@@ -1,3 +1,5 @@
+'use cache'
+
 import { Metadata } from 'next'
 
 import { getAboutUs, getExploreBlogData } from '@lib/data/fetch'

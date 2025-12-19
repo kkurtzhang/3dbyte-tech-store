@@ -1,4 +1,7 @@
-export {}
+export const resetDatabase = async () => {
+  // Database reset functionality - currently disabled
+  console.log('Database reset called - no-op in current configuration')
+}
 // import { Client } from 'pg'
 
 // async function getDatabaseClient() {

@@ -6,6 +6,7 @@ import { Heading } from '@modules/common/components/heading'
 import LocalizedClientLink from '@modules/common/components/localized-client-link'
 import { NavigationItem } from '@modules/common/components/navigation-item'
 import { Text } from '@modules/common/components/text'
+import CurrentYear from '@modules/common/components/current-year'
 import {
   HeadphonesIcon,
   KlarnaIcon,
@@ -36,7 +37,7 @@ export default function CheckoutFooter() {
         <Box className="flex flex-col-reverse gap-6 medium:flex-row medium:items-end medium:justify-between">
           <Box className="flex flex-wrap gap-6 gap-y-1">
             <Text size="md" className="shrink-0 text-secondary">
-              © {new Date().getFullYear()} Solace. All rights reserved.
+              © <CurrentYear /> Solace. All rights reserved.
             </Text>
             {checkoutFooterNavigation.map((link, id) => (
               <NavigationItem

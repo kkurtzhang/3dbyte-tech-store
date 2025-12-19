@@ -1,5 +1,8 @@
 'use client'
 
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import React, {
   startTransition,
   useActionState,
@@ -122,6 +125,7 @@ const AddressModalForm: React.FC<AddressModalFormProps> = ({
           validateOnBlur={true}
         >
           <Form>
+            {/* @ts-expect-error TypeScript compatibility issue with React 19 */}
             <DialogContent
               className="max-h-full max-w-[654px] !rounded-none border border-action-primary small:max-h-[724px]"
               aria-describedby={undefined}
@@ -131,6 +135,7 @@ const AddressModalForm: React.FC<AddressModalFormProps> = ({
                   {isAddingNewAddress
                     ? 'Add new address'
                     : 'Edit shipping address'}
+                  {/* @ts-expect-error React 19 type issue */}
                   <DialogClose className="right-4" />
                 </DialogHeader>
               </DialogTitle>

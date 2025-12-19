@@ -1,4 +1,4 @@
-import { unstable_noStore as noStore } from 'next/cache'
+// MIGRATED: Removed unstable_noStore - dynamic by default with Cache Components
 
 import { sdk } from '@lib/config'
 import { HttpTypes } from '@medusajs/types'
@@ -57,7 +57,7 @@ export const getProductsList = async function ({
   nextPage: number | null
   queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams
 }> {
-  noStore()
+  // MIGRATED: Removed noStore() call - dynamic by default with Cache Components
 
   const limit = queryParams?.limit || 12
   const offset = Math.max(0, (pageParam - 1) * limit)

@@ -86,9 +86,9 @@ function getCountryCode(
 }
 
 /**
- * Middleware to handle region selection and onboarding status.
+ * Proxy to handle region selection and onboarding status.
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const isOnboarding = searchParams.get('onboarding') === 'true'
   const cartId = searchParams.get('cart_id')
@@ -145,5 +145,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|favicon.ico).*)'],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 }

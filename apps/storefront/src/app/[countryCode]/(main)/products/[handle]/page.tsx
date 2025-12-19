@@ -18,8 +18,8 @@ export async function generateStaticParams() {
         .filter(Boolean) as string[]
   )
 
-  if (!countryCodes) {
-    return null
+  if (!countryCodes || countryCodes.length === 0) {
+    return []
   }
 
   const products = await Promise.all(
@@ -38,6 +38,12 @@ export async function generateStaticParams() {
       }))
     )
     .flat()
+
+  // Cache Components requires at least one static param
+  // Return a fallback if no products found
+  if (!staticParams || staticParams.length === 0) {
+    return [{ countryCode: 'us', handle: 'fallback' }]
+  }
 
   return staticParams
 }
