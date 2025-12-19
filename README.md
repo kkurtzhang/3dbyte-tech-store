@@ -1,53 +1,153 @@
 # 3D Byte Tech Store
 
-A monorepo-based e-commerce platform built with:
+A modern, full-stack e-commerce platform built with a monorepo architecture, combining the power of Medusa, Strapi, and Next.js to deliver a premium shopping experience.
 
-- **Backend**: Medusa v2.11.3
-- **CMS**: Strapi v5.15.1
-- **Storefront**: Next.js 15.1.5
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 20+
-- pnpm 8+
-
-### Installation
+## 🚀 Quick Start
 
 ```bash
+# Clone the repository
+git clone https://github.com/your-org/3dbyte-tech-store.git
+cd 3dbyte-tech-store
+
 # Install dependencies
 pnpm install
 
-# Build shared packages
-pnpm run build
+# Copy environment files
+cp apps/backend/.env.example apps/backend/.env
+cp apps/cms/.env.example apps/cms/.env
+cp apps/storefront/.env.example apps/storefront/.env.local
+
+# Start all services
+pnpm run dev
 ```
 
-### Development
+Your store will be available at:
+- **Storefront**: http://localhost:8000
+- **Admin Panel**: http://localhost:9000/app
+- **CMS Admin**: http://localhost:1337/admin
 
-#### Local Development
+## 📋 Prerequisites
+
+- **Node.js**: 20.0.0 or higher
+- **pnpm**: 8.0.0 or higher
+- **PostgreSQL**: For local development
+- **Redis**: For caching (optional for development)
+
+## 🏗️ Architecture
+
+This project uses a monorepo structure managed by pnpm and Turborepo, consisting of three main applications:
+
+```
+3dbyte-tech-store/
+├── apps/
+│   ├── backend/          # Medusa v2.12.3 - Commerce API
+│   ├── cms/              # Strapi v5.15.1 - Headless CMS
+│   └── storefront/       # Next.js 16.1.0 - Frontend
+├── packages/
+│   ├── shared-config/    # ESLint, TypeScript, Prettier configs
+│   ├── shared-types/     # Common TypeScript definitions
+│   ├── shared-ui/        # Reusable React components
+│   └── shared-utils/     # Shared utility functions
+├── scripts/              # Build and development scripts
+├── docker/               # Docker configurations
+└── docs/                 # Project documentation
+```
+
+## 🛠️ Technology Stack
+
+### Backend (Medusa v2.12.3)
+- **Framework**: Headless commerce platform
+- **Database**: PostgreSQL
+- **Cache**: Redis
+- **Features**:
+  - Product & inventory management
+  - Order processing
+  - Customer management
+  - Payment integrations (Stripe, PayPal)
+  - Shipping & tax calculations
+  - Admin dashboard
+
+### CMS (Strapi v5.15.1)
+- **Framework**: Headless CMS
+- **Features**:
+  - Blog management
+  - Content pages
+  - Media management with AWS S3
+  - Meilisearch integration
+  - Webhooks for automatic revalidation
+
+### Storefront (Next.js 16.1.0)
+- **Framework**: React 19.2.3 with TypeScript
+- **Styling**: Tailwind CSS with Medusa UI components
+- **Features**:
+  - Server-side rendering (SSR)
+  - Static site generation (SSG)
+  - Product catalog with filtering
+  - Shopping cart
+  - Multi-step checkout
+  - User authentication
+  - Search (Algolia integration)
+  - Dark/Light themes
+
+### Development Tools
+- **Package Manager**: pnpm with workspace support
+- **Build System**: Turborepo for optimized builds
+- **Code Quality**: ESLint, Prettier, TypeScript
+- **Testing**: Jest (unit), Playwright (e2e)
+- **Containerization**: Docker with Compose
+
+## ✨ Key Features
+
+### E-commerce Functionality
+- 📦 Product catalog with variants and options
+- 🛒 Shopping cart with promotional codes
+- 💳 Multi-payment methods (Stripe, PayPal)
+- 📦 Order tracking and history
+- 👥 Customer accounts and profiles
+- 🚚 Shipping calculations
+- 💰 Tax management
+- 📉 Inventory tracking
+- 🔄 Returns and exchanges
+
+### Content Management
+- 📝 Blog posts and articles
+- 📄 Static pages (About, FAQ, etc.)
+- 🖼️ Media asset management
+- 🔍 SEO-friendly URLs
+- 📝 Rich text editing
+- 🔄 Content versioning
+
+### Developer Experience
+- 🔗 Type-safe APIs across all services
+- ⚡ Optimized build pipeline with caching
+- 🔄 Hot reloading in development
+- 🐳 Docker support for easy setup
+- 🧪 Comprehensive testing suite
+- 🎨 Shared UI components
+- 📚 Extensive documentation
+
+## 🛠️ Development
+
+### Starting the Development Server
 
 ```bash
-# Start all services in parallel (recommended)
+# All services in parallel (recommended)
 pnpm run dev
 
-# Start individual services
-pnpm run dev:backend    # Medusa backend on http://localhost:9000
-pnpm run dev:cms        # Strapi CMS on http://localhost:1337
-pnpm run dev:storefront # Next.js on http://localhost:8000
+# Individual services
+pnpm run dev:backend      # Medusa on http://localhost:9000
+pnpm run dev:cms          # Strapi on http://localhost:1337
+pnpm run dev:storefront   # Next.js on http://localhost:8000
 
-# Using turbo directly
-pnpm run dev:turbo      # All services with Turborepo
+# Using Turborepo directly
+pnpm run dev:turbo
 ```
 
-#### Docker Development
+### Docker Development
 
 ```bash
 # Start all services with Docker
 pnpm run dev:docker
-
-# Or directly with Docker Compose
-docker-compose -f docker/docker-compose.yml up -d
 
 # View logs
 docker-compose -f docker/docker-compose.yml logs -f
@@ -56,7 +156,7 @@ docker-compose -f docker/docker-compose.yml logs -f
 docker-compose -f docker/docker-compose.yml down
 ```
 
-### Build
+### Building
 
 ```bash
 # Build all applications
@@ -72,53 +172,175 @@ pnpm --filter @3dbyte-tech-store/storefront build
 # Run all tests
 pnpm run test
 
-# Run tests for specific application
-pnpm --filter @3dbyte-tech-store/backend test
+# Specific test types
+pnpm run test:unit
+pnpm run test:integration
+pnpm run test-e2e
 ```
 
-### Linting
+### Code Quality
 
 ```bash
 # Lint all packages
 pnpm run lint
 
-# Lint specific package
-pnpm --filter @3dbyte-tech-store/storefront lint
+# Type checking
+pnpm run type-check
+
+# Format code
+pnpm run format:write
 ```
 
-## Project Structure
+## 📦 Package Management
 
-```
-3dbyte-tech-store/
-├── apps/
-│   ├── backend/          # Medusa commerce API
-│   ├── cms/              # Strapi CMS
-│   └── storefront/       # Next.js storefront
-├── packages/
-│   ├── shared-config/    # Shared ESLint, TypeScript configs
-│   ├── shared-types/     # Common TypeScript types
-│   └── shared-utils/     # Shared utilities
-└── ...
-```
-
-## Environment Setup
-
-Copy the following environment files and configure them:
+This monorepo uses pnpm workspaces for efficient dependency management:
 
 ```bash
-# Backend
-cp apps/backend/.env.example apps/backend/.env
+# Add dependency to specific app
+pnpm add <package> --filter=@3dbyte-tech-store/storefront
 
-# CMS
-cp apps/cms/.env.example apps/cms/.env
+# Add shared dependency to root
+pnpm add <package> -w
 
-# Storefront
-cp apps/storefront/.env.example apps/storefront/.env
+# Update all dependencies
+pnpm update
+
+# Check dependency tree
+pnpm ls
 ```
 
-## Learn More
+## 🔧 Environment Configuration
 
-- [Medusa Documentation](https://docs.medusajs.com/)
-- [Strapi Documentation](https://docs.strapi.io/)
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Turborepo Documentation](https://turbo.build/repo/docs)
+### Backend (apps/backend/.env)
+```env
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/medusa
+
+# Redis
+REDIS_URL=redis://localhost:6379
+
+# Medusa
+MEDUSA_ADMIN_ONBOARDING_TYPE=default
+CORS_ORIGIN=http://localhost:8000
+ADMIN_CORS=http://localhost:9000
+```
+
+### CMS (apps/cms/.env)
+```env
+# Database
+DATABASE_CLIENT=postgres
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_NAME=cms
+DATABASE_USERNAME=username
+DATABASE_PASSWORD=password
+
+# Strapi
+STRAPI_ADMIN_JWT_SECRET=your-jwt-secret
+API_TOKEN_SALT=your-token-salt
+
+# S3 (optional)
+S3_BUCKET=your-bucket
+S3_REGION=your-region
+S3_ACCESS_KEY_ID=your-access-key
+S3_ACCESS_SECRET=your-secret-key
+```
+
+### Storefront (apps/storefront/.env.local)
+```env
+# Medusa
+NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=your-publishable-key
+NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000
+
+# Strapi
+NEXT_PUBLIC_STRAPI_URL=http://localhost:1337
+NEXT_PUBLIC_STRAPI_READ_TOKEN=your-read-token
+
+# Webhook secret
+STRAPI_WEBHOOK_REVALIDATION_SECRET=your-webhook-secret
+```
+
+## 🚀 Deployment
+
+### Production Deployment
+
+1. **Build Applications**
+   ```bash
+   pnpm run build
+   ```
+
+2. **Environment Setup**
+   - Configure production environment variables
+   - Set up PostgreSQL and Redis instances
+   - Configure AWS S3 for media storage
+
+3. **Deploy Storefront (Vercel)**
+   ```bash
+   # Connect repository to Vercel
+   # Set environment variables in Vercel dashboard
+   ```
+
+4. **Deploy Backend & CMS**
+   - Recommended platforms: Railway, AWS, DigitalOcean
+   - Ensure database persistence
+   - Configure SSL certificates
+
+### Docker Production Deployment
+
+```bash
+# Build and deploy with Docker Compose
+docker-compose -f docker/docker-compose.prod.yml up -d
+```
+
+## 📚 Documentation
+
+- [Project Overview](docs/project-overview.md) - Detailed project information
+- [API Documentation](docs/api/) - Backend API reference
+- [Components Guide](docs/components.md) - Shared UI components
+- [Deployment Guide](docs/deployment.md) - Production deployment instructions
+- [Troubleshooting](docs/troubleshooting.md) - Common issues and solutions
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'feat: Add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
+
+### Commit Convention
+
+We follow conventional commits:
+
+- `feat:` for new features
+- `fix:` for bug fixes
+- `docs:` for documentation
+- `style:` for formatting
+- `refactor:` for code refactoring
+- `test:` for tests
+- `chore:` for maintenance
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [Medusa](https://medusajs.com/) - The headless commerce platform
+- [Strapi](https://strapi.io/) - The leading open-source headless CMS
+- [Next.js](https://nextjs.org/) - The React framework
+- [Vercel](https://vercel.com/) - For hosting the storefront
+- [Turborepo](https://turbo.build/) - For optimized monorepo builds
+
+## 📞 Support
+
+If you have any questions or need help, please:
+
+1. Check the [documentation](docs/)
+2. Search [existing issues](https://github.com/your-org/3dbyte-tech-store/issues)
+3. Create a new issue if needed
+4. Join our [Discord community](https://discord.gg/your-invite)
+
+---
+
+**Built with ❤️ by the 3D Byte Tech Store team**
