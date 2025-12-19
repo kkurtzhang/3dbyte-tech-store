@@ -1,0 +1,67 @@
+{
+  "kind": "collectionType",
+  "collectionName": "product_descriptions",
+  "info": {
+    "singularName": "product-description",
+    "pluralName": "product-descriptions",
+    "displayName": "ProductDescription",
+    "description": "Detailed product descriptions synced from Medusa"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "medusa_product_id": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "product_title": {
+      "type": "string",
+      "required": true
+    },
+    "product_handle": {
+      "type": "string",
+      "required": true
+    },
+    "detailed_description": {
+      "type": "richtext"
+    },
+    "product_images": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "features": {
+      "type": "json"
+    },
+    "specifications": {
+      "type": "json"
+    },
+    "seo_title": {
+      "type": "string"
+    },
+    "seo_description": {
+      "type": "text"
+    },
+    "meta_keywords": {
+      "type": "json"
+    },
+    "last_synced": {
+      "type": "datetime"
+    },
+    "sync_status": {
+      "type": "enumeration",
+      "default": "synced",
+      "enum": [
+        "synced",
+        "outdated",
+        "manual"
+      ]
+    }
+  }
+}

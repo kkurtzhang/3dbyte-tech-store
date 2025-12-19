@@ -1,0 +1,43 @@
+{
+  "name": "@3dbyte-tech-store/cms",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A Strapi application",
+  "scripts": {
+    "build": "strapi build",
+    "console": "strapi console",
+    "deploy": "strapi deploy",
+    "dev": "strapi develop",
+    "develop": "strapi develop",
+    "start": "strapi start",
+    "strapi": "strapi",
+    "upgrade": "npx @strapi/upgrade latest",
+    "upgrade:dry": "npx @strapi/upgrade latest --dry"
+  },
+  "dependencies": {
+    "@strapi/plugin-cloud": "5.15.1",
+    "@strapi/plugin-users-permissions": "5.15.1",
+    "@strapi/provider-upload-aws-s3": "^5.16.0",
+    "@strapi/strapi": "5.15.1",
+    "strapi-plugin-meilisearch": "^0.13.2",
+    "styled-components": "^6.0.0",
+    "@3dbyte-tech-store/shared-types": "workspace:*",
+    "@3dbyte-tech-store/shared-utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@3dbyte-tech-store/shared-config": "workspace:*",
+    "typescript": "^5",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18"
+  },
+  "engines": {
+    "node": ">=18.0.0 <=22.x.x",
+    "npm": ">=6.0.0"
+  },
+  "strapi": {
+    "uuid": "a7470f27-cbd6-4c0f-9e9a-3ae74de4d67b",
+    "installId": "51dac9a981349733da94761838d825dcd25b8bb28672af68f3c90ffe2fd4d36d"
+  },
+  "packageManager": "pnpm@10.12.1+sha512.f0dda8580f0ee9481c5c79a1d927b9164f2c478e90992ad268bbb2465a736984391d6333d2c327913578b2804af33474ca554ba29c04a8b13060a717675ae3ac"
+}

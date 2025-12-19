@@ -1,0 +1,66 @@
+{
+  "kind": "collectionType",
+  "collectionName": "brand_descriptions",
+  "info": {
+    "singularName": "brand-description",
+    "pluralName": "brand-descriptions",
+    "displayName": "BrandDescription"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": false
+    }
+  },
+  "attributes": {
+    "medusa_brand_id": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "brand_name": {
+      "type": "string",
+      "required": true
+    },
+    "brand_handle": {
+      "type": "string",
+      "required": true
+    },
+    "detailed_description": {
+      "type": "blocks"
+    },
+    "brand_logo": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "seo_title": {
+      "type": "string"
+    },
+    "seo_description": {
+      "type": "text"
+    },
+    "meta_keywords": {
+      "type": "json"
+    },
+    "last_synced": {
+      "type": "datetime"
+    },
+    "sync_status": {
+      "type": "enumeration",
+      "default": "synced",
+      "enum": [
+        "synced",
+        "outdated",
+        "manual"
+      ]
+    }
+  }
+}

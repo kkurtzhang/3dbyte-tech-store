@@ -1,0 +1,132 @@
+version: '3.8'
+
+services:
+  # PostgreSQL database
+  postgres:
+    image: postgres:15-alpine
+    container_name: 3dbyte-postgres
+    environment:
+      POSTGRES_DB: medusa
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_MULTIPLE_DATABASES: cms,medusa
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - 3dbyte-network
+
+  # Redis cache
+  redis:
+    image: redis:7-alpine
+    container_name: 3dbyte-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - 3dbyte-network
+
+  # Medusa Backend
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/backend/Dockerfile
+    container_name: 3dbyte-backend
+    ports:
+      - "9000:9000"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/medusa
+      REDIS_URL: redis://redis:6379
+      MEDUSA_ADMIN_ONBOARDING_TYPE: default
+      CORS_ORIGIN: http://localhost:8000
+      ADMIN_CORS: http://localhost:9000
+    volumes:
+      - ../apps/backend:/app
+      - /app/node_modules
+      - uploads:/app/uploads
+    networks:
+      - 3dbyte-network
+    command: pnpm run dev
+
+  # Strapi CMS
+  cms:
+    build:
+      context: ..
+      dockerfile: docker/cms/Dockerfile
+    container_name: 3dbyte-cms
+    ports:
+      - "1337:1337"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      NODE_ENV: development
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: cms
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: password
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    volumes:
+      - ../apps/cms:/app
+      - /app/node_modules
+      - cms_uploads:/app/public/uploads
+    networks:
+      - 3dbyte-network
+    command: pnpm run dev
+
+  # Next.js Storefront
+  storefront:
+    build:
+      context: ..
+      dockerfile: docker/storefront/Dockerfile
+    container_name: 3dbyte-storefront
+    ports:
+      - "8000:3000"
+    depends_on:
+      - backend
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_MEDUSA_BACKEND_URL: http://backend:9000
+      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: your-publishable-key
+      MEDUSA_ADMIN_EMAIL: admin@3dbyte.com
+    volumes:
+      - ../apps/storefront:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - 3dbyte-network
+    command: pnpm run dev
+
+  # Meilisearch (optional)
+  meilisearch:
+    image: getmeili/meilisearch:v1.5
+    container_name: 3dbyte-meilisearch
+    environment:
+      MEILI_MASTER_KEY: masterKey
+      MEILI_ENV: development
+    ports:
+      - "7700:7700"
+    volumes:
+      - meilisearch_data:/meili_data
+    networks:
+      - 3dbyte-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads:
+  cms_uploads:
+  meilisearch_data:
+
+networks:
+  3dbyte-network:
+    driver: bridge
