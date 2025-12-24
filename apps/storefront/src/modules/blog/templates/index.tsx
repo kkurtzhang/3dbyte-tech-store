@@ -92,7 +92,7 @@ export default async function BlogTemplate({
             </Box>
             <Suspense fallback={<SkeletonBlogPosts />}>
               {posts && posts.length > 0 ? (
-                <Box className="!mt-6 grid grid-cols-1 gap-2 large:grid-cols-2">
+                <Box className="!mt-6 grid grid-cols-1 gap-2 lg:grid-cols-2">
                   {posts
                     .slice(offset, pageNumber * POSTS_LIMIT)
                     .map((post, id) => {
@@ -140,10 +140,10 @@ function PostCount({
 
 function NoPosts() {
   return (
-    <Box className="flex flex-col items-center gap-6 p-0 small:pb-14 small:pt-6">
+    <Box className="flex flex-col items-center gap-6 p-0 sm:pb-14 sm:pt-6">
       <SearchResultsIcon />
       <Box className="flex flex-col items-center gap-2">
-        <Heading as="h3" className="text-xl small:text-2xl">
+        <Heading as="h3" className="text-xl sm:text-2xl">
           No posts found
         </Heading>
         <p className="text-center text-md text-secondary">

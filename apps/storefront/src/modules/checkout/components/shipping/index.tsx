@@ -130,7 +130,7 @@ const Shipping: React.FC<ShippingProps> = ({
                         <RadioGroupIndicator />
                       </RadioGroupItem>
                     </RadioGroupRoot>
-                    <Box className="flex w-full flex-col gap-1 small:flex-row small:items-center small:justify-between">
+                    <Box className="flex w-full flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                       <span className="text-lg">{option.name}</span>
                       <span className="justify-self-end text-md">
                         {convertToLocale({

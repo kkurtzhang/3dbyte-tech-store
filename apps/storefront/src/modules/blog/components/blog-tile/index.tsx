@@ -9,7 +9,7 @@ import { BlogPost } from 'types/strapi'
 export function BlogTile({ post }: { post: BlogPost }) {
   return (
     <Box className="flex min-w-40 flex-col overflow-hidden bg-secondary">
-      <Box className="h-[224px] overflow-hidden large:h-[280px]">
+      <Box className="h-[224px] overflow-hidden lg:h-[280px]">
         <LocalizedClientLink href={`/blog/${post.Slug}`}>
           <Image
             className="h-full w-full object-cover object-center"
@@ -21,7 +21,7 @@ export function BlogTile({ post }: { post: BlogPost }) {
           />
         </LocalizedClientLink>
       </Box>
-      <Box className="flex flex-col gap-4 p-4 small:gap-6 small:p-5">
+      <Box className="flex flex-col gap-4 p-4 sm:gap-6 sm:p-5">
         <div className="flex flex-col gap-1">
           <LocalizedClientLink href={`/blog/${post.Slug}`}>
             <Heading

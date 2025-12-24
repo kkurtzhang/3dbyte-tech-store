@@ -176,7 +176,7 @@ const SideMenu = ({
         <Button
           variant="icon"
           withIcon
-          className="flex h-auto !p-2 xsmall:!p-3.5 large:hidden"
+          className="flex h-auto !p-2 xsm:!p-3.5 lg:hidden"
         >
           <BarsIcon />
         </Button>
@@ -187,7 +187,7 @@ const SideMenu = ({
           className="!max-h-full !max-w-full !rounded-none"
           aria-describedby={undefined}
         >
-          <DialogHeader className="flex items-center gap-4 !p-4 text-xl text-basic-primary small:text-2xl">
+          <DialogHeader className="flex items-center gap-4 !p-4 text-xl text-basic-primary sm:text-2xl">
             {currentCategory && (
               <Button variant="tonal" withIcon size="sm" onClick={handleBack}>
                 <ArrowLeftIcon className="h-5 w-5" />
@@ -207,7 +207,7 @@ const SideMenu = ({
           <VisuallyHidden.Root>
             <DialogTitle>Menu modal</DialogTitle>
           </VisuallyHidden.Root>
-          <DialogBody className="overflow-y-auto p-4 small:p-5">
+          <DialogBody className="overflow-y-auto p-4 sm:p-5">
             <Box className="flex flex-col">
               {shouldRenderButton && (
                 <Button

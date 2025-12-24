@@ -16,17 +16,17 @@ export const rootColors = {
   '--fg-primary': '9 9 9',
   '--fg-primary-hover': '17 17 17',
   '--fg-primary-pressed': '26 26 26',
-  '--fg-secondary': '9, 9, 9, 0.1',
-  '--fg-secondary-hover': '9, 9, 9, 0.2',
-  '--fg-secondary-pressed': '9, 9, 9, 0.3',
-  '--fg-tertiary': '255, 255, 255, 0.4',
-  '--fg-tertiary-hover': '255, 255, 255, 0.2',
-  '--fg-tertiary-pressed': '255, 255, 255, 0.3',
+  '--fg-secondary': '9 9 9 / 0.1',
+  '--fg-secondary-hover': '9 9 9 / 0.2',
+  '--fg-secondary-pressed': '9 9 9 / 0.3',
+  '--fg-tertiary': '255 255 255 / 0.4',
+  '--fg-tertiary-hover': '255 255 255 / 0.2',
+  '--fg-tertiary-pressed': '255 255 255 / 0.3',
   '--fg-primary-negative': '217 45 32',
   '--fg-primary-negative-hover': '180 35 24',
   '--fg-primary-negative-pressed': '145 32 24',
-  '--fg-secondary-negative': '217, 45, 32, 0.2',
-  '--fg-positive': '3, 152, 85, 0.2',
+  '--fg-secondary-negative': '217 45 32 / 0.2',
+  '--fg-positive': '3 152 85 / 0.2',
 
   /*CONTENT*/
 
@@ -46,7 +46,7 @@ export const rootColors = {
   /*BORDER*/
 
   '--border-basic-primary': '229 229 229',
-  '--border-secondary': '255, 255, 255, 0.1',
+  '--border-secondary': '255 255 255 / 0.1',
   '--border-disabled': '140 140 140',
   '--border-action-primary': '9 9 9',
   '--border-action-primary-inverse': '255 255 255',
@@ -74,17 +74,17 @@ export const darkMode = {
   '--fg-primary': '249 249 249',
   '--fg-primary-hover': '237 237 237',
   '--fg-primary-pressed': '229 229 229',
-  '--fg-secondary': '255, 255, 255 ,0.1',
-  '--fg-secondary-hover': '255 255 255 0.2',
-  '--fg-secondary-pressed': '255 255 255 0.3',
-  '--fg-tertiary': '255, 255, 255, 0.1',
-  '--fg-tertiary-hover': '255, 255, 255, 0.2',
-  '--fg-tertiary-pressed': '255, 255, 255, 0.3',
+  '--fg-secondary': '255 255 255 / 0.1',
+  '--fg-secondary-hover': '255 255 255 / 0.2',
+  '--fg-secondary-pressed': '255 255 255 / 0.3',
+  '--fg-tertiary': '255 255 255 / 0.1',
+  '--fg-tertiary-hover': '255 255 255 / 0.2',
+  '--fg-tertiary-pressed': '255 255 255 / 0.3',
   '--fg-primary-negative': '240 68 56',
   '--fg-primary-negative-hover': '217 45 32',
   '--fg-primary-negative-pressed': '180 35 24',
-  '--fg-secondary-negative': '217, 45, 32, 0.2',
-  '--fg-positive': '3, 152, 85, 0.2',
+  '--fg-secondary-negative': '217 45 32 / 0.2',
+  '--fg-positive': '3 152 85 / 0.2',
 
   /*CONTENT*/
 
@@ -104,7 +104,7 @@ export const darkMode = {
   /*BORDER*/
 
   '--border-basic-primary': '33 33 33',
-  '--border-secondary': '255, 255, 255, 0.1',
+  '--border-secondary': '255 255 255 / 0.1',
   '--border-disabled': '108 108 108',
   '--border-action-primary': '255 255 255',
   '--border-action-primary-inverse': '9 9 9',

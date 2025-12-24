@@ -11,8 +11,8 @@ const CartTemplate = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
   return (
     <Container className="flex items-center justify-center">
       {cart?.items?.length ? (
-        <div className="flex w-full flex-col gap-6 large:flex-row large:justify-between large:gap-0">
-          <div className="flex max-w-[765px] shrink grow flex-col gap-4 large:mr-12">
+        <div className="flex w-full flex-col gap-6 lg:flex-row lg:justify-between lg:gap-0">
+          <div className="flex max-w-[765px] shrink grow flex-col gap-4 lg:mr-12">
             <ItemsTemplate items={cart?.items} />
           </div>
           <div className="relative">

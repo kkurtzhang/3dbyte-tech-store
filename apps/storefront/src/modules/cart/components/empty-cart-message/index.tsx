@@ -10,7 +10,7 @@ const EmptyCartMessage = () => {
     <Box className="flex flex-col items-center gap-6 text-basic-primary">
       <BagIcon className="h-14 w-14" />
       <Box className="flex flex-col items-center gap-2">
-        <Heading as="h2" className="text-xl small:text-2xl">
+        <Heading as="h2" className="text-xl sm:text-2xl">
           Your shopping cart is empty
         </Heading>
         <Text size="md" className="text-secondary">

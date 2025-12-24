@@ -21,7 +21,7 @@ const BillingAddress = ({
 }) => {
   return (
     <>
-      <Box className="grid grid-cols-1 gap-2 small:gap-4 xl:grid-cols-2">
+      <Box className="grid grid-cols-1 gap-2 sm:gap-4 xl:grid-cols-2">
         <Input
           label="First name"
           name="billing_address.first_name"

@@ -33,7 +33,7 @@ const EditAddressForm = forwardRef<HTMLFormElement, EditAddressFormProps>(
     return (
       <>
         <form ref={ref}>
-          <div className="grid w-full grid-cols-1 gap-4 overflow-y-auto small:grid-cols-2">
+          <div className="grid w-full grid-cols-1 gap-4 overflow-y-auto sm:grid-cols-2">
             <input type="hidden" name="id" defaultValue={address.id} />
             <Input
               label="First name"

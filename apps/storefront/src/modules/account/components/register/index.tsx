@@ -112,13 +112,13 @@ const Register = ({ setCurrentView }: Props) => {
       className="flex w-full flex-col items-center gap-6"
       data-testid="register-page"
     >
-      <Box className="flex w-full flex-col gap-6 bg-primary p-4 small:p-5">
-        <Heading as="h2" className="text-xl small:text-2xl">
+      <Box className="flex w-full flex-col gap-6 bg-primary p-4 sm:p-5">
+        <Heading as="h2" className="text-xl sm:text-2xl">
           Create account
         </Heading>
         <form className="flex w-full flex-col" onSubmit={handleSubmit}>
           <Box className="flex w-full flex-col gap-y-4">
-            <Box className="grid grid-cols-1 gap-4 small:grid-cols-2">
+            <Box className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Input
                 label="First Name"
                 name="first_name"
@@ -142,7 +142,7 @@ const Register = ({ setCurrentView }: Props) => {
                 data-testid="last-name-input"
               />
             </Box>
-            <Box className="grid grid-cols-1 gap-4 small:grid-cols-2">
+            <Box className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Input
                 label="Email"
                 name="email"

@@ -78,8 +78,8 @@ const Login = ({ setCurrentView }: Props) => {
       className="flex w-full flex-col items-center gap-6"
       data-testid="login-page"
     >
-      <Box className="flex w-full flex-col gap-6 bg-primary p-4 small:p-5">
-        <Heading as="h2" className="text-xl small:text-2xl">
+      <Box className="flex w-full flex-col gap-6 bg-primary p-4 sm:p-5">
+        <Heading as="h2" className="text-xl sm:text-2xl">
           Log in
         </Heading>
         <form onSubmit={handleSubmit}>

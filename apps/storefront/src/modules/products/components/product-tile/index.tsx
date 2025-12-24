@@ -39,9 +39,9 @@ export function ProductTile({
       className="group flex h-full flex-col"
       data-testid={formatNameForTestId(`${product.title}-product-tile`)}
     >
-      <Box className="relative h-[290px] small:h-[504px]">
+      <Box className="relative h-[290px] sm:h-[504px]">
         {isNew && (
-          <Box className="absolute left-3 top-3 z-10 small:left-5 small:top-5">
+          <Box className="absolute left-3 top-3 z-10 sm:left-5 sm:top-5">
             <Badge label="New product" variant="brand" />
           </Box>
         )}
@@ -77,7 +77,7 @@ function ProductInfo({
   salePrice: string
 }) {
   return (
-    <Box className="flex flex-col gap-3 p-4 small:gap-6 small:p-5">
+    <Box className="flex flex-col gap-3 p-4 sm:gap-6 sm:p-5">
       <div className="flex flex-1 flex-col justify-between gap-4">
         <LocalizedClientLink href={`/products/${productHandle}`}>
           <Text

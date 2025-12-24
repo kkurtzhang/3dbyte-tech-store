@@ -42,7 +42,7 @@ export default async function PrivacyPolicyPage() {
           <Box className="col-span-12 mb-10 medium:col-span-3 medium:mb-0">
             <SidebarBookmarks data={bookmarks} />
           </Box>
-          <Box className="col-span-12 -mt-6 space-y-10 small:-mt-12 medium:col-span-8 medium:col-start-5">
+          <Box className="col-span-12 -mt-6 space-y-10 sm:-mt-12 medium:col-span-8 medium:col-start-5">
             <MDXRemote source={mdxSource} />
           </Box>
         </Box>

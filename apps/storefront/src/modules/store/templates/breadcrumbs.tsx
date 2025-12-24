@@ -18,7 +18,7 @@ export default function StoreBreadcrumbs({
   return (
     <>
       <Breadcrumbs className="text-basic-primary">
-        <BreadcrumbsList className="hidden small:flex">
+        <BreadcrumbsList className="hidden sm:flex">
           <BreadcrumbsItem>
             <BreadcrumbsLink href="/">Home Page</BreadcrumbsLink>
           </BreadcrumbsItem>
@@ -27,7 +27,7 @@ export default function StoreBreadcrumbs({
             <BreadcrumbsStatic>{breadcrumb ?? 'Shop'}</BreadcrumbsStatic>
           </BreadcrumbsItem>
         </BreadcrumbsList>
-        <BreadcrumbsList className="flex small:hidden">
+        <BreadcrumbsList className="flex sm:hidden">
           <BreadcrumbsItem>
             <BreadcrumbsLink
               href="/"

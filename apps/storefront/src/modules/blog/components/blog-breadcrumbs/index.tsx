@@ -17,7 +17,7 @@ export default function BlogBreadcrumbs({
 }) {
   return (
     <Breadcrumbs className="text-basic-primary">
-      <BreadcrumbsList className="hidden small:flex">
+      <BreadcrumbsList className="hidden sm:flex">
         <BreadcrumbsItem>
           <BreadcrumbsLink href={`/${countryCode}`}>Home Page</BreadcrumbsLink>
         </BreadcrumbsItem>
@@ -31,7 +31,7 @@ export default function BlogBreadcrumbs({
         </BreadcrumbsItem>
       </BreadcrumbsList>
 
-      <BreadcrumbsList className="flex small:hidden">
+      <BreadcrumbsList className="flex sm:hidden">
         <BreadcrumbsItem>
           <BreadcrumbsLink
             href={`/${countryCode}/blog}`}

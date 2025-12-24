@@ -12,6 +12,7 @@ import {
 } from "./admin/brands/validators";
 import z from "zod";
 import { createFindParams } from "@medusajs/medusa/api/utils/validators";
+import { storeSearchRoutesMiddlewares } from "./store/search/middlewares";
 
 export const GetBrandsSchema = createFindParams();
 
@@ -87,5 +88,6 @@ export default defineMiddlewares({
         validateAndTransformBody(DeleteAdminBatchLinkProductsBrand),
       ],
     },
+    ...storeSearchRoutesMiddlewares,
   ],
 });

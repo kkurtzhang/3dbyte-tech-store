@@ -40,18 +40,18 @@ const ProductTemplate: React.FC<ProductTemplateProps> = async ({
   return (
     <>
       <Container
-        className="relative flex flex-col gap-y-6 !py-8 small:gap-y-12"
+        className="relative flex flex-col gap-y-6 !py-8 sm:gap-y-12"
         data-testid="product-container"
       >
         <ProductBreadcrumbs product={product} countryCode={countryCode} />
-        <Box className="relative flex flex-col gap-y-6 large:flex-row large:items-start large:gap-x-16 xl:gap-x-[120px]">
+        <Box className="relative flex flex-col gap-y-6 lg:flex-row lg:items-start lg:gap-x-16 xl:gap-x-[120px]">
           <Box className="relative block w-full">
             <ImageGallery
               title={product.title}
               images={product?.images || []}
             />
           </Box>
-          <Box className="flex w-full flex-col gap-y-6 py-8 large:sticky large:top-24 large:max-w-[440px] large:py-0">
+          <Box className="flex w-full flex-col gap-y-6 py-8 lg:sticky lg:top-24 lg:max-w-[440px] lg:py-0">
             <ProductInfo product={product} />
             <Suspense fallback={<SkeletonProductActions />}>
               <ProductActionsWrapper

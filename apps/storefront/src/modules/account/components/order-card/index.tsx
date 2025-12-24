@@ -17,8 +17,8 @@ export default async function OrderCard({
   const orderStatus = getOrderStatus(order.status)
 
   return (
-    <Box className="flex flex-col bg-primary large:flex-row">
-      <Box className="flex justify-between p-4 large:p-5 large:pr-0">
+    <Box className="flex flex-col bg-primary lg:flex-row">
+      <Box className="flex justify-between p-4 lg:p-5 lg:pr-0">
         <Box className="flex min-w-[160px] flex-col gap-4 text-md text-basic-primary">
           <Text>{orderStatus}</Text>
           <div className="flex flex-col gap-1">
@@ -44,15 +44,15 @@ export default async function OrderCard({
           variant="tonal"
           size="sm"
           asChild
-          className="flex justify-end large:hidden"
+          className="flex justify-end lg:hidden"
         >
           <LocalizedClientLink href={`/account/orders/details/${order.id}`}>
             View order
           </LocalizedClientLink>
         </Button>
       </Box>
-      <Box className="flex w-full justify-between gap-1 p-4 large:p-5 large:pl-0">
-        <Box className="flex flex-wrap items-center gap-2 large:py-5">
+      <Box className="flex w-full justify-between gap-1 p-4 lg:p-5 lg:pl-0">
+        <Box className="flex flex-wrap items-center gap-2 lg:py-5">
           {order.items.slice(0, 2).map((item, index) => (
             <Thumbnail
               key={index}
@@ -90,7 +90,7 @@ export default async function OrderCard({
           variant="tonal"
           size="sm"
           asChild
-          className="hidden w-max justify-end large:flex"
+          className="hidden w-max justify-end lg:flex"
         >
           <LocalizedClientLink href={`/account/orders/details/${order.id}`}>
             View order

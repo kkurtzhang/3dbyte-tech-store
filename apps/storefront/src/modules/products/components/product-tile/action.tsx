@@ -52,7 +52,7 @@ export function ProductActions({
       withIcon
       disabled={isAddingToCart}
       className={cn(
-        'absolute bottom-3 right-3 opacity-100 transition-opacity duration-300 group-hover:opacity-100 small:bottom-5 small:right-5 large:opacity-0',
+        'absolute bottom-3 right-3 opacity-100 transition-opacity duration-300 group-hover:opacity-100 sm:bottom-5 sm:right-5 lg:opacity-0',
         { 'pointer-events-none !px-4': isAddingToCart }
       )}
       onClick={handleAddToCart}

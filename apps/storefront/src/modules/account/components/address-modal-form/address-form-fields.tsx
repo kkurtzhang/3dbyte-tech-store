@@ -22,7 +22,7 @@ const AddressFormFields = ({
 
   return (
     <>
-      <div className="grid w-full grid-cols-1 gap-4 overflow-y-auto small:grid-cols-2">
+      <div className="grid w-full grid-cols-1 gap-4 overflow-y-auto sm:grid-cols-2">
         {!isAddingNewAddress && (
           <input type="hidden" name="id" defaultValue={address?.id} />
         )}

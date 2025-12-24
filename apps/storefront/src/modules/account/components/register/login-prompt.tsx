@@ -9,8 +9,8 @@ export default function LoginPrompt({
   setCurrentView: (view: LOGIN_VIEW) => void
 }) {
   return (
-    <Box className="flex w-full flex-col gap-6 bg-primary p-4 small:p-5">
-      <Heading as="h2" className="text-xl small:text-2xl">
+    <Box className="flex w-full flex-col gap-6 bg-primary p-4 sm:p-5">
+      <Heading as="h2" className="text-xl sm:text-2xl">
         Already have an account?
       </Heading>
       <Button

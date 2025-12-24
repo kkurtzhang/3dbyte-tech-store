@@ -22,10 +22,10 @@ export default function CheckoutFooter() {
   return (
     <Container
       as="footer"
-      className="mx-0 max-w-full bg-static px-0 py-0 small:px-0 small:py-0"
+      className="mx-0 max-w-full bg-static px-0 py-0 sm:px-0 sm:py-0"
     >
       <Container className="flex flex-col gap-8 text-static">
-        <Box className="flex flex-col gap-4 small:flex-row small:items-center">
+        <Box className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <Heading className="text-lg text-static">Have questions?</Heading>
           <Button size="sm" withIcon asChild className="w-max">
             <LocalizedClientLink href="#">

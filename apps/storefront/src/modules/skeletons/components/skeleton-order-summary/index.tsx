@@ -4,7 +4,7 @@ import SkeletonCodeForm from '@modules/skeletons/components/skeleton-code-form'
 
 const SkeletonOrderSummary = () => {
   return (
-    <div className="flex w-full flex-col gap-2 large:w-[326px] xl:w-[437px]">
+    <div className="flex w-full flex-col gap-2 lg:w-[326px] xl:w-[437px]">
       <SkeletonCodeForm />
       <div className="flex animate-pulse flex-col gap-5 bg-skeleton-primary p-5">
         <SkeletonCartTotals header={false} />

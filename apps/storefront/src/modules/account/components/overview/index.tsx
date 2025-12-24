@@ -14,10 +14,10 @@ const Overview = ({ orders }: OverviewProps) => {
   return (
     <Box
       data-testid="overview-page-wrapper"
-      className="flex flex-col gap-4 small:gap-6"
+      className="flex flex-col gap-4 sm:gap-6"
     >
       <Box className="flex items-center justify-between">
-        <Heading as="h2" className="text-xl small:text-2xl">
+        <Heading as="h2" className="text-xl sm:text-2xl">
           Latest order updates
         </Heading>
         <Button

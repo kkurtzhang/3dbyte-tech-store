@@ -59,7 +59,7 @@ export const SearchDialog = ({
           className="!max-h-full !max-w-full !rounded-none"
           aria-describedby={undefined}
         >
-          <DialogHeader className="flex items-center gap-4 !border-b-0 !p-4 text-xl text-basic-primary small:text-2xl">
+          <DialogHeader className="flex items-center gap-4 !border-b-0 !p-4 text-xl text-basic-primary sm:text-2xl">
             <Button
               withIcon
               variant="text"
@@ -93,7 +93,7 @@ export const SearchDialog = ({
                 </TabsTrigger>
               </TabsList>
               <TabsContent
-                className="grow p-4 outline-none small:p-6"
+                className="grow p-4 outline-none sm:p-6"
                 value="tab1"
               >
                 <RecentSearches
@@ -101,7 +101,7 @@ export const SearchDialog = ({
                 />
               </TabsContent>
               <TabsContent
-                className="grow p-4 outline-none small:p-6"
+                className="grow p-4 outline-none sm:p-6"
                 value="tab2"
               >
                 <div className="grid gap-3">

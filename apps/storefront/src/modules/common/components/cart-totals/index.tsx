@@ -30,7 +30,7 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
   } = totals
 
   return (
-    <Box className="flex flex-col gap-4 text-md text-secondary small:gap-5">
+    <Box className="flex flex-col gap-4 text-md text-secondary sm:gap-5">
       <Box className="flex flex-col gap-2">
         <Box className="flex items-center justify-between">
           <span className="flex items-center gap-x-1">

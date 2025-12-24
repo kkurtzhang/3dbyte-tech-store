@@ -66,8 +66,8 @@ export default async function CollectionTemplate({
           <Text className="text-md text-secondary">
             {count === 1 ? `${count} product` : `${count} products`}
           </Text>
-          <Box className="grid w-full grid-cols-2 items-center justify-between gap-2 small:flex small:flex-wrap">
-            <Box className="hidden small:flex">
+          <Box className="grid w-full grid-cols-2 items-center justify-between gap-2 sm:flex sm:flex-wrap">
+            <Box className="hidden sm:flex">
               <ProductFilters filters={filters} />
             </Box>
             <ProductFiltersDrawer>

@@ -37,7 +37,7 @@ export default function Navigation({
   )
 
   return (
-    <Box className="hidden gap-4 self-stretch large:flex">
+    <Box className="hidden gap-4 self-stretch lg:flex">
       {navigation.map((item: any, index: number) => {
         const handle = item.name.toLowerCase().replace(' ', '-')
         const isCategories =

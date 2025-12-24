@@ -7,7 +7,7 @@ export default function CheckoutLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="relative w-full bg-primary small:min-h-screen">
+    <div className="relative w-full bg-primary sm:min-h-screen">
       <div className="border-b bg-primary">
         <CheckoutNav />
       </div>

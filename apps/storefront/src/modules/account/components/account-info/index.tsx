@@ -124,7 +124,7 @@ const AccountInfo = ({
             <div className="mt-2 flex items-center justify-end">
               <Button
                 isLoading={pending}
-                className="w-full small:max-w-[140px]"
+                className="w-full sm:max-w-[140px]"
                 type="submit"
                 data-testid="save-button"
               >

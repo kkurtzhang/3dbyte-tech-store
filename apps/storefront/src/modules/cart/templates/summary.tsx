@@ -27,7 +27,7 @@ const Summary = ({ cart }: SummaryProps) => {
   const step = getCheckoutStep(cart)
 
   return (
-    <Box className="flex w-full flex-col gap-2 large:w-[326px] xl:w-[437px]">
+    <Box className="flex w-full flex-col gap-2 lg:w-[326px] xl:w-[437px]">
       <DiscountCode cart={cart} />
       <Box className="flex flex-col gap-5 bg-primary p-5">
         <CartTotals totals={cart} />

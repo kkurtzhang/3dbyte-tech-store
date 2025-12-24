@@ -22,7 +22,7 @@ export default function StorePageLayout({ children }: StorePageLayoutProps) {
           <StoreBreadcrumbs />
           <Heading
             as="h1"
-            className="text-4xl text-basic-primary small:text-5xl"
+            className="text-4xl text-basic-primary sm:text-5xl"
           >
             All products
           </Heading>

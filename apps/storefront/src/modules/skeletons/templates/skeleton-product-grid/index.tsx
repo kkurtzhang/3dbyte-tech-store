@@ -4,7 +4,7 @@ import SkeletonProductPreview from '@modules/skeletons/components/skeleton-produ
 const SkeletonProductGrid = () => {
   return (
     <ul
-      className="grid w-full grid-cols-1 gap-x-2 gap-y-6 small:grid-cols-2 large:grid-cols-3"
+      className="grid w-full grid-cols-1 gap-x-2 gap-y-6 sm:grid-cols-2 lg:grid-cols-3"
       data-testid="products-list"
     >
       {repeat(8).map((index) => (

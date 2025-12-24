@@ -42,13 +42,13 @@ const Sorting = ({ options, sortBy, setQueryParams }: SortingProps) => {
 
   return (
     <Box className="flex items-center gap-4">
-      <Text size="md" className="hidden text-secondary small:block">
+      <Text size="md" className="hidden text-secondary sm:block">
         Sort by:
       </Text>
       <Select
         value={sortBy}
         onValueChange={(e: string) => handleChange(e)}
-        className="hidden w-[200px] small:block"
+        className="hidden w-[200px] sm:block"
       >
         <SelectTrigger aria-label="Sort by" data-testid="select-sort-by">
           <SelectValue
@@ -69,7 +69,7 @@ const Sorting = ({ options, sortBy, setQueryParams }: SortingProps) => {
           ))}
         </SelectContent>
       </Select>
-      <div className="relative z-20 flex w-full justify-end small:hidden">
+      <div className="relative z-20 flex w-full justify-end sm:hidden">
         <Menu as="div">
           {({ close }) => (
             <>

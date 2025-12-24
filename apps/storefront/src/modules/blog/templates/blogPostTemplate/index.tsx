@@ -49,14 +49,14 @@ export default async function BlogPostTemplate({
     <Container className="flex flex-col gap-6 !py-8 medium:gap-8">
       <Box className="flex flex-col gap-4">
         <BlogBreadcrumbs blogTitle={article.Title} countryCode={countryCode} />
-        <Heading as="h1" className="text-4xl text-basic-primary small:text-5xl">
+        <Heading as="h1" className="text-4xl text-basic-primary sm:text-5xl">
           {article.Title}
         </Heading>
       </Box>
       <Box className="grid grid-cols-12 gap-4">
         <Box
           className={cn(
-            'col-span-12 hidden large:col-span-3 large:block',
+            'col-span-12 hidden lg:col-span-3 lg:block',
             hasHeadings ? 'block' : 'hidden'
           )}
         >
@@ -64,10 +64,10 @@ export default async function BlogPostTemplate({
         </Box>
         <Box
           className={cn(
-            'col-span-12 large:col-span-9 large:col-start-5',
+            'col-span-12 lg:col-span-9 lg:col-start-5',
             hasHeadings
-              ? 'large:col-span-9'
-              : 'large:col-span-12 large:col-start-1'
+              ? 'lg:col-span-9'
+              : 'lg:col-span-12 lg:col-start-1'
           )}
         >
           <Box className="relative h-[400px] w-full">

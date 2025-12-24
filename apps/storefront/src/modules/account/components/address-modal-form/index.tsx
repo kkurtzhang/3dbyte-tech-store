@@ -127,11 +127,11 @@ const AddressModalForm: React.FC<AddressModalFormProps> = ({
           <Form>
             {/* @ts-expect-error TypeScript compatibility issue with React 19 */}
             <DialogContent
-              className="max-h-full max-w-[654px] !rounded-none border border-action-primary small:max-h-[724px]"
+              className="max-h-full max-w-[654px] !rounded-none border border-action-primary sm:max-h-[724px]"
               aria-describedby={undefined}
             >
               <DialogTitle>
-                <DialogHeader className="flex items-center text-xl text-basic-primary small:text-2xl">
+                <DialogHeader className="flex items-center text-xl text-basic-primary sm:text-2xl">
                   {isAddingNewAddress
                     ? 'Add new address'
                     : 'Edit shipping address'}
@@ -140,7 +140,7 @@ const AddressModalForm: React.FC<AddressModalFormProps> = ({
                 </DialogHeader>
               </DialogTitle>
 
-              <DialogBody className="overflow-y-auto p-4 small:p-5">
+              <DialogBody className="overflow-y-auto p-4 sm:p-5">
                 <AddressFormFields
                   address={address}
                   isAddingNewAddress={isAddingNewAddress}

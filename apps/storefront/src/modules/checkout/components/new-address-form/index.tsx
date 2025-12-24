@@ -32,7 +32,7 @@ const NewAddressForm = forwardRef<HTMLFormElement, NewAddressFormProps>(
     return (
       <>
         <form ref={ref}>
-          <Box className="grid w-full grid-cols-1 gap-4 overflow-y-auto small:grid-cols-2">
+          <Box className="grid w-full grid-cols-1 gap-4 overflow-y-auto sm:grid-cols-2">
             <Input
               label="First name"
               name="first_name"

@@ -18,24 +18,24 @@ export function ExploreBlog({ posts }: { posts: BlogPost[] }) {
 
   return (
     <Container className="overflow-hidden" data-testid="get-inspired-section">
-      <Box className="flex flex-col gap-6 small:gap-12">
+      <Box className="flex flex-col gap-6 sm:gap-12">
         <Box className="flex items-center justify-between">
           <Heading
             as="h2"
-            className="text-2xl text-basic-primary small:text-3xl"
+            className="text-2xl text-basic-primary sm:text-3xl"
           >
             Get inspired
           </Heading>
-          <Button className="hidden w-max large:flex" variant="tonal" asChild>
+          <Button className="hidden w-max lg:flex" variant="tonal" asChild>
             <LocalizedClientLink href="/blog">Read more</LocalizedClientLink>
           </Button>
         </Box>
-        <Box className="hidden items-center gap-2 large:grid large:grid-cols-3">
+        <Box className="hidden items-center gap-2 lg:grid lg:grid-cols-3">
           {posts.map((post, id) => {
             return <BlogTile key={id} post={post} />
           })}
         </Box>
-        <div ref={emblaRef} className="block large:hidden">
+        <div ref={emblaRef} className="block lg:hidden">
           <Box className="flex gap-2">
             {posts.map((post, id) => {
               return (
@@ -47,7 +47,7 @@ export function ExploreBlog({ posts }: { posts: BlogPost[] }) {
           </Box>
         </div>
         <Button
-          className="mx-auto flex w-max large:hidden"
+          className="mx-auto flex w-max lg:hidden"
           variant="tonal"
           asChild
         >

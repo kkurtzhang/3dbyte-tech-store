@@ -49,18 +49,18 @@ const Item = ({ item, type = 'full' }: ItemProps) => {
     item.variant.inventory_quantity > 0 ? item.variant.inventory_quantity : 10
 
   return (
-    <Box className="flex bg-primary small:h-[172px]" data-testid="cart-item">
+    <Box className="flex bg-primary sm:h-[172px]" data-testid="cart-item">
       <Box>
         <LocalizedClientLink href={`/products/${handle}`}>
           <Thumbnail
-            className="h-[92px] max-w-[92px] rounded-none small:h-full small:max-w-[146px]"
+            className="h-[92px] max-w-[92px] rounded-none sm:h-full sm:max-w-[146px]"
             thumbnail={item.variant?.product?.thumbnail}
             images={item.variant?.product?.images}
           />
         </LocalizedClientLink>
       </Box>
       <Box className="flex w-full justify-between p-5">
-        <Box className="flex h-full flex-col gap-3 small:justify-between small:gap-0">
+        <Box className="flex h-full flex-col gap-3 sm:justify-between sm:gap-0">
           <Box>
             <LocalizedClientLink href={`/products/${handle}`}>
               <Heading as="h3" className="line-clamp-2 text-md font-medium">
@@ -72,7 +72,7 @@ const Item = ({ item, type = 'full' }: ItemProps) => {
               data-testid="product-variant"
             />
           </Box>
-          <Box className="block w-max small:hidden">
+          <Box className="block w-max sm:hidden">
             <LineItemPrice item={item} style="tight" />
           </Box>
           {type === 'full' ? (
@@ -99,7 +99,7 @@ const Item = ({ item, type = 'full' }: ItemProps) => {
           {type === 'full' && (
             <DeleteButton id={item.id} className="w-12 hover:bg-transparent" />
           )}
-          <Box className="hidden small:block">
+          <Box className="hidden sm:block">
             <LineItemPrice item={item} style="tight" />
           </Box>
         </Box>

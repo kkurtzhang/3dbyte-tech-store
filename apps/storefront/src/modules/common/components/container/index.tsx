@@ -4,7 +4,7 @@ import { cn } from '@lib/util/cn'
 import { cva } from 'cva'
 
 const containerVariants = cva({
-  base: 'small:px-14 small:py-16 mx-auto box-content px-4 py-8',
+  base: 'sm:px-14 sm:py-16 mx-auto box-content px-4 py-8',
   variants: {
     maxWidth: {
       sm: 'max-w-[600px]',

@@ -86,7 +86,7 @@ export default async function CollectionPageLayout(
           <StoreBreadcrumbs breadcrumb={currentCollection.title} />
           <Heading
             as="h1"
-            className="text-4xl text-basic-primary small:text-5xl"
+            className="text-4xl text-basic-primary sm:text-5xl"
           >
             {currentCollection.title}
           </Heading>

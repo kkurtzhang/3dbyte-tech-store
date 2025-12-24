@@ -43,7 +43,7 @@ const ForgotPassword = ({ setCurrentView }: Props) => {
 
   return (
     <Box
-      className={cn('flex w-full flex-col gap-6 p-4 small:p-5', {
+      className={cn('flex w-full flex-col gap-6 p-4 sm:p-5', {
         'bg-primary': !email,
         'mx-auto max-w-[438px] items-center': !!email,
       })}
@@ -52,7 +52,7 @@ const ForgotPassword = ({ setCurrentView }: Props) => {
         <>
           <SearchResultsIcon />
           <Box className="text-center">
-            <Heading className="mb-2 text-xl small:text-2xl">
+            <Heading className="mb-2 text-xl sm:text-2xl">
               Check your inbox
             </Heading>
             <Text className="text-secondary" size="md">
@@ -66,7 +66,7 @@ const ForgotPassword = ({ setCurrentView }: Props) => {
       ) : (
         <>
           <Box className="flex flex-col gap-2">
-            <Heading className="text-xl small:text-2xl">
+            <Heading className="text-xl sm:text-2xl">
               Forgot your password?
             </Heading>
             <Text className="text-secondary" size="md">

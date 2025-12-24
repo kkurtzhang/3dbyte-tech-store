@@ -62,7 +62,7 @@ export default function ProductFiltersDrawer({ children }: PropsWithChildren) {
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenDialogChange}>
       <DialogTrigger asChild>
-        <Button variant="tonal" className="flex small:hidden">
+        <Button variant="tonal" className="flex sm:hidden">
           <FilterIcon />
           Filters
         </Button>
@@ -73,7 +73,7 @@ export default function ProductFiltersDrawer({ children }: PropsWithChildren) {
           className="!max-h-full !max-w-full !rounded-none"
           aria-describedby={undefined}
         >
-          <DialogHeader className="flex items-center gap-4 text-xl text-basic-primary small:text-2xl">
+          <DialogHeader className="flex items-center gap-4 text-xl text-basic-primary sm:text-2xl">
             Filters
             <DialogClose className="right-4" />
           </DialogHeader>

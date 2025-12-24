@@ -27,7 +27,7 @@ const CollectionTile = ({
   return (
     <Box
       className={cn('group relative', {
-        'small:col-start-2 small:row-start-1 small:row-end-3': id === 2,
+        'sm:col-start-2 sm:row-start-1 sm:row-end-3': id === 2,
       })}
     >
       <Image
@@ -39,33 +39,33 @@ const CollectionTile = ({
         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         className="h-full w-full object-cover object-center"
       />
-      <Box className="absolute left-0 top-0 hidden h-full w-full flex-col p-6 small:flex large:p-10">
+      <Box className="absolute left-0 top-0 hidden h-full w-full flex-col p-6 sm:flex lg:p-10">
         <Button
           asChild
-          className="w-max self-end transition-all duration-500 ease-in-out large:opacity-0 large:group-hover:opacity-100"
+          className="w-max self-end transition-all duration-500 ease-in-out lg:opacity-0 lg:group-hover:opacity-100"
         >
           <LocalizedClientLink href={`/collections/${handle}`}>
             Discover
           </LocalizedClientLink>
         </Button>
         <Box className="mt-auto text-static">
-          <Heading as="h3" className="mt-auto text-2xl large:text-3xl">
+          <Heading as="h3" className="mt-auto text-2xl lg:text-3xl">
             {title}
           </Heading>
           <Text
             size="lg"
-            className="line-clamp-2 transition-all duration-500 ease-in-out large:h-0 large:opacity-0 large:group-hover:h-12 large:group-hover:opacity-100"
+            className="line-clamp-2 transition-all duration-500 ease-in-out lg:h-0 lg:opacity-0 lg:group-hover:h-12 lg:group-hover:opacity-100"
           >
             {description}
           </Text>
         </Box>
       </Box>
-      <Box className="absolute left-0 top-0 block h-full w-full p-6 small:hidden large:p-10">
+      <Box className="absolute left-0 top-0 block h-full w-full p-6 sm:hidden lg:p-10">
         <LocalizedClientLink
           href={`/collections/${handle}`}
           className="flex h-full w-full flex-col justify-end"
         >
-          <Heading as="h3" className="text-2xl text-static large:text-3xl">
+          <Heading as="h3" className="text-2xl text-static lg:text-3xl">
             {title}
           </Heading>
         </LocalizedClientLink>
@@ -100,7 +100,7 @@ const Collections = ({
   if (!newestCollections) return null
 
   return (
-    <Container className="grid max-h-[660px] grid-rows-3 gap-2 small:max-h-[440px] small:grid-cols-2 small:grid-rows-2 large:max-h-[660px]">
+    <Container className="grid max-h-[660px] grid-rows-3 gap-2 sm:max-h-[440px] sm:grid-cols-2 sm:grid-rows-2 lg:max-h-[660px]">
       {newestCollections.slice(0, 3).map((element, id) => (
         <CollectionTile
           key={id}

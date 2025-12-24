@@ -18,7 +18,7 @@ export default function NavContent(props: any) {
 
   return (
     <>
-      <Box className="flex large:hidden">
+      <Box className="flex lg:hidden">
         <SideMenu
           productCategories={props.productCategories}
           collections={props.collections}
@@ -49,7 +49,7 @@ export default function NavContent(props: any) {
       />
       <Box
         className={cn('relative block', {
-          'medium:absolute medium:left-1/2 medium:top-1/2 medium:-translate-x-1/2 medium:-translate-y-1/2':
+          'lg:absolute lg:left-1/2 lg:top-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2':
             !isSearchOpen,
           'right-0 z-40': isSearchOpen,
         })}

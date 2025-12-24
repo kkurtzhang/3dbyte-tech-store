@@ -1,9 +1,8 @@
-// TODO: Fix custom preset import issue
-// const uiPreset = require('./preset/preset')
+const uiPreset = require('./preset/preset.cjs')
 
 module.exports = {
   darkMode: 'class',
-  presets: [require('@medusajs/ui-preset')], // uiPreset temporarily removed
+  presets: [uiPreset],
   content: [
     './src/app/**/*.{js,ts,jsx,tsx}',
     './src/pages/**/*.{js,ts,jsx,tsx}',

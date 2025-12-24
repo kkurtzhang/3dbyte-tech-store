@@ -35,7 +35,7 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
         value={paymentProviderId}
         disabled={disabled}
         className={clx(
-          'flex cursor-pointer flex-col justify-between gap-1 border p-2 !pr-4 text-basic-primary transition-all duration-200 small:flex-row small:items-center',
+          'flex cursor-pointer flex-col justify-between gap-1 border p-2 !pr-4 text-basic-primary transition-all duration-200 sm:flex-row sm:items-center',
           {
             'border-action-primary':
               paymentProviderId === selectedPaymentOptionId,
@@ -60,7 +60,7 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
               {paymentInfoMap[paymentProviderId]?.title || paymentProviderId}
             </span>
             {isManual(paymentProviderId) && isDevelopment && (
-              <PaymentTest className="hidden small:block" />
+              <PaymentTest className="hidden sm:block" />
             )}
             <span className="justify-self-end">
               {paymentInfoMap[paymentProviderId]?.icon}
@@ -68,7 +68,7 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
           </Box>
         </Box>
         {isManual(paymentProviderId) && isDevelopment && (
-          <PaymentTest className="text-[10px] small:hidden" />
+          <PaymentTest className="text-[10px] sm:hidden" />
         )}
       </RadioGroup.Option>
     </>

@@ -19,7 +19,7 @@ export const RecommendedItem = ({
       }}
     >
       <Box
-        className="flex w-full bg-primary transition-all duration-300 ease-in-out large:hover:bg-hover"
+        className="flex w-full bg-primary transition-all duration-300 ease-in-out lg:hover:bg-hover"
         data-testid="product-row"
       >
         <div className="flex h-[90px] w-[90px]">

@@ -8,16 +8,16 @@ import { ContentAttributes } from 'types/strapi'
 
 export const BasicContentSection = ({ data }: { data: ContentAttributes }) => {
   return (
-    <Container className="flex flex-col justify-between large:flex-row">
-      <Box className="mb-6 shrink large:mb-0 large:mr-12 large:max-w-[539px]">
-        <Heading className="mb-4 text-2xl text-basic-primary small:text-3xl">
+    <Container className="flex flex-col justify-between lg:flex-row">
+      <Box className="mb-6 shrink lg:mb-0 lg:mr-12 lg:max-w-[539px]">
+        <Heading className="mb-4 text-2xl text-basic-primary sm:text-3xl">
           {data.Title}
         </Heading>
         <Text size="lg" className="text-secondary">
           {data.Text}
         </Text>
       </Box>
-      <Box className="relative h-[224px] grow small:h-[400px] large:min-w-[400px] large:max-w-[600px]">
+      <Box className="relative h-[224px] grow sm:h-[400px] lg:min-w-[400px] lg:max-w-[600px]">
         <Image
           src={data.Image.url}
           alt={data.Image.alternativeText ?? 'Content section image'}

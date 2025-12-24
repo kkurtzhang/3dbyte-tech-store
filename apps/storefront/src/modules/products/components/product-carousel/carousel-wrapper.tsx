@@ -55,14 +55,14 @@ export default function CarouselWrapper({
   return (
     <>
       <Box className="flex justify-between">
-        <Heading as="h2" className="text-2xl text-basic-primary small:text-3xl">
+        <Heading as="h2" className="text-2xl text-basic-primary sm:text-3xl">
           {title}
         </Heading>
         <Box
-          className={cn('mb-4 hidden justify-end gap-2 small:flex', {
+          className={cn('mb-4 hidden justify-end gap-2 sm:flex', {
             'xl:hidden': isLessThanFourProducts,
             'medium:hidden': isLessThanThreeProducts,
-            'small:hidden': isLessThanTwoProducts,
+            'sm:hidden': isLessThanTwoProducts,
           })}
         >
           <Button

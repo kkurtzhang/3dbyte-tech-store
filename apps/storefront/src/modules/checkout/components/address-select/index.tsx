@@ -98,10 +98,10 @@ const AddressSelect: React.FC<AddressSelectProps> = ({
       <DialogPortal>
         <DialogOverlay />
         <DialogContent
-          className="max-h-full max-w-[600px] !rounded-none small:max-h-[654px]"
+          className="max-h-full max-w-[600px] !rounded-none sm:max-h-[654px]"
           aria-describedby={undefined}
         >
-          <DialogHeader className="flex items-center gap-4 text-xl text-basic-primary small:text-2xl">
+          <DialogHeader className="flex items-center gap-4 text-xl text-basic-primary sm:text-2xl">
             {addNewAddress && (
               <Button
                 variant="icon"
@@ -123,7 +123,7 @@ const AddressSelect: React.FC<AddressSelectProps> = ({
           <VisuallyHidden.Root>
             <DialogTitle>Select address modal</DialogTitle>
           </VisuallyHidden.Root>
-          <DialogBody className="flex flex-col gap-6 overflow-y-auto p-4 small:p-5">
+          <DialogBody className="flex flex-col gap-6 overflow-y-auto p-4 sm:p-5">
             <FormikProvider value={formik}>
               {addNewAddress ? (
                 <NewAddressForm

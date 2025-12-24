@@ -52,7 +52,7 @@ const Sorting = ({
       <Select
         value={sortBy}
         onValueChange={(e: string) => handleChange(e)}
-        className="w-[calc(100vw-32px)] small:w-[calc(100vw-112px)] medium:w-[200px]"
+        className="w-[calc(100vw-32px)] sm:w-[calc(100vw-112px)] medium:w-[200px]"
       >
         <SelectTrigger aria-label="Sort by">
           <SelectValue
@@ -61,7 +61,7 @@ const Sorting = ({
             }
           />
         </SelectTrigger>
-        <SelectContent className="!z-30 w-[calc(100vw-32px)] small:w-[calc(100vw-112px)] medium:w-[200px]">
+        <SelectContent className="!z-30 w-[calc(100vw-32px)] sm:w-[calc(100vw-112px)] medium:w-[200px]">
           {options.map((option, index) => (
             <SelectItem
               key={index}

@@ -23,7 +23,7 @@ const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = ({
   order,
 }) => {
   return (
-    <Box className="flex flex-col justify-center gap-6 small:gap-8">
+    <Box className="flex flex-col justify-center gap-6 sm:gap-8">
       <Button variant="tonal" size="sm" asChild className="w-max">
         <LocalizedClientLink
           href="/account/orders"
@@ -33,7 +33,7 @@ const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = ({
           Order history
         </LocalizedClientLink>
       </Button>
-      <Heading as="h2" className="text-2xl small:text-3xl">
+      <Heading as="h2" className="text-2xl sm:text-3xl">
         Order #{order.display_id}
       </Heading>
       <Box

@@ -109,14 +109,14 @@ export function ResetPassword() {
     <Box
       className={cn('flex w-full flex-col gap-6', {
         'max-w-[438px]': passwordChanged,
-        'bg-primary p-5 small:p-4': !passwordChanged,
+        'bg-primary p-5 sm:p-4': !passwordChanged,
       })}
     >
       {passwordChanged && !message ? (
         <>
           <CheckCircleIcon className="mx-auto h-14 w-14" />
           <Box className="text-center">
-            <Heading className="mb-2 text-xl small:text-2xl">
+            <Heading className="mb-2 text-xl sm:text-2xl">
               Password changed
             </Heading>
             <Text className="text-secondary" size="md">
@@ -132,7 +132,7 @@ export function ResetPassword() {
       ) : (
         <>
           <Box>
-            <Heading className="mb-2 text-xl small:text-2xl">
+            <Heading className="mb-2 text-xl sm:text-2xl">
               Set new password
             </Heading>
             <Text className="text-secondary" size="md">

@@ -15,7 +15,7 @@ export const FAQAccordion = ({ data }: { data: FAQSection }) => {
     <Box id={data.Bookmark}>
       <Heading
         as="h2"
-        className="mb-4 text-xl text-basic-primary small:mb-6 small:text-3xl"
+        className="mb-4 text-xl text-basic-primary sm:mb-6 sm:text-3xl"
       >
         {data.Title}
       </Heading>

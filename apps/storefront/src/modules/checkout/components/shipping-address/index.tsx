@@ -110,7 +110,7 @@ const ShippingAddress = ({
     <>
       {customer && (addressesInRegion?.length || 0) > 0 && (
         <Box className="flex items-center justify-between p-6">
-          <Box className="w-1/2 small:w-full">
+          <Box className="w-1/2 sm:w-full">
             {Object.keys(formik.values.shipping_address).length === 0 ? (
               <Spinner />
             ) : (
@@ -136,7 +136,7 @@ const ShippingAddress = ({
         </Box>
       )}
       <Box
-        className={cn('grid grid-cols-1 gap-2 small:gap-4 xl:grid-cols-2', {
+        className={cn('grid grid-cols-1 gap-2 sm:gap-4 xl:grid-cols-2', {
           hidden: customer && (addressesInRegion?.length || 0) > 0,
         })}
       >

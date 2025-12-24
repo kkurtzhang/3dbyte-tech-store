@@ -4,8 +4,11 @@
 
 @layer base {
   body {
-    @apply bg-white dark:bg-gray-900;
+    background-color: rgb(var(--bg-primary));
     scroll-behavior: smooth;
+  }
+  .dark body {
+    background-color: rgb(var(--bg-primary));
   }
 }
 

@@ -66,21 +66,21 @@ export const GalleryDialog = ({
         <DialogPortal>
           <DialogOverlay />
           <DialogContent aria-describedby={undefined}>
-            <DialogHeader className="flex items-center text-xl text-basic-primary small:hidden">
+            <DialogHeader className="flex items-center text-xl text-basic-primary sm:hidden">
               {title}
               <DialogClose className="right-4" />
             </DialogHeader>
             <VisuallyHidden.Root>
               <DialogTitle>Product Gallery Modal</DialogTitle>
             </VisuallyHidden.Root>
-            <DialogBody className="mx-auto flex max-w-[1440px] flex-col items-center justify-center gap-4 p-4 small:gap-20 small:px-14 small:py-[31px] large:flex-row large:justify-normal">
+            <DialogBody className="mx-auto flex max-w-[1440px] flex-col items-center justify-center gap-4 p-4 sm:gap-20 sm:px-14 sm:py-[31px] lg:flex-row lg:justify-normal">
               <div
                 ref={images.length < 4 ? null : emblaRef}
-                className="order-2 w-full select-none overflow-hidden small:max-w-[549px] large:order-1 large:h-[429px] large:w-auto"
+                className="order-2 w-full select-none overflow-hidden sm:max-w-[549px] lg:order-1 lg:h-[429px] lg:w-auto"
               >
                 <div
                   className={clx(
-                    'flex flex-row gap-2 large:h-full large:flex-col'
+                    'flex flex-row gap-2 lg:h-full lg:flex-col'
                   )}
                 >
                   {images.map((img, id) => (
@@ -107,7 +107,7 @@ export const GalleryDialog = ({
                   ))}
                 </div>
               </div>
-              <Box className="relative order-1 mx-auto flex h-full max-h-[458px] w-full items-center small:max-h-[758px] small:max-w-[549px] large:order-2 large:-translate-x-20 xl:max-w-[660px] 2xl:max-h-[1137px] 2xl:max-w-[990px]">
+              <Box className="relative order-1 mx-auto flex h-full max-h-[458px] w-full items-center sm:max-h-[758px] sm:max-w-[549px] lg:order-2 lg:-translate-x-20 xl:max-w-[660px] 2xl:max-h-[1137px] 2xl:max-w-[990px]">
                 <LoadingImage
                   src={images[currentIndex].url}
                   alt={title ? `${title} - product image` : 'Product image'}
@@ -115,7 +115,7 @@ export const GalleryDialog = ({
                 />
               </Box>
             </DialogBody>
-            <DialogClose className="right-14 top-[31px] hidden small:block" />
+            <DialogClose className="right-14 top-[31px] hidden sm:block" />
           </DialogContent>
         </DialogPortal>
       </Dialog>

@@ -13,7 +13,7 @@ const Hero = ({ data }: { data: HeroBanner }) => {
 
   return (
     <>
-      <Box className="h-[168px] max-h-[368px] w-full small:h-[368px] 2xl:h-[468px] 2xl:max-h-[468px]">
+      <Box className="h-[168px] max-h-[368px] w-full sm:h-[368px] 2xl:h-[468px] 2xl:max-h-[468px]">
         <Image
           src={bannerImage.url}
           alt={bannerImage.alternativeText ?? 'Banner image'}
@@ -23,8 +23,8 @@ const Hero = ({ data }: { data: HeroBanner }) => {
           priority
         />
       </Box>
-      <Container className="flex flex-col gap-2 !py-6 small:gap-8 small:!py-10">
-        <Heading className="max-w-full text-4xl text-basic-primary small:max-w-[510px] medium:text-5xl">
+      <Container className="flex flex-col gap-2 !py-6 sm:gap-8 sm:!py-10">
+        <Heading className="max-w-full text-4xl text-basic-primary sm:max-w-[510px] medium:text-5xl">
           {Headline}
         </Heading>
         <Box className="flex flex-col-reverse justify-between gap-8 medium:flex-row medium:items-center">

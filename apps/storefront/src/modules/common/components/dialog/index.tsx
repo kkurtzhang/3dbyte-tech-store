@@ -58,7 +58,7 @@ export const DialogContent = forwardRef<
       ref={forwardedRef}
       className={cn(
         className,
-        'fixed left-[50%] top-[50%] z-50 flex h-full w-full translate-x-[-50%] translate-y-[-50%] flex-col overflow-y-auto overflow-x-hidden bg-primary shadow-black-basic'
+        'fixed inset-0 z-50 flex h-full w-full flex-col overflow-y-auto overflow-x-hidden bg-primary shadow-black-basic'
       )}
       {...props}
     >

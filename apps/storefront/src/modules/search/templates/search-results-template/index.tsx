@@ -81,15 +81,15 @@ export default async function SearchResultsTemplate({
               />
               <Heading
                 as="h1"
-                className="text-4xl text-basic-primary small:text-5xl"
+                className="text-4xl text-basic-primary sm:text-5xl"
               >
                 &quot;{safeDecodeURIComponent(query)}&quot;
               </Heading>
               <Text className="text-md text-secondary">
                 {count === 1 ? `${count} product` : `${count} products`}
               </Text>
-              <Box className="grid w-full grid-cols-2 items-center justify-between gap-2 small:flex small:flex-wrap">
-                <Box className="hidden small:flex">
+              <Box className="grid w-full grid-cols-2 items-center justify-between gap-2 sm:flex sm:flex-wrap">
+                <Box className="hidden sm:flex">
                   <ProductFilters filters={filters} />
                 </Box>
                 <ProductFiltersDrawer>
@@ -116,10 +116,10 @@ export default async function SearchResultsTemplate({
             </Suspense>
           </>
         ) : (
-          <Box className="flex flex-col items-center gap-6 p-0 small:pb-14 small:pt-6">
+          <Box className="flex flex-col items-center gap-6 p-0 sm:pb-14 sm:pt-6">
             <SearchResultsIcon />
             <Box className="flex flex-col items-center gap-2">
-              <Heading as="h3" className="text-xl small:text-2xl">
+              <Heading as="h3" className="text-xl sm:text-2xl">
                 No results for &quot;{safeDecodeURIComponent(query)}&quot;
               </Heading>
               <p className="text-center text-md text-secondary">

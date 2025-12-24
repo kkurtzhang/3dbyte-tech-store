@@ -52,10 +52,10 @@ export default async function Footer({ countryCode }: { countryCode: string }) {
   return (
     <Container
       as="footer"
-      className="mx-0 max-w-full border-t border-basic-primary bg-static px-0 py-0 small:px-0 small:py-0"
+      className="mx-0 max-w-full border-t border-basic-primary bg-static px-0 py-0 sm:px-0 sm:py-0"
     >
-      <Container className="flex flex-col gap-6 text-static small:gap-12">
-        <Box className="flex flex-col gap-8 small:gap-12 large:flex-row xl:gap-0">
+      <Container className="flex flex-col gap-6 text-static sm:gap-12">
+        <Box className="flex flex-col gap-8 sm:gap-12 lg:flex-row xl:gap-0">
           <Box className="flex flex-col justify-between xl:min-w-[437px]">
             <LocalizedClientLink
               href="#"
@@ -63,14 +63,14 @@ export default async function Footer({ countryCode }: { countryCode: string }) {
             >
               <SolaceLogo />
             </LocalizedClientLink>
-            <SocialMedia className="hidden large:flex" />
+            <SocialMedia className="hidden lg:flex" />
           </Box>
-          <Box className="hidden shrink grow gap-5 small:flex xl:gap-0" data-testid="footer-links-section">
+          <Box className="hidden shrink grow gap-5 sm:flex xl:gap-0" data-testid="footer-links-section">
             {footerNavigation.navigation.map((item, id) => {
               return (
                 <Box
                   key={`footerSection-${id}`}
-                  className="hidden flex-1 flex-col gap-3 small:flex"
+                  className="hidden flex-1 flex-col gap-3 sm:flex"
                 >
                   <Heading className="mb-2 text-lg" as="h3">
                     {item.header}
@@ -95,7 +95,7 @@ export default async function Footer({ countryCode }: { countryCode: string }) {
           <Accordion
             type="single"
             collapsible
-            className="flex w-full flex-col gap-6 small:hidden"
+            className="flex w-full flex-col gap-6 sm:hidden"
           >
             {footerNavigation.navigation.map((item, id) => {
               return (
@@ -109,7 +109,7 @@ export default async function Footer({ countryCode }: { countryCode: string }) {
                     data-testid={formatNameForTestId(`${item.header}-dropdown`)}
                   >
                     <Heading
-                      className="text-md font-medium text-static small:text-lg"
+                      className="text-md font-medium text-static sm:text-lg"
                       as="h3"
                     >
                       {item.header}
@@ -142,7 +142,7 @@ export default async function Footer({ countryCode }: { countryCode: string }) {
               )
             })}
           </Accordion>
-          <SocialMedia className="flex large:hidden" />
+          <SocialMedia className="flex lg:hidden" />
         </Box>
         <Divider alignment="horizontal" variant="secondary" />
         <Box className="flex flex-wrap gap-6 gap-y-1">

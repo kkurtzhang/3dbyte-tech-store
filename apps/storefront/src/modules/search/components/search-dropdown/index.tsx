@@ -47,7 +47,7 @@ export default function SearchDropdown({
     <div
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="hidden w-full large:absolute large:left-1/2 large:top-4 large:z-30 large:block large:-translate-x-1/2"
+      className="hidden w-full lg:absolute lg:left-1/2 lg:top-4 lg:z-30 lg:block lg:-translate-x-1/2"
     >
       <ControlledSearchBox
         countryCode={countryCode}

@@ -5,7 +5,7 @@ import { Slot } from '@lib/util/slot'
 import { cva, VariantProps } from 'cva'
 
 const NavigationItemVariants = cva({
-  base: 'hover:text-action-primary-hover transition-all duration-200 ease-in-out',
+  base: 'hover:bg-fg-secondary-hover hover:text-action-primary-hover hover:scale-[1.02] active:scale-[1.01] transition-all duration-150 ease-out origin-left',
   variants: {
     variant: {
       primary: 'text-lg text-basic-primary',
@@ -14,9 +14,14 @@ const NavigationItemVariants = cva({
     disabled: {
       true: 'pointer-events-none text-disabled',
     },
+    active: {
+      true: 'bg-fg-secondary-hover font-medium',
+      false: '',
+    },
   },
   defaultVariants: {
     variant: 'primary',
+    active: false,
   },
 })
 
@@ -26,6 +31,7 @@ interface NavigationItemProps
   asChild?: boolean
   className?: string
   children?: ReactNode
+  active?: boolean
 }
 
 export function NavigationItem({
@@ -34,6 +40,7 @@ export function NavigationItem({
   asChild,
   disabled,
   variant,
+  active,
   ...props
 }: NavigationItemProps) {
   const Comp = asChild ? Slot : 'a'
@@ -49,7 +56,7 @@ export function NavigationItem({
     <Comp
       {...props}
       {...disabledProps}
-      className={cn(NavigationItemVariants({ variant, disabled }), className)}
+      className={cn(NavigationItemVariants({ variant, disabled, active }), className)}
     >
       {children}
     </Comp>

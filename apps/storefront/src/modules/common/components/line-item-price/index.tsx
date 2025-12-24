@@ -39,8 +39,8 @@ const LineItemPrice = ({
         'flex flex-row-reverse items-center gap-2',
         className,
         isInCartDropdown
-          ? 'small:flex-row-reverse'
-          : 'small:flex-col small:items-end small:gap-0'
+          ? 'sm:flex-row-reverse'
+          : 'sm:flex-col sm:items-end sm:gap-0'
       )}
     >
       {hasReducedPrice && (

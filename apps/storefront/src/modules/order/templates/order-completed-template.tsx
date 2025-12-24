@@ -26,7 +26,7 @@ export default function OrderCompletedTemplate({
           <Box className="flex flex-col items-center gap-2 py-6 text-center">
             <Heading
               level="h1"
-              className="text-xl font-normal text-basic-primary small:max-w-md medium:text-2xl"
+              className="text-xl font-normal text-basic-primary sm:max-w-md medium:text-2xl"
             >
               Thank you! Your order was placed successfully.
             </Heading>

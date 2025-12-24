@@ -31,7 +31,7 @@ const ProfileDropdown = ({ loggedIn }: { loggedIn: boolean }) => {
     <Box className="z-50 h-full" onMouseEnter={open} onMouseLeave={close}>
       <Popover className="relative h-full">
         <Popover.Button
-          className="cursor-default rounded-full bg-transparent !p-2 text-action-primary outline-none hover:text-action-primary-hover active:bg-fg-secondary-pressed active:text-action-primary-pressed xsmall:!p-3.5 small:hover:bg-fg-secondary-hover"
+          className="cursor-default rounded-full bg-transparent !p-2 text-action-primary outline-none hover:text-action-primary-hover hover:bg-fg-secondary-hover active:bg-fg-secondary-pressed active:text-action-primary-pressed xsm:!p-3.5"
           data-testid="profile-dropdown-button"
         >
           <UserIcon />
@@ -48,7 +48,7 @@ const ProfileDropdown = ({ loggedIn }: { loggedIn: boolean }) => {
         >
           <Popover.Panel
             static
-            className="absolute -right-10 top-[calc(100%+8px)] w-[264px] border border-action-primary bg-primary text-basic-primary small:right-0"
+            className="absolute -right-10 top-[calc(100%+8px)] w-[264px] border border-action-primary bg-primary text-basic-primary sm:right-0"
             data-testid={`${loggedIn ? 'profile-dropdown-logged-in' : 'profile-dropdown-logged-out'}`}
           >
             {loggedIn ? (

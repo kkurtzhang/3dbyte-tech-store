@@ -48,7 +48,7 @@ export default function ProductFilters({
 
   return (
     <>
-      <Box className="flex flex-col gap-4 small:hidden">
+      <Box className="flex flex-col gap-4 sm:hidden">
         {!isCollection && (
           <>
             <FilterWrapper
@@ -75,7 +75,7 @@ export default function ProductFilters({
           content={<FilterItems items={priceOptions} param="price" />}
         />
       </Box>
-      <Box className="hidden items-center gap-2 small:flex">
+      <Box className="hidden items-center gap-2 sm:flex">
         {!isCollection && collectionOptions && collectionOptions.length > 0 && (
           <Select value={null} onValueChange={() => {}}>
             <SelectTrigger

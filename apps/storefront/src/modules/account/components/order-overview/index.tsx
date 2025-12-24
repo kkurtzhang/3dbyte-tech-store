@@ -52,7 +52,7 @@ export function NoOrders() {
     >
       <BoxIcon />
       <Box className="flex flex-col items-center gap-2">
-        <Heading as="h2" className="text-xl text-basic-primary small:text-2xl">
+        <Heading as="h2" className="text-xl text-basic-primary sm:text-2xl">
           No order updates
         </Heading>
         <Text className="max-w-[438px] text-center text-md text-secondary">

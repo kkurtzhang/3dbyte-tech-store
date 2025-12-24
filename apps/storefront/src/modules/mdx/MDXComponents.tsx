@@ -27,7 +27,7 @@ export const mdxComponents: MDXComponents = {
   h2: ({ children, id, ...props }) => {
     return (
       <h2
-        className="mb-2 mt-6 w-full text-xl text-basic-primary small:mt-12 small:text-2xl"
+        className="mb-2 mt-6 w-full text-xl text-basic-primary sm:mt-12 sm:text-2xl"
         id={id}
         {...props}
       >
@@ -38,7 +38,7 @@ export const mdxComponents: MDXComponents = {
   h3: ({ children, ...props }) => {
     return (
       <h3
-        className="w-full text-lg text-basic-primary small:text-xl"
+        className="w-full text-lg text-basic-primary sm:text-xl"
         {...props}
       >
         {children}
@@ -48,7 +48,7 @@ export const mdxComponents: MDXComponents = {
   h4: ({ children, ...props }) => {
     return (
       <h4
-        className="my-0.5 w-full text-md text-basic-primary small:text-lg"
+        className="my-0.5 w-full text-md text-basic-primary sm:text-lg"
         {...props}
       >
         {children}

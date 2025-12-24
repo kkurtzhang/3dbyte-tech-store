@@ -30,7 +30,7 @@ export function ProductCarousel({
 }: ProductCarouselProps) {
   return (
     <Container className="overflow-hidden" data-testid={testId}>
-      <Box className="flex flex-col gap-6 small:gap-12">
+      <Box className="flex flex-col gap-6 sm:gap-12">
         <CarouselWrapper title={title} productsCount={products.length}>
           <Box className="flex gap-2">
             {products.map((item, index) => {
@@ -40,7 +40,7 @@ export function ProductCarousel({
 
               return (
                 <Box
-                  className="flex-[0_0_calc(72.666%-8px)] small:flex-[0_0_calc(62.666%-8px)] medium:flex-[0_0_calc(42.666%-8px)] xl:flex-[0_0_calc(33.333%-8px)] 2xl:flex-[0_0_calc(30.333%-8px)]"
+                  className="flex-[0_0_calc(72.666%-8px)] sm:flex-[0_0_calc(62.666%-8px)] medium:flex-[0_0_calc(42.666%-8px)] xl:flex-[0_0_calc(33.333%-8px)] 2xl:flex-[0_0_calc(30.333%-8px)]"
                   key={index}
                 >
                   <ProductTile

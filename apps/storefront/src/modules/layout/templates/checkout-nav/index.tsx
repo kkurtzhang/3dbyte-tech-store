@@ -9,16 +9,16 @@ export default function CheckoutNav() {
   return (
     <Container
       as="nav"
-      className="flex h-full items-center justify-between !py-3 small:!py-4"
+      className="flex h-full items-center justify-between !py-3 sm:!py-4"
     >
-      <Box className="small:flex-1">
+      <Box className="sm:flex-1">
         <Button variant="tonal" asChild className="w-max">
           <LocalizedClientLink href="/cart">
             <Box className="flex gap-2">
               <ArrowLeftIcon />
               <Text>
                 Back to{' '}
-                <Text as="span" className="hidden small:inline">
+                <Text as="span" className="hidden sm:inline">
                   shopping
                 </Text>{' '}
                 cart
@@ -27,12 +27,12 @@ export default function CheckoutNav() {
           </LocalizedClientLink>
         </Button>
       </Box>
-      <Box className="flex items-center justify-end small:flex-1 small:justify-center">
+      <Box className="flex items-center justify-end sm:flex-1 sm:justify-center">
         <LocalizedClientLink href="/">
-          <SolaceLogo className="h-6 small:h-7" />
+          <SolaceLogo className="h-6 sm:h-7" />
         </LocalizedClientLink>
       </Box>
-      <div className="hidden flex-1 basis-0 small:flex" />
+      <div className="hidden flex-1 basis-0 sm:flex" />
     </Container>
   )
 }
