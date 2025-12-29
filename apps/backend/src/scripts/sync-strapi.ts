@@ -1,15 +1,15 @@
 import { ExecArgs } from "@medusajs/framework/types";
 import { IProductModuleService } from "@medusajs/framework/types";
 import { Modules } from "@medusajs/framework/utils";
-import { StrapiModuleService } from "../modules/strapi";
+import { STRAPI_MODULE, StrapiModuleService } from "../modules/strapi";
 
 export default async function syncStrapiScript({ container }: ExecArgs) {
   const logger = container.resolve("logger");
   const productModuleService: IProductModuleService = container.resolve(
     Modules.PRODUCT
   );
-  const strapiService: StrapiModuleService = container.resolve("strapiService");
-
+  const strapiModuleService: StrapiModuleService =
+    container.resolve(STRAPI_MODULE);
   logger.info("Starting bulk Strapi sync...");
 
   let offset = 0;
@@ -40,16 +40,17 @@ export default async function syncStrapiScript({ container }: ExecArgs) {
             id: product.id,
             title: product.title,
             handle: product.handle,
+            status: product.status,
           };
 
-          const existing = await strapiService.findProductDescription(
+          const existing = await strapiModuleService.findProductDescription(
             product.id
           );
           if (existing) {
-            await strapiService.updateProductDescription(syncData);
+            await strapiModuleService.updateProductDescription(syncData);
             results.updated++;
           } else {
-            await strapiService.createProductDescription(syncData);
+            await strapiModuleService.createProductDescription(syncData);
             results.created++;
           }
         } catch (error) {

@@ -8,8 +8,7 @@ import { Button } from '@modules/common/components/button'
 import LocalizedClientLink from '@modules/common/components/localized-client-link'
 import { SearchIcon, SolaceLogo } from '@modules/common/icons'
 import SideMenu from '@modules/layout/components/side-menu'
-import { SearchDialog } from '@modules/search/components/search-dialog'
-import SearchDropdown from '@modules/search/components/search-dropdown'
+import { InstantSearchDropdown } from '@modules/search/components/instant-search'
 
 import Navigation from './navigation'
 
@@ -34,19 +33,11 @@ export default function NavContent(props: any) {
         />
       )}
       {isSearchOpen && (
-        <SearchDropdown
+        <InstantSearchDropdown
           setIsOpen={setIsSearchOpen}
-          recommendedProducts={props.products}
           isOpen={isSearchOpen}
-          countryCode={props.countryCode}
         />
       )}
-      <SearchDialog
-        recommendedProducts={props.products}
-        countryCode={props.countryCode}
-        isOpen={isSearchOpen}
-        handleOpenDialogChange={setIsSearchOpen}
-      />
       <Box
         className={cn('relative block', {
           'lg:absolute lg:left-1/2 lg:top-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2':

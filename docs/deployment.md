@@ -288,6 +288,75 @@ railway up
 5. Add environment variables
 6. Deploy
 
+### Webhook Configuration (Strapi → Medusa)
+
+When Strapi runs in Docker and needs to send webhooks to Medusa (or vice versa), special network configuration is required.
+
+**IMPORTANT: Webhook Events Configuration**
+========================================
+
+ONLY enable **"Entry publish"** and **"Entry unpublish"** events in Strapi webhook settings. Do NOT enable "Entry create" or "Entry update":
+
+| Event | Enable? | Reason |
+|-------|---------|--------|
+| **Entry publish** | ✅ YES | Fires when content becomes live. Index with full Strapi enrichment (descriptions, features, etc.). |
+| **Entry unpublish** | ✅ YES | Fires when content is unpublished. Re-index with Medusa data only (product remains searchable with base info). |
+| **Entry create** | ❌ NO | Causes redundant re-indexing. Medusa subscriber already indexes when products are created. |
+| **Entry update** | ❌ NO | Fires on save (draft state). Strapi API only returns published content, so this re-indexes old content without updates. |
+
+#### Development (Docker Desktop / Colima)
+
+If Medusa runs on host and Strapi runs in Docker:
+
+| Component | URL Format | Example |
+|-----------|------------|---------|
+| **Medusa** (host) | `http://host.docker.internal:9000` | Backend accessible from Docker |
+| **Strapi** (Docker) | `http://localhost:1337` | CMS accessible from host |
+
+**Strapi Webhook Configuration:**
+```
+URL: http://host.docker.internal:9000/webhooks/strapi
+Method: POST
+Headers: X-Webhook-Secret: your-secret
+Events: Entry publish, Entry unpublish (see table above)
+```
+
+#### Production (Docker Network)
+
+If both run in Docker Compose:
+
+| Component | URL Format | Example |
+|-----------|------------|---------|
+| **Medusa** | `http://backend:9000` | Use service name |
+| **Strapi** | `http://cms:1337` | Use service name |
+
+**Strapi Webhook Configuration:**
+```
+URL: http://backend:9000/webhooks/strapi
+Method: POST
+Headers: X-Webhook-Secret: ${STRAPI_WEBHOOK_SECRET}
+Events: Entry publish, Entry unpublish (see table above)
+```
+
+#### Production (Separate Servers)
+
+If deployed on different servers:
+
+| Component | URL Format | Example |
+|-----------|------------|---------|
+| **Medusa** | `https://api.your-domain.com` | Public URL |
+| **Strapi** | `https://cms.your-domain.com` | Public URL |
+
+**Strapi Webhook Configuration:**
+```
+URL: https://api.your-domain.com/webhooks/strapi
+Method: POST
+Headers: X-Webhook-Secret: ${STRAPI_WEBHOOK_SECRET}
+Events: Entry publish, Entry unpublish (see table above)
+```
+
+**Important:** Always use HTTPS in production for webhook security.
+
 ## Database Setup
 
 ### PostgreSQL Production
@@ -684,6 +753,34 @@ module.exports = {
 3. **Build failures**: Review build logs
 4. **Slow performance**: Enable caching and CDN
 5. **Memory issues**: Check server resources
+6. **Webhook "fetch failed" errors**: Docker networking issue
+
+### Docker Networking for Webhooks
+
+**Problem**: Strapi webhook test fails with "fetch failed" error.
+
+**Cause**: Strapi running in Docker tries to connect to `localhost:9000`, which refers to the container itself, not the host machine where Medusa runs.
+
+**Solutions by Deployment Type:**
+
+| Deployment | Webhook URL | Notes |
+|------------|--------------|-------|
+| **Docker Desktop** | `http://host.docker.internal:9000/webhooks/strapi` | Special DNS for host |
+| **Colima (Mac)** | `http://192.168.5.2:9000/webhooks/strapi` | Get IP with `colima ssh` |
+| **Docker Compose** | `http://backend:9000/webhooks/strapi` | Use service name |
+| **Separate servers** | `https://api.your-domain.com/webhooks/strapi` | Use public URL |
+
+**Get Colima IP:**
+```bash
+colima ssh
+ip addr show eth0 | grep inet
+```
+
+**Verify connectivity from Strapi container:**
+```bash
+docker exec -it strapi sh
+wget -O- http://host.docker.internal:9000/webhooks/strapi
+```
 
 ### Debug Commands
 

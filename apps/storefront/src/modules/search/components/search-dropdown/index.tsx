@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from 'react'
+import React, { Fragment, useEffect, useRef } from 'react'
 
 import { cn } from '@lib/util/cn'
 import { StoreProduct } from '@medusajs/types'
@@ -21,32 +21,32 @@ export default function SearchDropdown({
   countryCode: string
   recommendedProducts: StoreProduct[]
 }) {
-  const [delayClose, setDelayClose] = useState(null)
-  const handleMouseEnter = () => {
-    if (delayClose) {
-      clearTimeout(delayClose)
-    }
-    setIsOpen(true)
-  }
-
-  const handleMouseLeave = () => {
-    const timeout = setTimeout(() => {
-      setIsOpen(false)
-    }, 500)
-    setDelayClose(timeout)
-  }
+  const searchRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    return () => {
-      if (delayClose) {
-        clearTimeout(delayClose)
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false)
       }
     }
-  }, [delayClose])
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isOpen, setIsOpen])
+
   return (
     <div
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      ref={searchRef}
       className="hidden w-full lg:absolute lg:left-1/2 lg:top-4 lg:z-30 lg:block lg:-translate-x-1/2"
     >
       <ControlledSearchBox

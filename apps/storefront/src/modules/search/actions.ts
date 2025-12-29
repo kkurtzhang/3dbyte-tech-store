@@ -1,116 +1,104 @@
-import { safeDecodeURIComponent } from '@lib/util/safe-decode-uri'
-import { SearchedProducts } from 'types/global'
+import { safeDecodeURIComponent } from "@lib/util/safe-decode-uri"
+import { searchProducts, urlParamsToMeilisearchParams } from "@lib/meilisearch/search"
 
-export const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-export const PUBLISHABLE_API_KEY =
-  process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+// Re-export environment variables for compatibility with existing code
+export const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
+export const PUBLISHABLE_API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || ""
 
 export const PRODUCT_LIMIT = 12
 
 type SearchParams = {
-  currency_code: string
-  page?: number
-  order?: string
-  category_id?: string
-  collection?: string[]
-  type?: string[]
-  material?: string[]
-  price?: string[]
-  query?: string
+	query?: string
+	currency_code?: string
+	page?: number
+	order?: string
+	collection?: string[]
+	type?: string[]
+	material?: string[]
+	price?: string[]
 }
 
 export async function search({
-  currency_code,
-  page,
-  order = 'relevance',
-  category_id,
-  collection,
-  type,
-  material,
-  price,
-  query,
-}: SearchParams): Promise<SearchedProducts> {
-  const sortBy =
-    order === 'price_asc'
-      ? 'calculated_price'
-      : order === 'price_desc'
-        ? '-calculated_price'
-        : order === 'created_at'
-          ? '-created_at'
-          : order
+	query,
+	currency_code,
+	page = 1,
+	order,
+	collection,
+	type,
+	material,
+	price,
+}: SearchParams): Promise<{
+	results: any[]
+	count: number
+}> {
+	// Build Meilisearch filter from parameters
+	const filters: string[] = []
 
-  const searchParams = new URLSearchParams({
-    currency_code,
-    order: sortBy,
-    offset: ((page - 1) * PRODUCT_LIMIT).toString(),
-    limit: PRODUCT_LIMIT.toString(),
-  })
+	// Handle collection filter
+	if (collection && collection.length > 0) {
+		filters.push(collection.map((id) => `collection_ids:${id}`).join(" OR "))
+	}
 
-  if (category_id) {
-    searchParams.append('category_id[]', category_id)
-  }
+	// Handle type filter
+	if (type && type.length > 0) {
+		filters.push(type.map((id) => `type_ids:${id}`).join(" OR "))
+	}
 
-  if (collection && Array.isArray(collection)) {
-    collection.forEach((id) => {
-      searchParams.append('collection_id[]', id)
-    })
-  }
+	// Handle material filter
+	if (material && material.length > 0) {
+		filters.push(material.map((id) => `material_ids:${id}`).join(" OR "))
+	}
 
-  if (type && Array.isArray(type)) {
-    type.forEach((id) => {
-      searchParams.append('type_id[]', id)
-    })
-  }
+	// Handle price range filter
+	if (price && price.length > 0) {
+		const priceFilters: string[] = []
+		if (price.includes("under-100")) {
+			priceFilters.push("price <= 100")
+		}
+		if (price.includes("100-500")) {
+			priceFilters.push("price 100 TO 500")
+		}
+		if (price.includes("501-1000")) {
+			priceFilters.push("price 501 TO 1000")
+		}
+		if (price.includes("more-than-1000")) {
+			priceFilters.push("price >= 1000")
+		}
+		if (priceFilters.length > 0) {
+			filters.push(`(${priceFilters.join(" OR ")})`)
+		}
+	}
 
-  if (material && Array.isArray(material)) {
-    material.forEach((id) => {
-      searchParams.append('materials[]', id)
-    })
-  }
+	// Handle sorting
+	let sort: string[] | undefined
+	if (order) {
+		switch (order) {
+			case "price_asc":
+				sort = ["price:asc"]
+				break
+			case "price_desc":
+				sort = ["price:desc"]
+				break
+			case "created_at":
+				sort = ["created_at:desc"]
+				break
+			default:
+				// Default relevance sorting
+				break
+		}
+	}
 
-  if (price && Array.isArray(price)) {
-    price.forEach((range) => {
-      switch (range) {
-        case 'under-100':
-          searchParams.append('price_to', '100')
-          break
-        case '100-500':
-          searchParams.append('price_from', '100')
-          searchParams.append('price_to', '500')
-          break
-        case '501-1000':
-          searchParams.append('price_from', '501')
-          searchParams.append('price_to', '1000')
-          break
-        case 'more-than-1000':
-          searchParams.append('price_from', '1000')
-          break
-      }
-    })
-  }
+	// Search Meilisearch
+	const { results, count } = await searchProducts({
+		q: query,
+		limit: PRODUCT_LIMIT,
+		offset: (page - 1) * PRODUCT_LIMIT,
+		filter: filters.length > 0 ? filters.join(" AND ") : undefined,
+		sort,
+	})
 
-  if (query) {
-    searchParams.append('q', safeDecodeURIComponent(query))
-  }
-
-  const response = await fetch(
-    `${BACKEND_URL}/store/search?${searchParams.toString()}`,
-    {
-      headers: {
-        'x-publishable-api-key': PUBLISHABLE_API_KEY!,
-      },
-      cache: 'no-store',
-    }
-  )
-
-  if (!response.ok) {
-    throw new Error(`Response error. Status: ${response.status}`)
-  }
-
-  const data = await response.json()
-
-  return {
-    results: data.products,
-    count: data.count,
-  }
+	return {
+		results,
+		count,
+	}
 }

@@ -324,6 +324,301 @@ export const config: SubscriberConfig = {
 };
 ```
 
+## MEILISEARCH INTEGRATION
+
+### Recommended Approach: Community Plugin
+
+> **RECOMMENDED**: Use `@rokmo/medusa-plugin-meilisearch` for v2. It's simpler and faster than building a custom module.
+
+```bash
+npm install @rokmo/medusa-plugin-meilisearch
+```
+
+Configure in `medusa-config.ts`:
+
+```typescript
+module.exports = defineConfig({
+  plugins: [
+    {
+      resolve: "@rokmo/medusa-plugin-meilisearch",
+      options: {
+        host: process.env.MEILISEARCH_HOST,
+        apiKey: process.env.MEILISEARCH_API_KEY,
+        settings: {
+          filterableAttributes: ["price", "categories", "tags"],
+          sortableAttributes: ["price", "title"],
+          searchableAttributes: ["title", "description", "rich_description"],
+        },
+      },
+    },
+  ],
+})
+```
+
+### Medusa v2 Architecture
+
+In Medusa v2, integrations use **Loaders, Modules, and Workflows**:
+
+| Pattern | Purpose | Location |
+|---------|---------|----------|
+| **Loader** | Inject external services into container | `src/loaders/*.ts` |
+| **Plugin** | Pre-built functionality (recommended) | `medusa-config.ts` |
+| **Module** | Custom functionality when plugin insufficient | `src/modules/*/` |
+| **Subscriber** | React to events | `src/subscribers/*.ts` |
+| **Workflow** | Multi-step operations with rollback | `src/workflows/*.ts` |
+
+### Architecture Pattern: Medusa as Aggregator
+
+For search functionality, Medusa acts as the aggregator that:
+1. Listens to product events (created, updated, deleted)
+2. Fetches enriched content from Strapi (via Loader)
+3. Merges and pushes to Meilisearch (via Plugin or Module)
+
+**Why this pattern?**
+- Single source of truth for product data (prevents conflicts)
+- Price/inventory data never overwritten by Strapi
+- Enriched content (descriptions, stories) included in search
+
+### Strapi Loader (External Service Injection)
+
+```typescript
+// src/loaders/strapi.ts
+import { MedusaContainer } from "@medusajs/framework/types"
+import StrapiClient from "@strapi/client"
+
+export default async function strapiLoader(
+  container: MedusaContainer
+) {
+  const strapiClient = new StrapiClient({
+    url: process.env.STRAPI_URL || "http://localhost:1337",
+    apiKey: process.env.STRAPI_API_KEY,
+  })
+
+  container.register("strapi", strapiClient)
+}
+```
+
+Register in `medusa-config.ts`:
+
+```typescript
+module.exports = defineConfig({
+  loaders: [
+    { resolve: "./src/loaders/strapi.ts" },
+  ],
+})
+```
+
+### Meilisearch Module (Custom Functionality)
+
+```typescript
+// src/modules/meilisearch/service.ts
+import { MedusaError } from "@medusajs/framework/utils"
+
+type MeilisearchOptions = {
+  host: string;
+  apiKey: string;
+  productIndexName: string;
+}
+
+export type MeilisearchIndexType = "product" | "content"
+
+export default class MeilisearchModuleService {
+  private client: any
+  private options: MeilisearchOptions
+
+  constructor({}, options: MeilisearchOptions) {
+    const { Meilisearch } = require("meilisearch")
+    this.client = new Meilisearch({
+      host: options.host,
+      apiKey: options.apiKey,
+    })
+    this.options = options
+  }
+
+  async indexData(data: Record<string, unknown>[], type: MeilisearchIndexType = "product") {
+    const indexName = type === "product" ? this.options.productIndexName : "content"
+    await this.client.index(indexName).addDocuments(data)
+  }
+
+  async deleteFromIndex(documentIds: string[], type: MeilisearchIndexType = "product") {
+    const indexName = type === "product" ? this.options.productIndexName : "content"
+    await this.client.index(indexName).deleteDocuments(documentIds)
+  }
+}
+```
+
+```typescript
+// src/modules/meilisearch/index.ts
+import { Module } from "@medusajs/framework/utils"
+import MeilisearchModuleService from "./service"
+
+export const MEILISEARCH_MODULE = "meilisearch"
+
+export default Module(MEILISEARCH_MODULE, {
+  service: MeilisearchModuleService,
+})
+```
+
+Register in `medusa-config.ts`:
+
+```typescript
+module.exports = defineConfig({
+  modules: [
+    {
+      resolve: "./src/modules/meilisearch",
+      options: {
+        host: process.env.MEILISEARCH_HOST!,
+        apiKey: process.env.MEILISEARCH_API_KEY!,
+        productIndexName: "products",
+      },
+    },
+  ],
+})
+```
+
+### Subscriber Implementation (with Plugin)
+
+When using the `@rokmo/medusa-plugin-meilisearch`, you still need a subscriber to enrich data with Strapi content before indexing:
+
+```typescript
+// src/subscribers/product-index.ts
+import { SubscriberArgs, type SubscriberConfig } from "@medusajs/framework"
+import { Modules } from "@medusajs/framework/utils"
+
+export default async function productIndexer({
+  data,
+  container,
+}: SubscriberArgs<{ id: string }>) {
+  const { id: productId } = data
+
+  // 1. Resolve Services from container
+  const productModule = container.resolve(Modules.PRODUCT)
+  const strapi = container.resolve("strapi") // From loader
+  const logger = container.resolve("logger")
+
+  // 2. Fetch Product from Medusa
+  const [product] = await productModule.listProducts({
+    filters: { id: productId },
+    relations: ["variants", "images", "categories"],
+  })
+
+  if (!product) return
+
+  // 3. Fetch Content from Strapi (non-blocking)
+  let richDescription = ""
+  try {
+    const cmsData = await strapi.find("product-descriptions", {
+      filters: { medusa_id: productId },
+    })
+    richDescription = cmsData?.data?.[0]?.attributes?.rich_text || ""
+  } catch (e) {
+    logger.warn(`Strapi fetch failed for ${productId}`)
+  }
+
+  // 4. The plugin auto-syncs product data
+  // To add enriched content, either:
+  // a) Use a transformer function in plugin config, or
+  // b) Emit a custom event with merged data
+  logger.info(`Product ${productId} enriched with Strapi content`)
+}
+
+export const config: SubscriberConfig = {
+  event: ["product.created", "product.updated"],
+}
+```
+
+**Alternative: Using transformer in plugin config**
+
+```typescript
+// medusa-config.ts
+module.exports = defineConfig({
+  plugins: [
+    {
+      resolve: "@rokmo/medusa-plugin-meilisearch",
+      options: {
+        host: process.env.MEILISEARCH_HOST,
+        apiKey: process.env.MEILISEARCH_API_KEY,
+        settings: {
+          // Use transformer to merge Strapi data
+          transformer: async (product, container) => {
+            const strapi = container.resolve("strapi")
+            let richDescription = ""
+
+            try {
+              const cmsData = await strapi.find("product-descriptions", {
+                filters: { medusa_id: product.id },
+              })
+              richDescription = cmsData?.data?.[0]?.attributes?.rich_text || ""
+            } catch (e) {
+              // Continue without enrichment
+            }
+
+            return {
+              ...product,
+              rich_description: richDescription,
+            }
+          },
+        },
+      },
+    },
+  ],
+})
+```
+
+### Product Status Filtering
+
+**IMPORTANT**: Only **published** products are indexed into Meilisearch. The sync behavior is determined by **both** Medusa product status AND Strapi `productDescription` status.
+
+**Product Status Values:**
+| Status | Action | Description |
+|--------|--------|-------------|
+| `published` | ✅ Index/Update | Product is live and available for purchase |
+| `draft` | ❌ Delete | Product is still being worked on - removed from search |
+| `proposed` | ❌ Delete | Product is awaiting approval - removed from search |
+| `rejected` | ❌ Delete | Product has been rejected - removed from search |
+
+**Sync Behavior - Both Statuses Matter:**
+| Medusa Status | Strapi Description Status | Result | Index Includes |
+|---------------|---------------------------|--------|----------------|
+| `published` | `published` | ✅ Synced | Medusa data + Strapi enrichment |
+| `published` | `draft` | ✅ Synced | Medusa data **only** (no Strapi content) |
+| `published` | (not found) | ✅ Synced | Medusa data only |
+| `draft` | Any | ❌ **NOT synced** | Removed from index |
+| `proposed` | Any | ❌ **NOT synced** | Removed from index |
+| `rejected` | Any | ❌ **NOT synced** | Removed from index |
+
+**How Strapi Status Affects Sync:**
+- Strapi API defaults to `publicationState=live` (only published entries)
+- When Strapi content is **published** → Enrichment included in Meilisearch
+- When Strapi content is **draft/unpublished** → Product indexed with Medusa data only
+- Strapi webhook (`entry.unpublish`) triggers re-sync without enrichment
+
+**Where filtering happens:**
+1. **`indexProduct` helper** (`src/modules/meilisearch/helpers.ts:59`) - Checks `product.status` and deletes if not published
+2. **`syncAllProductsToMeilisearchWorkflow`** (`src/workflows/meilisearch/sync-all-products-to-meilisearch.ts:159`) - Filters query by `status: "published"`
+3. **Strapi API** (`src/modules/strapi/service.ts:192`) - Only returns published entries by default
+4. **Webhook** (`src/api/webhooks/strapi/route.ts`) - Handles `entry.unpublish` to re-sync without enrichment
+
+**To remove draft products from existing Meilisearch index:**
+```bash
+# Trigger product update event for draft products (will auto-delete them)
+# Or manually run the sync workflow which only re-indexes published products
+curl -X POST http://localhost:9000/admin/workflows/sync-all-products-to-meilisearch
+# Then manually delete remaining drafts via Meilisearch dashboard
+```
+
+### Environment Variables
+
+```bash
+# .env
+MEILISEARCH_HOST=http://localhost:7700
+MEILISEARCH_API_KEY=your-master-key
+STRAPI_URL=http://localhost:1337
+STRAPI_API_KEY=your-strapi-api-key
+```
+
+**See also**: `/docs/meilisearch-integration-guide.md` for comprehensive guide.
+
 ## PLUGINS & INTEGRATIONS
 
 ### Payment Providers
@@ -417,6 +712,65 @@ describe("GET /store/custom", () => {
   });
 });
 ```
+
+### Meilisearch Module Tests
+
+**Important**: Meilisearch tasks are asynchronous in production. Tests must wait explicitly.
+
+```typescript
+// src/modules/meilisearch/__tests__/service.spec.ts
+import { Meilisearch } from "meilisearch";
+import MeilisearchModuleService from "../service";
+
+describe("MeilisearchModuleService", () => {
+  let service: MeilisearchModuleService;
+  let client: Meilisearch;
+
+  beforeAll(async () => {
+    client = new Meilisearch({
+      host: process.env.MEILISEARCH_HOST!,
+      apiKey: process.env.MEILISEARCH_API_KEY!,
+    });
+
+    const logger = { info: jest.fn(), warn: jest.fn(), error: jest.fn() };
+    service = new MeilisearchModuleService(
+      { logger },
+      { host: process.env.MEILISEARCH_HOST!, apiKey: process.env.MEILISEARCH_API_KEY! }
+    );
+  });
+
+  describe("indexData", () => {
+    it("should index documents to Meilisearch", async () => {
+      const documents = [
+        { id: "prod_1", title: "Test Product 1" },
+        { id: "prod_2", title: "Test Product 2" },
+      ];
+
+      // Act: Index documents (production code doesn't wait)
+      const task = await client.index("test-products").addDocuments(documents);
+
+      // CRITICAL: In tests, wait for task completion before asserting
+      await client.waitForTask(task.taskUid);
+
+      // Assert: Verify documents are indexed
+      const index = client.index("test-products");
+      const results = await index.search("Test Product");
+
+      expect(results.hits).toHaveLength(2);
+      expect(results.hits[0].title).toBe("Test Product 1");
+
+      // Cleanup
+      await index.deleteDocuments(["prod_1", "prod_2"]);
+    });
+  });
+});
+```
+
+**Key Testing Patterns:**
+1. Use `client.waitForTask(taskUid)` after indexing operations
+2. Use `client.waitForTask(taskUid)` after delete operations
+3. Verify data before asserting search results
+4. Cleanup test data in `afterEach` or `afterAll`
 
 ## ENVIRONMENT VARIABLES
 

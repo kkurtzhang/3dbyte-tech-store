@@ -6,6 +6,9 @@
 // Export JS SDK client
 export { default as MedusaSdkClient } from '@medusajs/js-sdk'
 
+// Meilisearch types
+export * from './meilisearch'
+
 // Custom shared types
 export interface StoreConfig {
   name: string

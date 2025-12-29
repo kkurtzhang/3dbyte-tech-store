@@ -31,6 +31,7 @@ export const GET = async (
     id: product.id,
     title: product.title,
     handle: product.handle,
+    status: product.status,
   };
 
   const result = await strapiService.updateProductDescription(syncData);

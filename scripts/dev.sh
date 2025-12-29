@@ -1,21 +1,23 @@
 #!/bin/bash
 
+# Define the location of the CMS docker-compose file for easier reference
+COMPOSE_FILE="docker/docker-compose.yml"
+PROJECT_NAME="3dbyte-cms"
+
 # Development script for 3D Byte Tech Store monorepo
 echo "🚀 Starting 3D Byte Tech Store in development mode..."
 
 # Check if CMS Docker containers are already running
-CMS_CONTAINERS=$(docker ps -q -f name=3dbyte-tech-cms)
+CMS_CONTAINERS=$(docker ps -q -f name=$PROJECT_NAME)
 if [ -n "$CMS_CONTAINERS" ]; then
     echo "✅ CMS Docker containers are already running!"
     echo "📦 Services detected:"
-    docker ps -f name=3dbyte-tech-cms --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+    docker ps -f name=$PROJECT_NAME --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
     echo ""
 else
     # Start Docker container for CMS services (Strapi, Redis, Meilisearch)
     echo "🐳 Starting Docker container for CMS services..."
-    cd apps/cms
-    docker-compose -p 3dbyte-tech-cms up -d
-    cd ../..
+    docker-compose -f $COMPOSE_FILE -p $PROJECT_NAME up -d
 
     # Wait a moment for services to start
     echo "⏳ Waiting for CMS services to initialize..."

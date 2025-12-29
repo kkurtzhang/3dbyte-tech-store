@@ -1,6 +1,39 @@
 # OVERVIEW
 This is the breakdown of which sections and webpages retrieve data from the MedusaJS server (E-commerce engine) versus the Strapi CMS server (Content Management System), along with a summary of how they communicate.
 
+# DATA SOURCES: QUICK REFERENCE
+
+| Page/Section | Primary Source | Secondary Source | Pattern |
+|--------------|----------------|------------------|---------|
+| **Hero Section** | Strapi | - | CMS-only |
+| **Product Listings** | Meilisearch | Medusa (fallback) | Search-first |
+| **Product Details** | Medusa | Strapi | Storefront Composition |
+| **Blog Posts** | Strapi | - | CMS-only |
+| **Static Pages** | Strapi | - | CMS-only |
+| **Global Search** | Meilisearch | - | Unified search |
+
+# ARCHITECTURE PATTERNS
+
+## 1. Search Path: Meilisearch (Medusa as Aggregator)
+
+For search functionality, we use **Meilisearch** with the **Medusa as Aggregator** pattern:
+- Medusa is the single source of truth for the products index
+- Medusa fetches enriched content from Strapi before indexing
+- Next.js queries Meilisearch directly for fast, filtered search
+
+**Flow**: Product Update → Medusa Subscriber → Fetch Strapi Content → Merge → Push to Meilisearch
+
+## 2. Read Path: Storefront Composition (Parallel Fetching)
+
+For rendering pages, we use **Storefront Composition**:
+- Next.js fetches from Medusa and Strapi in parallel using `Promise.all`
+- Data is merged in the server component
+- Each source can be cached independently
+
+**Flow**: Next.js → Parallel (Medusa + Strapi) → Merge → Render
+
+**See also**: `/docs/meilisearch-integration-guide.md` for comprehensive guide.
+
 # 1. Webpage & Section Hierarchy
 
 ### A. Homepage (`/`)

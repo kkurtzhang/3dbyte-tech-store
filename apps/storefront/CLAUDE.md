@@ -373,6 +373,68 @@ export async function POST(request: NextRequest) {
 
 ## DATA FETCHING
 
+### Storefront Composition Pattern (Recommended)
+
+**IMPORTANT**: For rendering enriched pages, use **Storefront Composition**, NOT Medusa proxy.
+
+**Why?**
+- Parallel fetching is faster than waterfall (Next.js → Medusa → Strapi)
+- If Strapi goes down, product page still loads
+- Can cache Strapi (1hr) separately from Medusa (fresh)
+
+### Parallel Fetching Implementation
+
+```typescript
+// app/(shop)/products/[handle]/page.tsx
+import { getProductByHandle } from "@/lib/medusa/products";
+import { getStrapiContent } from "@/lib/strapi/content";
+
+export default async function ProductPage({
+  params,
+}: {
+  params: { handle: string };
+}) {
+  // ✅ RIGHT: Parallel fetching - Storefront Composition
+  const [product, strapiData] = await Promise.all([
+    getProductByHandle(params.handle),
+    getStrapiContent("product-description", {
+      filters: { medusa_id: { $eq: null } }
+    }),
+  ]);
+
+  // Match Strapi content by medusa_id
+  const enrichedContent = strapiData?.data?.find(
+    (item) => item.attributes.medusa_id === product.id
+  );
+
+  return (
+    <ProductTemplate
+      product={product}
+      richDescription={enrichedContent?.attributes?.rich_text}
+    />
+  );
+}
+```
+
+### ❌ Wrong: Waterfall Pattern
+
+```typescript
+// ❌ WRONG: Do NOT proxy through Medusa
+const product = await medusa.getEnrichedProduct(id);
+// This is slow: Next.js → Medusa → Strapi
+// And fragile: if Strapi is down, whole page fails
+```
+
+### Comparison Table
+
+| Aspect | Storefront Composition | Medusa Proxy |
+|--------|----------------------|--------------|
+| Performance | Parallel (fast) | Waterfall (slow) |
+| Resilience | Strapi down = product still works | Strapi down = page fails |
+| Caching | Separate TTL per source | Single TTL (compromise) |
+
+**See also**: `/docs/meilisearch-integration-guide.md` for comprehensive patterns.
+
 ### Medusa Client Setup
 ```typescript
 // lib/medusa/client.ts

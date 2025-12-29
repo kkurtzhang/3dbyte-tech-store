@@ -106,6 +106,44 @@ describe('ComponentName', () => {
 - **Storefront**: Jest + React Testing Library + Playwright
 - **Shared packages**: Vitest for faster runs
 
+### Testing with Meilisearch
+
+When testing code that interacts with Meilisearch:
+
+**Task Processing is Asynchronous**
+```typescript
+// Production code does NOT wait for tasks (recommended)
+const task = await index.addDocuments(documents)
+// Returns immediately, task processes in background
+
+// For tests requiring immediate consistency, wait explicitly
+const task = await index.addDocuments(documents)
+await client.waitForTask(task.taskUid)  // Only in tests!
+```
+
+**Key Differences (Meilisearch SDK v0.54.0)**
+| Context | Use `waitForTask`? | Reason |
+|---------|-------------------|--------|
+| Production | ❌ No | Faster responses, async is fine |
+| Integration tests | ✅ Yes | Ensure data is indexed before assertions |
+| E2E tests | ✅ Yes | Wait for search to reflect changes |
+
+**Test Example:**
+```typescript
+describe('Meilisearch sync', () => {
+  it('should index products', async () => {
+    const task = await meilisearchModule.indexData(products)
+
+    // In tests: wait for task to complete
+    await meilisearchClient.waitForTask(task.taskUid)
+
+    // Now assert
+    const results = await meilisearchClient.index('products').search('test')
+    expect(results.hits).toHaveLength(5)
+  })
+})
+```
+
 ## TYPESCRIPT STANDARDS
 
 ### Strict Mode

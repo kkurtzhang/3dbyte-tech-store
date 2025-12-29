@@ -2,10 +2,10 @@ export default ({ env }) => ({
   meilisearch: {
     config: {
       // Your meili host
-      host: "http://meilisearch:7700",
+      host: env("MEILISEARCH_HOST", "http://localhost:7700"),
       // Your master key or private key
       // apiKey: "M8QDSdT0UT74H3leQaq4c72ctnDIo1jAkxuK-AuE7cM",
-      apiKey: "dN481cbEz7OMsg72N5qspU9S4Jsh9ceV9qe7dvt-2Gg",
+      apiKey: env("MEILISEARCH_API_KEY"),
     },
   },
   upload: {

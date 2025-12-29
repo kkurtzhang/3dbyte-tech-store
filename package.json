@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "./scripts/build.sh",
-    "dev": "./scripts/dev.sh",
+    "dev": "concurrently --raw -n \"DOCKER,TURBO\" -c \"blue,magenta\" \"docker compose --ansi always -f docker/docker-compose.yml -p 3dbyte-cms up\" \"pnpm run dev:turbo --filter=!@3dbyte-tech-store/cms\"",
+    "dev:script": "./scripts/dev.sh",
     "dev:backend": "./scripts/dev-backend.sh",
     "dev:cms": "./scripts/dev-cms.sh",
     "dev:storefront": "./scripts/dev-storefront.sh",
@@ -28,6 +29,7 @@
     "@types/node": "^20.0.0",
     "@types/react": "^18.3.2",
     "@types/react-dom": "^18.3.2",
+    "concurrently": "^9.2.1",
     "eslint": "^8.57.0",
     "jest": "^29.7.0",
     "prettier": "^3.2.5",
@@ -38,5 +40,5 @@
     "node": ">=20.0.0",
     "pnpm": ">=8.0.0"
   },
-  "packageManager": "pnpm@8.15.4"
+  "packageManager": "pnpm@10.26.2+sha512.0e308ff2005fc7410366f154f625f6631ab2b16b1d2e70238444dd6ae9d630a8482d92a451144debc492416896ed16f7b114a86ec68b8404b2443869e68ffda6"
 }

@@ -49,6 +49,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: process.env.NEXT_PUBLIC_SPACE_ENDPOINT,
       },
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+      },
     ],
   },
 }

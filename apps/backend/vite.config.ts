@@ -1,3 +1,4 @@
+// @ts-ignore - Vite types may not resolve correctly
 import { defineConfig } from 'vite';
 
 export default defineConfig({

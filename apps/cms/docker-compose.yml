@@ -20,7 +20,7 @@ services:
       - ./config:/opt/app/config
       - ./src:/opt/app/src
       - ./package.json:/opt/package.json
-      - ./yarn.lock:/opt/yarn.lock
+      - ./pnpm-lock.yaml:/opt/pnpm-lock.yaml
       - ./.env:/opt/app/.env
       - ./public/uploads:/opt/app/public/uploads
     ports:
@@ -31,22 +31,25 @@ services:
       - meilisearch
 
   meilisearch:
-    image: getmeili/meilisearch
+    image: getmeili/meilisearch:v1.31.0
     command: meilisearch
+    environment:
+      MEILI_MASTER_KEY: ${MEILISEARCH_API_KEY}
+      MELI_ENV: development
     volumes:
-      - /Volumes/MINI-M1/Projects/AI-Coder/search/meili_data:/meili_data
+      - ./docker_volumes/meili_data:/meili_data
     ports:
       - "7700:7700"
     networks:
       - strapi
 
   redis:
-    image: redis:latest
+    image: redis:8.4.0
     container_name: redis
     ports:
       - "6379:6379"
     volumes:
-      - /Volumes/MINI-M1/Projects/AI-Coder/redis_data:/data
+      - ./docker_volumes/redis_data:/data
     networks:
       - strapi
 
