@@ -1,6 +1,3 @@
 packages:
   - apps/*
   - packages/*
-
-patchedDependencies:
-  '@lodashventure/medusa-media-manager': patches/@lodashventure__medusa-media-manager.patch
