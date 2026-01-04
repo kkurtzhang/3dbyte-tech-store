@@ -61,7 +61,7 @@ interface StrapiWebhookRequest extends MedusaRequest {
  * - Verify webhook using X-Webhook-Secret header matching STRAPI_WEBHOOK_SECRET env var
  */
 export async function POST(
-	req: MedusaRequest,
+	req: StrapiWebhookRequest,
 	res: MedusaResponse
 ): Promise<void> {
 	const logger = req.scope.resolve("logger")

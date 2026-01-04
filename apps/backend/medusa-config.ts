@@ -67,5 +67,27 @@ module.exports = defineConfig({
       resolve: "@medusajs/draft-order",
       options: {},
     },
+    {
+      resolve: "@lodashventure/medusa-media-manager",
+      options: {
+        storage: {
+          driver: "s3",
+          bucket: process.env.MEDIA_BUCKET,
+          region: process.env.MEDIA_REGION,
+          publicCdn: process.env.MEDIA_ENDPOINT,
+          signed: { enabled: true, ttlSeconds: 3600 },
+        },
+        presets: [
+          { name: "thumbnail", width: 200, height: 200, fit: "cover" },
+          { name: "small", width: 640 },
+          { name: "medium", width: 1024 },
+          { name: "large", width: 1600 },
+        ],
+        generate: { mode: "eager" },
+        svg: { sanitize: true },
+        moderation: { enabled: true },
+        rbac: { deleteRequiresNoUsage: true },
+      },
+    },
   ],
 });

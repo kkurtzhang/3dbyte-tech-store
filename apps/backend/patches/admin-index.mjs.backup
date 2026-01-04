@@ -1,0 +1,1460 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { defineRouteConfig } from "@medusajs/admin-sdk";
+import { SquaresPlus, ListBullet, ArrowPath, CloudArrowUp, Photo, ShieldCheck, DocumentText, PlaySolid, X, CircleArrowUp, ArrowDownTray, SquareTwoStack, Trash } from "@medusajs/icons";
+import { Input, Select, TooltipProvider, Tooltip, IconButton, clx, Button, Badge, Skeleton, Table, StatusBadge, toast, Drawer, FocusModal, Textarea, Prompt, Container, Heading, Alert } from "@medusajs/ui";
+import "@medusajs/admin-shared";
+const ALL_OPTION_VALUE = "all";
+const normalizeSelectValue = (value) => {
+  if (value === "" || value === void 0) {
+    return ALL_OPTION_VALUE;
+  }
+  return value;
+};
+const resolveSelection = (value) => {
+  if (value === ALL_OPTION_VALUE || value === "") {
+    return void 0;
+  }
+  return value;
+};
+const typeOptions = [
+  { label: "All types", value: ALL_OPTION_VALUE },
+  { label: "Images", value: "image" },
+  { label: "SVG", value: "svg" },
+  { label: "Videos", value: "video" },
+  { label: "Documents", value: "document" }
+];
+const statusOptions = [
+  { label: "All statuses", value: ALL_OPTION_VALUE },
+  { label: "Draft", value: "draft" },
+  { label: "Published", value: "published" },
+  { label: "Archived", value: "archived" }
+];
+const visibilityOptions = [
+  { label: "All visibility", value: ALL_OPTION_VALUE },
+  { label: "Public", value: "public" },
+  { label: "Private", value: "private" }
+];
+const FiltersBar = ({
+  search,
+  onSearchChange,
+  type,
+  onTypeChange,
+  status,
+  onStatusChange,
+  visibility,
+  onVisibilityChange,
+  tags,
+  onTagsChange,
+  viewMode,
+  onViewModeChange,
+  onOpenUpload,
+  onRefresh,
+  totalCount
+}) => {
+  return /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-y-4", children: [
+    /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-y-3 lg:flex-row lg:items-center lg:justify-between lg:gap-y-0 lg:gap-x-4", children: [
+      /* @__PURE__ */ jsxs("div", { className: "flex flex-1 flex-col gap-y-3 sm:flex-row sm:items-center sm:gap-x-3", children: [
+        /* @__PURE__ */ jsx(
+          Input,
+          {
+            type: "search",
+            placeholder: "Search filename, tags, or captions...",
+            value: search,
+            onChange: (e) => onSearchChange(e.target.value),
+            className: "w-full sm:max-w-xs"
+          }
+        ),
+        /* @__PURE__ */ jsxs(
+          Select,
+          {
+            value: normalizeSelectValue(type),
+            onValueChange: (value) => onTypeChange(resolveSelection(value)),
+            children: [
+              /* @__PURE__ */ jsx(Select.Trigger, { className: "w-full sm:w-[160px]", children: /* @__PURE__ */ jsx(Select.Value, { placeholder: "Type" }) }),
+              /* @__PURE__ */ jsx(Select.Content, { children: typeOptions.map((option) => /* @__PURE__ */ jsx(Select.Item, { value: option.value, children: option.label }, option.value)) })
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxs(
+          Select,
+          {
+            value: normalizeSelectValue(status),
+            onValueChange: (value) => onStatusChange(resolveSelection(value)),
+            children: [
+              /* @__PURE__ */ jsx(Select.Trigger, { className: "w-full sm:w-[160px]", children: /* @__PURE__ */ jsx(Select.Value, { placeholder: "Status" }) }),
+              /* @__PURE__ */ jsx(Select.Content, { children: statusOptions.map((option) => /* @__PURE__ */ jsx(Select.Item, { value: option.value, children: option.label }, option.value)) })
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxs(
+          Select,
+          {
+            value: normalizeSelectValue(visibility),
+            onValueChange: (value) => onVisibilityChange(resolveSelection(value)),
+            children: [
+              /* @__PURE__ */ jsx(Select.Trigger, { className: "w-full sm:w-[160px]", children: /* @__PURE__ */ jsx(Select.Value, { placeholder: "Visibility" }) }),
+              /* @__PURE__ */ jsx(Select.Content, { children: visibilityOptions.map((option) => /* @__PURE__ */ jsx(Select.Item, { value: option.value, children: option.label }, option.value)) })
+            ]
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between gap-x-3 sm:justify-end", children: [
+        /* @__PURE__ */ jsx(
+          Input,
+          {
+            placeholder: "Tags (comma separated)",
+            value: tags,
+            onChange: (e) => onTagsChange(e.target.value),
+            className: "hidden md:block md:max-w-sm"
+          }
+        ),
+        /* @__PURE__ */ jsxs(TooltipProvider, { children: [
+          /* @__PURE__ */ jsx(Tooltip, { content: "Grid view", children: /* @__PURE__ */ jsx(
+            IconButton,
+            {
+              variant: "secondary",
+              className: clx(viewMode === "grid" && "bg-ui-bg-subtle"),
+              onClick: () => onViewModeChange("grid"),
+              children: /* @__PURE__ */ jsx(SquaresPlus, {})
+            }
+          ) }),
+          /* @__PURE__ */ jsx(Tooltip, { content: "List view", children: /* @__PURE__ */ jsx(
+            IconButton,
+            {
+              variant: "secondary",
+              className: clx(viewMode === "table" && "bg-ui-bg-subtle"),
+              onClick: () => onViewModeChange("table"),
+              children: /* @__PURE__ */ jsx(ListBullet, {})
+            }
+          ) }),
+          /* @__PURE__ */ jsx(Tooltip, { content: "Refresh", children: /* @__PURE__ */ jsx(IconButton, { variant: "secondary", onClick: onRefresh, children: /* @__PURE__ */ jsx(ArrowPath, {}) }) })
+        ] }),
+        /* @__PURE__ */ jsxs(Button, { onClick: onOpenUpload, className: "whitespace-nowrap", children: [
+          /* @__PURE__ */ jsx(CloudArrowUp, { className: "mr-1 size-4" }),
+          "Upload"
+        ] })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsx(
+      Input,
+      {
+        placeholder: "Tags (comma separated)",
+        value: tags,
+        onChange: (e) => onTagsChange(e.target.value),
+        className: "md:hidden"
+      }
+    ),
+    /* @__PURE__ */ jsxs(Badge, { size: "small", variant: "neutral", children: [
+      totalCount,
+      " assets"
+    ] })
+  ] });
+};
+function formatFileSize(bytes) {
+  if (!bytes || bytes <= 0) {
+    return "0 B";
+  }
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  const size = bytes / Math.pow(1024, i);
+  return `${size.toFixed(size < 10 && i > 0 ? 1 : 0)} ${units[i]}`;
+}
+function formatDateTime(value) {
+  if (!value) {
+    return "-";
+  }
+  try {
+    return new Date(value).toLocaleString();
+  } catch {
+    return value;
+  }
+}
+function parseTags(value) {
+  return value.split(",").map((tag) => tag.trim()).filter(Boolean);
+}
+function getLocaleText(record, fallbackLocale = "default") {
+  if (!record) {
+    return "";
+  }
+  if (record[fallbackLocale]) {
+    return record[fallbackLocale] ?? "";
+  }
+  const first = Object.values(record).find((value) => value);
+  return first ?? "";
+}
+function setLocaleText(value, locale = "default") {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+  return { [locale]: trimmed };
+}
+const typeIconMap = {
+  image: /* @__PURE__ */ jsx(Photo, { className: "size-4" }),
+  svg: /* @__PURE__ */ jsx(Photo, { className: "size-4" }),
+  document: /* @__PURE__ */ jsx(DocumentText, { className: "size-4" }),
+  video: /* @__PURE__ */ jsx(PlaySolid, { className: "size-4" })
+};
+const statusColorMap = {
+  published: "success",
+  draft: "default",
+  archived: "warning"
+};
+const MediaGrid = ({
+  assets,
+  previews,
+  viewMode,
+  isLoading,
+  onSelectAsset,
+  selectedAssetId
+}) => {
+  if (isLoading) {
+    return /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: clx(
+          "grid gap-4",
+          viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4" : "grid-cols-1"
+        ),
+        children: Array.from({ length: viewMode === "grid" ? 8 : 4 }).map((_, index) => /* @__PURE__ */ jsx(Skeleton, { className: "h-48 rounded-md" }, index))
+      }
+    );
+  }
+  if (!assets.length) {
+    return /* @__PURE__ */ jsxs("div", { className: "flex h-64 flex-col items-center justify-center gap-y-2 rounded-md border border-dashed border-ui-border-base bg-ui-bg-subtle", children: [
+      /* @__PURE__ */ jsx(Photo, { className: "size-6 text-ui-fg-subtle" }),
+      /* @__PURE__ */ jsx("p", { className: "text-sm text-ui-fg-subtle", children: "No media assets found. Try adjusting filters or upload new assets." })
+    ] });
+  }
+  if (viewMode === "table") {
+    return /* @__PURE__ */ jsxs(Table, { children: [
+      /* @__PURE__ */ jsx(Table.Header, { children: /* @__PURE__ */ jsxs(Table.Row, { children: [
+        /* @__PURE__ */ jsx(Table.HeaderCell, { children: "Preview" }),
+        /* @__PURE__ */ jsx(Table.HeaderCell, { children: "Name" }),
+        /* @__PURE__ */ jsx(Table.HeaderCell, { children: "Type" }),
+        /* @__PURE__ */ jsx(Table.HeaderCell, { children: "Size" }),
+        /* @__PURE__ */ jsx(Table.HeaderCell, { children: "Status" }),
+        /* @__PURE__ */ jsx(Table.HeaderCell, { children: "Visibility" }),
+        /* @__PURE__ */ jsx(Table.HeaderCell, { children: "Updated" })
+      ] }) }),
+      /* @__PURE__ */ jsx(Table.Body, { children: assets.map((asset) => /* @__PURE__ */ jsxs(
+        Table.Row,
+        {
+          className: "cursor-pointer",
+          onClick: () => onSelectAsset(asset),
+          children: [
+            /* @__PURE__ */ jsx(Table.Cell, { children: /* @__PURE__ */ jsx("div", { className: "flex items-center gap-x-3", children: /* @__PURE__ */ jsx(AssetPreview, { asset, previewUrl: previews[asset.id] }) }) }),
+            /* @__PURE__ */ jsx(Table.Cell, { className: "max-w-xs truncate", children: asset.original_filename }),
+            /* @__PURE__ */ jsx(Table.Cell, { className: "capitalize", children: asset.type }),
+            /* @__PURE__ */ jsx(Table.Cell, { children: formatFileSize(asset.size_bytes) }),
+            /* @__PURE__ */ jsx(Table.Cell, { children: /* @__PURE__ */ jsx(
+              StatusBadge,
+              {
+                color: statusColorMap[asset.status] ?? "default",
+                size: "small",
+                children: asset.status
+              }
+            ) }),
+            /* @__PURE__ */ jsx(Table.Cell, { children: /* @__PURE__ */ jsx(
+              Badge,
+              {
+                size: "small",
+                variant: asset.visibility === "public" ? "neutral" : "warning",
+                className: "capitalize",
+                children: asset.visibility
+              }
+            ) }),
+            /* @__PURE__ */ jsx(Table.Cell, { children: formatDateTime(asset.updated_at) })
+          ]
+        },
+        asset.id
+      )) })
+    ] });
+  }
+  return /* @__PURE__ */ jsx("div", { className: "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4", children: assets.map((asset) => {
+    var _a;
+    return /* @__PURE__ */ jsxs(
+      "button",
+      {
+        type: "button",
+        onClick: () => onSelectAsset(asset),
+        className: clx(
+          "flex h-full flex-col overflow-hidden rounded-lg border border-ui-border-base bg-ui-bg-base text-left shadow-sm transition hover:border-ui-border-strong",
+          selectedAssetId === asset.id && "border-ui-fg-interactive"
+        ),
+        children: [
+          /* @__PURE__ */ jsxs("div", { className: "relative aspect-video w-full overflow-hidden bg-ui-bg-subtle", children: [
+            /* @__PURE__ */ jsx(AssetPreview, { asset, previewUrl: previews[asset.id] }),
+            asset.visibility === "private" && /* @__PURE__ */ jsx("div", { className: "absolute right-2 top-2 rounded-full bg-ui-bg-base/80 p-1", children: /* @__PURE__ */ jsx(ShieldCheck, { className: "size-4 text-ui-fg-muted" }) })
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "flex flex-1 flex-col gap-y-2 p-4", children: [
+            /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-between gap-2", children: [
+              /* @__PURE__ */ jsx(TooltipProvider, { children: /* @__PURE__ */ jsx(Tooltip, { content: asset.mime, children: /* @__PURE__ */ jsxs("span", { className: "flex items-center gap-1 text-xs text-ui-fg-subtle", children: [
+                typeIconMap[asset.type] ?? /* @__PURE__ */ jsx(DocumentText, { className: "size-4" }),
+                asset.mime
+              ] }) }) }),
+              /* @__PURE__ */ jsx(
+                StatusBadge,
+                {
+                  size: "small",
+                  color: statusColorMap[asset.status] ?? "default",
+                  children: asset.status
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxs("div", { children: [
+              /* @__PURE__ */ jsx("p", { className: "line-clamp-1 text-sm font-medium", children: asset.original_filename }),
+              /* @__PURE__ */ jsxs("p", { className: "text-xs text-ui-fg-subtle", children: [
+                formatFileSize(asset.size_bytes),
+                " ·",
+                " ",
+                formatDateTime(asset.updated_at)
+              ] })
+            ] }),
+            ((_a = asset.tag_links) == null ? void 0 : _a.length) ? /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap gap-1.5", children: [
+              asset.tag_links.slice(0, 4).map((link) => /* @__PURE__ */ jsxs(Badge, { size: "small", variant: "neutral", children: [
+                "#",
+                link.tag.name
+              ] }, link.id)),
+              asset.tag_links.length > 4 && /* @__PURE__ */ jsxs("span", { className: "text-xs text-ui-fg-muted", children: [
+                "+",
+                asset.tag_links.length - 4
+              ] })
+            ] }) : null
+          ] })
+        ]
+      },
+      asset.id
+    );
+  }) });
+};
+const AssetPreview = ({
+  asset,
+  previewUrl
+}) => {
+  if (previewUrl && asset.type !== "document") {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      /* @__PURE__ */ jsx(
+        "img",
+        {
+          src: previewUrl,
+          alt: asset.original_filename,
+          className: "h-full w-full object-cover"
+        }
+      )
+    );
+  }
+  return /* @__PURE__ */ jsx("div", { className: "flex h-full w-full items-center justify-center bg-ui-bg-subtle text-ui-fg-muted", children: typeIconMap[asset.type] ?? /* @__PURE__ */ jsx(DocumentText, { className: "size-5" }) });
+};
+const API_BASE = "/admin/media/assets";
+function buildQuery(params) {
+  const search = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === void 0 || value === null || value === "") {
+      return;
+    }
+    if (Array.isArray(value)) {
+      if (value.length) {
+        search.set(key, value.join(","));
+      }
+      return;
+    }
+    search.set(key, String(value));
+  });
+  const query = search.toString();
+  return query.length ? `?${query}` : "";
+}
+// Authenticated fetch wrapper for JWT authentication
+async function authenticatedFetch(url, options = {}) {
+  if (typeof window === "undefined") {
+    return fetch(url, options);
+  }
+
+  // Try multiple token sources
+  let token = null;
+
+  // Try localStorage first (default for JWT)
+  token = token || window.localStorage.getItem("medusa_auth_token");
+
+  // Try sessionStorage as fallback
+  token = token || window.sessionStorage.getItem("medusa_auth_token");
+
+  // Try common alternative keys
+  token = token || window.localStorage.getItem("medusa_jwt_token");
+  token = token || window.sessionStorage.getItem("medusa_jwt_token");
+
+  const headers = { ...options.headers };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  return fetch(url, {
+    ...options,
+    headers,
+    credentials: token ? "omit" : "include"
+  });
+}
+async function parseJson(res) {
+  if (!res.ok) {
+    let message = "Unexpected server error";
+    try {
+      const body = await res.json();
+      if (body == null ? void 0 : body.message) {
+        message = body.message;
+      }
+    } catch {
+      message = res.statusText || message;
+    }
+    throw new Error(message);
+  }
+  return res.json();
+}
+async function listMediaAssets(params) {
+  const query = buildQuery(params);
+  const res = await authenticatedFetch(`${API_BASE}${query}`);
+  return parseJson(res);
+}
+async function uploadMediaAssets(input) {
+  var _a;
+  const formData = new FormData();
+  input.files.forEach((file) => {
+    formData.append("files", file);
+  });
+  if (input.folderId) {
+    formData.append("folderId", input.folderId);
+  }
+  if (input.visibility) {
+    formData.append("visibility", input.visibility);
+  }
+  if (input.status) {
+    formData.append("status", input.status);
+  }
+  if ((_a = input.tags) == null ? void 0 : _a.length) {
+    formData.append("tags", JSON.stringify(input.tags));
+  }
+  const res = await authenticatedFetch(`${API_BASE}/upload`, {
+    method: "POST",
+    body: formData
+  });
+  return parseJson(res);
+}
+async function getMediaAsset(id) {
+  const res = await authenticatedFetch(`${API_BASE}/${id}`);
+  return parseJson(res);
+}
+async function updateMediaAsset(id, payload) {
+  const res = await authenticatedFetch(`${API_BASE}/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+  return parseJson(res);
+}
+async function deleteMediaAsset(id, force) {
+  const search = force ? "?force=true" : "";
+  const res = await authenticatedFetch(`${API_BASE}/${id}${search}`, {
+    method: "DELETE"
+  });
+  if (!res.ok) {
+    let message = "Failed to delete media asset";
+    try {
+      const body = await res.json();
+      message = (body == null ? void 0 : body.message) ?? (body == null ? void 0 : body.error) ?? message;
+    } catch {
+      try {
+        const text = await res.text();
+        if (text) {
+          message = text;
+        }
+      } catch {
+      }
+    }
+    throw new Error(message);
+  }
+}
+async function replaceMediaAsset(id, file) {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await authenticatedFetch(`${API_BASE}/${id}/replace`, {
+    method: "POST",
+    body: formData
+  });
+  return parseJson(res);
+}
+async function getMediaAssetUrl(id, options = {}) {
+  const params = new URLSearchParams();
+  if (options.variant) {
+    params.set("variant", options.variant);
+  }
+  if (options.signed !== void 0) {
+    params.set("signed", String(options.signed));
+  }
+  if (options.ttl) {
+    params.set("ttl", String(options.ttl));
+  }
+  const query = params.toString();
+  const res = await authenticatedFetch(
+    `${API_BASE}/${id}/url${query ? `?${query}` : ""}`
+  );
+  const data = await parseJson(res);
+  return data.url;
+}
+const UploadDrawer = ({
+  open,
+  onOpenChange,
+  onUploaded
+}) => {
+  const [files, setFiles] = useState([]);
+  const [tagsInput, setTagsInput] = useState("");
+  const [status, setStatus] = useState("draft");
+  const [visibility, setVisibility] = useState("public");
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState(null);
+  const tags = useMemo(() => parseTags(tagsInput), [tagsInput]);
+  const handleFiles = useCallback((selected) => {
+    if (!selected) {
+      setFiles([]);
+      return;
+    }
+    setFiles(Array.from(selected));
+  }, []);
+  const handleDrop = useCallback((event) => {
+    event.preventDefault();
+    if (event.dataTransfer.items) {
+      const droppedFiles = Array.from(event.dataTransfer.items).filter((item) => item.kind === "file").map((item) => item.getAsFile()).filter(Boolean);
+      if (droppedFiles.length) {
+        setFiles(droppedFiles);
+      }
+    } else if (event.dataTransfer.files) {
+      setFiles(Array.from(event.dataTransfer.files));
+    }
+  }, []);
+  const handleUpload = useCallback(async () => {
+    if (!files.length) {
+      return;
+    }
+    setIsUploading(true);
+    setError(null);
+    try {
+      await uploadMediaAssets({
+        files,
+        tags,
+        visibility,
+        status
+      });
+      toast.success("Upload completed", {
+        description: `${files.length} file${files.length > 1 ? "s" : ""} uploaded successfully.`
+      });
+      setFiles([]);
+      setTagsInput("");
+      onUploaded();
+      onOpenChange(false);
+    } catch (err) {
+      setError((err == null ? void 0 : err.message) ?? "Failed to upload media assets");
+      toast.error("Upload failed", {
+        description: (err == null ? void 0 : err.message) ?? "Unable to upload assets. Try again."
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  }, [files, tags, visibility, status, onUploaded, onOpenChange]);
+  const clearFile = (file) => {
+    setFiles((prev) => prev.filter((item) => item !== file));
+  };
+  return /* @__PURE__ */ jsx(Drawer, { open, onOpenChange, children: /* @__PURE__ */ jsxs(Drawer.Content, { className: "flex w-full flex-col gap-y-6 p-6 sm:max-w-xl", children: [
+    /* @__PURE__ */ jsxs(Drawer.Header, { children: [
+      /* @__PURE__ */ jsx(Drawer.Title, { children: "Upload media" }),
+      /* @__PURE__ */ jsx(Drawer.Description, { children: "Drag & drop or pick files to upload. Supported formats include images, SVG, videos, and PDFs." })
+    ] }),
+    /* @__PURE__ */ jsxs(
+      "div",
+      {
+        onDragOver: (event) => event.preventDefault(),
+        onDrop: handleDrop,
+        className: "flex cursor-pointer flex-col items-center justify-center gap-y-2 rounded-lg border border-dashed border-ui-border-base bg-ui-bg-subtle p-8 text-center transition hover:border-ui-border-strong",
+        children: [
+          /* @__PURE__ */ jsx(CloudArrowUp, { className: "size-6 text-ui-fg-subtle" }),
+          /* @__PURE__ */ jsx("p", { className: "text-sm font-medium text-ui-fg-base", children: "Drag & drop files here, or click to browse" }),
+          /* @__PURE__ */ jsx("p", { className: "text-xs text-ui-fg-subtle", children: "JPG, PNG, WebP, AVIF, SVG, MP4, WebM, PDF up to 200MB" }),
+          /* @__PURE__ */ jsx(
+            "input",
+            {
+              type: "file",
+              multiple: true,
+              className: "hidden",
+              id: "media-manager-upload-input",
+              onChange: (event) => handleFiles(event.target.files)
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            "label",
+            {
+              htmlFor: "media-manager-upload-input",
+              className: "mt-2 inline-flex cursor-pointer rounded-md border border-ui-border-base bg-ui-bg-base px-3 py-1 text-xs font-medium text-ui-fg-base transition hover:border-ui-border-strong",
+              children: "Select files"
+            }
+          )
+        ]
+      }
+    ),
+    files.length > 0 && /* @__PURE__ */ jsx("div", { className: "max-h-48 space-y-2 overflow-y-auto rounded-md border border-ui-border-base p-3", children: files.map((file) => /* @__PURE__ */ jsxs(
+      "div",
+      {
+        className: "flex items-center justify-between gap-x-2 rounded bg-ui-bg-subtle px-3 py-2",
+        children: [
+          /* @__PURE__ */ jsxs("div", { className: "min-w-0", children: [
+            /* @__PURE__ */ jsx("p", { className: "truncate text-sm font-medium", children: file.name }),
+            /* @__PURE__ */ jsxs("p", { className: "text-xs text-ui-fg-subtle", children: [
+              (file.size / 1024 / 1024).toFixed(2),
+              " MB · ",
+              file.type
+            ] })
+          ] }),
+          /* @__PURE__ */ jsx(IconButtonSmall, { onClick: () => clearFile(file) })
+        ]
+      },
+      `${file.name}-${file.size}-${file.lastModified}`
+    )) }),
+    /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
+      /* @__PURE__ */ jsx(
+        Input,
+        {
+          label: "Tags",
+          placeholder: "summer, lookbook, homepage",
+          value: tagsInput,
+          onChange: (event) => setTagsInput(event.target.value),
+          helperText: "Separate tags with commas."
+        }
+      ),
+      /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 gap-4 sm:grid-cols-2", children: [
+        /* @__PURE__ */ jsxs(
+          Select,
+          {
+            value: status,
+            onValueChange: (value) => setStatus(value),
+            children: [
+              /* @__PURE__ */ jsx(Select.Trigger, { children: /* @__PURE__ */ jsx(Select.Value, { placeholder: "Status" }) }),
+              /* @__PURE__ */ jsxs(Select.Content, { children: [
+                /* @__PURE__ */ jsx(Select.Item, { value: "draft", children: "Draft" }),
+                /* @__PURE__ */ jsx(Select.Item, { value: "published", children: "Published" }),
+                /* @__PURE__ */ jsx(Select.Item, { value: "archived", children: "Archived" })
+              ] })
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxs(
+          Select,
+          {
+            value: visibility,
+            onValueChange: (value) => setVisibility(value),
+            children: [
+              /* @__PURE__ */ jsx(Select.Trigger, { children: /* @__PURE__ */ jsx(Select.Value, { placeholder: "Visibility" }) }),
+              /* @__PURE__ */ jsxs(Select.Content, { children: [
+                /* @__PURE__ */ jsx(Select.Item, { value: "public", children: "Public" }),
+                /* @__PURE__ */ jsx(Select.Item, { value: "private", children: "Private" })
+              ] })
+            ]
+          }
+        )
+      ] })
+    ] }),
+    error && /* @__PURE__ */ jsx("p", { className: "text-sm text-ui-fg-error", children: error }),
+    /* @__PURE__ */ jsxs(Drawer.Footer, { className: "flex items-center justify-between gap-x-2", children: [
+      /* @__PURE__ */ jsx(
+        Button,
+        {
+          variant: "secondary",
+          onClick: () => {
+            setFiles([]);
+            setTagsInput("");
+            setError(null);
+            onOpenChange(false);
+          },
+          children: "Cancel"
+        }
+      ),
+      /* @__PURE__ */ jsxs(
+        Button,
+        {
+          onClick: handleUpload,
+          disabled: !files.length || isUploading,
+          isLoading: isUploading,
+          children: [
+            "Upload ",
+            files.length ? `(${files.length})` : ""
+          ]
+        }
+      )
+    ] })
+  ] }) });
+};
+const IconButtonSmall = ({ onClick }) => {
+  return /* @__PURE__ */ jsx(
+    "button",
+    {
+      type: "button",
+      onClick: (event) => {
+        event.stopPropagation();
+        onClick();
+      },
+      className: "rounded-full p-1 text-ui-fg-muted transition hover:bg-ui-bg-subtle hover:text-ui-fg-base",
+      children: /* @__PURE__ */ jsx(X, { className: "size-4" })
+    }
+  );
+};
+const STATUS_COLORS = {
+  published: "success",
+  draft: "default",
+  archived: "warning"
+};
+const DEFAULT_LOCALE = "default";
+const MediaAssetDialog = ({
+  assetId,
+  onClose,
+  onUpdated,
+  onDeleted
+}) => {
+  var _a;
+  const fileInputRef = useRef(null);
+  const modalContentRef = useRef(null);
+  const [asset, setAsset] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isReplacing, setIsReplacing] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [variantUrls, setVariantUrls] = useState({});
+  const [title, setTitle] = useState("");
+  const [altText, setAltText] = useState("");
+  const [caption, setCaption] = useState("");
+  const [tagsInput, setTagsInput] = useState("");
+  const [status, setStatus] = useState("draft");
+  const [visibility, setVisibility] = useState("public");
+  const [deletePromptOpen, setDeletePromptOpen] = useState(false);
+  const [deleteAttempted, setDeleteAttempted] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  useEffect(() => {
+    if (!assetId) {
+      setAsset(null);
+      setPreviewUrl(null);
+      setDeleteAttempted(false);
+      setDeletePromptOpen(false);
+      return;
+    }
+    let isMounted = true;
+    const loadAsset = async () => {
+      var _a2;
+      try {
+        setIsLoading(true);
+        const response = await getMediaAsset(assetId);
+        if (!isMounted) {
+          return;
+        }
+        const currentAsset = response.asset;
+        setAsset(currentAsset);
+        setDeleteAttempted(false);
+        setTitle(getLocaleText(currentAsset.title, DEFAULT_LOCALE));
+        setAltText(getLocaleText(currentAsset.alt_text, DEFAULT_LOCALE));
+        setCaption(getLocaleText(currentAsset.caption, DEFAULT_LOCALE));
+        setStatus(currentAsset.status);
+        setVisibility(currentAsset.visibility);
+        setTagsInput(
+          ((_a2 = currentAsset.tag_links) == null ? void 0 : _a2.map((link) => link.tag.name).join(", ")) ?? ""
+        );
+        try {
+          const url = await getMediaAssetUrl(currentAsset.id, {
+            variant: "medium",
+            signed: currentAsset.visibility === "private"
+          });
+          if (isMounted) {
+            setPreviewUrl(url);
+          }
+        } catch {
+          try {
+            const fallback = await getMediaAssetUrl(currentAsset.id, {
+              signed: currentAsset.visibility === "private"
+            });
+            if (isMounted) {
+              setPreviewUrl(fallback);
+            }
+          } catch {
+            setPreviewUrl(null);
+          }
+        }
+      } catch (err) {
+        toast.error("Failed to load asset", {
+          description: (err == null ? void 0 : err.message) ?? "Unable to load asset details."
+        });
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+    loadAsset();
+    return () => {
+      isMounted = false;
+    };
+  }, [assetId]);
+  useEffect(() => {
+    if (modalContentRef.current) {
+      modalContentRef.current.scrollTop = 0;
+    }
+  }, [assetId]);
+  const tags = useMemo(() => parseTags(tagsInput), [tagsInput]);
+  const handleSave = async () => {
+    if (!asset || !assetId) {
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await updateMediaAsset(assetId, {
+        title: setLocaleText(title, DEFAULT_LOCALE),
+        alt_text: setLocaleText(altText, DEFAULT_LOCALE),
+        caption: setLocaleText(caption, DEFAULT_LOCALE),
+        visibility,
+        status,
+        tags
+      });
+      toast.success("Asset updated", {
+        description: "Metadata has been saved successfully."
+      });
+      onUpdated();
+    } catch (err) {
+      toast.error("Failed to update", {
+        description: (err == null ? void 0 : err.message) ?? "Unable to update asset metadata."
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  const handleDelete = async (force) => {
+    if (!assetId) {
+      return;
+    }
+    if (isDeleting) {
+      return;
+    }
+    setIsDeleting(true);
+    try {
+      await deleteMediaAsset(assetId, force);
+      toast.success("Asset deleted");
+      setDeletePromptOpen(false);
+      setDeleteAttempted(false);
+      onDeleted();
+      onClose();
+    } catch (err) {
+      setDeleteAttempted(true);
+      toast.error("Failed to delete", {
+        description: (err == null ? void 0 : err.message) ?? "Unable to delete asset. If it's in use, try forcing deletion."
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+  const handleVariantCopy = async (preset) => {
+    if (!asset) {
+      return;
+    }
+    try {
+      const url = variantUrls[preset] ?? await getMediaAssetUrl(asset.id, {
+        variant: preset,
+        signed: asset.visibility === "private"
+      });
+      setVariantUrls((prev) => ({ ...prev, [preset]: url }));
+      await navigator.clipboard.writeText(url);
+      toast.success("Variant URL copied", {
+        description: preset
+      });
+    } catch (err) {
+      toast.error("Failed to copy URL", {
+        description: (err == null ? void 0 : err.message) ?? "Unable to copy variant URL."
+      });
+    }
+  };
+  const handleReplace = async (file) => {
+    if (!file || !assetId) {
+      return;
+    }
+    setIsReplacing(true);
+    try {
+      await replaceMediaAsset(assetId, file);
+      toast.success("Asset replaced", {
+        description: file.name
+      });
+      setVariantUrls({});
+      onUpdated();
+      const response = await getMediaAsset(assetId);
+      setAsset(response.asset);
+    } catch (err) {
+      toast.error("Failed to replace", {
+        description: (err == null ? void 0 : err.message) ?? "Unable to replace asset."
+      });
+    } finally {
+      setIsReplacing(false);
+    }
+  };
+  const assetRelations = (asset == null ? void 0 : asset.relations) ?? [];
+  return /* @__PURE__ */ jsxs(FocusModal, { open: Boolean(assetId), onOpenChange: (open) => !open && onClose(), children: [
+    /* @__PURE__ */ jsxs(
+      FocusModal.Content,
+      {
+        ref: modalContentRef,
+        className: "flex h-full w-full max-w-3xl flex-col overflow-y-auto p-6",
+        children: [
+          /* @__PURE__ */ jsxs(FocusModal.Header, { children: [
+            /* @__PURE__ */ jsx(FocusModal.Title, { className: "text-lg font-semibold", children: "Asset details" }),
+            /* @__PURE__ */ jsx(FocusModal.Description, { children: "Review and update metadata, copy delivery URLs, or replace the original file." })
+          ] }),
+          isLoading ? /* @__PURE__ */ jsx("div", { className: "flex flex-1 items-center justify-center", children: /* @__PURE__ */ jsx("div", { className: "text-sm text-ui-fg-subtle", children: "Loading asset..." }) }) : asset ? /* @__PURE__ */ jsxs("div", { className: "flex flex-1 flex-col gap-y-6", children: [
+            /* @__PURE__ */ jsxs("section", { className: "flex flex-col gap-y-4", children: [
+              /* @__PURE__ */ jsx("div", { className: "aspect-video w-full overflow-hidden rounded-lg border border-ui-border-base bg-ui-bg-subtle", children: previewUrl ? /* @__PURE__ */ jsx(
+                "img",
+                {
+                  src: previewUrl,
+                  alt: asset.original_filename,
+                  className: "h-full w-full object-contain"
+                }
+              ) : /* @__PURE__ */ jsx("div", { className: "flex h-full w-full items-center justify-center text-ui-fg-muted", children: /* @__PURE__ */ jsx(Photo, { className: "size-8" }) }) }),
+              /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap items-center gap-2 text-xs text-ui-fg-subtle", children: [
+                /* @__PURE__ */ jsx("span", { children: asset.mime }),
+                /* @__PURE__ */ jsx("span", { children: "·" }),
+                /* @__PURE__ */ jsx("span", { children: formatFileSize(asset.size_bytes) }),
+                /* @__PURE__ */ jsx("span", { children: "·" }),
+                /* @__PURE__ */ jsxs("span", { children: [
+                  "Updated ",
+                  formatDateTime(asset.updated_at)
+                ] }),
+                /* @__PURE__ */ jsx(
+                  StatusBadge,
+                  {
+                    size: "small",
+                    color: STATUS_COLORS[asset.status] ?? "default",
+                    children: asset.status
+                  }
+                ),
+                /* @__PURE__ */ jsx(
+                  Badge,
+                  {
+                    size: "small",
+                    variant: asset.visibility === "public" ? "neutral" : "warning",
+                    className: "capitalize",
+                    children: asset.visibility
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ jsxs("div", { className: "flex flex-wrap gap-2", children: [
+                /* @__PURE__ */ jsxs(
+                  Button,
+                  {
+                    type: "button",
+                    variant: "secondary",
+                    onClick: () => {
+                      var _a2;
+                      return (_a2 = fileInputRef.current) == null ? void 0 : _a2.click();
+                    },
+                    isLoading: isReplacing,
+                    children: [
+                      /* @__PURE__ */ jsx(CircleArrowUp, { className: "mr-1 size-4" }),
+                      "Replace file"
+                    ]
+                  }
+                ),
+                /* @__PURE__ */ jsxs(
+                  Button,
+                  {
+                    type: "button",
+                    variant: "secondary",
+                    onClick: () => handleVariantCopy("medium"),
+                    children: [
+                      /* @__PURE__ */ jsx(ArrowDownTray, { className: "mr-1 size-4" }),
+                      "Get URL"
+                    ]
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ jsx(
+                "input",
+                {
+                  type: "file",
+                  ref: fileInputRef,
+                  className: "hidden",
+                  onChange: (event) => {
+                    var _a2;
+                    return handleReplace(((_a2 = event.target.files) == null ? void 0 : _a2[0]) ?? null);
+                  }
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxs("section", { className: "space-y-4", children: [
+              /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 gap-4 md:grid-cols-2", children: [
+                /* @__PURE__ */ jsx(
+                  Input,
+                  {
+                    label: "Title",
+                    placeholder: "Hero banner",
+                    value: title,
+                    onChange: (event) => setTitle(event.target.value)
+                  }
+                ),
+                /* @__PURE__ */ jsx(
+                  Input,
+                  {
+                    label: "Alt text",
+                    placeholder: "Describe the media for accessibility",
+                    value: altText,
+                    onChange: (event) => setAltText(event.target.value)
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ jsx(
+                Textarea,
+                {
+                  label: "Caption",
+                  placeholder: "Optional caption or notes",
+                  value: caption,
+                  onChange: (event) => setCaption(event.target.value)
+                }
+              ),
+              /* @__PURE__ */ jsx(
+                Input,
+                {
+                  label: "Tags",
+                  placeholder: "summer, lookbook, hero",
+                  value: tagsInput,
+                  onChange: (event) => setTagsInput(event.target.value),
+                  helperText: "Separate tags with commas"
+                }
+              ),
+              /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-1 gap-4 sm:grid-cols-2", children: [
+                /* @__PURE__ */ jsxs(
+                  Select,
+                  {
+                    value: status,
+                    onValueChange: (value) => setStatus(value),
+                    children: [
+                      /* @__PURE__ */ jsx(Select.Trigger, { children: /* @__PURE__ */ jsx(Select.Value, { placeholder: "Status" }) }),
+                      /* @__PURE__ */ jsxs(Select.Content, { children: [
+                        /* @__PURE__ */ jsx(Select.Item, { value: "draft", children: "Draft" }),
+                        /* @__PURE__ */ jsx(Select.Item, { value: "published", children: "Published" }),
+                        /* @__PURE__ */ jsx(Select.Item, { value: "archived", children: "Archived" })
+                      ] })
+                    ]
+                  }
+                ),
+                /* @__PURE__ */ jsxs(
+                  Select,
+                  {
+                    value: visibility,
+                    onValueChange: (value) => setVisibility(value),
+                    children: [
+                      /* @__PURE__ */ jsx(Select.Trigger, { children: /* @__PURE__ */ jsx(Select.Value, { placeholder: "Visibility" }) }),
+                      /* @__PURE__ */ jsxs(Select.Content, { children: [
+                        /* @__PURE__ */ jsx(Select.Item, { value: "public", children: "Public" }),
+                        /* @__PURE__ */ jsx(Select.Item, { value: "private", children: "Private" })
+                      ] })
+                    ]
+                  }
+                )
+              ] })
+            ] }),
+            ((_a = asset.variants) == null ? void 0 : _a.length) ? /* @__PURE__ */ jsxs("section", { className: "space-y-3", children: [
+              /* @__PURE__ */ jsx("h3", { className: "text-sm font-medium", children: "Variants" }),
+              /* @__PURE__ */ jsxs(Table, { children: [
+                /* @__PURE__ */ jsx(Table.Header, { children: /* @__PURE__ */ jsxs(Table.Row, { children: [
+                  /* @__PURE__ */ jsx(Table.HeaderCell, { children: "Name" }),
+                  /* @__PURE__ */ jsx(Table.HeaderCell, { children: "Format" }),
+                  /* @__PURE__ */ jsx(Table.HeaderCell, { children: "Dimensions" }),
+                  /* @__PURE__ */ jsx(Table.HeaderCell, { children: "Size" }),
+                  /* @__PURE__ */ jsx(Table.HeaderCell, { className: "text-right", children: "Actions" })
+                ] }) }),
+                /* @__PURE__ */ jsx(Table.Body, { children: asset.variants.map((variant) => /* @__PURE__ */ jsxs(
+                  Table.Row,
+                  {
+                    children: [
+                      /* @__PURE__ */ jsx(Table.Cell, { className: "capitalize", children: variant.preset }),
+                      /* @__PURE__ */ jsx(Table.Cell, { children: variant.format }),
+                      /* @__PURE__ */ jsx(Table.Cell, { children: variant.width && variant.height ? `${variant.width}×${variant.height}` : "-" }),
+                      /* @__PURE__ */ jsx(Table.Cell, { children: formatFileSize(variant.size_bytes) }),
+                      /* @__PURE__ */ jsx(Table.Cell, { className: "flex justify-end gap-2", children: /* @__PURE__ */ jsxs(
+                        Button,
+                        {
+                          size: "small",
+                          variant: "secondary",
+                          onClick: () => handleVariantCopy(variant.preset),
+                          children: [
+                            /* @__PURE__ */ jsx(SquareTwoStack, { className: "mr-1 size-4" }),
+                            " Copy URL"
+                          ]
+                        }
+                      ) })
+                    ]
+                  },
+                  variant.id ?? `${variant.preset}-${variant.format}`
+                )) })
+              ] })
+            ] }) : null,
+            /* @__PURE__ */ jsxs("section", { className: "space-y-3", children: [
+              /* @__PURE__ */ jsx("h3", { className: "text-sm font-medium", children: "Usage" }),
+              assetRelations.length ? /* @__PURE__ */ jsxs(Table, { children: [
+                /* @__PURE__ */ jsx(Table.Header, { children: /* @__PURE__ */ jsxs(Table.Row, { children: [
+                  /* @__PURE__ */ jsx(Table.HeaderCell, { children: "Entity" }),
+                  /* @__PURE__ */ jsx(Table.HeaderCell, { children: "Reference" }),
+                  /* @__PURE__ */ jsx(Table.HeaderCell, { children: "Role" })
+                ] }) }),
+                /* @__PURE__ */ jsx(Table.Body, { children: assetRelations.map((relation) => /* @__PURE__ */ jsxs(Table.Row, { children: [
+                  /* @__PURE__ */ jsx(Table.Cell, { className: "capitalize", children: relation.entity_type }),
+                  /* @__PURE__ */ jsx(Table.Cell, { className: "font-mono text-xs", children: relation.entity_id }),
+                  /* @__PURE__ */ jsx(Table.Cell, { children: relation.relation_role })
+                ] }, relation.id)) })
+              ] }) : /* @__PURE__ */ jsx("p", { className: "text-sm text-ui-fg-subtle", children: "This asset is not linked to any entities." })
+            ] })
+          ] }) : /* @__PURE__ */ jsx("div", { className: "flex flex-1 items-center justify-center text-sm text-ui-fg-subtle", children: "Select an asset to view details." }),
+          /* @__PURE__ */ jsxs(FocusModal.Footer, { className: "mt-6 flex flex-wrap items-center justify-between gap-3", children: [
+            /* @__PURE__ */ jsxs("div", { className: "flex gap-2", children: [
+              /* @__PURE__ */ jsxs(
+                Button,
+                {
+                  type: "button",
+                  variant: "danger",
+                  onClick: () => {
+                    if (!asset) {
+                      return;
+                    }
+                    setDeletePromptOpen(true);
+                  },
+                  disabled: !asset || isDeleting,
+                  isLoading: isDeleting,
+                  children: [
+                    /* @__PURE__ */ jsx(Trash, { className: "mr-1 size-4" }),
+                    " Delete"
+                  ]
+                }
+              ),
+              /* @__PURE__ */ jsxs(
+                Button,
+                {
+                  type: "button",
+                  variant: "secondary",
+                  onClick: () => asset && handleVariantCopy("medium"),
+                  disabled: !asset,
+                  children: [
+                    /* @__PURE__ */ jsx(ArrowPath, { className: "mr-1 size-4" }),
+                    " Copy URL"
+                  ]
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxs("div", { className: "flex gap-2", children: [
+              /* @__PURE__ */ jsx(Button, { variant: "secondary", onClick: onClose, children: "Close" }),
+              /* @__PURE__ */ jsx(
+                Button,
+                {
+                  onClick: handleSave,
+                  disabled: !asset || isSaving,
+                  isLoading: isSaving,
+                  children: "Save changes"
+                }
+              )
+            ] })
+          ] }),
+          deleteAttempted && asset && /* @__PURE__ */ jsxs("div", { className: "mt-4 rounded-md border border-ui-border-base bg-ui-bg-subtle p-4 text-sm text-ui-fg-subtle", children: [
+            /* @__PURE__ */ jsx("p", { className: "font-medium text-ui-fg-base", children: "Having trouble deleting?" }),
+            /* @__PURE__ */ jsx("p", { className: "mt-1", children: "If the asset is still referenced, remove those relations first or attempt a force delete." }),
+            /* @__PURE__ */ jsx(
+              Button,
+              {
+                className: "mt-3",
+                variant: "danger",
+                size: "small",
+                disabled: isDeleting,
+                isLoading: isDeleting,
+                onClick: () => {
+                  const confirmForce = window.confirm(
+                    "Force delete will remove the asset even if it is still referenced. Continue?"
+                  );
+                  if (confirmForce) {
+                    handleDelete(true);
+                  }
+                },
+                children: "Force delete"
+              }
+            )
+          ] })
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      Prompt,
+      {
+        variant: "confirmation",
+        open: Boolean(asset) && deletePromptOpen,
+        onOpenChange: (open) => setDeletePromptOpen(open),
+        children: /* @__PURE__ */ jsxs(Prompt.Content, { children: [
+          /* @__PURE__ */ jsxs(Prompt.Header, { children: [
+            /* @__PURE__ */ jsx(Prompt.Title, { children: "Delete asset" }),
+            /* @__PURE__ */ jsx(Prompt.Description, { children: asset ? `Delete "${asset.original_filename}" and all generated variants? This cannot be undone.` : "Delete this asset and all generated variants? This cannot be undone." })
+          ] }),
+          /* @__PURE__ */ jsxs(Prompt.Footer, { children: [
+            /* @__PURE__ */ jsx(Prompt.Cancel, { children: "Cancel" }),
+            /* @__PURE__ */ jsx(Prompt.Action, { asChild: true, children: /* @__PURE__ */ jsx(
+              Button,
+              {
+                variant: "danger",
+                onClick: () => handleDelete(false),
+                disabled: isDeleting,
+                isLoading: isDeleting,
+                children: "Delete"
+              }
+            ) })
+          ] })
+        ] })
+      }
+    )
+  ] });
+};
+const MediaAssetDrawer = MediaAssetDialog;
+const PAGE_SIZE = 24;
+const MediaLibraryPage = () => {
+  const [search, setSearch] = useState("");
+  const [type, setType] = useState("");
+  const [status, setStatus] = useState("");
+  const [visibility, setVisibility] = useState("");
+  const [tagsInput, setTagsInput] = useState("");
+  const [viewMode, setViewMode] = useState("grid");
+  const [page, setPage] = useState(0);
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [selectedAsset, setSelectedAsset] = useState(null);
+  const [assetsResult, setAssetsResult] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
+  const [error, setError] = useState(null);
+  const tags = useMemo(() => parseTags(tagsInput), [tagsInput]);
+  const queryParams = useMemo(
+    () => ({
+      q: search || void 0,
+      type: type || void 0,
+      status: status || void 0,
+      visibility: visibility || void 0,
+      tags: tags.length ? tags : void 0,
+      limit: PAGE_SIZE,
+      offset: page * PAGE_SIZE
+    }),
+    [search, type, status, visibility, tags, page]
+  );
+  const fetchAssets = useCallback(
+    async (showSpinner) => {
+      setError(null);
+      if (showSpinner) {
+        setIsLoading(true);
+      } else {
+        setIsFetching(true);
+      }
+      try {
+        const result = await listMediaAssets(queryParams);
+        setAssetsResult(result);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to load media assets";
+        setError(message);
+      } finally {
+        setIsLoading(false);
+        setIsFetching(false);
+      }
+    },
+    [queryParams]
+  );
+  useEffect(() => {
+    void fetchAssets(true);
+  }, [fetchAssets]);
+  const refetch = useCallback(() => {
+    void fetchAssets(false);
+  }, [fetchAssets]);
+  const assets = (assetsResult == null ? void 0 : assetsResult.assets) ?? [];
+  const total = (assetsResult == null ? void 0 : assetsResult.count) ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  useEffect(() => {
+    setPage(0);
+  }, [search, type, status, visibility, tagsInput]);
+  const previewCache = useRef({});
+  const [previews, setPreviews] = useState({});
+  useEffect(() => {
+    let cancelled = false;
+    const loadPreviews = async () => {
+      const entries = [];
+      for (const asset of assets) {
+        if (asset.type === "document") {
+          previewCache.current[asset.id] = null;
+          continue;
+        }
+        if (previewCache.current[asset.id] !== void 0) {
+          entries.push([asset.id, previewCache.current[asset.id]]);
+          continue;
+        }
+        try {
+          const url = await getMediaAssetUrl(asset.id, {
+            variant: "thumbnail",
+            signed: asset.visibility === "private"
+          });
+          previewCache.current[asset.id] = url;
+          entries.push([asset.id, url]);
+        } catch {
+          previewCache.current[asset.id] = null;
+          entries.push([asset.id, null]);
+        }
+      }
+      if (!cancelled && entries.length) {
+        setPreviews((prev) => ({ ...prev, ...Object.fromEntries(entries) }));
+      }
+    };
+    if (assets.length) {
+      loadPreviews();
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [assets]);
+  const handleSelectAsset = (asset) => {
+    setSelectedAsset(asset);
+  };
+  const handleCloseDrawer = () => {
+    setSelectedAsset(null);
+  };
+  return /* @__PURE__ */ jsxs(Container, { className: "flex h-full w-full flex-1 flex-col gap-y-6", children: [
+    /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-y-2", children: [
+      /* @__PURE__ */ jsx(Heading, { level: "h1", children: "Media library" }),
+      /* @__PURE__ */ jsx("p", { className: "text-sm text-ui-fg-subtle", children: "Upload, organize, and manage media assets across the storefront and admin experiences." })
+    ] }),
+    /* @__PURE__ */ jsx(
+      FiltersBar,
+      {
+        search,
+        onSearchChange: setSearch,
+        type,
+        onTypeChange: setType,
+        status,
+        onStatusChange: setStatus,
+        visibility,
+        onVisibilityChange: setVisibility,
+        tags: tagsInput,
+        onTagsChange: setTagsInput,
+        viewMode,
+        onViewModeChange: setViewMode,
+        onOpenUpload: () => setIsUploadOpen(true),
+        onRefresh: () => refetch(),
+        totalCount: total
+      }
+    ),
+    error && /* @__PURE__ */ jsx(Alert, { variant: "error", children: error }),
+    /* @__PURE__ */ jsx(
+      MediaGrid,
+      {
+        assets,
+        previews,
+        viewMode,
+        isLoading: isLoading || isFetching,
+        onSelectAsset: handleSelectAsset,
+        selectedAssetId: selectedAsset == null ? void 0 : selectedAsset.id
+      }
+    ),
+    totalPages > 1 && /* @__PURE__ */ jsxs("div", { className: "flex items-center justify-end gap-x-3", children: [
+      /* @__PURE__ */ jsx(
+        Button,
+        {
+          variant: "secondary",
+          size: "small",
+          onClick: () => setPage((prev) => Math.max(prev - 1, 0)),
+          disabled: page === 0,
+          children: "Previous"
+        }
+      ),
+      /* @__PURE__ */ jsxs("span", { className: "text-sm text-ui-fg-muted", children: [
+        "Page ",
+        page + 1,
+        " of ",
+        totalPages
+      ] }),
+      /* @__PURE__ */ jsx(
+        Button,
+        {
+          variant: "secondary",
+          size: "small",
+          onClick: () => setPage((prev) => Math.min(prev + 1, totalPages - 1)),
+          disabled: page + 1 >= totalPages,
+          children: "Next"
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsx(
+      UploadDrawer,
+      {
+        open: isUploadOpen,
+        onOpenChange: setIsUploadOpen,
+        onUploaded: () => {
+          previewCache.current = {};
+          refetch();
+        }
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      MediaAssetDrawer,
+      {
+        assetId: (selectedAsset == null ? void 0 : selectedAsset.id) ?? null,
+        onClose: handleCloseDrawer,
+        onUpdated: () => {
+          previewCache.current = {};
+          refetch();
+        },
+        onDeleted: () => {
+          previewCache.current = {};
+          setSelectedAsset(null);
+          refetch();
+        }
+      }
+    )
+  ] });
+};
+const config = defineRouteConfig({
+  icon: Photo,
+  label: "Media Library",
+  path: "/media-library"
+});
+const widgetModule = { widgets: [] };
+const routeModule = {
+  routes: [
+    {
+      Component: MediaLibraryPage,
+      path: "/library"
+    }
+  ]
+};
+const menuItemModule = {
+  menuItems: [
+    {
+      label: config.label,
+      icon: config.icon,
+      path: "/library",
+      nested: void 0,
+      rank: void 0,
+      translationNs: void 0
+    }
+  ]
+};
+const formModule = { customFields: {} };
+const displayModule = {
+  displays: {}
+};
+const i18nModule = { resources: {} };
+const plugin = {
+  widgetModule,
+  routeModule,
+  menuItemModule,
+  formModule,
+  displayModule,
+  i18nModule
+};
+export {
+  plugin as default
+};

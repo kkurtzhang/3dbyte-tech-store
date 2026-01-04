@@ -1,4 +1,5 @@
 import {
+  authenticate,
   defineMiddlewares,
   validateAndTransformBody,
   validateAndTransformQuery,
@@ -18,6 +19,13 @@ export const GetBrandsSchema = createFindParams();
 
 export default defineMiddlewares({
   routes: [
+    // Media Manager plugin authentication
+    {
+      matcher: "/admin/media*",
+      middlewares: [
+        authenticate("user", ["session", "bearer", "api-key"]),
+      ],
+    },
     {
       matcher: "/admin/brands",
       method: "POST",
