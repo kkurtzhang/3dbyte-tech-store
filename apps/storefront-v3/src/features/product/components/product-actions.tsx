@@ -1,9 +1,11 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { StoreProduct, StoreProductOption, StoreProductVariant } from "@medusajs/types"
+import { useCart } from "@/context/cart-context"
+import { useToast } from "@/lib/hooks/use-toast"
 
 interface ProductActionsProps {
   product: StoreProduct
@@ -22,6 +24,10 @@ export function ProductActions({
   setOptions,
   disabled,
 }: ProductActionsProps) {
+  const { addItem } = useCart()
+  const { toast } = useToast()
+  const [isAdding, setIsAdding] = useState(false)
+
   const updateOption = (optionId: string, value: string) => {
     const newOptions = { ...options, [optionId]: value }
     setOptions(newOptions)
@@ -33,6 +39,27 @@ export function ProductActions({
     })
 
     onVariantChange(variant)
+  }
+
+  const handleAddToCart = async () => {
+    if (!selectedVariant?.id) return
+
+    setIsAdding(true)
+    try {
+      await addItem(selectedVariant.id, 1)
+      toast({
+        title: "Item_Acquired",
+        description: `${product.title} has been added to your system inventory.`,
+      })
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Acquisition_Failed",
+        description: "Unable to add item. Please check system connection.",
+      })
+    } finally {
+      setIsAdding(false)
+    }
   }
 
   const formatPrice = (amount: number, currency: string) => {
@@ -101,9 +128,10 @@ export function ProductActions({
         <Button
             size="lg"
             className="w-full font-mono text-lg h-14 uppercase tracking-widest"
-            disabled={!selectedVariant || disabled}
+            disabled={!selectedVariant || disabled || isAdding}
+            onClick={handleAddToCart}
         >
-          {selectedVariant ? "Add_to_System" : "Select_Options"}
+          {isAdding ? "Initiating_Transfer..." : selectedVariant ? "Add_to_System" : "Select_Options"}
         </Button>
          <p className="mt-2 text-center text-xs font-mono text-muted-foreground">
             SECURE_TRANSACTION_PROTOCOL_V3
