@@ -1,9 +1,7 @@
 "use client"
 
 import { ProductCard } from "@/features/product/components/product-card"
-import { searchProducts } from "@/features/search/actions/search"
-import { useQueryState } from "nuqs"
-import { useEffect, useState, useTransition } from "react"
+import { useSearch } from "@/lib/hooks/use-search"
 
 interface SearchResultsProps {
   initialHits: any[]
@@ -11,21 +9,10 @@ interface SearchResultsProps {
 }
 
 export function SearchResults({ initialHits, initialQuery = "" }: SearchResultsProps) {
-  const [query] = useQueryState("q", { defaultValue: initialQuery })
-  const [hits, setHits] = useState(initialHits)
-  const [isPending, startTransition] = useTransition()
-
-  // Re-fetch when query changes (client-side navigation)
-  useEffect(() => {
-    // If query is empty, we might want to show "Featured" or clear results.
-    // For now, let's search empty string (browse all).
-    const term = query || ""
-
-    startTransition(async () => {
-      const result = await searchProducts(term)
-      setHits(result.hits)
-    })
-  }, [query])
+  const { hits, isPending } = useSearch({
+    defaultValue: initialQuery,
+    initialHits
+  })
 
   if (isPending) {
     return (

@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { StoreProduct, StoreProductVariant } from "@medusajs/types"
 import { ProductGallery } from "../components/product-gallery"
 import { ProductActions } from "../components/product-actions"
 import { SpecSheet } from "../components/spec-sheet"
 import { Separator } from "@/components/ui/separator"
+import { useQueryState } from "nuqs"
 
 interface ProductTemplateProps {
   product: StoreProduct
@@ -13,25 +14,55 @@ interface ProductTemplateProps {
 }
 
 export function ProductTemplate({ product, richDescription }: ProductTemplateProps) {
+  const [variantId, setVariantId] = useQueryState("variant", {
+    shallow: false,
+    history: "push",
+  })
+
   const [options, setOptions] = useState<Record<string, string>>({})
-  const [selectedVariant, setSelectedVariant] = useState<StoreProductVariant | undefined>(undefined)
 
-  // Initialize options from the first variant (or default behavior)
+  // Derive selected variant from URL or default to first
+  const selectedVariant = useMemo(() => {
+    if (variantId && product.variants) {
+      return product.variants.find((v) => v.id === variantId)
+    }
+    return undefined
+  }, [product.variants, variantId])
+
+  // Initialize or Sync options when selectedVariant changes
+  // This handles both initial load (from URL) and navigation updates
   useEffect(() => {
-    if (product.variants && product.variants.length > 0 && !selectedVariant) {
-      const firstVariant = product.variants[0]
-      const initialOptions: Record<string, string> = {}
+    if (!product.variants || product.variants.length === 0) return
 
-      firstVariant.options?.forEach((opt) => {
+    // If we have a selected variant (from URL), sync options to it
+    if (selectedVariant) {
+      const variantOptions: Record<string, string> = {}
+      selectedVariant.options?.forEach((opt) => {
         if (opt.option_id && opt.value) {
-           initialOptions[opt.option_id] = opt.value
+          variantOptions[opt.option_id] = opt.value
         }
       })
 
-      setOptions(initialOptions)
-      setSelectedVariant(firstVariant)
+      // Only update if different to avoid infinite loops
+      if (JSON.stringify(variantOptions) !== JSON.stringify(options)) {
+        setOptions(variantOptions)
+      }
     }
-  }, [product, selectedVariant])
+    // If no variant selected (no URL param), default to first variant
+    else if (!variantId) {
+      const firstVariant = product.variants[0]
+      setVariantId(firstVariant.id)
+      // Options will be synced in the next render cycle when selectedVariant updates
+    }
+  }, [product.variants, selectedVariant, variantId, setVariantId, options])
+
+  const handleVariantChange = (variant: StoreProductVariant | undefined) => {
+    if (variant) {
+      setVariantId(variant.id)
+    } else {
+      setVariantId(null)
+    }
+  }
 
   // Extract specs for the SpecSheet
   // In a real app, these might come from product metadata or a dedicated Strapi content type
@@ -63,7 +94,7 @@ export function ProductTemplate({ product, richDescription }: ProductTemplatePro
            <ProductActions
               product={product}
               selectedVariant={selectedVariant}
-              onVariantChange={setSelectedVariant}
+              onVariantChange={handleVariantChange}
               options={options}
               setOptions={setOptions}
            />

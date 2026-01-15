@@ -2,7 +2,7 @@ import { MeiliSearch } from "meilisearch"
 
 export const searchClient = new MeiliSearch({
   host: process.env.NEXT_PUBLIC_MEILISEARCH_HOST || "http://localhost:7700",
-  apiKey: process.env.NEXT_PUBLIC_MEILISEARCH_SEARCH_KEY,
+  apiKey: process.env.NEXT_PUBLIC_MEILISEARCH_API_KEY,
 })
 
 export const INDEX_PRODUCTS = "products"
