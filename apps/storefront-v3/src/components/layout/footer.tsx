@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Github, Twitter, MessageCircle } from "lucide-react";
+import { SiGithub, SiX, SiDiscord } from "@icons-pack/react-simple-icons";
 
 /**
  * Footer component with 4-column grid layout.
@@ -151,7 +151,7 @@ export function Footer() {
                   className="text-muted-foreground transition-colors hover:text-foreground"
                   aria-label="GitHub"
                 >
-                  <Github className="h-5 w-5" />
+                  <SiGithub className="h-5 w-5" />
                 </Link>
               </li>
               <li>
@@ -160,7 +160,7 @@ export function Footer() {
                   className="text-muted-foreground transition-colors hover:text-foreground"
                   aria-label="Twitter"
                 >
-                  <Twitter className="h-5 w-5" />
+                  <SiX className="h-5 w-5" />
                 </Link>
               </li>
               <li>
@@ -169,7 +169,7 @@ export function Footer() {
                   className="text-muted-foreground transition-colors hover:text-foreground"
                   aria-label="Discord"
                 >
-                  <MessageCircle className="h-5 w-5" />
+                  <SiDiscord className="h-5 w-5" />
                 </Link>
               </li>
             </ul>

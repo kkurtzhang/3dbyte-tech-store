@@ -12,6 +12,7 @@
     "@3dbyte-tech-store/shared-types": "workspace:*",
     "@3dbyte-tech-store/shared-utils": "workspace:*",
     "@hookform/resolvers": "^3.4.2",
+    "@icons-pack/react-simple-icons": "^13.8.0",
     "@medusajs/icons": "2.12.3",
     "@medusajs/js-sdk": "2.12.3",
     "@medusajs/types": "2.12.3",
