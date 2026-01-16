@@ -31,15 +31,11 @@ export default function AccountLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
-  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
 
   const handleSignOut = () => {
     // TODO: Implement sign out when Medusa integration is complete
     console.log("Sign out clicked")
   }
-
-  const currentPage =
-    accountNavItems.find((item) => item.href === pathname)?.label || "Account"
 
   return (
     <div className="container py-8">
