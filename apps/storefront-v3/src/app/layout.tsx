@@ -4,8 +4,9 @@ import "@/styles/globals.css";
 import { cn } from "@/lib/utils";
 import { CartProvider } from "@/context/cart-context";
 import { Toaster } from "@/components/ui/toaster";
-import { CartSheet } from "@/features/cart/components/cart-sheet";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { ThemeProvider } from "@/components/providers/theme-provider";
+import { Navbar } from "@/components/layout/navbar";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -40,35 +41,29 @@ export default function RootLayout({
           jetbrainsMono.variable
         )}
       >
-        <NuqsAdapter>
-          <CartProvider>
-            <div className="relative flex min-h-screen flex-col">
-              <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <div className="container flex h-14 items-center justify-between">
-                  <div className="mr-4 flex">
-                    <a className="mr-6 flex items-center space-x-2" href="/">
-                      <span className="hidden font-bold sm:inline-block">
-                        3D Byte
-                      </span>
-                    </a>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <NuqsAdapter>
+            <CartProvider>
+              <div className="relative flex min-h-screen flex-col">
+                <Navbar />
+                <main className="flex-1">{children}</main>
+                <footer className="border-t py-6 md:py-0">
+                  <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
+                    <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
+                      Built by 3D Byte Tech.
+                    </p>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <CartSheet />
-                  </div>
-                </div>
-              </header>
-              <main className="flex-1">{children}</main>
-              <footer className="border-t py-6 md:py-0">
-                <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
-                  <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-                    Built by 3D Byte Tech.
-                  </p>
-                </div>
-              </footer>
-            </div>
-            <Toaster />
-          </CartProvider>
-        </NuqsAdapter>
+                </footer>
+              </div>
+              <Toaster />
+            </CartProvider>
+          </NuqsAdapter>
+        </ThemeProvider>
       </body>
     </html>
   );
