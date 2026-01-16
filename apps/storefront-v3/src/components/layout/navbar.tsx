@@ -8,6 +8,7 @@ import { CartSheet } from "@/features/cart/components/cart-sheet"
 import { ThemeToggle } from "./theme-toggle"
 import { MobileMenu } from "./mobile-menu"
 import { SearchCommandDialog } from "@/components/search/search-command-dialog"
+import { AuthSheet } from "@/features/auth/components/auth-sheet"
 
 /**
  * Navbar component for the main site navigation.
@@ -18,9 +19,11 @@ import { SearchCommandDialog } from "@/components/search/search-command-dialog"
  * - Mobile hamburger menu
  * - Sticky header with backdrop blur
  * - Command palette search dialog
+ * - Authentication sheet for quick login/register
  */
 export function Navbar() {
   const [searchOpen, setSearchOpen] = React.useState(false)
+  const [authOpen, setAuthOpen] = React.useState(false)
 
   return (
     <>
@@ -72,11 +75,13 @@ export function Navbar() {
             </kbd>
 
             {/* Account Trigger */}
-            <Button variant="ghost" size="icon" asChild>
-              <Link href="/account">
-                <User className="h-5 w-5" />
-                <span className="sr-only">Account</span>
-              </Link>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setAuthOpen(true)}
+            >
+              <User className="h-5 w-5" />
+              <span className="sr-only">Account</span>
             </Button>
 
             {/* Cart Sheet */}
@@ -90,6 +95,9 @@ export function Navbar() {
 
       {/* Search Command Dialog */}
       <SearchCommandDialog open={searchOpen} onOpenChange={setSearchOpen} />
+
+      {/* Auth Sheet */}
+      <AuthSheet open={authOpen} onOpenChange={setAuthOpen} />
     </>
   )
 }
