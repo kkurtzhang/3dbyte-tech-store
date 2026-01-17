@@ -2,7 +2,7 @@ import {
 	SubscriberArgs,
 	type SubscriberConfig,
 } from "@medusajs/framework"
-import { indexProduct } from "../modules/meilisearch/helpers"
+import { syncProductsWorkflow } from "../workflows/meilisearch/sync-products"
 
 /**
  * Product Indexing Subscriber
@@ -12,14 +12,19 @@ import { indexProduct } from "../modules/meilisearch/helpers"
  * - When product is updated → Indexes to Meilisearch if published, DELETES if not published
  * - When product status changes from published → Auto-removes from Meilisearch
  *
- * Uses shared indexProduct helper to avoid code duplication with webhook handler.
+ * Uses syncProductsWorkflow following official Medusa patterns.
  */
 export default async function productIndexer({
 	event: { data },
 	container,
 }: SubscriberArgs<{ id: string }>) {
-	// Use shared helper to index the product
-	await indexProduct(container, data.id)
+	await syncProductsWorkflow(container).run({
+		input: {
+			filters: {
+				id: data.id,
+			},
+		},
+	})
 }
 
 export const config: SubscriberConfig = {
