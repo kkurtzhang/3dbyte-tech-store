@@ -5,72 +5,12 @@
  * These types are shared between backend (indexing) and storefront (search).
  */
 
-/**
- * Meilisearch search document structure
- * This represents the indexed product with enriched Strapi content
- */
-export interface MeilisearchProductDocument {
-	// Core Medusa fields
-	id: string
-	title: string
-	handle: string
-	subtitle?: string
-	description?: string
-	thumbnail?: string
-	status: string
+import type { MeiliSearch } from "meilisearch"
 
-	// Pricing
-	price: number
-	currency_code: string
+export type MeilisearchClient = MeiliSearch
 
-	// Variants for filtering
-	variants: Array<{
-		id: string
-		title: string
-		options: Record<string, string>
-		prices?: Array<{
-			amount: number
-			currency_code: string
-		}>
-	}>
+export type MeilisearchIndexType = "product"
 
-	// Categories for faceting
-	categories: string[]
-
-	// Tags
-	tags: string[]
-
-	// Images
-	images: string[]
-
-	// Collection IDs for faceting
-	collection_ids?: string[]
-
-	// Type IDs for faceting
-	type_ids?: string[]
-
-	// Material IDs for faceting
-	material_ids?: string[]
-
-	// Enriched from Strapi Product Description
-	detailed_description?: string
-	features?: string[]
-	specifications?: Record<string, unknown>
-	seo_title?: string
-	seo_description?: string
-	meta_keywords?: string[]
-
-	// Metadata
-	created_at: string
-	updated_at: string
-
-	// Index signature for compatibility with Record<string, unknown>
-	[key: string]: unknown
-}
-
-/**
- * Meilisearch module configuration
- */
 export interface MeilisearchModuleConfig {
 	host: string
 	apiKey: string
@@ -78,17 +18,19 @@ export interface MeilisearchModuleConfig {
 	settings?: MeilisearchIndexSettings
 }
 
-/**
- * Meilisearch index settings
- */
 export interface MeilisearchIndexSettings {
-	filterableAttributes: string[]
-	sortableAttributes: string[]
-	searchableAttributes: string[]
-	displayedAttributes: string[]
-	rankingRules: string[]
-	// Additional settings
-	typoTolerance?: boolean | object
+	filterableAttributes?: string[]
+	sortableAttributes?: string[]
+	searchableAttributes?: string[]
+	displayedAttributes?: string[]
+	rankingRules?: string[]
+	typoTolerance?: {
+		enabled?: boolean
+		minWordSizeForTypos?: {
+			oneTypo?: number
+			twoTypos?: number
+		}
+	}
 	faceting?: {
 		maxValuesPerFacet?: number
 	}
@@ -97,10 +39,109 @@ export interface MeilisearchIndexSettings {
 	}
 }
 
+export interface MeilisearchProductDocument {
+	id: string
+	title: string
+	handle: string
+	subtitle?: string
+	description?: string
+	thumbnail?: string
+	status: string
+	price: number
+	currency_code: string
+	variants: Array<{
+		id: string
+		title: string
+		options: Record<string, string>
+		prices: Array<{
+			amount: number
+			currency_code: string
+		}>
+	}>
+	categories: string[]
+	tags: string[]
+	images: string[]
+	collection_ids: string[]
+	type_ids: string[]
+	material_ids: string[]
+	detailed_description?: string
+	features?: string[]
+	specifications?: Record<string, string>
+	seo_title?: string
+	seo_description?: string
+	meta_keywords?: string[]
+	created_at: string
+	updated_at: string
+}
+
+export interface MeilisearchSearchOptions {
+	limit?: number
+	offset?: number
+	filter?: string | string[]
+	sort?: string[]
+	facets?: string[]
+}
+
+export interface MeilisearchSearchResponse<T = MeilisearchProductDocument> {
+	hits: T[]
+	estimatedTotalHits: number
+	limit: number
+	offset: number
+	processingTimeMs: number
+	query: string
+}
+
+export interface MeilisearchIndexStats {
+	numberOfDocuments: number
+	isIndexing: boolean
+	fieldDistribution: Record<string, number>
+}
+
 /**
- * Meilisearch index type
+ * Product type for workflow steps (matches useQueryGraphStep output)
  */
-export type MeilisearchIndexType = "product"
+export interface SyncProductsStepProduct {
+	id: string
+	title: string
+	handle: string
+	subtitle?: string | null
+	description?: string | null
+	thumbnail?: string | null
+	status: string
+	created_at: string
+	updated_at: string
+	variants?: Array<{
+		id: string
+		title?: string
+		options?: Array<{
+			option_title?: string
+			title?: string
+			value: string
+		}>
+		prices?: Array<{
+			amount: number
+			currency_code: string
+		}>
+		original_price?: number
+		original_price_calculated?: number
+	}>
+	images?: Array<{
+		url: string
+	}>
+	categories?: Array<{
+		id: string
+		name: string
+		handle: string
+	}>
+	tags?: Array<{
+		id: string
+		value: string
+	}>
+	collection_id?: string
+	type_id?: string
+	material_id?: string
+	currency_code?: string
+}
 
 /**
  * Strapi product description response
@@ -120,28 +161,4 @@ export interface StrapiProductDescription {
 	last_synced: string
 	sync_status: "synced" | "outdated" | "pending"
 	publishedAt: string
-}
-
-/**
- * Meilisearch search response wrapper
- * Used for type-safe search results
- */
-export interface MeilisearchSearchResponse<T = MeilisearchProductDocument> {
-	hits: T[]
-	estimatedTotalHits: number
-	limit: number
-	offset: number
-	processingTimeMs: number
-	query: string
-}
-
-/**
- * Meilisearch search options
- */
-export interface MeilisearchSearchOptions {
-	limit?: number
-	offset?: number
-	filter?: string | string[]
-	sort?: string[]
-	facets?: string[]
 }

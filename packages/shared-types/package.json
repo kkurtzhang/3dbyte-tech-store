@@ -14,8 +14,9 @@
     "@medusajs/js-sdk": "2.12.3"
   },
   "devDependencies": {
-    "typescript": "^5.3.3",
-    "@3dbyte-tech-store/shared-config": "workspace:*"
+    "@3dbyte-tech-store/shared-config": "workspace:*",
+    "meilisearch": "^0.55.0",
+    "typescript": "^5.3.3"
   },
   "files": [
     "dist"
