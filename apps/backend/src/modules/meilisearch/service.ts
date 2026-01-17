@@ -1,18 +1,20 @@
-import { Logger } from "@medusajs/framework/types"
-import {
+import { MedusaError } from "@medusajs/framework/utils"
+import type { Logger } from "@medusajs/framework/types"
+import type {
 	MeilisearchIndexSettings,
 	MeilisearchIndexType,
 	MeilisearchModuleConfig,
 	MeilisearchProductDocument,
 	MeilisearchSearchResponse,
 	MeilisearchSearchOptions,
+	MeilisearchIndexStats,
 } from "@3dbyte-tech-store/shared-types"
 
 type InjectedDependencies = {
 	logger: Logger
 }
 
-const MEILISEARCH_PRODUCT_INDEX = "products"
+type MeilisearchOptions = Omit<MeilisearchModuleConfig, "settings">
 
 /**
  * Meilisearch Module Service
@@ -36,321 +38,197 @@ const MEILISEARCH_PRODUCT_INDEX = "products"
  *   await client.waitForTask(task.taskUid)
  */
 export default class MeilisearchModuleService {
-	private client: any // Meilisearch client
+	private client: any
 	protected logger_: Logger
-	private config_: Omit<MeilisearchModuleConfig, "settings">
+	private options_: MeilisearchOptions
 
 	constructor(
 		{ logger }: InjectedDependencies,
-		options: Omit<MeilisearchModuleConfig, "settings">
+		options: MeilisearchOptions
 	) {
 		this.logger_ = logger
 
-		if (!options.host || !options.apiKey) {
-			this.logger_.warn(
-				"Meilisearch host or API key not configured. Meilisearch integration will be disabled."
+		// Official pattern: throw MedusaError for invalid configuration
+		if (!options.host || !options.apiKey || !options.productIndexName) {
+			throw new MedusaError(
+				MedusaError.Types.INVALID_ARGUMENT,
+				"Meilisearch options are required (host, apiKey, productIndexName)"
 			)
-			this.config_ = {
-				host: options.host || "",
-				apiKey: options.apiKey || "",
-				productIndexName: options.productIndexName || MEILISEARCH_PRODUCT_INDEX,
-			}
-			return
 		}
 
-		this.config_ = options
+		this.options_ = options
+		// Use require for ESM module in CommonJS context
+		const { MeiliSearch } = require("meilisearch")
+		this.client = new MeiliSearch({
+			host: options.host,
+			apiKey: options.apiKey,
+		})
 
-		try {
-			// Dynamic import of meilisearch
-			const { Meilisearch } = require("meilisearch")
-			this.client = new Meilisearch({
-				host: this.config_.host,
-				apiKey: this.config_.apiKey,
-			})
-			this.logger_.info(
-				`Meilisearch client initialized for ${this.config_.host}`
-			)
-		} catch (error) {
-			this.logger_.error(
-				`Failed to initialize Meilisearch client: ${error.message}`
-			)
-			this.client = null
-		}
+		this.logger_.info(`Meilisearch client initialized for ${options.host}`)
 	}
 
-	/**
-	 * Get the index name for a given index type
-	 */
-	async getIndexName(
-		type: MeilisearchIndexType
-	): Promise<string> {
+	async getIndexName(type: MeilisearchIndexType): Promise<string> {
 		switch (type) {
 			case "product":
-				return this.config_.productIndexName || MEILISEARCH_PRODUCT_INDEX
+				return this.options_.productIndexName
 			default:
-				throw new Error(`Invalid index type: ${type}`)
+				throw new MedusaError(
+					MedusaError.Types.INVALID_ARGUMENT,
+					`Invalid index type: ${type}`
+				)
 		}
 	}
 
-	/**
-	 * Get the Meilisearch index for a given type
-	 */
-	private async getIndex(type: MeilisearchIndexType) {
-		if (!this.client) {
-			throw new Error("Meilisearch client is not initialized")
-		}
-
+	private async getIndex(type: MeilisearchIndexType): Promise<any> {
 		const indexName = await this.getIndexName(type)
 		return this.client.index(indexName)
 	}
 
-	/**
-	 * Index documents into Meilisearch
-	 *
-	 * @param data - Array of documents to index
-	 * @param type - Index type (currently only "product" supported)
-	 */
 	async indexData(
 		data: Record<string, unknown>[],
 		type: MeilisearchIndexType = "product"
-	): Promise<void> {
-		if (!this.client) {
-			this.logger_.warn("Meilisearch client not initialized, skipping indexing")
-			return
-		}
+	): Promise<any> {
+		const index = await this.getIndex(type)
+		const documents = data.map((item) => ({
+			...item,
+			id: item.id,
+		}))
 
-		try {
-			const index = await this.getIndex(type)
+		const task = await index.addDocuments(documents)
+		this.logger_.info(
+			`Indexed ${documents.length} documents into ${type} index (task: ${task.taskUid})`
+		)
 
-			// Transform data to ensure id is the primary key
-			const documents = data.map((item) => ({
-				...item,
-				id: item.id,
-			}))
-
-			const task = await index.addDocuments(documents)
-			this.logger_.info(
-				`Indexed ${documents.length} documents into ${type} index (task: ${task.taskUid})`
-			)
-			// Note: Task processing is asynchronous. The documents are queued
-			// and will be indexed by Meilisearch in the background.
-		} catch (error) {
-			this.logger_.error(
-				`Failed to index documents: ${error.message}`,
-				error
-			)
-			throw error
-		}
+		return task
 	}
 
 	/**
-	 * Delete documents from Meilisearch index
-	 *
-	 * @param documentIds - Array of document IDs to delete
-	 * @param type - Index type
+	 * Retrieve documents from Meilisearch index by IDs
+	 * Used for compensation functions to backup data before modifications.
 	 */
+	async retrieveFromIndex(
+		documentIds: string[],
+		type: MeilisearchIndexType = "product"
+	): Promise<Record<string, unknown>[]> {
+		const index = await this.getIndex(type)
+
+		const results = await Promise.all(
+			documentIds.map(async (id) => {
+				try {
+					return await index.getDocument(id)
+				} catch (error) {
+					return null
+				}
+			})
+		)
+
+		return results.filter((doc): doc is Record<string, unknown> => doc !== null)
+	}
+
 	async deleteFromIndex(
 		documentIds: string[],
 		type: MeilisearchIndexType = "product"
-	): Promise<void> {
-		if (!this.client) {
-			this.logger_.warn("Meilisearch client not initialized, skipping deletion")
-			return
-		}
+	): Promise<any> {
+		const index = await this.getIndex(type)
+		const task = await index.deleteDocuments(documentIds)
 
-		try {
-			const index = await this.getIndex(type)
-			const task = await index.deleteDocuments(documentIds)
-			this.logger_.info(
-				`Deleted ${documentIds.length} documents from ${type} index (task: ${task.taskUid})`
-			)
-			// Note: Task processing is asynchronous. The documents are queued
-			// and will be deleted by Meilisearch in the background.
-		} catch (error) {
-			this.logger_.error(
-				`Failed to delete documents: ${error.message}`,
-				error
-			)
-			throw error
-		}
+		this.logger_.info(
+			`Deleted ${documentIds.length} documents from ${type} index (task: ${task.taskUid})`
+		)
+
+		return task
 	}
 
-	/**
-	 * Search documents in Meilisearch
-	 *
-	 * @param query - Search query string
-	 * @param type - Index type
-	 * @param options - Search options (limit, offset, filters, etc.)
-	 */
 	async search(
 		query: string,
 		type: MeilisearchIndexType = "product",
 		options?: MeilisearchSearchOptions
 	): Promise<MeilisearchSearchResponse> {
-		if (!this.client) {
-			throw new Error("Meilisearch client is not initialized")
+		const index = await this.getIndex(type)
+		const searchParams: Record<string, unknown> = {
+			limit: options?.limit ?? 20,
+			offset: options?.offset ?? 0,
 		}
 
-		try {
-			const index = await this.getIndex(type)
-			const searchParams: Record<string, unknown> = {
-				limit: options?.limit || 20,
-				offset: options?.offset || 0,
-			}
+		if (options?.filter) {
+			searchParams.filter = options.filter
+		}
+		if (options?.sort) {
+			searchParams.sort = options.sort
+		}
+		if (options?.facets) {
+			searchParams.facets = options.facets
+		}
 
-			if (options?.filter) {
-				searchParams.filter = options.filter
-			}
+		const results = await index.search(query, searchParams)
 
-			if (options?.sort) {
-				searchParams.sort = options.sort
-			}
-
-			if (options?.facets) {
-				searchParams.facets = options.facets
-			}
-
-			const results = await index.search(query, searchParams)
-
-			return {
-				hits: results.hits as MeilisearchProductDocument[],
-				estimatedTotalHits: results.estimatedTotalHits,
-				limit: results.limit,
-				offset: results.offset,
-				processingTimeMs: results.processingTimeMs,
-				query: results.query,
-			}
-		} catch (error) {
-			this.logger_.error(`Failed to search: ${error.message}`, error)
-			throw error
+		return {
+			hits: results.hits as MeilisearchProductDocument[],
+			estimatedTotalHits: results.estimatedTotalHits ?? 0,
+			limit: results.limit,
+			offset: results.offset,
+			processingTimeMs: results.processingTimeMs,
+			query: results.query,
 		}
 	}
 
-	/**
-	 * Configure index settings
-	 *
-	 * @param settings - Index settings to apply
-	 * @param type - Index type
-	 */
 	async configureIndex(
 		settings: MeilisearchIndexSettings,
 		type: MeilisearchIndexType = "product"
 	): Promise<void> {
-		if (!this.client) {
-			this.logger_.warn("Meilisearch client not initialized, skipping configuration")
-			return
+		const index = await this.getIndex(type)
+		this.logger_.info(`Configuring ${type} index settings...`)
+
+		const updateTasks: Promise<any>[] = []
+
+		if (settings.filterableAttributes?.length) {
+			updateTasks.push(index.updateFilterableAttributes(settings.filterableAttributes))
+		}
+		if (settings.sortableAttributes?.length) {
+			updateTasks.push(index.updateSortableAttributes(settings.sortableAttributes))
+		}
+		if (settings.searchableAttributes?.length) {
+			updateTasks.push(index.updateSearchableAttributes(settings.searchableAttributes))
+		}
+		if (settings.displayedAttributes?.length) {
+			updateTasks.push(index.updateDisplayedAttributes(settings.displayedAttributes))
+		}
+		if (settings.rankingRules?.length) {
+			updateTasks.push(index.updateRankingRules(settings.rankingRules))
+		}
+		if (settings.typoTolerance) {
+			updateTasks.push(index.updateTypoTolerance(settings.typoTolerance))
+		}
+		if (settings.faceting) {
+			updateTasks.push(index.updateFaceting(settings.faceting))
+		}
+		if (settings.pagination) {
+			updateTasks.push(index.updatePagination(settings.pagination))
 		}
 
-		try {
-			const index = await this.getIndex(type)
-
-			this.logger_.info(`Configuring ${type} index settings...`)
-
-			// Apply settings sequentially
-			const updateTasks: Promise<unknown>[] = []
-
-			if (settings.filterableAttributes?.length > 0) {
-				updateTasks.push(
-					index.updateFilterableAttributes(settings.filterableAttributes)
-				)
-				this.logger_.info(
-					`Set filterable attributes: ${settings.filterableAttributes.join(", ")}`
-				)
-			}
-
-			if (settings.sortableAttributes?.length > 0) {
-				updateTasks.push(
-					index.updateSortableAttributes(settings.sortableAttributes)
-				)
-				this.logger_.info(
-					`Set sortable attributes: ${settings.sortableAttributes.join(", ")}`
-				)
-			}
-
-			if (settings.searchableAttributes?.length > 0) {
-				updateTasks.push(
-					index.updateSearchableAttributes(settings.searchableAttributes)
-				)
-				this.logger_.info(
-					`Set searchable attributes: ${settings.searchableAttributes.join(", ")}`
-				)
-			}
-
-			if (settings.displayedAttributes?.length > 0) {
-				updateTasks.push(
-					index.updateDisplayedAttributes(settings.displayedAttributes)
-				)
-				this.logger_.info(
-					`Set displayed attributes: ${settings.displayedAttributes.join(", ")}`
-				)
-			}
-
-			if (settings.rankingRules?.length > 0) {
-				updateTasks.push(index.updateRankingRules(settings.rankingRules))
-				this.logger_.info(
-					`Set ranking rules: ${settings.rankingRules.join(", ")}`
-				)
-			}
-
-			if (settings.typoTolerance) {
-				updateTasks.push(index.updateTypoTolerance(settings.typoTolerance))
-				this.logger_.info("Set typo tolerance")
-			}
-
-			if (settings.faceting) {
-				updateTasks.push(index.updateFaceting(settings.faceting))
-				this.logger_.info("Set faceting settings")
-			}
-
-			if (settings.pagination) {
-				updateTasks.push(index.updatePagination(settings.pagination))
-				this.logger_.info("Set pagination settings")
-			}
-
-			// Wait for all settings to be applied
-			await Promise.all(updateTasks)
-
-			this.logger_.info(`${type} index configuration completed`)
-		} catch (error) {
-			this.logger_.error(
-				`Failed to configure index: ${error.message}`,
-				error
-			)
-			throw error
-		}
+		await Promise.all(updateTasks)
+		this.logger_.info(`${type} index configuration completed`)
 	}
 
-	/**
-	 * Check if Meilisearch is healthy and accessible
-	 */
 	async healthCheck(): Promise<boolean> {
-		if (!this.client) {
-			return false
-		}
-
 		try {
 			await this.client.health()
 			return true
 		} catch (error) {
-			this.logger_.warn(`Meilisearch health check failed: ${error.message}`)
+			const message = error instanceof Error ? error.message : "Unknown error"
+			this.logger_.warn(`Meilisearch health check failed: ${message}`)
 			return false
 		}
 	}
 
-	/**
-	 * Get index statistics
-	 */
-	async getIndexStats(type: MeilisearchIndexType = "product"): Promise<any> {
-		if (!this.client) {
-			throw new Error("Meilisearch client is not initialized")
-		}
+	async getIndexStats(type: MeilisearchIndexType = "product"): Promise<MeilisearchIndexStats> {
+		const index = await this.getIndex(type)
+		const stats = await index.getStats()
 
-		try {
-			const indexName = await this.getIndexName(type)
-			return await this.client.index(indexName).getStats()
-		} catch (error) {
-			this.logger_.error(`Failed to get index stats: ${error.message}`, error)
-			throw error
+		return {
+			numberOfDocuments: stats.numberOfDocuments,
+			isIndexing: stats.isIndexing,
+			fieldDistribution: stats.fieldDistribution,
 		}
 	}
 }
