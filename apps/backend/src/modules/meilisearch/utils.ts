@@ -1,6 +1,8 @@
 import type {
+	MeilisearchIndexSettings,
 	MeilisearchProductDocument,
 	StrapiProductDescription,
+	SyncProductsStepProduct,
 } from "@3dbyte-tech-store/shared-types"
 
 /**
@@ -14,7 +16,7 @@ import type {
  * @returns Formatted Meilisearch document
  */
 export function toMeilisearchDocument(
-	product: any,
+	product: SyncProductsStepProduct,
 	strapiContent?: StrapiProductDescription | null
 ): MeilisearchProductDocument {
 	// Extract pricing from first variant
@@ -30,35 +32,36 @@ export function toMeilisearchDocument(
 		"USD"
 
 	// Extract categories as string array
-	const categories = product.categories?.map((c: any) => c.name) || []
+	const categories = product.categories?.map((c) => c.name) || []
 
 	// Extract tags as string array
-	const tags = product.tags?.map((t: any) => t.value) || []
+	const tags = product.tags?.map((t) => t.value) || []
 
 	// Extract images as string array
-	const images = product.images?.map((img: any) => img.url) || []
+	const images = product.images?.map((img) => img.url) || []
 
 	// Extract collection ID for faceting (Medusa v2 uses collection_id, not collections)
 	const collectionIds = product.collection_id ? [product.collection_id] : []
 
 	// Extract type IDs for faceting
-	const typeIds = product.type_id
-		? [product.type_id]
-		: (product.types?.map((t: any) => t.id) || [])
+	const typeIds = product.type_id ? [product.type_id] : []
 
 	// Extract material IDs for faceting (if applicable)
-	const materialIds = product.material_id
-		? [product.material_id]
-		: (product.materials?.map((m: any) => m.id) || [])
+	const materialIds = product.material_id ? [product.material_id] : []
 
 	// Build variants array with minimal data
-	const variants = (product.variants || []).map((v: any) => ({
+	const variants = (product.variants || []).map((v) => ({
 		id: v.id,
-		title: v.title || v.options?.map((o: any) => o.value).join(" / ") || "",
-		options: v.options?.reduce((acc: Record<string, string>, o: any) => {
-			acc[o.option_title || o.title] = o.value
-			return acc
-		}, {}) || {},
+		title: v.title || v.options?.map((o) => o.value).join(" / ") || "",
+		options:
+			v.options?.reduce((acc: Record<string, string>, o) => {
+				// Use first non-undefined option title as key
+				const key = o.option_title || o.title
+				if (key) {
+					acc[key] = o.value
+				}
+				return acc
+			}, {}) || {},
 		prices: v.prices || [],
 	}))
 
@@ -108,7 +111,7 @@ export function toMeilisearchDocument(
 		// Enriched from Strapi
 		detailed_description: detailedDescription || undefined,
 		features: features.length > 0 ? features : undefined,
-		specifications: Object.keys(specifications).length > 0 ? specifications : undefined,
+		specifications: Object.keys(specifications).length > 0 ? (specifications as Record<string, string>) : undefined,
 		seo_title: seoTitle || undefined,
 		seo_description: seoDescription || undefined,
 		meta_keywords: metaKeywords.length > 0 ? metaKeywords : undefined,
@@ -122,7 +125,7 @@ export function toMeilisearchDocument(
 /**
  * Default index settings for Meilisearch product index
  */
-export const DEFAULT_INDEX_SETTINGS = {
+export const DEFAULT_INDEX_SETTINGS: MeilisearchIndexSettings = {
 	filterableAttributes: [
 		"price",
 		"categories",
