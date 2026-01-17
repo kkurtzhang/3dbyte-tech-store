@@ -1,5 +1,5 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { indexProduct } from "../../../modules/meilisearch/helpers"
+import { syncProductsWorkflow } from "../../../workflows/meilisearch"
 
 interface StrapiWebhookBody {
 	model: string
@@ -111,23 +111,32 @@ export async function POST(
 		`Received Strapi webhook for product ${productId} (event: ${event})`
 	)
 
-	// 5. Re-index the product with updated Strapi content
-	const result = await indexProduct(req.scope, productId)
+	// 5. Re-index the product with updated Strapi content using workflow
+	try {
+		const { result } = await syncProductsWorkflow(req.scope).run({
+			input: {
+				filters: {
+					id: productId,
+				},
+			},
+		})
 
-	if (result.success) {
 		res.json({
 			received: true,
 			message: "Product re-indexed to Meilisearch",
 			productId,
+			indexed: result.indexed,
 		})
-	} else {
+	} catch (error) {
 		// Still return 200 to avoid Strapi retrying the webhook
-		// The error is logged in the helper
+		const errorMessage = error instanceof Error ? error.message : "Unknown error"
+		logger.error(`Failed to re-index product ${productId}: ${errorMessage}`, error)
+
 		res.json({
 			received: true,
 			message: "Product indexing failed",
 			productId,
-			error: result.error,
+			error: errorMessage,
 		})
 	}
 }
