@@ -5,7 +5,7 @@
  * These types are shared between backend (indexing) and storefront (search).
  */
 
-import type { MeiliSearch } from "meilisearch"
+import type { MeiliSearch } from "meilisearch" with { "resolution-mode": "import" }
 
 export type MeilisearchClient = MeiliSearch
 
