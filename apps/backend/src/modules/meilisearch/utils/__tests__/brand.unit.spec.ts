@@ -27,6 +27,7 @@ describe("toBrandDocument", () => {
 		meta_keywords: ["electronics", "tech", "gadgets"],
 		last_synced: "2024-01-15T10:30:00.000Z",
 		sync_status: "synced",
+		publishedAt: "2024-01-15T10:30:00.000Z",
 	}
 
 	describe("when transforming Medusa brand only", () => {
