@@ -69,6 +69,6 @@ export const LinkProductsToBrandWorkflow = createWorkflow(
   (input: LinkProductsToBrandWorkflowInput) => {
     const links = linkProductsToBrandStep(input);
 
-    return new WorkflowResponse(links);
+    return new WorkflowResponse({ links, brand_id: input.brand_id });
   }
 );

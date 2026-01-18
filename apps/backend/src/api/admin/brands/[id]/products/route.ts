@@ -9,6 +9,7 @@ import {
   dismissLinksWorkflow,
   updateLinksWorkflow,
 } from "@medusajs/medusa/core-flows";
+import { syncBrandsWorkflow } from "../../../../../workflows/meilisearch/sync-brands";
 
 type PostAdminLinkProductsToBrandType = z.infer<
   typeof PostAdminLinkProductsToBrand
@@ -34,6 +35,15 @@ export const POST = async (
     input: links,
   });
 
+  // Trigger brand re-indexing to update product_count
+  await syncBrandsWorkflow(req.scope).run({
+    input: {
+      filters: {
+        id,
+      },
+    },
+  });
+
   res.json(result);
 };
 
@@ -56,6 +66,15 @@ export const DELETE = async (
   }
   const { result } = await dismissLinksWorkflow(req.scope).run({
     input: links,
+  });
+
+  // Trigger brand re-indexing to update product_count
+  await syncBrandsWorkflow(req.scope).run({
+    input: {
+      filters: {
+        id,
+      },
+    },
   });
 
   res.json(result);

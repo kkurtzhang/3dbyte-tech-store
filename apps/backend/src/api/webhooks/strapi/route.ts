@@ -1,5 +1,6 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { syncProductsWorkflow } from "../../../workflows/meilisearch"
+import { syncBrandsWorkflow } from "../../../workflows/meilisearch/sync-brands"
 
 interface StrapiWebhookBody {
 	model: string
@@ -7,6 +8,7 @@ interface StrapiWebhookBody {
 		id?: number
 		documentId?: string
 		medusa_product_id?: string
+		medusa_brand_id?: string
 		[key: string]: unknown
 	}
 	event: string
@@ -88,56 +90,123 @@ export async function POST(
 	// 2. Parse webhook payload
 	const { model, entry, event } = req.body
 
-	// 3. Validate this is a product-description event
+	// 3. Validate this is a tracked model
 	// Strapi v5 sends model as the API ID (e.g., "product-descriptions" or "api::product-description.product-description")
-	const validModels = ["product-description", "product-descriptions", "api::product-description.product-description", "api::product-descriptions.product-descriptions"]
+	const validProductModels = [
+		"product-description",
+		"product-descriptions",
+		"api::product-description.product-description",
+		"api::product-descriptions.product-descriptions",
+	]
+	const validBrandModels = [
+		"brand-description",
+		"brand-descriptions",
+		"api::brand-description.brand-description",
+		"api::brand-descriptions.brand-descriptions",
+	]
 
-	if (!validModels.includes(model)) {
+	const isProductModel = validProductModels.includes(model)
+	const isBrandModel = validBrandModels.includes(model)
+
+	if (!isProductModel && !isBrandModel) {
 		logger.info(`Ignoring webhook for model: ${model}`)
 		res.json({ received: true, message: "Model not tracked" })
 		return
 	}
 
-	// 4. Extract product ID
-	const productId = entry?.medusa_product_id
+	// 4. Handle product-description webhooks
+	if (isProductModel) {
+		const productId = entry?.medusa_product_id
 
-	if (!productId) {
-		logger.warn("Webhook payload missing medusa_product_id")
-		res.status(400).json({ error: "Invalid payload: missing medusa_product_id" })
+		if (!productId) {
+			logger.warn("Webhook payload missing medusa_product_id")
+			res.status(400).json({ error: "Invalid payload: missing medusa_product_id" })
+			return
+		}
+
+		logger.info(
+			`Received Strapi webhook for product ${productId} (event: ${event})`
+		)
+
+		// 5. Re-index the product with updated Strapi content using workflow
+		try {
+			const { result } = await syncProductsWorkflow(req.scope).run({
+				input: {
+					filters: {
+						id: productId,
+					},
+				},
+			})
+
+			res.json({
+				received: true,
+				message: "Product re-indexed to Meilisearch",
+				productId,
+				indexed: result.indexed,
+			})
+		} catch (error) {
+			// Still return 200 to avoid Strapi retrying the webhook
+			const errorMessage = error instanceof Error ? error.message : "Unknown error"
+			logger.error(`Failed to re-index product ${productId}: ${errorMessage}`, error)
+
+			res.json({
+				received: true,
+				message: "Product indexing failed",
+				productId,
+				error: errorMessage,
+			})
+		}
 		return
 	}
 
-	logger.info(
-		`Received Strapi webhook for product ${productId} (event: ${event})`
-	)
+	// 6. Handle brand-description webhooks
+	if (isBrandModel) {
+		const brandId = entry?.medusa_brand_id
 
-	// 5. Re-index the product with updated Strapi content using workflow
-	try {
-		const { result } = await syncProductsWorkflow(req.scope).run({
-			input: {
-				filters: {
-					id: productId,
+		if (!brandId) {
+			logger.warn("Webhook payload missing medusa_brand_id")
+			res.status(400).json({ error: "Invalid payload: missing medusa_brand_id" })
+			return
+		}
+
+		logger.info(
+			`Received Strapi webhook for brand ${brandId} (event: ${event})`
+		)
+
+		// 7. Directly call syncBrandsWorkflow to index the brand
+		try {
+			const { result } = await syncBrandsWorkflow(req.scope).run({
+				input: {
+					filters: {
+						id: brandId,
+					},
 				},
-			},
-		})
+			})
 
-		res.json({
-			received: true,
-			message: "Product re-indexed to Meilisearch",
-			productId,
-			indexed: result.indexed,
-		})
-	} catch (error) {
-		// Still return 200 to avoid Strapi retrying the webhook
-		const errorMessage = error instanceof Error ? error.message : "Unknown error"
-		logger.error(`Failed to re-index product ${productId}: ${errorMessage}`, error)
+			const eventName =
+				event === "entry.unpublish"
+					? "unpublished"
+					: "published"
 
-		res.json({
-			received: true,
-			message: "Product indexing failed",
-			productId,
-			error: errorMessage,
-		})
+			res.json({
+				received: true,
+				message: `Brand ${eventName} and re-indexed to Meilisearch`,
+				brandId,
+				indexed: result.indexed,
+			})
+		} catch (error) {
+			// Still return 200 to avoid Strapi retrying the webhook
+			const errorMessage = error instanceof Error ? error.message : "Unknown error"
+			logger.error(`Failed to re-index brand ${brandId}: ${errorMessage}`, error)
+
+			res.json({
+				received: true,
+				message: "Brand indexing failed",
+				brandId,
+				error: errorMessage,
+			})
+		}
+		return
 	}
 }
 
@@ -156,18 +225,33 @@ export async function GET(
 		endpoint: "/webhooks/strapi",
 		method: "POST",
 		description:
-			"Webhook endpoint for Strapi to trigger Meilisearch re-indexing when product descriptions are updated",
+			"Webhook endpoint for Strapi to trigger Meilisearch re-indexing when product or brand descriptions are updated",
 		configured: isConfigured,
-		examplePayload: {
-			model: "product-descriptions",
-			entry: {
-				id: 1,
-				documentId: "abc123",
-				medusa_product_id: "prod_123",
-				detailed_description: "<p>Updated content...</p>",
-				features: ["Feature 1", "Feature 2"],
+		productWebhook: {
+			examplePayload: {
+				model: "product-descriptions",
+				entry: {
+					id: 1,
+					documentId: "abc123",
+					medusa_product_id: "prod_123",
+					detailed_description: "<p>Updated content...</p>",
+					features: ["Feature 1", "Feature 2"],
+				},
+				event: "entry.publish",
 			},
-			event: "entry.publish",
+		},
+		brandWebhook: {
+			examplePayload: {
+				model: "brand-descriptions",
+				entry: {
+					id: 1,
+					documentId: "xyz789",
+					medusa_brand_id: "brand_456",
+					tagline: "Quality gaming gear",
+					story: "<p>Our brand story...</p>",
+				},
+				event: "entry.publish",
+			},
 		},
 		strapiV5Config: {
 			url: `${process.env.MEDUSA_BACKEND_URL || "http://localhost:9000"}/webhooks/strapi`,
@@ -179,7 +263,7 @@ export async function GET(
 			// DO NOT enable "entry.create" - causes redundant re-indexing
 			// DO NOT enable "entry.update" - won't update correctly (drafts not returned by API)
 			// Note: In Strapi v5, there's no "Content Types" filter - webhook receives all events
-			// The handler filters by model name (product-descriptions)
+			// The handler filters by model name (product-descriptions, brand-descriptions)
 		},
 		networking: {
 			// Docker networking reference: /docs/deployment.md#webhook-configuration-strapi--medusa
