@@ -11,7 +11,7 @@ type SyncResponse = {
 }
 
 const MeilisearchPage = () => {
-  const { mutate, isPending } = useMutation({
+  const { mutate: mutateProducts, isPending: isProductsPending } = useMutation({
     mutationFn: async (): Promise<SyncResponse> => {
       const response = await sdk.client.fetch<SyncResponse>(
         "/admin/meilisearch/sync-products",
@@ -32,48 +32,118 @@ const MeilisearchPage = () => {
     },
   })
 
-  const handleSync = () => {
-    mutate()
+  const { mutate: mutateCategories, isPending: isCategoriesPending } = useMutation({
+    mutationFn: async (): Promise<SyncResponse> => {
+      const response = await sdk.client.fetch<SyncResponse>(
+        "/admin/meilisearch/sync-categories",
+        { method: "POST" }
+      )
+      return response
+    },
+    onSuccess: (data) => {
+      toast.success("Meilisearch sync completed", {
+        description: `Successfully indexed ${data.indexed} categories`,
+      })
+    },
+    onError: (err) => {
+      console.error(err)
+      toast.error("Failed to sync categories to Meilisearch", {
+        description: err instanceof Error ? err.message : "Unknown error",
+      })
+    },
+  })
+
+  const handleSyncProducts = () => {
+    mutateProducts()
+  }
+
+  const handleSyncCategories = () => {
+    mutateCategories()
   }
 
   return (
     <Container>
       <Header
         title="Meilisearch"
-        subtitle="Manually trigger a full re-index of all products to Meilisearch."
+        subtitle="Manually trigger a full re-index of products and categories to Meilisearch."
       />
       <div className="px-6 py-8">
-        <div className="flex flex-col gap-y-4">
-          <div className="flex items-start gap-x-2">
-            <MagnifyingGlass className="mt-0.5" />
-            <Text>
-              Clicking the button below will sync all products from Medusa to
-              Meilisearch, including enriched content from Strapi (if available).
-            </Text>
+        {/* Products Index Section */}
+        <div className="mb-10">
+          <div className="border-b border-ui-border-base pb-6">
+            <h3 className="text-lg font-semibold mb-4">Products Index</h3>
+            <div className="flex flex-col gap-y-4">
+              <div className="flex items-start gap-x-2">
+                <MagnifyingGlass className="mt-0.5" />
+                <Text>
+                  Clicking the button below will sync all products from Medusa to
+                  Meilisearch, including enriched content from Strapi (if available).
+                </Text>
+              </div>
+              <div className="flex items-start gap-x-2">
+                <ChatBubble className="mt-0.5" />
+                <Text className="text-ui-fg-subtle">
+                  Tip: Products are automatically synced when created or updated. Use
+                  this manual sync to re-index all products after bulk changes or
+                  Meilisearch configuration updates.
+                </Text>
+              </div>
+              <div className="flex items-start gap-x-2">
+                <Text size="small" className="text-ui-fg-subtle">
+                  This operation may take several minutes depending on the number of
+                  products in your catalog.
+                </Text>
+              </div>
+              <div className="flex items-start gap-x-2">
+                <Button
+                  variant="primary"
+                  onClick={handleSyncProducts}
+                  isLoading={isProductsPending}
+                  disabled={isProductsPending}
+                >
+                  {isProductsPending ? "Syncing..." : "Sync Products to Meilisearch"}
+                </Button>
+              </div>
+            </div>
           </div>
-          <div className="flex items-start gap-x-2">
-            <ChatBubble className="mt-0.5" />
-            <Text className="text-ui-fg-subtle">
-              Tip: Products are automatically synced when created or updated. Use
-              this manual sync to re-index all products after bulk changes or
-              Meilisearch configuration updates.
-            </Text>
-          </div>
-          <div className="flex items-start gap-x-2">
-            <Text size="small" className="text-ui-fg-subtle">
-              This operation may take several minutes depending on the number of
-              products in your catalog.
-            </Text>
-          </div>
-          <div className="flex items-start gap-x-2">
-            <Button
-              variant="primary"
-              onClick={handleSync}
-              isLoading={isPending}
-              disabled={isPending}
-            >
-              {isPending ? "Syncing..." : "Sync Products to Meilisearch"}
-            </Button>
+        </div>
+
+        {/* Categories Index Section */}
+        <div>
+          <h3 className="text-lg font-semibold mb-4">Categories Index</h3>
+          <div className="flex flex-col gap-y-4">
+            <div className="flex items-start gap-x-2">
+              <MagnifyingGlass className="mt-0.5" />
+              <Text>
+                Clicking the button below will sync all categories from Medusa to
+                Meilisearch. Categories help organize products in search results and
+                filtering.
+              </Text>
+            </div>
+            <div className="flex items-start gap-x-2">
+              <ChatBubble className="mt-0.5" />
+              <Text className="text-ui-fg-subtle">
+                Tip: Categories are automatically synced when created or updated. Use
+                this manual sync to re-index all categories after bulk changes or
+                Meilisearch configuration updates.
+              </Text>
+            </div>
+            <div className="flex items-start gap-x-2">
+              <Text size="small" className="text-ui-fg-subtle">
+                This operation may take several seconds depending on the number of
+                categories in your catalog.
+              </Text>
+            </div>
+            <div className="flex items-start gap-x-2">
+              <Button
+                variant="secondary"
+                onClick={handleSyncCategories}
+                isLoading={isCategoriesPending}
+                disabled={isCategoriesPending}
+              >
+                {isCategoriesPending ? "Syncing..." : "Sync Categories to Meilisearch"}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import type {
+	MeilisearchCategoryDocument,
 	MeilisearchIndexSettings,
 	MeilisearchProductDocument,
 	StrapiProductDescription,
@@ -186,3 +187,106 @@ export const DEFAULT_INDEX_SETTINGS: MeilisearchIndexSettings = {
 		maxTotalHits: 10000,
 	},
 } as const
+
+/**
+ * Category type from Medusa query (matches useQueryGraphStep output)
+ */
+export interface SyncCategoriesStepCategory {
+	id: string
+	name: string
+	handle: string
+	description?: string | null
+	parent_category?: SyncCategoriesStepCategory | null
+	rank: number
+	created_at: string
+	updated_at: string
+}
+
+/**
+ * Compute the full hierarchy path for a category
+ * Traverses parent relationships to build the path array
+ *
+ * @param category - Category with optional parent_category
+ * @returns Path array from root to current category
+ *
+ * @example
+ * ```ts
+ * computeCategoryPath({ name: "Shoes", parent_category: { name: "Men", parent_category: null } })
+ * // Returns: ["Men", "Shoes"]
+ * ```
+ */
+export function computeCategoryPath(
+	category: SyncCategoriesStepCategory | null
+): string[] {
+	if (!category) return []
+
+	const path: string[] = []
+	let current: SyncCategoriesStepCategory | null | undefined = category
+
+	// Traverse up the hierarchy
+	while (current) {
+		path.unshift(current.name)
+		current = current.parent_category
+	}
+
+	return path
+}
+
+/**
+ * Compute the breadcrumb string for a category's parent
+ * Returns null for root categories (no parent)
+ *
+ * @param category - Category with optional parent_category
+ * @returns Breadcrumb string or null
+ *
+ * @example
+ * ```ts
+ * computeParentName({ name: "Shoes", parent_category: { name: "Men", parent_category: { name: "Apparel", parent_category: null } } })
+ * // Returns: "Apparel > Men"
+ * ```
+ */
+export function computeParentName(
+	category: SyncCategoriesStepCategory | null
+): string | null {
+	if (!category?.parent_category) return null
+
+	const parentPath = computeCategoryPath(category.parent_category)
+	return parentPath.join(" > ")
+}
+
+/**
+ * Transform Medusa category into a Meilisearch document
+ *
+ * This function transforms a category from Medusa into a Meilisearch document
+ * with computed hierarchy paths and metadata for search and browse functionality.
+ *
+ * @param category - Category from Medusa with parent relationships
+ * @param productCount - Number of active products in this category
+ * @returns Formatted Meilisearch category document
+ */
+export function toCategoryDocument(
+	category: SyncCategoriesStepCategory,
+	productCount: number
+): MeilisearchCategoryDocument {
+	// Convert created_at to UNIX timestamp in milliseconds
+	const createdAt = new Date(category.created_at).getTime()
+
+	// Compute hierarchy path
+	const path = computeCategoryPath(category)
+
+	// Compute parent breadcrumb
+	const parentName = computeParentName(category)
+
+	return {
+		id: category.id,
+		name: category.name,
+		handle: category.handle,
+		description: category.description || undefined,
+		parent_category_id: category.parent_category?.id,
+		parent_name: parentName || undefined,
+		rank: category.rank,
+		path,
+		product_count: productCount,
+		created_at: createdAt,
+	}
+}

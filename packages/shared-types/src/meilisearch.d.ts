@@ -4,12 +4,14 @@
  * Type definitions for Meilisearch integration across the monorepo.
  * These types are shared between backend (indexing) and storefront (search).
  */
-export type MeilisearchClient = unknown;
-export type MeilisearchIndexType = "product";
+import type { MeiliSearch } from "meilisearch" with { "resolution-mode": "import" };
+export type MeilisearchClient = MeiliSearch;
+export type MeilisearchIndexType = "product" | "category";
 export interface MeilisearchModuleConfig {
     host: string;
     apiKey: string;
     productIndexName: string;
+    categoryIndexName: string;
     settings?: MeilisearchIndexSettings;
 }
 export interface MeilisearchIndexSettings {
@@ -19,7 +21,7 @@ export interface MeilisearchIndexSettings {
     displayedAttributes?: string[];
     rankingRules?: string[];
     typoTolerance?: {
-        enabled: boolean;
+        enabled?: boolean;
         minWordSizeForTypos?: {
             oneTypo?: number;
             twoTypos?: number;
@@ -66,6 +68,22 @@ export interface MeilisearchProductDocument {
     created_at: string;
     updated_at: string;
 }
+/**
+ * Category document for Meilisearch indexing
+ * Contains hierarchy information and computed product counts
+ */
+export interface MeilisearchCategoryDocument {
+    id: string;
+    name: string;
+    handle: string;
+    description?: string;
+    parent_category_id?: string;
+    parent_name?: string;
+    rank: number;
+    path: string[];
+    product_count: number;
+    created_at: number;
+}
 export interface MeilisearchSearchOptions {
     limit?: number;
     offset?: number;
@@ -73,8 +91,8 @@ export interface MeilisearchSearchOptions {
     sort?: string[];
     facets?: string[];
 }
-export interface MeilisearchSearchResponse {
-    hits: MeilisearchProductDocument[];
+export interface MeilisearchSearchResponse<T = MeilisearchProductDocument | MeilisearchCategoryDocument> {
+    hits: T[];
     estimatedTotalHits: number;
     limit: number;
     offset: number;
