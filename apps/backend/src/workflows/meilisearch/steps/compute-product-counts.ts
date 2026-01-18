@@ -19,7 +19,7 @@ export type ComputeProductCountsStepOutput = {
 /**
  * Product type from Medusa query (matches useQueryGraphStep output)
  */
-interface ProductFromQuery {
+export interface ProductFromQuery {
 	id: string
 	status: string
 	categories?: Array<{

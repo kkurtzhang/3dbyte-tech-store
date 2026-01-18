@@ -33,8 +33,7 @@ export default async function categoryDeletedHandler({
 
 	try {
 		await deleteCategoriesFromMeilisearchStep(
-			{ ids: [data.id] },
-			{ container }
+			{ ids: [data.id] }
 		)
 
 		logger.info(`Successfully removed category ${data.id} from Meilisearch`)
