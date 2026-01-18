@@ -208,3 +208,33 @@ export interface StrapiProductDescription {
 	sync_status: "synced" | "outdated" | "pending"
 	publishedAt: string
 }
+
+/**
+ * Brand type for workflow steps (matches useQueryGraphStep output)
+ */
+export interface SyncBrandsStepBrand {
+	id: string
+	name: string
+	handle: string
+	created_at: string
+	updated_at: string
+}
+
+/**
+ * Strapi brand description response
+ * Matches the Strapi brand-descriptions content type structure
+ */
+export interface StrapiBrandDescription {
+	documentId: string
+	medusa_brand_id: string
+	brand_name: string
+	brand_handle: string
+	detailed_description: string
+	brand_logo: Array<{
+		url: string
+	}>
+	meta_keywords: string[]
+	last_synced: string
+	sync_status: "synced" | "outdated" | "pending"
+	publishedAt: string
+}

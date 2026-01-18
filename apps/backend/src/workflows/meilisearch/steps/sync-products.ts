@@ -1,6 +1,6 @@
 import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk"
 import { MEILISEARCH_MODULE } from "../../../modules/meilisearch"
-import { toMeilisearchDocument } from "../../../modules/meilisearch/utils"
+import { toMeilisearchDocument } from "../../../modules/meilisearch/utils/index"
 import type MeilisearchModuleService from "../../../modules/meilisearch/service"
 import type {
 	SyncProductsStepProduct,
