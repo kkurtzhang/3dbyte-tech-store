@@ -9,13 +9,14 @@ import type { MeiliSearch } from "meilisearch" with { "resolution-mode": "import
 
 export type MeilisearchClient = MeiliSearch
 
-export type MeilisearchIndexType = "product" | "category"
+export type MeilisearchIndexType = "product" | "category" | "brand"
 
 export interface MeilisearchModuleConfig {
 	host: string
 	apiKey: string
 	productIndexName: string
 	categoryIndexName: string
+	brandIndexName: string
 	settings?: MeilisearchIndexSettings
 }
 
@@ -39,6 +40,16 @@ export interface MeilisearchIndexSettings {
 		maxTotalHits?: number
 	}
 }
+
+export const BRAND_INDEX_SETTINGS = {
+	searchableAttributes: ["name", "meta_keywords", "detailed_description", "handle"],
+	displayedAttributes: ["id", "name", "handle", "brand_logo", "product_count"],
+	filterableAttributes: ["product_count", "id"],
+	sortableAttributes: ["product_count", "created_at", "name"],
+	typoTolerance: {
+		disableOnAttributes: ["handle"],
+	},
+} as const
 
 export interface MeilisearchProductDocument {
 	id: string
@@ -89,6 +100,20 @@ export interface MeilisearchCategoryDocument {
 	rank: number
 	breadcrumb: Array<{id: string, name: string, handle: string}> // All parent categories (excluding current)
 	category_ids: string[] // This category's ID and all parent IDs
+	product_count: number
+	created_at: number // UNIX timestamp in milliseconds
+}
+
+export interface MeilisearchBrandDocument {
+	// Core Medusa fields
+	id: string
+	name: string
+	handle: string
+	// Enriched from Strapi
+	detailed_description?: string
+	brand_logo?: string[]
+	meta_keywords?: string[]
+	// Calculated
 	product_count: number
 	created_at: number // UNIX timestamp in milliseconds
 }

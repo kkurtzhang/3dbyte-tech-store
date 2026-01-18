@@ -6,12 +6,13 @@
  */
 import type { MeiliSearch } from "meilisearch" with { "resolution-mode": "import" };
 export type MeilisearchClient = MeiliSearch;
-export type MeilisearchIndexType = "product" | "category";
+export type MeilisearchIndexType = "product" | "category" | "brand";
 export interface MeilisearchModuleConfig {
     host: string;
     apiKey: string;
     productIndexName: string;
     categoryIndexName: string;
+    brandIndexName: string;
     settings?: MeilisearchIndexSettings;
 }
 export interface MeilisearchIndexSettings {
@@ -34,6 +35,15 @@ export interface MeilisearchIndexSettings {
         maxTotalHits?: number;
     };
 }
+export declare const BRAND_INDEX_SETTINGS: {
+    readonly searchableAttributes: readonly ["name", "meta_keywords", "detailed_description", "handle"];
+    readonly displayedAttributes: readonly ["id", "name", "handle", "brand_logo", "product_count"];
+    readonly filterableAttributes: readonly ["product_count", "id"];
+    readonly sortableAttributes: readonly ["product_count", "created_at", "name"];
+    readonly typoTolerance: {
+        readonly disableOnAttributes: readonly ["handle"];
+    };
+};
 export interface MeilisearchProductDocument {
     id: string;
     title: string;
@@ -89,6 +99,16 @@ export interface MeilisearchCategoryDocument {
     product_count: number;
     created_at: number;
 }
+export interface MeilisearchBrandDocument {
+    id: string;
+    name: string;
+    handle: string;
+    detailed_description?: string;
+    brand_logo?: string[];
+    meta_keywords?: string[];
+    product_count: number;
+    created_at: number;
+}
 export interface MeilisearchSearchOptions {
     limit?: number;
     offset?: number;
@@ -96,7 +116,7 @@ export interface MeilisearchSearchOptions {
     sort?: string[];
     facets?: string[];
 }
-export interface MeilisearchSearchResponse<T = MeilisearchProductDocument | MeilisearchCategoryDocument> {
+export interface MeilisearchSearchResponse<T = MeilisearchProductDocument | MeilisearchCategoryDocument | MeilisearchBrandDocument> {
     hits: T[];
     estimatedTotalHits: number;
     limit: number;
