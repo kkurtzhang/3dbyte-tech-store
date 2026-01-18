@@ -32,13 +32,3 @@ export function toBrandDocument(
 		created_at: createdAt,
 	}
 }
-
-/**
- * Calculate product count for a brand by querying product-brand links
- * This will be implemented in the workflow step, placeholder for now
- *
- * TODO: Implement product count calculation in workflow step
- */
-export function calculateProductCount(/* TODO: implement */): number {
-	return 0
-}

@@ -4,7 +4,7 @@ import type { MeilisearchIndexSettings } from "@3dbyte-tech-store/shared-types"
 export { toMeilisearchDocument } from "./product"
 
 // Brand utilities
-export { toBrandDocument, calculateProductCount } from "./brand"
+export { toBrandDocument } from "./brand"
 
 /**
  * Default index settings for Meilisearch product index

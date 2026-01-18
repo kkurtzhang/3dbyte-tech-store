@@ -1,7 +1,11 @@
 export { syncProductsWorkflow } from "./sync-products"
 export { deleteProductsFromMeilisearchWorkflow } from "./delete-products-from-meilisearch"
 export { syncCategoriesWorkflow } from "./sync-categories"
+export { syncBrandsWorkflow } from "./sync-brands"
+export { deleteBrandsFromMeilisearchWorkflow } from "./delete-brands-from-meilisearch"
 
 export type { SyncProductsWorkflowInput } from "./sync-products"
 export type { DeleteProductsFromMeilisearchWorkflowInput } from "./delete-products-from-meilisearch"
 export type { SyncCategoriesWorkflowInput, SyncCategoriesWorkflowOutput } from "./sync-categories"
+export type { SyncBrandsWorkflowInput } from "./sync-brands"
+export type { DeleteBrandsFromMeilisearchWorkflowInput } from "./delete-brands-from-meilisearch"
