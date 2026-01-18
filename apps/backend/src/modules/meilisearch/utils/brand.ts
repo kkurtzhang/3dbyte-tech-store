@@ -8,14 +8,14 @@ import type {
  * Transform Medusa brand and Strapi content into a Meilisearch document
  *
  * @param brand - Medusa brand data
- * @param strapiContent - Enriched content from Strapi (optional)
+ * @param strapiContent - Enriched content from Strapi (can be null)
  * @param productCount - Number of products for this brand
  * @returns Formatted Meilisearch brand document
  */
 export function toBrandDocument(
 	brand: SyncBrandsStepBrand,
-	productCount: number,
-	strapiContent?: StrapiBrandDescription | null
+	strapiContent: StrapiBrandDescription | null,
+	productCount: number
 ): MeilisearchBrandDocument {
 	const createdAt = new Date(brand.created_at).getTime()
 	const logos = strapiContent?.brand_logo?.map((media) => media.url) ?? []
