@@ -16,42 +16,23 @@ import { syncCategoriesWorkflow } from "../workflows/meilisearch/sync-categories
  * - Cleaning up any inactive entries
  */
 export default async function syncCategoriesScheduledJob(container: MedusaContainer) {
-  // Access logger through container using standard logging pattern
   const logger = container.resolve("logger");
 
   try {
-    console.log("Starting scheduled category sync to Meilisearch");
+    logger.info("Starting scheduled category sync to Meilisearch");
 
-    // Execute the sync categories workflow with default parameters
-    // This will fetch all active categories without pagination
+    // Execute the sync categories workflow
+    // The workflow internally filters for active categories
     const { result } = await syncCategoriesWorkflow(container).run({
-      input: {
-        filters: {
-          // Only sync active, non-internal categories that haven't been deleted
-          is_active: true,
-          is_internal: false,
-          deleted_at: null,
-        },
-      },
+      input: {},
     });
 
     // Log the results of the sync operation
-    console.log(
+    logger.info(
       `Category sync completed successfully - Indexed: ${result.indexed}, Deleted: ${result.deleted}, Total: ${result.total}`
     );
-
-    // Log metadata if available
-    if (result.metadata) {
-      console.debug(
-        `Sync metadata - Total count: ${result.metadata.count}, Skipped: ${result.metadata.skip}, Limit: ${result.metadata.take}`
-      );
-    }
-
   } catch (error) {
-    console.error("Category sync failed", error);
-
-    // Re-throw the error to ensure the job is marked as failed
-    // in the Medusa job system for proper retry handling
+    logger.error("Category sync failed", error);
     throw error;
   }
 }
