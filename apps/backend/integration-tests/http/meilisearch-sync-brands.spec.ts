@@ -141,6 +141,5 @@ medusaIntegrationTestRunner({
 		 *   await api.delete(`/admin/brands/${brandId}`)
 		 * })
 		 */
-		}
 	}
 })
