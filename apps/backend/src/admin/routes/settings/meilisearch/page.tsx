@@ -1,4 +1,4 @@
-import { Container, Heading, Button, toast, Text } from "@medusajs/ui"
+import { Container, Button, toast, Text } from "@medusajs/ui"
 import { useMutation } from "@tanstack/react-query"
 import { sdk } from "../../../lib/sdk"
 import { defineRouteConfig } from "@medusajs/admin-sdk"
@@ -20,7 +20,7 @@ const MeilisearchPage = () => {
       return response
     },
     onSuccess: (data) => {
-      toast.success("Meilisearch sync completed", {
+      toast.success("Products synced to Meilisearch", {
         description: `Successfully indexed ${data.indexed} products`,
       })
     },
@@ -53,6 +53,27 @@ const MeilisearchPage = () => {
     },
   })
 
+    const { mutate: mutateBrands, isPending: isBrandsPending } = useMutation({
+    mutationFn: async (): Promise<SyncResponse> => {
+      const response = await sdk.client.fetch<SyncResponse>(
+        "/admin/meilisearch/sync-brands",
+        { method: "POST" }
+      )
+      return response
+    },
+    onSuccess: (data) => {
+      toast.success("Brands synced to Meilisearch", {
+        description: `Successfully indexed ${data.indexed} brands`,
+      })
+    },
+    onError: (err) => {
+      console.error(err)
+      toast.error("Failed to sync brands to Meilisearch", {
+        description: err instanceof Error ? err.message : "Unknown error",
+      })
+    },
+  })
+
   const handleSyncProducts = () => {
     mutateProducts()
   }
@@ -61,11 +82,15 @@ const MeilisearchPage = () => {
     mutateCategories()
   }
 
+  const handleSyncBrands = () => {
+    mutateBrands()
+  }
+
   return (
     <Container>
       <Header
         title="Meilisearch"
-        subtitle="Manually trigger a full re-index of products and categories to Meilisearch."
+        subtitle="Manually trigger a full re-index of products, categories and brands to Meilisearch."
       />
       <div className="px-6 py-8">
         {/* Products Index Section */}
@@ -142,6 +167,45 @@ const MeilisearchPage = () => {
                 disabled={isCategoriesPending}
               >
                 {isCategoriesPending ? "Syncing..." : "Sync Categories to Meilisearch"}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Brands Index Section */}
+        <div>
+          <h3 className="text-lg font-semibold mb-4">Brands Index</h3>
+          <div className="flex flex-col gap-y-4">
+            <div className="flex items-start gap-x-2">
+              <MagnifyingGlass className="mt-0.5" />
+              <Text>
+                Clicking the button below will sync all brands from Medusa to
+                Meilisearch. Brands help organize products in search results and
+                filtering.
+              </Text>
+            </div>
+            <div className="flex items-start gap-x-2">
+              <ChatBubble className="mt-0.5" />
+              <Text className="text-ui-fg-subtle">
+                Tip: Brands are automatically synced when created or updated. Use
+                this manual sync to re-index all brands after bulk changes or
+                Meilisearch configuration updates.
+              </Text>
+            </div>
+            <div className="flex items-start gap-x-2">
+              <Text size="small" className="text-ui-fg-subtle">
+                This operation may take several seconds depending on the number of
+                brands in your system.
+              </Text>
+            </div>
+            <div className="flex items-start gap-x-2">
+              <Button
+                variant="secondary"
+                onClick={handleSyncBrands}
+                isLoading={isBrandsPending}
+                disabled={isBrandsPending}
+              >
+                {isBrandsPending ? "Syncing..." : "Sync Brands to Meilisearch"}
               </Button>
             </div>
           </div>
