@@ -54,6 +54,7 @@ module.exports = defineConfig({
         apiKey: process.env.MEILISEARCH_API_KEY || "",
         productIndexName: process.env.MEILISEARCH_PRODUCT_INDEX_NAME || "products",
         categoryIndexName: process.env.MEILISEARCH_CATEGORY_INDEX_NAME || "categories",
+        brandIndexName: process.env.MEILISEARCH_BRAND_INDEX_NAME || "brands",
       },
     },
     // {

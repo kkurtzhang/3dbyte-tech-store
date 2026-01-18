@@ -49,10 +49,10 @@ export default class MeilisearchModuleService {
 		this.logger_ = logger
 
 		// Official pattern: throw MedusaError for invalid configuration
-		if (!options.host || !options.apiKey || !options.productIndexName || !options.categoryIndexName) {
+		if (!options.host || !options.apiKey || !options.productIndexName || !options.categoryIndexName || !options.brandIndexName) {
 			throw new MedusaError(
 				MedusaError.Types.INVALID_ARGUMENT,
-				"Meilisearch options are required (host, apiKey, productIndexName, categoryIndexName)"
+				"Meilisearch options are required (host, apiKey, productIndexName, categoryIndexName, brandIndexName)"
 			)
 		}
 
@@ -73,6 +73,8 @@ export default class MeilisearchModuleService {
 				return this.options_.productIndexName
 			case "category":
 				return this.options_.categoryIndexName
+			case "brand":
+				return this.options_.brandIndexName
 			default:
 				throw new MedusaError(
 					MedusaError.Types.INVALID_ARGUMENT,
