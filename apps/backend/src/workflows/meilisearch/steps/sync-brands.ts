@@ -8,7 +8,6 @@ import type {
 	MeilisearchBrandDocument,
 } from "@3dbyte-tech-store/shared-types"
 import { BRAND_MODULE } from "../../../modules/brand"
-import { Modules } from "@medusajs/framework/utils"
 
 export type SyncBrandsStepInput = {
 	brands: SyncBrandsStepBrand[]
