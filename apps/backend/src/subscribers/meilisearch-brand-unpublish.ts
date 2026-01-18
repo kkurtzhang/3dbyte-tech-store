@@ -32,29 +32,30 @@ import { syncBrandsWorkflow } from "../workflows/meilisearch/sync-brands"
 export default async function brandUnpublishSubscriber({
 	event: { data },
 	container,
-}: SubscriberArgs<{ id: string }>) {
+}: SubscriberArgs) {
 	const logger = container.resolve("logger")
+	const brandId = (data as { id: string }).id
 
 	logger.info(
-		`Received brand unpublish event for brand: ${data.id} - re-indexing with Medusa data only`
+		`Received brand unpublish event for brand: ${brandId} - re-indexing with Medusa data only`
 	)
 
 	try {
 		const { result } = await syncBrandsWorkflow(container).run({
 			input: {
 				filters: {
-					id: data.id,
+					id: brandId,
 				},
 			},
 		})
 
 		logger.info(
-			`Brand ${data.id} re-indexed to Meilisearch with ${result.indexed} documents (Strapi content removed)`
+			`Brand ${brandId} re-indexed to Meilisearch with ${result.indexed} documents (Strapi content removed)`
 		)
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : "Unknown error"
 		logger.error(
-			`Failed to re-index brand ${data.id} after unpublish: ${errorMessage}`,
+			`Failed to re-index brand ${brandId} after unpublish: ${errorMessage}`,
 			error
 		)
 	}

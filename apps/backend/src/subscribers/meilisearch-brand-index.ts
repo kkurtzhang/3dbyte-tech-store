@@ -27,26 +27,27 @@ import { syncBrandsWorkflow } from "../workflows/meilisearch/sync-brands"
 export default async function brandIndexSubscriber({
 	event: { data },
 	container,
-}: SubscriberArgs<{ id: string }>) {
+}: SubscriberArgs) {
 	const logger = container.resolve("logger")
+	const brandId = (data as { id: string }).id
 
-	logger.info(`Received brand indexing event for brand: ${data.id}`)
+	logger.info(`Received brand indexing event for brand: ${brandId}`)
 
 	try {
 		const { result } = await syncBrandsWorkflow(container).run({
 			input: {
 				filters: {
-					id: data.id,
+					id: brandId,
 				},
 			},
 		})
 
 		logger.info(
-			`Brand ${data.id} indexed to Meilisearch with ${result.indexed} documents`
+			`Brand ${brandId} indexed to Meilisearch with ${result.indexed} documents`
 		)
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : "Unknown error"
-		logger.error(`Failed to index brand ${data.id}: ${errorMessage}`, error)
+		logger.error(`Failed to index brand ${brandId}: ${errorMessage}`, error)
 	}
 }
 

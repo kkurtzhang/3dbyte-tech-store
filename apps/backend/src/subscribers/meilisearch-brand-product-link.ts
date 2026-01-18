@@ -25,29 +25,30 @@ import { syncBrandsWorkflow } from "../workflows/meilisearch/sync-brands"
 export default async function brandProductLinkSubscriber({
 	event: { data },
 	container,
-}: SubscriberArgs<{ id: string }>) {
+}: SubscriberArgs) {
 	const logger = container.resolve("logger")
+	const brandId = (data as { id: string }).id
 
 	logger.info(
-		`Received brand-product link change event for brand: ${data.id} - re-indexing to update product_count`
+		`Received brand-product link change event for brand: ${brandId} - re-indexing to update product_count`
 	)
 
 	try {
 		const { result } = await syncBrandsWorkflow(container).run({
 			input: {
 				filters: {
-					id: data.id,
+					id: brandId,
 				},
 			},
 		})
 
 		logger.info(
-			`Brand ${data.id} re-indexed to Meilisearch with ${result.indexed} documents (product_count updated)`
+			`Brand ${brandId} re-indexed to Meilisearch with ${result.indexed} documents (product_count updated)`
 		)
 	} catch (error) {
 		const errorMessage = error instanceof Error ? error.message : "Unknown error"
 		logger.error(
-			`Failed to re-index brand ${data.id} after product link change: ${errorMessage}`,
+			`Failed to re-index brand ${brandId} after product link change: ${errorMessage}`,
 			error
 		)
 	}
