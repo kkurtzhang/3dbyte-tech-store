@@ -1,4 +1,3 @@
-import { describe, it, expect } from "@jest/globals"
 import { deleteCategoriesFromMeilisearchStep } from "../delete-categories-from-meilisearch"
 
 describe("delete-categories-from-meilisearch step", () => {

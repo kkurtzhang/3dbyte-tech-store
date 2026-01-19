@@ -1,5 +1,4 @@
 import { transformCategoriesToDocuments } from "../sync-categories"
-import type { MeilisearchCategoryDocument } from "@3dbyte-tech-store/shared-types"
 
 describe("sync-categories step", () => {
 	describe("transformCategoriesToDocuments", () => {

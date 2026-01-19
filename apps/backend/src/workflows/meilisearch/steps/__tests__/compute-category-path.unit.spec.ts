@@ -1,4 +1,3 @@
-import { describe, it, expect } from "@jest/globals"
 import { computeCategoryPathsForCategories } from "../compute-category-path"
 import type { SyncCategoriesStepCategory } from "../../../../modules/meilisearch/utils"
 
