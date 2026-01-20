@@ -67,9 +67,9 @@ export type SyncCategoriesWorkflowOutput = {
 export const syncCategoriesWorkflow = createWorkflow(
 	"sync-categories",
 	({ filters, limit, offset }: SyncCategoriesWorkflowInput) => {
-		// Step 1: Fetch categories with products relation and nested parent_category (up to 4 levels)
-		// This enables full breadcrumb path computation.
-		// Parent hierarchy: parent_category (level 1), parent_category.parent_category (level 2), etc.
+		// Step 1: Fetch categories with products relation
+		// Only fetch immediate parent_category (1 level)
+		// Full breadcrumb is built using parent_category_id lookup from the fetched category list
 		const categoriesResult = useQueryGraphStep({
 			entity: "product_category",
 			fields: [
@@ -78,25 +78,10 @@ export const syncCategoriesWorkflow = createWorkflow(
 				"handle",
 				"description",
 				"parent_category_id",
-				// Level 1: Immediate parent
+				// Level 1: Immediate parent only (for parent_category object passed to downstream functions)
 				"parent_category.id",
 				"parent_category.name",
 				"parent_category.handle",
-				"parent_category.parent_category_id",
-				// Level 2: Grandparent
-				"parent_category.parent_category.id",
-				"parent_category.parent_category.name",
-				"parent_category.parent_category.handle",
-				"parent_category.parent_category.parent_category_id",
-				// Level 3: Great-grandparent
-				"parent_category.parent_category.parent_category.id",
-				"parent_category.parent_category.parent_category.name",
-				"parent_category.parent_category.parent_category.handle",
-				"parent_category.parent_category.parent_category.parent_category_id",
-				// Level 4: 4th level ancestor
-				"parent_category.parent_category.parent_category.parent_category.id",
-				"parent_category.parent_category.parent_category.parent_category.name",
-				"parent_category.parent_category.parent_category.parent_category.handle",
 				"rank",
 				"is_active",
 				"is_internal",
@@ -131,25 +116,6 @@ export const syncCategoriesWorkflow = createWorkflow(
 						id: string
 						name: string
 						handle: string
-						parent_category_id?: string | null
-						parent_category?: {
-							id: string
-							name: string
-							handle: string
-							parent_category_id?: string | null
-							parent_category?: {
-								id: string
-								name: string
-								handle: string
-								parent_category_id?: string | null
-								parent_category?: {
-									id: string
-									name: string
-									handle: string
-									parent_category_id?: string | null
-								}
-							}
-						}
 					} | null
 					rank: number
 					is_active: boolean
