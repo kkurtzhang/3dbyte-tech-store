@@ -195,8 +195,11 @@ export const syncCategoriesWorkflow = createWorkflow(
 					const categoryIds: string[] = [cat.id]
 
 					// Traverse up the hierarchy using parent_category_id and the lookup map
+					// Track visited nodes to prevent infinite loops from circular references
+					const visited = new Set<string>([cat.id])
 					let currentParentId = cat.parent_category_id
-					while (currentParentId) {
+					while (currentParentId && !visited.has(currentParentId)) {
+						visited.add(currentParentId)
 						const parentCat = categoryMap.get(currentParentId)
 						if (!parentCat) break // Parent not in our fetched set
 

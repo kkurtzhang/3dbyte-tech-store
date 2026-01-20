@@ -1,5 +1,4 @@
 import { medusaIntegrationTestRunner } from "@medusajs/test-utils"
-import { syncCategoriesWorkflow } from "../../../workflows/meilisearch/sync-categories"
 
 /**
  * Integration tests for category sync API endpoint
@@ -41,7 +40,7 @@ export default medusaIntegrationTestRunner({
           expect(response.data.deleted).toBe(0)
         })
       })
-    }),
+    })
   },
 })
 

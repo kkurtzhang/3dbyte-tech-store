@@ -118,7 +118,7 @@ describe("delete-categories-from-meilisearch step", () => {
 				handle: "electronics",
 				description: "Electronic devices",
 				parent_category_id: undefined,
-				parent_name: undefined,
+				display_path: undefined,
 				rank: 0,
 				path: ["Electronics"],
 				product_count: 15,
@@ -137,13 +137,13 @@ describe("delete-categories-from-meilisearch step", () => {
 				name: "Laptops",
 				handle: "laptops",
 				parent_category_id: "cat_1",
-				parent_name: "Electronics",
+				display_path: "Electronics",
 				path: ["Electronics", "Laptops"],
 				product_count: 8,
 			}
 
 			expect(nestedCategory.parent_category_id).toBe("cat_1")
-			expect(nestedCategory.parent_name).toBe("Electronics")
+			expect(nestedCategory.display_path).toBe("Electronics")
 			expect(nestedCategory.path).toEqual(["Electronics", "Laptops"])
 		})
 	})

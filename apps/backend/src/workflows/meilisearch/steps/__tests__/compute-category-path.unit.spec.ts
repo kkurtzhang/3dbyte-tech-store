@@ -27,7 +27,7 @@ describe("computeCategoryPathsForCategories", () => {
 				id: "cat_1",
 				name: "Men",
 				path: ["Men"],
-				parent_name: undefined,
+				display_path: undefined,
 			})
 		})
 	})
@@ -66,7 +66,7 @@ describe("computeCategoryPathsForCategories", () => {
 				id: "cat_2",
 				name: "Clothing",
 				path: ["Men", "Clothing"],
-				parent_name: "Men",
+				display_path: "Men",
 			})
 		})
 	})
@@ -114,7 +114,7 @@ describe("computeCategoryPathsForCategories", () => {
 				id: "cat_3",
 				name: "Shoes",
 				path: ["Men", "Clothing", "Shoes"],
-				parent_name: "Men > Clothing",
+				display_path: "Men > Clothing",
 			})
 		})
 	})
@@ -175,7 +175,7 @@ describe("computeCategoryPathsForCategories", () => {
 				id: "cat_1",
 				name: "Men",
 				path: ["Men"],
-				parent_name: undefined,
+				display_path: undefined,
 			})
 
 			// Second category - root level
@@ -183,7 +183,7 @@ describe("computeCategoryPathsForCategories", () => {
 				id: "cat_2",
 				name: "Women",
 				path: ["Women"],
-				parent_name: undefined,
+				display_path: undefined,
 			})
 
 			// Third category - has parent
@@ -191,7 +191,7 @@ describe("computeCategoryPathsForCategories", () => {
 				id: "cat_3",
 				name: "Shoes",
 				path: ["Men", "Shoes"],
-				parent_name: "Men",
+				display_path: "Men",
 			})
 		})
 	})
