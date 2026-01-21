@@ -9,12 +9,13 @@ import type { MeiliSearch } from "meilisearch" with { "resolution-mode": "import
 
 export type MeilisearchClient = MeiliSearch
 
-export type MeilisearchIndexType = "product"
+export type MeilisearchIndexType = "product" | "category"
 
 export interface MeilisearchModuleConfig {
 	host: string
 	apiKey: string
 	productIndexName: string
+	categoryIndexName: string
 	settings?: MeilisearchIndexSettings
 }
 
@@ -74,6 +75,24 @@ export interface MeilisearchProductDocument {
 	updated_at: string
 }
 
+/**
+ * Category document for Meilisearch indexing
+ * Contains hierarchy information and computed product counts
+ */
+export interface MeilisearchCategoryDocument {
+	id: string
+	name: string
+	handle: string
+	description?: string
+	parent_category_id?: string
+	display_path?: string // Name of immediate parent category
+	rank: number
+	breadcrumb: Array<{id: string, name: string, handle: string}> // All parent categories (excluding current)
+	category_ids: string[] // This category's ID and all parent IDs
+	product_count: number
+	created_at: number // UNIX timestamp in milliseconds
+}
+
 export interface MeilisearchSearchOptions {
 	limit?: number
 	offset?: number
@@ -82,7 +101,9 @@ export interface MeilisearchSearchOptions {
 	facets?: string[]
 }
 
-export interface MeilisearchSearchResponse<T = MeilisearchProductDocument> {
+export interface MeilisearchSearchResponse<
+	T = MeilisearchProductDocument | MeilisearchCategoryDocument
+> {
 	hits: T[]
 	estimatedTotalHits: number
 	limit: number

@@ -95,6 +95,104 @@ const { result } = await customOrderWorkflow.run({
 });
 ```
 
+### Workflow Steps
+
+#### useQueryGraphStep
+
+**When to use `.config({ name: "..." })`:**
+
+If you need to call `useQueryGraphStep` more than once in the same workflow, you must use `.config({ name: "..." })` to give each step a unique name. Otherwise, Medusa will throw "Step use-query-graph-step is already defined" error.
+
+```typescript
+// ❌ WRONG: Duplicate step names will cause error
+const categories = useQueryGraphStep({
+  entity: "product_category",
+  fields: ["id", "name"],
+});
+
+const products = useQueryGraphStep({
+  entity: "product",
+  fields: ["id", "title"],
+});
+// Error: Step use-query-graph-step is already defined
+```
+
+**Correct approach using `.config()`:**
+
+```typescript
+// ✅ RIGHT: Unique step names
+const categories = useQueryGraphStep({
+  entity: "product_category",
+  fields: ["id", "name"],
+});
+
+const products = useQueryGraphStep({
+  entity: "product",
+  fields: ["id", "title"],
+}).config({ name: "fetch-products" });
+```
+
+**Alternative: Query relations instead of separate steps:**
+
+If you need related data (e.g., products for categories), use relations instead of separate queries:
+
+```typescript
+// ✅ BETTER: Single query with relation
+const categories = useQueryGraphStep({
+  entity: "product_category",
+  fields: [
+    "id",
+    "name",
+    "products.id",      // Include products relation
+    "products.status",  // Include product fields
+  ],
+});
+
+// Then extract products from categories in transform
+```
+
+This approach is:
+- **Faster**: Single query instead of multiple
+- **Simpler**: No need for `.config()` or parallel execution
+- **More efficient**: Database handles joins
+
+#### transform Callback Limitations
+
+**IMPORTANT**: The `transform` function is ONLY for data/variable manipulation, NOT for side-effects like logging or validation.
+
+```typescript
+// ❌ WRONG: Cannot use logger inside transform
+const result = transform({ data }, (data, { container }) => {
+  const logger = container.resolve("logger")  // NOT SUPPORTED
+  logger.info("Processing data")              // Will not work reliably
+  return processedData
+})
+
+// ✅ RIGHT: Use console.warn for debugging in transform (development only)
+const result = transform({ data }, (data) => {
+  if (someCondition) {
+    console.warn("Data quality issue detected")  // OK for debugging
+  }
+  return processedData
+})
+
+// ✅ BEST: Use a step for logging
+const logSomethingStep = createStep(
+  "log-something",
+  async (input, { container }) => {
+    const logger = container.resolve("logger")
+    logger.info(`Got input: ${JSON.stringify(input)}`)
+    return new StepResponse(input)
+  }
+)
+```
+
+**Pattern for data manipulation with logging:**
+1. Use `transform` purely to shape data
+2. Pass the result into a step for logging/validation
+
+**Why?** The `container` argument in transform is not reliably available - it's only supported inside steps and compensations.
+
 ## SERVICES
 
 ### Service Pattern

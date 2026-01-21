@@ -14,7 +14,7 @@ type InjectedDependencies = {
 	logger: Logger
 }
 
-type MeilisearchOptions = Omit<MeilisearchModuleConfig, "settings">
+export type MeilisearchOptions = Omit<MeilisearchModuleConfig, "settings">
 
 /**
  * Meilisearch Module Service
@@ -49,10 +49,10 @@ export default class MeilisearchModuleService {
 		this.logger_ = logger
 
 		// Official pattern: throw MedusaError for invalid configuration
-		if (!options.host || !options.apiKey || !options.productIndexName) {
+		if (!options.host || !options.apiKey || !options.productIndexName || !options.categoryIndexName) {
 			throw new MedusaError(
 				MedusaError.Types.INVALID_ARGUMENT,
-				"Meilisearch options are required (host, apiKey, productIndexName)"
+				"Meilisearch options are required (host, apiKey, productIndexName, categoryIndexName)"
 			)
 		}
 
@@ -71,6 +71,8 @@ export default class MeilisearchModuleService {
 		switch (type) {
 			case "product":
 				return this.options_.productIndexName
+			case "category":
+				return this.options_.categoryIndexName
 			default:
 				throw new MedusaError(
 					MedusaError.Types.INVALID_ARGUMENT,
@@ -231,4 +233,74 @@ export default class MeilisearchModuleService {
 			fieldDistribution: stats.fieldDistribution,
 		}
 	}
+}
+
+/**
+ * Category index settings for Meilisearch
+ * Optimized for category browse pages and autocomplete
+ */
+export const CATEGORY_INDEX_SETTINGS: MeilisearchIndexSettings = {
+	// 1. SEARCHABLE
+	// Users search by Name ("Shoes") or Breadcrumb ("Men").
+	// 'handle' is searchable in case someone searches by a URL slug they saw.
+	searchableAttributes: ["name", "display_path", "handle"],
+
+	// 2. FILTERABLE
+	// Critical for the frontend to hide empty categories or build specific menus.
+	filterableAttributes: [
+		"id",
+		"category_ids", // For filtering by multiple categories
+		"parent_category_id", // Essential for "Get all sub-categories of X"
+		"product_count", // Filter: "product_count > 0"
+		"created_at", // Filter: "created_at > 170000..." (New categories)
+	],
+
+	// 3. SORTABLE
+	// Categories are rarely sorted by date.
+	// They are sorted by "Rank" (Manual order) or "Popularity" (Traffic).
+	sortableAttributes: ["rank", "product_count", "name", "created_at"],
+
+	// 4. RANKING RULES
+	// This is the "Secret Sauce".
+	// We modify the standard rules to prioritizing your 'rank' field above text relevance.
+	rankingRules: [
+		"words",
+		"typo",
+		"sort", // <--- Moved UP (Default is #5). Important!
+		"proximity",
+		"attribute",
+		"exactness",
+		"product_count:desc", // Boost categories with more products
+	],
+
+	// 5. DISPLAYED
+	// Keep the payload light. Don't send internal flags.
+	displayedAttributes: [
+		"id",
+		"name",
+		"handle",
+		"description",
+		"display_path",
+		"breadcrumb",     // For rich display: Link > Link > Link
+		"product_count",
+		"rank",
+	],
+
+	// 6. TYPO TOLERANCE
+	// Optional: Prevent "shos" from matching "shoes" if you want strictness.
+	// Usually, default is fine.
+	typoTolerance: {
+		minWordSizeForTypos: {
+			oneTypo: 4,
+			twoTypos: 8
+		}
+	},
+
+	// 7. FACETING & PAGINATION
+	faceting: {
+		maxValuesPerFacet: 100,
+	},
+	pagination: {
+		maxTotalHits: 10000,
+	},
 }
