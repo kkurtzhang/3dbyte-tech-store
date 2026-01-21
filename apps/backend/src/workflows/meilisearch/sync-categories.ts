@@ -105,8 +105,7 @@ export const syncCategoriesWorkflow = createWorkflow(
 				limit,
 				offset,
 			},
-			(data, { container }) => {
-				const logger = container.resolve("logger")
+			(data) => {
 				const categoriesWithProducts = data.allCategories as Array<{
 					id: string
 					name: string
@@ -189,7 +188,7 @@ export const syncCategoriesWorkflow = createWorkflow(
 				const categories = categoriesWithProducts.map((cat) => {
 					// Check for self-reference (category pointing to itself as parent)
 					if (cat.parent_category_id === cat.id) {
-						logger.warn(
+						console.warn(
 							`Category ${cat.id} (${cat.name}) has self-reference: parent_category_id equals its own id`
 						)
 					}
@@ -211,7 +210,7 @@ export const syncCategoriesWorkflow = createWorkflow(
 						const parentCat = categoryMap.get(currentParentId)
 						if (!parentCat) {
 						// Parent not in fetched set (may be inactive/deleted)
-						logger.warn(
+						console.warn(
 							`Category ${cat.id} (${cat.name}) references parent ${currentParentId} which is not in the active category set`
 						)
 						break
@@ -230,7 +229,7 @@ export const syncCategoriesWorkflow = createWorkflow(
 
 					// Check if loop stopped due to circular reference
 					if (currentParentId && visited.has(currentParentId)) {
-						logger.warn(
+						console.warn(
 							`Circular reference detected for category ${cat.id} (${cat.name}): parent chain leads back to ${currentParentId}`
 						)
 					}

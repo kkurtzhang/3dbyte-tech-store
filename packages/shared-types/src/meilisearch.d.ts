@@ -78,9 +78,14 @@ export interface MeilisearchCategoryDocument {
     handle: string;
     description?: string;
     parent_category_id?: string;
-    parent_name?: string;
+    display_path?: string;
     rank: number;
-    path: string[];
+    breadcrumb: Array<{
+        id: string;
+        name: string;
+        handle: string;
+    }>;
+    category_ids: string[];
     product_count: number;
     created_at: number;
 }

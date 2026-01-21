@@ -190,16 +190,21 @@ export const DEFAULT_INDEX_SETTINGS: MeilisearchIndexSettings = {
 
 /**
  * Category type from Medusa query (matches useQueryGraphStep output)
+ *
+ * Note: Date fields accept string | Date to match Medusa's ProductCategory type
+ * from useQueryGraphStep. This ensures type compatibility when passing data
+ * between workflow steps.
  */
 export interface SyncCategoriesStepCategory {
 	id: string
 	name: string
 	handle: string
 	description?: string | null
+	parent_category_id?: string | null
 	parent_category?: SyncCategoriesStepCategory | null
 	rank: number
-	created_at: string
-	updated_at: string
+	created_at: string | Date
+	updated_at: string | Date
 }
 
 /**
@@ -234,15 +239,22 @@ export function computeCategoryPath(
 
 /**
  * Compute the breadcrumb string for a category's parent
+ * Returns the full path from root to parent: "Apparel > Men > Clothing"
  * Returns null for root categories (no parent)
  *
  * @param category - Category with optional parent_category
- * @returns Breadcrumb string or null
+ * @returns Breadcrumb string of parent's full path or null
  *
  * @example
  * ```ts
- * computeParentName({ name: "Shoes", parent_category: { name: "Men", parent_category: { name: "Apparel", parent_category: null } } })
- * // Returns: "Apparel > Men"
+ * computeParentName({ name: "Shoes", parent_category: { name: "Clothing", parent_category: { name: "Men", parent_category: { name: "Apparel", parent_category: null } } } })
+ * // Returns: "Apparel > Men > Clothing"
+ *
+ * computeParentName({ name: "Men", parent_category: { name: "Apparel", parent_category: null } })
+ * // Returns: "Apparel"
+ *
+ * computeParentName({ name: "Apparel", parent_category: null })
+ * // Returns: null
  * ```
  */
 export function computeParentName(
@@ -251,14 +263,16 @@ export function computeParentName(
 	if (!category?.parent_category) return null
 
 	const parentPath = computeCategoryPath(category.parent_category)
-	return parentPath.join(" > ")
+	const breadcrumb = parentPath.join(" > ")
+
+	return breadcrumb
 }
 
 /**
  * Transform Medusa category into a Meilisearch document
  *
  * This function transforms a category from Medusa into a Meilisearch document
- * with computed hierarchy paths and metadata for search and browse functionality.
+ * with computed breadcrumb hierarchy and category IDs for search and browse functionality.
  *
  * @param category - Category from Medusa with parent relationships
  * @param productCount - Number of active products in this category
@@ -266,27 +280,45 @@ export function computeParentName(
  */
 export function toCategoryDocument(
 	category: SyncCategoriesStepCategory,
-	productCount: number
+	productCount: number,
+	breadcrumb?: Array<{ id: string; name: string; handle: string }>,
+	category_ids?: string[],
 ): MeilisearchCategoryDocument {
 	// Convert created_at to UNIX timestamp in milliseconds
-	const createdAt = new Date(category.created_at).getTime()
+	// Handles Date, string, or number (already a timestamp)
+	let createdAt: number
+	if (category.created_at instanceof Date) {
+		createdAt = category.created_at.getTime()
+	} else if (typeof category.created_at === "string") {
+		createdAt = new Date(category.created_at).getTime()
+	} else if (typeof category.created_at === "number") {
+		createdAt = category.created_at
+	} else {
+		createdAt = Date.now()
+	}
 
-	// Compute hierarchy path
-	const path = computeCategoryPath(category)
+	// Generate display_path from breadcrumb (full path of parents)
+	const display_path =
+		breadcrumb && breadcrumb.length > 0
+			? breadcrumb.map((b) => b.name).join(" > ")
+			: undefined
 
-	// Compute parent breadcrumb
-	const parentName = computeParentName(category)
+	// Use provided breadcrumb and category_ids, or fall back to empty/single
+	const finalBreadcrumb = breadcrumb || []
+	const finalCategoryIds = category_ids || [category.id]
 
 	return {
 		id: category.id,
 		name: category.name,
 		handle: category.handle,
 		description: category.description || undefined,
-		parent_category_id: category.parent_category?.id,
-		parent_name: parentName || undefined,
+		parent_category_id: category.parent_category_id || undefined,
+		display_path,
 		rank: category.rank,
-		path,
+		breadcrumb: finalBreadcrumb,
+		category_ids: finalCategoryIds,
 		product_count: productCount,
 		created_at: createdAt,
 	}
 }
+

@@ -1,30 +1,23 @@
 import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk"
 import { MEILISEARCH_MODULE } from "../../../modules/meilisearch"
-import { toCategoryDocument } from "../../../modules/meilisearch/utils"
+import { toCategoryDocument, type SyncCategoriesStepCategory } from "../../../modules/meilisearch/utils"
 import type MeilisearchModuleService from "../../../modules/meilisearch/service"
 import type { MeilisearchCategoryDocument } from "@3dbyte-tech-store/shared-types"
 
 /**
  * Input type for sync-categories step
+ *
+ * Categories come with parent_category relationships from useQueryGraphStep,
+ * product_count, and pre-computed breadcrumb and category_ids from the workflow.
  */
 export type SyncCategoriesStepInput = {
-	categories: Array<{
-		id: string
-		name: string
-		handle: string
-		description?: string | null
-		parent_category?: {
-			id: string
-			name: string
-			handle?: string
-		} | null
-		rank: number
-		path: string[]
-		parent_name?: string
-		product_count: number
-		created_at: string
-	}>
-	productCounts: Record<string, number>
+	categories: Array<
+		SyncCategoriesStepCategory & {
+			product_count: number
+			breadcrumb: Array<{ id: string; name: string; handle: string }>
+			category_ids: string[]
+		}
+	>
 }
 
 /**
@@ -49,7 +42,7 @@ type SyncCategoriesStepCompensationData = {
  * It transforms categories from Medusa format into Meilisearch documents with
  * all necessary fields for search and browse functionality.
  *
- * @param categories - Array of categories from Medusa with computed paths and counts
+ * @param categories - Array of categories from Medusa with parent relationships and counts
  * @returns Array of Meilisearch category documents
  *
  * @example
@@ -57,7 +50,6 @@ type SyncCategoriesStepCompensationData = {
  *   id: "cat_1",
  *   name: "Electronics",
  *   handle: "electronics",
- *   path: ["Electronics"],
  *   product_count: 15,
  *   created_at: "2024-01-01T00:00:00.000Z"
  * }]
@@ -65,7 +57,8 @@ type SyncCategoriesStepCompensationData = {
  *   id: "cat_1",
  *   name: "Electronics",
  *   handle: "electronics",
- *   path: ["Electronics"],
+ *   breadcrumb: [],
+ *   category_ids: ["cat_1"],
  *   product_count: 15,
  *   created_at: 1704067200000
  * }]
@@ -80,32 +73,23 @@ export function transformCategoriesToDocuments(
 
 	// Transform each category to a Meilisearch document
 	return categories.map((category) => {
-		// Build parent_category object matching SyncCategoriesStepCategory type
-		const parentCategory = category.parent_category
-			? ({
-					id: category.parent_category.id,
-					name: category.parent_category.name,
-					handle: category.parent_category.handle || category.parent_category.name.toLowerCase(),
-					parent_category: null,
-					rank: 0,
-					created_at: category.created_at,
-					updated_at: category.created_at,
-				} as const)
-			: null
-
 		// Use toCategoryDocument utility function
+		// Pass pre-computed breadcrumb and category_ids from workflow
 		return toCategoryDocument(
 			{
 				id: category.id,
 				name: category.name,
 				handle: category.handle,
 				description: category.description,
-				parent_category: parentCategory,
+				parent_category_id: category.parent_category_id,
+				parent_category: category.parent_category || undefined,
 				rank: category.rank,
 				created_at: category.created_at,
-				updated_at: category.created_at, // Use created_at as fallback
+				updated_at: category.updated_at || category.created_at,
 			},
-			category.product_count
+			category.product_count,
+			category.breadcrumb,
+			category.category_ids
 		)
 	})
 }
@@ -133,7 +117,7 @@ export function transformCategoriesToDocuments(
 export const syncCategoriesStep = createStep(
 	"sync-categories",
 	async (
-		{ categories, productCounts }: SyncCategoriesStepInput,
+		{ categories }: SyncCategoriesStepInput,
 		{ container }
 	) => {
 		const meilisearchModuleService =
@@ -146,12 +130,6 @@ export const syncCategoriesStep = createStep(
 				{ newCategoryIds: [], existingCategories: [] }
 			)
 		}
-
-		// Merge product counts into categories
-		const categoriesWithCounts = categories.map((category) => ({
-			...category,
-			product_count: productCounts[category.id] || 0,
-		}))
 
 		// Retrieve existing categories BEFORE indexing (for rollback)
 		const existingCategories =
@@ -169,7 +147,7 @@ export const syncCategoriesStep = createStep(
 			.map((category) => category.id)
 
 		// Transform categories to Meilisearch documents
-		const documents = transformCategoriesToDocuments(categoriesWithCounts)
+		const documents = transformCategoriesToDocuments(categories)
 
 		// Index the documents
 		await meilisearchModuleService.indexData(

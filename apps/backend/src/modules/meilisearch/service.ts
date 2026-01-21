@@ -14,7 +14,7 @@ type InjectedDependencies = {
 	logger: Logger
 }
 
-type MeilisearchOptions = Omit<MeilisearchModuleConfig, "settings">
+export type MeilisearchOptions = Omit<MeilisearchModuleConfig, "settings">
 
 /**
  * Meilisearch Module Service
@@ -243,22 +243,22 @@ export const CATEGORY_INDEX_SETTINGS: MeilisearchIndexSettings = {
 	// 1. SEARCHABLE
 	// Users search by Name ("Shoes") or Breadcrumb ("Men").
 	// 'handle' is searchable in case someone searches by a URL slug they saw.
-	searchableAttributes: ["name", "parent_name", "handle"],
+	searchableAttributes: ["name", "display_path", "handle"],
 
 	// 2. FILTERABLE
 	// Critical for the frontend to hide empty categories or build specific menus.
 	filterableAttributes: [
 		"id",
+		"category_ids", // For filtering by multiple categories
 		"parent_category_id", // Essential for "Get all sub-categories of X"
 		"product_count", // Filter: "product_count > 0"
-		"path", // Filter: "path = 'Men'" (Matches hierarchy)
 		"created_at", // Filter: "created_at > 170000..." (New categories)
 	],
 
 	// 3. SORTABLE
 	// Categories are rarely sorted by date.
 	// They are sorted by "Rank" (Manual order) or "Popularity" (Traffic).
-	sortableAttributes: ["rank", "product_count", "created_at", "name"],
+	sortableAttributes: ["rank", "product_count", "name", "created_at"],
 
 	// 4. RANKING RULES
 	// This is the "Secret Sauce".
@@ -280,12 +280,23 @@ export const CATEGORY_INDEX_SETTINGS: MeilisearchIndexSettings = {
 		"name",
 		"handle",
 		"description",
-		"parent_name",
+		"display_path",
+		"breadcrumb",     // For rich display: Link > Link > Link
 		"product_count",
-		"path", // Useful for frontend breadcrumb generation
+		"rank",
 	],
 
-	// 6. FACETING & PAGINATION
+	// 6. TYPO TOLERANCE
+	// Optional: Prevent "shos" from matching "shoes" if you want strictness.
+	// Usually, default is fine.
+	typoTolerance: {
+		minWordSizeForTypos: {
+			oneTypo: 4,
+			twoTypos: 8
+		}
+	},
+
+	// 7. FACETING & PAGINATION
 	faceting: {
 		maxValuesPerFacet: 100,
 	},

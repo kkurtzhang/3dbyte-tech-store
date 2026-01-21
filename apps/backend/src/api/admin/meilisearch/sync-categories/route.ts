@@ -51,7 +51,9 @@ export const POST = async (
 				},
 			})
 
-			hasMore = offset + limit < (result.metadata?.count ?? 0)
+			// Check if we have more categories to sync
+			// If the number of indexed categories is less than the limit, we've reached the end
+			hasMore = result.indexed >= limit
 			offset += limit
 			totalIndexed += result.indexed
 			totalDeleted += result.deleted

@@ -85,9 +85,10 @@ export interface MeilisearchCategoryDocument {
 	handle: string
 	description?: string
 	parent_category_id?: string
-	parent_name?: string // Breadcrumb: "Men > Clothing"
+	display_path?: string // Name of immediate parent category
 	rank: number
-	path: string[] // Full path array: ["Men", "Clothing", "Shoes"]
+	breadcrumb: Array<{id: string, name: string, handle: string}> // All parent categories (excluding current)
+	category_ids: string[] // This category's ID and all parent IDs
 	product_count: number
 	created_at: number // UNIX timestamp in milliseconds
 }

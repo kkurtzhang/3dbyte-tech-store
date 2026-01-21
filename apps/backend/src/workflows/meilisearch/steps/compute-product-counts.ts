@@ -1,5 +1,4 @@
 import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk"
-import { useQueryGraphStep } from "@medusajs/medusa/core-flows"
 import type { SyncCategoriesStepCategory } from "../../../modules/meilisearch/utils"
 
 /**
@@ -7,6 +6,7 @@ import type { SyncCategoriesStepCategory } from "../../../modules/meilisearch/ut
  */
 export type ComputeProductCountsStepInput = {
 	categories: SyncCategoriesStepCategory[]
+	products: ProductFromQuery[]
 }
 
 /**
@@ -18,6 +18,9 @@ export type ComputeProductCountsStepOutput = {
 
 /**
  * Product type from Medusa query (matches useQueryGraphStep output)
+ *
+ * The categories field uses a flexible type to handle Medusa's Maybe<Maybe<ProductCategory>[]>
+ * output from useQueryGraphStep. At runtime, it will be an array of category objects or null.
  */
 export interface ProductFromQuery {
 	id: string
@@ -26,7 +29,7 @@ export interface ProductFromQuery {
 		id: string
 		name: string
 		handle: string
-	}> | null
+	} | null> | null
 }
 
 /**
@@ -76,6 +79,9 @@ export function computeProductCountsForCategories(
 
 		// Increment count for each category this product belongs to
 		for (const category of product.categories) {
+			// Handle null entries in the categories array
+			if (!category) continue
+
 			if (category.id in productCounts) {
 				productCounts[category.id]++
 			}
@@ -158,21 +164,24 @@ export function aggregateChildCategoryCounts(
 /**
  * Compute product counts for categories
  *
- * This step queries all published products from Medusa and counts
- * how many products are assigned to each category, including aggregation
- * from child categories to parent categories.
+ * This step receives products from Medusa and counts how many products
+ * are assigned to each category, including aggregation from child categories
+ * to parent categories.
  *
  * The count for each category includes:
  * - Direct product assignments to the category
  * - Products from all descendant categories (aggregated upward)
  *
  * @example
- * Input: { categories: [{ id: "cat_1", name: "Electronics", parent_category: null }, { id: "cat_2", name: "Laptops", parent_category: { id: "cat_1" } }] }
- * Output: { productCounts: { "cat_1": 15, "cat_2": 8 } }  // Parent includes child counts
+ * Input: {
+ *   categories: [{ id: "cat_1", name: "Electronics", parent_category: null }, { id: "cat_2", name: "Laptops", parent_category: { id: "cat_1" } }],
+ *   products: [{ id: "prod_1", status: "published", categories: [{ id: "cat_2" }] }]
+ * }
+ * Output: { productCounts: { "cat_1": 1, "cat_2": 1 } }  // Parent includes child counts
  */
 export const computeProductCountsStep = createStep(
 	"compute-product-counts",
-	async ({ categories }: ComputeProductCountsStepInput) => {
+	async ({ categories, products }: ComputeProductCountsStepInput) => {
 		// Handle empty array
 		if (!categories || categories.length === 0) {
 			return new StepResponse<ComputeProductCountsStepOutput>({
@@ -182,21 +191,6 @@ export const computeProductCountsStep = createStep(
 
 		// Extract category IDs for initialization
 		const categoryIds = categories.map((cat) => cat.id)
-
-		// Query all published products with their categories
-		const { data: products } = useQueryGraphStep({
-			entity: "product",
-			fields: [
-				"id",
-				"status",
-				"categories.id",
-				"categories.name",
-				"categories.handle",
-			],
-			filters: {
-				status: "published",
-			},
-		})
 
 		// Compute direct product counts (category assignments only)
 		const directCounts = computeProductCountsForCategories(

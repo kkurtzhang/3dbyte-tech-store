@@ -1,7 +1,7 @@
 # Meilisearch Category Indexing - Implementation Plan
 
 **Date:** 2026-01-18
-**Status:** Design Complete
+**Status:** Implementation Complete
 **Goal:** Index product categories to Meilisearch for category browse pages and autocomplete functionality
 
 ## Overview
@@ -20,12 +20,23 @@ Add a parallel category indexing system alongside the existing product indexing.
 
   // Hierarchy
   parent_category_id?: string
-  parent_name?: string        // Breadcrumb: "Men > Clothing"
+  display_path?: string        // Breadcrumb: "Men > Clothing" (Excludes self)
   rank: number               // Order among siblings
-  path: string[]             // Full path array: ["Men", "Clothing", "Shoes"]
+
+  // Navigation & Visuals
+  breadcrumb: Array<{       // All parent categories (excludes current)
+    id: string
+    name: string
+    handle: string
+  }> // Example: For "Running Shoes" under "Men > Shoes":
+    // [{id: "pcat_men", name: "Men", handle: "men"},
+    //  {id: "pcat_shoes", name: "Shoes", handle: "shoes"}]
+
+  // Filtering & Querying
+  category_ids: string[]    // For Filtering: "Give me all sub-categories of ID X"
 
   // Computed
-  product_count: number      // Active products in this category
+  product_count: number      // Active products in this category (includes descendants)
 
   // Timestamp (UNIX format)
   created_at: number         // UNIX timestamp in milliseconds
@@ -36,19 +47,60 @@ Add a parallel category indexing system alongside the existing product indexing.
 
 ```typescript
 {
-  searchableAttributes: ["name", "parent_name", "handle"],
-  filterableAttributes: ["id", "parent_category_id", "product_count", "path", "created_at"],
-  sortableAttributes: ["rank", "product_count", "created_at", "name"],
+  // Users search by Name ("Shoes") or Breadcrumb ("Men").
+  // 'handle' is searchable in case someone searches by a URL slug they saw.
+  searchableAttributes: ["name", "display_path", "handle"],
+
+  // Critical for the frontend to hide empty categories or build specific menus.
+  filterableAttributes: [
+    "id",
+    "category_ids",          // CRITICAL: Used for "Show all sub-categories of X
+    "parent_category_id",    // Used for "Show direct children of X"
+    "product_count",         // Filter: "product_count > 0"
+    "created_at",            // Filter: "created_at > 170000..." (New categories)
+  ],
+
+  // Categories are rarely sorted by date.
+  // They are sorted by "Rank" (Manual order) or "Popularity" (Traffic).
+  sortableAttributes: [
+       "rank",             // Your manual order from Medusa Admin
+    "product_count",    // For "Most Popular" sorting
+    "name",             // For "A-Z" sorting
+    "created_at",        // For "Newest" sorting
+],
+
+  // This is the "Secret Sauce".
+  // We modify the standard rules to prioritize 'rank' field above text relevance.
   rankingRules: [
     "words",
     "typo",
-    "sort",
+    "sort",                  // <--- Moved UP (Default is #5). Important!
     "proximity",
     "attribute",
     "exactness",
-    "product_count:desc"
+    "product_count:desc",    // Boost categories with more products
   ],
-  displayedAttributes: ["id", "name", "handle", "description", "parent_name", "product_count", "path"],
+
+  // Keep the payload light. Don't send internal flags.
+  displayedAttributes: [
+    "id",
+    "name",
+    "handle",
+    "description",
+    "display_path",
+    "breadcrumb",            // For rich display: Link > Link > Link
+    "product_count",
+    "rank",
+  ],
+
+  // Optional: Prevent "shos" from matching "shoes" if you want strictness.
+  typoTolerance: {
+    minWordSizeForTypos: {
+      oneTypo: 4,
+      twoTypos: 8
+    }
+  },
+
   faceting: { maxValuesPerFacet: 100 },
   pagination: { maxTotalHits: 10000 }
 }
@@ -78,13 +130,31 @@ Add a parallel category indexing system alongside the existing product indexing.
 1. Add `toCategoryDocument()` transform function
 2. Add `computeCategoryPath()` helper
 
+### Phase 2.5: Category Index Initialization Loader
+
+**File:** `apps/backend/src/modules/meilisearch/loaders/configure-category-index.ts`
+
+- Create module loader to auto-configure category index on startup
+- Apply `CATEGORY_INDEX_SETTINGS` to ensure proper search behavior
+- Registered in module's `index.ts` via `loaders` array
+
+**File:** `apps/backend/src/modules/meilisearch/index.ts`
+
+- Register `configureCategoryIndexLoader` in module definition
+
+**Why this loader?**
+
+- Meilisearch auto-creates indexes with default settings when first used
+- Custom settings (ranking rules, filterable attributes) must be applied manually
+- Loader runs once on startup, ensuring consistent configuration before any indexing
+
 ### Phase 3: Workflow Steps
 
 **File:** `apps/backend/src/workflows/meilisearch/steps/compute-category-path.ts`
 
 - Traverse parent_category relationships
 - Build path array: ["Men", "Clothing", "Shoes"]
-- Build parent_name breadcrumb: "Men > Clothing"
+- Build display_path breadcrumb: "Men > Clothing"
 
 **File:** `apps/backend/src/workflows/meilisearch/steps/compute-product-counts.ts`
 
@@ -106,6 +176,7 @@ Add a parallel category indexing system alongside the existing product indexing.
 **File:** `apps/backend/src/workflows/meilisearch/sync-categories.ts`
 
 - Fetch categories with filters: `is_active: true`, `is_internal: false`, `deleted_at: null`
+- Fetch nested parent hierarchy (up to 4 levels) to enable full breadcrumb computation
 - Separate active vs inactive
 - Compute path and product counts
 - Sync active, delete inactive
@@ -148,7 +219,7 @@ Add a parallel category indexing system alongside the existing product indexing.
 
 **File:** `apps/backend/src/jobs/sync-categories-scheduled.ts`
 
-- Configure cron job: "0 2 * * *" (daily at 2 AM)
+- Configure cron job: "0 2 \* \* \*" (daily at 2 AM)
 - Run full category sync
 - Handle errors gracefully (retry next night)
 
@@ -168,13 +239,16 @@ CATEGORY_SYNC_CRON="0 2 * * *"
 ### Phase 10: Tests
 
 **Unit Tests:**
+
 - `apps/backend/src/workflows/meilisearch/__tests__/compute-category-path.test.ts`
 - `apps/backend/src/workflows/meilisearch/__tests__/compute-product-counts.test.ts`
 
 **Integration Tests:**
+
 - `apps/backend/src/integration/__tests__/meilisearch/sync-categories.test.ts`
 
 **Test Data:**
+
 - `apps/backend/src/scripts/seed-categories.ts`
 
 ## Files to Create
@@ -202,7 +276,10 @@ apps/backend/src/
 ├── jobs/sync-categories-scheduled.ts
 └── modules/meilisearch/
     ├── service.ts (extend existing)
-    └── utils.ts (extend existing)
+    ├── utils.ts (extend existing)
+    ├── index.ts (extend existing - register loader)
+    └── loaders/
+        └── configure-category-index.ts
 
 packages/shared-types/src/
 └── meilisearch.ts (extend existing)
@@ -225,14 +302,79 @@ packages/shared-types/src/
 
 ## Success Criteria
 
-- [ ] Categories indexed with correct hierarchy paths
-- [ ] Product counts accurate within nightly sync window
-- [ ] Admin sync button functional
-- [ ] Scheduled sync running at 2 AM daily
-- [ ] All unit and integration tests passing
-- [ ] Meilisearch index configured correctly
+- [x] Categories indexed with correct hierarchy paths
+- [x] Product counts accurate within nightly sync window
+- [x] Admin sync button functional
+- [x] Scheduled sync running at 2 AM daily
+- [x] All unit and integration tests passing
+- [x] Meilisearch index configured correctly (via startup loader)
 
 ## Related Documentation
 
 - [Medusa Product Categories Reference](https://docs.medusajs.com/resources/references/product/models/ProductCategory)
 - [Meilisearch Official Standards](./2026-01-17-meilisearch-official-standards.md)
+
+## Implementation Notes
+
+### Loader Implementation Details
+
+The category index initialization loader was implemented within the Meilisearch module following Medusa v2 patterns:
+
+**File Structure:**
+
+```
+apps/backend/src/modules/meilisearch/
+├── loaders/
+│   └── configure-category-index.ts  ← Created
+├── service.ts                       ← Exported MeilisearchOptions type
+└── index.ts                         ← Registered loader in Module()
+```
+
+**Key Implementation Details:**
+
+1. **Loader location:** Within `modules/meilisearch/loaders/` (not app-level loaders)
+2. **Service instantiation:** Uses `new MeilisearchModuleService({ logger }, options)` pattern
+3. **Type safety:** Exported `MeilisearchOptions` type from service.ts for loader use
+4. **Error handling:** Logs warnings but doesn't fail startup if configuration fails
+5. **Registration:** Added to `loaders` array in module's `index.ts`
+
+**Loader Execution Flow:**
+
+```
+Application Startup
+       ↓
+Meilisearch Module Loads
+       ↓
+configureCategoryIndexLoader Runs
+       ↓
+Validates options exists
+       ↓
+Instantiates MeilisearchModuleService
+       ↓
+Calls configureIndex(CATEGORY_INDEX_SETTINGS, "category")
+       ↓
+Applies custom ranking rules, filters, search settings
+       ↓
+Index ready for category sync operations
+```
+
+**Settings Applied:**
+
+- `rankingRules`: Boosts categories with higher product counts, prioritizes `sort` (rank) above text relevance
+- `filterableAttributes`: Enables filtering by category_ids, parent_category_id, product_count, created_at
+- `searchableAttributes`: Optimizes search for name, display_path, handle
+- `sortableAttributes`: Allows sorting by rank, product_count, name, created_at
+- `displayedAttributes`: Includes breadcrumb for rich category navigation display
+
+### Parent Hierarchy Fetching
+
+**Important:** The workflow query fetches nested `parent_category` relationships up to 4 levels deep to enable full breadcrumb path computation. This ensures `display_path` contains the complete path from root to parent (e.g., "Apparel > Men > Clothing") rather than just the immediate parent name.
+
+**Query fields include:**
+
+- `parent_category.id`, `parent_category.name`, `parent_category.handle`
+- `parent_category.parent_category.*` (grandparent)
+- `parent_category.parent_category.parent_category.*` (great-grandparent)
+- `parent_category.parent_category.parent_category.parent_category.*` (4th level)
+
+This depth covers most e-commerce category hierarchies while maintaining query performance.

@@ -16,7 +16,7 @@ export type ComputeCategoryPathStepOutput = {
 	categories: Array<
 		SyncCategoriesStepCategory & {
 			path: string[]
-			parent_name?: string
+			display_path?: string
 		}
 	>
 }
@@ -27,14 +27,14 @@ export type ComputeCategoryPathStepOutput = {
  * This is a pure function that can be tested independently of the workflow step.
  * It traverses parent_category relationships to build:
  * - path: Array of category names from root to current category
- * - parent_name: Breadcrumb string of parent hierarchy
+ * - display_path: Breadcrumb string of parent hierarchy
  *
  * @param categories - Array of categories from Medusa
- * @returns Array of categories with computed path and parent_name fields
+ * @returns Array of categories with computed path and display_path fields
  *
  * @example
  * Input: [{ name: "Shoes", parent_category: { name: "Men", parent_category: null } }]
- * Output: [{ ...category, path: ["Men", "Shoes"], parent_name: "Men" }]
+ * Output: [{ ...category, path: ["Men", "Shoes"], display_path: "Men" }]
  */
 export function computeCategoryPathsForCategories(
 	categories: SyncCategoriesStepCategory[]
@@ -44,7 +44,7 @@ export function computeCategoryPathsForCategories(
 		return []
 	}
 
-	// Compute path and parent_name for each category
+	// Compute path and display_path for each category
 	return categories.map((category) => {
 		const path = computeCategoryPath(category)
 		const parentName = computeParentName(category)
@@ -52,7 +52,7 @@ export function computeCategoryPathsForCategories(
 		return {
 			...category,
 			path,
-			parent_name: parentName || undefined,
+			display_path: parentName || undefined,
 		}
 	})
 }
@@ -62,11 +62,11 @@ export function computeCategoryPathsForCategories(
  *
  * This step traverses parent_category relationships to build:
  * - path: Array of category names from root to current category
- * - parent_name: Breadcrumb string of parent hierarchy
+ * - display_path: Breadcrumb string of parent hierarchy
  *
  * @example
  * Input: { name: "Shoes", parent_category: { name: "Men", parent_category: { name: "Apparel", parent_category: null } } }
- * Output: { path: ["Apparel", "Men", "Shoes"], parent_name: "Apparel > Men" }
+ * Output: { path: ["Apparel", "Men", "Shoes"], display_path: "Apparel > Men" }
  */
 export const computeCategoryPathStep = createStep(
 	"compute-category-path",
