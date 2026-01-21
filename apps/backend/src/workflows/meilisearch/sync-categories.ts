@@ -105,7 +105,8 @@ export const syncCategoriesWorkflow = createWorkflow(
 				limit,
 				offset,
 			},
-			(data) => {
+			(data, { container }) => {
+				const logger = container.resolve("logger")
 				const categoriesWithProducts = data.allCategories as Array<{
 					id: string
 					name: string
@@ -186,6 +187,13 @@ export const syncCategoriesWorkflow = createWorkflow(
 
 				// Build categories array for sync step with full breadcrumb
 				const categories = categoriesWithProducts.map((cat) => {
+					// Check for self-reference (category pointing to itself as parent)
+					if (cat.parent_category_id === cat.id) {
+						logger.warn(
+							`Category ${cat.id} (${cat.name}) has self-reference: parent_category_id equals its own id`
+						)
+					}
+
 					// Build full breadcrumb and category_ids by traversing up using parent_category_id
 					const breadcrumb: Array<{
 						id: string
@@ -201,7 +209,13 @@ export const syncCategoriesWorkflow = createWorkflow(
 					while (currentParentId && !visited.has(currentParentId)) {
 						visited.add(currentParentId)
 						const parentCat = categoryMap.get(currentParentId)
-						if (!parentCat) break // Parent not in our fetched set
+						if (!parentCat) {
+						// Parent not in fetched set (may be inactive/deleted)
+						logger.warn(
+							`Category ${cat.id} (${cat.name}) references parent ${currentParentId} which is not in the active category set`
+						)
+						break
+					}
 
 						breadcrumb.unshift({
 							id: parentCat.id,
@@ -212,6 +226,13 @@ export const syncCategoriesWorkflow = createWorkflow(
 
 						// Move to next parent
 						currentParentId = parentCat.parent_category_id
+					}
+
+					// Check if loop stopped due to circular reference
+					if (currentParentId && visited.has(currentParentId)) {
+						logger.warn(
+							`Circular reference detected for category ${cat.id} (${cat.name}): parent chain leads back to ${currentParentId}`
+						)
 					}
 
 					return {
