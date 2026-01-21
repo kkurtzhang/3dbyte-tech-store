@@ -1,6 +1,43 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { syncProductsWorkflow } from "../../../workflows/meilisearch"
-import { syncBrandsWorkflow } from "../../../workflows/meilisearch/sync-brands"
+import { indexRichBrandWorkflow } from "../../../workflows/meilisearch/index-rich-brand-workflow"
+import { indexBasicBrandWorkflow } from "../../../workflows/meilisearch/index-basic-brand-workflow"
+import { deleteBrandWorkflow } from "../../../workflows/meilisearch/delete-brand-workflow"
+import { BRAND_MODULE } from "../../../modules/brand"
+import type BrandModuleService from "../../../modules/brand/service"
+import type {
+	SyncBrandsStepBrand,
+	StrapiBrandDescription,
+} from "@3dbyte-tech-store/shared-types"
+import type { MedusaContainer } from "@medusajs/framework/types"
+
+/**
+ * Calculate the product count for a single brand using the Medusa link system
+ */
+async function getProductCountForBrand(
+	brandId: string,
+	container: MedusaContainer
+): Promise<number> {
+	const link = container.resolve("link")
+	const logger = container.resolve("logger")
+
+	try {
+		const links = await link.list({
+			[BRAND_MODULE]: {
+				brand_id: [brandId],
+			},
+		})
+		const count = links.length
+		logger.info(`Calculated product count for brand ${brandId}: ${count}`)
+		return count
+	} catch (error) {
+		const message = error instanceof Error ? error.message : "Unknown error"
+		logger.warn(
+			`Failed to query product count for brand ${brandId}: ${message}, defaulting to 0`
+		)
+		return 0
+	}
+}
 
 interface StrapiWebhookBody {
 	model: string
@@ -9,6 +46,14 @@ interface StrapiWebhookBody {
 		documentId?: string
 		medusa_product_id?: string
 		medusa_brand_id?: string
+		brand_name?: string
+		brand_handle?: string
+		detailed_description?: string
+		brand_logo?: Array<{ url: string }>
+		meta_keywords?: string[]
+		last_synced?: string
+		sync_status?: string
+		publishedAt?: string
 		[key: string]: unknown
 	}
 	event: string
@@ -23,41 +68,30 @@ interface StrapiWebhookRequest extends MedusaRequest {
  *
  * Webhook endpoint for Strapi to notify Medusa of content changes.
  *
- * When product descriptions are published in Strapi, Strapi calls this webhook
- * to trigger a re-index of the affected product in Meilisearch.
+ * BRAND WEBHOOK EVENTS:
+ * =====================
+ * - entry.publish: Index rich brand data (with Strapi enrichment) using Workflow C
+ * - entry.unpublish: Re-index basic brand data only (removes rich content) using Workflow A
+ * - entry.delete: Remove brand from Meilisearch using Workflow D (safety fallback)
+ *
+ * PRODUCT WEBHOOK EVENTS:
+ * =======================
+ * - entry.publish: Re-index product with Strapi content
+ * - entry.unpublish: Re-index product with Medusa data only
  *
  * IMPORTANT WEBHOOK CONFIGURATION:
  * ================================
- * ONLY enable "Entry publish" and "Entry unpublish" events in Strapi webhook settings.
+ * ONLY enable "Entry publish", "Entry unpublish", and "Entry delete" events.
  *
  * DO NOT enable "Entry create" - causes redundant re-indexing:
- * - When Medusa creates a product → subscriber indexes it
+ * - When Medusa creates a brand → subscriber indexes it
  * - Then Medusa syncs to Strapi (creates empty entry)
- * - If Entry create webhook fires → re-indexes same product again (redundant!)
+ * - If Entry create webhook fires → re-indexes same brand again (redundant!)
  *
  * DO NOT enable "Entry update" - won't update Meilisearch correctly:
  * - Entry update fires when content is SAVED (draft state)
  * - Medusa fetches from Strapi API (only returns published content by default)
  * - Draft content is NOT returned, so Meilisearch re-indexes old published content
- * - Only when content is PUBLISHED does the API return the new content
- *
- * Why "Entry publish" and "Entry unpublish"?
- * - Entry publish: Content becomes live → index with full Strapi enrichment
- * - Entry unpublish: Content is unpublished → re-index with Medusa data only (product remains searchable)
- * - Draft/work-in-progress content should not appear in search results
- * - When content is unpublished, product stays searchable with base information (title, price, etc.)
- *
- * Expected payload:
- * {
- *   model: "product-descriptions",
- *   entry: {
- *     id: 1,
- *     documentId: "abc123",
- *     medusa_product_id: "prod_123",
- *     ...
- *   },
- *   event: "entry.publish" | "entry.unpublish"
- * }
  *
  * Security:
  * - Verify webhook using X-Webhook-Secret header matching STRAPI_WEBHOOK_SECRET env var
@@ -91,7 +125,6 @@ export async function POST(
 	const { model, entry, event } = req.body
 
 	// 3. Validate this is a tracked model
-	// Strapi v5 sends model as the API ID (e.g., "product-descriptions" or "api::product-description.product-description")
 	const validProductModels = [
 		"product-description",
 		"product-descriptions",
@@ -128,7 +161,6 @@ export async function POST(
 			`Received Strapi webhook for product ${productId} (event: ${event})`
 		)
 
-		// 5. Re-index the product with updated Strapi content using workflow
 		try {
 			const { result } = await syncProductsWorkflow(req.scope).run({
 				input: {
@@ -145,7 +177,6 @@ export async function POST(
 				indexed: result.indexed,
 			})
 		} catch (error) {
-			// Still return 200 to avoid Strapi retrying the webhook
 			const errorMessage = error instanceof Error ? error.message : "Unknown error"
 			logger.error(`Failed to re-index product ${productId}: ${errorMessage}`, error)
 
@@ -159,7 +190,7 @@ export async function POST(
 		return
 	}
 
-	// 6. Handle brand-description webhooks
+	// 5. Handle brand-description webhooks
 	if (isBrandModel) {
 		const brandId = entry?.medusa_brand_id
 
@@ -173,35 +204,99 @@ export async function POST(
 			`Received Strapi webhook for brand ${brandId} (event: ${event})`
 		)
 
-		// 7. Directly call syncBrandsWorkflow to index the brand
 		try {
-			const { result } = await syncBrandsWorkflow(req.scope).run({
-				input: {
-					filters: {
-						id: brandId,
+			// Fetch brand data from Medusa
+			const brandModuleService: BrandModuleService =
+				req.scope.resolve(BRAND_MODULE)
+			const brand = await brandModuleService.retrieveBrand(brandId)
+
+			if (!brand) {
+				logger.warn(`Brand ${brandId} not found in Medusa`)
+				res.status(404).json({ error: `Brand ${brandId} not found` })
+				return
+			}
+
+			const brandData: SyncBrandsStepBrand = {
+				id: brand.id,
+				name: brand.name,
+				handle: brand.handle,
+				created_at: typeof brand.created_at === 'string' ? brand.created_at : brand.created_at.toISOString(),
+				updated_at: typeof brand.updated_at === 'string' ? brand.updated_at : brand.updated_at.toISOString(),
+			}
+
+			// Handle different webhook events
+			if (event === "entry.publish") {
+				// Workflow C: Index rich brand data with Strapi enrichment
+				const strapiPayload: StrapiBrandDescription = {
+					documentId: entry.documentId || "",
+					medusa_brand_id: brandId,
+					brand_name: entry.brand_name || brand.name,
+					brand_handle: entry.brand_handle || brand.handle,
+					detailed_description: entry.detailed_description || "",
+					brand_logo: entry.brand_logo || [],
+					meta_keywords: entry.meta_keywords || [],
+					last_synced: entry.last_synced || new Date().toISOString(),
+					sync_status: (entry.sync_status as "synced" | "outdated" | "pending") || "synced",
+					publishedAt: entry.publishedAt || new Date().toISOString(),
+				}
+
+				// Calculate actual product count using link service
+				const productCount = await getProductCountForBrand(brandId, req.scope)
+
+				const { result } = await indexRichBrandWorkflow(req.scope).run({
+					input: {
+						brand: brandData,
+						strapiPayload,
+						productCount,
 					},
-				},
-			})
+				})
 
-			const eventName =
-				event === "entry.unpublish"
-					? "unpublished"
-					: "published"
+				res.json({
+					received: true,
+					message: "Brand published and indexed with rich content",
+					brandId,
+					indexed: result.indexed,
+				})
+			} else if (event === "entry.unpublish") {
+				// Workflow A: Re-index with basic data only (removes rich content)
+				const { result } = await indexBasicBrandWorkflow(req.scope).run({
+					input: { brand: brandData },
+				})
 
-			res.json({
-				received: true,
-				message: `Brand ${eventName} and re-indexed to Meilisearch`,
-				brandId,
-				indexed: result.indexed,
-			})
+				res.json({
+					received: true,
+					message: "Brand unpublished - re-indexed with basic data only",
+					brandId,
+					indexed: result.indexed,
+				})
+			} else if (event === "entry.delete") {
+				// Workflow D: Delete from Meilisearch (safety fallback)
+				// Note: Normally brand deletion is handled by Medusa's brand.deleted event
+				const { result } = await deleteBrandWorkflow(req.scope).run({
+					input: { brandId },
+				})
+
+				res.json({
+					received: true,
+					message: "Brand deleted from Meilisearch",
+					brandId,
+					deleted: result.deleted,
+				})
+			} else {
+				logger.info(`Ignoring unhandled brand event: ${event}`)
+				res.json({
+					received: true,
+					message: `Event ${event} not handled`,
+					brandId,
+				})
+			}
 		} catch (error) {
-			// Still return 200 to avoid Strapi retrying the webhook
 			const errorMessage = error instanceof Error ? error.message : "Unknown error"
-			logger.error(`Failed to re-index brand ${brandId}: ${errorMessage}`, error)
+			logger.error(`Failed to process brand ${brandId}: ${errorMessage}`, error)
 
 			res.json({
 				received: true,
-				message: "Brand indexing failed",
+				message: "Brand processing failed",
 				brandId,
 				error: errorMessage,
 			})
@@ -241,16 +336,25 @@ export async function GET(
 			},
 		},
 		brandWebhook: {
+			supportedEvents: ["entry.publish", "entry.unpublish", "entry.delete"],
 			examplePayload: {
 				model: "brand-descriptions",
 				entry: {
 					id: 1,
 					documentId: "xyz789",
 					medusa_brand_id: "brand_456",
-					tagline: "Quality gaming gear",
-					story: "<p>Our brand story...</p>",
+					brand_name: "Acme Corp",
+					brand_handle: "acme-corp",
+					detailed_description: "<p>Our brand story...</p>",
+					brand_logo: [{ url: "https://example.com/logo.png" }],
+					meta_keywords: ["quality", "innovation"],
 				},
 				event: "entry.publish",
+			},
+			eventBehavior: {
+				"entry.publish": "Index brand with rich Strapi content (Workflow C)",
+				"entry.unpublish": "Re-index with basic data only (Workflow A)",
+				"entry.delete": "Delete from Meilisearch (Workflow D - safety fallback)",
 			},
 		},
 		strapiV5Config: {
@@ -259,14 +363,9 @@ export async function GET(
 			headers: {
 				"X-Webhook-Secret": process.env.STRAPI_WEBHOOK_SECRET || "your-webhook-secret",
 			},
-			events: ["entry.publish", "entry.unpublish"], // Use these events - see IMPORTANT notes above
-			// DO NOT enable "entry.create" - causes redundant re-indexing
-			// DO NOT enable "entry.update" - won't update correctly (drafts not returned by API)
-			// Note: In Strapi v5, there's no "Content Types" filter - webhook receives all events
-			// The handler filters by model name (product-descriptions, brand-descriptions)
+			events: ["entry.publish", "entry.unpublish", "entry.delete"],
 		},
 		networking: {
-			// Docker networking reference: /docs/deployment.md#webhook-configuration-strapi--medusa
 			dockerDesktop: "Use http://host.docker.internal:9000/webhooks/strapi",
 			colima: "Use http://<colima-ip>:9000/webhooks/strapi (get IP: colima ssh + ip addr)",
 			dockerCompose: "Use http://backend:9000/webhooks/strapi (service name)",
