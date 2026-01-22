@@ -1,4 +1,5 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+import { z } from "zod"
 import { syncProductsWorkflow } from "../../../workflows/meilisearch"
 import { indexRichBrandWorkflow } from "../../../workflows/meilisearch/index-rich-brand-workflow"
 import { indexBasicBrandWorkflow } from "../../../workflows/meilisearch/index-basic-brand-workflow"
@@ -10,23 +11,64 @@ import type {
 	StrapiBrandDescription,
 } from "@3dbyte-tech-store/shared-types"
 import type { MedusaContainer } from "@medusajs/framework/types"
+import ProductBrandLink from "../../../links/product-brand"
 
 /**
- * Calculate the product count for a single brand using the Medusa link system
+ * Link record structure returned by query.graph for product-brand links
+ */
+interface ProductBrandLinkRecord {
+	product_id: string
+	brand_id: string
+}
+
+/**
+ * Zod schema for validating Strapi webhook payloads
+ */
+const strapiWebhookSchema = z.object({
+	model: z.string(),
+	entry: z.object({
+		id: z.number().optional(),
+		documentId: z.string().optional(),
+		medusa_product_id: z.string().optional(),
+		medusa_brand_id: z.string().optional(),
+		brand_name: z.string().optional(),
+		brand_handle: z.string().optional(),
+		detailed_description: z.string().optional(),
+		brand_logo: z.array(z.object({ url: z.string() })).optional(),
+		meta_keywords: z.array(z.string()).optional(),
+		last_synced: z.string().optional(),
+		sync_status: z.string().optional(),
+		publishedAt: z.string().optional(),
+	}).passthrough(),
+	event: z.string(),
+})
+
+type StrapiWebhookPayload = z.infer<typeof strapiWebhookSchema>
+
+/**
+ * Calculate the product count for a single brand using Medusa v2 query.graph
+ *
+ * Uses the link's entryPoint to directly query the product-brand link table,
+ * which is the correct Medusa v2 pattern for querying relationships between modules.
  */
 async function getProductCountForBrand(
 	brandId: string,
 	container: MedusaContainer
 ): Promise<number> {
-	const link = container.resolve("link")
+	const query = container.resolve("query")
 	const logger = container.resolve("logger")
 
 	try {
-		const links = await link.list({
-			[BRAND_MODULE]: {
-				brand_id: [brandId],
+		// Query the link table directly using the link's entryPoint
+		// This is the correct Medusa v2 pattern for querying module links
+		const { data: links } = await query.graph({
+			entity: ProductBrandLink.entryPoint,
+			fields: ["product_id", "brand_id"],
+			filters: {
+				brand_id: brandId,
 			},
-		})
+		}) as { data: ProductBrandLinkRecord[] }
+
 		const count = links.length
 		logger.info(`Calculated product count for brand ${brandId}: ${count}`)
 		return count
@@ -39,28 +81,8 @@ async function getProductCountForBrand(
 	}
 }
 
-interface StrapiWebhookBody {
-	model: string
-	entry: {
-		id?: number
-		documentId?: string
-		medusa_product_id?: string
-		medusa_brand_id?: string
-		brand_name?: string
-		brand_handle?: string
-		detailed_description?: string
-		brand_logo?: Array<{ url: string }>
-		meta_keywords?: string[]
-		last_synced?: string
-		sync_status?: string
-		publishedAt?: string
-		[key: string]: unknown
-	}
-	event: string
-}
-
 interface StrapiWebhookRequest extends MedusaRequest {
-	body: StrapiWebhookBody
+	body: StrapiWebhookPayload
 }
 
 /**
@@ -121,10 +143,22 @@ export async function POST(
 		return
 	}
 
-	// 2. Parse webhook payload
-	const { model, entry, event } = req.body
+	// 2. Validate webhook payload with zod
+	const parseResult = strapiWebhookSchema.safeParse(req.body)
+	if (!parseResult.success) {
+		logger.warn(`Invalid webhook payload: ${parseResult.error.message}`)
+		res.status(400).json({
+			error: "Invalid payload",
+			message: "Webhook payload failed validation",
+			details: parseResult.error.flatten(),
+		})
+		return
+	}
 
-	// 3. Validate this is a tracked model
+	// 3. Parse validated webhook payload
+	const { model, entry, event } = parseResult.data
+
+	// 4. Validate this is a tracked model
 	const validProductModels = [
 		"product-description",
 		"product-descriptions",
@@ -147,7 +181,7 @@ export async function POST(
 		return
 	}
 
-	// 4. Handle product-description webhooks
+	// 5. Handle product-description webhooks
 	if (isProductModel) {
 		const productId = entry?.medusa_product_id
 
@@ -190,7 +224,7 @@ export async function POST(
 		return
 	}
 
-	// 5. Handle brand-description webhooks
+	// 6. Handle brand-description webhooks
 	if (isBrandModel) {
 		const brandId = entry?.medusa_brand_id
 

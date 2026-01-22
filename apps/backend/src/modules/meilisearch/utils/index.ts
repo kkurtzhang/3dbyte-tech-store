@@ -3,6 +3,10 @@ import type { MeilisearchIndexSettings } from "@3dbyte-tech-store/shared-types"
 // Product utilities
 export { toMeilisearchDocument } from "./product"
 
+// Category utilities
+export { toCategoryDocument, computeCategoryPath, computeParentName } from "./product"
+export type { SyncCategoriesStepCategory } from "./product"
+
 // Brand utilities
 export { toBrandDocument } from "./brand"
 

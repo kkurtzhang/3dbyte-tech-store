@@ -10,6 +10,48 @@ import type {
 	MeilisearchIndexStats,
 } from "@3dbyte-tech-store/shared-types"
 
+/**
+ * Meilisearch SDK types (manually defined to avoid ESM/CJS import issues)
+ * These match the types from meilisearch v0.54.0+
+ */
+interface MeiliSearchClient {
+	index(indexName: string): MeiliSearchIndex
+	health(): Promise<{ status: string }>
+}
+
+interface MeiliSearchIndex {
+	addDocuments(documents: Record<string, unknown>[]): Promise<MeiliSearchEnqueuedTask>
+	deleteDocuments(documentIds: string[]): Promise<MeiliSearchEnqueuedTask>
+	getDocument(documentId: string): Promise<Record<string, unknown>>
+	search(query: string, options?: Record<string, unknown>): Promise<MeiliSearchSearchResponse>
+	getStats(): Promise<{ numberOfDocuments: number; isIndexing: boolean; fieldDistribution: Record<string, number> }>
+	updateFilterableAttributes(attributes: string[]): Promise<MeiliSearchEnqueuedTask>
+	updateSortableAttributes(attributes: string[]): Promise<MeiliSearchEnqueuedTask>
+	updateSearchableAttributes(attributes: string[]): Promise<MeiliSearchEnqueuedTask>
+	updateDisplayedAttributes(attributes: string[]): Promise<MeiliSearchEnqueuedTask>
+	updateRankingRules(rules: string[]): Promise<MeiliSearchEnqueuedTask>
+	updateTypoTolerance(settings: unknown): Promise<MeiliSearchEnqueuedTask>
+	updateFaceting(settings: unknown): Promise<MeiliSearchEnqueuedTask>
+	updatePagination(settings: unknown): Promise<MeiliSearchEnqueuedTask>
+}
+
+interface MeiliSearchEnqueuedTask {
+	taskUid: number
+	indexUid: string
+	status: string
+	type: string
+	enqueuedAt: string
+}
+
+interface MeiliSearchSearchResponse {
+	hits: Record<string, unknown>[]
+	estimatedTotalHits?: number
+	limit: number
+	offset: number
+	processingTimeMs: number
+	query: string
+}
+
 type InjectedDependencies = {
 	logger: Logger
 }
@@ -38,7 +80,7 @@ export type MeilisearchOptions = Omit<MeilisearchModuleConfig, "settings">
  *   await client.waitForTask(task.taskUid)
  */
 export default class MeilisearchModuleService {
-	private client: any
+	private client: MeiliSearchClient
 	protected logger_: Logger
 	private options_: MeilisearchOptions
 
@@ -83,7 +125,7 @@ export default class MeilisearchModuleService {
 		}
 	}
 
-	private async getIndex(type: MeilisearchIndexType): Promise<any> {
+	private async getIndex(type: MeilisearchIndexType): Promise<MeiliSearchIndex> {
 		const indexName = await this.getIndexName(type)
 		return this.client.index(indexName)
 	}
@@ -91,7 +133,7 @@ export default class MeilisearchModuleService {
 	async indexData(
 		data: Record<string, unknown>[],
 		type: MeilisearchIndexType = "product"
-	): Promise<any> {
+	): Promise<MeiliSearchEnqueuedTask> {
 		const index = await this.getIndex(type)
 		const documents = data.map((item) => ({
 			...item,
@@ -132,7 +174,7 @@ export default class MeilisearchModuleService {
 	async deleteFromIndex(
 		documentIds: string[],
 		type: MeilisearchIndexType = "product"
-	): Promise<any> {
+	): Promise<MeiliSearchEnqueuedTask> {
 		const index = await this.getIndex(type)
 		const task = await index.deleteDocuments(documentIds)
 
@@ -167,7 +209,7 @@ export default class MeilisearchModuleService {
 		const results = await index.search(query, searchParams)
 
 		return {
-			hits: results.hits as MeilisearchProductDocument[],
+			hits: results.hits as unknown as MeilisearchProductDocument[],
 			estimatedTotalHits: results.estimatedTotalHits ?? 0,
 			limit: results.limit,
 			offset: results.offset,
@@ -183,7 +225,7 @@ export default class MeilisearchModuleService {
 		const index = await this.getIndex(type)
 		this.logger_.info(`Configuring ${type} index settings...`)
 
-		const updateTasks: Promise<any>[] = []
+		const updateTasks: Promise<MeiliSearchEnqueuedTask>[] = []
 
 		if (settings.filterableAttributes?.length) {
 			updateTasks.push(index.updateFilterableAttributes(settings.filterableAttributes))

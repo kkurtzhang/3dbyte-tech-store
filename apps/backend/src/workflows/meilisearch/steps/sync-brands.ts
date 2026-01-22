@@ -7,11 +7,12 @@ import type {
 	StrapiBrandDescription,
 	MeilisearchBrandDocument,
 } from "@3dbyte-tech-store/shared-types"
-import { BRAND_MODULE } from "../../../modules/brand"
 
 export type SyncBrandsStepInput = {
 	brands: SyncBrandsStepBrand[]
 	strapiContents?: StrapiBrandDescription[]
+	/** Product counts per brand ID, computed at workflow level using useQueryGraphStep */
+	productCounts?: Record<string, number>
 }
 
 type SyncBrandsStepCompensationData = {
@@ -19,61 +20,15 @@ type SyncBrandsStepCompensationData = {
 	existingBrands: Record<string, unknown>[]
 }
 
-/**
- * Query product counts for multiple brands using Medusa link system
- */
-async function getProductCountsForBrands(
-	brandIds: string[],
-	container: any
-): Promise<Map<string, number>> {
-	const productCounts = new Map<string, number>()
-
-	// Use the link service to query product-brand relationships
-	const link = container.resolve("link")
-	const logger = container.resolve("logger")
-
-	try {
-		// Query links for all brands at once
-		// This returns all links between products and brands
-		const links = await link.list({
-			[BRAND_MODULE]: {
-				brand_id: brandIds,
-			},
-		})
-
-		// Count products per brand
-		for (const brandId of brandIds) {
-			const count = links.filter(
-				(link: any) => link[BRAND_MODULE]?.brand_id === brandId
-			).length
-			productCounts.set(brandId, count)
-		}
-
-		logger.info(
-			`Calculated product counts for ${brandIds.length} brands: ${JSON.stringify(Array.from(productCounts.entries()))}`
-		)
-	} catch (error) {
-		// If link query fails, default to 0 for all brands
-		const message = error instanceof Error ? error.message : "Unknown error"
-		logger.warn(
-			`Failed to query product counts for brands: ${message}, defaulting to 0`
-		)
-		for (const brandId of brandIds) {
-			productCounts.set(brandId, 0)
-		}
-	}
-
-	return productCounts
-}
-
 export const syncBrandsStep = createStep(
 	"sync-brands",
 	async (
-		{ brands, strapiContents = [] }: SyncBrandsStepInput,
+		{ brands, strapiContents = [], productCounts = {} }: SyncBrandsStepInput,
 		{ container }
 	) => {
 		const meilisearchModuleService =
 			container.resolve<MeilisearchModuleService>(MEILISEARCH_MODULE)
+		const logger = container.resolve("logger")
 
 		if (!brands || brands.length === 0) {
 			return new StepResponse(
@@ -99,16 +54,15 @@ export const syncBrandsStep = createStep(
 			strapiContents.map((content) => [content.medusa_brand_id, content])
 		)
 
-		// Calculate product counts for all brands
-		const productCounts = await getProductCountsForBrands(
-			brands.map((b) => b.id),
-			container
+		// Log product counts for debugging
+		logger.info(
+			`Received product counts for ${Object.keys(productCounts).length} brands`
 		)
 
 		// Transform brands to Meilisearch documents with Strapi enrichment
 		const documents: MeilisearchBrandDocument[] = brands.map((brand) => {
 			const strapiContent = strapiContentMap.get(brand.id)
-			const productCount = productCounts.get(brand.id) ?? 0
+			const productCount = productCounts[brand.id] ?? 0
 			return toBrandDocument(brand, strapiContent ?? null, productCount)
 		})
 

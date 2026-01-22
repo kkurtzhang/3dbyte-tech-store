@@ -10,10 +10,19 @@
 // Note: These are structural tests verifying the subscriber exports correctly.
 // Full integration testing requires a running Medusa instance.
 
+// Use require for dynamic imports to avoid ESM extension issues
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const brandCreated = require("../brand-created")
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const brandUpdated = require("../brand-updated")
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const brandDeleted = require("../brand-deleted")
+
 describe("brand-sync subscribers", () => {
 	describe("brand-created subscriber", () => {
-		it("should export a handler function and config", async () => {
-			const { default: handler, config } = await import("../brand-created")
+		it("should export a handler function and config", () => {
+			const handler = brandCreated.default
+			const config = brandCreated.config
 
 			expect(handler).toBeDefined()
 			expect(typeof handler).toBe("function")
@@ -23,8 +32,9 @@ describe("brand-sync subscribers", () => {
 	})
 
 	describe("brand-updated subscriber", () => {
-		it("should export a handler function and config", async () => {
-			const { default: handler, config } = await import("../brand-updated")
+		it("should export a handler function and config", () => {
+			const handler = brandUpdated.default
+			const config = brandUpdated.config
 
 			expect(handler).toBeDefined()
 			expect(typeof handler).toBe("function")
@@ -34,8 +44,9 @@ describe("brand-sync subscribers", () => {
 	})
 
 	describe("brand-deleted subscriber", () => {
-		it("should export a handler function and config", async () => {
-			const { default: handler, config } = await import("../brand-deleted")
+		it("should export a handler function and config", () => {
+			const handler = brandDeleted.default
+			const config = brandDeleted.config
 
 			expect(handler).toBeDefined()
 			expect(typeof handler).toBe("function")
