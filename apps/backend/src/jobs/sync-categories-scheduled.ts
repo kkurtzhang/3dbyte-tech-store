@@ -1,5 +1,5 @@
 import { MedusaContainer } from "@medusajs/framework/types";
-import { syncCategoriesWorkflow } from "../workflows/meilisearch/sync-categories";
+import { syncCategoriesWorkflow } from "../workflows/meilisearch/categories/sync-categories";
 
 /**
  * Scheduled job to sync categories to Meilisearch

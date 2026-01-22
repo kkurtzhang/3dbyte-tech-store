@@ -5,7 +5,7 @@ import { Modules } from "@medusajs/utils";
 import { BRAND_MODULE } from "../../../../modules/brand";
 import { dismissLinksWorkflow } from "@medusajs/medusa/core-flows";
 import { DeleteAdminBatchLinkProductsBrand } from "../validators";
-import { syncBrandsWorkflow } from "../../../../workflows/meilisearch/sync-brands";
+import { syncBrandsWorkflow } from "../../../../workflows/meilisearch/brands/sync-brands";
 
 type DeleteAdminBatchLinkProductsBrandType = z.infer<
   typeof DeleteAdminBatchLinkProductsBrand

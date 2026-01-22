@@ -1,6 +1,6 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { MedusaError } from "@medusajs/framework/utils"
-import { syncCategoriesWorkflow } from "../../../../workflows/meilisearch/sync-categories"
+import { syncCategoriesWorkflow } from "../../../../workflows/meilisearch/categories/sync-categories"
 import type { Logger } from "@medusajs/framework/types"
 
 /**

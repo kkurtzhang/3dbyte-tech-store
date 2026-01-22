@@ -1,9 +1,9 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { z } from "zod"
 import { syncProductsWorkflow } from "../../../workflows/meilisearch"
-import { indexRichBrandWorkflow } from "../../../workflows/meilisearch/index-rich-brand-workflow"
-import { indexBasicBrandWorkflow } from "../../../workflows/meilisearch/index-basic-brand-workflow"
-import { deleteBrandWorkflow } from "../../../workflows/meilisearch/delete-brand-workflow"
+import { indexRichBrandWorkflow } from "../../../workflows/meilisearch/brands/index-rich-brand-workflow"
+import { indexBasicBrandWorkflow } from "../../../workflows/meilisearch/brands/index-basic-brand-workflow"
+import { deleteBrandWorkflow } from "../../../workflows/meilisearch/brands/delete-brand-workflow"
 import { BRAND_MODULE } from "../../../modules/brand"
 import type BrandModuleService from "../../../modules/brand/service"
 import type {

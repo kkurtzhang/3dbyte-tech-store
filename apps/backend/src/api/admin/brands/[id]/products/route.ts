@@ -9,7 +9,7 @@ import {
   dismissLinksWorkflow,
   updateLinksWorkflow,
 } from "@medusajs/medusa/core-flows";
-import { syncBrandsWorkflow } from "../../../../../workflows/meilisearch/sync-brands";
+import { syncBrandsWorkflow } from "../../../../../workflows/meilisearch/brands/sync-brands";
 
 type PostAdminLinkProductsToBrandType = z.infer<
   typeof PostAdminLinkProductsToBrand
