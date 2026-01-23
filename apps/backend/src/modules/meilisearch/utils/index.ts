@@ -27,7 +27,7 @@ export const DEFAULT_INDEX_SETTINGS: MeilisearchIndexSettings = {
 	searchableAttributes: [
 		"title",
 		"description",
-		"detailed_description",
+		"rich_description",
 		"features",
 		"tags",
 		"categories",
@@ -44,7 +44,7 @@ export const DEFAULT_INDEX_SETTINGS: MeilisearchIndexSettings = {
 		"categories",
 		"tags",
 		"images",
-		"detailed_description",
+		"rich_description",
 		"features",
 		"specifications",
 		"status",

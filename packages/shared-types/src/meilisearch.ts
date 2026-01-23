@@ -42,7 +42,7 @@ export interface MeilisearchIndexSettings {
 }
 
 export const BRAND_INDEX_SETTINGS = {
-	searchableAttributes: ["name", "meta_keywords", "detailed_description", "handle"],
+	searchableAttributes: ["name", "meta_keywords", "rich_description", "handle"],
 	displayedAttributes: ["id", "name", "handle", "brand_logo", "product_count"],
 	filterableAttributes: ["product_count", "id"],
 	sortableAttributes: ["product_count", "created_at", "name"],
@@ -76,7 +76,7 @@ export interface MeilisearchProductDocument {
 	collection_ids: string[]
 	type_ids: string[]
 	material_ids: string[]
-	detailed_description?: string
+	rich_description?: string
 	features?: string[]
 	specifications?: Record<string, string>
 	seo_title?: string
@@ -110,7 +110,7 @@ export interface MeilisearchBrandDocument {
 	name: string
 	handle: string
 	// Enriched from Strapi
-	detailed_description?: string
+	rich_description?: string
 	brand_logo?: string[]
 	meta_keywords?: string[]
 	// Calculated
@@ -198,7 +198,7 @@ export interface StrapiProductDescription {
 	medusa_product_id: string
 	product_title: string
 	product_handle: string
-	detailed_description: string
+	rich_description: string
 	features: string[]
 	specifications: Record<string, unknown>
 	seo_title: string
@@ -229,7 +229,7 @@ export interface StrapiBrandDescription {
 	medusa_brand_id: string
 	brand_name: string
 	brand_handle: string
-	detailed_description: string
+	rich_description: string
 	brand_logo: Array<{
 		url: string
 	}>

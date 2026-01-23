@@ -878,7 +878,7 @@ events: ["entry.publish", "entry.unpublish"]
 
 ```typescript
 // src/modules/meilisearch/utils.ts:66-71
-const detailedDescription = strapiContent?.detailed_description || ""
+const richDescription = strapiContent?.rich_description || ""
 const features = strapiContent?.features || []
 const specifications = strapiContent?.specifications || {}
 
@@ -894,10 +894,10 @@ describe("Dual Status Filtering", () => {
   it("should index published product with published Strapi content", async () => {
     // Both published → full enrichment
     const product = { id: "prod_1", status: "published" }
-    const strapiContent = { detailed_description: "<p>Rich content</p>" }
+    const strapiContent = { rich_description: "<p>Rich content</p>" }
 
     const doc = toMeilisearchDocument(product, strapiContent)
-    expect(doc.detailed_description).toBe("<p>Rich content</p>")
+    expect(doc.rich_description).toBe("<p>Rich content</p>")
   })
 
   it("should index published product without Strapi enrichment when draft", async () => {
@@ -906,7 +906,7 @@ describe("Dual Status Filtering", () => {
     const strapiContent = null // API returned empty (draft)
 
     const doc = toMeilisearchDocument(product, strapiContent)
-    expect(doc.detailed_description).toBeUndefined()
+    expect(doc.rich_description).toBeUndefined()
     // Product still indexed with Medusa data
     expect(doc.title).toBeDefined()
     expect(doc.price).toBeDefined()

@@ -36,7 +36,7 @@ export interface MeilisearchIndexSettings {
     };
 }
 export declare const BRAND_INDEX_SETTINGS: {
-    readonly searchableAttributes: readonly ["name", "meta_keywords", "detailed_description", "handle"];
+    readonly searchableAttributes: readonly ["name", "meta_keywords", "rich_description", "handle"];
     readonly displayedAttributes: readonly ["id", "name", "handle", "brand_logo", "product_count"];
     readonly filterableAttributes: readonly ["product_count", "id"];
     readonly sortableAttributes: readonly ["product_count", "created_at", "name"];
@@ -69,7 +69,7 @@ export interface MeilisearchProductDocument {
     collection_ids: string[];
     type_ids: string[];
     material_ids: string[];
-    detailed_description?: string;
+    rich_description?: string;
     features?: string[];
     specifications?: Record<string, string>;
     seo_title?: string;
@@ -103,7 +103,7 @@ export interface MeilisearchBrandDocument {
     id: string;
     name: string;
     handle: string;
-    detailed_description?: string;
+    rich_description?: string;
     brand_logo?: string[];
     meta_keywords?: string[];
     product_count: number;
@@ -116,7 +116,7 @@ export interface MeilisearchSearchOptions {
     sort?: string[];
     facets?: string[];
 }
-export interface MeilisearchSearchResponse<T = MeilisearchProductDocument | MeilisearchCategoryDocument | MeilisearchBrandDocument> {
+export interface MeilisearchSearchResponse<T = MeilisearchProductDocument | MeilisearchCategoryDocument> {
     hits: T[];
     estimatedTotalHits: number;
     limit: number;
@@ -183,11 +183,39 @@ export interface StrapiProductDescription {
     medusa_product_id: string;
     product_title: string;
     product_handle: string;
-    detailed_description: string;
+    rich_description: string;
     features: string[];
     specifications: Record<string, unknown>;
     seo_title: string;
     seo_description: string;
+    meta_keywords: string[];
+    last_synced: string;
+    sync_status: "synced" | "outdated" | "pending";
+    publishedAt: string;
+}
+/**
+ * Brand type for workflow steps (matches useQueryGraphStep output)
+ */
+export interface SyncBrandsStepBrand {
+    id: string;
+    name: string;
+    handle: string;
+    created_at: string;
+    updated_at: string;
+}
+/**
+ * Strapi brand description response
+ * Matches the Strapi brand-descriptions content type structure
+ */
+export interface StrapiBrandDescription {
+    documentId: string;
+    medusa_brand_id: string;
+    brand_name: string;
+    brand_handle: string;
+    rich_description: string;
+    brand_logo: Array<{
+        url: string;
+    }>;
     meta_keywords: string[];
     last_synced: string;
     sync_status: "synced" | "outdated" | "pending";

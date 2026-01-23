@@ -84,7 +84,7 @@ export interface MeilisearchBrandDocument {
   created_at: number
 
   // Rich Info (Flow 2)
-  detailed_description?: string
+  rich_description?: string
   brand_logo?: string[]
   meta_keywords?: string[]
 
@@ -101,7 +101,7 @@ export interface MeilisearchBrandDocument {
 *   **Input:** `{ brand: Brand, strapiPayload?: any, productCount?: number }`
 *   **Logic:**
     *   Constructs `MeilisearchBrandDocument`.
-    *   If `strapiPayload` is present, maps `brand_logo`, `detailed_description`.
+    *   If `strapiPayload` is present, maps `brand_logo`, `rich_description`.
     *   If absent, sends only basic fields (Meilisearch `updateDocuments` handles partial updates).
 *   **Retry:** Configurable per workflow.
 

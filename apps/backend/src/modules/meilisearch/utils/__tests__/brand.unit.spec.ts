@@ -19,7 +19,7 @@ describe("toBrandDocument", () => {
 		medusa_brand_id: "brand_123",
 		brand_name: "Test Brand",
 		brand_handle: "test-brand",
-		detailed_description: "This is a detailed brand description from Strapi.",
+		rich_description: "This is a detailed brand description from Strapi.",
 		brand_logo: [
 			{ url: "https://cdn.example.com/logo1.png" },
 			{ url: "https://cdn.example.com/logo2.png" },
@@ -44,7 +44,7 @@ describe("toBrandDocument", () => {
 				id: "brand_123",
 				name: "Test Brand",
 				handle: "test-brand",
-				detailed_description: undefined,
+				rich_description: undefined,
 				brand_logo: undefined,
 				meta_keywords: undefined,
 				product_count: 10,
@@ -55,7 +55,7 @@ describe("toBrandDocument", () => {
 			expect(result.id).toBe("brand_123")
 			expect(result.name).toBe("Test Brand")
 			expect(result.handle).toBe("test-brand")
-			expect(result.detailed_description).toBeUndefined()
+			expect(result.rich_description).toBeUndefined()
 			expect(result.brand_logo).toBeUndefined()
 			expect(result.meta_keywords).toBeUndefined()
 			expect(result.product_count).toBe(10)
@@ -91,7 +91,7 @@ describe("toBrandDocument", () => {
 				id: "brand_123",
 				name: "Test Brand",
 				handle: "test-brand",
-				detailed_description: "This is a detailed brand description from Strapi.",
+				rich_description: "This is a detailed brand description from Strapi.",
 				brand_logo: ["https://cdn.example.com/logo1.png", "https://cdn.example.com/logo2.png"],
 				meta_keywords: ["electronics", "tech", "gadgets"],
 				product_count: 25,
@@ -126,7 +126,7 @@ describe("toBrandDocument", () => {
 			expect(result.meta_keywords).toHaveLength(3)
 		})
 
-		it("should include detailed description from Strapi", () => {
+		it("should include rich description from Strapi", () => {
 			// Arrange
 			const productCount = 0
 
@@ -134,7 +134,7 @@ describe("toBrandDocument", () => {
 			const result = toBrandDocument(mockBrand, mockStrapiContent, productCount)
 
 			// Assert
-			expect(result.detailed_description).toBe("This is a detailed brand description from Strapi.")
+			expect(result.rich_description).toBe("This is a detailed brand description from Strapi.")
 		})
 	})
 
@@ -230,8 +230,8 @@ describe("toBrandDocument", () => {
 			expect(typeof result.created_at).toBe("number")
 
 			// Verify optional fields
-			if (result.detailed_description !== undefined) {
-				expect(typeof result.detailed_description).toBe("string")
+			if (result.rich_description !== undefined) {
+				expect(typeof result.rich_description).toBe("string")
 			}
 			if (result.brand_logo !== undefined) {
 				expect(Array.isArray(result.brand_logo)).toBe(true)

@@ -36,7 +36,7 @@ describe("indexRichBrandWorkflow", () => {
 				medusa_brand_id: "brand_123",
 				brand_name: "Test Brand",
 				brand_handle: "test-brand",
-				detailed_description: "A detailed description",
+				rich_description: "A detailed description",
 				brand_logo: [{ url: "https://example.com/logo.png" }],
 				meta_keywords: ["tech", "innovation"],
 				last_synced: "2026-01-18T10:00:00.000Z",
@@ -51,7 +51,7 @@ describe("indexRichBrandWorkflow", () => {
 			}
 
 			expect(input.brand.id).toBe("brand_123")
-			expect(input.strapiPayload.detailed_description).toBe("A detailed description")
+			expect(input.strapiPayload.rich_description).toBe("A detailed description")
 			expect(input.productCount).toBe(10)
 		})
 	})

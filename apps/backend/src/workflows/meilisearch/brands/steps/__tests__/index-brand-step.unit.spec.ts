@@ -69,7 +69,7 @@ describe("indexBrandStep", () => {
 				medusa_brand_id: "brand_789",
 				brand_name: "Full Brand",
 				brand_handle: "full-brand",
-				detailed_description: "A detailed description",
+				rich_description: "A detailed description",
 				brand_logo: [{ url: "https://example.com/logo.png" }],
 				meta_keywords: ["tech", "innovation"],
 				last_synced: "2026-01-18T10:00:00.000Z",

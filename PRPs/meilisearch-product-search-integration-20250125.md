@@ -13,7 +13,7 @@ This PRP implements Meilisearch-powered product search for the 3D Byte Tech Stor
 
 **Key Architecture Decision**: Product enrichment (Medusa + Strapi data) happens at indexing time in Medusa subscribers, NOT at render time. This ensures:
 - Fast search queries (single index lookup)
-- Rich search results (includes Strapi content like detailed_description, features)
+- Rich search results (includes Strapi content like rich_description, features)
 - Separation of concerns (search vs rendering)
 
 ---
@@ -228,7 +228,7 @@ export async function search({
 │    id, title, handle, thumbnail, price, currency_code,              │
 │    variants, categories, tags, images,                              │
 │    // Enriched from Strapi                                          │
-│    detailed_description, features, specifications,                   │
+│    rich_description, features, specifications,                   │
 │    seo_title, seo_description, meta_keywords                        │
 │  }                                                                   │
 └─────────────────────────────────────────────────────────────────────┘
@@ -318,7 +318,7 @@ export interface MeilisearchProductDocument {
   images: string[];
 
   // Enriched from Strapi Product Description
-  detailed_description?: string;
+  rich_description?: string;
   features?: string[];
   specifications?: Record<string, unknown>;
   seo_title?: string;
@@ -404,7 +404,7 @@ export interface MeilisearchIndexSettings {
 
 5. **Configure index settings**
    - Add method to configure filterable/sortable/searchable attributes
-   - Configure: filterable (price, categories, tags), sortable (price, title), searchable (title, description, detailed_description)
+   - Configure: filterable (price, categories, tags), sortable (price, title), searchable (title, description, rich_description)
 
 ### Phase 3: Backend - Product Indexing Subscribers
 

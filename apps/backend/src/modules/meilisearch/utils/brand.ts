@@ -25,7 +25,7 @@ export function toBrandDocument(
 		id: brand.id,
 		name: brand.name,
 		handle: brand.handle,
-		detailed_description: strapiContent?.detailed_description,
+		rich_description: strapiContent?.rich_description,
 		brand_logo: logos.length > 0 ? logos : undefined,
 		meta_keywords: keywords.length > 0 ? keywords : undefined,
 		product_count: productCount,

@@ -67,7 +67,7 @@ export function toMeilisearchDocument(
 	}))
 
 	// Extract Strapi enriched content
-	const detailedDescription = strapiContent?.detailed_description || ""
+	const richDescription = strapiContent?.rich_description || ""
 	const features = strapiContent?.features || []
 	const specifications = strapiContent?.specifications || {}
 	const seoTitle = strapiContent?.seo_title || product.title
@@ -110,7 +110,7 @@ export function toMeilisearchDocument(
 		material_ids: materialIds,
 
 		// Enriched from Strapi
-		detailed_description: detailedDescription || undefined,
+		rich_description: richDescription || undefined,
 		features: features.length > 0 ? features : undefined,
 		specifications: Object.keys(specifications).length > 0 ? (specifications as Record<string, string>) : undefined,
 		seo_title: seoTitle || undefined,
