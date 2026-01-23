@@ -9,11 +9,7 @@
   "options": {
     "draftAndPublish": true
   },
-  "pluginOptions": {
-    "i18n": {
-      "localized": false
-    }
-  },
+  "pluginOptions": {},
   "attributes": {
     "medusa_brand_id": {
       "type": "string",
@@ -28,9 +24,6 @@
       "type": "string",
       "required": true
     },
-    "detailed_description": {
-      "type": "blocks"
-    },
     "brand_logo": {
       "type": "media",
       "multiple": true,
@@ -40,6 +33,9 @@
         "videos",
         "audios"
       ]
+    },
+    "rich_description": {
+      "type": "richtext"
     },
     "seo_title": {
       "type": "string"

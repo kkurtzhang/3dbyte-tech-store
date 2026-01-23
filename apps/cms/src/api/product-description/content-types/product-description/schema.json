@@ -25,7 +25,7 @@
       "type": "string",
       "required": true
     },
-    "detailed_description": {
+    "rich_description": {
       "type": "richtext"
     },
     "product_images": {
