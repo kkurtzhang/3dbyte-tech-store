@@ -348,3 +348,65 @@ export const CATEGORY_INDEX_SETTINGS: MeilisearchIndexSettings = {
 		maxTotalHits: 10000,
 	},
 }
+
+/**
+ * Brand index settings for Meilisearch
+ * Optimized for brand filtering and brand pages
+ */
+export const BRAND_INDEX_SETTINGS: MeilisearchIndexSettings = {
+	// 1. SEARCHABLE
+	// Users search by brand name, description, or handle (URL slug)
+	searchableAttributes: ["name", "rich_description", "handle"],
+
+	// 2. FILTERABLE
+	// Critical for filtering active brands, by ID, or by handle
+	filterableAttributes: [
+		"id",
+		"handle",
+		"is_active", // Filter: "is_active = true"
+		"created_at", // Filter: "created_at > timestamp" (New brands)
+	],
+
+	// 3. SORTABLE
+	// Brands are commonly sorted by name (alphabetically), product count (popularity), or creation date
+	sortableAttributes: ["name", "created_at", "product_count"],
+
+	// 4. RANKING RULES
+	// Standard relevance ranking for brand search
+	rankingRules: [
+		"words",
+		"typo",
+		"sort",
+		"proximity",
+		"attribute",
+		"exactness",
+	],
+
+	// 5. DISPLAYED
+	// Return relevant brand information for display
+	displayedAttributes: [
+		"id",
+		"name",
+		"handle",
+		"brand_logo",
+		"rich_description",
+		"product_count",
+	],
+
+	// 6. TYPO TOLERANCE
+	// Allow typos for better user experience
+	typoTolerance: {
+		minWordSizeForTypos: {
+			oneTypo: 4,
+			twoTypos: 8,
+		},
+	},
+
+	// 7. FACETING & PAGINATION
+	faceting: {
+		maxValuesPerFacet: 100,
+	},
+	pagination: {
+		maxTotalHits: 10000,
+	},
+}
