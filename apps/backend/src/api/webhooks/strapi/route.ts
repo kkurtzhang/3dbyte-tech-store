@@ -34,11 +34,11 @@ const strapiWebhookSchema = z.object({
 		brand_name: z.string().optional(),
 		brand_handle: z.string().optional(),
 		rich_description: z.string().optional(),
-		brand_logo: z.array(z.object({ url: z.string() })).optional(),
+		brand_logo: z.array(z.object({ url: z.string() })).nullish(),
 		meta_keywords: z.array(z.string()).optional(),
 		last_synced: z.string().optional(),
 		sync_status: z.string().optional(),
-		publishedAt: z.string().optional(),
+		publishedAt: z.string().nullish(),
 	}).passthrough(),
 	event: z.string(),
 })

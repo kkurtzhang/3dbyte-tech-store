@@ -363,7 +363,6 @@ export const BRAND_INDEX_SETTINGS: MeilisearchIndexSettings = {
 	filterableAttributes: [
 		"id",
 		"handle",
-		"is_active", // Filter: "is_active = true"
 		"created_at", // Filter: "created_at > timestamp" (New brands)
 	],
 

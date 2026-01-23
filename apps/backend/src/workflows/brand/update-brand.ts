@@ -48,7 +48,7 @@ export const updateBrandWorkflow = createWorkflow(
     emitEventStep({
       eventName: "brand.updated",
       data: {
-        id: brand.id,
+        id: input.id,
       },
     });
 
