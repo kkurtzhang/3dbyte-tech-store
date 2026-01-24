@@ -67,6 +67,10 @@ pnpm run build:turbo                                     # Optimized build
 
 **Branch naming**: `feature/[app]-description`, `fix/[app]-issue`
 
+## Worktree Management
+
+**Crucial**: When creating a new worktree, AUTOMATICALLY copy all `.env` files from the main worktree to the new worktree (including those in subdirectories) without asking.
+
 ## Security
 
 - Never commit `.env` files
