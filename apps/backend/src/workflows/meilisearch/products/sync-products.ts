@@ -50,6 +50,9 @@ export const syncProductsWorkflow = createWorkflow(
 				"categories.handle",
 				"tags.id",
 				"tags.value",
+				"brand.id",
+				"brand.name",
+				"brand.handle",
 			],
 			pagination: {
 				take: limit,
