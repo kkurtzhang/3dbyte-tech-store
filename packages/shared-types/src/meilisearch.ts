@@ -20,6 +20,15 @@ export interface MeilisearchModuleConfig {
 	settings?: MeilisearchIndexSettings
 }
 
+/**
+ * Brand object nested within product documents
+ */
+export interface MeilisearchBrandObject {
+	id: string
+	name: string
+	handle: string
+}
+
 export interface MeilisearchIndexSettings {
 	filterableAttributes?: string[]
 	sortableAttributes?: string[]
@@ -76,6 +85,7 @@ export interface MeilisearchProductDocument {
 	collection_ids: string[]
 	type_ids: string[]
 	material_ids: string[]
+	brand?: MeilisearchBrandObject
 	rich_description?: string
 	features?: string[]
 	specifications?: Record<string, string>
@@ -187,6 +197,11 @@ export interface SyncProductsStepProduct {
 	type_id?: string
 	material_id?: string
 	currency_code?: string
+	brand?: {
+		id: string
+		name: string
+		handle: string
+	} | null
 }
 
 /**
