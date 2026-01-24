@@ -22,8 +22,10 @@ export const DEFAULT_INDEX_SETTINGS: MeilisearchIndexSettings = {
 		"collection_ids",
 		"type_ids",
 		"material_ids",
+		"brand.id",
+		"brand.handle",
 	],
-	sortableAttributes: ["price", "title", "created_at", "updated_at"],
+	sortableAttributes: ["price", "title", "created_at", "updated_at", "brand.name"],
 	searchableAttributes: [
 		"title",
 		"description",
@@ -31,6 +33,7 @@ export const DEFAULT_INDEX_SETTINGS: MeilisearchIndexSettings = {
 		"features",
 		"tags",
 		"categories",
+		"brand.name",
 	],
 	displayedAttributes: [
 		"id",
@@ -44,6 +47,7 @@ export const DEFAULT_INDEX_SETTINGS: MeilisearchIndexSettings = {
 		"categories",
 		"tags",
 		"images",
+		"brand",
 		"rich_description",
 		"features",
 		"specifications",

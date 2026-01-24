@@ -1,6 +1,5 @@
 import type {
 	MeilisearchCategoryDocument,
-	MeilisearchIndexSettings,
 	MeilisearchProductDocument,
 	StrapiProductDescription,
 	SyncProductsStepProduct,
@@ -49,6 +48,15 @@ export function toMeilisearchDocument(
 
 	// Extract material IDs for faceting (if applicable)
 	const materialIds = product.material_id ? [product.material_id] : []
+
+	// Extract brand data for faceting and search
+	const brand = product.brand
+		? {
+				id: product.brand.id,
+				name: product.brand.name,
+				handle: product.brand.handle,
+			}
+		: undefined
 
 	// Build variants array with minimal data
 	const variants = (product.variants || []).map((v) => ({
@@ -108,6 +116,9 @@ export function toMeilisearchDocument(
 
 		// Material IDs for faceting
 		material_ids: materialIds,
+
+		// Brand for faceting and search
+		brand,
 
 		// Enriched from Strapi
 		rich_description: richDescription || undefined,
