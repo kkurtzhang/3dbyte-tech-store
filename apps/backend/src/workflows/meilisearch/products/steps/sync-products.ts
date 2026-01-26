@@ -1,93 +1,114 @@
-import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk"
-import { MEILISEARCH_MODULE } from "../../../../modules/meilisearch"
-import { toMeilisearchDocument } from "../../../../modules/meilisearch/utils/index"
-import type MeilisearchModuleService from "../../../../modules/meilisearch/service"
+import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk";
+import { ContainerRegistrationKeys } from "@medusajs/framework/utils";
+import { MEILISEARCH_MODULE } from "../../../../modules/meilisearch";
+import {
+  toMeilisearchDocument,
+  type RegionForPricing,
+} from "../../../../modules/meilisearch/utils/index";
+import type MeilisearchModuleService from "../../../../modules/meilisearch/service";
 import type {
-	SyncProductsStepProduct,
-	StrapiProductDescription,
-	MeilisearchProductDocument,
-} from "@3dbyte-tech-store/shared-types"
+  SyncProductsStepProduct,
+  StrapiProductDescription,
+  MeilisearchProductDocument,
+} from "@3dbyte-tech-store/shared-types";
 
 export type SyncProductsStepInput = {
-	products: SyncProductsStepProduct[]
-	strapiContents?: StrapiProductDescription[]
-}
+  products: SyncProductsStepProduct[];
+  strapiContents?: StrapiProductDescription[];
+};
 
 type SyncProductsStepCompensationData = {
-	newProductIds: string[]
-	existingProducts: Record<string, unknown>[]
-}
+  newProductIds: string[];
+  existingProducts: Record<string, unknown>[];
+};
 
 export const syncProductsStep = createStep(
-	"sync-products",
-	async (
-		{ products, strapiContents = [] }: SyncProductsStepInput,
-		{ container }
-	) => {
-		const meilisearchModuleService =
-			container.resolve<MeilisearchModuleService>(MEILISEARCH_MODULE)
+  "sync-products",
+  async (
+    { products, strapiContents = [] }: SyncProductsStepInput,
+    { container },
+  ) => {
+    const meilisearchModuleService =
+      container.resolve<MeilisearchModuleService>(MEILISEARCH_MODULE);
+    const remoteQuery = container.resolve(
+      ContainerRegistrationKeys.REMOTE_QUERY,
+    );
 
-		if (!products || products.length === 0) {
-			return new StepResponse(
-				{ indexed: 0 },
-				{ newProductIds: [], existingProducts: [] }
-			)
-		}
+    if (!products || products.length === 0) {
+      return new StepResponse(
+        { indexed: 0 },
+        { newProductIds: [], existingProducts: [] },
+      );
+    }
 
-		// Retrieve existing products BEFORE indexing (for rollback)
-		const existingProducts = await meilisearchModuleService.retrieveFromIndex(
-			products.map((product) => product.id),
-			"product"
-		)
+    // Fetch all active regions for multi-currency pricing
+    const { data: regions } = await remoteQuery.graph({
+      entity: "region",
+      fields: ["id", "currency_code"],
+    });
+    const regionsForPricing: RegionForPricing[] = regions.map((r: unknown) => ({
+      id: (r as { id: string }).id,
+      currency_code: (r as { currency_code: string }).currency_code,
+    }));
 
-		// Determine which products are new vs existing
-		const existingIds = new Set(existingProducts.map((p) => p.id as string))
-		const newProductIds = products
-			.filter((product) => !existingIds.has(product.id))
-			.map((product) => product.id)
+    // Retrieve existing products BEFORE indexing (for rollback)
+    const existingProducts = await meilisearchModuleService.retrieveFromIndex(
+      products.map((product) => product.id),
+      "product",
+    );
 
-		// Create a map of Strapi content by medusa_id for quick lookup
-		const strapiContentMap = new Map<string, StrapiProductDescription>(
-			strapiContents.map((content) => [content.medusa_product_id, content])
-		)
+    // Determine which products are new vs existing
+    const existingIds = new Set(existingProducts.map((p) => p.id as string));
+    const newProductIds = products
+      .filter((product) => !existingIds.has(product.id))
+      .map((product) => product.id);
 
-		// Transform products to Meilisearch documents with Strapi enrichment
-		const documents: MeilisearchProductDocument[] = products.map((product) => {
-			const strapiContent = strapiContentMap.get(product.id)
-			return toMeilisearchDocument(product, strapiContent ?? null)
-		})
+    // Create a map of Strapi content by medusa_id for quick lookup
+    const strapiContentMap = new Map<string, StrapiProductDescription>(
+      strapiContents.map((content) => [content.medusa_product_id, content]),
+    );
 
-		// Index the documents
-		await meilisearchModuleService.indexData(
-			documents as unknown as Record<string, unknown>[],
-			"product"
-		)
+    // Transform products to Meilisearch documents with regions and Strapi enrichment
+    const documents: MeilisearchProductDocument[] = products.map((product) => {
+      const strapiContent = strapiContentMap.get(product.id);
+      return toMeilisearchDocument(
+        product,
+        regionsForPricing,
+        strapiContent ?? null,
+      );
+    });
 
-		return new StepResponse(
-			{ indexed: documents.length },
-			{ newProductIds, existingProducts }
-		)
-	},
-	// Compensation function for rollback
-	async (compensationData, { container }) => {
-		if (!compensationData) {
-			return
-		}
+    // Index the documents
+    await meilisearchModuleService.indexData(
+      documents as unknown as Record<string, unknown>[],
+      "product",
+    );
 
-		const { newProductIds, existingProducts } =
-			compensationData as SyncProductsStepCompensationData
+    return new StepResponse(
+      { indexed: documents.length },
+      { newProductIds, existingProducts },
+    );
+  },
+  // Compensation function for rollback
+  async (compensationData, { container }) => {
+    if (!compensationData) {
+      return;
+    }
 
-		const meilisearchModuleService =
-			container.resolve<MeilisearchModuleService>(MEILISEARCH_MODULE)
+    const { newProductIds, existingProducts } =
+      compensationData as SyncProductsStepCompensationData;
 
-		// Delete newly added products
-		if (newProductIds && newProductIds.length > 0) {
-			await meilisearchModuleService.deleteFromIndex(newProductIds, "product")
-		}
+    const meilisearchModuleService =
+      container.resolve<MeilisearchModuleService>(MEILISEARCH_MODULE);
 
-		// Restore existing products to their original state
-		if (existingProducts && existingProducts.length > 0) {
-			await meilisearchModuleService.indexData(existingProducts, "product")
-		}
-	}
-)
+    // Delete newly added products
+    if (newProductIds && newProductIds.length > 0) {
+      await meilisearchModuleService.deleteFromIndex(newProductIds, "product");
+    }
+
+    // Restore existing products to their original state
+    if (existingProducts && existingProducts.length > 0) {
+      await meilisearchModuleService.indexData(existingProducts, "product");
+    }
+  },
+);

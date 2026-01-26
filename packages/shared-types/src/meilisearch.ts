@@ -184,6 +184,7 @@ export interface SyncProductsStepProduct {
   variants?: Array<{
     id: string;
     title?: string;
+    inventory_quantity?: number;
     options?: Array<{
       option_title?: string;
       title?: string;
@@ -192,6 +193,9 @@ export interface SyncProductsStepProduct {
     prices?: Array<{
       amount: number;
       currency_code: string;
+      rules?: {
+        region_id?: string;
+      };
     }>;
     original_price?: number;
     original_price_calculated?: number;
