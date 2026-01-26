@@ -101,7 +101,7 @@ export interface MeilisearchProductDocument {
   };
 
   // --- 8. SEARCHABLE CONTENT (Not in display payload ideally, but indexed) ---
-  detailed_description?: string;
+  rich_description?: string;
 
   // --- 9. VARIANTS (SKU Search) ---
   variants: Array<{
@@ -184,6 +184,7 @@ export interface SyncProductsStepProduct {
   variants?: Array<{
     id: string;
     title?: string;
+    sku?: string;
     inventory_quantity?: number;
     options?: Array<{
       option_title?: string;

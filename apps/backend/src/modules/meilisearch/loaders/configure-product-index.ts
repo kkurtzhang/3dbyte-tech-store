@@ -58,7 +58,7 @@ export default async function configureProductIndexLoader({
       filterableAttributes: staticAttributes,
       searchableAttributes: [
         "title",
-        "detailed_description",
+        "rich_description",
         "variants.sku",
         "variants.title",
       ],

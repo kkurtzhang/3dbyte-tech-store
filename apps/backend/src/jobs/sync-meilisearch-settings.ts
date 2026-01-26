@@ -96,7 +96,7 @@ export default async function syncMeilisearchSettingsJob(
       filterableAttributes,
       searchableAttributes: [
         "title",
-        "detailed_description",
+        "rich_description",
         "variants.sku",
         "variants.title",
       ],

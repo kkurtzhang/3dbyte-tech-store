@@ -136,13 +136,13 @@ export function toMeilisearchDocument(
     : undefined;
 
   // --- 8. SEARCHABLE CONTENT ---
-  const detailed_description =
+  const rich_description =
     strapiContent?.rich_description || product.description || undefined;
 
   // --- 9. VARIANTS (SKU Search) ---
   const variants = (product.variants || []).map((v) => ({
     id: v.id,
-    sku: undefined, // Will be populated if SKU field exists
+    sku: v.sku,
     title: v.title || v.options?.map((o) => o.value).join(" / ") || "",
   }));
 
@@ -179,7 +179,7 @@ export function toMeilisearchDocument(
     brand,
 
     // 8. SEARCHABLE CONTENT
-    detailed_description,
+    rich_description,
 
     // 9. VARIANTS
     variants,
