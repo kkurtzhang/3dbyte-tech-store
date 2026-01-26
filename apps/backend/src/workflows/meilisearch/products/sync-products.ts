@@ -44,7 +44,6 @@ export const syncProductsWorkflow = createWorkflow(
         "variants.options.value",
         "variants.prices.amount",
         "variants.prices.currency_code",
-        "variants.prices.rules.region_id",
         "variants.original_price",
         "variants.original_price_calculated",
         "images.url",
