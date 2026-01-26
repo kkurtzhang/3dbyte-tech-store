@@ -38,7 +38,9 @@ export const syncProductsWorkflow = createWorkflow(
         "variants.id",
         "variants.title",
         "variants.sku",
-        "variants.inventory_quantity",
+        "variants.manage_inventory",
+        // Computed field - requires + prefix
+        "+variants.inventory_quantity",
         "variants.options.option_title",
         "variants.options.title",
         "variants.options.value",

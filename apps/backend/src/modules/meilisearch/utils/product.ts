@@ -91,13 +91,18 @@ export function toMeilisearchDocument(
   });
 
   // --- 4. INVENTORY & AVAILABILITY ---
-  // Sum inventory across all variants
+  // Sum inventory across variants that have manage_inventory enabled
+  // If any variant has manage_inventory disabled, product is always in stock
+  const hasUnmanagedInventory = product.variants?.some(
+    (v) => v.manage_inventory === false,
+  );
+
   const inventory_quantity =
-    product.variants?.reduce(
-      (sum, v) => sum + (v.inventory_quantity || 0),
-      0,
-    ) || 0;
-  const in_stock = inventory_quantity > 0;
+    product.variants
+      ?.filter((v) => v.manage_inventory !== false)
+      .reduce((sum, v) => sum + (v.inventory_quantity || 0), 0) || 0;
+
+  const in_stock = hasUnmanagedInventory || inventory_quantity > 0;
 
   // --- 5. FACETS (Option Flattening) ---
   // Aggregate all unique option values across variants

@@ -185,6 +185,7 @@ export interface SyncProductsStepProduct {
     id: string;
     title?: string;
     sku?: string;
+    manage_inventory?: boolean;
     inventory_quantity?: number;
     options?: Array<{
       option_title?: string;

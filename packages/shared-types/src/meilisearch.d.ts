@@ -15,6 +15,14 @@ export interface MeilisearchModuleConfig {
     brandIndexName: string;
     settings?: MeilisearchIndexSettings;
 }
+/**
+ * Brand object nested within product documents
+ */
+export interface MeilisearchBrandObject {
+    id: string;
+    name: string;
+    handle: string;
+}
 export interface MeilisearchIndexSettings {
     filterableAttributes?: string[];
     sortableAttributes?: string[];
@@ -48,35 +56,32 @@ export interface MeilisearchProductDocument {
     id: string;
     title: string;
     handle: string;
-    subtitle?: string;
-    description?: string;
     thumbnail?: string;
-    status: string;
-    price: number;
-    currency_code: string;
-    variants: Array<{
-        id: string;
-        title: string;
-        options: Record<string, string>;
-        prices: Array<{
-            amount: number;
-            currency_code: string;
-        }>;
-    }>;
+    created_at_timestamp: number;
+    type_id?: string;
+    type_value?: string;
+    [key: `price_${string}`]: number | undefined;
+    on_sale: boolean;
+    inventory_quantity: number;
+    in_stock: boolean;
+    materials?: string[];
+    [key: `options_${string}`]: string[] | undefined;
+    category_ids: string[];
     categories: string[];
     tags: string[];
-    images: string[];
     collection_ids: string[];
-    type_ids: string[];
-    material_ids: string[];
-    rich_description?: string;
-    features?: string[];
-    specifications?: Record<string, string>;
-    seo_title?: string;
-    seo_description?: string;
-    meta_keywords?: string[];
-    created_at: string;
-    updated_at: string;
+    brand?: {
+        id: string;
+        name: string;
+        handle: string;
+        logo?: string;
+    };
+    detailed_description?: string;
+    variants: Array<{
+        id: string;
+        sku?: string;
+        title: string;
+    }>;
 }
 /**
  * Category document for Meilisearch indexing
@@ -173,6 +178,11 @@ export interface SyncProductsStepProduct {
     type_id?: string;
     material_id?: string;
     currency_code?: string;
+    brand?: {
+        id: string;
+        name: string;
+        handle: string;
+    } | null;
 }
 /**
  * Strapi product description response
