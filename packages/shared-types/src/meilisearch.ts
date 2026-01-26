@@ -89,7 +89,7 @@ export interface MeilisearchProductDocument {
   // --- 6. NAVIGATION ---
   category_ids: string[];
   categories: string[];
-  tags: string[];
+  _tags: string[]; // Flattened tag values (not original tags object)
   collection_ids: string[];
 
   // --- 7. BRAND ---

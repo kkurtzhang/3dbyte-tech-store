@@ -140,7 +140,7 @@ export function toMeilisearchDocument(
   // --- 6. NAVIGATION ---
   const category_ids = product.categories?.map((c) => c.id) || [];
   const categories = product.categories?.map((c) => c.name) || [];
-  const tags = product.tags?.map((t) => t.value) || [];
+  const _tags = product.tags?.map((t) => t.value) || [];
   const collection_ids = product.collection_id ? [product.collection_id] : [];
 
   // --- 7. BRAND ---
@@ -190,7 +190,7 @@ export function toMeilisearchDocument(
     // 6. NAVIGATION
     category_ids,
     categories,
-    tags,
+    _tags,
     collection_ids,
 
     // 7. BRAND

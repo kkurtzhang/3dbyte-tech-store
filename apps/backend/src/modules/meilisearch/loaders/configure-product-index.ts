@@ -73,7 +73,7 @@ export default async function configureProductIndexLoader({
         "in_stock",
         "inventory_quantity",
         "categories",
-        "tags",
+        "_tags",
         "collection_ids",
         "type_id",
         "created_at_timestamp",

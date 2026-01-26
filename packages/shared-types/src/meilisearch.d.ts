@@ -68,7 +68,7 @@ export interface MeilisearchProductDocument {
     [key: `options_${string}`]: string[] | undefined;
     category_ids: string[];
     categories: string[];
-    tags: string[];
+    _tags: string[];
     collection_ids: string[];
     brand?: {
         id: string;
@@ -76,7 +76,7 @@ export interface MeilisearchProductDocument {
         handle: string;
         logo?: string;
     };
-    detailed_description?: string;
+    rich_description?: string;
     variants: Array<{
         id: string;
         sku?: string;
@@ -150,6 +150,18 @@ export interface SyncProductsStepProduct {
     variants?: Array<{
         id: string;
         title?: string;
+        sku?: string;
+        manage_inventory?: boolean;
+        inventory_items?: Array<{
+            inventory_item_id: string;
+            required_quantity: number;
+            inventory?: {
+                location_levels?: Array<{
+                    stocked_quantity: number;
+                    reserved_quantity: number;
+                }>;
+            };
+        }>;
         options?: Array<{
             option_title?: string;
             title?: string;
@@ -158,6 +170,9 @@ export interface SyncProductsStepProduct {
         prices?: Array<{
             amount: number;
             currency_code: string;
+            rules?: {
+                region_id?: string;
+            };
         }>;
         original_price?: number;
         original_price_calculated?: number;
