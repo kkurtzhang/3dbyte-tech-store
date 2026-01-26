@@ -1,6 +1,5 @@
 import type { LoaderOptions } from "@medusajs/framework/types";
 import type { Logger } from "@medusajs/framework/types";
-import { ContainerRegistrationKeys } from "@medusajs/framework/utils";
 import type { MeilisearchIndexSettings } from "@3dbyte-tech-store/shared-types";
 import { type MeilisearchOptions } from "../service";
 import MeilisearchModuleService from "../service";
@@ -8,20 +7,16 @@ import MeilisearchModuleService from "../service";
 /**
  * Meilisearch Product Index Configuration Loader (V3)
  *
- * Dynamically configures the product index settings based on:
- * - Active product options from the database (e.g., Color, Size)
- * - Active regions for multi-currency pricing (price_usd, price_aud)
+ * Configures the product index with base settings on startup.
  *
- * Why this loader?
- * - Option titles are dynamic user data, not hardcoded
- * - New options added in the admin should automatically become filterable
- * - Regions can be added/removed, requiring dynamic price_* attributes
+ * Why static settings here?
+ * - Loaders run early in Medusa lifecycle, before Query/remoteQuery are available
+ * - Dynamic settings (options, regions) are synced by scheduled job at 3 AM
+ * - This ensures the index has valid settings even if the job hasn't run yet
  *
  * Architecture:
- * 1. Scan DB for unique product option titles
- * 2. Scan DB for active region currency codes
- * 3. Build dynamic filterable attributes list
- * 4. Configure Meilisearch index with computed settings
+ * 1. Apply static filterable/sortable/searchable attributes
+ * 2. Scheduled job (sync-meilisearch-settings) adds dynamic attributes later
  *
  * @param loaderOptions - Loader options containing container and module options
  */
@@ -43,45 +38,10 @@ export default async function configureProductIndexLoader({
       loaderOptions as MeilisearchOptions,
     );
 
-    const remoteQuery = container.resolve(
-      ContainerRegistrationKeys.REMOTE_QUERY,
-    );
-
-    logger.info("Scanning database for product options and regions...");
-
-    // Fetch all unique product option titles
-    const { data: productOptions } = await remoteQuery.graph({
-      entity: "product_option",
-      fields: ["title"],
-    });
-    const uniqueTitles = [
-      ...new Set(
-        productOptions.map((o: unknown) => (o as { title: string }).title),
-      ),
-    ];
-
-    // Normalize option titles to Meilisearch attribute keys
-    const dynamicAttributes = uniqueTitles
-      .map((title) => `options_${title.toLowerCase().replace(/\s+/g, "_")}`)
-      .filter((attr) => attr !== "options_"); // Filter out empty titles
-
-    // Fetch all active regions for price attributes
-    const { data: regions } = await remoteQuery.graph({
-      entity: "region",
-      fields: ["currency_code"],
-    });
-    const uniqueCurrencies = [
-      ...new Set(
-        regions.map(
-          (r: unknown) => (r as { currency_code: string }).currency_code,
-        ),
-      ),
-    ];
-    const priceAttributes = uniqueCurrencies.map(
-      (currency) => `price_${currency.toLowerCase()}`,
-    );
+    logger.info("Configuring Meilisearch product index with base settings...");
 
     // Static attributes that are always filterable
+    // Dynamic attributes (options_*, price_*) added by scheduled job
     const staticAttributes: string[] = [
       "id",
       "handle",
@@ -92,32 +52,22 @@ export default async function configureProductIndexLoader({
       "in_stock",
     ];
 
-    // Combine all filterable attributes
-    const filterableAttributes = [
-      ...staticAttributes,
-      ...priceAttributes,
-      ...dynamicAttributes,
-    ];
-
-    // Build the complete settings object
+    // Build the base settings object
+    // Note: Price and option attributes will be added dynamically by scheduled job
     const settings: MeilisearchIndexSettings = {
-      filterableAttributes,
+      filterableAttributes: staticAttributes,
       searchableAttributes: [
         "title",
         "detailed_description",
         "variants.sku",
         "variants.title",
       ],
-      sortableAttributes: ["created_at_timestamp", ...priceAttributes],
+      sortableAttributes: ["created_at_timestamp"],
       displayedAttributes: [
         "id",
         "title",
         "handle",
         "thumbnail",
-        // Price attributes (dynamic)
-        ...priceAttributes,
-        // Option attributes (dynamic)
-        ...dynamicAttributes,
         "brand",
         "on_sale",
         "in_stock",
@@ -153,14 +103,15 @@ export default async function configureProductIndexLoader({
     };
 
     logger.info(
-      `Configuring product index with ${filterableAttributes.length} filterable attributes: ` +
-        `${priceAttributes.length} prices, ${dynamicAttributes.length} options`,
+      `Configuring product index with ${staticAttributes.length} base filterable attributes`,
     );
 
-    // Configure the index with computed settings
+    // Configure the index with base settings
     await meilisearchService.configureIndex(settings, "product");
 
-    logger.info("Product index configured successfully");
+    logger.info(
+      "Product index configured with base settings. Dynamic attributes will be added by scheduled job.",
+    );
   } catch (error) {
     // Log error but don't fail startup
     const message = error instanceof Error ? error.message : "Unknown error";
