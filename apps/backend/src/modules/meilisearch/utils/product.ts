@@ -97,10 +97,23 @@ export function toMeilisearchDocument(
     (v) => v.manage_inventory === false,
   );
 
+  // Calculate inventory from inventory_items.location_levels.stocked_quantity
   const inventory_quantity =
     product.variants
       ?.filter((v) => v.manage_inventory !== false)
-      .reduce((sum, v) => sum + (v.inventory_quantity || 0), 0) || 0;
+      .reduce((sum, variant) => {
+        // Sum stocked_quantity from all location_levels across all inventory_items
+        const variantInventory =
+          variant.inventory_items?.reduce((itemSum, item) => {
+            const locationSum =
+              item.inventory?.location_levels?.reduce(
+                (levelSum, level) => levelSum + (level.stocked_quantity || 0),
+                0,
+              ) || 0;
+            return itemSum + locationSum;
+          }, 0) || 0;
+        return sum + variantInventory;
+      }, 0) || 0;
 
   const in_stock = hasUnmanagedInventory || inventory_quantity > 0;
 

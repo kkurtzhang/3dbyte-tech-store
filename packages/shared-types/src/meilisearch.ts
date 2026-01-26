@@ -186,7 +186,16 @@ export interface SyncProductsStepProduct {
     title?: string;
     sku?: string;
     manage_inventory?: boolean;
-    inventory_quantity?: number;
+    inventory_items?: Array<{
+      inventory_item_id: string;
+      required_quantity: number;
+      inventory?: {
+        location_levels?: Array<{
+          stocked_quantity: number;
+          reserved_quantity: number;
+        }>;
+      };
+    }>;
     options?: Array<{
       option_title?: string;
       title?: string;

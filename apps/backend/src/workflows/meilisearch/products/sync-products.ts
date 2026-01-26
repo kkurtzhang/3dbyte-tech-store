@@ -35,12 +35,11 @@ export const syncProductsWorkflow = createWorkflow(
         "type_id",
         "material_id",
         "currency_code",
+        // Variants with inventory items relation
         "variants.id",
         "variants.title",
         "variants.sku",
         "variants.manage_inventory",
-        // Computed field - requires + prefix
-        "+variants.inventory_quantity",
         "variants.options.option_title",
         "variants.options.title",
         "variants.options.value",
@@ -48,6 +47,10 @@ export const syncProductsWorkflow = createWorkflow(
         "variants.prices.currency_code",
         "variants.original_price",
         "variants.original_price_calculated",
+        // Inventory items for quantity calculation
+        "variants.inventory_items.inventory_item_id",
+        "variants.inventory_items.required_quantity",
+        "variants.inventory_items.inventory.location_levels.*",
         "images.url",
         "categories.id",
         "categories.name",
