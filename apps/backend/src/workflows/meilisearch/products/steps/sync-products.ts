@@ -11,10 +11,12 @@ import type {
   StrapiProductDescription,
   MeilisearchProductDocument,
 } from "@3dbyte-tech-store/shared-types";
+import type { Logger } from "@medusajs/framework/types";
 
 export type SyncProductsStepInput = {
   products: SyncProductsStepProduct[];
   strapiContents?: StrapiProductDescription[];
+  optionTitleMap?: Record<string, string>;
 };
 
 type SyncProductsStepCompensationData = {
@@ -25,9 +27,11 @@ type SyncProductsStepCompensationData = {
 export const syncProductsStep = createStep(
   "sync-products",
   async (
-    { products, strapiContents = [] }: SyncProductsStepInput,
+    { products, strapiContents = [], optionTitleMap }: SyncProductsStepInput,
     { container },
   ) => {
+    const logger = container.resolve<Logger>("logger");
+
     const meilisearchModuleService =
       container.resolve<MeilisearchModuleService>(MEILISEARCH_MODULE);
     const remoteQuery = container.resolve(
@@ -35,6 +39,7 @@ export const syncProductsStep = createStep(
     );
 
     if (!products || products.length === 0) {
+      logger.warn("[syncProductsStep] No products to index");
       return new StepResponse(
         { indexed: 0 },
         { newProductIds: [], existingProducts: [] },
@@ -75,14 +80,19 @@ export const syncProductsStep = createStep(
         product,
         regionsForPricing,
         strapiContent ?? null,
+        optionTitleMap,
       );
     });
+
+    logger.info(`[syncProductsStep] Transforming ${documents.length} products to Meilisearch documents`);
 
     // Index the documents
     await meilisearchModuleService.indexData(
       documents as unknown as Record<string, unknown>[],
       "product",
     );
+
+    logger.info(`[syncProductsStep] Indexed ${documents.length} documents to Meilisearch`);
 
     return new StepResponse(
       { indexed: documents.length },

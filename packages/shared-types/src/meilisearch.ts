@@ -197,6 +197,7 @@ export interface SyncProductsStepProduct {
       };
     }>;
     options?: Array<{
+      option_id?: string;
       option_title?: string;
       title?: string;
       value: string;

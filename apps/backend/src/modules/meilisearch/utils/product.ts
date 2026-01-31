@@ -38,12 +38,14 @@ function normalizeOptionKey(title: string): string {
  * @param product - Medusa product with variants, images, categories, tags
  * @param regions - List of active regions for multi-currency pricing
  * @param strapiContent - Enriched content from Strapi (optional)
+ * @param optionTitleMap - Plain object mapping option_id to option title (e.g., { "opt_123": "Color" })
  * @returns Formatted Meilisearch document
  */
 export function toMeilisearchDocument(
   product: SyncProductsStepProduct,
   regions: RegionForPricing[],
   strapiContent?: StrapiProductDescription | null,
+  optionTitleMap?: Record<string, string>,
 ): MeilisearchProductDocument {
   // --- 1. CORE IDENTITY ---
   const created_at_timestamp = new Date(product.created_at).getTime();
@@ -123,7 +125,28 @@ export function toMeilisearchDocument(
 
   product.variants?.forEach((variant) => {
     variant.options?.forEach((opt) => {
-      const key = normalizeOptionKey(opt.option_title || opt.title || "Option");
+      // Look up the option title from the map using option_id
+      // If option_id exists and we have a mapping, use the mapped title
+      // Otherwise fall back to the old behavior (for backward compatibility)
+      let optionTitle: string | undefined;
+
+      // Cast opt to access option_id (not in SyncProductsStepProduct yet)
+      const optWithId = opt as { option_id?: string; title?: string; value: string };
+
+      // Handle plain object (due to workflow serialization)
+      if (optWithId.option_id && optionTitleMap && optWithId.option_id in optionTitleMap) {
+        optionTitle = optionTitleMap[optWithId.option_id];
+      }
+
+      // Fall back to option_title (if available from old query) or title (the value)
+      // This provides backward compatibility for cases without option_id
+      const key = normalizeOptionKey(
+        optionTitle ||
+        (opt as { option_title?: string }).option_title ||
+        optWithId.title ||
+        "Option"
+      );
+
       if (!optionsMap[key]) {
         optionsMap[key] = new Set();
       }

@@ -5,24 +5,45 @@ import {
 } from "@medusajs/framework/workflows-sdk";
 import { useQueryGraphStep } from "@medusajs/medusa/core-flows";
 import { fetchProductOptionsStep } from "./steps/fetch-product-options";
+import { syncIndexSettingsStep } from "./steps/sync-index-settings";
 import { syncProductsStep, SyncProductsStepInput } from "./steps/sync-products";
 import { deleteProductsFromMeilisearchStep } from "./steps/delete-products-from-meilisearch";
 import { fetchStrapiContentStep } from "./steps/fetch-strapi-content";
 import type { SyncProductsStepProduct } from "@3dbyte-tech-store/shared-types";
 
-export type SyncProductsWorkflowInput = {
+export type SyncProductsWithSettingsWorkflowInput = {
   filters?: Record<string, unknown>;
   limit?: number;
   offset?: number;
 };
 
-export const syncProductsWorkflow = createWorkflow(
-  "sync-products",
-  ({ filters, limit, offset }: SyncProductsWorkflowInput) => {
-    // Step 1: Fetch product options for correct option title mapping
+/**
+ * Workflow to sync products to Meilisearch with up-to-date index settings
+ *
+ * This workflow ensures that the Meilisearch index settings are always
+ * current before syncing products. This is important for:
+ * - New product options becoming filterable
+ * - New regions getting price_* attributes added
+ *
+ * Difference from sync-products workflow:
+ * - sync-products: Only syncs documents, assumes settings are already current
+ * - sync-products-with-settings: Always syncs settings first, then documents
+ *
+ * Use cases:
+ * - Manual sync via admin panel (ensures settings are applied)
+ * - Scheduled full sync (ensures everything is up-to-date)
+ */
+export const syncProductsWithSettingsWorkflow = createWorkflow(
+  "sync-products-with-settings",
+  ({ filters, limit, offset }: SyncProductsWithSettingsWorkflowInput) => {
+    // Step 1: Sync index settings BEFORE indexing documents
+    // This ensures filterable/sortable attributes are current
+    const settingsResult = syncIndexSettingsStep({ type: "product" });
+
+    // Step 2: Fetch product options for correct option title mapping
     const optionTitleMap = fetchProductOptionsStep();
 
-    // Step 2: Fetch products from Medusa using useQueryGraphStep
+    // Step 3: Fetch products from Medusa using useQueryGraphStep
     const { data: products, metadata } = useQueryGraphStep({
       entity: "product",
       fields: [
@@ -72,16 +93,12 @@ export const syncProductsWorkflow = createWorkflow(
       filters,
     });
 
-    // Step 3: Use transform to separate published vs unpublished products
+    // Step 4: Use transform to separate published vs unpublished products
     const { publishedProducts, unpublishedProductIds } = transform(
       { products },
       (data) => {
         const publishedProducts: SyncProductsStepInput["products"] = [];
         const unpublishedProductIds: string[] = [];
-
-        // Debug: log what we received
-        console.log("[DEBUG transform sync-products] products type:", typeof data.products);
-        console.log("[DEBUG transform sync-products] Is array?:", Array.isArray(data.products));
 
         const productsArray = data.products as unknown as SyncProductsStepProduct[];
 
@@ -93,26 +110,23 @@ export const syncProductsWorkflow = createWorkflow(
           }
         });
 
-        console.log("[DEBUG transform sync-products] publishedProducts:", publishedProducts.length);
-        console.log("[DEBUG transform sync-products] unpublishedProductIds:", unpublishedProductIds.length);
-
         return { publishedProducts, unpublishedProductIds };
       },
     );
 
-    // Step 4: Fetch Strapi content for enrichment (for published products only)
+    // Step 5: Fetch Strapi content for enrichment (for published products only)
     const strapiContents = fetchStrapiContentStep({
       products: publishedProducts,
     });
 
-    // Step 5: Sync published products to Meilisearch with Strapi enrichment and option title mapping
+    // Step 6: Sync published products to Meilisearch with Strapi enrichment and option title mapping
     const syncResult = syncProductsStep({
       products: publishedProducts,
       strapiContents,
       optionTitleMap,
     });
 
-    // Step 6: Delete unpublished products from Meilisearch
+    // Step 7: Delete unpublished products from Meilisearch
     deleteProductsFromMeilisearchStep({
       ids: unpublishedProductIds,
     });

@@ -93,4 +93,50 @@ describe("toMeilisearchDocument", () => {
       expect.arrayContaining(["Medium", "Large"]),
     );
   });
+
+  it("should flatten options using option_id mapping", () => {
+    const productWithOptions: SyncProductsStepProduct = {
+      ...mockProduct,
+      variants: [
+        {
+          id: "variant_1",
+          options: [
+            { option_id: "opt_color_1", value: "Red" },
+            { option_id: "opt_size_1", value: "Medium" },
+          ],
+          prices: [{ amount: 1000, currency_code: "usd" }],
+        },
+        {
+          id: "variant_2",
+          options: [
+            { option_id: "opt_color_1", value: "Blue" },
+            { option_id: "opt_size_1", value: "Large" },
+          ],
+          prices: [{ amount: 1200, currency_code: "usd" }],
+        },
+      ],
+    };
+
+    // Create option title mapping as plain object
+    const optionTitleMap: Record<string, string> = {
+      "opt_color_1": "Color",
+      "opt_size_1": "Size",
+    };
+
+    const result = toMeilisearchDocument(
+      productWithOptions,
+      mockRegions,
+      undefined,
+      optionTitleMap,
+    );
+
+    expect(result).toHaveProperty("options_color");
+    expect(result.options_color).toEqual(
+      expect.arrayContaining(["Red", "Blue"]),
+    );
+    expect(result).toHaveProperty("options_size");
+    expect(result.options_size).toEqual(
+      expect.arrayContaining(["Medium", "Large"]),
+    );
+  });
 });

@@ -1,10 +1,12 @@
 export { syncProductsWorkflow } from "./products/sync-products"
+export { syncProductsWithSettingsWorkflow } from "./products/sync-products-with-settings"
 export { deleteProductsFromMeilisearchWorkflow } from "./products/delete-products-from-meilisearch"
 export { syncCategoriesWorkflow } from "./categories/sync-categories"
 export { syncBrandsWorkflow } from "./brands/sync-brands"
 export { deleteBrandsFromMeilisearchWorkflow } from "./brands/delete-brands-from-meilisearch"
 
 export type { SyncProductsWorkflowInput } from "./products/sync-products"
+export type { SyncProductsWithSettingsWorkflowInput } from "./products/sync-products-with-settings"
 export type { DeleteProductsFromMeilisearchWorkflowInput } from "./products/delete-products-from-meilisearch"
 export type { SyncCategoriesWorkflowInput, SyncCategoriesWorkflowOutput } from "./categories/sync-categories"
 export type { SyncBrandsWorkflowInput } from "./brands/sync-brands"

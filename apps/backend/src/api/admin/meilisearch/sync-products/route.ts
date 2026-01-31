@@ -1,6 +1,6 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { MedusaError } from "@medusajs/framework/utils"
-import { syncProductsWorkflow } from "../../../../workflows/meilisearch/products/sync-products"
+import { syncProductsWithSettingsWorkflow } from "../../../../workflows/meilisearch/products/sync-products-with-settings"
 import type { Logger } from "@medusajs/framework/types"
 
 /**
@@ -9,6 +9,7 @@ import type { Logger } from "@medusajs/framework/types"
  * Admin API endpoint to manually trigger a full sync of all products to Meilisearch.
  *
  * This endpoint will:
+ * - Sync index settings (ensures filterable/sortable attributes are current)
  * - Fetch all published products from Medusa
  * - Fetch enriched content from Strapi (if available)
  * - Index all products to Meilisearch
@@ -19,12 +20,12 @@ import type { Logger } from "@medusajs/framework/types"
  */
 export const POST = async (
   req: MedusaRequest,
-  res: MedusaResponse
+  res: MedusaResponse,
 ): Promise<void> => {
-  const logger = req.scope.resolve<Logger>("logger")
+  const logger = req.scope.resolve<Logger>("logger");
 
   try {
-    logger.info("Starting manual Meilisearch sync...")
+    logger.info("Starting manual Meilisearch sync...");
 
     let hasMore = true
     let offset = 0
@@ -33,7 +34,7 @@ export const POST = async (
 
     // Paginated sync following official pattern
     while (hasMore) {
-      const { result } = await syncProductsWorkflow(req.scope).run({
+      const { result } = await syncProductsWithSettingsWorkflow(req.scope).run({
         input: {
           filters: {
             status: "published",
@@ -41,7 +42,7 @@ export const POST = async (
           limit,
           offset,
         },
-      })
+      });
 
       hasMore = offset + limit < (result.metadata?.count ?? 0)
       offset += limit
@@ -53,16 +54,16 @@ export const POST = async (
     res.json({
       message: "Products synced to Meilisearch successfully",
       indexed: totalIndexed,
-    })
+    });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error"
-    logger.error("Failed to sync products to Meilisearch:", error)
+    const message = error instanceof Error ? error.message : "Unknown error";
+    logger.error("Failed to sync products to Meilisearch:", error);
     throw new MedusaError(
       MedusaError.Types.INVALID_DATA,
-      `Failed to sync products to Meilisearch: ${message}`
-    )
+      `Failed to sync products to Meilisearch: ${message}`,
+    );
   }
-}
+};
 
 /**
  * GET /admin/meilisearch/sync-products
@@ -70,14 +71,15 @@ export const POST = async (
  * Returns information about the sync endpoint (for discovery)
  */
 export const GET = async (
-  req: MedusaRequest,
-  res: MedusaResponse
+  _req: MedusaRequest,
+  res: MedusaResponse,
 ): Promise<void> => {
   res.json({
     endpoint: "/admin/meilisearch/sync-products",
     method: "POST",
-    description: "Manually trigger a full sync of all products to Meilisearch",
-    behavior: "Syncs all published products from Medusa to Meilisearch with Strapi enrichment",
+    description: "Manually trigger a full sync of all products to Meilisearch with up-to-date index settings",
+    behavior:
+      "Syncs index settings (filterable/sortable attributes) then syncs all published products from Medusa to Meilisearch with Strapi enrichment",
     example: {
       request: "POST /admin/meilisearch/sync-products",
       response: {
@@ -85,5 +87,5 @@ export const GET = async (
         indexed: 150,
       },
     },
-  })
-}
+  });
+};
