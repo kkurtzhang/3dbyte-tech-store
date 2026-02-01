@@ -1,5 +1,5 @@
-export { default as MedusaSdkClient } from '@medusajs/js-sdk';
-export * from './meilisearch';
+export { default as MedusaSdkClient } from "@medusajs/js-sdk";
+export * from "./meilisearch";
 export interface StoreConfig {
     name: string;
     description: string;
@@ -40,6 +40,16 @@ export interface ProductVariant {
     inventoryQuantity: number;
     options: Record<string, string>;
     requiresShipping?: boolean;
+}
+export interface Brand {
+    id: string;
+    name: string;
+    handle: string;
+    description?: string;
+    logo?: string;
+    is_active?: boolean;
+    created_at?: string;
+    updated_at?: string;
 }
 export interface Address {
     firstName: string;

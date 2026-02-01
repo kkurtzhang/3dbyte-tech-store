@@ -2,7 +2,7 @@
 // Import Medusa types as needed to avoid conflicts
 // You can import directly from @medusajs/types in your apps when needed
 // Export JS SDK client
-export { default as MedusaSdkClient } from '@medusajs/js-sdk';
+export { default as MedusaSdkClient } from "@medusajs/js-sdk";
 // Meilisearch types
-export * from './meilisearch';
+export * from "./meilisearch";
 //# sourceMappingURL=index.js.map
