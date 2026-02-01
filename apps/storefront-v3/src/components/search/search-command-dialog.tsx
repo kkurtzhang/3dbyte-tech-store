@@ -35,10 +35,22 @@ export function SearchCommandDialog({
   const [internalOpen, setInternalOpen] = React.useState(false);
   const router = useRouter();
   const { setTheme, theme } = useTheme();
+  const inputRef = React.useRef<HTMLInputElement>(null);
 
   // Use controlled or uncontrolled state
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = onOpenChange || setInternalOpen;
+
+  // Focus input when dialog opens
+  React.useEffect(() => {
+    if (open) {
+      // Small delay to ensure the dialog has rendered
+      const timeout = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 0);
+      return () => clearTimeout(timeout);
+    }
+  }, [open]);
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -57,56 +69,59 @@ export function SearchCommandDialog({
       setOpen(false);
       callback();
     },
-    [setOpen]
+    [setOpen],
   );
 
   return (
     <>
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Type a command or search..." />
+        <CommandInput
+          ref={inputRef}
+          placeholder="Type a command or search..."
+        />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
 
-          <CommandGroup heading="Navigation">
-            <CommandItem
-              onSelect={() =>
+          {/* Quick Navigation Badges */}
+          <div className="flex flex-wrap gap-2 border-b p-3">
+            <button
+              onClick={() =>
                 handleSelect(() => {
                   router.push("/cart");
                 })
               }
+              className="flex items-center gap-1.5 rounded-md border bg-accent px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent-hover hover:border-primary/50"
             >
-              <ShoppingCart className="mr-2 h-4 w-4" />
-              <span>Go to Cart</span>
-            </CommandItem>
-            <CommandItem
-              onSelect={() =>
+              <ShoppingCart className="h-3.5 w-3.5" />
+              <span>Cart</span>
+            </button>
+            <button
+              onClick={() =>
                 handleSelect(() => {
                   router.push("/account");
                 })
               }
+              className="flex items-center gap-1.5 rounded-md border bg-accent px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent-hover hover:border-primary/50"
             >
-              <User className="mr-2 h-4 w-4" />
-              <span>Go to Profile</span>
-            </CommandItem>
-            <CommandItem
-              onSelect={() =>
+              <User className="h-3.5 w-3.5" />
+              <span>Profile</span>
+            </button>
+            <button
+              onClick={() =>
                 handleSelect(() => {
                   setTheme(theme === "light" ? "dark" : "light");
                 })
               }
+              className="flex items-center gap-1.5 rounded-md border bg-accent px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent-hover hover:border-primary/50"
             >
               {theme === "light" ? (
-                <Moon className="mr-2 h-4 w-4" />
+                <Moon className="h-3.5 w-3.5" />
               ) : (
-                <Sun className="mr-2 h-4 w-4" />
+                <Sun className="h-3.5 w-3.5" />
               )}
-              <span>
-                Theme: Toggle {theme === "light" ? "Dark" : "Light"}
-              </span>
-            </CommandItem>
-          </CommandGroup>
-
-          <CommandSeparator />
+              <span>Theme</span>
+            </button>
+          </div>
 
           <CommandGroup heading="Products">
             <CommandItem disabled>
