@@ -24,7 +24,7 @@ export function Footer() {
             <ul className="space-y-3">
               <li>
                 <Link
-                  href="/products?category=filaments"
+                  href="/shop?category=Filament"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Filaments
@@ -32,7 +32,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/products?category=printers"
+                  href="/shop?category=Printers"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Printers
@@ -40,7 +40,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/products?category=components"
+                  href="/shop?category=Components"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Components
@@ -48,7 +48,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/products"
+                  href="/shop"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   All Products
@@ -106,7 +106,7 @@ export function Footer() {
             <ul className="space-y-3">
               <li>
                 <Link
-                  href="#"
+                  href="/docs"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Documentation
@@ -114,7 +114,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="/guides"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Guides
@@ -122,7 +122,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="/community"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Community
@@ -130,7 +130,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="/blog"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Blog
@@ -183,13 +183,13 @@ export function Footer() {
           </p>
           <div className="flex gap-4">
             <Link
-              href="#"
+              href="/privacy-policy"
               className="text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               Privacy Policy
             </Link>
             <Link
-              href="#"
+              href="/terms-and-conditions"
               className="text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
               Terms of Service

@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import Link from "next/link"
-import { Search, User } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { CartSheet } from "@/features/cart/components/cart-sheet"
-import { ThemeToggle } from "./theme-toggle"
-import { MobileMenu } from "./mobile-menu"
-import { SearchCommandDialog } from "@/components/search/search-command-dialog"
-import { AuthSheet } from "@/features/auth/components/auth-sheet"
+import * as React from "react";
+import Link from "next/link";
+import { Search, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CartSheet } from "@/features/cart/components/cart-sheet";
+import { ThemeToggle } from "./theme-toggle";
+import { MobileMenu } from "./mobile-menu";
+import { SearchCommandDialog } from "@/components/search/search-command-dialog";
+import { AuthSheet } from "@/features/auth/components/auth-sheet";
 
 /**
  * Navbar component for the main site navigation.
@@ -22,8 +22,8 @@ import { AuthSheet } from "@/features/auth/components/auth-sheet"
  * - Authentication sheet for quick login/register
  */
 export function Navbar() {
-  const [searchOpen, setSearchOpen] = React.useState(false)
-  const [authOpen, setAuthOpen] = React.useState(false)
+  const [searchOpen, setSearchOpen] = React.useState(false);
+  const [authOpen, setAuthOpen] = React.useState(false);
 
   return (
     <>
@@ -44,16 +44,22 @@ export function Navbar() {
           {/* Center Section: Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
             <Link
-              href="/products"
+              href="/shop"
               className="text-sm font-medium transition-colors hover:text-primary"
             >
-              Products
+              Shop
             </Link>
             <Link
-              href="/resources"
+              href="/brands"
               className="text-sm font-medium transition-colors hover:text-primary"
             >
-              Resources
+              Brands
+            </Link>
+            <Link
+              href="/blog"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Blog
             </Link>
           </nav>
 
@@ -99,5 +105,5 @@ export function Navbar() {
       {/* Auth Sheet */}
       <AuthSheet open={authOpen} onOpenChange={setAuthOpen} />
     </>
-  )
+  );
 }
