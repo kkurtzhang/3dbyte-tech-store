@@ -52,11 +52,16 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           <div className="mb-4 flex items-center justify-between">
             <h3 className="font-mono text-sm font-bold">FILTERS</h3>
           </div>
-          <SearchFilters />
+          <Suspense fallback={<div className="space-y-4"><div className="h-20 animate-pulse bg-muted/20" /><div className="h-20 animate-pulse bg-muted/20" /><div className="h-20 animate-pulse bg-muted/20" /></div>}>
+            <SearchFilters />
+          </Suspense>
         </div>
       }
     >
       <div className="flex-1">
+        <div role="status" aria-live="polite" className="sr-only">
+          {query ? `Showing results for "${query}"` : "Browse all products"}
+        </div>
         <Suspense fallback={<div className="h-96 animate-pulse bg-muted/20" />}>
           <SearchResults initialHits={hits} initialQuery={query} />
         </Suspense>
