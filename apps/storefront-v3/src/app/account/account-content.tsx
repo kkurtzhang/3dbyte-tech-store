@@ -1,34 +1,40 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useState } from "react"
-import { updateProfileAction, deleteAccountAction } from "@/app/actions/auth"
-import { updateAccount } from "@/app/actions/account"
-import { AccountRecentlyViewed } from "@/components/account/account-recently-viewed"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import { updateProfileAction, deleteAccountAction } from "@/app/actions/auth";
+import { updateAccount } from "@/app/actions/account";
+import { AccountRecentlyViewed } from "@/components/account/account-recently-viewed";
 
 interface CustomerData {
-  first_name?: string | null
-  last_name?: string | null
-  email?: string | null
-  phone?: string | null
+  first_name?: string | null;
+  last_name?: string | null;
+  email?: string | null;
+  phone?: string | null;
 }
 
 export function AccountContent({ customer }: { customer: CustomerData }) {
   return (
     <>
-      <AccountRecentlyViewed />
-
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">
-            Personal Information
-          </CardTitle>
+          <CardTitle className="text-base">Personal Information</CardTitle>
         </CardHeader>
         <CardContent>
-          <form action={updateAccount}>
+          <form
+            action={async (formData) => {
+              "use server";
+              const data = {
+                first_name: formData.get("first_name") as string,
+                last_name: formData.get("last_name") as string,
+                phone: formData.get("phone") as string,
+              };
+              await updateProfileAction(data);
+            }}
+          >
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="first_name">First Name</Label>
@@ -74,9 +80,7 @@ export function AccountContent({ customer }: { customer: CustomerData }) {
             </div>
 
             <div className="flex justify-end mt-6">
-              <Button type="submit">
-                Save Changes
-              </Button>
+              <Button type="submit">Save Changes</Button>
             </div>
           </form>
         </CardContent>
@@ -90,29 +94,30 @@ export function AccountContent({ customer }: { customer: CustomerData }) {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            Permanently delete your account and all associated data. This action cannot be undone.
+            Permanently delete your account and all associated data. This action
+            cannot be undone.
           </p>
           <DeleteAccountButton />
         </CardContent>
       </Card>
     </>
-  )
+  );
 }
 
 function DeleteAccountButton() {
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [showConfirm, setShowConfirm] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleDelete = async () => {
-    setIsDeleting(true)
+    setIsDeleting(true);
     try {
-      await deleteAccountAction()
+      await deleteAccountAction();
     } catch (error) {
-      console.error("Failed to delete account:", error)
-      setIsDeleting(false)
-      setShowConfirm(false)
+      console.error("Failed to delete account:", error);
+      setIsDeleting(false);
+      setShowConfirm(false);
     }
-  }
+  };
 
   if (showConfirm) {
     return (
@@ -132,15 +137,12 @@ function DeleteAccountButton() {
           Cancel
         </Button>
       </div>
-    )
+    );
   }
 
   return (
-    <Button
-      variant="destructive"
-      onClick={() => setShowConfirm(true)}
-    >
+    <Button variant="destructive" onClick={() => setShowConfirm(true)}>
       Delete Account
     </Button>
-  )
+  );
 }

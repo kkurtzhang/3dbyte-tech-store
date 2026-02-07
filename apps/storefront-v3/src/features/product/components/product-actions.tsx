@@ -222,29 +222,17 @@ export function ProductActions({
 
       {/* Add to Cart / Notify Me */}
       <div className="pt-6 border-t">
-        {stockStatus.status === "out-of-stock" ? (
-          <NotifyMeButton
-            productId={product.id}
-            productHandle={productHandle}
-            productTitle={product.title}
-            variantId={selectedVariant?.id}
-            variantTitle={selectedVariant?.title || undefined}
-          />
-        ) : (
-          <>
-            <Button
-                size="lg"
-                className="w-full font-mono text-lg h-14 uppercase tracking-widest"
-                disabled={!selectedVariant || disabled || isAdding}
-                onClick={handleAddToCart}
-            >
-              {isAdding ? "Adding..." : selectedVariant ? "Add to Cart" : "Select Options"}
-            </Button>
-            <p className="mt-2 text-center text-xs font-mono text-muted-foreground">
-                Secure checkout
-            </p>
-          </>
-        )}
+        <Button
+            size="lg"
+            className="w-full font-mono text-lg h-14 uppercase tracking-widest"
+            disabled={!selectedVariant || disabled || isAdding}
+            onClick={handleAddToCart}
+        >
+          {isAdding ? "Adding..." : selectedVariant ? "Add to Cart" : "Select Options"}
+        </Button>
+         <p className="mt-2 text-center text-xs font-mono text-muted-foreground">
+            Secure checkout
+          </p>
       </div>
     </div>
   )

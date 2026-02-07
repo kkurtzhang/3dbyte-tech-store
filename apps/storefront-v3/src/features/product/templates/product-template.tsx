@@ -19,6 +19,12 @@ interface VariantImageData {
   variantId: string
 }
 
+interface VariantImageData {
+  id: string
+  url: string
+  variantId: string
+}
+
 interface ProductTemplateProps {
   product: StoreProduct
   richDescription?: string

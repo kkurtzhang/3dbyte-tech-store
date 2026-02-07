@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { LogOut, Star } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { cn } from "@/lib/utils"
-import { logoutAction } from "@/app/actions/auth"
+import * as React from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
+import { logoutAction } from "@/app/actions/auth";
 
 /**
  * Account layout with hybrid navigation:
@@ -16,8 +16,8 @@ import { logoutAction } from "@/app/actions/auth"
  */
 
 interface AccountNavItem {
-  label: string
-  href: string
+  label: string;
+  href: string;
 }
 
 const accountNavItems: AccountNavItem[] = [
@@ -28,29 +28,29 @@ const accountNavItems: AccountNavItem[] = [
   { label: "Saved Items", href: "/account/saved" },
   { label: "Inventory Alerts", href: "/account/alerts" },
   { label: "Loyalty Rewards", href: "/loyalty" },
-]
+];
 
 export default function AccountLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  const pathname = usePathname()
-  const router = useRouter()
-  const [isLoading, setIsLoading] = React.useState(false)
+  const pathname = usePathname();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const handleSignOut = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      await logoutAction()
-      router.push("/")
-      router.refresh()
+      await logoutAction();
+      router.push("/");
+      router.refresh();
     } catch (error) {
-      console.error("Sign out error:", error)
+      console.error("Sign out error:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="container py-8">
@@ -62,7 +62,7 @@ export default function AccountLayout({
               Account
             </h2>
             {accountNavItems.map((item) => {
-              const isActive = pathname === item.href
+              const isActive = pathname === item.href;
               return (
                 <Link
                   key={item.href}
@@ -71,12 +71,12 @@ export default function AccountLayout({
                     "block rounded-md px-3 py-2 text-sm font-medium transition-colors",
                     isActive
                       ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted"
+                      : "hover:bg-muted",
                   )}
                 >
                   {item.label}
                 </Link>
-              )
+              );
             })}
             <Separator className="my-4" />
             <Button
@@ -101,7 +101,7 @@ export default function AccountLayout({
               id="account-nav"
               value={pathname}
               onChange={(e) => {
-                window.location.href = e.target.value
+                window.location.href = e.target.value;
               }}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
@@ -127,5 +127,5 @@ export default function AccountLayout({
         <main className="flex-1 min-w-0">{children}</main>
       </div>
     </div>
-  )
+  );
 }

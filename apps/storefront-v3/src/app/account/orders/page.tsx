@@ -4,9 +4,8 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Package, ChevronRight } from "lucide-react"
+import { Loader2, Package, ChevronRight } from "lucide-react"
 import { sdk } from "@/lib/medusa/client"
-import { ReorderButton } from "@/components/reorder/reorder-button"
 
 export const metadata: Metadata = {
   title: "Orders",
@@ -119,7 +118,6 @@ export default async function OrdersPage() {
                   Total
                 </th>
                 <th className="text-right p-4 font-mono text-sm font-semibold uppercase tracking-wider">
-                  Actions
                 </th>
               </tr>
             </thead>
@@ -162,14 +160,11 @@ export default async function OrdersPage() {
                     </span>
                   </td>
                   <td className="p-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <ReorderButton orderId={order.id} showText={false} size="sm" variant="ghost" />
-                      <Link href={`/account/orders/${order.id}`}>
-                        <Button variant="ghost" size="sm">
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                    </div>
+                    <Link href={`/account/orders/${order.id}`}>
+                      <Button variant="ghost" size="sm">
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
                   </td>
                 </tr>
               ))}

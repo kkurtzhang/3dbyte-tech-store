@@ -203,7 +203,7 @@ export function SearchCommandDialog({
             <>
               {/* Categories */}
               {categories.length > 0 && (
-                <CommandGroup heading={`Categories (${categories.length})`}>
+                <CommandGroup heading="Categories">
                   {categories.map((category) => (
                     <CommandItem
                       key={category.id}
@@ -234,7 +234,7 @@ export function SearchCommandDialog({
               {brands.length > 0 && (
                 <>
                   <CommandSeparator />
-                  <CommandGroup heading={`Brands (${brands.length})`}>
+                  <CommandGroup heading="Brands">
                     {brands.map((brand) => (
                       <CommandItem
                         key={brand.id}
@@ -265,7 +265,7 @@ export function SearchCommandDialog({
               {products.length > 0 && (
                 <>
                   <CommandSeparator />
-                  <CommandGroup heading={`Products (${products.length})`}>
+                  <CommandGroup heading="Products">
                     {products.map((product) => (
                       <CommandItem
                         key={product.id}

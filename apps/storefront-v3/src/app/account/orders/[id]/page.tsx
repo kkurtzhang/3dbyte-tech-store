@@ -1,41 +1,40 @@
-import { Metadata } from "next"
-import { notFound } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { ArrowLeft, Package, Truck, CreditCard, MapPin, ShoppingCart } from "lucide-react"
-import { sdk } from "@/lib/medusa/client"
-import { ReorderButton } from "@/components/reorder/reorder-button"
+import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { ArrowLeft, Package, Truck, CreditCard } from "lucide-react";
+import { sdk } from "@/lib/medusa/client";
 
 interface Props {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params
+  const { id } = await params;
   return {
     title: `Order #${id.slice(-8).toUpperCase()}`,
     description: `Order details for order ${id}`,
-  }
+  };
 }
 
 async function getOrder(orderId: string) {
   try {
-    const { order } = await sdk.store.order.retrieve(orderId)
-    return order
+    const { order } = await sdk.store.order.retrieve(orderId);
+    return order;
   } catch (error) {
-    console.error("Failed to fetch order:", error)
-    return null
+    console.error("Failed to fetch order:", error);
+    return null;
   }
 }
 
 export default async function OrderDetailPage({ params }: Props) {
-  const { id } = await params
-  const order = await getOrder(id)
+  const { id } = await params;
+  const order = await getOrder(id);
 
   if (!order) {
-    notFound()
+    notFound();
   }
 
   return (
@@ -55,7 +54,8 @@ export default async function OrderDetailPage({ params }: Props) {
             Order #{id.slice(-8).toUpperCase()}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Placed on {new Date(order.created_at).toLocaleDateString("en-US", {
+            Placed on{" "}
+            {new Date(order.created_at).toLocaleDateString("en-US", {
               year: "numeric",
               month: "long",
               day: "numeric",
@@ -64,21 +64,18 @@ export default async function OrderDetailPage({ params }: Props) {
             })}
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <ReorderButton orderId={id} variant="default" size="default" />
-          <Badge
-            variant={
-              order.status === "completed"
-                ? "default"
-                : order.status === "shipped"
+        <Badge
+          variant={
+            order.status === "completed"
+              ? "default"
+              : order.status === "shipped"
                 ? "secondary"
                 : "outline"
-            }
-            className="font-mono text-sm uppercase tracking-wider"
-          >
-            {order.status}
-          </Badge>
-        </div>
+          }
+          className="font-mono text-sm uppercase tracking-wider"
+        >
+          {order.status}
+        </Badge>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -134,16 +131,10 @@ export default async function OrderDetailPage({ params }: Props) {
                 <div className="h-2 w-2 rounded-full bg-primary" />
                 <span className="text-sm">Order confirmed</span>
               </div>
-              {order.status === "processing" || order.status === "shipped" || order.status === "completed" ? (
-                <div className="flex items-center gap-3">
-                  <div className={`h-2 w-2 rounded-full ${order.status !== "processing" ? "bg-primary" : "bg-muted-foreground/30"}`} />
-                  <span className="text-sm">Preparing for shipment</span>
-                </div>
-              ) : null}
               {order.status === "shipped" || order.status === "completed" ? (
                 <div className="flex items-center gap-3">
                   <div className="h-2 w-2 rounded-full bg-primary" />
-                  <span className="text-sm">Shipped via Standard Shipping</span>
+                  <span className="text-sm">Shipped via Freight</span>
                 </div>
               ) : null}
               {order.status === "completed" ? (
@@ -154,33 +145,6 @@ export default async function OrderDetailPage({ params }: Props) {
               ) : null}
             </div>
           </div>
-
-          {/* Shipping Address */}
-          {order.shipping_address && (
-            <div className="rounded-lg border bg-card p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <MapPin className="h-5 w-5 text-primary" />
-                <h2 className="font-mono font-semibold uppercase tracking-wider text-sm">
-                  Shipping Address
-                </h2>
-              </div>
-              <address className="text-sm text-muted-foreground not-italic">
-                {order.shipping_address.first_name} {order.shipping_address.last_name}
-                <br />
-                {order.shipping_address.address_1}
-                {order.shipping_address.address_2 && (
-                  <>
-                    <br />
-                    {order.shipping_address.address_2}
-                  </>
-                )}
-                <br />
-                {order.shipping_address.city}, {order.shipping_address.postal_code}
-                <br />
-                {order.shipping_address.country_code?.toUpperCase()}
-              </address>
-            </div>
-          )}
         </div>
 
         <div className="space-y-6">
@@ -212,7 +176,8 @@ export default async function OrderDetailPage({ params }: Props) {
                 <div className="flex justify-between text-green-500">
                   <span>Discount</span>
                   <span className="font-mono">
-                    -{new Intl.NumberFormat("en-US", {
+                    -
+                    {new Intl.NumberFormat("en-US", {
                       style: "currency",
                       currency: order.currency_code || "usd",
                     }).format((order.discount_total || 0) / 100)}
@@ -248,5 +213,5 @@ export default async function OrderDetailPage({ params }: Props) {
         </div>
       </div>
     </div>
-  )
+  );
 }
