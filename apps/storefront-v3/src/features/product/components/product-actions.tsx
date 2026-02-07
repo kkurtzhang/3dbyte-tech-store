@@ -131,10 +131,10 @@ export function ProductActions({
             disabled={!selectedVariant || disabled || isAdding}
             onClick={handleAddToCart}
         >
-          {isAdding ? "Initiating_Transfer..." : selectedVariant ? "Add_to_System" : "Select_Options"}
+          {isAdding ? "Adding..." : selectedVariant ? "Add to Cart" : "Select Options"}
         </Button>
          <p className="mt-2 text-center text-xs font-mono text-muted-foreground">
-            SECURE_TRANSACTION_PROTOCOL_V3
+            Secure checkout
           </p>
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Search, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CartSheet } from "@/features/cart/components/cart-sheet";
@@ -9,21 +10,36 @@ import { ThemeToggle } from "./theme-toggle";
 import { MobileMenu } from "./mobile-menu";
 import { SearchCommandDialog } from "@/components/search/search-command-dialog";
 import { AuthSheet } from "@/features/auth/components/auth-sheet";
+import { logoutAction, getSessionAction } from "@/app/actions/auth";
 
-/**
- * Navbar component for the main site navigation.
- * Features:
- * - Logo with "The Lab" badge (left)
- * - Desktop navigation links (center)
- * - Action buttons: Search (Cmd+K), Account, Cart, Theme Toggle (right)
- * - Mobile hamburger menu
- * - Sticky header with backdrop blur
- * - Command palette search dialog
- * - Authentication sheet for quick login/register
- */
 export function Navbar() {
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [authOpen, setAuthOpen] = React.useState(false);
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const router = useRouter();
+
+  React.useEffect(() => {
+    checkSession();
+  }, []);
+
+  async function checkSession() {
+    try {
+      const result = await getSessionAction();
+      setIsLoggedIn(result.success);
+    } catch (error) {
+      setIsLoggedIn(false);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleLogout() {
+    await logoutAction();
+    setIsLoggedIn(false);
+    router.push("/");
+    router.refresh();
+  }
 
   return (
     <>
@@ -80,15 +96,38 @@ export function Navbar() {
               <span className="text-xs">⌘</span>K
             </kbd>
 
-            {/* Account Trigger */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setAuthOpen(true)}
-            >
-              <User className="h-5 w-5" />
-              <span className="sr-only">Account</span>
-            </Button>
+            {/* Account */}
+            {isLoading ? (
+              <Button variant="ghost" size="icon" disabled>
+                <User className="h-5 w-5 animate-pulse" />
+              </Button>
+            ) : isLoggedIn ? (
+              <div className="flex items-center gap-2">
+                <Link href="/account">
+                  <Button variant="ghost" size="sm">
+                    <User className="h-5 w-5 mr-2" />
+                    My Account
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="text-muted-foreground"
+                >
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setAuthOpen(true)}
+              >
+                <User className="h-5 w-5 mr-2" />
+                Sign In
+              </Button>
+            )}
 
             {/* Cart Sheet */}
             <CartSheet />

@@ -40,11 +40,19 @@ export async function getBrandByHandle(handle: string): Promise<Brand | null> {
 }
 
 export async function getProductsByBrand(brandHandle: string) {
+  // First, get the brand by handle to retrieve its id
+  const brand = await getBrandByHandle(brandHandle);
+  
+  if (!brand || !brand.id) {
+    return {
+      hits: [],
+      count: 0,
+    };
+  }
+
   const index = searchClient.index(INDEX_PRODUCTS);
-  // Assuming the product document has a 'brand.handle' or 'brand_handle' field
-  // Based on standard Meilisearch nesting, it might be 'brand.handle'
   const response = await index.search("", {
-    filter: `brand.handle = "${brandHandle}"`,
+    filter: `brand.id = "${brand.id}"`,
     limit: 100,
   });
 

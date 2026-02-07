@@ -8,12 +8,19 @@ import { SpecSheet } from "../components/spec-sheet"
 import { Separator } from "@/components/ui/separator"
 import { useQueryState } from "nuqs"
 
-interface ProductTemplateProps {
-  product: StoreProduct
-  richDescription?: string // From Strapi
+interface VariantImageData {
+  id: string
+  url: string
+  variantId: string
 }
 
-export function ProductTemplate({ product, richDescription }: ProductTemplateProps) {
+interface ProductTemplateProps {
+  product: StoreProduct
+  richDescription?: string
+  variantImageUrls?: string[]
+}
+
+export function ProductTemplate({ product, richDescription, variantImageUrls }: ProductTemplateProps) {
   const [variantId, setVariantId] = useQueryState("variant", {
     shallow: false,
     history: "push",
@@ -83,8 +90,9 @@ export function ProductTemplate({ product, richDescription }: ProductTemplatePro
         <div className="relative">
            <div className="sticky top-24">
              <ProductGallery
-                images={product.images || []}
-                selectedVariantId={selectedVariant?.id}
+                product={product}
+                selectedVariant={selectedVariant}
+                variantImageUrls={variantImageUrls}
              />
            </div>
         </div>
@@ -108,8 +116,8 @@ export function ProductTemplate({ product, richDescription }: ProductTemplatePro
 
            {/* Rich Description from Strapi (if available) */}
            {richDescription && (
-             <div className="prose prose-sm dark:prose-invert">
-                <h3>Product_Analysis</h3>
+             <div className="prose prose-sm dark:prose-invert bg-muted/30 p-6 rounded-lg border">
+                <h3 className="text-lg font-semibold mb-3">Product Description</h3>
                 <div dangerouslySetInnerHTML={{ __html: richDescription }} />
              </div>
            )}

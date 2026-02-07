@@ -1,16 +1,18 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { loginAction } from "@/app/actions/auth"
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z.string().min(1, "Password is required"),
 })
 
 type LoginFormData = z.infer<typeof loginSchema>
@@ -24,11 +26,13 @@ interface LoginFormProps {
  * Features:
  * - Email and password validation using zod
  * - Form state management with react-hook-form
- * - Forgot password link
+ * - Integration with Medusa authentication
  * - Error display for validation
  */
 export function LoginForm({ onSuccess }: LoginFormProps) {
+  const router = useRouter()
   const [isLoading, setIsLoading] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
 
   const {
     register,
@@ -40,16 +44,19 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true)
+    setError(null)
     try {
-      // TODO: Integrate with Medusa authentication
-      console.log("Login form submitted:", data)
+      const result = await loginAction(data.email, data.password)
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      onSuccess?.()
+      if (result.success) {
+        router.refresh()
+        onSuccess?.()
+      } else {
+        setError(result.error || "Login failed")
+      }
     } catch (error) {
       console.error("Login error:", error)
+      setError("An unexpected error occurred")
     } finally {
       setIsLoading(false)
     }
@@ -92,6 +99,12 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           <p className="text-sm text-destructive">{errors.password.message}</p>
         )}
       </div>
+
+      {error && (
+        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
 
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? "Signing in..." : "Sign In"}

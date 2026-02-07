@@ -103,3 +103,15 @@ export async function initiatePaymentSession({
     provider_id: providerId,
   })
 }
+
+export async function getShippingOptions(cartId: string): Promise<any[]> {
+  try {
+    const { shipping_options } = await sdk.store.fulfillment.listCartOptions({
+      cart_id: cartId,
+    })
+    return shipping_options || []
+  } catch (error) {
+    console.error("Failed to fetch shipping options:", error)
+    return []
+  }
+}

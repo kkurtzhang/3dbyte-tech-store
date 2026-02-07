@@ -57,6 +57,21 @@ module.exports = defineConfig({
         brandIndexName: process.env.MEILISEARCH_BRAND_INDEX_NAME || "brands",
       },
     },
+    {
+      resolve: "@medusajs/payment",
+      options: {
+        providers: [
+          {
+            resolve: "@medusajs/payment-stripe",
+            id: "stripe",
+            options: {
+              apiKey: process.env.STRIPE_SECRET_KEY,
+              webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+            },
+          },
+        ],
+      },
+    },
     // {
     //   resolve: "@medusajs/index",
     //   options: {

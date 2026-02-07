@@ -2,11 +2,12 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
+import { logoutAction } from "@/app/actions/auth"
 
 /**
  * Account layout with hybrid navigation:
@@ -31,10 +32,20 @@ export default function AccountLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const router = useRouter()
+  const [isLoading, setIsLoading] = React.useState(false)
 
-  const handleSignOut = () => {
-    // TODO: Implement sign out when Medusa integration is complete
-    console.log("Sign out clicked")
+  const handleSignOut = async () => {
+    setIsLoading(true)
+    try {
+      await logoutAction()
+      router.push("/")
+      router.refresh()
+    } catch (error) {
+      console.error("Sign out error:", error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -68,9 +79,10 @@ export default function AccountLayout({
               variant="ghost"
               className="w-full justify-start"
               onClick={handleSignOut}
+              disabled={isLoading}
             >
               <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
+              {isLoading ? "Signing out..." : "Sign Out"}
             </Button>
           </nav>
         </aside>
@@ -100,9 +112,10 @@ export default function AccountLayout({
             variant="outline"
             className="w-full mb-6"
             onClick={handleSignOut}
+            disabled={isLoading}
           >
             <LogOut className="mr-2 h-4 w-4" />
-            Sign Out
+            {isLoading ? "Signing out..." : "Sign Out"}
           </Button>
         </div>
 

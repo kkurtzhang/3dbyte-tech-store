@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation"
 import { getProductByHandle, getProductHandles } from "@/lib/medusa/products"
-import { getStrapiContent, RichTextContent } from "@/lib/strapi/content"
+import { getStrapiContent } from "@/lib/strapi/content"
 import { ProductTemplate } from "@/features/product/templates/product-template"
 import { Metadata } from "next"
 import { Suspense } from "react"
@@ -40,6 +40,26 @@ export async function generateMetadata({
   }
 }
 
+// Strapi v4 content type
+interface StrapiProductDescription {
+  id: number
+  medusa_id: string
+  rich_text: string
+  documentId: string
+}
+
+interface StrapiResponse<T> {
+  data: T[]
+  meta: {
+    pagination?: {
+      page: number
+      pageSize: number
+      pageCount: number
+      total: number
+    }
+  }
+}
+
 export default async function ProductPage({
   params,
 }: {
@@ -50,7 +70,7 @@ export default async function ProductPage({
   // Storefront Composition Pattern: Parallel Fetching
   const [product, strapiData] = await Promise.all([
     getProductByHandle(handle),
-    getStrapiContent<{ data: RichTextContent[] }>("product-descriptions", {
+    getStrapiContent<StrapiResponse<StrapiProductDescription>>("product-descriptions", {
       filters: { medusa_id: { $eq: null } }, // Optimized: We'll filter in JS if needed, or refine query
     }).catch(() => ({ data: [] })), // Fail gracefully if Strapi is down
   ])
@@ -59,16 +79,32 @@ export default async function ProductPage({
     notFound()
   }
 
+  // Debug: Log variant data
+  console.log("SSR: product.variants count:", product.variants?.length)
+  if (product.variants?.length) {
+    console.log("SSR: first variant has images:", product.variants[0].images?.length)
+  }
+  
+  // Extract variant image URLs as simple string array (survives SSR serialization)
+  const variantImageUrls = product.variants?.flatMap((variant) =>
+    (variant.images || []).map((img) =>
+      JSON.stringify({ id: img.id, url: String(img.url), variantId: variant.id })
+    )
+  ) || []
+  
+  console.log("SSR: variantImageUrls count:", variantImageUrls.length)
+
   // Find matching enriched content
   const enrichedContent = strapiData?.data?.find(
-    (item) => item.attributes?.medusa_id === product.id
+    (item) => item.medusa_id === product.id
   )
 
   return (
     <Suspense fallback={<div className="container py-12 animate-pulse"><div className="h-96 bg-muted rounded-sm"></div></div>}>
       <ProductTemplate
         product={product}
-        richDescription={enrichedContent?.attributes?.rich_text}
+        richDescription={enrichedContent?.rich_text}
+        variantImageUrls={variantImageUrls}
       />
     </Suspense>
   )

@@ -2,9 +2,24 @@
 
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
-import { updateCart, addShippingMethod, completeCart, initiatePaymentSession, getCart } from "@/lib/medusa/cart"
+import { updateCart, addShippingMethod, completeCart, initiatePaymentSession, getCart, getShippingOptions } from "@/lib/medusa/cart"
 
 const CART_COOKIE = "_medusa_cart_id"
+
+export async function getShippingOptionsAction() {
+  const cookieStore = await cookies()
+  const cartId = cookieStore.get(CART_COOKIE)?.value
+
+  if (!cartId) return { success: false, error: "No cart found", options: [] }
+
+  try {
+    const options = await getShippingOptions(cartId)
+    return { success: true, options }
+  } catch (error: any) {
+    console.error("Get shipping options error:", error)
+    return { success: false, error: error.message, options: [] }
+  }
+}
 
 export async function initPaymentSessionAction() {
   const cookieStore = await cookies()
@@ -20,7 +35,7 @@ export async function initPaymentSessionAction() {
     // In Medusa v2, we initiate a session for a specific provider
     const paymentCollection = await initiatePaymentSession({
       cart,
-      providerId: "pp_stripe_stripe" // Typical ID, might need adjustment based on backend config
+      providerId: "stripe"
     })
 
     revalidatePath("/checkout")
