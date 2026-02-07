@@ -171,7 +171,7 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
         size="lg"
         disabled={isSubmitting}
       >
-        {isSubmitting ? "Verifying_Data..." : "Proceed_To_Logistics"}
+        {isSubmitting ? "Saving..." : "Continue to Delivery"}
       </Button>
     </form>
   )

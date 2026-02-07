@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { StoreCart } from "@medusajs/types"
 import { Separator } from "@/components/ui/separator"
-import { CheckCircle2, Circle } from "lucide-react"
+import { CheckCircle2, Circle, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { AddressStep } from "./address-step"
 import { DeliveryStep } from "./delivery-step"
@@ -12,6 +12,7 @@ import { PaymentStep } from "./payment-step"
 import { setAddressesAction, setShippingMethodAction, completeCartAction, initPaymentSessionAction } from "@/app/actions/checkout"
 import { useRouter } from "next/navigation"
 import { StripeWrapper } from "./stripe-wrapper"
+import { useToast } from "@/lib/hooks/use-toast"
 
 interface CheckoutFormProps {
   cart: StoreCart
@@ -21,73 +22,124 @@ type Step = "address" | "delivery" | "payment"
 
 export function CheckoutForm({ cart }: CheckoutFormProps) {
   const router = useRouter()
+  const { toast } = useToast()
   const [currentStep, setCurrentStep] = useState<Step>("address")
 
   // Form Data State
   const [addressData, setAddressData] = useState<any>(null)
   const [deliveryMethod, setDeliveryMethod] = useState<string>("standard")
   const [clientSecret, setClientSecret] = useState<string | undefined>(undefined)
+  
+  // Loading states
+  const [isLoadingAddress, setIsLoadingAddress] = useState(false)
+  const [isLoadingDelivery, setIsLoadingDelivery] = useState(false)
+  const [isLoadingPayment, setIsLoadingPayment] = useState(false)
 
   const steps = [
-    { id: "address", label: "Phase 1: Identification" },
-    { id: "delivery", label: "Phase 2: Logistics" },
-    { id: "payment", label: "Phase 3: Transaction" },
+    { id: "address", label: "Shipping Address" },
+    { id: "delivery", label: "Delivery Method" },
+    { id: "payment", label: "Payment" },
   ]
 
   const handleAddressComplete = async (data: any) => {
-    const result = await setAddressesAction(data)
-    if (result.success) {
-      setAddressData(data)
-      setCurrentStep("delivery")
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    } else {
-      console.error(result.error)
-      // TODO: Show toast error
-      alert("Failed to save address: " + result.error)
+    setIsLoadingAddress(true)
+    try {
+      const result = await setAddressesAction(data)
+      if (result.success) {
+        setAddressData(data)
+        setCurrentStep("delivery")
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Address Error",
+          description: result.error || "Failed to save address. Please try again.",
+        })
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Connection Error",
+        description: "Unable to save address. Please check your connection and try again.",
+      })
+    } finally {
+      setIsLoadingAddress(false)
     }
   }
 
   const handleDeliveryComplete = async (methodId: string) => {
-    const result = await setShippingMethodAction(methodId)
-    if (result.success) {
-      setDeliveryMethod(methodId)
+    setIsLoadingDelivery(true)
+    try {
+      const result = await setShippingMethodAction(methodId)
+      if (result.success) {
+        setDeliveryMethod(methodId)
 
-      // Initialize payment session
-      const sessionResult = await initPaymentSessionAction()
-      if (sessionResult.success) {
-        // Find Stripe session data
-        const paymentSession = sessionResult.paymentCollection?.payment_sessions?.find(
-          (s: any) => s.provider_id === "pp_stripe_stripe"
-        )
+        // Initialize payment session
+        const sessionResult = await initPaymentSessionAction()
+        if (sessionResult.success) {
+          // Find Stripe session data
+          const paymentSession = sessionResult.paymentCollection?.payment_sessions?.find(
+            (s: any) => s.provider_id === "stripe" || s.provider_id?.includes("stripe")
+          )
 
-        if (paymentSession?.data?.client_secret) {
-            setClientSecret(paymentSession.data.client_secret)
+          if (paymentSession?.data?.client_secret) {
+              setClientSecret(paymentSession.data.client_secret)
+          }
+
+          setCurrentStep("payment")
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Payment Setup Error",
+            description: sessionResult.error || "Failed to initialize payment. Please try again.",
+          })
         }
-
-        setCurrentStep("payment")
-        window.scrollTo({ top: 0, behavior: 'smooth' })
       } else {
-         console.error(sessionResult.error)
-         alert("Failed to initialize payment: " + sessionResult.error)
+        toast({
+          variant: "destructive",
+          title: "Delivery Error",
+          description: result.error || "Failed to set delivery method. Please try again.",
+        })
       }
-    } else {
-      console.error(result.error)
-      alert("Failed to set shipping method: " + result.error)
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Connection Error",
+        description: "Unable to save delivery method. Please check your connection and try again.",
+      })
+    } finally {
+      setIsLoadingDelivery(false)
     }
   }
 
   const handlePaymentComplete = async () => {
-    const result = await completeCartAction()
-    if (result.success) {
-      console.log("Order placed:", result.order, "Delivery Method:", deliveryMethod)
-      // Redirect to confirmation page
-      // router.push(`/order/confirmed/${result.order.id}`)
-      alert("Order placed successfully! Redirecting...")
-      // For now, just reset or redirect home/cart
-      router.refresh()
-    } else {
-      console.error(result.error)
-      alert("Failed to complete order: " + result.error)
+    setIsLoadingPayment(true)
+    try {
+      const result = await completeCartAction()
+      if (result.success && result.order) {
+        console.log("Order placed:", result.order, "Delivery Method:", deliveryMethod)
+        // Redirect to confirmation page
+        if (result.order.id) {
+          router.push(`/order/confirmed/${result.order.id}`)
+        } else {
+          router.push("/order/confirmed")
+        }
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Order Failed",
+          description: result.error || "Failed to complete order. Please try again.",
+        })
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Connection Error",
+        description: "Unable to complete order. Please check your connection and try again.",
+      })
+    } finally {
+      setIsLoadingPayment(false)
     }
   }
 
@@ -109,7 +161,7 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
                         <Circle className={cn("h-4 w-4", isActive && "fill-current animate-pulse")} />
                     )}
                     <span className="font-mono uppercase tracking-wider hidden md:inline-block">{step.label}</span>
-                    <span className="font-mono uppercase tracking-wider md:hidden">{step.label.split(": ")[1]}</span>
+                    <span className="font-mono uppercase tracking-wider md:hidden">{step.label}</span>
                     {index < steps.length - 1 && (
                         <Separator orientation="vertical" className="h-4 mx-2" />
                     )}

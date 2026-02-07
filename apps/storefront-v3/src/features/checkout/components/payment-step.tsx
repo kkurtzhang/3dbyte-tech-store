@@ -67,9 +67,9 @@ export function PaymentStep({ onBack, onComplete }: PaymentStepProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid gap-2">
-        <h2 className="text-xl font-bold">Transaction Method</h2>
+        <h2 className="text-xl font-bold">Payment</h2>
         <p className="text-sm text-muted-foreground">
-          Select encrypted payment channel.
+          Enter your payment details to complete the order.
         </p>
       </div>
 
@@ -85,9 +85,9 @@ export function PaymentStep({ onBack, onComplete }: PaymentStepProps) {
         >
           <CreditCard className="h-6 w-6 text-primary" />
           <div className="flex-1">
-            <h3 className="font-mono font-bold text-sm uppercase">Secure Card Protocol</h3>
+            <h3 className="font-mono font-bold text-sm uppercase">Credit Card</h3>
             <p className="text-xs text-muted-foreground">
-              Encrypted transmission via Stripe
+              Pay securely with your credit or debit card
             </p>
           </div>
           <div className={cn(
@@ -126,9 +126,9 @@ export function PaymentStep({ onBack, onComplete }: PaymentStepProps) {
         >
           <Wallet className="h-6 w-6 text-primary" />
           <div className="flex-1">
-            <h3 className="font-mono font-bold text-sm uppercase">Manual Transfer</h3>
+            <h3 className="font-mono font-bold text-sm uppercase">Manual Payment</h3>
             <p className="text-xs text-muted-foreground">
-              Direct wire to laboratory accounts
+              Pay by wire transfer or check
             </p>
           </div>
            <div className={cn(
@@ -142,7 +142,7 @@ export function PaymentStep({ onBack, onComplete }: PaymentStepProps) {
 
       {errorMessage && (
         <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive font-mono">
-          ERROR: {errorMessage}
+          Error: {errorMessage}
         </div>
       )}
 
@@ -161,7 +161,7 @@ export function PaymentStep({ onBack, onComplete }: PaymentStepProps) {
           size="lg"
           disabled={isProcessing || (method === "card" && !stripe)}
         >
-          {isProcessing ? "Processing_Transaction..." : "Authorize_Payment"}
+          {isProcessing ? "Processing..." : "Pay Now"}
         </Button>
       </div>
     </form>
