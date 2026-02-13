@@ -13,32 +13,24 @@
 ### ✅ COMPLETED TODAY
 | Owner | Task | Verified | Notes |
 |-------|------|----------|-------|
+| @Pixel | Address Book UI | Feb 13 | /account/addresses with edit/delete |
+| @Pixel | Blog Post Pages | Feb 13 | /blog list and /blog/[slug] |
+| @Pixel | Contact Us Page | Feb 13 | /contact with form, info, map |
+| @Pixel | Order History/Tracking | Feb 13 | Enhanced tracking |
+| @Pixel | Search Autocomplete | Feb 13 | Medusa API integration |
+| @Pixel | Product Compare | Feb 13 | /compare page exists |
+| @Pixel | Newsletter Popup | Feb 13 | 10s delay, localStorage |
+| @Pixel | Wishlist Page UI | Feb 13 | /wishlist page |
+| @Pixel | Recently Viewed Products | Feb 13 | localStorage tracking |
 | @Pixel | Product Compare | Feb 13 | ✅ /compare page live with specs table |
 | @Merchant | Order Cancellation API | Feb 13 | Workflow + API route complete |
 | @Merchant | Wishlist Backend API | Feb 13 | API implemented |
-| @Pixel | Mini Cart Drawer | Feb 13 | Heartbeat spawn - Complete |
-| @Merchant | Social Login (Google OAuth) | Feb 13 | Retry succeeded |
-| @Pixel | Stock Availability | Feb 13 | Retry succeeded |
-| @Merchant | Promo Codes | Feb 13 | Completed |
-| @Sentinel | E2E Testing (Playwright) | Feb 13 | Completed |
-| @Curator | CMS Documentation | Feb 13 | Completed |
-| @Merchant | Product Reviews/Ratings | Feb 13 | Retry succeeded |
-| @Merchant | Guest Checkout | Feb 13 | Retry succeeded |
-| @Pixel | Advanced Product Filters | Feb 13 | Retry succeeded |
 
 ### 📦 BACKLOG - NEW TASKS
 
-**🔄 IN PROGRESS (2 sub-agents active)**
+**🔄 IN PROGRESS**
 
-| Owner | Task | Priority | Status |
-|-------|------|----------|--------|
-| @Pixel | Address Book UI | High | ✅ Complete |
-| @Pixel | Blog Post Pages | Medium | ✅ Complete |
-| @Pixel | Contact Us Page | High | ✅ Complete |
-| @Pixel | Wishlist Page UI | High | ✅ Complete |
-| @Pixel | Recently Viewed Products | High | ✅ Complete |
-
-**🔴 High Priority (Core Commerce)**
+*No active tasks - all completed*
 
 **🟡 Medium Priority (UX Polish)**
 
