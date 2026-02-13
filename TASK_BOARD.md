@@ -52,7 +52,7 @@
 | Owner | Task | Priority | Status |
 |-------|------|----------|--------|
 | @Pixel | Order History/Tracking | High | ✅ Complete |
-| @Pixel | Newsletter Popup | Medium | Backlog |
+| @Pixel | Newsletter Popup | Medium | 🔄 In Progress |
 
 | Owner | Task | Priority | Why |
 |-------|------|----------|-----|
