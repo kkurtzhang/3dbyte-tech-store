@@ -42,10 +42,10 @@
 
 **🟡 Medium Priority (UX Polish)**
 
-| Owner | Task | Priority | Why |
-|-------|------|----------|-----|
-| @Pixel | Search Autocomplete | Medium | Search UX |
-| @Pixel | Product Compare | Medium | Product discovery |
+| Owner | Task | Priority | Status |
+|-------|------|----------|--------|
+| @Pixel | Search Autocomplete | Medium | 🔄 In Progress |
+| @Pixel | Product Compare | Medium | Backlog |
 
 **📄 Pages Needed**
 
@@ -53,8 +53,6 @@
 |-------|------|----------|--------|
 | @Pixel | Order History/Tracking | High | ✅ Complete |
 | @Pixel | Newsletter Popup | Medium | Backlog |
-| @Pixel | Search Autocomplete | Medium | Backlog |
-| @Pixel | Product Compare | Medium | Backlog |
 
 | Owner | Task | Priority | Why |
 |-------|------|----------|-----|
