@@ -207,56 +207,17 @@ Create tasks in BACKLOG with priority:
 
 ---
 
-## Step 5: Verify Services (Brief)
+## Step 5: Report (Log to Memory)
 
-```bash
-curl -s http://localhost:9000/health
-curl -s http://localhost:3001
-```
-
----
-
-## Step 6: Report (Beautiful Format)
-
-Post to Telegram:
-
-```
-╔══════════════════════════════════════════════════════╗
-║            🏠 HEARTBEAT REPORT                      ║
-║            Feb 12, 6:40 PM GMT+11                   ║
-╠══════════════════════════════════════════════════════╣
-║  🔧 SERVICES STATUS                                 ║
-║  ─────────────────────────────────────────────────  ║
-║  • Backend: localhost:9000 ✅                        ║
-║  • Storefront: localhost:3001 ✅                     ║
-║  • Active sub-agents: 1/2                           ║
-╠══════════════════════════════════════════════════════╣
-║  🔄 IN PROGRESS (1)                                  ║
-║  ─────────────────────────────────────────────────  ║
-║  @Merchant   Stripe validation (0/2)                  ║
-╠══════════════════════════════════════════════════════╣
-║  ✅ COMPLETED TODAY (2)                              ║
-║  ─────────────────────────────────────────────────  ║
-║  • Sub-agent spawning enabled                        ║
-║  • Monorepo build                                   ║
-╠══════════════════════════════════════════════════════╣
-║  📦 BACKLOG (2)                                      ║
-║  ─────────────────────────────────────────────────  ║
-║  @Pixel      Stripe Elements (High)                  ║
-║  @Pixel      MDX rendering (Medium)                  ║
-║  ─────────────────────────────────────────────────  ║
-║  ⚠️ BACKLOG LOW (<3) - INVESTIGATE NEW TASKS       ║
-╠══════════════════════════════════════════════════════╣
-║  🚨 BLOCKERS                                        ║
-║  ─────────────────────────────────────────────────  ║
-║  None                                               ║
-╚══════════════════════════════════════════════════════╝
-```
+Update heartbeat-state.json with:
+- beatCount
+- activeSubagents
+- completedTasks
+- backlogCount
 
 **Rules:**
-- Filter COMPLETED table to show only tasks verified TODAY
-- Show active sub-agents count (X/2)
-- Show BACKLOG count - if <3, flag with ⚠️ and investigate
+- Update heartbeat-state.json every heartbeat
+- Commit changes to git
 
 ---
 
