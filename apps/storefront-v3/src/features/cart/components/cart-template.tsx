@@ -2,10 +2,11 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { ShoppingCart, ArrowRight } from "lucide-react";
+import { ShoppingCart, ArrowRight, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/cart-context";
+import { useSavedItems } from "@/context/saved-items-context";
 import { CartItem } from "./cart-item";
 import {
   Card,
@@ -17,6 +18,7 @@ import {
 
 export function CartTemplate() {
   const { cart, isLoading } = useCart();
+  const { savedItems } = useSavedItems();
 
   const itemCount = useMemo(() => {
     return cart?.items?.reduce((acc, item) => acc + item.quantity, 0) || 0;
@@ -191,6 +193,33 @@ export function CartTemplate() {
             ))}
           </div>
         </div>
+
+        {/* Saved Items Section */}
+        {savedItems.length > 0 && (
+          <div className="mt-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold tracking-tight font-mono uppercase flex items-center gap-2">
+                <Bookmark className="h-5 w-5" />
+                Saved for Later
+              </h2>
+              <Button variant="link" asChild>
+                <Link href="/account/saved">View All</Link>
+              </Button>
+            </div>
+            <div className="rounded-lg border bg-card">
+              <div className="divide-y p-1">
+                {savedItems.slice(0, 3).map((item) => (
+                  <div
+                    key={item.id}
+                    className="px-4 hover:bg-muted/30 transition-colors"
+                  >
+                    <CartItem item={item} currencyCode={currencyCode} showSaveForLater={false} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="lg:col-span-4">

@@ -23,6 +23,8 @@
 - **Fallback**: `opencode/minimax-m2.5-free` (free tier, cooldown issues)
 - **Important**: Use plain model names in spawn commands - fallback chain is automatic at gateway level
 - **Syntax**: `GLM-2` alias also works, `#zai:fallback2` suffix is optional
+- **Authority**: Architect has authority to assign fallback models to sub-agents if primary model runs low
+- **Monitor next sub-agent run to verify** - Check session logs for claude CLI usage
 
 ### Sub-Agent Concurrency
 - **Limit**: 2 concurrent sub-agents max

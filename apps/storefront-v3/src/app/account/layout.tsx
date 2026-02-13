@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { LogOut } from "lucide-react"
+import { LogOut, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
@@ -22,8 +22,12 @@ interface AccountNavItem {
 
 const accountNavItems: AccountNavItem[] = [
   { label: "Profile", href: "/account" },
+  { label: "Settings", href: "/account/settings" },
   { label: "Orders", href: "/account/orders" },
   { label: "Addresses", href: "/account/addresses" },
+  { label: "Saved Items", href: "/account/saved" },
+  { label: "Inventory Alerts", href: "/account/alerts" },
+  { label: "Loyalty Rewards", href: "/loyalty" },
 ]
 
 export default function AccountLayout({

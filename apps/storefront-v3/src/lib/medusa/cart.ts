@@ -97,11 +97,30 @@ export async function initiatePaymentSession({
   cart: StoreCart
   providerId: string
 }): Promise<any> {
-  // @ts-ignore - The SDK types might be slightly off or we need to access differently
-  // based on Source 1: sdk.store.payment.initiatePaymentSession(cart, { provider_id })
   return await sdk.store.payment.initiatePaymentSession(cart, {
     provider_id: providerId,
   })
+}
+
+export async function addLineItems({
+  cartId,
+  items,
+}: {
+  cartId: string
+  items: { variant_id: string; quantity: number }[]
+}): Promise<StoreCart> {
+  let cart = await getCart(cartId)
+  
+  // Add each item sequentially
+  for (const item of items) {
+    cart = await addToCart({
+      cartId,
+      variantId: item.variant_id,
+      quantity: item.quantity,
+    })
+  }
+  
+  return cart
 }
 
 export async function getShippingOptions(cartId: string): Promise<any[]> {

@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useState } from "react"
 import { updateProfileAction, deleteAccountAction } from "@/app/actions/auth"
 import { updateAccount } from "@/app/actions/account"
+import { AccountRecentlyViewed } from "@/components/account/account-recently-viewed"
 
 interface CustomerData {
   first_name?: string | null
@@ -18,6 +19,8 @@ interface CustomerData {
 export function AccountContent({ customer }: { customer: CustomerData }) {
   return (
     <>
+      <AccountRecentlyViewed />
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">

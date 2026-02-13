@@ -4,7 +4,9 @@
     "calendar": null,
     "weather": null
   },
-  "beatCount": 2,
-  "activeSubagents": 3,
-  "subagentLabels": ["contact-us-page-retry", "blog-post-pages", "address-book-ui"]
+  "beatCount": 1,
+  "activeSubagents": 0,
+  "subagentLabels": [],
+  "completedTasks": 39,
+  "backlogCount": 1
 }

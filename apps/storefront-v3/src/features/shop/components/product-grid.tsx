@@ -18,6 +18,10 @@ export interface ProductLike {
     calculated_amount: number;
     currency_code: string;
   };
+  // Discount information
+  discountPercentage?: number;
+  originalPrice?: number;
+  salePrice?: number;
 }
 
 export interface ProductGridProps {
@@ -55,6 +59,8 @@ export function ProductGrid({ products, className }: ProductGridProps) {
         // Handle price resolution for different product types
         let price = 0;
         let currencyCode = "usd";
+        let originalPrice: number | undefined;
+        let discountPercentage: number | undefined;
 
         if ("price" in product && typeof product.price === "number") {
           // Meilisearch document (flat price)
@@ -64,8 +70,33 @@ export function ProductGrid({ products, className }: ProductGridProps) {
           // Medusa StoreProduct (nested in variants)
           const variant = product.variants?.[0];
           currencyCode = variant?.calculated_price?.currency_code || "usd";
-          // Medusa returns price in cents
-          price = (variant?.calculated_price?.calculated_amount || 0) / 100;
+          
+          // Get calculated (sale) price and original price
+          const calculatedAmount = variant?.calculated_price?.calculated_amount;
+          const originalAmount = variant?.original_price?.amount;
+          
+          if (calculatedAmount) {
+            price = calculatedAmount / 100;
+          } else if (variant?.prices?.[0]?.amount) {
+            price = variant.prices[0].amount / 100;
+          }
+
+          // Calculate discount if original price exists
+          if (originalAmount && originalAmount > 0 && calculatedAmount) {
+            originalPrice = originalAmount / 100;
+            discountPercentage = ((originalAmount - calculatedAmount) / originalAmount) * 100;
+          }
+
+          // Check if product already has discount info attached (from getDiscountedProducts)
+          if (product.discountPercentage !== undefined) {
+            discountPercentage = product.discountPercentage;
+          }
+          if (product.originalPrice !== undefined) {
+            originalPrice = product.originalPrice;
+          }
+          if (product.salePrice !== undefined) {
+            price = product.salePrice;
+          }
         }
 
         return (
@@ -79,6 +110,8 @@ export function ProductGrid({ products, className }: ProductGridProps) {
               amount: price,
               currency_code: currencyCode.toUpperCase(),
             }}
+            originalPrice={originalPrice}
+            discountPercentage={discountPercentage}
           />
         );
       })}

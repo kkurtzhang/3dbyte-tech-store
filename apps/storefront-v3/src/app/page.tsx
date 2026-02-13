@@ -2,6 +2,7 @@ import { Suspense } from "react"
 import { Button } from "@/components/ui/button"
 import { getProducts, getDemoProducts } from "@/lib/medusa/products"
 import { getStrapiContent } from "@/lib/strapi/content"
+import { getFeaturedCollections } from "@/lib/medusa/collections"
 import { ProductCard } from "@/features/product/components/product-card"
 import Link from "next/link"
 
@@ -16,6 +17,69 @@ function ProductsSkeleton() {
           key={i}
           className="h-80 animate-pulse rounded-lg bg-muted"
         />
+      ))}
+    </div>
+  )
+}
+
+// Loading skeleton for collections
+function CollectionsSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {[...Array(4)].map((_, i) => (
+        <div
+          key={i}
+          className="aspect-[4/5] animate-pulse rounded-lg bg-muted"
+        />
+      ))}
+    </div>
+  )
+}
+
+// Collection card component
+function CollectionCard({ collection }: { collection: any }) {
+  const imageUrl = collection.metadata?.image as string | undefined
+  
+  return (
+    <Link 
+      href={`/collections/${collection.handle}`}
+      className="group relative block overflow-hidden rounded-lg bg-muted"
+    >
+      <div className="aspect-[4/5] w-full">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={collection.title}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-muted/50">
+            <span className="font-mono text-4xl text-muted-foreground/30">
+              {collection.title?.charAt(0) || "C"}
+            </span>
+          </div>
+        )}
+      </div>
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12">
+        <h3 className="text-lg font-bold text-white">{collection.title}</h3>
+        <p className="text-sm text-white/70 font-mono">
+          {collection.metadata?.product_count || "Shop now"}
+        </p>
+      </div>
+    </Link>
+  )
+}
+
+// Collection grid component
+function CollectionGrid({ collections }: { collections: any[] }) {
+  if (collections.length === 0) {
+    return null
+  }
+
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {collections.map((collection) => (
+        <CollectionCard key={collection.id} collection={collection} />
       ))}
     </div>
   )
@@ -93,6 +157,9 @@ export default async function Home() {
   // Fetch products with fallback support
   const { products, count } = await getProducts({ limit: 4 })
 
+  // Fetch featured collections (limit to 4)
+  const collections = await getFeaturedCollections(4)
+
   // Fetch hero content in parallel
   const strapiData = await getStrapiContent("homepage").catch(() => null)
   const heroData = strapiData && strapiData.value ? strapiData.value.data?.attributes : null
@@ -125,6 +192,22 @@ export default async function Home() {
           </Button>
         </div>
       </section>
+
+      {/* Featured Collections Section */}
+      {collections.length > 0 && (
+        <section className="mb-16">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-xl font-bold tracking-tight">Featured Collections</h2>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/collections">View All →</Link>
+            </Button>
+          </div>
+
+          <Suspense fallback={<CollectionsSkeleton />}>
+            <CollectionGrid collections={collections} />
+          </Suspense>
+        </section>
+      )}
 
       {/* Featured Products Section */}
       <section>

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { StoreProduct } from "@medusajs/types"
 
 const STORAGE_KEY = "recently-viewed-products"
-const MAX_ITEMS = 10
+const MAX_ITEMS = 20
 
 interface RecentlyViewedProduct {
   id: string

@@ -48,6 +48,9 @@ export default async function OrderConfirmedPage({
         {/* Action Buttons */}
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Button asChild size="lg" className="flex-1 sm:flex-none">
+            <Link href="/track-order">Track Order</Link>
+          </Button>
+          <Button asChild size="lg" variant="outline" className="flex-1 sm:flex-none">
             <Link href="/">Continue Shopping</Link>
           </Button>
           <PrintButton className="flex-1 sm:flex-none">

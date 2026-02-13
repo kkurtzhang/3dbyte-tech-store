@@ -4,8 +4,9 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { ArrowLeft, Package, Truck, CreditCard } from "lucide-react"
+import { ArrowLeft, Package, Truck, CreditCard, MapPin, ShoppingCart } from "lucide-react"
 import { sdk } from "@/lib/medusa/client"
+import { ReorderButton } from "@/components/reorder/reorder-button"
 
 interface Props {
   params: Promise<{ id: string }>
@@ -63,18 +64,21 @@ export default async function OrderDetailPage({ params }: Props) {
             })}
           </p>
         </div>
-        <Badge
-          variant={
-            order.status === "completed"
-              ? "default"
-              : order.status === "shipped"
-              ? "secondary"
-              : "outline"
-          }
-          className="font-mono text-sm uppercase tracking-wider"
-        >
-          {order.status}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <ReorderButton orderId={id} variant="default" size="default" />
+          <Badge
+            variant={
+              order.status === "completed"
+                ? "default"
+                : order.status === "shipped"
+                ? "secondary"
+                : "outline"
+            }
+            className="font-mono text-sm uppercase tracking-wider"
+          >
+            {order.status}
+          </Badge>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -130,10 +134,16 @@ export default async function OrderDetailPage({ params }: Props) {
                 <div className="h-2 w-2 rounded-full bg-primary" />
                 <span className="text-sm">Order confirmed</span>
               </div>
+              {order.status === "processing" || order.status === "shipped" || order.status === "completed" ? (
+                <div className="flex items-center gap-3">
+                  <div className={`h-2 w-2 rounded-full ${order.status !== "processing" ? "bg-primary" : "bg-muted-foreground/30"}`} />
+                  <span className="text-sm">Preparing for shipment</span>
+                </div>
+              ) : null}
               {order.status === "shipped" || order.status === "completed" ? (
                 <div className="flex items-center gap-3">
                   <div className="h-2 w-2 rounded-full bg-primary" />
-                  <span className="text-sm">Shipped via Freight</span>
+                  <span className="text-sm">Shipped via Standard Shipping</span>
                 </div>
               ) : null}
               {order.status === "completed" ? (
@@ -144,6 +154,33 @@ export default async function OrderDetailPage({ params }: Props) {
               ) : null}
             </div>
           </div>
+
+          {/* Shipping Address */}
+          {order.shipping_address && (
+            <div className="rounded-lg border bg-card p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <MapPin className="h-5 w-5 text-primary" />
+                <h2 className="font-mono font-semibold uppercase tracking-wider text-sm">
+                  Shipping Address
+                </h2>
+              </div>
+              <address className="text-sm text-muted-foreground not-italic">
+                {order.shipping_address.first_name} {order.shipping_address.last_name}
+                <br />
+                {order.shipping_address.address_1}
+                {order.shipping_address.address_2 && (
+                  <>
+                    <br />
+                    {order.shipping_address.address_2}
+                  </>
+                )}
+                <br />
+                {order.shipping_address.city}, {order.shipping_address.postal_code}
+                <br />
+                {order.shipping_address.country_code?.toUpperCase()}
+              </address>
+            </div>
+          )}
         </div>
 
         <div className="space-y-6">

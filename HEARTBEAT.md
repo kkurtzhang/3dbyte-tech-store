@@ -143,8 +143,11 @@ For each task in "IN PROGRESS":
    - Check retry count (see limits below)
    - Spawn sub-agent with correct workdir:
 
+**⚠️ MUST include in task description:**
+> "Use `claude` CLI for all code changes (not standard I/O). Execute: `bash pty:true command:\"claude -p '<your prompt>'\"`"
+
 ```bash
-openclaw sessions spawn --agentId <name> --workdir /Users/3dbyte-tech/claw_ws/3dbyte-tech-store/apps/<path> --task "<task details>" --label "<label>"
+openclaw sessions spawn --agentId <name> --workdir /Users/3dbyte-tech/claw_ws/3dbyte-tech-store/apps/<path> --task "<task details> IMPORTANT: Use claude CLI for all code changes. Run: bash pty:true command:\"claude -p '<prompt>'\" " --label "<label>"
 ```
 
 **Examples:**

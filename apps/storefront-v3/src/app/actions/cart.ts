@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
-import { createCart, getCart, addToCart, updateLineItem, deleteLineItem } from "@/lib/medusa/cart"
+import { createCart, getCart, addToCart, updateLineItem, deleteLineItem, addLineItems } from "@/lib/medusa/cart"
 import { StoreCart } from "@medusajs/types"
 
 const CART_COOKIE = "_medusa_cart_id"
@@ -41,6 +41,30 @@ export async function addToCartAction(variantId: string, quantity: number) {
   } catch (error: any) {
     console.error("Add to cart error:", error)
     return { success: false, error: error.message || "Failed to add item" }
+  }
+}
+
+export async function addMultipleToCartAction(items: { variantId: string; quantity: number }[]) {
+  const cookieStore = await cookies()
+  let cartId = cookieStore.get(CART_COOKIE)?.value
+
+  try {
+    if (!cartId) {
+      const cart = await createCart()
+      cartId = cart.id
+      cookieStore.set(CART_COOKIE, cartId)
+    }
+
+    const cart = await addLineItems({ 
+      cartId, 
+      items: items.map(item => ({ variant_id: item.variantId, quantity: item.quantity })) 
+    })
+    revalidatePath("/cart")
+    revalidatePath("/")
+    return { success: true, cart }
+  } catch (error: any) {
+    console.error("Add multiple to cart error:", error)
+    return { success: false, error: error.message || "Failed to add items" }
   }
 }
 
