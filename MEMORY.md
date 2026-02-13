@@ -70,6 +70,7 @@
 - Services managed by sub-agents when they're actively implementing code
 - **MUST follow HEARTBEAT.md exactly** - don't make up steps or skip Step 5
 - Step 5 is "Report (Log to Memory)" - update heartbeat-state.json + git commit
+- **Only commit TASK_BOARD.md once per day (Evening Standup)** - not every heartbeat
 - Search Autocomplete
 - Wishlist Page UI
 - Address Book UI

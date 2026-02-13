@@ -217,7 +217,7 @@ Update heartbeat-state.json with:
 
 **Rules:**
 - Update heartbeat-state.json every heartbeat
-- Commit changes to git
+- Commit changes to git **once per day (Evening Standup)**
 
 ---
 
