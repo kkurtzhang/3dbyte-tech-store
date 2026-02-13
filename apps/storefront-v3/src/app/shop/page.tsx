@@ -9,9 +9,9 @@ import { getCategories } from "@/lib/medusa/categories";
 import { getCollections } from "@/lib/medusa/collections";
 import { ProductGrid } from "@/features/shop/components/product-grid";
 import {
-  ShopFilters,
+  AdvancedShopFilters,
   FilterGroup,
-} from "@/features/shop/components/shop-filters";
+} from "@/features/shop/components/advanced-shop-filters";
 import {
   ShopSort,
   type SortOption,
@@ -25,6 +25,10 @@ interface ShopPageProps {
     category?: string;
     collection?: string;
     q?: string;
+    color?: string;
+    size?: string;
+    minPrice?: string;
+    maxPrice?: string;
   }>;
 }
 
@@ -37,6 +41,10 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
   // Parse category and collection filters
   const categoryIds = params.category?.split(",").filter(Boolean) || [];
   const collectionIds = params.collection?.split(",").filter(Boolean) || [];
+  const colors = params.color?.split(",").filter(Boolean) || [];
+  const sizes = params.size?.split(",").filter(Boolean) || [];
+  const minPrice = params.minPrice ? Number(params.minPrice) : undefined;
+  const maxPrice = params.maxPrice ? Number(params.maxPrice) : undefined;
 
   // Fetch products, categories, and collections in parallel
   const [productsData, categoriesData, collectionsData] = await Promise.all([
@@ -46,6 +54,10 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
       category_id: categoryIds.length > 0 ? categoryIds : undefined,
       collection_id: collectionIds.length > 0 ? collectionIds : undefined,
       q: params.q,
+      colors: colors.length > 0 ? colors : undefined,
+      sizes: sizes.length > 0 ? sizes : undefined,
+      minPrice,
+      maxPrice,
     }),
     getCategories(),
     getCollections(),
@@ -95,7 +107,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
         </div>
       }
       sidebar={
-        <ShopFilters
+        <AdvancedShopFilters
           categories={categories.options.length > 0 ? categories : undefined}
           collections={collections.options.length > 0 ? collections : undefined}
         />
@@ -122,6 +134,14 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
                   searchParams.set("category", params.category);
                 if (params.collection)
                   searchParams.set("collection", params.collection);
+                if (params.color)
+                  searchParams.set("color", params.color);
+                if (params.size)
+                  searchParams.set("size", params.size);
+                if (params.minPrice)
+                  searchParams.set("minPrice", params.minPrice);
+                if (params.maxPrice)
+                  searchParams.set("maxPrice", params.maxPrice);
 
                 return (
                   <a
@@ -153,8 +173,17 @@ export async function generateMetadata({
   const params = await searchParams;
   const category = params.category;
 
+  let title = "All Products | Shop";
+  if (category) {
+    title = `${category} Products | Shop`;
+  } else if (params.color) {
+    title = `${params.color} Products | Shop`;
+  } else if (params.size) {
+    title = `${params.size} Size Products | Shop`;
+  }
+
   return {
-    title: category ? `${category} Products | Shop` : "All Products | Shop",
+    title,
     description: "Browse our product catalog.",
   };
 }

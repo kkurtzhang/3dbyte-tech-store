@@ -10,7 +10,17 @@
   "options": {
     "draftAndPublish": true
   },
-  "pluginOptions": {},
+  "pluginOptions": {
+    "meilisearch": {
+      "indexName": "blog",
+      "settings": {
+        "searchableAttributes": ["Title", "Content", "Excerpt"],
+        "filterableAttributes": ["Categories"],
+        "sortableAttributes": ["Title"],
+        "displayedAttributes": ["Title", "Slug", "Content", "Excerpt", "publishedAt"]
+      }
+    }
+  },
   "attributes": {
     "Title": {
       "type": "string",
@@ -37,6 +47,10 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::blog-post-category.blog-post-category"
+    },
+    "Excerpt": {
+      "type": "text",
+      "required": false
     }
   }
 }

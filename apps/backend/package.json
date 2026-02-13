@@ -24,7 +24,6 @@
   "dependencies": {
     "@3dbyte-tech-store/shared-types": "workspace:*",
     "@3dbyte-tech-store/shared-utils": "workspace:*",
-    "@lodashventure/medusa-media-manager": "^0.2.29",
     "@medusajs/admin-sdk": "2.12.3",
     "@medusajs/admin-shared": "2.12.3",
     "@medusajs/cli": "2.12.3",

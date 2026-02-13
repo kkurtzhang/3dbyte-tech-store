@@ -1,3 +1,5 @@
 packages:
-  - apps/*
+  - apps/storefront-v3
+  - apps/backend
+  - apps/cms
   - packages/*

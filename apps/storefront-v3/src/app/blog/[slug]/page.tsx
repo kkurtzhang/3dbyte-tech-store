@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ChevronLeft } from "lucide-react";
-import { getStrapiContent } from "@/lib/strapi/content";
-import { CmsContent } from "@/features/cms/components/cms-content";
+import { getMDXPost } from "@/lib/mdx";
+import { MDXProvider } from "@/components/mdx/mdx-provider";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 
@@ -17,55 +17,11 @@ interface PageProps {
   }>;
 }
 
-interface BlogPost {
-  id: number;
-  attributes: {
-    title: string;
-    slug: string;
-    excerpt: string;
-    content: string;
-    publishedAt: string;
-    seo_title?: string;
-    seo_description?: string;
-    cover?: {
-      data?: {
-        attributes: {
-          url: string;
-          alternativeText?: string;
-        };
-      };
-    };
-    author?: {
-      data?: {
-        attributes: {
-          name: string;
-        };
-      };
-    };
-  };
-}
-
-async function getBlogPost(slug: string): Promise<BlogPost | null> {
-  try {
-    const response = await getStrapiContent<{ data: BlogPost[] }>("posts", {
-      filters: {
-        slug: {
-          $eq: slug,
-        },
-      },
-    });
-    return response.data[0] || null;
-  } catch (error) {
-    console.error(`Failed to fetch blog post ${slug}:`, error);
-    return null;
-  }
-}
-
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getBlogPost(slug);
+  const post = await getMDXPost(slug);
 
   if (!post) {
     return {
@@ -74,14 +30,14 @@ export async function generateMetadata({
   }
 
   return {
-    title: post.attributes.seo_title || post.attributes.title,
-    description: post.attributes.seo_description || post.attributes.excerpt,
+    title: post.title,
+    description: post.excerpt,
   };
 }
 
 export default async function BlogPostPage({ params }: PageProps) {
   const { slug } = await params;
-  const post = await getBlogPost(slug);
+  const post = await getMDXPost(slug);
 
   if (!post) {
     notFound();
@@ -106,31 +62,39 @@ export default async function BlogPostPage({ params }: PageProps) {
       <article>
         <header className="space-y-4 mb-8">
           <div className="flex items-center gap-4 text-xs font-mono text-muted-foreground">
-            <time dateTime={post.attributes.publishedAt}>
-              {format(new Date(post.attributes.publishedAt), "yyyy.MM.dd")}
+            <time dateTime={post.date}>
+              {format(new Date(post.date), "yyyy.MM.dd")}
             </time>
-            {post.attributes.author?.data && (
+            {post.author && (
               <>
                 <span>/</span>
-                <span>{post.attributes.author.data.attributes.name}</span>
+                <span>{post.author}</span>
+              </>
+            )}
+            {post.tags && post.tags.length > 0 && (
+              <>
+                <span>/</span>
+                <span className="uppercase">{post.tags.join(", ")}</span>
               </>
             )}
           </div>
 
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight font-mono uppercase leading-tight">
-            {post.attributes.title}
+            {post.title}
           </h1>
 
-          {post.attributes.excerpt && (
+          {post.excerpt && (
             <p className="text-xl text-muted-foreground leading-relaxed">
-              {post.attributes.excerpt}
+              {post.excerpt}
             </p>
           )}
         </header>
 
         <Separator className="my-8" />
 
-        <CmsContent content={post.attributes.content} />
+        <div className="prose prose-mono max-w-none">
+          <MDXProvider content={post.content} />
+        </div>
       </article>
     </div>
   );

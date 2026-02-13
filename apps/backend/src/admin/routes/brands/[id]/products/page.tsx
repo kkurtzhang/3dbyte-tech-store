@@ -127,7 +127,7 @@ const columns = [
   }),
 ];
 
-const filterHelper = createDataTableFilterHelper<AdminProduct>();
+const filterHelper = createDataTableFilterHelper<AdminProductBrand>();
 
 const filters = [
   filterHelper.accessor("status", {
@@ -204,7 +204,7 @@ const LinkProductsToBrandPage = () => {
 
   const table = useDataTable({
     columns,
-    data: data?.products || [],
+    data: (data?.products as unknown as AdminProductBrand[]) || [],
     getRowId: (row) => row.id,
     rowCount: data?.count || 0,
     isLoading,
@@ -243,8 +243,8 @@ const LinkProductsToBrandPage = () => {
     try {
       setSaveLoading(true);
       const selectedProductIDs = Object.keys(rowSelection);
-      const linkedProducts: AdminProduct[] = [];
-      const selectedProducts = data?.products.filter((p) =>
+      const linkedProducts: AdminProductBrand[] = [];
+      const selectedProducts = (data?.products as unknown as AdminProductBrand[]).filter((p) =>
         selectedProductIDs.includes(p.id)
       );
       selectedProducts?.forEach((p) => {

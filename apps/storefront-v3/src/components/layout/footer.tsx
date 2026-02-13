@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SiGithub, SiX, SiDiscord } from "@icons-pack/react-simple-icons";
+import { NewsletterSignup } from "./newsletter-signup";
 
 /**
  * Footer component with 4-column grid layout.
@@ -81,7 +82,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="/contact"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Contact Us
@@ -174,6 +175,11 @@ export function Footer() {
               </li>
             </ul>
           </div>
+        </div>
+
+        {/* Newsletter Section */}
+        <div className="mt-12">
+          <NewsletterSignup compact={false} variant="default" />
         </div>
 
         {/* Bottom Bar */}

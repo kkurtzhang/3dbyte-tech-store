@@ -7,6 +7,10 @@ export interface ShopQueryParams {
   q?: string
   category?: string
   collection?: string
+  color?: string
+  size?: string
+  minPrice?: string
+  maxPrice?: string
   sort?: string
   page?: string | number
 }
@@ -33,6 +37,25 @@ export function buildShopQueryString(params: ShopQueryParams): string {
     searchParams.set("collection", params.collection)
   }
 
+  // Colors (comma-separated)
+  if (params.color) {
+    searchParams.set("color", params.color)
+  }
+
+  // Sizes (comma-separated)
+  if (params.size) {
+    searchParams.set("size", params.size)
+  }
+
+  // Price range
+  if (params.minPrice) {
+    searchParams.set("minPrice", params.minPrice)
+  }
+
+  if (params.maxPrice) {
+    searchParams.set("maxPrice", params.maxPrice)
+  }
+
   // Sort order
   if (params.sort) {
     searchParams.set("sort", params.sort)
@@ -55,6 +78,10 @@ export function parseShopQueryString(searchParams: URLSearchParams): ShopQueryPa
     q: searchParams.get("q") || undefined,
     category: searchParams.get("category") || undefined,
     collection: searchParams.get("collection") || undefined,
+    color: searchParams.get("color") || undefined,
+    size: searchParams.get("size") || undefined,
+    minPrice: searchParams.get("minPrice") || undefined,
+    maxPrice: searchParams.get("maxPrice") || undefined,
     sort: searchParams.get("sort") || undefined,
     page: searchParams.get("page") || undefined,
   }

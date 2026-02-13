@@ -1,6 +1,10 @@
+"use client"
+
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { useCompare } from "@/context/compare-context"
+import { ArrowRightLeft } from "lucide-react"
 
 export interface ProductCardProps {
   id: string
@@ -18,11 +22,18 @@ export interface ProductCardProps {
 }
 
 export function ProductCard({ id, handle, title, thumbnail, price, specs }: ProductCardProps) {
+  const { isInCompare, toggleCompare } = useCompare()
+  const inCompare = isInCompare(id)
+
   const formatPrice = (amount: number, currency: string) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: currency,
     }).format(amount)
+  }
+
+  const handleCompareClick = () => {
+    toggleCompare({ id, handle, title, thumbnail, price, specs })
   }
 
   // "Lab" Aesthetic: Clean borders, mono fonts for data
@@ -64,9 +75,20 @@ export function ProductCard({ id, handle, title, thumbnail, price, specs }: Prod
           <span className="font-mono text-sm font-bold tracking-tight text-foreground">
             {formatPrice(price.amount, price.currency_code)}
           </span>
-          <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground hover:text-primary">
-            Quick_View
-          </Button>
+          <div className="flex gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground hover:text-primary"
+              onClick={handleCompareClick}
+            >
+              <ArrowRightLeft className={`mr-1 h-3 w-3 ${inCompare ? 'text-primary' : ''}`} />
+              Compare
+            </Button>
+            <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground hover:text-primary">
+              Quick_View
+            </Button>
+          </div>
         </div>
       </div>
     </div>

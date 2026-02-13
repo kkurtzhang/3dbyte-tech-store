@@ -29,7 +29,7 @@ import { useNavigate } from "react-router-dom";
 import { ActionMenu } from "../action-menu";
 import { useRemoveProducts } from "../../hooks/brands";
 
-const columnHelper = createDataTableColumnHelper<HttpTypes.AdminProduct>();
+const columnHelper = createDataTableColumnHelper<HttpTypes.AdminProduct & { brand_id: string }>();
 
 const columns = [
   columnHelper.select(),
@@ -154,7 +154,7 @@ const columns = [
   }),
 ];
 
-const filterHelper = createDataTableFilterHelper<HttpTypes.AdminProduct>();
+const filterHelper = createDataTableFilterHelper<HttpTypes.AdminProduct & { brand_id: string }>();
 
 const filters = [
   filterHelper.accessor("status", {

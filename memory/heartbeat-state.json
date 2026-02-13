@@ -4,5 +4,7 @@
     "calendar": null,
     "weather": null
   },
-  "beatCount": 3
+  "beatCount": 2,
+  "activeSubagents": 3,
+  "subagentLabels": ["contact-us-page-retry", "blog-post-pages", "address-book-ui"]
 }

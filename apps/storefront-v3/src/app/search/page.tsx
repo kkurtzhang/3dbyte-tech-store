@@ -1,6 +1,6 @@
 import { SearchInput } from "@/features/search/components/search-input";
 import { SearchResults } from "@/features/search/components/search-results";
-import { SearchFilters } from "@/features/search/components/search-filters";
+import { AdvancedSearchFilters } from "@/features/search/components/advanced-search-filters";
 import { searchProducts } from "@/features/search/actions/search";
 import { searchCategories, searchBrands } from "@/features/search/actions/unified-search";
 import { Suspense } from "react";
@@ -13,6 +13,10 @@ interface SearchPageProps {
     category?: string | string[];
     material?: string | string[];
     diameter?: string | string[];
+    color?: string | string[];
+    size?: string | string[];
+    minPrice?: string;
+    maxPrice?: string;
   }>;
 }
 
@@ -28,12 +32,18 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       typeof params.material === "string" ? [params.material] : params.material,
     diameters:
       typeof params.diameter === "string" ? [params.diameter] : params.diameter,
+    colors:
+      typeof params.color === "string" ? [params.color] : params.color,
+    sizes:
+      typeof params.size === "string" ? [params.size] : params.size,
+    minPrice: params.minPrice ? Number(params.minPrice) : undefined,
+    maxPrice: params.maxPrice ? Number(params.maxPrice) : undefined,
   });
 
   // Fetch categories and brands for the sidebar
   const [categoriesResult, brandsResult] = await Promise.all([
-    searchCategories("", { limit: 10 }),
-    searchBrands("", { limit: 10 }),
+    searchCategories("", 10),
+    searchBrands("", 10),
   ]);
 
   return (
@@ -57,11 +67,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       }
       sidebar={
         <div>
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-mono text-sm font-bold">FILTERS</h3>
-          </div>
           <Suspense fallback={<div className="space-y-4"><div className="h-20 animate-pulse bg-muted/20" /><div className="h-20 animate-pulse bg-muted/20" /><div className="h-20 animate-pulse bg-muted/20" /></div>}>
-            <SearchFilters />
+            <AdvancedSearchFilters />
           </Suspense>
 
           {/* Browse Categories */}

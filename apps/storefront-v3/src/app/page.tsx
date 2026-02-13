@@ -59,7 +59,7 @@ function ProductGrid({ products }: { products: any[] }) {
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
       {products.map((product) => {
         const variant = product.variants?.[0]
-        // @ts-expect-error - Medusa types are strict but we request prices in getProducts
+        // Types seem correct now
         const price = variant?.calculated_price || variant?.prices?.[0]
 
         const displayPrice = price

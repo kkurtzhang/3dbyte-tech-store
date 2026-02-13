@@ -10,7 +10,15 @@
   "options": {
     "draftAndPublish": true
   },
-  "pluginOptions": {},
+  "pluginOptions": {
+    "meilisearch": {
+      "indexName": "blog_post_categories",
+      "settings": {
+        "searchableAttributes": ["Title"],
+        "displayedAttributes": ["Title", "Slug", "publishedAt"]
+      }
+    }
+  },
   "attributes": {
     "Title": {
       "type": "string"

@@ -32,8 +32,9 @@
 
 | Owner | Task | Priority | Status |
 |-------|------|----------|--------|
-| @Pixel | Address Book UI | High | ✅ Exists - Verified |
-| @Pixel | Blog Post Pages | Medium | ✅ Exists - Verified |
+| @Pixel | Address Book UI | High | ✅ Complete |
+| @Pixel | Blog Post Pages | Medium | ✅ Complete |
+| @Pixel | Contact Us Page | High | ✅ Complete |
 | @Pixel | Wishlist Page UI | High | ✅ Complete |
 | @Pixel | Recently Viewed Products | High | ✅ Complete |
 

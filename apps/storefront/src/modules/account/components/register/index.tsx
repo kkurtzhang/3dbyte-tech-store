@@ -10,6 +10,7 @@ import { LOGIN_VIEW } from '@modules/account/templates/login-template'
 import ErrorMessage from '@modules/checkout/components/error-message'
 import { SubmitButton } from '@modules/checkout/components/submit-button'
 import { Box } from '@modules/common/components/box'
+import { Button } from '@modules/common/components/button'
 import { Checkbox } from '@modules/common/components/checkbox'
 import { Heading } from '@modules/common/components/heading'
 import { Input } from '@modules/common/components/input'
@@ -19,6 +20,7 @@ import { toast } from '@modules/common/components/toast'
 import { CheckCircleIcon, XCircleIcon } from '@modules/common/icons'
 
 import LoginPrompt from './login-prompt'
+import { GoogleIcon } from './google-icon'
 
 type Props = {
   setCurrentView: (view: LOGIN_VIEW) => void
@@ -31,6 +33,31 @@ const Register = ({ setCurrentView }: Props) => {
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
     []
   )
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleGoogleLogin = async () => {
+    setIsLoading(true)
+    try {
+      const response = await fetch('/store/auth', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to get Google OAuth URL')
+      }
+
+      const data = await response.json()
+      window.location.href = data.auth_url
+    } catch (error) {
+      console.error('Google login error:', error)
+      toast('error', 'Failed to initialize Google login')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -116,6 +143,31 @@ const Register = ({ setCurrentView }: Props) => {
         <Heading as="h2" className="text-xl sm:text-2xl">
           Create account
         </Heading>
+
+        {/* Google Login Button */}
+        <Button
+          type="button"
+          variant="secondary"
+          className="w-full border border-basic-secondary"
+          onClick={handleGoogleLogin}
+          disabled={isLoading}
+        >
+          <Box className="flex items-center justify-center gap-2">
+            <GoogleIcon />
+            <span>Continue with Google</span>
+          </Box>
+        </Button>
+
+        {/* Divider */}
+        <Box className="relative my-4">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-basic-secondary" />
+          </div>
+          <Box className="relative flex justify-center text-xs uppercase">
+            <span className="bg-primary px-2 text-secondary">Or</span>
+          </Box>
+        </Box>
+
         <form className="flex w-full flex-col" onSubmit={handleSubmit}>
           <Box className="flex w-full flex-col gap-y-4">
             <Box className="grid grid-cols-1 gap-4 sm:grid-cols-2">

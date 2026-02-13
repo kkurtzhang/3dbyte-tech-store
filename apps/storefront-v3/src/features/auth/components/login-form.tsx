@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { loginAction } from "@/app/actions/auth"
+import { GoogleIcon } from "@/components/ui/google-icon"
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -62,8 +63,55 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     }
   }
 
+  const handleGoogleLogin = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      // Get Google OAuth URL
+      const response = await fetch("http://localhost:8000/store/auth", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to get Google auth URL")
+      }
+
+      const data = await response.json()
+      window.location.href = data.auth_url
+    } catch (error) {
+      console.error("Google login error:", error)
+      setError("Failed to initiate Google login")
+      setIsLoading(false)
+    }
+  }
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        onClick={handleGoogleLogin}
+        disabled={isLoading}
+      >
+        <GoogleIcon className="mr-2 h-4 w-4" />
+        Continue with Google
+      </Button>
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">
+            Or continue with email
+          </span>
+        </div>
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="login-email">Email</Label>
         <Input

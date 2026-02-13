@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useState } from "react"
 import { updateProfileAction, deleteAccountAction } from "@/app/actions/auth"
+import { updateAccount } from "@/app/actions/account"
 
 interface CustomerData {
   first_name?: string | null
@@ -24,15 +25,7 @@ export function AccountContent({ customer }: { customer: CustomerData }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form action={async (formData) => {
-            "use server"
-            const data = {
-              first_name: formData.get("first_name") as string,
-              last_name: formData.get("last_name") as string,
-              phone: formData.get("phone") as string,
-            }
-            await updateProfileAction(data)
-          }}>
+          <form action={updateAccount}>
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="first_name">First Name</Label>

@@ -1,12 +1,14 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { StoreProduct, StoreProductVariant } from "@medusajs/types"
 import { ProductGallery } from "../components/product-gallery"
 import { ProductActions } from "../components/product-actions"
 import { SpecSheet } from "../components/spec-sheet"
+import { RecentlyViewedProducts } from "@/components/product/recently-viewed-products"
 import { Separator } from "@/components/ui/separator"
 import { useQueryState } from "nuqs"
+import { useRecentlyViewed } from "@/lib/hooks/use-recently-viewed"
 
 interface VariantImageData {
   id: string
@@ -27,6 +29,16 @@ export function ProductTemplate({ product, richDescription, variantImageUrls }: 
   })
 
   const [options, setOptions] = useState<Record<string, string>>({})
+  const { addToRecentlyViewed } = useRecentlyViewed()
+
+  // Track product views - only add once per visit using a ref
+  const hasTrackedView = useRef(false)
+  useEffect(() => {
+    if (!hasTrackedView.current && product.id) {
+      addToRecentlyViewed(product)
+      hasTrackedView.current = true
+    }
+  }, [product.id, addToRecentlyViewed])
 
   // Derive selected variant from URL or default to first
   const selectedVariant = useMemo(() => {
@@ -122,6 +134,11 @@ export function ProductTemplate({ product, richDescription, variantImageUrls }: 
              </div>
            )}
         </div>
+      </div>
+
+      {/* Recently Viewed Products Section */}
+      <div className="mt-12">
+        <RecentlyViewedProducts currentProductId={product.id} />
       </div>
     </div>
   )

@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils"
 import { StoreProduct, StoreProductOption, StoreProductVariant } from "@medusajs/types"
 import { useCart } from "@/context/cart-context"
 import { useToast } from "@/lib/hooks/use-toast"
+import { Badge } from "@/components/ui/badge"
+import { CheckCircle2, AlertTriangle, XCircle, Package } from "lucide-react"
 
 interface ProductActionsProps {
   product: StoreProduct
@@ -69,6 +71,70 @@ export function ProductActions({
     }).format(amount)
   }
 
+  // Stock status logic
+  const getStockStatus = () => {
+    if (!selectedVariant) return { status: "unknown", quantity: null }
+
+    const quantity = selectedVariant.inventory_quantity ?? 0
+    const manageInventory = selectedVariant.manage_inventory ?? true
+
+    if (!manageInventory) {
+      return { status: "in-stock", quantity: null }
+    }
+
+    if (quantity === 0) {
+      return { status: "out-of-stock", quantity: 0 }
+    } else if (quantity <= 10) {
+      return { status: "low-stock", quantity }
+    } else {
+      return { status: "in-stock", quantity }
+    }
+  }
+
+  const stockStatus = getStockStatus()
+
+  const StockStatusBadge = () => {
+    if (stockStatus.status === "unknown") {
+      return null
+    }
+
+    if (stockStatus.status === "out-of-stock") {
+      return (
+        <Badge variant="destructive" className="gap-1.5 px-3 py-1.5 text-sm font-medium">
+          <XCircle className="h-4 w-4" />
+          Out of Stock
+        </Badge>
+      )
+    }
+
+    if (stockStatus.status === "low-stock") {
+      return (
+        <Badge variant="secondary" className="gap-1.5 px-3 py-1.5 text-sm font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-300 dark:border-yellow-700">
+          <AlertTriangle className="h-4 w-4" />
+          Low Stock
+          {stockStatus.quantity !== null && (
+            <span className="text-xs opacity-75">
+              ({stockStatus.quantity} left)
+            </span>
+          )}
+        </Badge>
+      )
+    }
+
+    // In Stock
+    return (
+      <Badge variant="secondary" className="gap-1.5 px-3 py-1.5 text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-300 dark:border-green-700">
+        <CheckCircle2 className="h-4 w-4" />
+        In Stock
+        {stockStatus.quantity !== null && stockStatus.quantity > 10 && (
+          <span className="text-xs opacity-75">
+            ({stockStatus.quantity} available)
+          </span>
+        )}
+      </Badge>
+    )
+  }
+
   // Get price from selected variant or first variant or product
   const displayPrice = useMemo(() => {
     const variant = selectedVariant || product.variants?.[0]
@@ -81,13 +147,16 @@ export function ProductActions({
       {/* Price Display */}
       <div className="border-b pb-6">
         <h1 className="text-3xl font-bold tracking-tight mb-2">{product.title}</h1>
-        {displayPrice ? (
-             <div className="text-2xl font-mono text-primary">
-             {formatPrice(displayPrice.calculated_amount || displayPrice.amount, displayPrice.currency_code)}
-           </div>
-        ) : (
-            <div className="text-2xl font-mono text-muted-foreground">Price on request</div>
-        )}
+        <div className="flex items-center gap-3 flex-wrap">
+          {displayPrice ? (
+               <div className="text-2xl font-mono text-primary">
+               {formatPrice(displayPrice.calculated_amount || displayPrice.amount, displayPrice.currency_code)}
+             </div>
+          ) : (
+              <div className="text-2xl font-mono text-muted-foreground">Price on request</div>
+          )}
+          <StockStatusBadge />
+        </div>
         {product.description && (
              <p className="mt-4 text-muted-foreground leading-relaxed">{product.description}</p>
         )}

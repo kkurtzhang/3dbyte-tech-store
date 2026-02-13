@@ -15,7 +15,13 @@ module.exports = defineConfig({
     },
     redisUrl: process.env.REDIS_URL,
   },
+  admin: {
+    disable: true,
+  },
   modules: [
+    {
+      resolve: "./src/modules/auth",
+    },
     {
       resolve: "./src/modules/strapi",
       options: {
@@ -46,6 +52,15 @@ module.exports = defineConfig({
     },
     {
       resolve: "./src/modules/brand",
+    },
+    {
+      resolve: "./src/modules/wishlist",
+    },
+    {
+      resolve: "./src/modules/reviews",
+    },
+    {
+      resolve: "./src/modules/newsletter",
     },
     {
       resolve: "./src/modules/meilisearch",
@@ -84,27 +99,27 @@ module.exports = defineConfig({
       resolve: "@medusajs/draft-order",
       options: {},
     },
-    {
-      resolve: "@lodashventure/medusa-media-manager",
-      options: {
-        storage: {
-          driver: "s3",
-          bucket: process.env.MEDIA_BUCKET,
-          region: process.env.MEDIA_REGION,
-          publicCdn: process.env.MEDIA_ENDPOINT,
-          signed: { enabled: true, ttlSeconds: 3600 },
-        },
-        presets: [
-          { name: "thumbnail", width: 200, height: 200, fit: "cover" },
-          { name: "small", width: 640 },
-          { name: "medium", width: 1024 },
-          { name: "large", width: 1600 },
-        ],
-        generate: { mode: "eager" },
-        svg: { sanitize: true },
-        moderation: { enabled: true },
-        rbac: { deleteRequiresNoUsage: true },
-      },
-    },
+    // {
+    //   resolve: "@lodashventure/medusa-media-manager",
+    //   options: {
+    //     storage: {
+    //       driver: "s3",
+    //       bucket: process.env.MEDIA_BUCKET,
+    //       region: process.env.MEDIA_REGION,
+    //       publicCdn: process.env.MEDIA_ENDPOINT,
+    //       signed: { enabled: true, ttlSeconds: 3600 },
+    //     },
+    //     presets: [
+    //       { name: "thumbnail", width: 200, height: 200, fit: "cover" },
+    //       { name: "small", width: 640 },
+    //       { name: "medium", width: 1024 },
+    //       { name: "large", width: 1600 },
+    //     ],
+    //     generate: { mode: "eager" },
+    //     svg: { sanitize: true },
+    //     moderation: { enabled: true },
+    //     rbac: { deleteRequiresNoUsage: true },
+    //   },
+    // },
   ],
 });

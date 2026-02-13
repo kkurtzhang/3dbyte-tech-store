@@ -97,5 +97,15 @@ export default defineMiddlewares({
       ],
     },
     ...storeSearchRoutesMiddlewares,
+    // Wishlist routes
+    {
+      matcher: "/store/wishlist",
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
+      matcher: "/store/wishlist/:id",
+      methods: ["DELETE"],
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
   ],
 });

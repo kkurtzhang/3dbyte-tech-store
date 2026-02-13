@@ -8,10 +8,14 @@ export async function getProducts(params: {
   category_id?: string[]
   collection_id?: string[]
   q?: string
+  colors?: string[]
+  sizes?: string[]
+  minPrice?: number
+  maxPrice?: number
 }): Promise<{ products: StoreProduct[]; count: number }> {
   let products: StoreProduct[] = []
   let count = 0
-  
+
   try {
     const { page = 1, limit = 20, category_id, collection_id, q } = params
 
@@ -24,22 +28,22 @@ export async function getProducts(params: {
       fields: "*variants,*variants.prices",
     })
 
-    products = fetchedProducts
+    products = fetchedProducts as any
     count = fetchedCount
   } catch (error) {
     console.warn("Medusa SDK failed, falling back to Meilisearch", error)
   }
-  
+
   // If products array is empty (Medusa failed or no products), fallback
   if (!products || products.length === 0) {
     try {
       const result = await getProductsFromMeilisearch(params)
-      products = result.products
+      products = result.products as any
       count = result.count
     } catch (error) {
       console.warn("Meilisearch also failed, using demo products", error)
       const result = getDemoProducts(params.limit)
-      products = result.products
+      products = result.products as any
       count = result.count
     }
   }
@@ -54,13 +58,39 @@ export async function getProducts(params: {
 async function getProductsFromMeilisearch(params: {
   limit?: number
   q?: string
+  colors?: string[]
+  sizes?: string[]
+  minPrice?: number
+  maxPrice?: number
 }): Promise<{ products: StoreProduct[]; count: number }> {
   try {
-    const { limit = 4, q } = params
+    const { limit = 4, q, colors, sizes, minPrice, maxPrice } = params
+
+    const filter: string[] = []
+
+    if (q) {
+      filter.push(`title ~ ${q}`)
+    }
+
+    if (colors && colors.length > 0) {
+      filter.push(`color IN [${colors.map(c => `"${c}"`).join(", ")}]`)
+    }
+
+    if (sizes && sizes.length > 0) {
+      filter.push(`size IN [${sizes.map(s => `"${s}"`).join(", ")}]`)
+    }
+
+    if (minPrice !== undefined) {
+      filter.push(`price >= ${minPrice}`)
+    }
+
+    if (maxPrice !== undefined) {
+      filter.push(`price <= ${maxPrice}`)
+    }
 
     const searchParams: any = {
       limit,
-      filter: q ? [`title ~ ${q}`] : undefined,
+      filter: filter.length > 0 ? filter.join(" AND ") : undefined,
     }
 
     const results = await searchClient.index(INDEX_PRODUCTS).search("", searchParams)
@@ -80,12 +110,12 @@ async function getProductsFromMeilisearch(params: {
       tags: hit.tags,
       created_at: hit.created_at,
       updated_at: hit.updated_at,
-    }))
+    })) as unknown as StoreProduct[]
 
     return { products, count: results.estimatedTotalHits || results.hits.length }
   } catch (error) {
     console.warn("Meilisearch also failed, using demo products", error)
-    return getDemoProducts(params.limit)
+    return (await getDemoProducts(params.limit)) as any
   }
 }
 
@@ -93,8 +123,8 @@ async function getProductsFromMeilisearch(params: {
  * Demo products fallback
  * Used when both Medusa and Meilisearch are unavailable
  */
-export async function getDemoProducts(limit = 4): { products: StoreProduct[]; count: number } {
-  const demoProducts: StoreProduct[] = [
+export function getDemoProducts(limit = 4) {
+  const demoProducts = [
     {
       id: "demo-1",
       title: "PLA Filament - Arctic White",

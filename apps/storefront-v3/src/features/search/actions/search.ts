@@ -7,10 +7,14 @@ interface SearchOptions {
   categories?: string[] | undefined
   materials?: string[] | undefined
   diameters?: string[] | undefined
+  colors?: string[] | undefined
+  sizes?: string[] | undefined
+  minPrice?: number | undefined
+  maxPrice?: number | undefined
 }
 
 export async function searchProducts(query: string, options: SearchOptions = {}) {
-  const { limit = 20, categories, materials, diameters } = options
+  const { limit = 20, categories, materials, diameters, colors, sizes, minPrice, maxPrice } = options
 
   try {
     const index = searchClient.index(INDEX_PRODUCTS)
@@ -28,6 +32,22 @@ export async function searchProducts(query: string, options: SearchOptions = {})
 
     if (diameters && diameters.length > 0) {
       filter.push(`diameter IN [${diameters.map(d => `"${d}"`).join(", ")}]`)
+    }
+
+    if (colors && colors.length > 0) {
+      filter.push(`color IN [${colors.map(c => `"${c}"`).join(", ")}]`)
+    }
+
+    if (sizes && sizes.length > 0) {
+      filter.push(`size IN [${sizes.map(s => `"${s}"`).join(", ")}]`)
+    }
+
+    if (minPrice !== undefined) {
+      filter.push(`price >= ${minPrice}`)
+    }
+
+    if (maxPrice !== undefined) {
+      filter.push(`price <= ${maxPrice}`)
     }
 
     const result = await index.search(query, {
