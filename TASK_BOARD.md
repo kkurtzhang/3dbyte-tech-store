@@ -51,6 +51,7 @@
 | Owner | Task | Priority | Status |
 |-------|------|----------|--------|
 | @Merchant | Newsletter Signup API | Low | ✅ Exists - verified |
+| @Pixel | Returns & Shipping Pages | Medium | 🔄 In Progress |
 | @Merchant | API Rate Limiting | Low | Backlog |
 | @Sentinel | Performance Audit | Low | Backlog |
 
