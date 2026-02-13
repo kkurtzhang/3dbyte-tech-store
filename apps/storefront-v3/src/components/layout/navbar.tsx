@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, User } from "lucide-react";
+import { Search, User, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CartSheet } from "@/features/cart/components/cart-sheet";
 import { ThemeToggle } from "./theme-toggle";
@@ -11,6 +11,7 @@ import { MobileMenu } from "./mobile-menu";
 import { SearchCommandDialog } from "@/components/search/search-command-dialog";
 import { AuthSheet } from "@/features/auth/components/auth-sheet";
 import { logoutAction, getSessionAction } from "@/app/actions/auth";
+import { useWishlist } from "@/context/wishlist-context";
 
 export function Navbar() {
   const [searchOpen, setSearchOpen] = React.useState(false);
@@ -18,6 +19,7 @@ export function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
   const router = useRouter();
+  const { wishlist } = useWishlist();
 
   React.useEffect(() => {
     checkSession();
@@ -140,6 +142,19 @@ export function Navbar() {
                 Sign In
               </Button>
             )}
+
+            {/* Wishlist */}
+            <Link href="/wishlist">
+              <Button variant="ghost" size="icon" className="relative">
+                <Heart className="h-5 w-5" />
+                {wishlist.length > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                    {wishlist.length}
+                  </span>
+                )}
+                <span className="sr-only">Wishlist</span>
+              </Button>
+            </Link>
 
             {/* Cart Sheet */}
             <CartSheet />

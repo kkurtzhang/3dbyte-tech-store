@@ -6,18 +6,9 @@ import { ProductGallery } from "../components/product-gallery"
 import { ProductActions } from "../components/product-actions"
 import { SpecSheet } from "../components/spec-sheet"
 import { RecentlyViewedProducts } from "@/components/product/recently-viewed-products"
-import { FrequentlyBoughtTogether } from "@/components/product/frequently-bought-together"
-import { ProductReviews } from "@/features/review/components/product-reviews"
 import { Separator } from "@/components/ui/separator"
 import { useQueryState } from "nuqs"
 import { useRecentlyViewed } from "@/lib/hooks/use-recently-viewed"
-import { YouMayAlsoLike } from "@/components/product/you-may-also-like"
-
-interface VariantImageData {
-  id: string
-  url: string
-  variantId: string
-}
 
 interface VariantImageData {
   id: string
@@ -128,9 +119,6 @@ export function ProductTemplate({ product, richDescription, variantImageUrls }: 
               setOptions={setOptions}
            />
 
-           {/* Frequently Bought Together Section */}
-           <FrequentlyBoughtTogether productId={product.id} />
-
            <Separator />
 
            {/* Technical Specs */}
@@ -148,16 +136,10 @@ export function ProductTemplate({ product, richDescription, variantImageUrls }: 
         </div>
       </div>
 
-      {/* You May Also Like - Related Products Carousel */}
-      <YouMayAlsoLike productId={product.id} />
-
       {/* Recently Viewed Products Section */}
       <div className="mt-12">
         <RecentlyViewedProducts currentProductId={product.id} />
       </div>
-
-      {/* Product Reviews Section */}
-      <ProductReviews productId={product.id} />
     </div>
   )
 }

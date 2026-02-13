@@ -5,8 +5,8 @@ import { Search, Command, Package, X, ArrowRight } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { useEffect, useState, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { sdk } from "@/lib/medusa/client"
-import type { StoreProduct } from "@medusajs/types"
+import { searchClient, INDEX_PRODUCTS } from "@/lib/search/client"
+import type { ProductHit } from "@/features/search/actions/unified-search"
 
 export function SearchInput() {
   const router = useRouter()
@@ -18,7 +18,7 @@ export function SearchInput() {
 
   const [value, setValue] = useState(query)
   const [showDropdown, setShowDropdown] = useState(false)
-  const [suggestions, setSuggestions] = useState<StoreProduct[]>([])
+  const [suggestions, setSuggestions] = useState<ProductHit[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -77,7 +77,7 @@ export function SearchInput() {
     return () => input?.removeEventListener("keydown", handleKeyDown)
   }, [showDropdown, suggestions, selectedIndex])
 
-  // Debounced search for autocomplete using Medusa SDK
+  // Debounced search for autocomplete
   const performSearch = useCallback(async (searchTerm: string) => {
     if (!searchTerm.trim()) {
       setSuggestions([])
@@ -88,12 +88,12 @@ export function SearchInput() {
 
     setIsSearching(true)
     try {
-      const { products } = await sdk.store.product.list({
-        q: searchTerm,
+      const index = searchClient.index(INDEX_PRODUCTS)
+      const result = await index.search(searchTerm, {
         limit: 6,
-        fields: "id,handle,title,thumbnail,*variants,*variants.prices",
+        attributesToRetrieve: ["id", "handle", "title", "thumbnail", "price", "specs"],
       })
-      setSuggestions(products)
+      setSuggestions(result.hits as ProductHit[])
       setShowDropdown(true)
       setSelectedIndex(-1)
     } catch (error) {
@@ -121,9 +121,9 @@ export function SearchInput() {
     setQuery(term)
   }
 
-  const handleSuggestionClick = (product: StoreProduct) => {
+  const handleSuggestionClick = (product: ProductHit) => {
     setShowDropdown(false)
-    setValue(product.title!)
+    setValue(product.title)
     setQuery("")
     router.push(`/products/${product.handle}`)
   }
@@ -193,14 +193,7 @@ export function SearchInput() {
               <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 Products
               </div>
-              {suggestions.map((product, index) => {
-                  // Get price from first variant
-                  const firstVariant = product.variants?.[0]
-                  const price = firstVariant?.calculated_price?.calculated_amount
-                    ? firstVariant.calculated_price.calculated_amount / 100
-                    : null
-
-                  return (
+              {suggestions.map((product, index) => (
                 <button
                   key={product.id}
                   role="option"
@@ -216,7 +209,7 @@ export function SearchInput() {
                     <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded bg-muted">
                       <img
                         src={product.thumbnail}
-                        alt={product.title || ""}
+                        alt={product.title}
                         className="h-full w-full object-cover"
                         loading="lazy"
                       />
@@ -224,15 +217,25 @@ export function SearchInput() {
                   )}
                   <div className="flex min-w-0 flex-1 flex-col">
                     <span className="text-sm font-medium truncate">{product.title}</span>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      {product.specs?.material && (
+                        <span className="truncate">{product.specs.material}</span>
+                      )}
+                      {product.specs?.diameter && product.specs.material && (
+                        <span>•</span>
+                      )}
+                      {product.specs?.diameter && (
+                        <span className="truncate">{product.specs.diameter}</span>
+                      )}
+                    </div>
                   </div>
-                  {price !== null && (
+                  {product.price && (
                     <div className="flex-shrink-0 text-sm font-semibold">
-                      ${price.toFixed(2)}
+                      ${product.price.toFixed(2)}
                     </div>
                   )}
                 </button>
-                  )
-                })}
+              ))}
               <button
                 onClick={() => {
                   setShowDropdown(false)

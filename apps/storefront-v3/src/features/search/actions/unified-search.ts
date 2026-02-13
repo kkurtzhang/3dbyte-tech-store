@@ -1,6 +1,6 @@
 "use server"
 
-import { searchClient, INDEX_PRODUCTS, INDEX_CATEGORIES, INDEX_BRANDS } from "@/lib/search/client"
+import { searchClient, INDEX_PRODUCTS, INDEX_CATEGORIES, INDEX_BRANDS, INDEX_COLLECTIONS } from "@/lib/search/client"
 
 interface SearchOptions {
   limit?: number
@@ -128,8 +128,8 @@ export async function searchAll(query: string): Promise<UnifiedSearchResult> {
   try {
     const [productsResult, categoriesResult, brandsResult] = await Promise.all([
       searchProducts(query, { limit: 6 }),
-      searchCategories(query, { limit: 4 }),
-      searchBrands(query, { limit: 4 }),
+      searchCategories(query, 4),
+      searchBrands(query, 4),
     ])
 
     return {

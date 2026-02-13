@@ -8,10 +8,6 @@ import { useCart } from "@/context/cart-context"
 import { useToast } from "@/lib/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle2, AlertTriangle, XCircle, Package } from "lucide-react"
-import { NotifyMeButton } from "./notify-me-button"
-import { SizeGuideButton, shouldShowSizeGuide } from "@/components/ui/size-guide"
-import { usePathname } from "next/navigation"
-import { SocialShare } from "./social-share"
 
 interface ProductActionsProps {
   product: StoreProduct
@@ -33,7 +29,6 @@ export function ProductActions({
   const { addItem } = useCart()
   const { toast } = useToast()
   const [isAdding, setIsAdding] = useState(false)
-  const pathname = usePathname()
 
   const updateOption = (optionId: string, value: string) => {
     const newOptions = { ...options, [optionId]: value }
@@ -147,12 +142,6 @@ export function ProductActions({
     return variant?.calculated_price || variant?.prices?.[0]
   }, [selectedVariant, product.variants])
 
-  // Extract handle from pathname or use product.id
-  const productHandle = pathname?.split("/").pop() || product.id || ""
-
-  // Check if we should show size guide
-  const sizeGuideInfo = shouldShowSizeGuide(product)
-
   return (
     <div className="flex flex-col gap-8">
       {/* Price Display */}
@@ -172,13 +161,6 @@ export function ProductActions({
              <p className="mt-4 text-muted-foreground leading-relaxed">{product.description}</p>
         )}
       </div>
-
-      {/* Social Share Buttons */}
-      <SocialShare
-        productTitle={product.title}
-        productDescription={product.description || undefined}
-        productImage={product.thumbnail || undefined}
-      />
 
       {/* Options Selection */}
       <div className="space-y-6">
@@ -208,19 +190,9 @@ export function ProductActions({
             </div>
           </div>
         ))}
-
-        {/* Size Guide Button - Only show for apparel/products with sizes */}
-        {sizeGuideInfo.shouldShow && (
-          <div className="pt-2">
-            <SizeGuideButton 
-              category={sizeGuideInfo.category} 
-              productType={sizeGuideInfo.productType}
-            />
-          </div>
-        )}
       </div>
 
-      {/* Add to Cart / Notify Me */}
+      {/* Add to Cart */}
       <div className="pt-6 border-t">
         <Button
             size="lg"

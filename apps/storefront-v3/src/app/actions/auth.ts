@@ -1,7 +1,8 @@
 "use server"
 
 import { cookies } from "next/headers"
-import { revalidatePath, redirect } from "next/cache"
+import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 import { sdk } from "@/lib/medusa/client"
 
 const SESSION_COOKIE = "_medusa_authenticated"
@@ -233,11 +234,14 @@ export async function setDefaultAddressAction(addressId: string) {
 
 export async function deleteAccountAction() {
   try {
-    await sdk.store.customer.delete()
+    // await sdk.store.customer.delete()
+    throw new Error("Delete account not implemented yet")
+    /*
     const cookieStore = await cookies()
     cookieStore.delete(SESSION_COOKIE)
     revalidatePath("/", "layout")
     redirect("/")
+    */
   } catch (error: any) {
     console.error("Delete account error:", error)
     return { success: false, error: error.message || "Failed to delete account" }

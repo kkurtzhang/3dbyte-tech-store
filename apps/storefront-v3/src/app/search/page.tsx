@@ -42,8 +42,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   // Fetch categories and brands for the sidebar
   const [categoriesResult, brandsResult] = await Promise.all([
-    searchCategories("", { limit: 10 }),
-    searchBrands("", { limit: 10 }),
+    searchCategories("", 10),
+    searchBrands("", 10),
   ]);
 
   return (
