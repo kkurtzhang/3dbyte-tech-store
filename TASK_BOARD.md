@@ -4,7 +4,7 @@
 
 **Status:** Sub-agent system enabled. Ready for parallel development.
 
-**Last Updated:** Feb 13, 2026 (20:44 GMT+11)
+**Last Updated:** Feb 13, 2026 (20:47 GMT+11)
 
 ---
 
@@ -40,10 +40,4 @@
 
 ---
 
-## Services Status
-| Service | URL | Status |
-|---------|-----|--------|
-| Backend | api.3dbyte.tech | ✅ RUNNING |
-| Storefront | store.3dbyte.tech | ✅ RUNNING |
-| CMS | cms.3dbyte.tech | ✅ Docker |
-| Meilisearch | search.3dbyte.tech | ✅ 103 products |
+**Note:** Services (Backend, Storefront) only run during active sub-agent work. Sub-agents must shutdown services when done.
