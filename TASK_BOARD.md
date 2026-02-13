@@ -32,6 +32,8 @@
 
 | Owner | Task | Priority | Status |
 |-------|------|----------|--------|
+| @Pixel | Address Book UI | High | ✅ Exists - Verified |
+| @Pixel | Blog Post Pages | Medium | ✅ Exists - Verified |
 | @Pixel | Wishlist Page UI | High | ✅ Complete |
 | @Pixel | Recently Viewed Products | High | ✅ Complete |
 
@@ -43,6 +45,14 @@
 |-------|------|----------|-----|
 | @Pixel | Search Autocomplete | Medium | Search UX |
 | @Pixel | Product Compare | Medium | Product discovery |
+
+**📄 Pages Needed**
+
+| Owner | Task | Priority | Why |
+|-------|------|----------|-----|
+| @Pixel | Contact Us Page | High | Static page missing |
+| @Pixel | Order History/Tracking | High | Account management |
+| @Pixel | Newsletter Popup | Medium | Marketing conversion |
 
 **🔧 Infrastructure**
 
