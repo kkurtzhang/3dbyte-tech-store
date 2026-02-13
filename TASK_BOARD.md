@@ -43,7 +43,7 @@
 ## Services Status
 | Service | URL | Status |
 |---------|-----|--------|
-| Backend | localhost:9000 | ✅ RUNNING |
-| Storefront | localhost:3001 | ✅ RUNNING |
-| CMS | localhost:1337 | ✅ Docker |
-| Meilisearch | 192.168.0.45:7700 | ✅ 103 products |
+| Backend | api.3dbyte.tech | ✅ RUNNING |
+| Storefront | store.3dbyte.tech | ✅ RUNNING |
+| CMS | cms.3dbyte.tech | ✅ Docker |
+| Meilisearch | search.3dbyte.tech | ✅ 103 products |
