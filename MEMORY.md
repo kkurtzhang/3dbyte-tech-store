@@ -67,8 +67,9 @@
 ### Heartbeat Protocol
 - Architect does NOT manage services - services only run when sub-agents are coding
 - Never auto-restart services - this wastes tokens and creates infinite loops
-- Check health (curl) but do NOT restart if down
 - Services managed by sub-agents when they're actively implementing code
+- **MUST follow HEARTBEAT.md exactly** - don't make up steps or skip Step 5
+- Step 5 is "Report (Log to Memory)" - update heartbeat-state.json + git commit
 - Search Autocomplete
 - Wishlist Page UI
 - Address Book UI
