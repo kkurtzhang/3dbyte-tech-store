@@ -50,9 +50,9 @@
 
 | Owner | Task | Priority | Status |
 |-------|------|----------|--------|
-| @Merchant | Newsletter Signup API | Low | 🔄 In Progress |
-| @Merchant | API Rate Limiting | Low | Security |
-| @Sentinel | Performance Audit | Low | Optimization |
+| @Merchant | Newsletter Signup API | Low | ✅ Exists - verified |
+| @Merchant | API Rate Limiting | Low | Backlog |
+| @Sentinel | Performance Audit | Low | Backlog |
 
 ---
 
