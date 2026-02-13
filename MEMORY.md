@@ -71,6 +71,7 @@
 - **MUST follow HEARTBEAT.md exactly** - don't make up steps or skip Step 5
 - Step 5 is "Report (Log to Memory)" - update heartbeat-state.json + git commit
 - **Only commit TASK_BOARD.md once per day (Evening Standup)** - not every heartbeat
+- **Step 2: Verify IN PROGRESS** - if tasks pass verification, MUST move them to COMPLETED section
 - Search Autocomplete
 - Wishlist Page UI
 - Address Book UI
