@@ -69,7 +69,7 @@
 - Never auto-restart services - this wastes tokens and creates infinite loops
 - Services managed by sub-agents when they're actively implementing code
 - **MUST follow HEARTBEAT.md exactly** - don't make up steps or skip Step 5
-- Step 5 is "Report (Log to Memory)" - update heartbeat-state.json + git commit
+- Step 5 is "Report" - update heartbeat-state.json every beat, post to Telegram every 4th beat
 - **Only commit TASK_BOARD.md once per day (Evening Standup)** - not every heartbeat
 - **Step 2: Verify IN PROGRESS** - if tasks pass verification, MUST move them to COMPLETED section
 - Search Autocomplete
