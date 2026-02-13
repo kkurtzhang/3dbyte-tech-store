@@ -30,7 +30,9 @@
 
 **🔄 IN PROGRESS**
 
-*None - all tasks completed*
+| Owner | Task | Priority | Status |
+|-------|------|----------|--------|
+| @Pixel | 404 Page Enhancement | Low | 🔄 In Progress |
 
 **🟡 Infrastructure**
 
