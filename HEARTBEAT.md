@@ -207,17 +207,20 @@ Create tasks in BACKLOG with priority:
 
 ---
 
-## Step 5: Report (Log to Memory)
+## Step 5: Report
 
-Update heartbeat-state.json with:
-- beatCount
-- activeSubagents
-- completedTasks
-- backlogCount
+**Every heartbeat:**
+- Update heartbeat-state.json with: beatCount, activeSubagents, completedTasks, backlogCount
+
+**Every 4th heartbeat:**
+- Post report to Telegram with:
+  - Active sub-agents count
+  - Completed tasks today
+  - Backlog count
+  - Any blockers
 
 **Rules:**
-- Update heartbeat-state.json every heartbeat
-- Commit changes to git **once per day (Evening Standup)**
+- Commit changes to git **once per day (Evening Standup)** - not every heartbeat
 
 ---
 
