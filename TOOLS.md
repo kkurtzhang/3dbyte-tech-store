@@ -47,3 +47,17 @@ Add whatever helps you do your job. This is your cheat sheet.
 - Before running Pixel (storefront) tasks that hit the API → start backend first
 - Backend: `cd apps/backend && pnpm run start` (or `dev`)
 - Storefront needs: `NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000`
+
+---
+
+### External Services
+
+| Service | Type | Address | Config Location |
+|---------|------|---------|----------------|
+| Database | PostgreSQL | 192.168.0.137:5432 | apps/backend/.env, apps/cms/.env |
+| Redis | Cache | 192.168.0.45:6379 | apps/backend/.env |
+| Meilisearch | Search | 192.168.0.45:7700 | apps/backend/.env, apps/storefront-v3/.env |
+| CMS | Strapi | 192.168.0.45:1337 | apps/storefront-v3/.env |
+| Backend | Medusa | localhost:9000 | apps/storefront-v3/.env |
+| Storefront | Next.js | localhost:3001 | - |
+| S3 | Cloud Storage | AWS (AKIAR2PQ3R2BJ2AYXNLR) | apps/cms/.env |
