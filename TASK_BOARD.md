@@ -49,13 +49,12 @@
 
 **📄 Pages Needed**
 
-| Owner | Task | Priority | Why |
-|-------|------|----------|-----|
-| @Pixel | Contact Us Page | High | Static page missing |
-| @Pixel | Order History/Tracking | High | Account management |
-| @Pixel | Newsletter Popup | Medium | Marketing conversion |
-
-**🔧 Infrastructure**
+| Owner | Task | Priority | Status |
+|-------|------|----------|--------|
+| @Pixel | Order History/Tracking | High | 🔄 In Progress |
+| @Pixel | Newsletter Popup | Medium | Backlog |
+| @Pixel | Search Autocomplete | Medium | Backlog |
+| @Pixel | Product Compare | Medium | Backlog |
 
 | Owner | Task | Priority | Why |
 |-------|------|----------|-----|
