@@ -44,7 +44,7 @@
 
 | Owner | Task | Priority | Status |
 |-------|------|----------|--------|
-| @Pixel | Search Autocomplete | Medium | ✅ Complete |
+| @Pixel | Search Autocomplete | Medium | 🔄 In Progress (Blocker: storefront `next` missing) |
 | @Pixel | Product Compare | Medium | Backlog |
 
 **📄 Pages Needed**
