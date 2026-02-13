@@ -46,9 +46,11 @@
 | @Pixel | Order History/Tracking | High | ✅ Complete |
 | @Pixel | Newsletter Popup | Medium | ✅ Complete |
 
-| Owner | Task | Priority | Why |
-|-------|------|----------|-----|
-| @Merchant | Newsletter Signup API | Low | Marketing channel |
+**🔄 IN PROGRESS**
+
+| Owner | Task | Priority | Status |
+|-------|------|----------|--------|
+| @Merchant | Newsletter Signup API | Low | 🔄 In Progress |
 | @Merchant | API Rate Limiting | Low | Security |
 | @Sentinel | Performance Audit | Low | Optimization |
 
