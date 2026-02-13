@@ -51,7 +51,7 @@
 
 | Owner | Task | Priority | Status |
 |-------|------|----------|--------|
-| @Pixel | Order History/Tracking | High | 🔄 In Progress |
+| @Pixel | Order History/Tracking | High | ✅ Complete |
 | @Pixel | Newsletter Popup | Medium | Backlog |
 | @Pixel | Search Autocomplete | Medium | Backlog |
 | @Pixel | Product Compare | Medium | Backlog |
