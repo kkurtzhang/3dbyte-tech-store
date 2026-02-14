@@ -4,9 +4,10 @@
     "calendar": null,
     "weather": null
   },
-  "beatCount": 114,
+  "beatCount": 116,
   "activeSubagents": 0,
   "subagentLabels": [],
   "completedTasks": 91,
-  "backlogCount": 2
+  "backlogCount": 2,
+  "notes": "Remaining tasks require CMS admin: docs content, about-us banner image"
 }

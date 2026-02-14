@@ -16,8 +16,8 @@
 | @Pixel | PDP: Align "Frequently Bought Together" under Add to Cart button | High | ✅ Done |
 | @Architect | PDP: Fix Rich_description field rendering | High | ✅ Code fixed - CMS content empty |
 | @Merchant | PDP: Connect Out of Stock logic to backend data | Medium | ✅ API queries fixed |
-| @Architect | Docs Page: Update CMS content for 3D printing (TDS, SDS resources) | High | Pending |
-| @Architect | About-Us: Replace sofa.webp banner with 3D printing image | High | Pending |
+| @Architect | Docs Page: Update CMS content for 3D printing (TDS, SDS resources) | High | ⚠️ Requires CMS admin |
+| @Architect | About-Us: Replace sofa.webp banner with 3D printing image | High | ⚠️ Requires image upload |
 | @Pixel | About-Us: Add navigation entry point | Medium | ✅ Done |
 | @Pixel | About-Us: Redirect /about-us to /about (remove duplicate) | Medium | ✅ Done |
 
