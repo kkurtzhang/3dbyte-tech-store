@@ -40,11 +40,12 @@ export async function generateMetadata({
   }
 }
 
-// Strapi v4 content type
+// Strapi v5 content type
 interface StrapiProductDescription {
   id: number
-  medusa_id: string
-  rich_text: string
+  medusa_product_id: string
+  rich_description: string | null
+  product_handle: string
   documentId: string
 }
 
@@ -71,7 +72,7 @@ export default async function ProductPage({
   const [product, strapiData] = await Promise.all([
     getProductByHandle(handle),
     getStrapiContent<StrapiResponse<StrapiProductDescription>>("product-descriptions", {
-      filters: { medusa_id: { $eq: null } }, // Optimized: We'll filter in JS if needed, or refine query
+      filters: { product_handle: { $eq: handle } },
     }).catch(() => ({ data: [] })), // Fail gracefully if Strapi is down
   ])
 
@@ -96,14 +97,14 @@ export default async function ProductPage({
 
   // Find matching enriched content
   const enrichedContent = strapiData?.data?.find(
-    (item) => item.medusa_id === product.id
+    (item) => item.product_handle === handle
   )
 
   return (
     <Suspense fallback={<div className="container py-12 animate-pulse"><div className="h-96 bg-muted rounded-sm"></div></div>}>
       <ProductTemplate
         product={product}
-        richDescription={enrichedContent?.rich_text}
+        richDescription={enrichedContent?.rich_description}
         variantImageUrls={variantImageUrls}
       />
     </Suspense>

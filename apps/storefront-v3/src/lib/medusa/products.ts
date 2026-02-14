@@ -25,7 +25,7 @@ export async function getProducts(params: {
       category_id,
       collection_id,
       q,
-      fields: "*variants,*variants.prices",
+      fields: "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory",
     })
 
     products = fetchedProducts as any
@@ -186,7 +186,7 @@ export async function getProductByHandle(handle: string): Promise<StoreProduct |
     const { products } = await sdk.store.product.list({
       handle,
       limit: 1,
-      fields: "*variants,*variants.prices,*variants.images,*options,*options.values,*images,*type,*collection,*tags",
+      fields: "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*variants.images,*options,*options.values,*images,*type,*collection,*tags",
     })
 
     return products[0] || null
@@ -279,7 +279,7 @@ export async function getDiscountedProducts(params: {
     const { products: fetchedProducts } = await sdk.store.product.list({
       limit: 100,
       offset: (page - 1) * limit,
-      fields: "*variants,*variants.prices,*variants.calculated_price,*variants.original_price",
+      fields: "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*variants.calculated_price,*variants.original_price",
     })
 
     const discountedProducts = fetchedProducts.filter((product) => {
@@ -483,7 +483,7 @@ export async function getProductBundles(params: {
     const { products: fetchedProducts, count: fetchedCount } = await sdk.store.product.list({
       limit: 100, // Fetch more to filter for bundles
       offset: 0,
-      fields: "*variants,*variants.prices,*tags,*metadata",
+      fields: "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*tags,*metadata",
     })
 
     // Filter products that are bundles (tag contains "bundle" or metadata indicates bundle)
@@ -608,7 +608,7 @@ export async function getRelatedProducts(productId: string, limit = 4): Promise<
     // Fetch products that might be related
     const filterParams: any = {
       limit: 20, // Fetch more to filter
-      fields: "*variants,*variants.prices,*variants.calculated_price,*category,*type,*collection",
+      fields: "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*variants.calculated_price,*category,*type,*collection",
     }
 
     if (categoryIds.length > 0) {
@@ -631,7 +631,7 @@ export async function getRelatedProducts(productId: string, limit = 4): Promise<
       const { products: collectionProducts } = await sdk.store.product.list({
         collection_id: [currentProduct.collection_id],
         limit: limit + 1,
-        fields: "*variants,*variants.prices,*variants.calculated_price",
+        fields: "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*variants.calculated_price",
       })
 
       return collectionProducts

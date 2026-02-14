@@ -50,7 +50,7 @@ export async function getProductsByCategory(
     category_id: [categoryId],
     limit,
     offset: (page - 1) * limit,
-    fields: "*variants,*variants.prices",
+    fields: "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory",
   })
 
   return {

@@ -122,6 +122,9 @@ export function ProductTemplate({ product, richDescription, variantImageUrls }: 
               setOptions={setOptions}
            />
 
+           {/* Frequently Bought Together Section */}
+           <FrequentlyBoughtTogether productId={product.id} />
+
            <Separator />
 
            {/* Technical Specs */}
@@ -149,9 +152,6 @@ export function ProductTemplate({ product, richDescription, variantImageUrls }: 
 
       {/* Product Reviews Section */}
       <ProductReviews productId={product.id} />
-
-      {/* Frequently Bought Together Section */}
-      <FrequentlyBoughtTogether productId={product.id} />
     </div>
   )
 }

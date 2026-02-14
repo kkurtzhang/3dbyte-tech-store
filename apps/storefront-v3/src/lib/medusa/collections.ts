@@ -60,7 +60,7 @@ export async function getProductsByCollection(
     collection_id: [collectionId],
     limit,
     offset: (page - 1) * limit,
-    fields: "*variants,*variants.prices",
+    fields: "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory",
   })
 
   return {

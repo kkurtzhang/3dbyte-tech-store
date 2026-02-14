@@ -1,91 +1,62 @@
 # TASK_BOARD.md - 3DByte Tech Store
 
-## Sprint: Implementation & Integration
+## Sprint: Website Audit & Content Integration
 
-**Status:** Sub-agent system enabled. Ready for parallel development.
+**Status:** Audit phase - content and UI fixes needed
 
-**Last Updated:** Feb 14, 2026 (06:56 GMT+11)
-
----
-
-## 📋 Task Board
-
-### ✅ COMPLETED TODAY
-| Owner | Task | Verified | Notes |
-|-------|------|----------|-------|
-| @Pixel | Address Book UI | Feb 13 | /account/addresses with edit/delete |
-| @Pixel | Blog Post Pages | Feb 13 | /blog list and /blog/[slug] |
-| @Pixel | Contact Us Page | Feb 13 | /contact with form, info, map |
-| @Pixel | Order History/Tracking | Feb 13 | Enhanced tracking |
-| @Pixel | Search Autocomplete | Feb 13 | Medusa API integration |
-| @Pixel | Product Compare | Feb 13 | /compare page exists |
-| @Pixel | Newsletter Popup | Feb 13 | 10s delay, localStorage |
-| @Pixel | Wishlist Page UI | Feb 13 | /wishlist page |
-| @Pixel | Recently Viewed Products | Feb 13 | localStorage tracking |
-| @Pixel | Guest Order Tracking | Feb 13 | /track-order page |
-| @Pixel | 404 Page Enhancement | Feb 13 | Search + navigation cards |
-| @Merchant | Order Cancellation API | Feb 13 | Workflow + API route complete |
-| @Pixel | Loyalty Rewards Page | Feb 13 | /loyalty page with points, tiers, rewards |
-| @Pixel | Save for Later | Feb 13 | /account/saved, localStorage persistence |
-| @Pixel | Brand Pages | Feb 13 | /brands, /brands/[handle] already exist |
-| @Pixel | Reorder Feature | Feb 13 | Add reorder button in order history |
-| @Pixel | Inventory Alerts | Feb 13 | Notify Me button, /account/alerts page |
-| @Pixel | Featured Collections | Feb 13 | Featured section on homepage |
-| @Pixel | Gift Cards | Feb 13 | /gift-cards page |
-| @Merchant | Fix Backend TypeScript | Feb 13 | Newsletter route TypeScript fix |
-| @Pixel | Fix Storefront TypeScript | Feb 13 | search-input.tsx TypeScript fix |
-| @Pixel | Deals Page | Feb 13 | /deals page with discounts |
-| @Pixel | Account Settings | Feb 14 | /account/settings page |
-| @Pixel | Product Bundles | Feb 14 | /bundles page |
-| @Pixel | Frequently Bought Together | Feb 14 | Product page section |
-| @Pixel | Size Guide | Feb 14 | Size guide component on PDP |
-| @Pixel | Product Reviews | Feb 14 | Reviews section on PDP |
-| @Pixel | Waitlist Feature | Feb 14 | /waitlist page |
-| @Pixel | Social Sharing | Feb 14 | Share buttons on PDP |
-| @Pixel | Related Products Carousel | Feb 14 | You May Also Like carousel |
-| @Pixel | Recently Viewed History | Feb 14 | /account recently viewed |
-| @Pixel | Checkout Progress | Feb 14 | Checkout stepper |
-| @Merchant | Wishlist Backend API | Feb 13 | API implemented |
-| @Pixel | Order Tracking Page | Feb 14 | /order/track page complete |
-| @Sentinel | Performance Audit | Feb 14 | Visual test + audit |
-| @Pixel | Fix Footer Broken Links | Feb 14 | Footer + returns/faq pages |
-| @Pixel | Create Docs Page | Feb 14 | /docs page |
-| @Pixel | Create Guides Page | Feb 14 | /guides page |
-| @Pixel | Create Community Page | Feb 14 | /community page |
-| @Pixel | Create Help Center Page | Feb 14 | /help page |
-| @Pixel | Create Cart Page | Feb 14 | /cart page |
-| @Pixel | Create Product Details Page | Feb 14 | /products/[id] page |
-| @Pixel | Create Checkout Page | Feb 14 | /checkout page |
-| @Pixel | Fix Product Images | Feb 14 | Next.js Image component |
-| @Pixel | Add to Cart Button | Feb 14 | Cart context + button on cards |
-| @Merchant | Connect Product Details to Medusa API | Feb 14 | Uses Medusa API - needs publishable key |
-| @Merchant | Connect Products Listing to Medusa API | Feb 14 | Uses Medusa API - needs publishable key |
-| @Merchant | Connect Cart to Medusa API | Feb 15 | Cart context uses Medusa SDK, localStorage |
-| @Pixel | Verify Checkout/Cart/Products Pages | Feb 15 | Fixed Collections API 500 error |
-| @Pixel | Create /about page | Feb 15 | Company about page exists |
-| @Pixel | Create /help page (Help Center) | Feb 15 | Help center page |
-| @Pixel | Create /docs page (Documentation) | Feb 15 | Developer docs page |
-| @Pixel | Create /guides page | Feb 15 | 3D printing guides |
-| @Pixel | Create /community page | Feb 15 | Community page |
-| @Merchant | Fix CORS config for localhost:3001 | Feb 15 | ✅ Fixed - restart backend |
-| @Pixel | Fix footer links (Help, Returns, FAQ, socials) | Feb 15 | ✅ Links updated |
+**Last Updated:** Feb 15, 2026 (08:47 GMT+11)
 
 ---
 
-**Note:** Services (Backend, Storefront) only run during active sub-agent work. Sub-agents must shutdown services when done.
+## 📦 BACKLOG
+
+| Owner | Task | Priority | Status |
+|-------|------|----------|--------|
+| @Pixel | PDP: Move "Frequently Bought Together" above "You Might Also Like" | High | ✅ Done |
+| @Pixel | PDP: Align "Frequently Bought Together" under Add to Cart button | High | ✅ Done |
+| @Architect | PDP: Fix Rich_description field rendering | High | ✅ Code fixed - CMS content empty |
+| @Merchant | PDP: Connect Out of Stock logic to backend data | Medium | Pending |
+| @Architect | Docs Page: Update CMS content for 3D printing (TDS, SDS resources) | High | Pending |
+| @Architect | About-Us: Replace sofa.webp banner with 3D printing image | High | Pending |
+| @Pixel | About-Us: Add navigation entry point | Medium | Pending |
+| @Pixel | About-Us: Redirect /about-us to /about (remove duplicate) | Medium | Pending |
 
 ---
 
-## 🔍 Visual Test Findings (Feb 14)
+## 📋 Notes
 
-### ✅ Working Pages
-Home, Shop, Brands, Blog, Gift Cards, Wishlist, Contact, Deals, Cart, Search, Track Order, Waitlist, About, Returns, Privacy Policy, Terms
+### CMS Authority
+- Architect can modify CMS content/single types via URL or API
+- Do NOT modify code in apps/cms folder (external service)
+- CMS at: 192.168.0.45:1337
+- Token available in apps/storefront-v3/.env
 
-### ❌ Broken Links (Footer)
-- Help Center → `#` (dead) → Create `/help`
-- Returns → `#` → Link to `/returns` (page exists!)
-- FAQs → `#` → Link to `/faq` (page exists!)
-- GitHub/Twitter/Discord → `#` → Add real URLs
-- Documentation → `/docs` → **404** → Create page
-- Guides → `/guides` → **404** → Create page
-- Community → `/community` → **404** → Create page
+### Legal Pages Status
+- ✅ privacy-policy: Content fetching correctly
+- ✅ terms-and-condition: Content fetching correctly  
+- ⚠️ returns: No CMS content type exists (using fallback)
+
+### PDP Rich Description
+- ✅ Code fixed: Now uses correct CMS fields (medusa_product_id, rich_description, product_handle)
+- ⚠️ CMS content: All `rich_description` fields are empty - need to add content via CMS admin
+
+### Key Files
+- PDP: `apps/storefront-v3/src/app/products/[handle]/page.tsx`
+- About: `apps/storefront-v3/src/app/about-us/page.tsx`
+
+---
+
+## 📁 Archive (Feb 13-15)
+
+<details>
+<summary>Completed Tasks (85 total)</summary>
+
+- Cart API connected to Medusa SDK
+- Collections API 500 error fixed
+- CORS config fixed for localhost:3001
+- Pages created: /help, /docs, /guides, /community, /about
+- Footer links fixed
+- Product pages, checkout, cart verified working
+- All UI components from original sprint completed
+
+</details>
