@@ -67,6 +67,8 @@
 ## 🧠 Key Learnings
 
 ### Heartbeat Protocol
+- **Main agent heartbeat: 30 minutes**
+- **My heartbeat: 15 minutes**
 - Architect does NOT manage services - services only run when sub-agents are coding
 - Never auto-restart services - this wastes tokens and creates infinite loops
 - Services managed by sub-agents when they're actively implementing code
@@ -74,6 +76,11 @@
 - Step 5 is "Report" - update heartbeat-state.json every beat, post to Telegram every 4th beat
 - **Only commit TASK_BOARD.md once per day (Evening Standup)** - not every heartbeat
 - **Step 2: Verify IN PROGRESS** - if tasks pass verification, MUST move them to COMPLETED section
+
+### Sub-Agent Tasks
+- **Audit tasks should NOT use Claude CLI** - use browser + grep only
+- Implementation tasks use Claude CLI via `bash pty:true command:"claude -p '...'"`
+- **Architect has authority to add broken/missing features to backlog without asking**
 - Search Autocomplete
 - Wishlist Page UI
 - Address Book UI

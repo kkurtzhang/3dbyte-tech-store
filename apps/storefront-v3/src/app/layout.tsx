@@ -7,6 +7,7 @@ import { SavedItemsProvider } from "@/context/saved-items-context";
 import { WishlistProvider } from "@/context/wishlist-context";
 import { CompareProvider } from "@/context/compare-context";
 import { InventoryAlertProvider } from "@/context/inventory-alert-context";
+import { SessionProvider } from "@/lib/providers/session-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { NewsletterPopup } from "@/components/newsletter/newsletter-popup";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
@@ -54,6 +55,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <SessionProvider>
           <NuqsAdapter>
             <CartProvider>
               <SavedItemsProvider>
@@ -74,6 +76,7 @@ export default function RootLayout({
               </SavedItemsProvider>
             </CartProvider>
           </NuqsAdapter>
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>

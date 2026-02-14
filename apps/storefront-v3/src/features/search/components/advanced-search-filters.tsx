@@ -1,18 +1,21 @@
 "use client"
 
 import { useState } from "react"
-import { useQueryState, parseAsArrayOf, parseAsString, parseAsInteger } from "nuqs"
+import { useQueryState, parseAsArrayOf, parseAsString, parseAsInteger, parseAsStringLiteral } from "nuqs"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Star } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 // Hardcoded for V3 MVP - will be dynamic from Meilisearch facets later
 const CATEGORIES = ["Filament", "Resin", "Printers", "Parts", "Accessories"]
-const MATERIALS = ["PLA", "ABS", "PETG", "TPU", "Nylon", "Resin"]
-const DIAMETERS = ["1.75mm", "2.85mm"]
+const MATERIALS = ["PLA", "ABS", "PETG", "TPU", "Nylon", "Resin", "ASA", "PC", "Carbon Fiber"]
+const DIAMETERS = ["1.75mm", "2.85mm", "3.00mm"]
+const BRANDS = ["Polymaker", "eSUN", "Hatchbox", "Prusament", "Anycubic", "Creality", "Bambu Lab"]
 
 // Hardcoded color options
 const COLORS = [
@@ -26,6 +29,8 @@ const COLORS = [
   { id: "orange", label: "Orange", hex: "#f97316" },
   { id: "gray", label: "Gray", hex: "#6b7280" },
   { id: "pink", label: "Pink", hex: "#ec4899" },
+  { id: "transparent", label: "Clear", hex: "#e5e7eb" },
+  { id: "gold", label: "Gold", hex: "#fbbf24" },
 ]
 
 // Hardcoded size options
@@ -36,6 +41,14 @@ const SIZES = [
   { id: "l", label: "L" },
   { id: "xl", label: "XL" },
   { id: "xxl", label: "XXL" },
+]
+
+const SORT_OPTIONS = [
+  { value: "relevance", label: "Relevance" },
+  { value: "price_asc", label: "Price: Low to High" },
+  { value: "price_desc", label: "Price: High to Low" },
+  { value: "newest", label: "Newest First" },
+  { value: "rating", label: "Top Rated" },
 ]
 
 interface AdvancedSearchFiltersProps {
@@ -122,6 +135,26 @@ export function AdvancedSearchFilters({ className }: AdvancedSearchFiltersProps)
     parseAsArrayOf(parseAsString).withDefault([])
   )
 
+  const [brands, setBrands] = useQueryState(
+    "brand",
+    parseAsArrayOf(parseAsString).withDefault([])
+  )
+
+  const [inStock, setInStock] = useQueryState(
+    "inStock",
+    parseAsStringLiteral(["true", "false"]).withDefault("false")
+  )
+
+  const [minRating, setMinRating] = useQueryState(
+    "minRating",
+    parseAsInteger.withDefault(0)
+  )
+
+  const [sortBy, setSortBy] = useQueryState(
+    "sortBy",
+    parseAsStringLiteral(SORT_OPTIONS.map(o => o.value)).withDefault("relevance")
+  )
+
   const [minPrice, setMinPrice] = useQueryState(
     "minPrice",
     parseAsInteger.withDefault(0)
@@ -169,6 +202,9 @@ export function AdvancedSearchFilters({ className }: AdvancedSearchFiltersProps)
     diameters.length > 0 ||
     colors.length > 0 ||
     sizes.length > 0 ||
+    brands.length > 0 ||
+    inStock === "true" ||
+    minRating > 0 ||
     minPrice !== 0 ||
     maxPrice !== 500
 
@@ -178,6 +214,10 @@ export function AdvancedSearchFilters({ className }: AdvancedSearchFiltersProps)
     setDiameters(null)
     setColors(null)
     setSizes(null)
+    setBrands(null)
+    setInStock(null)
+    setMinRating(null)
+    setSortBy(null)
     setMinPrice(null)
     setMaxPrice(null)
     setLocalMinPrice(0)
@@ -198,6 +238,68 @@ export function AdvancedSearchFilters({ className }: AdvancedSearchFiltersProps)
           </button>
         )}
       </div>
+
+      {/* Sort By */}
+      <div className="space-y-4">
+        <h3 className="font-mono text-sm font-bold tracking-tight">SORT BY</h3>
+        <Select value={sortBy || "relevance"} onValueChange={(v) => setSortBy(v === "relevance" ? null : v)}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select sort option" />
+          </SelectTrigger>
+          <SelectContent>
+            {SORT_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Separator />
+
+      {/* In Stock Toggle */}
+      <div className="space-y-4">
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="in-stock"
+            checked={inStock === "true"}
+            onCheckedChange={(checked) => setInStock(checked ? "true" : null)}
+          />
+          <Label htmlFor="in-stock" className="text-sm font-medium leading-none">
+            In Stock Only
+          </Label>
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Rating Filter */}
+      <div className="space-y-4">
+        <h3 className="font-mono text-sm font-bold tracking-tight">MIN RATING</h3>
+        <div className="flex gap-1">
+          {[1, 2, 3, 4, 5].map((rating) => (
+            <button
+              key={rating}
+              type="button"
+              onClick={() => setMinRating(minRating === rating ? null : rating)}
+              className={cn(
+                "p-1 transition-colors",
+                rating <= minRating ? "text-yellow-500" : "text-muted-foreground/30 hover:text-yellow-500/50"
+              )}
+            >
+              <Star className="h-5 w-5 fill-current" />
+            </button>
+          ))}
+        </div>
+        {minRating > 0 && (
+          <p className="text-xs text-muted-foreground">
+            {minRating}+ stars only
+          </p>
+        )}
+      </div>
+
+      <Separator />
 
       {/* Price Range */}
       <div className="space-y-4">
@@ -376,6 +478,32 @@ export function AdvancedSearchFilters({ className }: AdvancedSearchFiltersProps)
             >
               {size.label}
             </button>
+          ))}
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Brands */}
+      <div className="space-y-4">
+        <h3 className="font-mono text-sm font-bold tracking-tight">BRAND</h3>
+        <div className="space-y-2">
+          {BRANDS.map((brand) => (
+            <div key={brand} className="flex items-center space-x-2">
+              <Checkbox
+                id={`brand-${brand}`}
+                checked={brands.includes(brand)}
+                onCheckedChange={() =>
+                  toggleFilter(brand, brands, setBrands)
+                }
+              />
+              <Label
+                htmlFor={`brand-${brand}`}
+                className="text-sm font-medium leading-none"
+              >
+                {brand}
+              </Label>
+            </div>
           ))}
         </div>
       </div>

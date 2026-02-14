@@ -1,6 +1,6 @@
 import { strapiClient } from "./client";
 import qs from "qs";
-import { StrapiResponse, AboutUsData, FAQData, LegalPageData } from "./types";
+import { StrapiResponse, AboutUsData, FAQData, LegalPageData, BlogListResponse, BlogCategoryListResponse } from "./types";
 
 export async function getStrapiContent<T = any>(
   collectionType: string,
@@ -88,4 +88,44 @@ export interface RichTextContent {
   medusa_id: string;
   createdAt: string;
   updatedAt: string;
+}
+
+// Blog Functions
+export async function getBlogPosts(options?: {
+  sortBy?: string;
+  category?: string;
+  query?: string;
+  limit?: number;
+}) {
+  const { sortBy = 'publishedAt:desc', category, query, limit = 100 } = options || {};
+
+  let endpoint = `/blogs?populate[0]=FeaturedImage&populate[1]=Categories&sort=${sortBy}&pagination[limit]=${limit}`;
+
+  if (query) {
+    endpoint += `&filters[Title][$contains]=${encodeURIComponent(query)}`;
+  }
+
+  if (category) {
+    endpoint += `&filters[Categories][Slug][$eq]=${encodeURIComponent(category)}`;
+  }
+
+  return strapiClient.fetch<BlogListResponse>(endpoint, {
+    tags: ['blog'],
+  });
+}
+
+export async function getBlogPostBySlug(slug: string) {
+  const endpoint = `/blogs?filters[Slug][$eq]=${encodeURIComponent(slug)}&populate=*`;
+
+  return strapiClient.fetch<BlogListResponse>(endpoint, {
+    tags: [`blog-${slug}`],
+  });
+}
+
+export async function getBlogPostCategories() {
+  const endpoint = `/blog-post-categories?sort=createdAt:desc&pagination[limit]=100`;
+
+  return strapiClient.fetch<BlogCategoryListResponse>(endpoint, {
+    tags: ['blog-categories'],
+  });
 }

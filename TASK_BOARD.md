@@ -47,25 +47,47 @@
 | @Pixel | Checkout Progress | Feb 14 | Checkout stepper |
 | @Merchant | Wishlist Backend API | Feb 13 | API implemented |
 | @Pixel | Order Tracking Page | Feb 14 | /order/track page complete |
-| @Pixel | Checkout Progress | Feb 14 | Stepper on checkout |
-
-### 🔄 IN PROGRESS
-
-| Owner | Task | Priority | Status |
-|-------|------|----------|--------|
-| - | - | - | - |
+| @Sentinel | Performance Audit | Feb 14 | Visual test + audit |
+| @Pixel | Fix Footer Broken Links | Feb 14 | Footer + returns/faq pages |
+| @Pixel | Create Docs Page | Feb 14 | /docs page |
+| @Pixel | Create Guides Page | Feb 14 | /guides page |
+| @Pixel | Create Community Page | Feb 14 | /community page |
+| @Pixel | Create Help Center Page | Feb 14 | /help page |
+| @Pixel | Create Cart Page | Feb 14 | /cart page |
+| @Pixel | Create Product Details Page | Feb 14 | /products/[id] page |
+| @Pixel | Create Checkout Page | Feb 14 | /checkout page |
+| @Pixel | Fix Product Images | Feb 14 | Next.js Image component |
+| @Pixel | Add to Cart Button | Feb 14 | Cart context + button on cards |
+| @Merchant | Connect Product Details to Medusa API | Feb 14 | Uses Medusa API - needs publishable key |
+| @Merchant | Connect Products Listing to Medusa API | Feb 14 | Uses Medusa API - needs publishable key |
 
 ### 📦 BACKLOG
 
 | Owner | Task | Priority | Status |
 |-------|------|----------|--------|
-| @Merchant | API Rate Limiting | Low | Backlog |
-| @Sentinel | Performance Audit | Low | ✅ Completed |
-| @Pixel | Fix Footer Broken Links | Medium | ✅ Completed |
-| @Pixel | Create Docs Page | Medium | ✅ Completed |
-| @Pixel | Create Guides Page | Medium | ✅ Completed |
-| @Pixel | Create Community Page | Medium | ✅ Completed |
-| @Pixel | Create Help Center Page | Medium | ✅ Completed |
+| @Merchant | Fix Meilisearch filter attributes (category, material) | High | ✅ Fixed - use available attrs |
+| @Pixel | Fix SessionProvider error on product pages | High | ✅ Fixed - added to layout |
+| @Merchant | Fix Collections API 500 error | Medium | ⚠️ Backend issue - needs investigation |
+
+### 🔄 IN PROGRESS
+
+| Owner | Task | Priority | Status |
+|-------|------|----------|--------|
+| @Pixel | Create /about page | Medium | 🔄 In Progress |
+| @Merchant | Connect Cart to Medusa API | High | 🔄 In Progress |
+| @Pixel | Verify Checkout Page | Medium | 🔄 In Progress |
+
+| Owner | Task | Priority | Status |
+|-------|------|----------|--------|
+| @Pixel | Verify Cart Page | Medium | 🔄 In Progress |
+
+| Owner | Task | Priority | Status |
+|-------|------|----------|--------|
+| @Pixel | Verify Products Page | Medium | 🔄 In Progress |
+
+| Owner | Task | Priority | Status |
+|-------|------|----------|--------|
+| - | - | - | - |
 
 ---
 

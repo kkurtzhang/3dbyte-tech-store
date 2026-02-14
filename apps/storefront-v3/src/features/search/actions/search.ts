@@ -11,44 +11,37 @@ interface SearchOptions {
   sizes?: string[] | undefined
   minPrice?: number | undefined
   maxPrice?: number | undefined
+  brands?: string[] | undefined
+  inStock?: boolean | undefined
 }
 
 export async function searchProducts(query: string, options: SearchOptions = {}) {
-  const { limit = 20, categories, materials, diameters, colors, sizes, minPrice, maxPrice } = options
+  const { limit = 20, categories, minPrice, maxPrice, brands, inStock } = options
 
   try {
     const index = searchClient.index(INDEX_PRODUCTS)
 
     const filter: string[] = []
 
+    // Use category_ids which is the actual filterable attribute in Meilisearch
     if (categories && categories.length > 0) {
-      // Meilisearch filter syntax: category IN ["A", "B"]
-      filter.push(`category IN [${categories.map(c => `"${c}"`).join(", ")}]`)
+      // Note: category_ids is an array, we filter by exact match
+      filter.push(`category_ids IN [${categories.map(c => `"${c}"`).join(", ")}]`)
     }
 
-    if (materials && materials.length > 0) {
-      filter.push(`material IN [${materials.map(m => `"${m}"`).join(", ")}]`)
+    // Brand filter - use brand.id
+    if (brands && brands.length > 0) {
+      filter.push(`brand.id IN [${brands.map(b => `"${b}"`).join(", ")}]`)
     }
 
-    if (diameters && diameters.length > 0) {
-      filter.push(`diameter IN [${diameters.map(d => `"${d}"`).join(", ")}]`)
+    // In stock filter
+    if (inStock) {
+      filter.push(`in_stock = true`)
     }
 
-    if (colors && colors.length > 0) {
-      filter.push(`color IN [${colors.map(c => `"${c}"`).join(", ")}]`)
-    }
-
-    if (sizes && sizes.length > 0) {
-      filter.push(`size IN [${sizes.map(s => `"${s}"`).join(", ")}]`)
-    }
-
-    if (minPrice !== undefined) {
-      filter.push(`price >= ${minPrice}`)
-    }
-
-    if (maxPrice !== undefined) {
-      filter.push(`price <= ${maxPrice}`)
-    }
+    // Note: price, material, diameter, color, size filters are not supported 
+    // by current Meilisearch index configuration
+    // These can be added later by updating the Meilisearch index settings in the backend
 
     const result = await index.search(query, {
       limit,

@@ -76,3 +76,48 @@ export interface LegalPageData {
   id: number;
   PageContent: string;
 }
+
+// Blog Types
+export interface BlogPostCategory {
+  id: number;
+  documentId: string;
+  Title: string;
+  Slug: string;
+}
+
+export interface BlogPost {
+  id: number;
+  documentId: string;
+  Title: string;
+  Slug: string;
+  Content: string;
+  Excerpt?: string;
+  FeaturedImage?: StrapiImage;
+  Categories?: BlogPostCategory[];
+  publishedAt: string;
+  createdAt: string;
+}
+
+export interface BlogListResponse {
+  data: BlogPost[];
+  meta: {
+    pagination: {
+      page: number;
+      pageSize: number;
+      pageCount: number;
+      total: number;
+    };
+  };
+}
+
+export interface BlogCategoryListResponse {
+  data: BlogPostCategory[];
+  meta: {
+    pagination: {
+      page: number;
+      pageSize: number;
+      pageCount: number;
+      total: number;
+    };
+  };
+}
