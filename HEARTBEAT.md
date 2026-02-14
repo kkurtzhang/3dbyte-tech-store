@@ -221,9 +221,10 @@ Create tasks in BACKLOG with priority:
   - Completed tasks today
   - Backlog count
   - Any blockers
+- **Commit and push changes to git** (hourly cadence)
 
 **Rules:**
-- Commit changes to git **once per day (Evening Standup)** - not every heartbeat
+- Commit message format: `feat/fix/chore: <description>`
 
 ---
 
