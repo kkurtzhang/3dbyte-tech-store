@@ -85,6 +85,12 @@ export function Navbar() {
             >
               Gift Cards
             </Link>
+            <Link
+              href="/about"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              About
+            </Link>
           </nav>
 
           {/* Right Section: Actions */}

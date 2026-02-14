@@ -1,5 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async redirects() {
+    return [
+      {
+        source: "/about-us",
+        destination: "/about",
+        permanent: true,
+      },
+    ];
+  },
   transpilePackages: ["@3dbyte-tech-store/shared-ui"],
   images: {
     remotePatterns: [

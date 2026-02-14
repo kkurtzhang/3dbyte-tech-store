@@ -4,9 +4,9 @@
     "calendar": null,
     "weather": null
   },
-  "beatCount": 112,
-  "activeSubagents": 1,
-  "subagentLabels": ["pdp-out-of-stock"],
-  "completedTasks": 88,
-  "backlogCount": 5
+  "beatCount": 114,
+  "activeSubagents": 0,
+  "subagentLabels": [],
+  "completedTasks": 91,
+  "backlogCount": 2
 }
