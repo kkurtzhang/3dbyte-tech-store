@@ -66,7 +66,7 @@ export function Footer() {
             <ul className="space-y-3">
               <li>
                 <Link
-                  href="#"
+                  href="/help"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Help Center
@@ -74,7 +74,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="/returns"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Returns
@@ -90,7 +90,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="/faq"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   FAQs
@@ -148,7 +148,7 @@ export function Footer() {
             <ul className="flex gap-4">
               <li>
                 <Link
-                  href="#"
+                  href="https://github.com/3dbyte-tech"
                   className="text-muted-foreground transition-colors hover:text-foreground"
                   aria-label="GitHub"
                 >
@@ -157,7 +157,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="https://x.com/3dbyte_tech"
                   className="text-muted-foreground transition-colors hover:text-foreground"
                   aria-label="Twitter"
                 >
@@ -166,7 +166,7 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="https://discord.gg/3dbyte"
                   className="text-muted-foreground transition-colors hover:text-foreground"
                   aria-label="Discord"
                 >

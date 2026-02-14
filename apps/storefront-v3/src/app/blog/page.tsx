@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { getBlogPosts, getBlogPostCategories } from "@/lib/strapi/content";
+import type { BlogPost, BlogPostCategory } from "@/lib/strapi/types";
 
 export const metadata: Metadata = {
   title: "Blog",
@@ -17,8 +18,8 @@ export default async function BlogPage({
 }) {
   const { category, q } = await searchParams;
 
-  let posts = [];
-  let categories = [];
+  let posts: BlogPost[] = [];
+  let categories: BlogPostCategory[] = [];
 
   try {
     const [postsResponse, categoriesResponse] = await Promise.all([
