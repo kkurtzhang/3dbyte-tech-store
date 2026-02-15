@@ -104,7 +104,7 @@ export default async function ProductPage({
     <Suspense fallback={<div className="container py-12 animate-pulse"><div className="h-96 bg-muted rounded-sm"></div></div>}>
       <ProductTemplate
         product={product}
-        richDescription={enrichedContent?.rich_description}
+        richDescription={enrichedContent?.rich_description ?? undefined}
         variantImageUrls={variantImageUrls}
       />
     </Suspense>
