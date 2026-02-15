@@ -57,6 +57,21 @@ export interface FAQSection {
   Question: FAQItem[];
 }
 
+export interface TimelineItem {
+  id: number;
+  year: number;
+  title: string;
+  description: string;
+}
+
+export interface TeamMember {
+  id: number;
+  name: string;
+  role: string;
+  bio: string;
+  image?: StrapiImage;
+}
+
 export interface AboutUsData {
   id: number;
   documentId: string;
@@ -65,6 +80,8 @@ export interface AboutUsData {
   WhyUs: WhyUsSection;
   OurCraftsmanship: ContentSection | null;
   Numbers: NumericalContent[];
+  Timeline: TimelineItem[];
+  Team: TeamMember[];
 }
 
 export interface FAQData {

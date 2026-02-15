@@ -2,13 +2,24 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getAboutUs } from "@/lib/strapi/content";
+import { StrapiImage } from "@/lib/strapi/types";
 
 export const metadata: Metadata = {
   title: "About Us - 3DByte Tech",
   description: "Learn about 3DByte Tech and our mission to bring precision 3D printing technology to makers and engineers.",
 };
 
-export default function AboutPage() {
+async function getAboutPageData() {
+  const response = await getAboutUs();
+  return response.data;
+}
+
+export default async function AboutPage() {
+  const data = await getAboutPageData();
+
+  const bannerImage = data.Banner?.[0];
+
   return (
     <main className="flex flex-col">
       {/* Hero Section */}
@@ -26,6 +37,17 @@ export default function AboutPage() {
               We empower makers, engineers, and innovators with precision 3D printing
               technology, premium Voron kits, and expert support.
             </p>
+            {bannerImage && (
+              <div className="mx-auto mt-12 max-w-4xl">
+                <img
+                  src={bannerImage.url}
+                  alt={bannerImage.alternativeText || "3DByte Tech Banner"}
+                  width={bannerImage.width}
+                  height={bannerImage.height}
+                  className="rounded-lg shadow-lg"
+                />
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -46,40 +68,15 @@ export default function AboutPage() {
           </div>
 
           <div className="mx-auto max-w-3xl space-y-12">
-            {[
-              {
-                year: "2020",
-                title: "Founded with a Vision",
-                description:
-                  "3DByte Tech was born from a passion for precision engineering and a belief that 3D printing should be accessible to everyone.",
-              },
-              {
-                year: "2021",
-                title: "First Voron Kits Launched",
-                description:
-                  "We introduced our premium Voron kit line, carefully curated and tested to ensure exceptional quality and performance.",
-              },
-              {
-                year: "2023",
-                title: "Australia-Wide Shipping",
-                description:
-                  "Expanded our operations to offer fast, reliable shipping across Australia, bringing precision printing to makers nationwide.",
-              },
-              {
-                year: "2025",
-                title: "Premium Filament Line",
-                description:
-                  "Launched our own high-performance filament line, engineered for precision prints and exceptional results.",
-              },
-            ].map((milestone, index) => (
+            {data?.Timeline?.map((milestone, index) => (
               <div
-                key={milestone.year}
+                key={milestone.id}
                 className="relative pl-8 md:pl-12"
               >
                 {/* Timeline line and dot */}
                 <div className="absolute left-0 top-0 flex h-full w-8 flex-col items-center md:left-4 md:w-12">
                   <div className="h-3 w-3 rounded-full bg-primary ring-4 ring-background" />
-                  {index < 3 && (
+                  {index < (data.Timeline?.length || 0) - 1 && (
                     <div className="flex-1 w-px bg-border" />
                   )}
                 </div>
@@ -117,21 +114,29 @@ export default function AboutPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { name: "Kurt Zhang", role: "CEO & Founder", initial: "K" },
-              { name: "Sarah Chen", role: "Lead Engineer", initial: "S" },
-              { name: "Michael Ross", role: "Operations Manager", initial: "M" },
-              { name: "Emily Park", role: "Customer Success", initial: "E" },
-            ].map((member) => (
-              <Card key={member.name} className="text-center">
+            {data?.Team?.map((member) => (
+              <Card key={member.id} className="text-center">
                 <CardHeader>
-                  <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 text-4xl font-bold text-primary">
-                    {member.initial}
-                  </div>
+                  {member.image ? (
+                    <img
+                      src={member.image.url}
+                      alt={member.image.alternativeText || member.name}
+                      width={member.image.width}
+                      height={member.image.height}
+                      className="mx-auto mb-4 h-24 w-24 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 text-4xl font-bold text-primary">
+                      {member.name.charAt(0)}
+                    </div>
+                  )}
                   <CardTitle className="text-lg">{member.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">{member.role}</p>
+                  <p className="mb-2 text-sm font-semibold text-primary">{member.role}</p>
+                  {member.bio && (
+                    <p className="text-sm text-muted-foreground">{member.bio}</p>
+                  )}
                 </CardContent>
               </Card>
             ))}

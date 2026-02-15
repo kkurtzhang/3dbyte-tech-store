@@ -53,6 +53,16 @@ export async function getAboutUs() {
       Numbers: {
         populate: "*",
       },
+      Timeline: {
+        populate: "*",
+      },
+      Team: {
+        populate: {
+          image: {
+            populate: "*",
+          },
+        },
+      },
     },
   });
 
