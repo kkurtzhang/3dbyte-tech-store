@@ -4,7 +4,7 @@
 
 **Status:** Audit phase - content and UI fixes needed
 
-**Last Updated:** Feb 15, 2026 (08:47 GMT+11)
+**Last Updated:** Feb 16, 2026 (23:00 GMT+11) - Evening Review
 
 ---
 
@@ -19,7 +19,7 @@
 | @Architect | Docs Page: Update CMS content for 3D printing (TDS, SDS resources) | High | ⚠️ Requires CMS admin |
 | @Architect | About-Us: Replace sofa.webp banner with 3D printing image | High | ✅ Done - Now dynamic from CMS |
 | @Architect | About-Us: Make page dynamic (fetch Timeline & Team from CMS) | High | ✅ Done |
-| @Architect | About-Us: Add Timeline & Team CMS content | High | ⚠️ Requires CMS admin |
+| @Architect | About-Us: Add Timeline & Team CMS content | High | ✅ Done via API |
 | @Pixel | About-Us: Add navigation entry point | Medium | ✅ Done |
 | @Pixel | About-Us: Redirect /about-us to /about (remove duplicate) | Medium | ✅ Done |
 
