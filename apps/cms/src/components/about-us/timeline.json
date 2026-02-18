@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_about_us_timelines",
+  "info": {
+    "displayName": "Timeline"
+  },
+  "options": {},
+  "attributes": {
+    "year": {
+      "type": "integer"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    }
+  },
+  "config": {}
+}
