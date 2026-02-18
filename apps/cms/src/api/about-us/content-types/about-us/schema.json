@@ -21,27 +21,34 @@
       ]
     },
     "OurStory": {
-      "displayName": "Content Section",
       "type": "component",
-      "repeatable": false,
-      "component": "about-us.content-section"
+      "component": "about-us.content-section",
+      "repeatable": false
     },
     "WhyUs": {
-      "displayName": "WhyUs",
       "type": "component",
-      "repeatable": false,
-      "component": "about-us.why-us"
+      "component": "about-us.why-us",
+      "repeatable": false
     },
     "OurCraftsmanship": {
       "type": "component",
-      "repeatable": false,
-      "component": "about-us.content-section"
+      "component": "about-us.content-section",
+      "repeatable": false
     },
     "Numbers": {
-      "displayName": "NumericalContent",
       "type": "component",
-      "repeatable": true,
-      "component": "about-us.numerical-content"
+      "component": "about-us.numerical-content",
+      "repeatable": true
+    },
+    "Timeline": {
+      "type": "component",
+      "component": "about-us.timeline",
+      "repeatable": true
+    },
+    "Team": {
+      "type": "component",
+      "component": "about-us.team",
+      "repeatable": true
     }
   }
 }
