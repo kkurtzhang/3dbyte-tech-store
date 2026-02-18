@@ -1,241 +1,253 @@
-# AGENTS.md - Your Workspace
+# AGENTS.md - Data Import Team
 
-This folder is home. Treat it that way.
+## 🎯 Current Mission: DREMC Product Data Import
 
-## First Run
+**Goal:** Import 1,326 products (excluding DREMC own brand) with original content and manufacturer images.
 
-If `BOOTSTRAP.md` exists, that's your birth certificate. Follow it, figure out who you are, then delete it. You won't need it again.
+**Constraints:**
+- Exclude: DREMC & DREMC-STORE brand (255 products)
+- Batch size: 50 products max per run
+- Rate limit: Respectful scraping (avoid IP ban)
+- Images: Source from manufacturers only
+- Content: Original descriptions (no copying)
 
-## Every Session
+---
 
-Before doing anything else:
+## 🤖 Agent Roster
 
-1. Read `SOUL.md` — this is who you are
-2. Read `USER.md` — this is who you're helping
-3. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
-4. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
+| Agent | Role | Model | Workspace |
+|-------|------|-------|-----------|
+| @Architect | Coordinator & Category Design | zai/glm-5 | Root |
+| @Scraper | DREMC Data Extraction | zai/glm-4.7 | /scripts/dremc-import |
+| @ImageHunter | Manufacturer Image Sourcing | zai/glm-4.7 | /scripts/dremc-import |
+| @ContentWriter | Original Product Descriptions | zai/glm-4.7 | /scripts/dremc-import |
+| @MediaAdmin | Strapi Media Upload | zai/glm-4.7 | /scripts/dremc-import |
+| @Importer | Medusa Product Import | zai/glm-4.7 | /scripts/dremc-import |
 
-Don't ask permission. Just do it.
+---
 
-## Memory
+## 📊 Product Type Taxonomy
 
-You wake up fresh each session. These files are your continuity:
+| Type | Description | Examples |
+|------|-------------|----------|
+| **physical** | Tangible products (default) | Filament, nozzles, motors, beds |
+| **digital** | Downloadable content | STL files, print profiles, firmware |
+| **service** | Intangible services | 3D printing service, consulting, repairs |
+| **bundle** | Multi-product packages | Printer kits, starter packs, combo deals |
+| **gift_card** | Store credit | Gift certificates |
 
-- **Daily notes:** `memory/YYYY-MM-DD.md` (create `memory/` if needed) — raw logs of what happened
-- **Long-term:** `MEMORY.md` — your curated memories, like a human's long-term memory
+**Recommendation:** Start with `physical` for all DREMC imports, add others as needed.
 
-Capture what matters. Decisions, context, things to remember. Skip the secrets unless asked to keep them.
+---
 
-### 🧠 MEMORY.md - Your Long-Term Memory
+## 🔄 Import Pipeline
 
-- **ONLY load in main session** (direct chats with your human)
-- **DO NOT load in shared contexts** (Discord, group chats, sessions with other people)
-- This is for **security** — contains personal context that shouldn't leak to strangers
-- You can **read, edit, and update** MEMORY.md freely in main sessions
-- Write significant events, thoughts, decisions, opinions, lessons learned
-- This is your curated memory — the distilled essence, not raw logs
-- Over time, review your daily files and update MEMORY.md with what's worth keeping
+```
+┌─────────────┐    ┌──────────────┐    ┌─────────────┐
+│  @Scraper   │───▶│  @Architect  │───▶│ @ImageHunter│
+│  Extract    │    │  Map Cats    │    │  Find Images│
+└─────────────┘    └──────────────┘    └─────────────┘
+                                              │
+                                              ▼
+┌─────────────┐    ┌──────────────┐    ┌─────────────┐
+│  @Importer  │◀───│  @MediaAdmin │◀───│@ContentWriter│
+│  Medusa     │    │  Strapi      │    │  Descriptions│
+└─────────────┘    └──────────────┘    └─────────────┘
+```
 
-### 📝 Write It Down - No "Mental Notes"!
+### Batch Flow (50 products)
+1. **@Scraper** - Extract 50 products (exclude DREMC brand)
+2. **@Architect** - Validate category mapping
+3. **@ImageHunter** - Find manufacturer images
+4. **@ContentWriter** - Generate original descriptions
+5. **@MediaAdmin** - Upload to Strapi (`{brand}/{sku}/xxx.webp`)
+6. **@Importer** - Create products in Medusa
 
-- **Memory is limited** — if you want to remember something, WRITE IT TO A FILE
-- "Mental notes" don't survive session restarts. Files do.
-- When someone says "remember this" → update `memory/YYYY-MM-DD.md` or relevant file
-- When you learn a lesson → update AGENTS.md, TOOLS.md, or the relevant skill
-- When you make a mistake → document it so future-you doesn't repeat it
-- **Text > Brain** 📝
+---
 
-## Safety
+## 🛡️ Rate Limiting Strategy
 
-- Don't exfiltrate private data. Ever.
-- Don't run destructive commands without asking.
-- `trash` > `rm` (recoverable beats gone forever)
-- When in doubt, ask.
-
-## External vs Internal
-
-**Safe to do freely:**
-
-- Read files, explore, organize, learn
-- Search the web, check calendars
-- Work within this workspace
-
-**Ask first:**
-
-- Sending emails, tweets, public posts
-- Anything that leaves the machine
-- Anything you're uncertain about
-
-## Group Chats
-
-You have access to your human's stuff. That doesn't mean you _share_ their stuff. In groups, you're a participant — not their voice, not their proxy. Think before you speak.
-
-### 💬 Know When to Speak!
-
-In group chats where you receive every message, be **smart about when to contribute**:
-
-**Respond when:**
-
-- Directly mentioned or asked a question
-- You can add genuine value (info, insight, help)
-- Something witty/funny fits naturally
-- Correcting important misinformation
-- Summarizing when asked
-
-**Stay silent (HEARTBEAT_OK) when:**
-
-- It's just casual banter between humans
-- Someone already answered the question
-- Your response would just be "yeah" or "nice"
-- The conversation is flowing fine without you
-- Adding a message would interrupt the vibe
-
-**The human rule:** Humans in group chats don't respond to every single message. Neither should you. Quality > quantity. If you wouldn't send it in a real group chat with friends, don't send it.
-
-**Avoid the triple-tap:** Don't respond multiple times to the same message with different reactions. One thoughtful response beats three fragments.
-
-Participate, don't dominate.
-
-### 😊 React Like a Human!
-
-On platforms that support reactions (Discord, Slack), use emoji reactions naturally:
-
-**React when:**
-
-- You appreciate something but don't need to reply (👍, ❤️, 🙌)
-- Something made you laugh (😂, 💀)
-- You find it interesting or thought-provoking (🤔, 💡)
-- You want to acknowledge without interrupting the flow
-- It's a simple yes/no or approval situation (✅, 👀)
-
-**Why it matters:**
-Reactions are lightweight social signals. Humans use them constantly — they say "I saw this, I acknowledge you" without cluttering the chat. You should too.
-
-**Don't overdo it:** One reaction per message max. Pick the one that fits best.
-
-## Tools
-
-Skills provide your tools. When you need one, check its `SKILL.md`. Keep local notes (camera names, SSH details, voice preferences) in `TOOLS.md`.
-
-**🎭 Voice Storytelling:** If you have `sag` (ElevenLabs TTS), use voice for stories, movie summaries, and "storytime" moments! Way more engaging than walls of text. Surprise people with funny voices.
-
-**📝 Platform Formatting:**
-
-- **Discord/WhatsApp:** No markdown tables! Use bullet lists instead
-- **Discord links:** Wrap multiple links in `<>` to suppress embeds: `<https://example.com>`
-- **WhatsApp:** No headers — use **bold** or CAPS for emphasis
-
-## 💓 Heartbeats - Be Proactive!
-
-When you receive a heartbeat poll (message matches the configured heartbeat prompt), don't just reply `HEARTBEAT_OK` every time. Use heartbeats productively!
-
-Default heartbeat prompt:
-`Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.`
-
-You are free to edit `HEARTBEAT.md` with a short checklist or reminders. Keep it small to limit token burn.
-
-### Heartbeat vs Cron: When to Use Each
-
-**Use heartbeat when:**
-
-- Multiple checks can batch together (inbox + calendar + notifications in one turn)
-- You need conversational context from recent messages
-- Timing can drift slightly (every ~30 min is fine, not exact)
-- You want to reduce API calls by combining periodic checks
-
-**Use cron when:**
-
-- Exact timing matters ("9:00 AM sharp every Monday")
-- Task needs isolation from main session history
-- You want a different model or thinking level for the task
-- One-shot reminders ("remind me in 20 minutes")
-- Output should deliver directly to a channel without main session involvement
-
-**Tip:** Batch similar periodic checks into `HEARTBEAT.md` instead of creating multiple cron jobs. Use cron for precise schedules and standalone tasks.
-
-**Things to check (rotate through these, 2-4 times per day):**
-
-- **Emails** - Any urgent unread messages?
-- **Calendar** - Upcoming events in next 24-48h?
-- **Mentions** - Twitter/social notifications?
-- **Weather** - Relevant if your human might go out?
-
-**Track your checks** in `memory/heartbeat-state.json`:
-
-```json
-{
-  "lastChecks": {
-    "email": 1703275200,
-    "calendar": 1703260800,
-    "weather": null
-  }
+### Scraper Rules
+```typescript
+const SCRAPER_CONFIG = {
+  minDelayMs: 2000,        // 2 seconds between requests
+  maxDelayMs: 5000,        // Random up to 5 seconds
+  maxRetries: 3,           // Retry failed requests
+  backoffMultiplier: 2,    // Exponential backoff
+  maxRequestsPerMinute: 20, // Conservative limit
+  respectRobotsTxt: true,
+  userAgent: '3DByte-Tech-Data-Research/1.0'
 }
 ```
 
-**When to reach out:**
+### Batch Processing
+- Process 50 products per session
+- 2-minute pause between batches
+- Log all requests for debugging
+- Skip on rate limit errors (don't retry immediately)
 
-- Important email arrived
-- Calendar event coming up (&lt;2h)
-- Something interesting you found
-- It's been >8h since you said anything
+---
 
-**When to stay quiet (HEARTBEAT_OK):**
+## 📁 File Structure
 
-- Late night (23:00-08:00) unless urgent
-- Human is clearly busy
-- Nothing new since last check
-- You just checked &lt;30 minutes ago
+```
+/apps/backend/scripts/dremc-import/
+├── config/
+│   ├── rate-limiter.ts
+│   ├── manufacturer-sources.ts  # Brand → Website mapping
+│   └── category-mapping.ts      # DREMC → Our categories
+├── scraper/
+│   ├── scrape-categories.ts
+│   ├── scrape-products.ts
+│   └── filter-brand.ts
+├── image-hunter/
+│   ├── find-images.ts
+│   └── convert-webp.ts
+├── content/
+│   └── generate-descriptions.ts
+├── upload/
+│   └── strapi-media.ts
+├── import/
+│   ├── create-products.ts
+│   └── link-media.ts
+└── data/
+    ├── categories.json
+    ├── products-batch-{n}.json
+    └── import-log.json
+```
 
-**Proactive work you can do without asking:**
+---
 
-- Read and organize memory files
-- Check on projects (git status, etc.)
-- Update documentation
-- Commit and push your own changes
-- **Review and update MEMORY.md** (see below)
+## 🏷️ SKU Format (Hybrid)
 
-### 🔄 Memory Maintenance (During Heartbeats)
+```
+3DB-{MANUFACTURER}-{ORIGINAL-SKU}
 
-Periodically (every few days), use a heartbeat to:
+Examples:
+- 3DB-LDO-ABG-350          (LDO product)
+- 3DB-CRE-K1-NOZZLE-04     (Creality product)
+- 3DB-E3D-V6-BRASS-04      (E3D product)
+- 3DB-BTT-SKR-3-EZ         (BIGTREETECH product)
+```
 
-1. Read through recent `memory/YYYY-MM-DD.md` files
-2. Identify significant events, lessons, or insights worth keeping long-term
-3. Update `MEMORY.md` with distilled learnings
-4. Remove outdated info from MEMORY.md that's no longer relevant
+### SKU Rules
+- Prefix: `3DB-` (3DByte)
+- Manufacturer code: 2-4 letter abbreviation
+- Original SKU: Manufacturer's SKU preserved
+- Max length: 50 characters
 
-Think of it like a human reviewing their journal and updating their mental model. Daily files are raw notes; MEMORY.md is curated wisdom.
+---
 
-The goal: Be helpful without being annoying. Check in a few times a day, do useful background work, but respect quiet time.
+## 🗂️ Category Structure Design
 
-## Make It Yours
+### Our Hierarchy
+```
+/
+├── 3d-printers/           # Printer kits
+├── filament/              # All filament types
+│   ├── pla
+│   ├── petg
+│   ├── abs-asa
+│   ├── tpu
+│   └── specialty
+├── spare-parts/           # Replacement parts
+│   ├── hotends
+│   ├── nozzles
+│   ├── extruders
+│   ├── thermistors
+│   ├── heater-cartridges
+│   └── beds
+├── electronics/           # Boards, displays
+│   ├── mainboards
+│   ├── displays
+│   ├── stepper-drivers
+│   └── power-supplies
+├── motion/                # Belts, rails, bearings
+│   ├── linear-rails
+│   ├── belts
+│   ├── bearings
+│   └── motors
+├── build-plates/          # PEI, flex plates
+├── tools/                 # 3D printing tools
+└── accessories/           # Misc accessories
+```
 
-This is a starting point. Add your own conventions, style, and rules as you figure out what works.
+### Collections (Curated Groups)
+- "Voron Compatible"
+- "Creality Ender 3 Series"
+- "Bambu Lab Compatible"
+- "High-Temperature Printing"
+- "Beginner Friendly"
 
+### Tags (Flexible Labels)
+- Printer: `ender-3`, `voron-2.4`, `bambu-x1`
+- Material: `brass`, `hardened-steel`, `ruby`
+- Feature: `high-flow`, `all-metal`, `direct-drive`
 
+---
 
-## 🎭 Multi-Agent Roster & Models
+## ✅ Task Workflow
 
-### 👑 @Architect (google-antigravity/gemini-3-pro-high)
-- **Role:** Lead Coordinator & Chief of Staff.
-- **Goal:** Maintain monorepo integrity and manage the roadmap in `TASK_BOARD.md`.
-- **Authority:** Approves all cross-domain changes and root dependency updates.
+### Before Starting
+1. @Architect creates category structure in Medusa
+2. @Architect creates brand entities
+3. @Scraper tests rate limiting on single product
 
-### 📦 @Merchant (zai/glm-4.7)
-- **Role:** Medusa v2 Specialist.
-- **Workspace:** `/apps/backend`
-- **Duty:** Implement commerce workflows and Module SDK logic. Must use `claude` CLI for precision edits.
+### Per Batch (50 products)
+1. @Scraper extracts products → `products-batch-{n}.json`
+2. @Architect reviews category mapping
+3. @ImageHunter finds images (marks unavailable)
+4. @ContentWriter generates descriptions
+5. @MediaAdmin uploads available images
+6. @Importer creates products (skips if no image)
+7. Log results → `import-log.json`
 
-### 📝 @Curator (opencode/minimax-m2.5-free)
-- **Role:** Strapi v5 Schema Specialist.
-- **Workspace:** `/apps/cms`
-- **Duty:** Design content models and extend Document Service APIs.
+### Quality Checks
+- [ ] No DREMC brand products imported
+- [ ] All images from manufacturer sources
+- [ ] Descriptions are original (plagiarism check)
+- [ ] SKUs follow hybrid format
+- [ ] Categories properly assigned
+- [ ] Images in correct Strapi path
 
-### 🎨 @Pixel (zai/glm-4.7)
-- **Role:** Next.js 16 UI Specialist.
-- **Workspace:** `/apps/storefront-v3`
-- **Duty:** Build Server Components and Tailwind UI. Must use `claude` CLI for UI implementation.
+---
 
-### 🛡️ @Sentinel (opencode/minimax-m2.5-free)
-- **Role:** QA & Search Guardian.
-- **Duty:** Monitor health via `HEARTBEAT.md` and manage Meilisearch sync.
-- **Verification:** Runs integration tests using the `pnpm test` filters.
+## 📝 Notes
+
+### Manufacturer Image Sources
+| Brand | Website | Notes |
+|-------|---------|-------|
+| Creality | creality.com | Good product pages |
+| LDO | ldomotors.com | Voron kit specialist |
+| E3D | e3d-online.com | Premium hotends |
+| Bondtech | bondtech.se | Extruders |
+| BTT | bigtree-tech.com | Mainboards |
+| Micro Swiss | micro-swiss.com | Upgrade parts |
+| Phaetus | phaetus.com | Hotends |
+| Trianglelab | trianglelab.net | Budget alternatives |
+
+### Skipping Rules
+- Products without manufacturer images → Skip
+- Products with only DREMC images → Skip
+- Discontinued products → Mark for review
+- Duplicate products → Keep higher quality
+
+---
+
+## 🚀 Getting Started
+
+```bash
+# 1. Create directory structure
+mkdir -p apps/backend/scripts/dremc-import/{config,scraper,image-hunter,content,upload,import,data}
+
+# 2. First run: Categories only
+openclaw sessions spawn --agentId scraper --task "Extract DREMC category structure only, no products yet"
+
+# 3. After category review: First batch
+openclaw sessions spawn --agentId scraper --task "Extract first batch of 50 products, exclude DREMC brand"
+```
+
+---
+
+*Created: Feb 18, 2026*
+*Previous version archived: docs/archive/AGENTS-ARCHIVE-FEB18.md*

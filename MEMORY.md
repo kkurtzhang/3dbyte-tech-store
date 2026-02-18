@@ -113,5 +113,46 @@
 
 - `TASK_BOARD.md` - Sprint backlog and status
 - `HEARTBEAT.md` - Auto-drive protocol
-- `AGENTS.md` - Team roster and rules
+- `AGENTS.md` - Team roster and rules (NEW: Data Import Team)
 - `TOOLS.md` - Local dev notes
+
+---
+
+## 🆕 New Project: DREMC Data Import
+
+**Started:** Feb 18, 2026
+
+### Goal
+Import 1,326 products from DREMC (excluding their own brand) with:
+- Original descriptions (AI-generated)
+- Manufacturer-sourced images
+- Hybrid SKU format: `3DB-{MANUFACTURER}-{ORIGINAL-SKU}`
+- Our category/collection/tag structure
+
+### Agent Team
+| Agent | Role |
+|-------|------|
+| @Architect | Coordinator, category design |
+| @Scraper | DREMC data extraction |
+| @ImageHunter | Manufacturer image sourcing |
+| @ContentWriter | Original descriptions |
+| @MediaAdmin | Strapi media upload |
+| @Importer | Medusa product import |
+
+### Constraints
+- Batch size: 50 products max
+- Rate limiting: 2-5s delay, 20 req/min max
+- Skip products without manufacturer images
+- Exclude DREMC own brand (255 products)
+
+### Product Types
+- `physical` - Tangible products (default)
+- `digital` - STL files, profiles, firmware
+- `service` - 3D printing, consulting
+- `bundle` - Printer kits, combo packs
+- `gift_card` - Store credit
+
+### Files
+- `docs/DREMC-INTEGRATION-REPORT.md` - Analysis
+- `AGENTS.md` - New team structure
+- `docs/archive/AGENTS-ARCHIVE-FEB18.md` - Old team archived
