@@ -4,10 +4,10 @@
     "calendar": null,
     "weather": null
   },
-  "beatCount": 290,
-  "activeSubagents": 0,
-  "subagentLabels": [],
-  "completedTasks": 98,
+  "beatCount": 296,
+  "activeSubagents": 1,
+  "subagentLabels": ["clean-test-data"],
+  "completedTasks": 100,
   "backlogCount": 0,
-  "notes": "DREMC import agent team designed. Awaiting Kurt's answers on SKU format, batch size, and archive approach."
+  "notes": "@Merchant cleaning test data from backend. In progress."
 }
