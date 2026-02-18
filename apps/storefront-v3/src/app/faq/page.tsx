@@ -3,16 +3,22 @@ import { getFAQ } from "@/lib/strapi/content";
 import { FAQAccordion } from "@/features/cms/components/faq-accordion";
 import { SidebarBookmarks } from "@/features/cms/components/sidebar-bookmarks";
 
+// Force dynamic rendering to avoid build-time CMS dependency
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "FAQ",
   description: "Frequently Asked Questions about our products and services.",
 };
 
-export const revalidate = 3600;
-
 export default async function FAQPage() {
-  const response = await getFAQ();
-  const { FAQSection } = response.data;
+  let FAQSection: any[] = [];
+  try {
+    const response = await getFAQ();
+    FAQSection = response.data?.FAQSection || [];
+  } catch (error) {
+    console.error("Failed to fetch FAQ data from CMS:", error);
+  }
 
   const bookmarks = FAQSection.map((section) => ({
     id: section.Bookmark,

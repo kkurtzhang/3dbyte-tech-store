@@ -6,7 +6,8 @@ import { getFeaturedCollections } from "@/lib/medusa/collections"
 import { ProductCard } from "@/features/product/components/product-card"
 import Link from "next/link"
 
-export const revalidate = 3600
+// Force dynamic rendering to avoid build-time CMS dependency
+export const dynamic = 'force-dynamic'
 
 // Loading skeleton for products
 function ProductsSkeleton() {

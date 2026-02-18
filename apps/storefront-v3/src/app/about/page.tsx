@@ -5,14 +5,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAboutUs } from "@/lib/strapi/content";
 import { StrapiImage } from "@/lib/strapi/types";
 
+// Force dynamic rendering to avoid build-time CMS dependency
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "About Us - 3DByte Tech",
   description: "Learn about 3DByte Tech and our mission to bring precision 3D printing technology to makers and engineers.",
 };
 
 async function getAboutPageData() {
-  const response = await getAboutUs();
-  return response.data;
+  try {
+    const response = await getAboutUs();
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch About Us data from CMS:", error);
+    // Return empty data structure on error
+    return {
+      Banner: [],
+      Timeline: [],
+      Team: [],
+    };
+  }
 }
 
 export default async function AboutPage() {

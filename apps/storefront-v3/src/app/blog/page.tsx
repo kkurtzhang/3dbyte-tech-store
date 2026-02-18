@@ -4,12 +4,13 @@ import Image from "next/image";
 import { getBlogPosts, getBlogPostCategories } from "@/lib/strapi/content";
 import type { BlogPost, BlogPostCategory } from "@/lib/strapi/types";
 
+// Force dynamic rendering to avoid build-time CMS dependency
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "Blog",
   description: "Latest news, tutorials, and insights from 3DByte Tech.",
 };
-
-export const revalidate = 3600;
 
 export default async function BlogPage({
   searchParams,
