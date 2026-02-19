@@ -1,0 +1,60 @@
+{
+  "batch": 1,
+  "extracted_at": "2026-02-19T01:49:28.771Z",
+  "total_products_fetched": 106,
+  "batch_size": 50,
+  "by_vendor": {
+    "CNC Kitchen": 2,
+    "Creality": 26,
+    "Polymaker": 2,
+    "Capricorn": 2,
+    "Slice Engineering": 1,
+    "LDO": 2,
+    "Cartographer3D": 1,
+    "Gates": 1,
+    "Bondtech": 1,
+    "Micro Swiss": 4,
+    "E3D": 4,
+    "BIGTREETECH": 1,
+    "Trianglelab": 2,
+    "GDSTIME": 1
+  },
+  "by_category": {
+    "accessories": 21,
+    "spare-parts": 12,
+    "spare-parts/hotends": 15,
+    "electronics": 2
+  },
+  "collections_processed": [
+    {
+      "handle": "3d-printer-accessories-and-consumable",
+      "title": "3D Printer Accessories & Consumable",
+      "products_fetched": 30
+    },
+    {
+      "handle": "3d-printer-parts",
+      "title": "3D Printer Parts",
+      "products_fetched": 30
+    },
+    {
+      "handle": "3d-printer-hotend-accessories",
+      "title": "3D Printer Hot-end Accessories",
+      "products_fetched": 30
+    },
+    {
+      "handle": "3d-printer-electronics",
+      "title": "3D Printer Electronics",
+      "products_fetched": 30
+    },
+    {
+      "handle": "3d-printer-wearing-parts",
+      "title": "3D Printer Wearing Parts",
+      "products_fetched": 30
+    },
+    {
+      "handle": "3d-printer-extruder",
+      "title": "3D Printer Extruder",
+      "products_fetched": 30
+    }
+  ]
+}
