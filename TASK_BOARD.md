@@ -1,28 +1,18 @@
 # TASK_BOARD.md - 3DByte Tech Store
 
-## Sprint: Website Audit & Content Integration
+## Sprint: DREMC Data Import
 
-**Status:** Build fixed - ready for content entry
+**Status:** Import started - Batch 1 in progress
 
-**Last Updated:** Feb 18, 2026 (11:45 GMT+11) - Morning Standup
+**Last Updated:** Feb 19, 2026 (12:45 GMT+11)
 
 ---
 
-## ✅ COMPLETED (verified & closed)
+## 🚧 IN PROGRESS
 
-| Owner | Task | Priority | Verified |
-|-------|------|----------|----------|
-| @Architect | Build Fix: Added dynamic rendering to CMS-dependent pages | High | ✅ Build passes |
-| @Architect | Build Fix: Removed duplicate /about-us page (redirect exists) | High | ✅ Build passes |
-| @Pixel | PDP: Move "Frequently Bought Together" above "You Might Also Like" | High | ✅ Done |
-| @Pixel | PDP: Align "Frequently Bought Together" under Add to Cart button | High | ✅ Done |
-| @Architect | PDP: Fix Rich_description field rendering | High | ✅ Code fixed |
-| @Merchant | PDP: Connect Out of Stock logic to backend data | Medium | ✅ API queries fixed |
-| @Architect | About-Us: Replace sofa.webp banner with 3D printing image | High | ✅ Dynamic from CMS |
-| @Architect | About-Us: Make page dynamic (fetch Timeline & Team from CMS) | High | ✅ Done |
-| @Architect | About-Us: Add Timeline & Team CMS content | High | ✅ Done via API |
-| @Pixel | About-Us: Add navigation entry point | Medium | ✅ Done |
-| @Pixel | About-Us: Redirect /about-us to /about | Medium | ✅ Done |
+| Owner | Task | Priority | Started |
+|-------|------|----------|---------|
+| @ImageHunter | DREMC: Find manufacturer images for batch 1 | High | 13:00 |
 
 ---
 
@@ -30,65 +20,106 @@
 
 | Owner | Task | Priority | Status |
 |-------|------|----------|--------|
-| @Architect | Docs Page: Update CMS content for 3D printing (TDS, SDS resources) | High | ⚠️ Requires CMS admin |
-| @Architect | PDP: Add rich_description content to products in CMS | Medium | ⚠️ Requires CMS admin |
+| @ImageHunter | DREMC: Find manufacturer images for batch 1 | High | ⏳ Waiting for scraper |
+| @ContentWriter | DREMC: Generate original descriptions for batch 1 | Medium | ⏳ Waiting for scraper |
+| @MediaAdmin | DREMC: Upload images to Strapi | Medium | ⏳ Waiting for images |
+| @Importer | DREMC: Import batch 1 to Medusa | High | ⏳ Waiting for content |
+| @Architect | Docs Page: Update CMS content for 3D printing | Medium | ⚠️ Requires CMS admin |
+| @Architect | PDP: Add rich_description content to products | Medium | ⚠️ Requires CMS admin |
 
 ---
 
-## 🔧 Today's Fixes (Feb 18)
+## 📊 Import Progress
 
-### Build Reliability Fix
-- **Issue:** Build failed when CMS unreachable (192.168.0.45:1337 timeout)
-- **Solution:** Added `export const dynamic = 'force-dynamic'` to CMS-dependent pages
-- **Files Fixed:**
-  - `/app/page.tsx` (home)
-  - `/app/about/page.tsx`
-  - `/app/faq/page.tsx`
-  - `/app/blog/page.tsx`
-- **Result:** Build now passes with fallback content when CMS down
+### Batch 1 (Current)
+- **Products to import:** 50
+- **Status:** Extracting
+- **Scraper:** Running
+- **Categories/Brands:** Creating
 
-### Removed Duplicate
-- Deleted `/app/about-us/page.tsx` - redirect already exists in next.config.js
-
----
-
-## 📋 Notes
-
-### CMS Authority
-- Architect can modify CMS content/single types via URL or API
-- Do NOT modify code in apps/cms folder (external service)
-- CMS at: 192.168.0.45:1337
-- Token available in apps/storefront-v3/.env
-
-### Legal Pages Status
-- ✅ privacy-policy: Content fetching correctly
-- ✅ terms-and-condition: Content fetching correctly  
-- ✅ returns: Using fallback content
-- ✅ shipping: Using fallback content
-
-### PDP Rich Description
-- ✅ Code fixed: Now uses correct CMS fields
-- ⚠️ CMS content: All `rich_description` fields are empty - need content entry
-
-### Services Status
-- Backend (:9000): Down (expected - no active work)
-- Storefront (:3001): Down (expected - no active work)
-- CMS (:1337): Down (external Docker)
-- Build: ✅ Passing
+### Overall Stats
+- **Total products available:** 1,318 (excluding DREMC brand)
+- **Total vendors:** 57
+- **Total batches:** ~27 (50 products each)
+- **Products imported:** 0
 
 ---
 
-## 📁 Archive (Feb 13-15)
+## 🗂️ Category Structure
+
+```
+/3d-printers
+/filament
+  ├── pla
+  ├── petg
+  ├── abs-asa
+  ├── tpu
+  └── specialty
+/spare-parts
+  ├── hotends
+  ├── nozzles
+  ├── extruders
+  ├── thermistors
+  ├── heater-cartridges
+  └── beds
+/electronics
+  ├── mainboards
+  ├── displays
+  ├── stepper-drivers
+  └── power-supplies
+/motion
+  ├── linear-rails
+  ├── belts
+  ├── bearings
+  └── motors
+/build-plates
+/tools
+/accessories
+```
+
+---
+
+## 🏷️ Tag Design Decision (Feb 19)
+
+**Decision:** Tags should NOT include category prefix.
+
+- ✅ `ender-3`, `voron-2.4`, `brass`, `high-flow`
+- ❌ `printer:ender-3`, `material:brass`
+
+**Rationale:**
+- Cleaner PDP rendering
+- Category is backend metadata for filtering
+- Tags can belong to multiple categories
+
+---
+
+## ✅ COMPLETED (Previous Sprint + DREMC Setup)
+
+| Owner | Task | Priority | Verified |
+|-------|------|----------|----------|
+| @Architect | DREMC: Create category structure (27 categories) | High | ✅ All created |
+| @Architect | DREMC: Create brand setup (57 vendors as metadata) | High | ✅ Ready for import |
+| @Scraper | DREMC: Extract batch 1 products | High | ✅ 50 products |
+| @Architect | Build Fix: Medusa v2 API array parameters | High | ✅ c813aff |
+| @Architect | Build Fix: Dynamic rendering for CMS pages | High | ✅ Build passes |
+| @Pixel | PDP: Move "Frequently Bought Together" above "You Might Also Like" | High | ✅ Done |
+| @Architect | PDP: Fix Rich_description field rendering | High | ✅ Code fixed |
+| @Merchant | PDP: Connect Out of Stock logic to backend data | Medium | ✅ API fixed |
+
+---
+
+## 📁 Archive (Feb 13-18)
 
 <details>
-<summary>Completed Tasks (85 total)</summary>
+<summary>Completed Tasks (95 total)</summary>
 
 - Cart API connected to Medusa SDK
 - Collections API 500 error fixed
 - CORS config fixed for localhost:3001
 - Pages created: /help, /docs, /guides, /community, /about
-- Footer links fixed
-- Product pages, checkout, cart verified working
 - All UI components from original sprint completed
+- DREMC category structure designed
+- DREMC vendor list extracted (57 vendors)
+- Config files created: category-mapping.ts, manufacturer-sources.ts
 
 </details>
