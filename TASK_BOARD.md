@@ -2,9 +2,9 @@
 
 ## Sprint: DREMC Data Import
 
-**Status:** Batches 1-4 COMPLETE ✅
+**Status:** Batches 1-5 COMPLETE ✅
 
-**Last Updated:** Feb 19, 2026 (18:15 GMT+11) - Evening Review
+**Last Updated:** Feb 22, 2026 (11:16 GMT+11) - Batch 5 Verified
 
 ---
 
@@ -16,13 +16,14 @@
 | Batch 2 | 49 | ✅ Complete |
 | Batch 3 | 50 | ✅ Complete |
 | Batch 4 | 50 | ✅ Complete |
-| **Total** | **199** | ✅ |
+| Batch 5 | 50 | ✅ Complete (verified - already in DB) |
+| **Total** | **249** | ✅ |
 
 ### Infrastructure
 - ✅ 27 categories created (8 top-level + 19 children)
 - ✅ 56 brands set up
-- ✅ Rich descriptions in Strapi (199)
-- ✅ Products in Medusa (199)
+- ✅ Rich descriptions in Strapi (249)
+- ✅ Products in Medusa (249)
 
 ---
 
@@ -66,9 +67,9 @@
 
 | Metric | Value |
 |--------|-------|
-| Products imported | 199 / 1,318 |
-| Batches complete | 4 / 27 |
-| Completion | **15%** |
+| Products imported | 249 / 1,318 |
+| Batches complete | 5 / 27 |
+| Completion | **19%** |
 
 ---
 
