@@ -1,10 +1,13 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { useCompare } from "@/context/compare-context"
-import { ArrowRightLeft } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Flame } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { QuickViewButton } from "./quick-view-button"
+import { QuickViewDialog } from "./quick-view-dialog"
 
 export interface ProductCardProps {
   id: string
@@ -15,15 +18,24 @@ export interface ProductCardProps {
     amount: number
     currency_code: string
   }
+  originalPrice?: number
+  discountPercentage?: number
   specs?: {
     label: string
     value: string
   }[]
 }
 
-export function ProductCard({ id, handle, title, thumbnail, price, specs }: ProductCardProps) {
-  const { isInCompare, toggleCompare } = useCompare()
-  const inCompare = isInCompare(id)
+export function ProductCard({
+  handle,
+  title,
+  thumbnail,
+  price,
+  originalPrice,
+  discountPercentage,
+  specs
+}: ProductCardProps) {
+  const [quickViewOpen, setQuickViewOpen] = useState(false)
 
   const formatPrice = (amount: number, currency: string) => {
     return new Intl.NumberFormat("en-US", {
@@ -32,9 +44,8 @@ export function ProductCard({ id, handle, title, thumbnail, price, specs }: Prod
     }).format(amount)
   }
 
-  const handleCompareClick = () => {
-    toggleCompare({ id, handle, title, thumbnail, price, specs })
-  }
+  const hasDiscount = discountPercentage && discountPercentage > 0
+  const isHotDeal = discountPercentage && discountPercentage >= 30
 
   // "Lab" Aesthetic: Clean borders, mono fonts for data
   return (
@@ -51,6 +62,23 @@ export function ProductCard({ id, handle, title, thumbnail, price, specs }: Prod
         ) : (
           <div className="flex h-full w-full items-center justify-center font-mono text-xs text-muted-foreground">
             NO_IMAGE
+          </div>
+        )}
+
+        {/* Discount Badge */}
+        {hasDiscount && (
+          <div className="absolute left-2 top-2 flex flex-col gap-1">
+            <Badge 
+              className={cn(
+                "flex items-center gap-1 font-mono text-xs",
+                isHotDeal 
+                  ? "bg-red-500 hover:bg-red-600" 
+                  : "bg-primary hover:bg-primary/90"
+              )}
+            >
+              {isHotDeal && <Flame className="h-3 w-3" />}
+              -{Math.round(discountPercentage)}%
+            </Badge>
           </div>
         )}
 
@@ -72,25 +100,33 @@ export function ProductCard({ id, handle, title, thumbnail, price, specs }: Prod
         </div>
 
         <div className="mt-auto flex items-center justify-between">
-          <span className="font-mono text-sm font-bold tracking-tight text-foreground">
-            {formatPrice(price.amount, price.currency_code)}
-          </span>
+          <div className="flex flex-col">
+            {hasDiscount && originalPrice ? (
+              <>
+                <span className="font-mono text-sm font-bold tracking-tight text-red-500">
+                  {formatPrice(price.amount, price.currency_code)}
+                </span>
+                <span className="font-mono text-xs text-muted-foreground line-through">
+                  {formatPrice(originalPrice, price.currency_code)}
+                </span>
+              </>
+            ) : (
+              <span className="font-mono text-sm font-bold tracking-tight text-foreground">
+                {formatPrice(price.amount, price.currency_code)}
+              </span>
+            )}
+          </div>
           <div className="flex gap-1">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 px-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground hover:text-primary"
-              onClick={handleCompareClick}
-            >
-              <ArrowRightLeft className={`mr-1 h-3 w-3 ${inCompare ? 'text-primary' : ''}`} />
-              Compare
-            </Button>
-            <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground hover:text-primary">
-              Quick_View
-            </Button>
+            <QuickViewButton onClick={() => setQuickViewOpen(true)} />
           </div>
         </div>
       </div>
+
+      <QuickViewDialog
+        handle={handle}
+        open={quickViewOpen}
+        onOpenChange={setQuickViewOpen}
+      />
     </div>
   )
 }

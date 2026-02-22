@@ -24,7 +24,7 @@ export function ListingLayout({
           </aside>
         )}
 
-        <div className="space-y-8">
+        <div className="space-y-8 min-w-0">
           {sidebar && (
             <details className="lg:hidden">
               <summary className="cursor-pointer font-medium select-none">

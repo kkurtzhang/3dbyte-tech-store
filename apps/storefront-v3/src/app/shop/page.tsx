@@ -119,7 +119,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
         {totalPages > 1 && (
           <div className="flex justify-center">
             <nav
-              className="flex gap-2"
+              className="flex flex-wrap gap-2 justify-center"
               role="navigation"
               aria-label="Pagination"
             >
