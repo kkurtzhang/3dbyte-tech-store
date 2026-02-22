@@ -1,10 +1,10 @@
 # TASK_BOARD.md - 3DByte Tech Store
 
-## Sprint: DREMC Data Import
+## Sprint: DREMC Data Import (Re-Import Complete)
 
-**Status:** ✅ **COMPLETE** - 1,054 Products Imported
+**Status:** ✅ **COMPLETE** - 1,044 Products with Correct Options
 
-**Last Updated:** Feb 22, 2026 (14:15 GMT+11)
+**Last Updated:** Feb 22, 2026 (17:45 GMT+11)
 
 ---
 
@@ -12,32 +12,26 @@
 
 | Metric | Value | Status |
 |--------|-------|--------|
-| Products imported | 1,054 | ✅ |
-| Variant options | 1,054 (100%) | ✅ Working |
-| Brand linking | 1,054 (100%) | ✅ |
-| DREMC ID coverage | 1,054 (100%) | ✅ |
+| Products imported | 1,044 | ✅ |
+| Variant options | 1,044 (100%) | ✅ Correct titles |
+| Images | 1,044 (100%) | ✅ From DREMC |
+| Brand linking | Pending | ⏳ Need to re-link |
+| Category linking | Pending | ⏳ Need to re-link |
 
-### Key Fix Applied
-**Variant Options:** Changed from broken ID-based approach to correct Medusa v2 format:
-```ts
-options: [{ title: "Type", values: ["value1", "value2"] }],
-variants: [{ options: { "Type": "value1" } }]  // ← title:value format
-```
+### Option Titles (Fixed!)
+| Option Title | Used For |
+|--------------|----------|
+| **Nozzle Type** | Nozzles (V6, Prusa, K1, etc.) |
+| **Nozzle Size** | Nozzles (0.4mm, 0.5mm, etc.) |
+| **Colour** | Filaments |
+| **Fitment** | Hotends |
+| **Default** | Products without variants |
+| Size, Type, Variant | Other products |
 
-### Vendor Breakdown
-| Vendor | Products |
-|--------|----------|
-| Creality | 180 |
-| LDO | 164 |
-| Trianglelab | 95 |
-| Fysetc | 72 |
-| Micro Swiss | 60 |
-| E3D | 55 |
-| Bondtech | 49 |
-| BIGTREETECH | 42 |
-| Phaetus | 27 |
-| Anycubic | 26 |
-| Others | 374 |
+### Key Improvements
+1. ✅ Option titles are now meaningful (not just "Type")
+2. ✅ Products without variants have "Default" option/variant
+3. ✅ All images imported from DREMC CDN
 
 ---
 
@@ -45,9 +39,11 @@ variants: [{ options: { "Type": "value1" } }]  // ← title:value format
 
 | Owner | Task | Priority | Status |
 |-------|------|----------|--------|
-| @Architect | Create product tags in Medusa | Medium | ⏳ Ready |
+| @Architect | Re-link products to brands | High | ⏳ Ready |
+| @Architect | Re-link products to categories | High | ⏳ Ready |
+| @Architect | Set Sales Channel to Web Store | Medium | ⏳ Ready |
+| @Architect | Create product tags | Medium | ⏳ Ready |
 | @Architect | Docs Page: CMS content | Medium | ⚠️ Needs admin |
-| @Architect | Link products to categories | Medium | ⏳ Ready |
 
 ---
 
@@ -55,10 +51,10 @@ variants: [{ options: { "Type": "value1" } }]  // ← title:value format
 
 | Metric | Value |
 |--------|-------|
-| Products imported | 1,054 / 1,064 (99%) |
-| Completion | **99%** |
-
-**Skipped:** 10 products (URL-unsafe characters like `™` in handles)
+| Products imported | 1,044 / 1,064 (98%) |
+| With correct options | 100% |
+| With images | 100% |
+| **Overall completion** | **98%** |
 
 ---
 
