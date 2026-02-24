@@ -189,11 +189,43 @@ export async function getProductByHandle(handle: string): Promise<StoreProduct |
       fields: "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*variants.images,*options,*options.values,*images,*type,*collection,*tags",
     })
 
-    return products[0] || null
+    if (products[0]) {
+      return products[0]
+    }
   } catch (error) {
-    console.warn(`Failed to fetch product by handle: ${handle}`, error)
-    return null
+    console.warn(`Medusa SDK failed for handle ${handle}, trying Meilisearch fallback`, error)
   }
+
+  // Fallback to Meilisearch when Medusa fails or returns empty
+  try {
+    const result = await searchClient.index(INDEX_PRODUCTS).search("", {
+      filter: `handle = "${handle}"`,
+      limit: 1,
+    })
+
+    if (result.hits[0]) {
+      const hit = result.hits[0] as any
+      return {
+        id: hit.id,
+        title: hit.title,
+        handle: hit.handle || hit.slug,
+        thumbnail: hit.thumbnail || hit.image,
+        description: hit.description,
+        variants: hit.variants || [],
+        options: hit.options || [],
+        images: hit.images || [],
+        type: hit.type ? { id: "", value: hit.type } : undefined,
+        collection: hit.collection,
+        tags: hit.tags,
+        created_at: hit.created_at,
+        updated_at: hit.updated_at,
+      } as unknown as StoreProduct
+    }
+  } catch (error) {
+    console.warn(`Meilisearch fallback also failed for handle ${handle}`, error)
+  }
+
+  return null
 }
 
 export async function getProductHandles(): Promise<string[]> {
@@ -594,7 +626,7 @@ export async function getRelatedProducts(productId: string, limit = 4): Promise<
     const { products: [currentProduct] } = await sdk.store.product.list({
       id: [productId],
       limit: 1,
-      fields: "*category,*type,*collection",
+      fields: "*categories,*type,*collection",
     })
 
     if (!currentProduct) {
@@ -608,7 +640,7 @@ export async function getRelatedProducts(productId: string, limit = 4): Promise<
     // Fetch products that might be related
     const filterParams: any = {
       limit: 20, // Fetch more to filter
-      fields: "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*variants.calculated_price,*category,*type,*collection",
+      fields: "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*variants.calculated_price,*categories,*type,*collection",
     }
 
     if (categoryIds.length > 0) {
