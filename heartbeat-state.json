@@ -1,24 +1,33 @@
 {
-  "beatCount": 105,
+  "beatCount": 134,
   "activeSubagents": 0,
-  "completedTasks": 23,
+  "completedTasks": 27,
   "backlogCount": 1,
-  "lastBeat": "2026-02-22T18:28:00Z",
+  "lastBeat": "2026-02-24T18:32:00+11:00",
   "notes": [
     "DREMC RE-IMPORT FULLY COMPLETE",
     "All 1,044 products have correct options, images, links",
     "Sales Channel FIXED via Remote Link API",
-    "All products linked to Web Store sales channel"
+    "All products linked to Web Store sales channel",
+    "STRAPI SYNC FIXED - All 1,044 products + 58 brands have descriptions",
+    "PRODUCT-BRAND LINKS FIXED - All 1,044 products linked to brands"
   ],
   "daySummary": {
     "productsImported": 1044,
     "salesChannelFixed": true,
     "salesChannelMethod": "Remote Link API",
-    "commits": 3,
+    "strapiProductDescriptions": 1044,
+    "strapiBrandDescriptions": 58,
+    "productBrandLinks": 1044,
+    "strapiSyncStatus": "perfect",
     "buildStatus": "passing"
   },
   "keyLearnings": [
     "Medusa v2 product-sales_channel uses Remote Link API",
-    "updateProducts() doesn't handle module relationships"
+    "updateProducts() doesn't handle module relationships",
+    "Re-import creates new product IDs - Strapi linking breaks",
+    "Strapi v5 uses documentId for deletions, not numeric id",
+    "Product-Brand links use Remote Link API with Modules.PRODUCT and BRAND_MODULE",
+    "Use write() instead of edit() for heartbeat-state.json to avoid stale text errors"
   ]
 }
