@@ -28,9 +28,9 @@ export default async function ({ container }: ExecArgs) {
   }
   
   // Group by vendor to see what brands we need
-  const byVendor = {};
+  const byVendor: Record<string, number> = {};
   withoutBrand.forEach(p => {
-    const vendor = p.metadata?.vendor || 'Unknown';
+    const vendor = (p.metadata?.vendor as string) || 'Unknown';
     byVendor[vendor] = (byVendor[vendor] || 0) + 1;
   });
   

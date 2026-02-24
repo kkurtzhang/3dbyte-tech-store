@@ -142,14 +142,17 @@ export type CategoryHandle = keyof typeof CATEGORY_MAPPING;
  */
 export function mapDremcCollectionToCategory(dremcHandle: string): string | null {
   for (const [categoryHandle, category] of Object.entries(CATEGORY_MAPPING)) {
-    if (category.dremcCollections?.includes(dremcHandle)) {
+    const cat = category as typeof CATEGORY_MAPPING.filament;
+    const collections = cat.dremcCollections as unknown as string[] | undefined;
+    if (collections?.includes(dremcHandle)) {
       return categoryHandle;
     }
 
     // Check children
-    if (category.children) {
-      for (const [childHandle, child] of Object.entries(category.children)) {
-        if (child.dremcCollections?.includes(dremcHandle)) {
+    if (cat.children) {
+      for (const [childHandle, child] of Object.entries(cat.children)) {
+        const childCat = child as { dremcCollections?: string[] };
+        if (childCat.dremcCollections?.includes(dremcHandle)) {
           return `${categoryHandle}/${childHandle}`;
         }
       }
