@@ -34,17 +34,17 @@ export async function getProducts(params: {
     console.warn("Medusa SDK failed, falling back to Meilisearch", error)
   }
 
-  // If products array is empty (Medusa failed or no products), fallback
+  // If products array is empty (Medusa failed or no products), fallback to Meilisearch
   if (!products || products.length === 0) {
     try {
       const result = await getProductsFromMeilisearch(params)
       products = result.products as any
       count = result.count
     } catch (error) {
-      console.warn("Meilisearch also failed, using demo products", error)
-      const result = getDemoProducts(params.limit)
-      products = result.products as any
-      count = result.count
+      console.warn("Meilisearch also failed, returning empty results", error)
+      // Return empty results instead of demo products
+      products = []
+      count = 0
     }
   }
 
@@ -114,70 +114,8 @@ async function getProductsFromMeilisearch(params: {
 
     return { products, count: results.estimatedTotalHits || results.hits.length }
   } catch (error) {
-    console.warn("Meilisearch also failed, using demo products", error)
-    return (await getDemoProducts(params.limit)) as any
-  }
-}
-
-/**
- * Demo products fallback
- * Used when both Medusa and Meilisearch are unavailable
- */
-export function getDemoProducts(limit = 4) {
-  const demoProducts = [
-    {
-      id: "demo-1",
-      title: "PLA Filament - Arctic White",
-      handle: "pla-arctic-white",
-      thumbnail: "https://images.unsplash.com/photo-1615850752729-592709f8eb41?w=500&h=500&fit=crop",
-      description: "Premium PLA filament for 3D printing",
-      variants: [{ id: "v1", prices: [{ amount: 2499, currency_code: "usd" }], title: "Default" }],
-      options: [],
-      type: { id: "", value: "Filament" },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      id: "demo-2",
-      title: "Voron 2.4 Kit - Complete",
-      handle: "voron-2-4-kit",
-      thumbnail: "https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?w=500&h=500&fit=crop",
-      description: "Full Voron 2.4 build kit",
-      variants: [{ id: "v2", prices: [{ amount: 129900, currency_code: "usd" }], title: "Default" }],
-      options: [],
-      type: { id: "", value: "Kit" },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      id: "demo-3",
-      title: "LDO Motor Set - NEMA17",
-      handle: "ldo-motor-set",
-      thumbnail: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=500&h=500&fit=crop",
-      description: "High-torque stepper motors",
-      variants: [{ id: "v3", prices: [{ amount: 15900, currency_code: "usd" }], title: "Set of 5" }],
-      options: [],
-      type: { id: "", value: "Electronics" },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      id: "demo-4",
-      title: "PETG Filament - Deep Blue",
-      handle: "petg-deep-blue",
-      thumbnail: "https://images.unsplash.com/photo-1615850752729-592709f8eb41?w=500&h=500&fit=crop",
-      description: "Durable PETG filament",
-      variants: [{ id: "v4", prices: [{ amount: 2799, currency_code: "usd" }], title: "1kg Spool" }],
-      options: [],
-      type: { id: "", value: "Filament" },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-  ]
-
-  return {
-    products: demoProducts.slice(0, limit),
-    count: demoProducts.length,
+    console.warn("Meilisearch failed, returning empty results", error)
+    return { products: [], count: 0 }
   }
 }
 
@@ -186,7 +124,7 @@ export async function getProductByHandle(handle: string): Promise<StoreProduct |
     const { products } = await sdk.store.product.list({
       handle,
       limit: 1,
-      fields: "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*variants.images,*options,*options.values,*images,*type,*collection,*tags",
+      fields: "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*variants.images,*variants.calculated_price,*options,*options.values,*images,*type,*collection,*tags",
     })
 
     if (products[0]) {
@@ -340,162 +278,12 @@ export async function getDiscountedProducts(params: {
     count = discountedProducts.length
   } catch (error) {
     console.warn("Failed to fetch discounted products from Medusa", error)
-    const result = getDemoDiscountedProducts(params)
-    products = result.products as any
-    count = result.count
+    // Return empty results instead of demo products
+    products = []
+    count = 0
   }
 
   return { products, count }
-}
-
-function getDemoDiscountedProducts(params: {
-  limit?: number
-  minDiscount?: number
-  maxDiscount?: number
-}) {
-  const demoDiscountedProducts = [
-    {
-      id: "demo-sale-1",
-      title: "PLA Filament - Arctic White (Sale)",
-      handle: "pla-arctic-white-sale",
-      thumbnail: "https://images.unsplash.com/photo-1615850752729-592709f8eb41?w=500&h=500&fit=crop",
-      description: "Premium PLA filament for 3D printing",
-      variants: [{ 
-        id: "v1", 
-        prices: [{ amount: 2499, currency_code: "usd" }],
-        calculated_price: { calculated_amount: 1749, currency_code: "usd" },
-        original_price: { amount: 2499, currency_code: "usd" },
-        title: "Default" 
-      }],
-      options: [],
-      type: { id: "", value: "Filament" },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      discountPercentage: 30,
-      originalPrice: 24.99,
-      salePrice: 17.49,
-    },
-    {
-      id: "demo-sale-2",
-      title: "Voron 2.4 Kit - Complete (Clearance)",
-      handle: "voron-2-4-kit-sale",
-      thumbnail: "https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?w=500&h=500&fit=crop",
-      description: "Full Voron 2.4 build kit",
-      variants: [{ 
-        id: "v2", 
-        prices: [{ amount: 129900, currency_code: "usd" }],
-        calculated_price: { calculated_amount: 90930, currency_code: "usd" },
-        original_price: { amount: 129900, currency_code: "usd" },
-        title: "Default" 
-      }],
-      options: [],
-      type: { id: "", value: "Kit" },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      discountPercentage: 30,
-      originalPrice: 1299.00,
-      salePrice: 909.30,
-    },
-    {
-      id: "demo-sale-3",
-      title: "LDO Motor Set - NEMA17 (20% Off)",
-      handle: "ldo-motor-set-sale",
-      thumbnail: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=500&h=500&fit=crop",
-      description: "High-torque stepper motors",
-      variants: [{ 
-        id: "v3", 
-        prices: [{ amount: 15900, currency_code: "usd" }],
-        calculated_price: { calculated_amount: 12720, currency_code: "usd" },
-        original_price: { amount: 15900, currency_code: "usd" },
-        title: "Set of 5" 
-      }],
-      options: [],
-      type: { id: "", value: "Electronics" },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      discountPercentage: 20,
-      originalPrice: 159.00,
-      salePrice: 127.20,
-    },
-    {
-      id: "demo-sale-4",
-      title: "PETG Filament - Deep Blue (40% Off)",
-      handle: "petg-deep-blue-sale",
-      thumbnail: "https://images.unsplash.com/photo-1615850752729-592709f8eb41?w=500&h=500&fit=crop",
-      description: "Durable PETG filament",
-      variants: [{ 
-        id: "v4", 
-        prices: [{ amount: 2799, currency_code: "usd" }],
-        calculated_price: { calculated_amount: 1679, currency_code: "usd" },
-        original_price: { amount: 2799, currency_code: "usd" },
-        title: "1kg Spool" 
-      }],
-      options: [],
-      type: { id: "", value: "Filament" },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      discountPercentage: 40,
-      originalPrice: 27.99,
-      salePrice: 16.79,
-    },
-    {
-      id: "demo-sale-5",
-      title: "Hotend Kit - V6 (15% Off)",
-      handle: "hotend-v6-sale",
-      thumbnail: "https://images.unsplash.com/photo-1565085108884-63f96f1e6037?w=500&h=500&fit=crop",
-      description: "High-performance V6 hotend",
-      variants: [{ 
-        id: "v5", 
-        prices: [{ amount: 8999, currency_code: "usd" }],
-        calculated_price: { calculated_amount: 7649, currency_code: "usd" },
-        original_price: { amount: 8999, currency_code: "usd" },
-        title: "Default" 
-      }],
-      options: [],
-      type: { id: "", value: "Parts" },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      discountPercentage: 15,
-      originalPrice: 89.99,
-      salePrice: 76.49,
-    },
-    {
-      id: "demo-sale-6",
-      title: "Build Plate - PEI (25% Off)",
-      handle: "pei-build-plate-sale",
-      thumbnail: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&h=500&fit=crop",
-      description: "Premium PEI build plate",
-      variants: [{ 
-        id: "v6", 
-        prices: [{ amount: 4999, currency_code: "usd" }],
-        calculated_price: { calculated_amount: 3749, currency_code: "usd" },
-        original_price: { amount: 4999, currency_code: "usd" },
-        title: "Default" 
-      }],
-      options: [],
-      type: { id: "", value: "Accessories" },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      discountPercentage: 25,
-      originalPrice: 49.99,
-      salePrice: 37.49,
-    },
-  ]
-
-  const { limit = 4, minDiscount, maxDiscount } = params
-  let filtered = demoDiscountedProducts
-  
-  if (minDiscount !== undefined) {
-    filtered = filtered.filter(p => p.discountPercentage >= minDiscount)
-  }
-  if (maxDiscount !== undefined) {
-    filtered = filtered.filter(p => p.discountPercentage <= maxDiscount)
-  }
-
-  return {
-    products: filtered.slice(0, limit || demoDiscountedProducts.length),
-    count: filtered.length,
-  }
 }
 
 /**
@@ -535,85 +323,12 @@ export async function getProductBundles(params: {
     count = bundleProducts.length
   } catch (error) {
     console.warn("Failed to fetch bundle products from Medusa", error)
-    // Return demo bundles as fallback
-    const result = getDemoBundles(params)
-    products = result.products as any
-    count = result.count
+    // Return empty results instead of demo products
+    products = []
+    count = 0
   }
 
   return { products, count }
-}
-
-/**
- * Demo bundles fallback
- */
-function getDemoBundles(params: {
-  limit?: number
-}) {
-  const demoBundles = [
-    {
-      id: "bundle-1",
-      title: "Starter 3D Printing Kit",
-      handle: "starter-3d-printing-kit",
-      thumbnail: "https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?w=500&h=500&fit=crop",
-      description: "Everything you need to get started with 3D printing. Includes filament, tools, and accessories.",
-      variants: [{ id: "v1", prices: [{ amount: 19900, currency_code: "usd" }], title: "Default" }],
-      options: [],
-      type: { id: "", value: "Bundle" },
-      tags: [{ id: "t1", value: "bundle" }],
-      metadata: { is_bundle: true, bundle_items: ["demo-1", "demo-3", "demo-4"] },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      id: "bundle-2",
-      title: "Pro Filament Pack",
-      handle: "pro-filament-pack",
-      thumbnail: "https://images.unsplash.com/photo-1615850752729-592709f8eb41?w=500&h=500&fit=crop",
-      description: "Premium filament selection with 5 different colors. Perfect for professionals and enthusiasts.",
-      variants: [{ id: "v2", prices: [{ amount: 9999, currency_code: "usd" }], title: "Default" }],
-      options: [],
-      type: { id: "", value: "Bundle" },
-      tags: [{ id: "t2", value: "bundle" }],
-      metadata: { is_bundle: true, bundle_items: ["demo-1", "demo-4"] },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      id: "bundle-3",
-      title: "Voron Upgrade Bundle",
-      handle: "voron-upgrade-bundle",
-      thumbnail: "https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=500&h=500&fit=crop",
-      description: "Complete upgrade kit for your Voron printer. Includes motors, hotends, and more.",
-      variants: [{ id: "v3", prices: [{ amount: 49900, currency_code: "usd" }], title: "Default" }],
-      options: [],
-      type: { id: "", value: "Bundle" },
-      tags: [{ id: "t3", value: "bundle" }],
-      metadata: { is_bundle: true, bundle_items: ["demo-2", "demo-3"] },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      id: "bundle-4",
-      title: "Maintenance Essentials",
-      handle: "maintenance-essentials",
-      thumbnail: "https://images.unsplash.com/photo-1565085108884-63f96f1e6037?w=500&h=500&fit=crop",
-      description: "Keep your printer running smoothly with this maintenance bundle.",
-      variants: [{ id: "v4", prices: [{ amount: 4999, currency_code: "usd" }], title: "Default" }],
-      options: [],
-      type: { id: "", value: "Bundle" },
-      tags: [{ id: "t4", value: "bundle" }],
-      metadata: { is_bundle: true, bundle_items: [] },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-  ]
-
-  const { limit = 20 } = params
-  return {
-    products: demoBundles.slice(0, limit),
-    count: demoBundles.length,
-  }
 }
 
 /**
@@ -630,7 +345,7 @@ export async function getRelatedProducts(productId: string, limit = 4): Promise<
     })
 
     if (!currentProduct) {
-      return getDemoProducts(limit).products as unknown as StoreProduct[]
+      return []
     }
 
     // Build filters - find products in same category or with same type
@@ -671,10 +386,10 @@ export async function getRelatedProducts(productId: string, limit = 4): Promise<
         .slice(0, limit)
     }
 
-    return getDemoProducts(limit).products as unknown as StoreProduct[]
+    return []
   } catch (error) {
     console.warn("Failed to fetch related products from Medusa", error)
-    // Return demo products as fallback
-    return getDemoProducts(limit).products as unknown as StoreProduct[]
+    // Return empty array instead of demo products
+    return []
   }
 }
