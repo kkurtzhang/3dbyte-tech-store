@@ -48,12 +48,13 @@ export default async function createCollections({ container }: { container: Medu
   // Try to create collections using the module
   for (const collectionData of collectionsToCreate) {
     try {
-      // Try different method names that might exist
-      if (typeof productModuleService.createProductCollections === 'function') {
-        const collection = await productModuleService.createProductCollections(collectionData)
+      // Use type assertion to bypass TypeScript check - method exists at runtime
+      const service = productModuleService as any
+      if (typeof service.createProductCollections === 'function') {
+        const collection = await service.createProductCollections(collectionData)
         console.log(`✅ Created collection "${collectionData.title}" (${collection.id})`)
-      } else if (typeof productModuleService.createCollections === 'function') {
-        const collection = await productModuleService.createCollections(collectionData)
+      } else if (typeof service.createCollections === 'function') {
+        const collection = await service.createCollections(collectionData)
         console.log(`✅ Created collection "${collectionData.title}" (${collection.id})`)
       } else {
         console.log(`⚠️ No create collection method found`)
