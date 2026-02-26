@@ -76,10 +76,11 @@ export function YouMayAlsoLike({ productId }: YouMayAlsoLikeProps) {
 
   const getPrice = (product: StoreProduct) => {
     const variant = product.variants?.[0]
-    const price = variant?.calculated_price?.calculated_amount || 
+    // Note: Medusa v2 returns prices in dollars, not cents
+    const price = variant?.calculated_price?.calculated_amount ||
       (variant as any)?.prices?.[0]?.amount ||
-      (variant as any)?.salePrice ? (variant as any).salePrice * 100 : 0
-    return price ? price / 100 : 0
+      (variant as any)?.salePrice || 0
+    return price || 0
   }
 
   const getOriginalPrice = (product: StoreProduct) => {
@@ -89,7 +90,7 @@ export function YouMayAlsoLike({ productId }: YouMayAlsoLikeProps) {
     const calcPrice = variant?.calculated_price?.calculated_amount
     const orig = (variant as any)?.calculated_price?.original_amount
     if (calcPrice && orig && orig > calcPrice) {
-      return orig / 100
+      return orig
     }
     return null
   }

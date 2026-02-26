@@ -77,7 +77,7 @@ export function AccountRecentlyViewed() {
                 {new Intl.NumberFormat("en-AU", {
                   style: "currency",
                   currency: product.currencyCode,
-                }).format(product.price / 100)}
+                }).format(product.price)}
               </p>
             </Link>
           ))}

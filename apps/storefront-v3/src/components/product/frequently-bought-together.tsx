@@ -60,11 +60,11 @@ export function FrequentlyBoughtTogether({ productId }: FrequentlyBoughtTogether
 
   const getPrice = (product: StoreProduct) => {
     const variant = product.variants?.[0]
-    // Try calculated_price first, then fall back to prices
-    const price = variant?.calculated_price?.calculated_amount || 
+    // Note: Medusa v2 returns prices in dollars, not cents
+    const price = variant?.calculated_price?.calculated_amount ||
       (variant as any)?.prices?.[0]?.amount ||
-      (variant as any)?.originalPrice ? (variant as any).originalPrice * 100 : 0
-    return price ? price / 100 : 0
+      (variant as any)?.originalPrice || 0
+    return price || 0
   }
 
   const formatPrice = (price: number) => {
