@@ -203,6 +203,23 @@ export function AdvancedShopFilters({
     })
   }
 
+  const selectAllCategories = () => {
+    const allCategoryIds = facets.categories.map((opt) => opt.value).join(",")
+    const params = getCurrentParams()
+    updateFilters({
+      ...params,
+      category: allCategoryIds,
+    })
+  }
+
+  const clearCategories = () => {
+    const params = getCurrentParams()
+    updateFilters({
+      ...params,
+      category: undefined,
+    })
+  }
+
   const updateBrand = (brandId: string, checked: boolean) => {
     let newBrands = selectedBrands.filter((b) => b !== brandId)
     if (checked) {
@@ -216,6 +233,23 @@ export function AdvancedShopFilters({
     })
   }
 
+  const selectAllBrands = () => {
+    const allBrandIds = facets.brands.map((opt) => opt.value).join(",")
+    const params = getCurrentParams()
+    updateFilters({
+      ...params,
+      brand: allBrandIds,
+    })
+  }
+
+  const clearBrands = () => {
+    const params = getCurrentParams()
+    updateFilters({
+      ...params,
+      brand: undefined,
+    })
+  }
+
   const updateCollection = (collectionId: string, checked: boolean) => {
     let newCollections = selectedCollections.filter((c) => c !== collectionId)
     if (checked) {
@@ -226,6 +260,23 @@ export function AdvancedShopFilters({
     updateFilters({
       ...params,
       collection: newCollections.length > 0 ? newCollections.join(",") : undefined,
+    })
+  }
+
+  const selectAllCollections = () => {
+    const allCollectionIds = facets.collections.map((opt) => opt.value).join(",")
+    const params = getCurrentParams()
+    updateFilters({
+      ...params,
+      collection: allCollectionIds,
+    })
+  }
+
+  const clearCollections = () => {
+    const params = getCurrentParams()
+    updateFilters({
+      ...params,
+      collection: undefined,
     })
   }
 
@@ -262,6 +313,15 @@ export function AdvancedShopFilters({
     updateFilters(updatedParams as ShopQueryParams)
   }
 
+  const clearOption = (optionKey: string) => {
+    const params = getCurrentParams()
+    const updatedParams = {
+      ...params,
+    } as Record<string, string | undefined>
+    updatedParams[optionKey] = undefined
+    updateFilters(updatedParams as ShopQueryParams)
+  }
+
   const applyPriceRange = () => {
     const params = getCurrentParams()
     updateFilters({
@@ -280,6 +340,72 @@ export function AdvancedShopFilters({
       minPrice: undefined,
       maxPrice: undefined,
     })
+  }
+
+  // Remove individual filter values
+  const removeCategory = (categoryId: string) => {
+    const newCategories = selectedCategories.filter((c) => c !== categoryId)
+    const params = getCurrentParams()
+    updateFilters({
+      ...params,
+      category: newCategories.length > 0 ? newCategories.join(",") : undefined,
+    })
+  }
+
+  const removeBrand = (brandId: string) => {
+    const newBrands = selectedBrands.filter((b) => b !== brandId)
+    const params = getCurrentParams()
+    updateFilters({
+      ...params,
+      brand: newBrands.length > 0 ? newBrands.join(",") : undefined,
+    })
+  }
+
+  const removeCollection = (collectionId: string) => {
+    const newCollections = selectedCollections.filter((c) => c !== collectionId)
+    const params = getCurrentParams()
+    updateFilters({
+      ...params,
+      collection: newCollections.length > 0 ? newCollections.join(",") : undefined,
+    })
+  }
+
+  const removeOnSale = () => {
+    const params = getCurrentParams()
+    updateFilters({
+      ...params,
+      onSale: undefined,
+    })
+  }
+
+  const removeInStock = () => {
+    const params = getCurrentParams()
+    updateFilters({
+      ...params,
+      inStock: undefined,
+    })
+  }
+
+  const removePriceRange = () => {
+    const params = getCurrentParams()
+    updateFilters({
+      ...params,
+      minPrice: undefined,
+      maxPrice: undefined,
+    })
+  }
+
+  const removeOption = (optionKey: string, optionValue: string) => {
+    const currentValues = selectedOptions[optionKey] || []
+    const newValues = currentValues.filter((v) => v !== optionValue)
+
+    const params = getCurrentParams()
+    const updatedParams = {
+      ...params,
+    } as Record<string, string | undefined>
+    updatedParams[optionKey] = newValues.length > 0 ? newValues.join(",") : undefined
+
+    updateFilters(updatedParams as ShopQueryParams)
   }
 
   // Check if any filters are active
@@ -332,6 +458,119 @@ export function AdvancedShopFilters({
           </Link>
         )}
       </div>
+
+      {/* Active Filter Chips */}
+      {hasActiveFilters && (
+        <div className="flex flex-wrap gap-1.5">
+          {selectedCategories.map((id) => {
+            const cat = facets.categories.find((c) => c.value === id)
+            return (
+              <span
+                key={id}
+                className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs"
+              >
+                Category: {cat?.label || id}
+                <button
+                  onClick={() => removeCategory(id)}
+                  className="hover:text-primary ml-1"
+                  aria-label={`Remove ${cat?.label || id} category`}
+                >
+                  ×
+                </button>
+              </span>
+            )
+          })}
+          {selectedBrands.map((id) => {
+            const brand = facets.brands.find((b) => b.value === id)
+            return (
+              <span
+                key={id}
+                className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs"
+              >
+                Brand: {brand?.label || id}
+                <button
+                  onClick={() => removeBrand(id)}
+                  className="hover:text-primary ml-1"
+                  aria-label={`Remove ${brand?.label || id} brand`}
+                >
+                  ×
+                </button>
+              </span>
+            )
+          })}
+          {selectedCollections.map((id) => {
+            const collection = facets.collections.find((c) => c.value === id)
+            return (
+              <span
+                key={id}
+                className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs"
+              >
+                Collection: {collection?.label || id}
+                <button
+                  onClick={() => removeCollection(id)}
+                  className="hover:text-primary ml-1"
+                  aria-label={`Remove ${collection?.label || id} collection`}
+                >
+                  ×
+                </button>
+              </span>
+            )
+          })}
+          {selectedOnSale && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs">
+              On Sale
+              <button
+                onClick={removeOnSale}
+                className="hover:text-primary ml-1"
+                aria-label="Remove on sale filter"
+              >
+                ×
+              </button>
+            </span>
+          )}
+          {selectedInStock && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs">
+              In Stock
+              <button
+                onClick={removeInStock}
+                className="hover:text-primary ml-1"
+                aria-label="Remove in stock filter"
+              >
+                ×
+              </button>
+            </span>
+          )}
+          {(minPrice !== facets.priceRange.min || maxPrice !== facets.priceRange.max) && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs">
+              Price: ${minPrice} - ${maxPrice}
+              <button
+                onClick={removePriceRange}
+                className="hover:text-primary ml-1"
+                aria-label="Remove price range filter"
+              >
+                ×
+              </button>
+            </span>
+          )}
+          {Object.entries(selectedOptions).map(([optionKey, values]) =>
+            values.map((value) => (
+              <span
+                key={`${optionKey}-${value}`}
+                className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs"
+              >
+                {formatOptionLabel(optionKey)}: {value}
+                <button
+                  onClick={() => removeOption(optionKey, value)}
+                  className="hover:text-primary ml-1"
+                  aria-label={`Remove ${value} ${formatOptionLabel(optionKey)}`}
+                >
+                  ×
+                </button>
+              </span>
+            ))
+          )}
+        </div>
+      )}
 
       <Accordion
         type="multiple"
@@ -415,12 +654,41 @@ export function AdvancedShopFilters({
         {facets.categories.length > 0 && (
           <AccordionItem value="categories">
             <AccordionTrigger className="py-3 text-sm font-medium hover:text-primary">
-              Categories
+              <span>Categories</span>
               {selectedCategories.length > 0 && (
-                <span className="ml-2 text-xs font-normal text-muted-foreground">
-                  ({selectedCategories.length} selected)
-                </span>
+                <>
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">
+                    ({selectedCategories.length} selected)
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      clearCategories()
+                    }}
+                    className="ml-auto mr-2 text-xs text-muted-foreground hover:text-primary"
+                  >
+                    Clear
+                  </button>
+                </>
               )}
+              <div
+                className="ml-auto flex gap-1 mr-2"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  onClick={selectAllCategories}
+                  className="text-xs text-muted-foreground hover:text-primary"
+                >
+                  All
+                </button>
+                <span className="text-muted-foreground">|</span>
+                <button
+                  onClick={clearCategories}
+                  className="text-xs text-muted-foreground hover:text-primary"
+                >
+                  None
+                </button>
+              </div>
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-1">
@@ -443,12 +711,41 @@ export function AdvancedShopFilters({
         {facets.brands.length > 0 && (
           <AccordionItem value="brands">
             <AccordionTrigger className="py-3 text-sm font-medium hover:text-primary">
-              Brands
+              <span>Brands</span>
               {selectedBrands.length > 0 && (
-                <span className="ml-2 text-xs font-normal text-muted-foreground">
-                  ({selectedBrands.length} selected)
-                </span>
+                <>
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">
+                    ({selectedBrands.length} selected)
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      clearBrands()
+                    }}
+                    className="ml-auto mr-2 text-xs text-muted-foreground hover:text-primary"
+                  >
+                    Clear
+                  </button>
+                </>
               )}
+              <div
+                className="ml-auto flex gap-1 mr-2"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  onClick={selectAllBrands}
+                  className="text-xs text-muted-foreground hover:text-primary"
+                >
+                  All
+                </button>
+                <span className="text-muted-foreground">|</span>
+                <button
+                  onClick={clearBrands}
+                  className="text-xs text-muted-foreground hover:text-primary"
+                >
+                  None
+                </button>
+              </div>
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-1">
@@ -471,12 +768,41 @@ export function AdvancedShopFilters({
         {facets.collections.length > 0 && (
           <AccordionItem value="collections">
             <AccordionTrigger className="py-3 text-sm font-medium hover:text-primary">
-              Collections
+              <span>Collections</span>
               {selectedCollections.length > 0 && (
-                <span className="ml-2 text-xs font-normal text-muted-foreground">
-                  ({selectedCollections.length} selected)
-                </span>
+                <>
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">
+                    ({selectedCollections.length} selected)
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      clearCollections()
+                    }}
+                    className="ml-auto mr-2 text-xs text-muted-foreground hover:text-primary"
+                  >
+                    Clear
+                  </button>
+                </>
               )}
+              <div
+                className="ml-auto flex gap-1 mr-2"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  onClick={selectAllCollections}
+                  className="text-xs text-muted-foreground hover:text-primary"
+                >
+                  All
+                </button>
+                <span className="text-muted-foreground">|</span>
+                <button
+                  onClick={clearCollections}
+                  className="text-xs text-muted-foreground hover:text-primary"
+                >
+                  None
+                </button>
+              </div>
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-1">
@@ -521,9 +847,20 @@ export function AdvancedShopFilters({
                 <AccordionTrigger className="py-3 text-sm font-medium hover:text-primary">
                   {formatOptionLabel(optionKey)}
                   {selectedValues.length > 0 && (
-                    <span className="ml-2 text-xs font-normal text-muted-foreground">
-                      ({selectedValues.length} selected)
-                    </span>
+                    <>
+                      <span className="ml-2 text-xs font-normal text-muted-foreground">
+                        ({selectedValues.length} selected)
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          clearOption(optionKey)
+                        }}
+                        className="ml-auto mr-2 text-xs text-muted-foreground hover:text-primary"
+                      >
+                        Clear
+                      </button>
+                    </>
                   )}
                 </AccordionTrigger>
                 <AccordionContent>
