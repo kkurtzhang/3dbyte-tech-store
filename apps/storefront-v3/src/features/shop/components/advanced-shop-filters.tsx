@@ -660,34 +660,48 @@ export function AdvancedShopFilters({
                   <span className="ml-2 text-xs font-normal text-muted-foreground">
                     ({selectedCategories.length} selected)
                   </span>
-                  <button
+                  <span
+                    role="button"
+                    tabIndex={0}
                     onClick={(e) => {
                       e.stopPropagation()
                       clearCategories()
                     }}
-                    className="ml-auto mr-2 text-xs text-muted-foreground hover:text-primary"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.stopPropagation()
+                        clearCategories()
+                      }
+                    }}
+                    className="ml-auto mr-2 cursor-pointer text-xs text-muted-foreground hover:text-primary"
                   >
                     Clear
-                  </button>
+                  </span>
                 </>
               )}
               <div
                 className="ml-auto flex gap-1 mr-2"
                 onClick={(e) => e.stopPropagation()}
               >
-                <button
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === "Enter" && selectAllCategories()}
                   onClick={selectAllCategories}
-                  className="text-xs text-muted-foreground hover:text-primary"
+                  className="cursor-pointer text-xs text-muted-foreground hover:text-primary"
                 >
                   All
-                </button>
+                </span>
                 <span className="text-muted-foreground">|</span>
-                <button
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === "Enter" && clearCategories()}
                   onClick={clearCategories}
-                  className="text-xs text-muted-foreground hover:text-primary"
+                  className="cursor-pointer text-xs text-muted-foreground hover:text-primary"
                 >
                   None
-                </button>
+                </span>
               </div>
             </AccordionTrigger>
             <AccordionContent>
@@ -717,34 +731,48 @@ export function AdvancedShopFilters({
                   <span className="ml-2 text-xs font-normal text-muted-foreground">
                     ({selectedBrands.length} selected)
                   </span>
-                  <button
+                  <span
+                    role="button"
+                    tabIndex={0}
                     onClick={(e) => {
                       e.stopPropagation()
                       clearBrands()
                     }}
-                    className="ml-auto mr-2 text-xs text-muted-foreground hover:text-primary"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.stopPropagation()
+                        clearBrands()
+                      }
+                    }}
+                    className="ml-auto mr-2 cursor-pointer text-xs text-muted-foreground hover:text-primary"
                   >
                     Clear
-                  </button>
+                  </span>
                 </>
               )}
               <div
                 className="ml-auto flex gap-1 mr-2"
                 onClick={(e) => e.stopPropagation()}
               >
-                <button
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === "Enter" && selectAllBrands()}
                   onClick={selectAllBrands}
-                  className="text-xs text-muted-foreground hover:text-primary"
+                  className="cursor-pointer text-xs text-muted-foreground hover:text-primary"
                 >
                   All
-                </button>
+                </span>
                 <span className="text-muted-foreground">|</span>
-                <button
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === "Enter" && clearBrands()}
                   onClick={clearBrands}
-                  className="text-xs text-muted-foreground hover:text-primary"
+                  className="cursor-pointer text-xs text-muted-foreground hover:text-primary"
                 >
                   None
-                </button>
+                </span>
               </div>
             </AccordionTrigger>
             <AccordionContent>
@@ -774,34 +802,48 @@ export function AdvancedShopFilters({
                   <span className="ml-2 text-xs font-normal text-muted-foreground">
                     ({selectedCollections.length} selected)
                   </span>
-                  <button
+                  <span
+                    role="button"
+                    tabIndex={0}
                     onClick={(e) => {
                       e.stopPropagation()
                       clearCollections()
                     }}
-                    className="ml-auto mr-2 text-xs text-muted-foreground hover:text-primary"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.stopPropagation()
+                        clearCollections()
+                      }
+                    }}
+                    className="ml-auto mr-2 cursor-pointer text-xs text-muted-foreground hover:text-primary"
                   >
                     Clear
-                  </button>
+                  </span>
                 </>
               )}
               <div
                 className="ml-auto flex gap-1 mr-2"
                 onClick={(e) => e.stopPropagation()}
               >
-                <button
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === "Enter" && selectAllCollections()}
                   onClick={selectAllCollections}
-                  className="text-xs text-muted-foreground hover:text-primary"
+                  className="cursor-pointer text-xs text-muted-foreground hover:text-primary"
                 >
                   All
-                </button>
+                </span>
                 <span className="text-muted-foreground">|</span>
-                <button
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === "Enter" && clearCollections()}
                   onClick={clearCollections}
-                  className="text-xs text-muted-foreground hover:text-primary"
+                  className="cursor-pointer text-xs text-muted-foreground hover:text-primary"
                 >
                   None
-                </button>
+                </span>
               </div>
             </AccordionTrigger>
             <AccordionContent>
@@ -851,15 +893,23 @@ export function AdvancedShopFilters({
                       <span className="ml-2 text-xs font-normal text-muted-foreground">
                         ({selectedValues.length} selected)
                       </span>
-                      <button
+                      <span
+                        role="button"
+                        tabIndex={0}
                         onClick={(e) => {
                           e.stopPropagation()
                           clearOption(optionKey)
                         }}
-                        className="ml-auto mr-2 text-xs text-muted-foreground hover:text-primary"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.stopPropagation()
+                            clearOption(optionKey)
+                          }
+                        }}
+                        className="ml-auto mr-2 cursor-pointer text-xs text-muted-foreground hover:text-primary"
                       >
                         Clear
-                      </button>
+                      </span>
                     </>
                   )}
                 </AccordionTrigger>
