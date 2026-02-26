@@ -143,13 +143,40 @@ export async function getProductByHandle(handle: string): Promise<StoreProduct |
 
     if (result.hits[0]) {
       const hit = result.hits[0] as any
+
+      // Construct a variant with price data from Meilisearch
+      // Meilisearch stores price_aud in cents at product level
+      const priceAud = hit.price_aud ?? 0
+      const originalPriceAud = hit.original_price_aud ?? priceAud
+      const onSale = hit.on_sale ?? false
+
+      // Create a synthetic variant with price info for the quick view dialog
+      const syntheticVariant = {
+        id: hit.variants?.[0]?.id || `variant_${hit.id}`,
+        title: hit.variants?.[0]?.title || "Default",
+        sku: hit.variants?.[0]?.sku,
+        prices: [{
+          amount: priceAud,
+          currency_code: "aud",
+        }],
+        calculated_price: onSale && originalPriceAud > priceAud ? {
+          calculated_amount: priceAud,
+          original_amount: originalPriceAud,
+        } : {
+          calculated_amount: priceAud,
+          original_amount: priceAud,
+        },
+        inventory_quantity: hit.inventory_quantity ?? 0,
+        manage_inventory: true,
+      }
+
       return {
         id: hit.id,
         title: hit.title,
         handle: hit.handle || hit.slug,
         thumbnail: hit.thumbnail || hit.image,
         description: hit.description,
-        variants: hit.variants || [],
+        variants: [syntheticVariant],
         options: hit.options || [],
         images: hit.images || [],
         type: hit.type ? { id: "", value: hit.type } : undefined,
