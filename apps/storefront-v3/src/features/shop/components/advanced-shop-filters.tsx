@@ -292,7 +292,8 @@ export function AdvancedShopFilters({
     const params = getCurrentParams()
     updateFilters({
       ...params,
-      inStock: checked ? "true" : undefined,
+      // Use "false" instead of undefined to prevent redirect from re-adding inStock=true
+      inStock: checked ? "true" : "false",
     })
   }
 
