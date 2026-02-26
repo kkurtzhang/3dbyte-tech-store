@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -10,47 +10,14 @@ import { Slider } from "@/components/ui/slider"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { buildShopUrl, type ShopQueryParams } from "@/lib/utils/url"
-
-export interface FilterOption {
-  id: string
-  label: string
-  count?: number
-}
-
-export interface FilterGroup {
-  id: string
-  label: string
-  options: FilterOption[]
-}
-
-// Hardcoded color options - can be made dynamic
-const COLORS = [
-  { id: "white", label: "White", hex: "#ffffff" },
-  { id: "black", label: "Black", hex: "#000000" },
-  { id: "red", label: "Red", hex: "#ef4444" },
-  { id: "blue", label: "Blue", hex: "#3b82f6" },
-  { id: "green", label: "Green", hex: "#22c55e" },
-  { id: "yellow", label: "Yellow", hex: "#eab308" },
-  { id: "purple", label: "Purple", hex: "#a855f7" },
-  { id: "orange", label: "Orange", hex: "#f97316" },
-  { id: "gray", label: "Gray", hex: "#6b7280" },
-  { id: "pink", label: "Pink", hex: "#ec4899" },
-]
-
-// Hardcoded size options - can be made dynamic
-const SIZES = [
-  { id: "xs", label: "XS" },
-  { id: "s", label: "S" },
-  { id: "m", label: "M" },
-  { id: "l", label: "L" },
-  { id: "xl", label: "XL" },
-  { id: "xxl", label: "XXL" },
-]
+import {
+  FilterFacets,
+  formatOptionLabel,
+  EXCLUDED_OPTIONS,
+} from "@/features/shop/types/filters"
 
 export interface AdvancedShopFiltersProps {
-  categories?: FilterGroup
-  collections?: FilterGroup
-  priceRange?: { min: number; max: number }
+  facets: FilterFacets
   className?: string
 }
 
@@ -90,81 +57,126 @@ function FilterCheckbox({
   )
 }
 
-function ColorCheckbox({
+function RadioFilterButton({
   id,
   label,
-  hex,
+  count,
   checked,
   onChange,
 }: {
   id: string
   label: string
-  hex: string
+  count?: number
   checked: boolean
   onChange: (checked: boolean) => void
 }) {
   return (
-    <div className="flex flex-col items-center space-y-1">
-      <button
-        type="button"
-        onClick={() => onChange(!checked)}
-        className={cn(
-          "relative h-8 w-8 rounded-full border-2 transition-all",
-          checked
-            ? "border-primary ring-2 ring-primary ring-offset-2"
-            : "border-border hover:border-primary/50",
-          checked ? "ring-offset-background" : ""
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      className={cn(
+        "flex w-full items-center justify-between rounded-md border px-3 py-2 text-sm transition-all",
+        checked
+          ? "border-primary bg-primary/10 text-primary"
+          : "border-border hover:border-primary/50 hover:bg-muted/50"
+      )}
+    >
+      <span>{label}</span>
+      {count !== undefined && (
+        <span className="font-mono text-xs text-muted-foreground">
+          ({count})
+        </span>
+      )}
+    </button>
+  )
+}
+
+function ToggleFilter({
+  id,
+  label,
+  count,
+  checked,
+  onChange,
+}: {
+  id: string
+  label: string
+  count?: number
+  checked: boolean
+  onChange: (checked: boolean) => void
+}) {
+  return (
+    <div className="flex items-center justify-between py-2">
+      <Label htmlFor={id} className="flex cursor-pointer items-center gap-2 text-sm font-normal">
+        <span>{label}</span>
+        {count !== undefined && (
+          <span className="font-mono text-xs text-muted-foreground">
+            ({count})
+          </span>
         )}
-        style={{ backgroundColor: hex }}
-        aria-label={`Toggle ${label}`}
-      >
-        {checked && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <svg
-              className="h-4 w-4 text-white drop-shadow-md"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </div>
-        )}
-      </button>
-      <Label
-        htmlFor={id}
-        className="cursor-pointer text-xs font-medium text-muted-foreground"
-      >
-        {label}
       </Label>
+      <Checkbox
+        id={id}
+        checked={checked}
+        onCheckedChange={onChange}
+        className="border-primary/20 data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+      />
     </div>
   )
 }
 
 export function AdvancedShopFilters({
-  categories,
-  collections,
-  priceRange: propPriceRange = { min: 0, max: 500 },
+  facets,
   className,
 }: AdvancedShopFiltersProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const selectedCategories = searchParams.get("category")?.split(",") || []
-  const selectedCollections = searchParams.get("collection")?.split(",") || []
-  const selectedColors = searchParams.get("color")?.split(",") || []
-  const selectedSizes = searchParams.get("size")?.split(",") || []
+  // Parse current filter selections from URL
+  const selectedCategories = searchParams.get("category")?.split(",").filter(Boolean) || []
+  const selectedBrands = searchParams.get("brand")?.split(",").filter(Boolean) || []
+  const selectedOnSale = searchParams.get("onSale") === "true"
+  const selectedInStock = searchParams.get("inStock") === "true"
+  const minPrice = Number(searchParams.get("minPrice")) || facets.priceRange.min
+  const maxPrice = Number(searchParams.get("maxPrice")) || facets.priceRange.max
 
-  // Parse price range from URL
-  const minPrice = Number(searchParams.get("minPrice")) || propPriceRange.min
-  const maxPrice = Number(searchParams.get("maxPrice")) || propPriceRange.max
+  // Parse dynamic options from URL (e.g., options_colour=Black,White)
+  const selectedOptions = useMemo(() => {
+    const options: Record<string, string[]> = {}
+    searchParams.forEach((value, key) => {
+      if (key.startsWith("options_")) {
+        options[key] = value.split(",").filter(Boolean)
+      }
+    })
+    return options
+  }, [searchParams])
 
   // Local state for price range (before apply)
   const [localMinPrice, setLocalMinPrice] = useState(minPrice)
   const [localMaxPrice, setLocalMaxPrice] = useState(maxPrice)
+
+  // Get all current URL params for preserving during filter updates
+  const getCurrentParams = (): ShopQueryParams => {
+    const params: ShopQueryParams = {
+      q: searchParams.get("q") || undefined,
+      category: searchParams.get("category") || undefined,
+      brand: searchParams.get("brand") || undefined,
+      onSale: searchParams.get("onSale") || undefined,
+      inStock: searchParams.get("inStock") || undefined,
+      minPrice: searchParams.get("minPrice") || undefined,
+      maxPrice: searchParams.get("maxPrice") || undefined,
+      sort: searchParams.get("sort") || undefined,
+      page: undefined,
+    }
+
+    // Add dynamic options
+    searchParams.forEach((value, key) => {
+      if (key.startsWith("options_")) {
+        (params as Record<string, string | undefined>)[key] = value || undefined
+      }
+    })
+
+    return params
+  }
 
   const updateFilters = (params: ShopQueryParams) => {
     router.push(buildShopUrl(params))
@@ -176,116 +188,109 @@ export function AdvancedShopFilters({
       newCategories.push(categoryId)
     }
 
+    const params = getCurrentParams()
     updateFilters({
-      q: searchParams.get("q") || undefined,
+      ...params,
       category: newCategories.length > 0 ? newCategories.join(",") : undefined,
-      collection: searchParams.get("collection") || undefined,
-      color: searchParams.get("color") || undefined,
-      size: searchParams.get("size") || undefined,
-      minPrice: searchParams.get("minPrice") || undefined,
-      maxPrice: searchParams.get("maxPrice") || undefined,
-      sort: searchParams.get("sort") || undefined,
-      page: undefined,
     })
   }
 
-  const updateCollection = (collectionId: string, checked: boolean) => {
-    let newCollections = selectedCollections.filter((c) => c !== collectionId)
+  const updateBrand = (brandId: string, checked: boolean) => {
+    let newBrands = selectedBrands.filter((b) => b !== brandId)
     if (checked) {
-      newCollections.push(collectionId)
+      newBrands.push(brandId)
     }
 
+    const params = getCurrentParams()
     updateFilters({
-      q: searchParams.get("q") || undefined,
-      category: searchParams.get("category") || undefined,
-      collection: newCollections.length > 0 ? newCollections.join(",") : undefined,
-      color: searchParams.get("color") || undefined,
-      size: searchParams.get("size") || undefined,
-      minPrice: searchParams.get("minPrice") || undefined,
-      maxPrice: searchParams.get("maxPrice") || undefined,
-      sort: searchParams.get("sort") || undefined,
-      page: undefined,
+      ...params,
+      brand: newBrands.length > 0 ? newBrands.join(",") : undefined,
     })
   }
 
-  const updateColor = (colorId: string, checked: boolean) => {
-    let newColors = selectedColors.filter((c) => c !== colorId)
-    if (checked) {
-      newColors.push(colorId)
-    }
-
+  const updateOnSale = (checked: boolean) => {
+    const params = getCurrentParams()
     updateFilters({
-      q: searchParams.get("q") || undefined,
-      category: searchParams.get("category") || undefined,
-      collection: searchParams.get("collection") || undefined,
-      color: newColors.length > 0 ? newColors.join(",") : undefined,
-      size: searchParams.get("size") || undefined,
-      minPrice: searchParams.get("minPrice") || undefined,
-      maxPrice: searchParams.get("maxPrice") || undefined,
-      sort: searchParams.get("sort") || undefined,
-      page: undefined,
+      ...params,
+      onSale: checked ? "true" : undefined,
     })
   }
 
-  const updateSize = (sizeId: string, checked: boolean) => {
-    let newSizes = selectedSizes.filter((s) => s !== sizeId)
+  const updateInStock = (checked: boolean) => {
+    const params = getCurrentParams()
+    updateFilters({
+      ...params,
+      inStock: checked ? "true" : undefined,
+    })
+  }
+
+  const updateOption = (optionKey: string, optionValue: string, checked: boolean) => {
+    const currentValues = selectedOptions[optionKey] || []
+    let newValues = currentValues.filter((v) => v !== optionValue)
     if (checked) {
-      newSizes.push(sizeId)
+      newValues.push(optionValue)
     }
 
-    updateFilters({
-      q: searchParams.get("q") || undefined,
-      category: searchParams.get("category") || undefined,
-      collection: searchParams.get("collection") || undefined,
-      color: searchParams.get("color") || undefined,
-      size: newSizes.length > 0 ? newSizes.join(",") : undefined,
-      minPrice: searchParams.get("minPrice") || undefined,
-      maxPrice: searchParams.get("maxPrice") || undefined,
-      sort: searchParams.get("sort") || undefined,
-      page: undefined,
-    })
+    const params = getCurrentParams()
+    // Update the specific option key
+    const updatedParams = {
+      ...params,
+    } as Record<string, string | undefined>
+    updatedParams[optionKey] = newValues.length > 0 ? newValues.join(",") : undefined
+
+    updateFilters(updatedParams as ShopQueryParams)
   }
 
   const applyPriceRange = () => {
+    const params = getCurrentParams()
     updateFilters({
-      q: searchParams.get("q") || undefined,
-      category: searchParams.get("category") || undefined,
-      collection: searchParams.get("collection") || undefined,
-      color: searchParams.get("color") || undefined,
-      size: searchParams.get("size") || undefined,
-      minPrice: localMinPrice > propPriceRange.min ? String(localMinPrice) : undefined,
-      maxPrice: localMaxPrice < propPriceRange.max ? String(localMaxPrice) : undefined,
-      sort: searchParams.get("sort") || undefined,
-      page: undefined,
+      ...params,
+      minPrice: localMinPrice > facets.priceRange.min ? String(localMinPrice) : undefined,
+      maxPrice: localMaxPrice < facets.priceRange.max ? String(localMaxPrice) : undefined,
     })
   }
 
   const clearPriceRange = () => {
-    setLocalMinPrice(propPriceRange.min)
-    setLocalMaxPrice(propPriceRange.max)
+    setLocalMinPrice(facets.priceRange.min)
+    setLocalMaxPrice(facets.priceRange.max)
+    const params = getCurrentParams()
     updateFilters({
-      q: searchParams.get("q") || undefined,
-      category: searchParams.get("category") || undefined,
-      collection: searchParams.get("collection") || undefined,
-      color: searchParams.get("color") || undefined,
-      size: searchParams.get("size") || undefined,
+      ...params,
       minPrice: undefined,
       maxPrice: undefined,
-      sort: searchParams.get("sort") || undefined,
-      page: undefined,
     })
   }
 
+  // Check if any filters are active
   const hasActiveFilters =
     selectedCategories.length > 0 ||
-    selectedCollections.length > 0 ||
-    selectedColors.length > 0 ||
-    selectedSizes.length > 0 ||
-    minPrice !== propPriceRange.min ||
-    maxPrice !== propPriceRange.max
+    selectedBrands.length > 0 ||
+    selectedOnSale ||
+    selectedInStock ||
+    minPrice !== facets.priceRange.min ||
+    maxPrice !== facets.priceRange.max ||
+    Object.values(selectedOptions).some((values) => values.length > 0)
 
   const priceHasChanged =
     localMinPrice !== minPrice || localMaxPrice !== maxPrice
+
+  // Get onSale and inStock facet counts
+  const onSaleTrueOption = facets.onSale.find((opt) => opt.value === "true")
+  const inStockTrueOption = facets.inStock.find((opt) => opt.value === "true")
+
+  // Filter dynamic options to exclude any in EXCLUDED_OPTIONS
+  const filteredOptions = Object.entries(facets.options).filter(
+    ([key]) => !EXCLUDED_OPTIONS.includes(key)
+  )
+
+  // Determine default open accordion items
+  const defaultAccordionItems = ["price"]
+  if (facets.categories.length > 0) defaultAccordionItems.push("categories")
+  if (facets.brands.length > 0) defaultAccordionItems.push("brands")
+  if (onSaleTrueOption && onSaleTrueOption.count > 0) defaultAccordionItems.push("onSale")
+  if (inStockTrueOption && inStockTrueOption.count > 0) defaultAccordionItems.push("inStock")
+  // Open first two dynamic option sections by default
+  filteredOptions.slice(0, 2).forEach(([key]) => defaultAccordionItems.push(key))
 
   return (
     <div className={cn("space-y-6", className)}>
@@ -304,14 +309,14 @@ export function AdvancedShopFilters({
 
       <Accordion
         type="multiple"
-        defaultValue={["price", "categories", "collections"]}
+        defaultValue={defaultAccordionItems}
         className="w-full"
       >
         {/* Price Range */}
         <AccordionItem value="price">
           <AccordionTrigger className="py-3 text-sm font-medium hover:text-primary">
             Price Range
-            {(minPrice !== propPriceRange.min || maxPrice !== propPriceRange.max) && (
+            {(minPrice !== facets.priceRange.min || maxPrice !== facets.priceRange.max) && (
               <span className="ml-2 text-xs font-normal text-muted-foreground">
                 (${minPrice} - ${maxPrice})
               </span>
@@ -321,8 +326,8 @@ export function AdvancedShopFilters({
             <div className="space-y-4">
               <div className="px-2">
                 <Slider
-                  min={propPriceRange.min}
-                  max={propPriceRange.max}
+                  min={facets.priceRange.min}
+                  max={facets.priceRange.max}
                   step={10}
                   value={[localMinPrice, localMaxPrice]}
                   onValueChange={([min, max]) => {
@@ -343,8 +348,8 @@ export function AdvancedShopFilters({
                   onClick={clearPriceRange}
                   className="flex-1 h-8 text-xs"
                   disabled={
-                    localMinPrice === propPriceRange.min &&
-                    localMaxPrice === propPriceRange.max
+                    localMinPrice === facets.priceRange.min &&
+                    localMaxPrice === facets.priceRange.max
                   }
                 >
                   Clear
@@ -363,23 +368,26 @@ export function AdvancedShopFilters({
         </AccordionItem>
 
         {/* Categories */}
-        {categories && categories.options.length > 0 && (
+        {facets.categories.length > 0 && (
           <AccordionItem value="categories">
             <AccordionTrigger className="py-3 text-sm font-medium hover:text-primary">
-              {categories.label}
+              Categories
+              {selectedCategories.length > 0 && (
+                <span className="ml-2 text-xs font-normal text-muted-foreground">
+                  ({selectedCategories.length} selected)
+                </span>
+              )}
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-1">
-                {categories.options.map((option) => (
+                {facets.categories.map((option) => (
                   <FilterCheckbox
-                    key={option.id}
-                    id={`category-${option.id}`}
-                    label={option.label}
+                    key={option.value}
+                    id={`category-${option.value}`}
+                    label={option.label || option.value}
                     count={option.count}
-                    checked={selectedCategories.includes(option.id)}
-                    onChange={(checked) =>
-                      updateCategory(option.id, checked)
-                    }
+                    checked={selectedCategories.includes(option.value)}
+                    onChange={(checked) => updateCategory(option.value, checked)}
                   />
                 ))}
               </div>
@@ -387,24 +395,27 @@ export function AdvancedShopFilters({
           </AccordionItem>
         )}
 
-        {/* Collections */}
-        {collections && collections.options.length > 0 && (
-          <AccordionItem value="collections">
+        {/* Brands - Multi Select */}
+        {facets.brands.length > 0 && (
+          <AccordionItem value="brands">
             <AccordionTrigger className="py-3 text-sm font-medium hover:text-primary">
-              {collections.label}
+              Brands
+              {selectedBrands.length > 0 && (
+                <span className="ml-2 text-xs font-normal text-muted-foreground">
+                  ({selectedBrands.length} selected)
+                </span>
+              )}
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-1">
-                {collections.options.map((option) => (
+                {facets.brands.map((option) => (
                   <FilterCheckbox
-                    key={option.id}
-                    id={`collection-${option.id}`}
-                    label={option.label}
+                    key={option.value}
+                    id={`brand-${option.value}`}
+                    label={option.label || option.value}
                     count={option.count}
-                    checked={selectedCollections.includes(option.id)}
-                    onChange={(checked) =>
-                      updateCollection(option.id, checked)
-                    }
+                    checked={selectedBrands.includes(option.value)}
+                    onChange={(checked) => updateBrand(option.value, checked)}
                   />
                 ))}
               </div>
@@ -412,52 +423,74 @@ export function AdvancedShopFilters({
           </AccordionItem>
         )}
 
-        {/* Colors */}
-        <AccordionItem value="colors">
-          <AccordionTrigger className="py-3 text-sm font-medium hover:text-primary">
-            Color
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="grid grid-cols-5 gap-3">
-              {COLORS.map((color) => (
-                <ColorCheckbox
-                  key={color.id}
-                  id={`color-${color.id}`}
-                  label={color.label}
-                  hex={color.hex}
-                  checked={selectedColors.includes(color.id)}
-                  onChange={(checked) => updateColor(color.id, checked)}
-                />
-              ))}
-            </div>
-          </AccordionContent>
-        </AccordionItem>
+        {/* On Sale Toggle */}
+        {onSaleTrueOption && onSaleTrueOption.count > 0 && (
+          <AccordionItem value="onSale">
+            <AccordionTrigger className="py-3 text-sm font-medium hover:text-primary">
+              On Sale
+            </AccordionTrigger>
+            <AccordionContent>
+              <ToggleFilter
+                id="onSale-toggle"
+                label="Show only sale items"
+                count={onSaleTrueOption.count}
+                checked={selectedOnSale}
+                onChange={updateOnSale}
+              />
+            </AccordionContent>
+          </AccordionItem>
+        )}
 
-        {/* Sizes */}
-        <AccordionItem value="sizes">
-          <AccordionTrigger className="py-3 text-sm font-medium hover:text-primary">
-            Size
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="grid grid-cols-3 gap-2">
-              {SIZES.map((size) => (
-                <button
-                  key={size.id}
-                  type="button"
-                  onClick={() => updateSize(size.id, !selectedSizes.includes(size.id))}
-                  className={cn(
-                    "rounded-md border py-2 text-sm font-medium transition-all",
-                    selectedSizes.includes(size.id)
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border hover:border-primary/50"
-                  )}
-                >
-                  {size.label}
-                </button>
-              ))}
-            </div>
-          </AccordionContent>
-        </AccordionItem>
+        {/* In Stock Toggle */}
+        {inStockTrueOption && inStockTrueOption.count > 0 && (
+          <AccordionItem value="inStock">
+            <AccordionTrigger className="py-3 text-sm font-medium hover:text-primary">
+              Availability
+            </AccordionTrigger>
+            <AccordionContent>
+              <ToggleFilter
+                id="inStock-toggle"
+                label="Show only in-stock items"
+                count={inStockTrueOption.count}
+                checked={selectedInStock}
+                onChange={updateInStock}
+              />
+            </AccordionContent>
+          </AccordionItem>
+        )}
+
+        {/* Dynamic Options */}
+        {filteredOptions.map(([optionKey, options]) => {
+          const selectedValues = selectedOptions[optionKey] || []
+          return (
+            <AccordionItem key={optionKey} value={optionKey}>
+              <AccordionTrigger className="py-3 text-sm font-medium hover:text-primary">
+                {formatOptionLabel(optionKey)}
+                {selectedValues.length > 0 && (
+                  <span className="ml-2 text-xs font-normal text-muted-foreground">
+                    ({selectedValues.length} selected)
+                  </span>
+                )}
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-1">
+                  {options.map((option) => (
+                    <FilterCheckbox
+                      key={option.value}
+                      id={`${optionKey}-${option.value}`}
+                      label={option.value}
+                      count={option.count}
+                      checked={selectedValues.includes(option.value)}
+                      onChange={(checked) =>
+                        updateOption(optionKey, option.value, checked)
+                      }
+                    />
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          )
+        })}
       </Accordion>
     </div>
   )

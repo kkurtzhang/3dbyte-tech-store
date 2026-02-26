@@ -7,12 +7,15 @@ export interface ShopQueryParams {
   q?: string
   category?: string
   collection?: string
-  color?: string
-  size?: string
+  brand?: string
+  onSale?: string
+  inStock?: string
   minPrice?: string
   maxPrice?: string
   sort?: string
   page?: string | number
+  // Dynamic options (e.g., options_colour, options_size)
+  [key: `options_${string}`]: string | undefined
 }
 
 /**
@@ -37,14 +40,19 @@ export function buildShopQueryString(params: ShopQueryParams): string {
     searchParams.set("collection", params.collection)
   }
 
-  // Colors (comma-separated)
-  if (params.color) {
-    searchParams.set("color", params.color)
+  // Brand (single value)
+  if (params.brand) {
+    searchParams.set("brand", params.brand)
   }
 
-  // Sizes (comma-separated)
-  if (params.size) {
-    searchParams.set("size", params.size)
+  // On sale (boolean as string)
+  if (params.onSale) {
+    searchParams.set("onSale", params.onSale)
+  }
+
+  // In stock (boolean as string)
+  if (params.inStock) {
+    searchParams.set("inStock", params.inStock)
   }
 
   // Price range
@@ -66,6 +74,13 @@ export function buildShopQueryString(params: ShopQueryParams): string {
     searchParams.set("page", String(params.page))
   }
 
+  // Dynamic options (e.g., options_colour, options_size)
+  Object.entries(params).forEach(([key, value]) => {
+    if (key.startsWith("options_") && value) {
+      searchParams.set(key, value)
+    }
+  })
+
   const queryString = searchParams.toString()
   return queryString ? `?${queryString}` : ""
 }
@@ -74,17 +89,27 @@ export function buildShopQueryString(params: ShopQueryParams): string {
  * Parse current URL search params into typed ShopQueryParams.
  */
 export function parseShopQueryString(searchParams: URLSearchParams): ShopQueryParams {
-  return {
+  const params: ShopQueryParams = {
     q: searchParams.get("q") || undefined,
     category: searchParams.get("category") || undefined,
     collection: searchParams.get("collection") || undefined,
-    color: searchParams.get("color") || undefined,
-    size: searchParams.get("size") || undefined,
+    brand: searchParams.get("brand") || undefined,
+    onSale: searchParams.get("onSale") || undefined,
+    inStock: searchParams.get("inStock") || undefined,
     minPrice: searchParams.get("minPrice") || undefined,
     maxPrice: searchParams.get("maxPrice") || undefined,
     sort: searchParams.get("sort") || undefined,
     page: searchParams.get("page") || undefined,
   }
+
+  // Parse dynamic options (e.g., options_colour, options_size)
+  searchParams.forEach((value, key) => {
+    if (key.startsWith("options_")) {
+      (params as Record<string, string | undefined>)[key] = value || undefined
+    }
+  })
+
+  return params
 }
 
 /**

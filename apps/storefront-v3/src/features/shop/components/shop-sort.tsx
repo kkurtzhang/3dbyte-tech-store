@@ -11,12 +11,11 @@ import {
 import { cn } from "@/lib/utils"
 import { buildShopUrl, type ShopQueryParams } from "@/lib/utils/url"
 
+// Sort options supported by Meilisearch (title not sortable in current index)
 export type SortOption =
   | "newest"
   | "price-asc"
   | "price-desc"
-  | "name-asc"
-  | "name-desc"
 
 export interface ShopSortProps {
   className?: string
@@ -29,8 +28,6 @@ const SORT_OPTIONS: Record<
   newest: { label: "Newest", value: "newest" },
   "price-asc": { label: "Price: Low to High", value: "price-asc" },
   "price-desc": { label: "Price: High to Low", value: "price-desc" },
-  "name-asc": { label: "Name: A to Z", value: "name-asc" },
-  "name-desc": { label: "Name: Z to A", value: "name-desc" },
 }
 
 export function ShopSort({ className }: ShopSortProps) {
@@ -82,13 +79,9 @@ export function getSortOrder(sort: SortOption): string {
     case "newest":
       return "-created_at"
     case "price-asc":
-      return "calculated_price.calculated_amount"
+      return "price_aud"
     case "price-desc":
-      return "-calculated_price.calculated_amount"
-    case "name-asc":
-      return "title"
-    case "name-desc":
-      return "-title"
+      return "-price_aud"
     default:
       return "-created_at"
   }
