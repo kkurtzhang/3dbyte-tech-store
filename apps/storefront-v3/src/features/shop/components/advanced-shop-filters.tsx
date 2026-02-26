@@ -679,30 +679,23 @@ export function AdvancedShopFilters({
                   </span>
                 </>
               )}
-              <div
-                className="ml-auto flex gap-1 mr-2"
-                onClick={(e) => e.stopPropagation()}
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  selectAllCategories()
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.stopPropagation()
+                    selectAllCategories()
+                  }
+                }}
+                className="ml-auto mr-2 cursor-pointer text-xs text-muted-foreground hover:text-primary"
               >
-                <span
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => e.key === "Enter" && selectAllCategories()}
-                  onClick={selectAllCategories}
-                  className="cursor-pointer text-xs text-muted-foreground hover:text-primary"
-                >
-                  All
-                </span>
-                <span className="text-muted-foreground">|</span>
-                <span
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => e.key === "Enter" && clearCategories()}
-                  onClick={clearCategories}
-                  className="cursor-pointer text-xs text-muted-foreground hover:text-primary"
-                >
-                  None
-                </span>
-              </div>
+                All
+              </span>
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-1">
@@ -750,30 +743,23 @@ export function AdvancedShopFilters({
                   </span>
                 </>
               )}
-              <div
-                className="ml-auto flex gap-1 mr-2"
-                onClick={(e) => e.stopPropagation()}
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  selectAllBrands()
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.stopPropagation()
+                    selectAllBrands()
+                  }
+                }}
+                className="ml-auto mr-2 cursor-pointer text-xs text-muted-foreground hover:text-primary"
               >
-                <span
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => e.key === "Enter" && selectAllBrands()}
-                  onClick={selectAllBrands}
-                  className="cursor-pointer text-xs text-muted-foreground hover:text-primary"
-                >
-                  All
-                </span>
-                <span className="text-muted-foreground">|</span>
-                <span
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => e.key === "Enter" && clearBrands()}
-                  onClick={clearBrands}
-                  className="cursor-pointer text-xs text-muted-foreground hover:text-primary"
-                >
-                  None
-                </span>
-              </div>
+                All
+              </span>
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-1">
@@ -821,30 +807,23 @@ export function AdvancedShopFilters({
                   </span>
                 </>
               )}
-              <div
-                className="ml-auto flex gap-1 mr-2"
-                onClick={(e) => e.stopPropagation()}
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  selectAllCollections()
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.stopPropagation()
+                    selectAllCollections()
+                  }
+                }}
+                className="ml-auto mr-2 cursor-pointer text-xs text-muted-foreground hover:text-primary"
               >
-                <span
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => e.key === "Enter" && selectAllCollections()}
-                  onClick={selectAllCollections}
-                  className="cursor-pointer text-xs text-muted-foreground hover:text-primary"
-                >
-                  All
-                </span>
-                <span className="text-muted-foreground">|</span>
-                <span
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => e.key === "Enter" && clearCollections()}
-                  onClick={clearCollections}
-                  className="cursor-pointer text-xs text-muted-foreground hover:text-primary"
-                >
-                  None
-                </span>
-              </div>
+                All
+              </span>
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-1">
