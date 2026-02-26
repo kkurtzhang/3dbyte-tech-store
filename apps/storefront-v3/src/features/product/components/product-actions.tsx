@@ -79,7 +79,8 @@ export function ProductActions({
     const prices = variantData?.prices as Array<{ amount: number; currency_code: string }> | undefined
 
     // Use calculated price or fall back to regular price
-    const priceAmount = (calculatedAmount || originalAmount || prices?.[0]?.amount || 0) / 100
+    // Note: Medusa v2 returns prices in dollars, not cents
+    const priceAmount = calculatedAmount || originalAmount || prices?.[0]?.amount || 0
     const currencyCode = prices?.[0]?.currency_code || "usd"
 
     // Calculate discount
@@ -90,7 +91,7 @@ export function ProductActions({
 
     return {
       price: { amount: priceAmount, currency_code: currencyCode },
-      originalPrice: hasDiscount ? (originalAmount / 100) : undefined,
+      originalPrice: hasDiscount ? originalAmount : undefined,
       discountPercentage,
     }
   }, [selectedVariant, product.variants])
