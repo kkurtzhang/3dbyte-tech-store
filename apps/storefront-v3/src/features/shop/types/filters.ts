@@ -17,6 +17,7 @@ export interface FilterGroup {
 export interface FilterFacets {
   categories: FilterOption[] // { value: category_id, count: number }
   brands: FilterOption[] // { value: brand_id, count: number }
+  collections: FilterOption[] // { value: collection_id, count: number }
   onSale: FilterOption[] // { value: 'true'/'false', count: number }
   inStock: FilterOption[] // { value: 'true'/'false', count: number }
   priceRange: {

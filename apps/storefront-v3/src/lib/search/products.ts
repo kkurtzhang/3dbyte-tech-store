@@ -31,6 +31,8 @@ export interface ProductSearchParams {
     categoryIds?: string[]
     /** Multiple brand IDs (OR within) */
     brandIds?: string[]
+    /** Multiple collection IDs (OR within) */
+    collectionIds?: string[]
     /** On sale filter */
     onSale?: boolean
     /** In stock filter */
@@ -122,6 +124,7 @@ const SORT_MAP: Record<string, string[]> = {
 const FACETS_TO_REQUEST = [
   "brand.id",
   "category_ids",
+  "collection_ids",
   "on_sale",
   "in_stock",
   "price_aud",
@@ -159,6 +162,14 @@ function buildFilters(params: ProductSearchParams): string[] {
       .map((id) => `brand.id = "${id}"`)
       .join(" OR ")
     filters.push(`(${brandFilter})`)
+  }
+
+  // Collection IDs - multi-select (OR within, AND with others)
+  if (f.collectionIds && f.collectionIds.length > 0) {
+    const collectionFilter = f.collectionIds
+      .map((id) => `collection_ids = "${id}"`)
+      .join(" OR ")
+    filters.push(`(${collectionFilter})`)
   }
 
   // On sale filter

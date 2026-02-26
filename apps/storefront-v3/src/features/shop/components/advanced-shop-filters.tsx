@@ -21,19 +21,21 @@ export interface AdvancedShopFiltersProps {
   className?: string
 }
 
+interface FilterCheckboxProps {
+  id: string
+  label: string
+  count?: number
+  checked: boolean
+  onChange: (checked: boolean) => void
+}
+
 function FilterCheckbox({
   id,
   label,
   count,
   checked,
   onChange,
-}: {
-  id: string
-  label: string
-  count?: number
-  checked: boolean
-  onChange: (checked: boolean) => void
-}) {
+}: FilterCheckboxProps) {
   return (
     <div className="flex items-center space-x-2 py-2">
       <Checkbox
@@ -57,19 +59,21 @@ function FilterCheckbox({
   )
 }
 
+interface RadioFilterButtonProps {
+  id: string
+  label: string
+  count?: number
+  checked: boolean
+  onChange: (checked: boolean) => void
+}
+
 function RadioFilterButton({
   id,
   label,
   count,
   checked,
   onChange,
-}: {
-  id: string
-  label: string
-  count?: number
-  checked: boolean
-  onChange: (checked: boolean) => void
-}) {
+}: RadioFilterButtonProps) {
   return (
     <button
       type="button"
@@ -91,19 +95,21 @@ function RadioFilterButton({
   )
 }
 
+interface ToggleFilterProps {
+  id: string
+  label: string
+  count?: number
+  checked: boolean
+  onChange: (checked: boolean) => void
+}
+
 function ToggleFilter({
   id,
   label,
   count,
   checked,
   onChange,
-}: {
-  id: string
-  label: string
-  count?: number
-  checked: boolean
-  onChange: (checked: boolean) => void
-}) {
+}: ToggleFilterProps) {
   return (
     <div className="flex items-center justify-between py-2">
       <Label htmlFor={id} className="flex cursor-pointer items-center gap-2 text-sm font-normal">
@@ -134,6 +140,7 @@ export function AdvancedShopFilters({
   // Parse current filter selections from URL
   const selectedCategories = searchParams.get("category")?.split(",").filter(Boolean) || []
   const selectedBrands = searchParams.get("brand")?.split(",").filter(Boolean) || []
+  const selectedCollections = searchParams.get("collection")?.split(",").filter(Boolean) || []
   const selectedOnSale = searchParams.get("onSale") === "true"
   const selectedInStock = searchParams.get("inStock") === "true"
   const minPrice = Number(searchParams.get("minPrice")) || facets.priceRange.min
@@ -160,6 +167,7 @@ export function AdvancedShopFilters({
       q: searchParams.get("q") || undefined,
       category: searchParams.get("category") || undefined,
       brand: searchParams.get("brand") || undefined,
+      collection: searchParams.get("collection") || undefined,
       onSale: searchParams.get("onSale") || undefined,
       inStock: searchParams.get("inStock") || undefined,
       minPrice: searchParams.get("minPrice") || undefined,
@@ -205,6 +213,19 @@ export function AdvancedShopFilters({
     updateFilters({
       ...params,
       brand: newBrands.length > 0 ? newBrands.join(",") : undefined,
+    })
+  }
+
+  const updateCollection = (collectionId: string, checked: boolean) => {
+    let newCollections = selectedCollections.filter((c) => c !== collectionId)
+    if (checked) {
+      newCollections.push(collectionId)
+    }
+
+    const params = getCurrentParams()
+    updateFilters({
+      ...params,
+      collection: newCollections.length > 0 ? newCollections.join(",") : undefined,
     })
   }
 
@@ -265,6 +286,7 @@ export function AdvancedShopFilters({
   const hasActiveFilters =
     selectedCategories.length > 0 ||
     selectedBrands.length > 0 ||
+    selectedCollections.length > 0 ||
     selectedOnSale ||
     selectedInStock ||
     minPrice !== facets.priceRange.min ||
@@ -279,16 +301,20 @@ export function AdvancedShopFilters({
   const inStockTrueOption = facets.inStock.find((opt) => opt.value === "true")
 
   // Filter dynamic options to exclude any in EXCLUDED_OPTIONS
+  // Note: Server already filters out options with 0 count
   const filteredOptions = Object.entries(facets.options).filter(
     ([key]) => !EXCLUDED_OPTIONS.includes(key)
   )
 
   // Determine default open accordion items
-  const defaultAccordionItems = ["price"]
+  // In Stock is first and always open by default
+  const defaultAccordionItems: string[] = []
+  if (inStockTrueOption && inStockTrueOption.count > 0) defaultAccordionItems.push("inStock")
+  defaultAccordionItems.push("price")
   if (facets.categories.length > 0) defaultAccordionItems.push("categories")
   if (facets.brands.length > 0) defaultAccordionItems.push("brands")
+  if (facets.collections.length > 0) defaultAccordionItems.push("collections")
   if (onSaleTrueOption && onSaleTrueOption.count > 0) defaultAccordionItems.push("onSale")
-  if (inStockTrueOption && inStockTrueOption.count > 0) defaultAccordionItems.push("inStock")
   // Open first two dynamic option sections by default
   filteredOptions.slice(0, 2).forEach(([key]) => defaultAccordionItems.push(key))
 
@@ -312,6 +338,24 @@ export function AdvancedShopFilters({
         defaultValue={defaultAccordionItems}
         className="w-full"
       >
+        {/* In Stock Toggle - First position, checked by default */}
+        {inStockTrueOption && inStockTrueOption.count > 0 && (
+          <AccordionItem value="inStock">
+            <AccordionTrigger className="py-3 text-sm font-medium hover:text-primary">
+              Availability
+            </AccordionTrigger>
+            <AccordionContent>
+              <ToggleFilter
+                id="inStock-toggle"
+                label="Show only in-stock items"
+                count={inStockTrueOption.count}
+                checked={selectedInStock}
+                onChange={updateInStock}
+              />
+            </AccordionContent>
+          </AccordionItem>
+        )}
+
         {/* Price Range */}
         <AccordionItem value="price">
           <AccordionTrigger className="py-3 text-sm font-medium hover:text-primary">
@@ -423,6 +467,34 @@ export function AdvancedShopFilters({
           </AccordionItem>
         )}
 
+        {/* Collections - Multi Select */}
+        {facets.collections.length > 0 && (
+          <AccordionItem value="collections">
+            <AccordionTrigger className="py-3 text-sm font-medium hover:text-primary">
+              Collections
+              {selectedCollections.length > 0 && (
+                <span className="ml-2 text-xs font-normal text-muted-foreground">
+                  ({selectedCollections.length} selected)
+                </span>
+              )}
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-1">
+                {facets.collections.map((option) => (
+                  <FilterCheckbox
+                    key={option.value}
+                    id={`collection-${option.value}`}
+                    label={option.label || option.value}
+                    count={option.count}
+                    checked={selectedCollections.includes(option.value)}
+                    onChange={(checked) => updateCollection(option.value, checked)}
+                  />
+                ))}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        )}
+
         {/* On Sale Toggle */}
         {onSaleTrueOption && onSaleTrueOption.count > 0 && (
           <AccordionItem value="onSale">
@@ -441,56 +513,38 @@ export function AdvancedShopFilters({
           </AccordionItem>
         )}
 
-        {/* In Stock Toggle */}
-        {inStockTrueOption && inStockTrueOption.count > 0 && (
-          <AccordionItem value="inStock">
-            <AccordionTrigger className="py-3 text-sm font-medium hover:text-primary">
-              Availability
-            </AccordionTrigger>
-            <AccordionContent>
-              <ToggleFilter
-                id="inStock-toggle"
-                label="Show only in-stock items"
-                count={inStockTrueOption.count}
-                checked={selectedInStock}
-                onChange={updateInStock}
-              />
-            </AccordionContent>
-          </AccordionItem>
-        )}
-
         {/* Dynamic Options */}
         {filteredOptions.map(([optionKey, options]) => {
-          const selectedValues = selectedOptions[optionKey] || []
-          return (
-            <AccordionItem key={optionKey} value={optionKey}>
-              <AccordionTrigger className="py-3 text-sm font-medium hover:text-primary">
-                {formatOptionLabel(optionKey)}
-                {selectedValues.length > 0 && (
-                  <span className="ml-2 text-xs font-normal text-muted-foreground">
-                    ({selectedValues.length} selected)
-                  </span>
-                )}
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="space-y-1">
-                  {options.map((option) => (
-                    <FilterCheckbox
-                      key={option.value}
-                      id={`${optionKey}-${option.value}`}
-                      label={option.value}
-                      count={option.count}
-                      checked={selectedValues.includes(option.value)}
-                      onChange={(checked) =>
-                        updateOption(optionKey, option.value, checked)
-                      }
-                    />
-                  ))}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          )
-        })}
+            const selectedValues = selectedOptions[optionKey] || []
+            return (
+              <AccordionItem key={optionKey} value={optionKey}>
+                <AccordionTrigger className="py-3 text-sm font-medium hover:text-primary">
+                  {formatOptionLabel(optionKey)}
+                  {selectedValues.length > 0 && (
+                    <span className="ml-2 text-xs font-normal text-muted-foreground">
+                      ({selectedValues.length} selected)
+                    </span>
+                  )}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-1">
+                    {options.map((option) => (
+                      <FilterCheckbox
+                        key={option.value}
+                        id={`${optionKey}-${option.value}`}
+                        label={option.value}
+                        count={option.count}
+                        checked={selectedValues.includes(option.value)}
+                        onChange={(checked) =>
+                          updateOption(optionKey, option.value, checked)
+                        }
+                      />
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            )
+          })}
       </Accordion>
     </div>
   )

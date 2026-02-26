@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { searchProducts, getFacets, type FacetDistribution } from "@/lib/search/products";
 
@@ -16,6 +17,7 @@ import { ShopErrorState } from "@/features/shop/components/shop-error-state";
 import { ShopEmptyState } from "@/features/shop/components/shop-empty-state";
 import { buildShopUrl, type ShopQueryParams } from "@/lib/utils/url";
 import { getCategories } from "@/lib/medusa/categories";
+import { getCollections } from "@/lib/medusa/collections";
 import { searchBrands } from "@/lib/search/brands";
 
 interface ShopPageProps {
@@ -55,12 +57,13 @@ function parseDynamicOptions(
 
 /**
  * Transform raw Meilisearch facet distribution to FilterFacets format
- * with human-readable labels for categories and brands
+ * with human-readable labels for categories, brands, and collections
  */
 function transformFacets(
   facetDistribution: FacetDistribution,
   categoryMap: Map<string, string>,
-  brandMap: Map<string, string>
+  brandMap: Map<string, string>,
+  collectionMap: Map<string, string>
 ): FilterFacets {
   // Transform categories (category_ids facet contains category IDs)
   // Map IDs to readable names
@@ -82,6 +85,18 @@ function transformFacets(
     .map(([id, count]) => ({
       value: id,
       label: brandMap.get(id) || id,
+      count,
+    }))
+    .sort((a, b) => (a.label || a.value).localeCompare(b.label || b.value));
+
+  // Transform collections (collection_ids facet contains collection IDs)
+  // Map IDs to readable names
+  const collections: FilterOption[] = Object.entries(
+    facetDistribution["collection_ids"] || {}
+  )
+    .map(([id, count]) => ({
+      value: id,
+      label: collectionMap.get(id) || id,
       count,
     }))
     .sort((a, b) => (a.label || a.value).localeCompare(b.label || b.value));
@@ -112,19 +127,26 @@ function transformFacets(
   };
 
   // Transform dynamic options (options_* facets)
+  // Filter out options with 0 count to hide empty filter sections
   const options: Record<string, FilterOption[]> = {};
   Object.entries(facetDistribution).forEach(([key, distribution]) => {
     if (key.startsWith("options_") && distribution) {
-      options[key] = Object.entries(distribution).map(([value, count]) => ({
-        value,
-        count,
-      }));
+      const filteredOpts = Object.entries(distribution)
+        .filter(([_, count]) => count > 0)
+        .map(([value, count]) => ({
+          value,
+          count,
+        }));
+      if (filteredOpts.length > 0) {
+        options[key] = filteredOpts;
+      }
     }
   });
 
   return {
     categories,
     brands,
+    collections,
     onSale,
     inStock,
     priceRange,
@@ -139,6 +161,7 @@ function hasActiveFilters(params: ShopPageProps["searchParams"] extends Promise<
   return (
     !!params.category ||
     !!params.brand ||
+    !!params.collection ||
     params.onSale === "true" ||
     params.inStock === "true" ||
     !!params.minPrice ||
@@ -180,6 +203,17 @@ function buildPaginationUrl(
 
 export default async function ShopPage({ searchParams }: ShopPageProps) {
   const params = await searchParams;
+
+  // Redirect to add inStock=true by default if not explicitly set
+  // This ensures the In Stock filter is checked by default
+  if (params.inStock === undefined) {
+    const redirectParams: ShopQueryParams = {
+      ...params,
+      inStock: "true",
+    };
+    redirect(buildShopUrl(redirectParams));
+  }
+
   const page = Number(params.page) || 1;
   const limit = 20;
   const sort = params.sort || "newest";
@@ -190,6 +224,9 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
   // Parse brand filters
   const brandIds = params.brand?.split(",").filter(Boolean) || [];
 
+  // Parse collection filters
+  const collectionIds = params.collection?.split(",").filter(Boolean) || [];
+
   // Parse price range
   const minPrice = params.minPrice ? Number(params.minPrice) : undefined;
   const maxPrice = params.maxPrice ? Number(params.maxPrice) : undefined;
@@ -197,8 +234,20 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
   // Parse dynamic options from URL
   const options = parseDynamicOptions(params);
 
-  // Fetch products, unfiltered facets (for filter UI), categories, and brands in parallel
-  const [result, facetsResult, categoriesData, brandsData] = await Promise.all([
+  // Check if any filters are active
+  const hasFilters =
+    categoryIds.length > 0 ||
+    brandIds.length > 0 ||
+    collectionIds.length > 0 ||
+    params.onSale === "true" ||
+    params.inStock === "true" ||
+    minPrice !== undefined ||
+    maxPrice !== undefined ||
+    Object.keys(options).length > 0;
+
+  // Fetch products, categories, collections, and brands in parallel
+  // When filters are active, fetch unfiltered facets separately for filter UI
+  const [result, categoriesData, collectionsData, brandsData, unfilteredFacets] = await Promise.all([
     searchProducts({
       query: params.q,
       page,
@@ -207,6 +256,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
       filters: {
         categoryIds: categoryIds.length > 0 ? categoryIds : undefined,
         brandIds: brandIds.length > 0 ? brandIds : undefined,
+        collectionIds: collectionIds.length > 0 ? collectionIds : undefined,
         onSale: params.onSale === "true" ? true : undefined,
         inStock: params.inStock === "true" ? true : undefined,
         minPrice,
@@ -214,15 +264,22 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
         options: Object.keys(options).length > 0 ? options : undefined,
       },
     }),
-    getFacets(), // Fetch unfiltered facets for filter UI
     getCategories(),
+    getCollections(),
     searchBrands({ limit: 100 }),
+    // Only fetch unfiltered facets when filters are active (for showing available options)
+    hasFilters ? getFacets() : Promise.resolve(null),
   ]);
 
-  // Build ID-to-name maps for categories and brands
+  // Build ID-to-name maps for categories, collections, and brands
   const categoryMap = new Map<string, string>();
   categoriesData.forEach((cat) => {
     categoryMap.set(cat.id, cat.name || cat.handle || cat.id);
+  });
+
+  const collectionMap = new Map<string, string>();
+  collectionsData.forEach((col) => {
+    collectionMap.set(col.id, col.title || col.handle || col.id);
   });
 
   const brandMap = new Map<string, string>();
@@ -252,12 +309,26 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
   }
 
   // Transform facets for filter UI with human-readable labels
-  // Use unfiltered facets so all options are visible even when filters are applied
+  // Dynamic filtering: Use filtered facets for categories, brands, collections, options
+  // Price range: Use unfiltered facets to show full range (better UX for expanding search)
   const facets = transformFacets(
-    facetsResult.facets || result.facets,
+    result.facets,
     categoryMap,
-    brandMap
+    brandMap,
+    collectionMap
   );
+
+  // Override price range with unfiltered facets if available (when filters are active)
+  // This allows users to see the full price range and expand their search
+  if (unfilteredFacets?.facets?.price_aud) {
+    const priceKeys = Object.keys(unfilteredFacets.facets.price_aud).map(Number);
+    if (priceKeys.length > 0) {
+      facets.priceRange = {
+        min: Math.min(...priceKeys),
+        max: Math.max(...priceKeys),
+      };
+    }
+  }
 
   // Calculate pagination
   const totalPages = Math.ceil(result.totalCount / limit);
@@ -290,6 +361,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
   }
 
   // Transform products for ProductGrid compatibility
+  // Note: Meilisearch returns prices in dollars, ProductGrid uses them directly
   const productsForGrid = result.products.map((product) => ({
     id: product.id,
     handle: product.handle,
@@ -298,7 +370,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     variants: product.variants,
     price: product.price_aud,
     currency_code: "AUD",
-    originalPrice: product.original_price_aud,
+    originalPrice: product.original_price_aud ?? undefined,
     salePrice: product.on_sale ? product.price_aud : undefined,
     discountPercentage:
       product.on_sale && product.original_price_aud
