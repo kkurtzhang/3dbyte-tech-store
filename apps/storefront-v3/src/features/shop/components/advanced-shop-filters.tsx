@@ -383,7 +383,7 @@ export function AdvancedShopFilters({
     const params = getCurrentParams()
     updateFilters({
       ...params,
-      inStock: undefined,
+      inStock: "false",
     })
   }
 
@@ -452,7 +452,7 @@ export function AdvancedShopFilters({
         <h3 className="font-semibold">Filters</h3>
         {hasActiveFilters && (
           <Link
-            href="/shop"
+            href="/shop?inStock=true"
             className="text-xs font-mono text-primary hover:underline"
           >
             Clear All
