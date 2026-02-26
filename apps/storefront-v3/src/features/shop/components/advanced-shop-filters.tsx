@@ -608,7 +608,7 @@ export function AdvancedShopFilters({
           </AccordionTrigger>
           <AccordionContent>
             <div className="space-y-4">
-              <div className="px-2">
+              <div className="px-2 py-3">
                 <Slider
                   min={facets.priceRange.min}
                   max={facets.priceRange.max}
