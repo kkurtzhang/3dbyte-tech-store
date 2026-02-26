@@ -287,13 +287,14 @@ export function QuickViewDialog({
                   const prices = variant?.prices as Array<{ amount: number; currency_code: string }> | undefined
 
                   // Use calculated price or fall back to regular price
+                  // Note: Medusa v2 returns prices in dollars, not cents
                   const priceAmount = calculatedAmount || originalAmount || prices?.[0]?.amount || 0
                   const currencyCode = prices?.[0]?.currency_code || "usd"
 
                   return (
                     <PriceDisplay
-                      price={{ amount: priceAmount / 100, currency_code: currencyCode }}
-                      originalPrice={originalAmount && calculatedAmount && originalAmount > calculatedAmount ? originalAmount / 100 : undefined}
+                      price={{ amount: priceAmount, currency_code: currencyCode }}
+                      originalPrice={originalAmount && calculatedAmount && originalAmount > calculatedAmount ? originalAmount : undefined}
                       discountPercentage={saleInfo?.percentage}
                       size="md"
                     />

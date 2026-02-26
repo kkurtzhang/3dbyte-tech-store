@@ -145,7 +145,7 @@ export async function getProductByHandle(handle: string): Promise<StoreProduct |
       const hit = result.hits[0] as any
 
       // Construct a variant with price data from Meilisearch
-      // Meilisearch stores price_aud in cents at product level
+      // Note: Both Medusa v2 and Meilisearch store prices in dollars
       const priceAud = hit.price_aud ?? 0
       const originalPriceAud = hit.original_price_aud ?? priceAud
       const onSale = hit.on_sale ?? false
