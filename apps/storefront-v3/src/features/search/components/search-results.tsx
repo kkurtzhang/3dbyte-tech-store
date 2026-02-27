@@ -17,7 +17,7 @@ export function SearchResults({ initialHits, initialQuery = "" }: SearchResultsP
   })
 
   const [focusedIndex, setFocusedIndex] = useState(-1)
-  const cardRefs = useRef<(HTMLAnchorElement | null)[]>([])
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([])
   const containerRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
@@ -65,8 +65,8 @@ export function SearchResults({ initialHits, initialQuery = "" }: SearchResultsP
         break
       case "Enter":
         e.preventDefault()
-        if (focusedIndex >= 0 && cardRefs.current[focusedIndex]) {
-          router.push(cardRefs.current[focusedIndex]?.href || "#")
+        if (focusedIndex >= 0 && hits[focusedIndex]) {
+          router.push(`/products/${hits[focusedIndex].handle}`)
         }
         break
       case "Escape":
@@ -129,7 +129,7 @@ export function SearchResults({ initialHits, initialQuery = "" }: SearchResultsP
   }
 
   return (
-    <div 
+    <div
       ref={containerRef}
       role="listbox"
       aria-label="Search Results"
@@ -141,16 +141,22 @@ export function SearchResults({ initialHits, initialQuery = "" }: SearchResultsP
         {hits.length} products found. Use arrow keys to navigate.
       </div>
       {hits.map((hit: any, index: number) => (
-        <a
+        <div
           key={hit.id}
           ref={(el) => { cardRefs.current[index] = el }}
           role="option"
           aria-selected={focusedIndex === index}
           tabIndex={focusedIndex === index ? 0 : -1}
-          href={`/products/${hit.handle}`}
-          className={`transition-all duration-150 ${
-            focusedIndex === index 
-              ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-[1.02]" 
+          onClick={() => router.push(`/products/${hit.handle}`)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault()
+              router.push(`/products/${hit.handle}`)
+            }
+          }}
+          className={`cursor-pointer transition-all duration-150 ${
+            focusedIndex === index
+              ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-[1.02]"
               : "hover:scale-[1.01]"
           }`}
           onFocus={() => setFocusedIndex(index)}
@@ -161,9 +167,11 @@ export function SearchResults({ initialHits, initialQuery = "" }: SearchResultsP
             title={hit.title}
             thumbnail={hit.thumbnail}
             price={hit.price || { amount: 0, currency_code: "USD" }}
+            originalPrice={hit.originalPrice}
+            discountPercentage={hit.discountPercentage}
             specs={hit.specs}
           />
-        </a>
+        </div>
       ))}
     </div>
   )
