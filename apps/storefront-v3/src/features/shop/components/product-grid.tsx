@@ -68,22 +68,23 @@ export function ProductGrid({ products, className }: ProductGridProps) {
           currencyCode = product.currency_code || "usd";
         } else {
           // Medusa StoreProduct (nested in variants)
+          // Note: Medusa v2 returns prices in dollars, not cents
           const variant = product.variants?.[0];
           currencyCode = variant?.calculated_price?.currency_code || "usd";
-          
+
           // Get calculated (sale) price and original price
           const calculatedAmount = variant?.calculated_price?.calculated_amount;
           const originalAmount = variant?.original_price?.amount;
-          
+
           if (calculatedAmount) {
-            price = calculatedAmount / 100;
+            price = calculatedAmount;
           } else if (variant?.prices?.[0]?.amount) {
-            price = variant.prices[0].amount / 100;
+            price = variant.prices[0].amount;
           }
 
           // Calculate discount if original price exists
           if (originalAmount && originalAmount > 0 && calculatedAmount) {
-            originalPrice = originalAmount / 100;
+            originalPrice = originalAmount;
             discountPercentage = ((originalAmount - calculatedAmount) / originalAmount) * 100;
           }
 

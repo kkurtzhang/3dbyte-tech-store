@@ -11,53 +11,76 @@ interface SearchOptions {
   sizes?: string[] | undefined
   minPrice?: number | undefined
   maxPrice?: number | undefined
+  brands?: string[] | undefined
+  inStock?: boolean | undefined
 }
 
 export async function searchProducts(query: string, options: SearchOptions = {}) {
-  const { limit = 20, categories, materials, diameters, colors, sizes, minPrice, maxPrice } = options
+  const { limit = 20, categories, minPrice, maxPrice, brands, inStock } = options
 
   try {
     const index = searchClient.index(INDEX_PRODUCTS)
 
     const filter: string[] = []
 
+    // Use category_ids which is the actual filterable attribute in Meilisearch
     if (categories && categories.length > 0) {
-      // Meilisearch filter syntax: category IN ["A", "B"]
-      filter.push(`category IN [${categories.map(c => `"${c}"`).join(", ")}]`)
+      // Note: category_ids is an array, we filter by exact match
+      filter.push(`category_ids IN [${categories.map(c => `"${c}"`).join(", ")}]`)
     }
 
-    if (materials && materials.length > 0) {
-      filter.push(`material IN [${materials.map(m => `"${m}"`).join(", ")}]`)
+    // Brand filter - use brand.id
+    if (brands && brands.length > 0) {
+      filter.push(`brand.id IN [${brands.map(b => `"${b}"`).join(", ")}]`)
     }
 
-    if (diameters && diameters.length > 0) {
-      filter.push(`diameter IN [${diameters.map(d => `"${d}"`).join(", ")}]`)
+    // In stock filter
+    if (inStock) {
+      filter.push(`in_stock = true`)
     }
 
-    if (colors && colors.length > 0) {
-      filter.push(`color IN [${colors.map(c => `"${c}"`).join(", ")}]`)
-    }
-
-    if (sizes && sizes.length > 0) {
-      filter.push(`size IN [${sizes.map(s => `"${s}"`).join(", ")}]`)
-    }
-
+    // Price range filters
     if (minPrice !== undefined) {
-      filter.push(`price >= ${minPrice}`)
+      filter.push(`price_aud >= ${minPrice}`)
     }
-
     if (maxPrice !== undefined) {
-      filter.push(`price <= ${maxPrice}`)
+      filter.push(`price_aud <= ${maxPrice}`)
     }
 
     const result = await index.search(query, {
       limit,
       filter: filter.length > 0 ? filter.join(" AND ") : undefined,
-      attributesToRetrieve: ["id", "handle", "title", "thumbnail", "price", "specs"],
+      // Request actual fields from Meilisearch index
+      attributesToRetrieve: [
+        "id", "handle", "title", "thumbnail",
+        "price_aud", "original_price_aud", "on_sale",
+        "in_stock", "inventory_quantity",
+        "categories", "category_ids", "brand"
+      ],
     })
 
+    // Transform hits to match ProductCard expected format
+    const hits = result.hits.map((hit: any) => ({
+      id: hit.id,
+      handle: hit.handle,
+      title: hit.title,
+      thumbnail: hit.thumbnail,
+      // Transform price to ProductCard format
+      price: {
+        amount: hit.price_aud ?? 0,
+        currency_code: "aud",
+      },
+      originalPrice: hit.original_price_aud && hit.original_price_aud > hit.price_aud
+        ? hit.original_price_aud
+        : undefined,
+      discountPercentage: hit.original_price_aud && hit.price_aud && hit.original_price_aud > hit.price_aud
+        ? Math.round((1 - hit.price_aud / hit.original_price_aud) * 100)
+        : undefined,
+      specs: [],
+    }))
+
     return {
-      hits: result.hits,
+      hits,
       estimatedTotalHits: result.estimatedTotalHits,
     }
   } catch (error) {

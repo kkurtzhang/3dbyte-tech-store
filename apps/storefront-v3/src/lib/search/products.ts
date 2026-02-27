@@ -298,17 +298,14 @@ export async function searchProducts(
       })
 
       // Transform Medusa products to ProductHit format
+      // Note: Medusa v2 returns prices in dollars, not cents
       const products: ProductHit[] = medusaResult.products.map((p: any) => ({
         id: p.id,
         handle: p.handle,
         title: p.title,
         thumbnail: p.thumbnail,
-        price_aud: p.variants?.[0]?.prices?.[0]?.amount
-          ? p.variants[0].prices[0].amount / 100
-          : 0,
-        original_price_aud: p.variants?.[0]?.original_price
-          ? p.variants[0].original_price / 100
-          : undefined,
+        price_aud: p.variants?.[0]?.prices?.[0]?.amount ?? 0,
+        original_price_aud: p.variants?.[0]?.original_price ?? undefined,
         on_sale: p.on_sale ?? false,
         in_stock:
           (p.variants?.[0]?.inventory_quantity ?? 0) > 0 ||
