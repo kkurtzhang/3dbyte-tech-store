@@ -15,13 +15,7 @@ module.exports = defineConfig({
     },
     redisUrl: process.env.REDIS_URL,
   },
-  admin: {
-    disable: true,
-  },
   modules: [
-    {
-      resolve: "./src/modules/auth",
-    },
     {
       resolve: "./src/modules/strapi",
       options: {
@@ -67,8 +61,10 @@ module.exports = defineConfig({
       options: {
         host: process.env.MEILISEARCH_HOST || "http://localhost:7700",
         apiKey: process.env.MEILISEARCH_API_KEY || "",
-        productIndexName: process.env.MEILISEARCH_PRODUCT_INDEX_NAME || "products",
-        categoryIndexName: process.env.MEILISEARCH_CATEGORY_INDEX_NAME || "categories",
+        productIndexName:
+          process.env.MEILISEARCH_PRODUCT_INDEX_NAME || "products",
+        categoryIndexName:
+          process.env.MEILISEARCH_CATEGORY_INDEX_NAME || "categories",
         brandIndexName: process.env.MEILISEARCH_BRAND_INDEX_NAME || "brands",
       },
     },

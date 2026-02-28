@@ -78,6 +78,7 @@ export async function syncIndexSettingsFn(
     "handle",
     "brand.id",
     "category_ids",
+    "collection_ids",
     "type_id",
     "on_sale",
     "in_stock",

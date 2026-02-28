@@ -35,6 +35,16 @@ interface MeiliSearchIndex {
     isIndexing: boolean;
     fieldDistribution: Record<string, number>;
   }>;
+  getSettings(): Promise<{
+    filterableAttributes: string[];
+    sortableAttributes: string[];
+    searchableAttributes: string[];
+    displayedAttributes: string[];
+    rankingRules: string[];
+    typoTolerance: unknown;
+    faceting: unknown;
+    pagination: unknown;
+  }>;
   updateFilterableAttributes(
     attributes: string[],
   ): Promise<MeiliSearchEnqueuedTask>;
@@ -310,6 +320,28 @@ export default class MeilisearchModuleService {
       numberOfDocuments: stats.numberOfDocuments,
       isIndexing: stats.isIndexing,
       fieldDistribution: stats.fieldDistribution,
+    };
+  }
+
+  /**
+   * Get current index settings from Meilisearch
+   * Used to merge with new settings instead of overwriting
+   */
+  async getIndexSettings(
+    type: MeilisearchIndexType = "product",
+  ): Promise<MeilisearchIndexSettings> {
+    const index = await this.getIndex(type);
+    const settings = await index.getSettings();
+
+    return {
+      filterableAttributes: settings.filterableAttributes,
+      sortableAttributes: settings.sortableAttributes,
+      searchableAttributes: settings.searchableAttributes,
+      displayedAttributes: settings.displayedAttributes,
+      rankingRules: settings.rankingRules,
+      typoTolerance: settings.typoTolerance as MeilisearchIndexSettings["typoTolerance"],
+      faceting: settings.faceting as MeilisearchIndexSettings["faceting"],
+      pagination: settings.pagination as MeilisearchIndexSettings["pagination"],
     };
   }
 }
