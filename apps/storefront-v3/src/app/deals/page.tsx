@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getDiscountedProducts } from "@/lib/medusa/products";
+import { searchProducts } from "@/lib/search/products";
 import { ProductGrid } from "@/features/shop/components/product-grid";
 import { DealsFilter } from "@/features/shop/components/deals-filter";
 import { ListingLayout } from "@/components/layout/listing-layout";
 import { Button } from "@/components/ui/button";
 import { Tag, ArrowRight } from "lucide-react";
+import { ShopErrorState } from "@/features/shop/components/shop-error-state";
+import { ShopEmptyState } from "@/features/shop/components/shop-empty-state";
+
+// Force dynamic rendering to prevent caching
+export const dynamic = "force-dynamic";
 
 interface DealsPageProps {
   searchParams: Promise<{
@@ -22,23 +27,108 @@ export default async function DealsPage({ searchParams }: DealsPageProps) {
   const minDiscount = params.minDiscount ? Number(params.minDiscount) : undefined;
   const maxDiscount = params.maxDiscount ? Number(params.maxDiscount) : undefined;
 
-  const { products, count } = await getDiscountedProducts({
+  // Fetch products on sale from Meilisearch
+  const result = await searchProducts({
     page,
     limit,
-    minDiscount,
-    maxDiscount,
+    filters: {
+      onSale: true,
+      minDiscount,
+      maxDiscount,
+    },
   });
 
-  const totalPages = Math.ceil(count / limit);
+  // Handle error state
+  if (result.error) {
+    return (
+      <ListingLayout
+        header={
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10">
+                <Tag className="h-6 w-6 text-red-500" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">Deals & Promotions</h1>
+                <p className="font-mono text-sm text-muted-foreground">
+                  Unable to load products
+                </p>
+              </div>
+            </div>
+          </div>
+        }
+        sidebar={null}
+      >
+        <ShopErrorState />
+      </ListingLayout>
+    );
+  }
 
-  // Generate discount filter options
+  const totalCount = result.totalCount;
+  const totalPages = Math.ceil(totalCount / limit);
+
+  // Handle empty state
+  if (result.products.length === 0) {
+    return (
+      <ListingLayout
+        header={
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/10">
+                <Tag className="h-6 w-6 text-red-500" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">Deals & Promotions</h1>
+                <p className="font-mono text-sm text-muted-foreground">
+                  0 products on sale
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" asChild>
+                <Link href="/shop">
+                  Browse All
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        }
+        sidebar={null}
+      >
+        <ShopEmptyState hasActiveFilters={false} />
+      </ListingLayout>
+    );
+  }
+
+  // Transform products for ProductGrid compatibility
+  // Note: Meilisearch returns prices in dollars, ProductGrid uses them directly
+  const productsForGrid = result.products.map((product) => ({
+    id: product.id,
+    handle: product.handle,
+    title: product.title,
+    thumbnail: product.thumbnail,
+    variants: product.variants,
+    price: product.price_aud,
+    currency_code: "AUD",
+    originalPrice: product.original_price_aud ?? undefined,
+    salePrice: product.on_sale ? product.price_aud : undefined,
+    discountPercentage:
+      product.on_sale && product.original_price_aud
+        ? ((product.original_price_aud - product.price_aud) /
+            product.original_price_aud) *
+          100
+        : undefined,
+  }));
+
+  // Generate discount filter options based on the transformed products
   const discountFilters = [
-    { id: "all", label: "All Deals", min: undefined, max: undefined, count: count },
-    { id: "10", label: "10%+ Off", min: 10, max: undefined, count: products.filter((p: any) => (p.discountPercentage || 0) >= 10).length || Math.floor(count * 0.6) },
-    { id: "20", label: "20%+ Off", min: 20, max: undefined, count: products.filter((p: any) => (p.discountPercentage || 0) >= 20).length || Math.floor(count * 0.4) },
-    { id: "30", label: "30%+ Off", min: 30, max: undefined, count: products.filter((p: any) => (p.discountPercentage || 0) >= 30).length || Math.floor(count * 0.25) },
-    { id: "40", label: "40%+ Off", min: 40, max: undefined, count: products.filter((p: any) => (p.discountPercentage || 0) >= 40).length || Math.floor(count * 0.1) },
-    { id: "50", label: "50%+ Off", min: 50, max: undefined, count: products.filter((p: any) => (p.discountPercentage || 0) >= 50).length || Math.floor(count * 0.05) },
+    { id: "all", label: "All Deals", min: undefined, max: undefined, count: totalCount },
+    { id: "10", label: "10%+ Off", min: 10, max: undefined, count: productsForGrid.filter((p: any) => (p.discountPercentage || 0) >= 10).length || Math.floor(totalCount * 0.6) },
+    { id: "20", label: "20%+ Off", min: 20, max: undefined, count: productsForGrid.filter((p: any) => (p.discountPercentage || 0) >= 20).length || Math.floor(totalCount * 0.4) },
+    { id: "30", label: "30%+ Off", min: 30, max: undefined, count: productsForGrid.filter((p: any) => (p.discountPercentage || 0) >= 30).length || Math.floor(totalCount * 0.25) },
+    { id: "40", label: "40%+ Off", min: 40, max: undefined, count: productsForGrid.filter((p: any) => (p.discountPercentage || 0) >= 40).length || Math.floor(totalCount * 0.1) },
+    { id: "50", label: "50%+ Off", min: 50, max: undefined, count: productsForGrid.filter((p: any) => (p.discountPercentage || 0) >= 50).length || Math.floor(totalCount * 0.05) },
   ];
 
   return (
@@ -52,7 +142,10 @@ export default async function DealsPage({ searchParams }: DealsPageProps) {
             <div>
               <h1 className="text-2xl font-bold tracking-tight">Deals & Promotions</h1>
               <p className="font-mono text-sm text-muted-foreground">
-                {count} {count === 1 ? "product" : "products"} on sale
+                {totalCount} {totalCount === 1 ? "product" : "products"} on sale
+                {result.degradedMode && (
+                  <span className="ml-2 text-amber-500">(limited results)</span>
+                )}
               </p>
             </div>
           </div>
@@ -87,7 +180,7 @@ export default async function DealsPage({ searchParams }: DealsPageProps) {
           </div>
         </div>
 
-        <ProductGrid products={products} />
+        <ProductGrid products={productsForGrid} />
 
         {totalPages > 1 && (
           <div className="flex justify-center">

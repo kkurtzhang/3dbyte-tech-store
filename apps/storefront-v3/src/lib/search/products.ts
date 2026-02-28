@@ -41,6 +41,10 @@ export interface ProductSearchParams {
     minPrice?: number
     /** Maximum price (AUD) */
     maxPrice?: number
+    /** Minimum discount percentage (0-100) - requires onSale=true for accurate results */
+    minDiscount?: number
+    /** Maximum discount percentage (0-100) - requires onSale=true for accurate results */
+    maxDiscount?: number
     /** Dynamic product options (e.g., { colour: ["Black", "White"], size: ["S", "M"] }) */
     options?: Record<string, string[]>
   }
@@ -56,6 +60,7 @@ export interface ProductHit {
   thumbnail?: string
   price_aud: number
   original_price_aud?: number
+  discount_percentage?: number
   on_sale: boolean
   in_stock: boolean
   inventory_quantity: number
@@ -220,6 +225,32 @@ function getOptionFacets(): string[] {
 }
 
 // ============================================================================
+// Discount Calculation Helper
+// ============================================================================
+
+/**
+ * Calculate discount percentage from original and sale price
+ *
+ * @param originalPrice - Original price before discount
+ * @param salePrice - Current sale price
+ * @returns Discount percentage (0-100) or undefined if not applicable
+ */
+function calculateDiscountPercentage(
+  originalPrice?: number,
+  salePrice?: number
+): number | undefined {
+  if (
+    originalPrice === undefined ||
+    salePrice === undefined ||
+    originalPrice <= salePrice ||
+    originalPrice <= 0
+  ) {
+    return undefined
+  }
+  return ((originalPrice - salePrice) / originalPrice) * 100
+}
+
+// ============================================================================
 // Main Search Function
 // ============================================================================
 
@@ -233,6 +264,13 @@ export async function searchProducts(
   params: ProductSearchParams = {}
 ): Promise<ProductSearchResult> {
   const { query = "", page = 1, limit = 20, sort } = params
+  const { minDiscount, maxDiscount } = params.filters || {}
+
+  // If discount filtering is requested, use Medusa directly since
+  // Meilisearch doesn't have discount_percentage indexed
+  if (minDiscount !== undefined || maxDiscount !== undefined) {
+    return searchWithDiscountFilter(params)
+  }
 
   // Try Meilisearch first
   try {
@@ -260,21 +298,31 @@ export async function searchProducts(
     })
 
     // Transform hits to ProductHit format
-    const products: ProductHit[] = result.hits.map((hit) => ({
-      id: hit.id,
-      handle: hit.handle,
-      title: hit.title,
-      thumbnail: hit.thumbnail,
-      price_aud: hit.price_aud ?? 0,
-      original_price_aud: hit.price_aud, // Will be different for sale items
-      on_sale: hit.on_sale,
-      in_stock: hit.in_stock,
-      inventory_quantity: hit.inventory_quantity,
-      category_ids: hit.category_ids,
-      categories: hit.categories,
-      brand: hit.brand,
-      variants: hit.variants,
-    }))
+    const products: ProductHit[] = result.hits.map((hit) => {
+      // original_price_aud may not be indexed, access with proper typing
+      const hitWithOriginalPrice = hit as typeof hit & { original_price_aud?: number }
+      const originalPriceAud = hitWithOriginalPrice.original_price_aud
+      const discountPercentage = calculateDiscountPercentage(
+        originalPriceAud,
+        hit.price_aud
+      )
+      return {
+        id: hit.id,
+        handle: hit.handle,
+        title: hit.title,
+        thumbnail: hit.thumbnail,
+        price_aud: hit.price_aud ?? 0,
+        original_price_aud: originalPriceAud,
+        discount_percentage: discountPercentage,
+        on_sale: hit.on_sale,
+        in_stock: hit.in_stock,
+        inventory_quantity: hit.inventory_quantity,
+        category_ids: hit.category_ids,
+        categories: hit.categories,
+        brand: hit.brand,
+        variants: hit.variants,
+      }
+    })
 
     return {
       products,
@@ -286,59 +334,103 @@ export async function searchProducts(
   } catch (error) {
     console.warn("Meilisearch search failed, falling back to Medusa", error)
 
-    // Fallback to Medusa SDK
-    try {
-      const medusaResult = await getProducts({
-        page,
-        limit,
-        q: query || undefined,
-        category_id: params.filters?.categoryIds,
-        minPrice: params.filters?.minPrice,
-        maxPrice: params.filters?.maxPrice,
+    return searchWithDiscountFilter(params)
+  }
+}
+
+/**
+ * Search products with discount filtering using Medusa
+ *
+ * This is used when discount filters are applied since Meilisearch
+ * doesn't have discount_percentage indexed.
+ */
+async function searchWithDiscountFilter(
+  params: ProductSearchParams
+): Promise<ProductSearchResult> {
+  const { query = "", page = 1, limit = 20 } = params
+  const { minDiscount, maxDiscount, onSale } = params.filters || {}
+
+  try {
+    // Use getDiscountedProducts for discount filtering
+    const medusaResult = await getProducts({
+      page,
+      limit: 100, // Fetch more to allow for filtering
+      q: query || undefined,
+      category_id: params.filters?.categoryIds,
+      minPrice: params.filters?.minPrice,
+      maxPrice: params.filters?.maxPrice,
+    })
+
+    // Transform and filter products
+    let products: ProductHit[] = medusaResult.products
+      .map((p: any) => {
+        const variant = p.variants?.[0]
+        const calcPrice = variant?.calculated_price?.calculated_amount ?? variant?.prices?.[0]?.amount ?? 0
+        const origPrice =
+          variant?.original_price?.amount ??
+          variant?.calculated_price?.original_amount ??
+          calcPrice
+
+        const discountPercentage = calculateDiscountPercentage(origPrice, calcPrice)
+        const isOnSale = origPrice > calcPrice
+
+        return {
+          id: p.id,
+          handle: p.handle,
+          title: p.title,
+          thumbnail: p.thumbnail,
+          price_aud: calcPrice,
+          original_price_aud: origPrice > calcPrice ? origPrice : undefined,
+          discount_percentage: discountPercentage,
+          on_sale: isOnSale,
+          in_stock:
+            (variant?.inventory_quantity ?? 0) > 0 ||
+            !variant?.manage_inventory,
+          inventory_quantity: variant?.inventory_quantity ?? 0,
+          category_ids: p.categories?.map((c: any) => c.id) ?? [],
+          categories: p.categories?.map((c: any) => c.name) ?? [],
+          brand: p.brand,
+          variants:
+            p.variants?.map((v: any) => ({
+              id: v.id,
+              sku: v.sku,
+              title: v.title,
+            })) ?? [],
+        }
+      })
+      .filter((product) => {
+        // Filter by onSale if requested
+        if (onSale && !product.on_sale) return false
+
+        // Filter by discount percentage
+        const discount = product.discount_percentage ?? 0
+        if (minDiscount !== undefined && discount < minDiscount) return false
+        if (maxDiscount !== undefined && discount > maxDiscount) return false
+
+        return true
       })
 
-      // Transform Medusa products to ProductHit format
-      // Note: Medusa v2 returns prices in dollars, not cents
-      const products: ProductHit[] = medusaResult.products.map((p: any) => ({
-        id: p.id,
-        handle: p.handle,
-        title: p.title,
-        thumbnail: p.thumbnail,
-        price_aud: p.variants?.[0]?.prices?.[0]?.amount ?? 0,
-        original_price_aud: p.variants?.[0]?.original_price ?? undefined,
-        on_sale: p.on_sale ?? false,
-        in_stock:
-          (p.variants?.[0]?.inventory_quantity ?? 0) > 0 ||
-          !p.variants?.[0]?.manage_inventory,
-        inventory_quantity: p.variants?.[0]?.inventory_quantity ?? 0,
-        category_ids: p.categories?.map((c: any) => c.id) ?? [],
-        categories: p.categories?.map((c: any) => c.name) ?? [],
-        brand: p.brand,
-        variants:
-          p.variants?.map((v: any) => ({
-            id: v.id,
-            sku: v.sku,
-            title: v.title,
-          })) ?? [],
-      }))
+    // Apply pagination after filtering
+    const totalCount = products.length
+    const offset = (page - 1) * limit
+    products = products.slice(offset, offset + limit)
 
-      return {
-        products,
-        totalCount: medusaResult.count,
-        facets: {}, // No facets in degraded mode
-        error: false,
-        degradedMode: true,
-      }
-    } catch (fallbackError) {
-      console.error("Both Meilisearch and Medusa failed", fallbackError)
+    return {
+      products,
+      totalCount,
+      facets: {}, // No facets when using discount filter
+      error: false,
+      degradedMode: true,
+    }
+  } catch (error) {
+    console.error("Medusa search with discount filter failed", error)
 
-      return {
-        products: [],
-        totalCount: 0,
-        facets: {},
-        error: true,
-        degradedMode: false,
-      }
+    return {
+      products: [],
+      totalCount: 0,
+      facets: {},
+      error: true,
+      degradedMode: false,
     }
   }
 }
