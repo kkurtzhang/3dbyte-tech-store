@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { StoreCart } from "@medusajs/types"
 import { createCart, getCart, addToCart, updateLineItem, deleteLineItem } from "@/lib/medusa/cart"
 
-const CART_STORAGE_KEY = "_medusa_cart_id"
+export const CART_STORAGE_KEY = "_medusa_cart_id"
 
 interface CartContextType {
   cart: StoreCart | null
