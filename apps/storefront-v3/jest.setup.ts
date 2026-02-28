@@ -87,3 +87,11 @@ Object.defineProperty(window, "localStorage", {
 Object.defineProperty(window, "sessionStorage", {
   value: localStorageMock,
 })
+
+// Mock pointer capture APIs (required for Radix UI components)
+Element.prototype.hasPointerCapture = jest.fn().mockReturnValue(false)
+Element.prototype.setPointerCapture = jest.fn()
+Element.prototype.releasePointerCapture = jest.fn()
+
+// Mock scrollIntoView (required for Radix UI Select)
+Element.prototype.scrollIntoView = jest.fn()

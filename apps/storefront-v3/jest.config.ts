@@ -47,7 +47,7 @@ const customJestConfig = {
   },
   testPathIgnorePatterns: ["<rootDir>/node_modules/", "<rootDir>/.next/"],
   transformIgnorePatterns: [
-    "/node_modules/(?!(@medusajs|meilisearch)/)",
+    "/node_modules/(?!(@medusajs|meilisearch|lucide-react)/)",
   ],
 } satisfies Config
 
