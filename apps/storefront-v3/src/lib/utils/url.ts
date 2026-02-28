@@ -114,8 +114,9 @@ export function parseShopQueryString(searchParams: URLSearchParams): ShopQueryPa
 
 /**
  * Build a full shop URL path with query string.
+ * Optionally accepts a custom base path (e.g., '/brands/xyz' for brand pages).
  */
-export function buildShopUrl(params: ShopQueryParams): string {
+export function buildShopUrl(params: ShopQueryParams, basePath: string = "/shop"): string {
   const queryString = buildShopQueryString(params)
-  return `/shop${queryString}`
+  return `${basePath}${queryString}`
 }

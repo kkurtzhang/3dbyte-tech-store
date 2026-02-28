@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react"
 import Image from "next/image"
 import { StoreCartLineItem } from "@medusajs/types"
-import { Minus, Plus, Trash2, Bookmark } from "lucide-react"
+import { Minus, Plus, Trash2, Bookmark, ImageOff } from "lucide-react"
 import { useCart } from "@/context/cart-context"
 import { useSavedItems } from "@/context/saved-items-context"
 
@@ -68,8 +68,8 @@ export function CartItem({ item, currencyCode, showSaveForLater = true }: CartIt
             sizes="80px"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center font-mono text-xs text-muted-foreground">
-            NO_IMG
+          <div className="flex h-full w-full items-center justify-center bg-muted">
+            <ImageOff className="h-8 w-8 text-muted-foreground/50" />
           </div>
         )}
       </div>

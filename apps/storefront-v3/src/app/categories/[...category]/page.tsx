@@ -1,15 +1,90 @@
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
-import { getCategoryByHandle, getProductsByCategory } from "@/lib/medusa/categories"
+import { getCategoryByHandle } from "@/lib/medusa/categories"
+import { searchProducts } from "@/lib/search/products"
 import { ProductGrid } from "@/features/shop/components/product-grid"
 import { ShopSort, type SortOption } from "@/features/shop/components/shop-sort"
+import { ShopErrorState } from "@/features/shop/components/shop-error-state"
+import { ShopEmptyState } from "@/features/shop/components/shop-empty-state"
+import { ListingLayout } from "@/components/layout/listing-layout"
+import { CategoryFilters } from "@/components/filters/category-filters"
+
+// Force dynamic rendering to prevent caching
+export const dynamic = "force-dynamic"
 
 interface CategoryPageProps {
   params: Promise<{ category: string[] }>
   searchParams: Promise<{
     page?: string
     sort?: SortOption
+    brand?: string
+    collection?: string
+    onSale?: string
+    inStock?: string
+    minPrice?: string
+    maxPrice?: string
+    // Dynamic options (e.g., options_colour, options_size)
+    [key: `options_${string}`]: string | undefined
   }>
+}
+
+/**
+ * Parse dynamic options from URL params (e.g., options_colour=Black,White)
+ */
+function parseDynamicOptions(
+  params: Record<string, string | undefined>
+): Record<string, string[]> {
+  const options: Record<string, string[]> = {}
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (key.startsWith("options_") && value) {
+      const optionKey = key.replace("options_", "")
+      options[optionKey] = value.split(",").filter(Boolean)
+    }
+  })
+
+  return options
+}
+
+/**
+ * Build category URL with query params preserving filters
+ */
+function buildCategoryUrl(
+  categoryHandle: string[],
+  pageNum: number,
+  sort: string,
+  filters: {
+    brand?: string
+    collection?: string
+    onSale?: string
+    inStock?: string
+    minPrice?: string
+    maxPrice?: string
+    options?: Record<string, string[]>
+  }
+): string {
+  const params = new URLSearchParams()
+
+  if (pageNum > 1) params.set("page", pageNum.toString())
+  if (sort !== "newest") params.set("sort", sort)
+  if (filters.brand) params.set("brand", filters.brand)
+  if (filters.collection) params.set("collection", filters.collection)
+  if (filters.onSale) params.set("onSale", filters.onSale)
+  if (filters.inStock) params.set("inStock", filters.inStock)
+  if (filters.minPrice) params.set("minPrice", filters.minPrice)
+  if (filters.maxPrice) params.set("maxPrice", filters.maxPrice)
+
+  // Add dynamic options
+  if (filters.options) {
+    Object.entries(filters.options).forEach(([key, values]) => {
+      if (values.length > 0) {
+        params.set(`options_${key}`, values.join(","))
+      }
+    })
+  }
+
+  const queryString = params.toString()
+  return `/categories/${categoryHandle.join("/")}${queryString ? `?${queryString}` : ""}`
 }
 
 export default async function CategoryPage({
@@ -22,18 +97,36 @@ export default async function CategoryPage({
   const limit = 20
   const sort = search.sort || "newest"
 
+  // Get category data from Medusa to get category ID and name
   const categoryData = await getCategoryByHandle(category.category)
 
   if (!categoryData) {
     notFound()
   }
 
-  const { products, count } = await getProductsByCategory(categoryData.id, {
+  // Parse filter params from URL
+  const brandIds = search.brand?.split(",").filter(Boolean) || []
+  const collectionIds = search.collection?.split(",").filter(Boolean) || []
+  const minPrice = search.minPrice ? Number(search.minPrice) : undefined
+  const maxPrice = search.maxPrice ? Number(search.maxPrice) : undefined
+  const options = parseDynamicOptions(search)
+
+  // Search products using Meilisearch with category and additional filters
+  const result = await searchProducts({
     page,
     limit,
+    sort,
+    filters: {
+      categoryIds: [categoryData.id],
+      brandIds: brandIds.length > 0 ? brandIds : undefined,
+      collectionIds: collectionIds.length > 0 ? collectionIds : undefined,
+      onSale: search.onSale === "true" ? true : undefined,
+      inStock: search.inStock === "true" ? true : undefined,
+      minPrice,
+      maxPrice,
+      options: Object.keys(options).length > 0 ? options : undefined,
+    },
   })
-
-  const totalPages = Math.ceil(count / limit)
 
   // Format category name from handle
   const categoryName = category.category
@@ -41,61 +134,150 @@ export default async function CategoryPage({
     .join(" / ")
     .replace(/\b\w/g, (l) => l.toUpperCase())
 
+  const categoryHandle = category.category.join("/")
+
+  // Handle error state
+  if (result.error) {
+    return (
+      <ListingLayout
+        header={
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">
+                {categoryData.name || categoryName}
+              </h1>
+              <p className="mt-2 font-mono text-sm text-muted-foreground">
+                Unable to load products
+              </p>
+            </div>
+          </div>
+        }
+        sidebar={null}
+      >
+        <ShopErrorState />
+      </ListingLayout>
+    )
+  }
+
+  // Handle empty state
+  if (result.products.length === 0) {
+    return (
+      <ListingLayout
+        header={
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">
+                {categoryData.name || categoryName}
+              </h1>
+              <p className="mt-2 font-mono text-sm text-muted-foreground">
+                0 products
+              </p>
+            </div>
+            <ShopSort basePath={`/categories/${categoryHandle}`} />
+          </div>
+        }
+        sidebar={
+          <CategoryFilters
+            categoryId={categoryData.id}
+            categoryHandle={categoryHandle}
+          />
+        }
+      >
+        <ShopEmptyState hasActiveFilters={true} />
+      </ListingLayout>
+    )
+  }
+
+  const totalPages = Math.ceil(result.totalCount / limit)
+
+  // Transform products for ProductGrid compatibility
+  // Note: Meilisearch returns prices in dollars, ProductGrid uses them directly
+  const productsForGrid = result.products.map((product) => ({
+    id: product.id,
+    handle: product.handle,
+    title: product.title,
+    thumbnail: product.thumbnail,
+    variants: product.variants,
+    price: product.price_aud,
+    currency_code: "AUD",
+    originalPrice: product.original_price_aud ?? undefined,
+    salePrice: product.on_sale ? product.price_aud : undefined,
+    discountPercentage:
+      product.on_sale && product.original_price_aud
+        ? ((product.original_price_aud - product.price_aud) /
+            product.original_price_aud) *
+          100
+        : undefined,
+  }))
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">
-          {categoryData.name || categoryName}
-        </h1>
-        <p className="mt-2 font-mono text-sm text-muted-foreground">
-          {count} {count === 1 ? "product" : "products"}
-        </p>
-      </div>
-
-      {/* Sort - Mobile */}
-      <div className="mb-6 flex justify-end lg:hidden">
-        <ShopSort />
-      </div>
-
-      {/* Products */}
-      <ProductGrid products={products} />
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-8 flex justify-center">
-          <nav
-            className="flex gap-2"
-            role="navigation"
-            aria-label="Pagination"
-          >
-            {Array.from({ length: totalPages }).map((_, i) => {
-              const pageNum = i + 1
-              const isCurrent = pageNum === page
-
-              const params = new URLSearchParams()
-              if (pageNum > 1) params.set("page", pageNum.toString())
-              if (sort !== "newest") params.set("sort", sort)
-
-              return (
-                <a
-                  key={pageNum}
-                  href={`/categories/${category.category.join("/")}?${params.toString()}`}
-                  className={`inline-flex h-10 w-10 items-center justify-center rounded-md border font-mono text-sm transition-colors ${
-                    isCurrent
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-card hover:border-primary/50 hover:bg-accent"
-                  }`}
-                  aria-current={isCurrent ? "page" : undefined}
-                >
-                  {pageNum}
-                </a>
-              )
-            })}
-          </nav>
+    <ListingLayout
+      header={
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              {categoryData.name || categoryName}
+            </h1>
+            <p className="mt-2 font-mono text-sm text-muted-foreground">
+              {result.totalCount}{" "}
+              {result.totalCount === 1 ? "product" : "products"}
+              {result.degradedMode && (
+                <span className="ml-2 text-amber-500">(limited results)</span>
+              )}
+            </p>
+          </div>
+          <ShopSort basePath={`/categories/${categoryHandle}`} />
         </div>
-      )}
-    </div>
+      }
+      sidebar={
+        <CategoryFilters
+          categoryId={categoryData.id}
+          categoryHandle={categoryHandle}
+        />
+      }
+    >
+      <div className="space-y-8">
+        <ProductGrid products={productsForGrid} />
+
+        {totalPages > 1 && (
+          <div className="flex justify-center">
+            <nav
+              className="flex flex-wrap gap-2 justify-center"
+              role="navigation"
+              aria-label="Pagination"
+            >
+              {Array.from({ length: totalPages }).map((_, i) => {
+                const pageNum = i + 1
+                const isCurrent = pageNum === page
+
+                return (
+                  <a
+                    key={pageNum}
+                    href={buildCategoryUrl(category.category, pageNum, sort, {
+                      brand: search.brand,
+                      collection: search.collection,
+                      onSale: search.onSale,
+                      inStock: search.inStock,
+                      minPrice: search.minPrice,
+                      maxPrice: search.maxPrice,
+                      options,
+                    })}
+                    className={`inline-flex h-10 w-10 items-center justify-center rounded-md border font-mono text-sm transition-colors ${
+                      isCurrent
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-card hover:border-primary/50 hover:bg-accent"
+                    }`}
+                    aria-current={isCurrent ? "page" : undefined}
+                  >
+                    {pageNum}
+                  </a>
+                )
+              })}
+            </nav>
+          </div>
+        )}
+      </div>
+    </ListingLayout>
   )
 }
 

@@ -1,13 +1,11 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { searchProducts, getFacets, type FacetDistribution } from "@/lib/search/products";
+import { searchProducts } from "@/lib/search/products";
 
 // Force dynamic rendering to prevent caching
 export const dynamic = "force-dynamic";
-import type { FilterFacets, FilterOption } from "@/features/shop/types/filters";
 import { ProductGrid } from "@/features/shop/components/product-grid";
-import { AdvancedShopFilters } from "@/features/shop/components/advanced-shop-filters";
 import {
   ShopSort,
   type SortOption,
@@ -16,9 +14,7 @@ import { ListingLayout } from "@/components/layout/listing-layout";
 import { ShopErrorState } from "@/features/shop/components/shop-error-state";
 import { ShopEmptyState } from "@/features/shop/components/shop-empty-state";
 import { buildShopUrl, type ShopQueryParams } from "@/lib/utils/url";
-import { getCategories } from "@/lib/medusa/categories";
-import { getCollections } from "@/lib/medusa/collections";
-import { searchBrands } from "@/lib/search/brands";
+import { ShopFilters } from "@/components/filters";
 
 interface ShopPageProps {
   searchParams: Promise<{
@@ -39,6 +35,7 @@ interface ShopPageProps {
 
 /**
  * Parse dynamic options from URL params (e.g., options_colour=Black,White)
+ * Kept for parsing options for product search
  */
 function parseDynamicOptions(
   params: Record<string, string | undefined>
@@ -53,105 +50,6 @@ function parseDynamicOptions(
   });
 
   return options;
-}
-
-/**
- * Transform raw Meilisearch facet distribution to FilterFacets format
- * with human-readable labels for categories, brands, and collections
- */
-function transformFacets(
-  facetDistribution: FacetDistribution,
-  categoryMap: Map<string, string>,
-  brandMap: Map<string, string>,
-  collectionMap: Map<string, string>
-): FilterFacets {
-  // Transform categories (category_ids facet contains category IDs)
-  // Map IDs to readable names
-  const categories: FilterOption[] = Object.entries(
-    facetDistribution["category_ids"] || {}
-  )
-    .map(([id, count]) => ({
-      value: id,
-      label: categoryMap.get(id) || id,
-      count,
-    }))
-    .sort((a, b) => (a.label || a.value).localeCompare(b.label || b.value));
-
-  // Transform brands (brand.id facet contains brand IDs)
-  // Map IDs to readable names
-  const brands: FilterOption[] = Object.entries(
-    facetDistribution["brand.id"] || {}
-  )
-    .map(([id, count]) => ({
-      value: id,
-      label: brandMap.get(id) || id,
-      count,
-    }))
-    .sort((a, b) => (a.label || a.value).localeCompare(b.label || b.value));
-
-  // Transform collections (collection_ids facet contains collection IDs)
-  // Map IDs to readable names
-  const collections: FilterOption[] = Object.entries(
-    facetDistribution["collection_ids"] || {}
-  )
-    .map(([id, count]) => ({
-      value: id,
-      label: collectionMap.get(id) || id,
-      count,
-    }))
-    .sort((a, b) => (a.label || a.value).localeCompare(b.label || b.value));
-
-  // Transform on_sale facet
-  const onSale: FilterOption[] = Object.entries(
-    facetDistribution["on_sale"] || {}
-  ).map(([value, count]) => ({
-    value,
-    count,
-  }));
-
-  // Transform in_stock facet
-  const inStock: FilterOption[] = Object.entries(
-    facetDistribution["in_stock"] || {}
-  ).map(([value, count]) => ({
-    value,
-    count,
-  }));
-
-  // Calculate price range from price_aud facet
-  const priceKeys = Object.keys(facetDistribution["price_aud"] || {}).map(
-    Number
-  );
-  const priceRange = {
-    min: priceKeys.length > 0 ? Math.min(...priceKeys) : 0,
-    max: priceKeys.length > 0 ? Math.max(...priceKeys) : 1000,
-  };
-
-  // Transform dynamic options (options_* facets)
-  // Filter out options with 0 count to hide empty filter sections
-  const options: Record<string, FilterOption[]> = {};
-  Object.entries(facetDistribution).forEach(([key, distribution]) => {
-    if (key.startsWith("options_") && distribution) {
-      const filteredOpts = Object.entries(distribution)
-        .filter(([_, count]) => count > 0)
-        .map(([value, count]) => ({
-          value,
-          count,
-        }));
-      if (filteredOpts.length > 0) {
-        options[key] = filteredOpts;
-      }
-    }
-  });
-
-  return {
-    categories,
-    brands,
-    collections,
-    onSale,
-    inStock,
-    priceRange,
-    options,
-  };
 }
 
 /**
@@ -245,46 +143,22 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     maxPrice !== undefined ||
     Object.keys(options).length > 0;
 
-  // Fetch products, categories, collections, and brands in parallel
-  // When filters are active, fetch unfiltered facets separately for filter UI
-  const [result, categoriesData, collectionsData, brandsData, unfilteredFacets] = await Promise.all([
-    searchProducts({
-      query: params.q,
-      page,
-      limit,
-      sort,
-      filters: {
-        categoryIds: categoryIds.length > 0 ? categoryIds : undefined,
-        brandIds: brandIds.length > 0 ? brandIds : undefined,
-        collectionIds: collectionIds.length > 0 ? collectionIds : undefined,
-        onSale: params.onSale === "true" ? true : undefined,
-        inStock: params.inStock === "true" ? true : undefined,
-        minPrice,
-        maxPrice,
-        options: Object.keys(options).length > 0 ? options : undefined,
-      },
-    }),
-    getCategories(),
-    getCollections(),
-    searchBrands({ limit: 100 }),
-    // Only fetch unfiltered facets when filters are active (for showing available options)
-    hasFilters ? getFacets() : Promise.resolve(null),
-  ]);
-
-  // Build ID-to-name maps for categories, collections, and brands
-  const categoryMap = new Map<string, string>();
-  categoriesData.forEach((cat) => {
-    categoryMap.set(cat.id, cat.name || cat.handle || cat.id);
-  });
-
-  const collectionMap = new Map<string, string>();
-  collectionsData.forEach((col) => {
-    collectionMap.set(col.id, col.title || col.handle || col.id);
-  });
-
-  const brandMap = new Map<string, string>();
-  brandsData.hits.forEach((brand) => {
-    brandMap.set(brand.id, brand.name || brand.handle || brand.id);
+  // Fetch products from Meilisearch
+  const result = await searchProducts({
+    query: params.q,
+    page,
+    limit,
+    sort,
+    filters: {
+      categoryIds: categoryIds.length > 0 ? categoryIds : undefined,
+      brandIds: brandIds.length > 0 ? brandIds : undefined,
+      collectionIds: collectionIds.length > 0 ? collectionIds : undefined,
+      onSale: params.onSale === "true" ? true : undefined,
+      inStock: params.inStock === "true" ? true : undefined,
+      minPrice,
+      maxPrice,
+      options: Object.keys(options).length > 0 ? options : undefined,
+    },
   });
 
   // Handle error state
@@ -308,28 +182,6 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     );
   }
 
-  // Transform facets for filter UI with human-readable labels
-  // Dynamic filtering: Use filtered facets for categories, brands, collections, options
-  // Price range: Use unfiltered facets to show full range (better UX for expanding search)
-  const facets = transformFacets(
-    result.facets,
-    categoryMap,
-    brandMap,
-    collectionMap
-  );
-
-  // Override price range with unfiltered facets if available (when filters are active)
-  // This allows users to see the full price range and expand their search
-  if (unfilteredFacets?.facets?.price_aud) {
-    const priceKeys = Object.keys(unfilteredFacets.facets.price_aud).map(Number);
-    if (priceKeys.length > 0) {
-      facets.priceRange = {
-        min: Math.min(...priceKeys),
-        max: Math.max(...priceKeys),
-      };
-    }
-  }
-
   // Calculate pagination
   const totalPages = Math.ceil(result.totalCount / limit);
 
@@ -351,9 +203,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
             <ShopSort />
           </div>
         }
-        sidebar={
-          <AdvancedShopFilters facets={facets} />
-        }
+        sidebar={<ShopFilters />}
       >
         <ShopEmptyState hasActiveFilters={filtersActive} />
       </ListingLayout>
@@ -397,7 +247,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
           <ShopSort />
         </div>
       }
-      sidebar={<AdvancedShopFilters facets={facets} />}
+      sidebar={<ShopFilters />}
     >
       <div className="space-y-8">
         <ProductGrid products={productsForGrid} />

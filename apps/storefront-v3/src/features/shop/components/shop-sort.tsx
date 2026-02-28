@@ -19,6 +19,7 @@ export type SortOption =
 
 export interface ShopSortProps {
   className?: string
+  basePath?: string // Optional base path for non-shop pages (e.g., '/brands/esun')
 }
 
 const SORT_OPTIONS: Record<
@@ -30,7 +31,7 @@ const SORT_OPTIONS: Record<
   "price-desc": { label: "Price: High to Low", value: "price-desc" },
 }
 
-export function ShopSort({ className }: ShopSortProps) {
+export function ShopSort({ className, basePath = "/shop" }: ShopSortProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const currentSort = (searchParams.get("sort") as SortOption) || "newest"
@@ -40,11 +41,23 @@ export function ShopSort({ className }: ShopSortProps) {
       q: searchParams.get("q") || undefined,
       category: searchParams.get("category") || undefined,
       collection: searchParams.get("collection") || undefined,
+      brand: searchParams.get("brand") || undefined,
+      onSale: searchParams.get("onSale") || undefined,
+      inStock: searchParams.get("inStock") || undefined,
+      minPrice: searchParams.get("minPrice") || undefined,
+      maxPrice: searchParams.get("maxPrice") || undefined,
       sort: value === "newest" ? undefined : value,
       page: undefined, // Reset to page 1
     }
 
-    router.push(buildShopUrl(params))
+    // Add dynamic options
+    searchParams.forEach((val, key) => {
+      if (key.startsWith("options_")) {
+        (params as Record<string, string | undefined>)[key] = val || undefined
+      }
+    })
+
+    router.push(buildShopUrl(params, basePath))
   }
 
   return (
@@ -74,15 +87,20 @@ export function ShopSort({ className }: ShopSortProps) {
   )
 }
 
+/**
+ * Get sort order string for Meilisearch
+ * Meilisearch uses :asc and :desc suffixes for sorting
+ * Note: Index uses created_at_timestamp (Unix timestamp) for sorting by date
+ */
 export function getSortOrder(sort: SortOption): string {
   switch (sort) {
     case "newest":
-      return "-created_at"
+      return "created_at_timestamp:desc"
     case "price-asc":
-      return "price_aud"
+      return "price_aud:asc"
     case "price-desc":
-      return "-price_aud"
+      return "price_aud:desc"
     default:
-      return "-created_at"
+      return "created_at_timestamp:desc"
   }
 }

@@ -2,36 +2,93 @@
 
 import { searchClient, INDEX_PRODUCTS } from "@/lib/search/client"
 
-interface SearchOptions {
+export interface SearchOptions {
   limit?: number
-  categories?: string[] | undefined
-  materials?: string[] | undefined
-  diameters?: string[] | undefined
-  colors?: string[] | undefined
-  sizes?: string[] | undefined
-  minPrice?: number | undefined
-  maxPrice?: number | undefined
-  brands?: string[] | undefined
-  inStock?: boolean | undefined
+  page?: number
+  categories?: string[]
+  brands?: string[]
+  collections?: string[]
+  onSale?: boolean
+  inStock?: boolean
+  minPrice?: number
+  maxPrice?: number
+  options?: Record<string, string[]>
+  sort?: string
 }
 
-export async function searchProducts(query: string, options: SearchOptions = {}) {
-  const { limit = 20, categories, minPrice, maxPrice, brands, inStock } = options
+export interface SearchResult {
+  hits: Array<{
+    id: string
+    handle: string
+    title: string
+    thumbnail: string
+    price: { amount: number; currency_code: string }
+    originalPrice?: number
+    discountPercentage?: number
+    variants?: any[]
+    on_sale?: boolean
+  }>
+  totalCount: number
+  estimatedTotalHits: number
+  facetDistribution?: Record<string, Record<string, number>>
+  degradedMode?: boolean
+}
+
+/**
+ * Get sort order string for Meilisearch
+ * Meilisearch uses :asc and :desc suffixes for sorting
+ * Note: Index uses created_at_timestamp (Unix timestamp) for sorting by date
+ */
+function getSortOrder(sort: string): string | undefined {
+  switch (sort) {
+    case "newest":
+      return "created_at_timestamp:desc"
+    case "price-asc":
+      return "price_aud:asc"
+    case "price-desc":
+      return "price_aud:desc"
+    default:
+      return "created_at_timestamp:desc"
+  }
+}
+
+export async function searchProducts(query: string, options: SearchOptions = {}): Promise<SearchResult> {
+  const {
+    limit = 20,
+    categories,
+    collections,
+    brands,
+    onSale,
+    inStock,
+    minPrice,
+    maxPrice,
+    options: dynamicOptions,
+    sort = "newest"
+  } = options
 
   try {
     const index = searchClient.index(INDEX_PRODUCTS)
 
     const filter: string[] = []
 
-    // Use category_ids which is the actual filterable attribute in Meilisearch
+    // Category filter
     if (categories && categories.length > 0) {
-      // Note: category_ids is an array, we filter by exact match
       filter.push(`category_ids IN [${categories.map(c => `"${c}"`).join(", ")}]`)
     }
 
-    // Brand filter - use brand.id
+    // Brand filter
     if (brands && brands.length > 0) {
       filter.push(`brand.id IN [${brands.map(b => `"${b}"`).join(", ")}]`)
+    }
+
+    // Collection filter
+    if (collections && collections.length > 0) {
+      filter.push(`collection_ids IN [${collections.map(c => `"${c}"`).join(", ")}]`)
+    }
+
+    // On sale filter
+    if (onSale) {
+      filter.push(`on_sale = true`)
     }
 
     // In stock filter
@@ -47,15 +104,27 @@ export async function searchProducts(query: string, options: SearchOptions = {})
       filter.push(`price_aud <= ${maxPrice}`)
     }
 
+    // Dynamic options filters (e.g., colour, size, nozzle_type)
+    if (dynamicOptions) {
+      Object.entries(dynamicOptions).forEach(([key, values]) => {
+        if (values.length > 0) {
+          filter.push(`${key} IN [${values.map(v => `"${v}"`).join(", ")}]`)
+        }
+      })
+    }
+
+    const sortOrder = getSortOrder(sort)
+
     const result = await index.search(query, {
       limit,
       filter: filter.length > 0 ? filter.join(" AND ") : undefined,
+      sort: sortOrder ? [sortOrder] : undefined,
       // Request actual fields from Meilisearch index
       attributesToRetrieve: [
         "id", "handle", "title", "thumbnail",
         "price_aud", "original_price_aud", "on_sale",
         "in_stock", "inventory_quantity",
-        "categories", "category_ids", "brand"
+        "categories", "category_ids", "brand", "collection_ids"
       ],
     })
 
@@ -81,10 +150,17 @@ export async function searchProducts(query: string, options: SearchOptions = {})
 
     return {
       hits,
+      totalCount: result.estimatedTotalHits,
       estimatedTotalHits: result.estimatedTotalHits,
+      degradedMode: false,
     }
   } catch (error) {
     console.error("Search failed:", error)
-    return { hits: [], estimatedTotalHits: 0 }
+    return {
+      hits: [],
+      totalCount: 0,
+      estimatedTotalHits: 0,
+      degradedMode: true,
+    }
   }
 }

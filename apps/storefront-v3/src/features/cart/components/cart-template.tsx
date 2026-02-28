@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { ShoppingCart, ArrowRight, Bookmark } from "lucide-react";
+import { ArrowRight, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/cart-context";
@@ -41,8 +41,8 @@ export function CartTemplate() {
 
   if (isLoading && !cart) {
     return (
-      <div className="flex h-[50vh] items-center justify-center font-mono text-sm text-muted-foreground animate-pulse">
-        Initializing_Module...
+      <div className="flex h-[50vh] items-center justify-center text-sm text-muted-foreground animate-pulse">
+        Loading cart...
       </div>
     );
   }
@@ -175,9 +175,9 @@ export function CartTemplate() {
     <div className="grid gap-8 lg:grid-cols-12">
       <div className="lg:col-span-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold tracking-tight font-mono uppercase">
-            System_Inventory{" "}
-            <span className="text-muted-foreground text-lg">({itemCount})</span>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Shopping Cart{" "}
+            <span className="text-muted-foreground text-lg font-normal">({itemCount} {itemCount === 1 ? 'item' : 'items'})</span>
           </h1>
         </div>
 
@@ -225,8 +225,8 @@ export function CartTemplate() {
       <div className="lg:col-span-4">
         <Card className="sticky top-24">
           <CardHeader className="pb-4">
-            <CardTitle className="font-mono uppercase tracking-wider text-lg">
-              Order_Summary
+            <CardTitle className="text-lg font-semibold">
+              Order Summary
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">
@@ -260,12 +260,12 @@ export function CartTemplate() {
           </CardContent>
           <CardFooter>
             <Button
-              className="w-full font-mono uppercase tracking-widest group"
+              className="w-full group"
               size="lg"
               asChild
             >
               <Link href="/checkout">
-                Proceed_To_Checkout
+                Proceed to Checkout
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </Button>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useQueryState } from "nuqs"
-import { Search, Command, Package, X, ArrowRight } from "lucide-react"
+import { Search, X, ArrowRight } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { useEffect, useState, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
@@ -148,7 +148,7 @@ export function SearchInput() {
       <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
       <Input
         id="search-input"
-        type="search"
+        type="text"
         placeholder="SEARCH_CATALOG..."
         aria-label="Search products"
         aria-expanded={showDropdown}

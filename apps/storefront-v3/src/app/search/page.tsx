@@ -1,50 +1,93 @@
 import { SearchInput } from "@/features/search/components/search-input";
 import { SearchResults } from "@/features/search/components/search-results";
-import { AdvancedSearchFilters } from "@/features/search/components/advanced-search-filters";
-import { searchProducts } from "@/features/search/actions/search";
-import { searchCategories, searchBrands } from "@/features/search/actions/unified-search";
+import { searchProducts, type ProductSearchParams } from "@/lib/search/products";
 import { Suspense } from "react";
 import { ListingLayout } from "@/components/layout/listing-layout";
-import Link from "next/link";
+import { SearchFilters } from "@/components/filters";
+import { ShopSort, type SortOption } from "@/features/shop/components/shop-sort";
+import { redirect } from "next/navigation";
 
 interface SearchPageProps {
   searchParams: Promise<{
     q?: string;
-    category?: string | string[];
-    material?: string | string[];
-    diameter?: string | string[];
-    color?: string | string[];
-    size?: string | string[];
+    category?: string;
+    brand?: string;
+    collection?: string;
+    onSale?: string;
+    inStock?: string;
     minPrice?: string;
     maxPrice?: string;
+    sort?: SortOption;
+    // Dynamic options (e.g., options_colour, options_size)
+    [key: `options_${string}`]: string | undefined;
   }>;
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const params = await searchParams;
+
+  // Redirect to set inStock=true by default if not explicitly set to "false"
+  if (params.inStock === undefined) {
+    const url = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) url.set(key, value);
+    });
+    url.set("inStock", "true");
+    redirect(`/search?${url.toString()}`);
+  }
   const query = params.q || "";
+  const sort = params.sort || "newest";
 
   // Parse filters from searchParams for initial fetch
-  const { hits } = await searchProducts(query, {
-    categories:
-      typeof params.category === "string" ? [params.category] : params.category,
-    materials:
-      typeof params.material === "string" ? [params.material] : params.material,
-    diameters:
-      typeof params.diameter === "string" ? [params.diameter] : params.diameter,
-    colors:
-      typeof params.color === "string" ? [params.color] : params.color,
-    sizes:
-      typeof params.size === "string" ? [params.size] : params.size,
-    minPrice: params.minPrice ? Number(params.minPrice) : undefined,
-    maxPrice: params.maxPrice ? Number(params.maxPrice) : undefined,
+  const categoryIds = params.category?.split(",").filter(Boolean) || [];
+  const brandIds = params.brand?.split(",").filter(Boolean) || [];
+  const collectionIds = params.collection?.split(",").filter(Boolean) || [];
+
+  // Parse dynamic options from URL
+  const dynamicOptions: Record<string, string[]> = {};
+  Object.entries(params).forEach(([key, value]) => {
+    if (key.startsWith("options_") && value) {
+      const optionKey = key.replace("options_", "");
+      dynamicOptions[optionKey] = value.split(",").filter(Boolean);
+    }
   });
 
-  // Fetch categories and brands for the sidebar
-  const [categoriesResult, brandsResult] = await Promise.all([
-    searchCategories("", 10),
-    searchBrands("", 10),
-  ]);
+  // Build search params using the working lib/search/products interface
+  const searchRequest: ProductSearchParams = {
+    query,
+    sort,
+    limit: 20,
+    filters: {
+      categoryIds: categoryIds.length > 0 ? categoryIds : undefined,
+      brandIds: brandIds.length > 0 ? brandIds : undefined,
+      collectionIds: collectionIds.length > 0 ? collectionIds : undefined,
+      onSale: params.onSale === "true" ? true : undefined,
+      inStock: params.inStock === "true" ? true : undefined,
+      minPrice: params.minPrice ? Number(params.minPrice) : undefined,
+      maxPrice: params.maxPrice ? Number(params.maxPrice) : undefined,
+      options: Object.keys(dynamicOptions).length > 0 ? dynamicOptions : undefined,
+    }
+  };
+
+  const result = await searchProducts(searchRequest);
+
+  const { products: rawProducts, totalCount, degradedMode } = result;
+
+  // Transform ProductHit[] to format expected by ProductCard
+  const products = rawProducts.map((p) => ({
+    id: p.id,
+    handle: p.handle,
+    title: p.title,
+    thumbnail: p.thumbnail || "",
+    price: {
+      amount: p.price_aud ?? 0,
+      currency_code: "AUD",
+    },
+    originalPrice: p.original_price_aud,
+    discountPercentage: p.on_sale && p.original_price_aud && p.price_aud
+      ? Math.round((1 - p.price_aud / p.original_price_aud) * 100)
+      : undefined,
+  }));
 
   return (
     <ListingLayout
@@ -55,56 +98,24 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               {query ? `Search: "${query}"` : "All Products"}
             </h1>
             <p className="text-muted-foreground font-mono text-sm">
-              {hits.length} products found
+              {totalCount} {totalCount === 1 ? "product" : "products"} found
+              {degradedMode && (
+                <span className="ml-2 text-amber-500">(limited results)</span>
+              )}
             </p>
           </div>
           <div className="flex w-full items-center gap-2 md:w-auto">
             <div className="flex-1 md:flex-none">
               <SearchInput />
             </div>
+            <ShopSort basePath="/search" />
           </div>
         </div>
       }
       sidebar={
-        <div>
-          <Suspense fallback={<div className="space-y-4"><div className="h-20 animate-pulse bg-muted/20" /><div className="h-20 animate-pulse bg-muted/20" /><div className="h-20 animate-pulse bg-muted/20" /></div>}>
-            <AdvancedSearchFilters />
-          </Suspense>
-
-          {/* Browse Categories */}
-          <div className="mt-8">
-            <h3 className="font-mono text-sm font-bold mb-4">BROWSE CATEGORIES</h3>
-            <div className="space-y-2">
-              {categoriesResult.hits.slice(0, 6).map((cat: any) => (
-                <Link
-                  key={cat.id}
-                  href={`/categories/${cat.handle}`}
-                  className="flex items-center justify-between py-1 text-sm hover:text-primary transition-colors"
-                >
-                  <span>{cat.name}</span>
-                  <span className="text-muted-foreground text-xs">{cat.product_count}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          {/* Top Brands */}
-          <div className="mt-8">
-            <h3 className="font-mono text-sm font-bold mb-4">TOP BRANDS</h3>
-            <div className="space-y-2">
-              {brandsResult.hits.slice(0, 6).map((brand: any) => (
-                <Link
-                  key={brand.id}
-                  href={`/brands/${brand.handle}`}
-                  className="flex items-center justify-between py-1 text-sm hover:text-primary transition-colors"
-                >
-                  <span>{brand.name}</span>
-                  <span className="text-muted-foreground text-xs">{brand.product_count}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
+        <Suspense fallback={<div className="space-y-4"><div className="h-20 animate-pulse bg-muted/20" /><div className="h-20 animate-pulse bg-muted/20" /><div className="h-20 animate-pulse bg-muted/20" /></div>}>
+          <SearchFilters searchQuery={query} />
+        </Suspense>
       }
     >
       <div className="flex-1">
@@ -112,7 +123,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           {query ? `Showing results for "${query}"` : "Browse all products"}
         </div>
         <Suspense fallback={<div className="h-96 animate-pulse bg-muted/20" />}>
-          <SearchResults initialHits={hits} initialQuery={query} />
+          <SearchResults initialHits={products} initialQuery={query} />
         </Suspense>
       </div>
     </ListingLayout>

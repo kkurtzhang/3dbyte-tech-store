@@ -1,6 +1,6 @@
 import { Suspense } from "react"
 import { Button } from "@/components/ui/button"
-import { getProducts, getDemoProducts } from "@/lib/medusa/products"
+import { searchProducts } from "@/lib/search/products"
 import { getStrapiContent } from "@/lib/strapi/content"
 import { getFeaturedCollections } from "@/lib/medusa/collections"
 import { ProductCard } from "@/features/product/components/product-card"
@@ -86,8 +86,56 @@ function CollectionGrid({ collections }: { collections: any[] }) {
   )
 }
 
-// Product grid component
-function ProductGrid({ products }: { products: any[] }) {
+// Product grid component for Meilisearch results
+interface Product {
+  id: string
+  handle: string
+  title: string
+  thumbnail?: string
+  price_aud: number
+  original_price_aud?: number
+  on_sale: boolean
+  variants?: Array<{
+    id: string
+    sku?: string
+    title: string
+  }>
+}
+
+function ProductGrid({ products, totalCount, error }: { products: Product[]; totalCount: number; error?: boolean }) {
+  // Handle error state
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="mb-4 rounded-full bg-destructive/10 p-4">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-8 w-8 text-destructive"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+        </div>
+        <h3 className="mb-2 text-lg font-medium">Unable to load products</h3>
+        <p className="mb-6 text-sm text-muted-foreground">
+          Please check back later or browse our catalog
+        </p>
+        <Button asChild variant="outline">
+          <Link href="/shop">Browse All Products</Link>
+        </Button>
+      </div>
+    )
+  }
+
   if (products.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -114,7 +162,7 @@ function ProductGrid({ products }: { products: any[] }) {
           Check back later for new arrivals
         </p>
         <Button asChild variant="outline">
-          <Link href="/search">Browse All Products</Link>
+          <Link href="/shop">Browse All Products</Link>
         </Button>
       </div>
     )
@@ -123,16 +171,10 @@ function ProductGrid({ products }: { products: any[] }) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
       {products.map((product) => {
-        const variant = product.variants?.[0]
-        // Types seem correct now
-        const price = variant?.calculated_price || variant?.prices?.[0]
-
-        const displayPrice = price
-          ? {
-              amount: price.amount || price.calculated_amount,
-              currency_code: price.currency_code,
-            }
-          : { amount: 0, currency_code: "usd" }
+        const displayPrice = {
+          amount: product.price_aud, // Meilisearch returns prices in dollars
+          currency_code: "aud",
+        }
 
         return (
           <ProductCard
@@ -142,11 +184,7 @@ function ProductGrid({ products }: { products: any[] }) {
             title={product.title}
             thumbnail={product.thumbnail || ""}
             price={displayPrice}
-            specs={
-              product.type
-                ? [{ label: "Type", value: product.type.value || product.type }]
-                : undefined
-            }
+            originalPrice={product.original_price_aud ?? undefined}
           />
         )
       })}
@@ -155,8 +193,11 @@ function ProductGrid({ products }: { products: any[] }) {
 }
 
 export default async function Home() {
-  // Fetch products with fallback support
-  const { products, count } = await getProducts({ limit: 4 })
+  // Fetch featured products from Meilisearch with fallback support
+  const productsResult = await searchProducts({
+    sort: "newest",
+    limit: 8,
+  })
 
   // Fetch featured collections (limit to 4)
   const collections = await getFeaturedCollections(4)
@@ -213,14 +254,21 @@ export default async function Home() {
       {/* Featured Products Section */}
       <section>
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold tracking-tight">Featured Products ({count})</h2>
+          <h2 className="text-xl font-bold tracking-tight">
+            Featured Products
+            {!productsResult.error && productsResult.totalCount > 0 && ` (${productsResult.totalCount})`}
+          </h2>
           <Button asChild variant="ghost" size="sm">
-            <Link href="/search">View All →</Link>
+            <Link href="/shop">View All →</Link>
           </Button>
         </div>
 
         <Suspense fallback={<ProductsSkeleton />}>
-          <ProductGrid products={products} />
+          <ProductGrid
+            products={productsResult.products}
+            totalCount={productsResult.totalCount}
+            error={productsResult.error}
+          />
         </Suspense>
       </section>
     </div>

@@ -10,7 +10,7 @@ export async function createCart(regionId?: string): Promise<StoreCart> {
 
 export async function getCart(cartId: string): Promise<StoreCart> {
   const { cart } = await sdk.store.cart.retrieve(cartId, {
-    fields: "*items,*items.variant,*items.variant.product,*region,*total,*subtotal,*tax_total,*discount_total,*shipping_total",
+    fields: "+items,+items.variant,+items.variant.product,+region,*promotions",
   })
   return cart
 }
