@@ -8,6 +8,7 @@ import { ShopErrorState } from "@/features/shop/components/shop-error-state"
 import { ShopEmptyState } from "@/features/shop/components/shop-empty-state"
 import { ListingLayout } from "@/components/layout/listing-layout"
 import { CollectionFilters } from "@/components/filters/collection-filters"
+import { parseDynamicOptionParams } from "@/lib/utils/search-params"
 
 // Force dynamic rendering to prevent caching
 export const dynamic = "force-dynamic"
@@ -26,24 +27,6 @@ interface CollectionPageProps {
     // Dynamic options (e.g., options_colour, options_size)
     [key: `options_${string}`]: string | undefined
   }>
-}
-
-/**
- * Parse dynamic options from URL params (e.g., options_colour=Black,White)
- */
-function parseDynamicOptions(
-  params: Record<string, string | undefined>
-): Record<string, string[]> {
-  const options: Record<string, string[]> = {}
-
-  Object.entries(params).forEach(([key, value]) => {
-    if (key.startsWith("options_") && value) {
-      const optionKey = key.replace("options_", "")
-      options[optionKey] = value.split(",").filter(Boolean)
-    }
-  })
-
-  return options
 }
 
 /**
@@ -109,7 +92,7 @@ export default async function CollectionPage({
   const brandIds = search.brand?.split(",").filter(Boolean) || []
   const minPrice = search.minPrice ? Number(search.minPrice) : undefined
   const maxPrice = search.maxPrice ? Number(search.maxPrice) : undefined
-  const options = parseDynamicOptions(search)
+  const options = parseDynamicOptionParams(search)
 
   // Search products using Meilisearch with collection and additional filters
   const result = await searchProducts({

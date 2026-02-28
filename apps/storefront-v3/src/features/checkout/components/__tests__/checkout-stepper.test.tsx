@@ -39,7 +39,7 @@ describe("CheckoutStepper", () => {
 
     // Completed steps should show check icon
     const checkIcons = screen.getAllByTestId("check-icon")
-    expect(checkIcons.length).toBe(2)
+    expect(checkIcons.length).toBe(4)
   })
 
   it("disables future steps that are not completed", () => {

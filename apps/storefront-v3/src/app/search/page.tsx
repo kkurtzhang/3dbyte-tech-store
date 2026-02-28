@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { ListingLayout } from "@/components/layout/listing-layout";
 import { SearchFilters } from "@/components/filters";
 import { ShopSort, type SortOption } from "@/features/shop/components/shop-sort";
+import { parseDynamicOptionParams } from "@/lib/utils/search-params";
 import { redirect } from "next/navigation";
 
 interface SearchPageProps {
@@ -44,13 +45,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const collectionIds = params.collection?.split(",").filter(Boolean) || [];
 
   // Parse dynamic options from URL
-  const dynamicOptions: Record<string, string[]> = {};
-  Object.entries(params).forEach(([key, value]) => {
-    if (key.startsWith("options_") && value) {
-      const optionKey = key.replace("options_", "");
-      dynamicOptions[optionKey] = value.split(",").filter(Boolean);
-    }
-  });
+  const dynamicOptions = parseDynamicOptionParams(params);
 
   // Build search params using the working lib/search/products interface
   const searchRequest: ProductSearchParams = {

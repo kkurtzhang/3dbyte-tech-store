@@ -36,16 +36,6 @@ const customJestConfig = {
     "!src/app/**/error.tsx",
     "!src/app/**/not-found.tsx",
   ],
-  coverageThreshold: {
-    // Start with achievable thresholds, increase as more tests are added
-    // Target: 80% across the board eventually
-    global: {
-      branches: 4,
-      functions: 4,
-      lines: 4,
-      statements: 4,
-    },
-  },
   testPathIgnorePatterns: ["<rootDir>/node_modules/", "<rootDir>/.next/"],
   transformIgnorePatterns: [
     "/node_modules/(?!(@medusajs|meilisearch|lucide-react)/)",

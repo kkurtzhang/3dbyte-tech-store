@@ -13,6 +13,11 @@ import {
 import { ListingLayout } from "@/components/layout/listing-layout";
 import { ShopErrorState } from "@/features/shop/components/shop-error-state";
 import { ShopEmptyState } from "@/features/shop/components/shop-empty-state";
+import {
+  copyDynamicOptionParams,
+  hasDynamicOptionParams,
+  parseDynamicOptionParams,
+} from "@/lib/utils/search-params";
 import { buildShopUrl, type ShopQueryParams } from "@/lib/utils/url";
 import { ShopFilters } from "@/components/filters";
 
@@ -34,25 +39,6 @@ interface ShopPageProps {
 }
 
 /**
- * Parse dynamic options from URL params (e.g., options_colour=Black,White)
- * Kept for parsing options for product search
- */
-function parseDynamicOptions(
-  params: Record<string, string | undefined>
-): Record<string, string[]> {
-  const options: Record<string, string[]> = {};
-
-  Object.entries(params).forEach(([key, value]) => {
-    if (key.startsWith("options_") && value) {
-      const optionKey = key.replace("options_", "");
-      options[optionKey] = value.split(",").filter(Boolean);
-    }
-  });
-
-  return options;
-}
-
-/**
  * Check if any filters are active
  */
 function hasActiveFilters(params: ShopPageProps["searchParams"] extends Promise<infer T> ? T : never): boolean {
@@ -65,7 +51,7 @@ function hasActiveFilters(params: ShopPageProps["searchParams"] extends Promise<
     !!params.minPrice ||
     !!params.maxPrice ||
     !!params.q ||
-    Object.keys(params).some((key) => key.startsWith("options_"))
+    hasDynamicOptionParams(params)
   );
 }
 
@@ -89,12 +75,7 @@ function buildPaginationUrl(
     page: pageNum > 1 ? pageNum : undefined,
   };
 
-  // Add dynamic options
-  Object.entries(params).forEach(([key, value]) => {
-    if (key.startsWith("options_") && value) {
-      (queryParams as Record<string, string | undefined>)[key] = value;
-    }
-  });
+  copyDynamicOptionParams(params, queryParams as Record<string, string | undefined>);
 
   return buildShopUrl(queryParams);
 }
@@ -130,18 +111,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
   const maxPrice = params.maxPrice ? Number(params.maxPrice) : undefined;
 
   // Parse dynamic options from URL
-  const options = parseDynamicOptions(params);
-
-  // Check if any filters are active
-  const hasFilters =
-    categoryIds.length > 0 ||
-    brandIds.length > 0 ||
-    collectionIds.length > 0 ||
-    params.onSale === "true" ||
-    params.inStock === "true" ||
-    minPrice !== undefined ||
-    maxPrice !== undefined ||
-    Object.keys(options).length > 0;
+  const options = parseDynamicOptionParams(params);
 
   // Fetch products from Meilisearch
   const result = await searchProducts({

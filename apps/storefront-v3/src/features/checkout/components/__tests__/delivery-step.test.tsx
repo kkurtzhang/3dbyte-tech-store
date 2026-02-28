@@ -7,6 +7,7 @@ jest.mock("lucide-react", () => ({
   Truck: () => <span data-testid="truck-icon">🚚</span>,
   Zap: () => <span data-testid="zap-icon">⚡</span>,
   Package: () => <span data-testid="package-icon">📦</span>,
+  Circle: () => <span data-testid="circle-icon">•</span>,
   Loader2: () => <span data-testid="loader-icon" className="animate-spin">⟳</span>,
 }))
 

@@ -1,0 +1,5 @@
+# Project MCP Servers
+[mcp_servers.meilisearch]
+startup_timeout_sec=20
+command = "uvx"
+args = ["-n", "meilisearch-mcp"]

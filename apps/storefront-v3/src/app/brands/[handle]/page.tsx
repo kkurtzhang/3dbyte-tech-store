@@ -12,6 +12,11 @@ import { ListingLayout } from "@/components/layout/listing-layout";
 import { ShopErrorState } from "@/features/shop/components/shop-error-state";
 import { ShopEmptyState } from "@/features/shop/components/shop-empty-state";
 import { BrandFilters } from "@/components/filters/brand-filters";
+import {
+  copyDynamicOptionParams,
+  hasDynamicOptionParams,
+  parseDynamicOptionParams,
+} from "@/lib/utils/search-params";
 import { buildShopUrl, type ShopQueryParams } from "@/lib/utils/url";
 
 // Force dynamic rendering to prevent caching
@@ -56,29 +61,10 @@ export async function generateMetadata({
 }
 
 /**
- * Parse dynamic options from URL params (e.g., options_colour=Black,White)
- */
-function parseDynamicOptions(
-  params: Record<string, string | undefined>
-): Record<string, string[]> {
-  const options: Record<string, string[]> = {};
-
-  Object.entries(params).forEach(([key, value]) => {
-    if (key.startsWith("options_") && value) {
-      const optionKey = key.replace("options_", "");
-      options[optionKey] = value.split(",").filter(Boolean);
-    }
-  });
-
-  return options;
-}
-
-/**
  * Check if any filters are active
  */
 function hasActiveFilters(
-  params: Awaited<PageProps["searchParams"]>,
-  brandId: string
+  params: Awaited<PageProps["searchParams"]>
 ): boolean {
   return (
     !!params.category ||
@@ -88,7 +74,7 @@ function hasActiveFilters(
     !!params.minPrice ||
     !!params.maxPrice ||
     !!params.q ||
-    Object.keys(params).some((key) => key.startsWith("options_"))
+    hasDynamicOptionParams(params)
   );
 }
 
@@ -113,12 +99,7 @@ function buildPaginationUrl(
     page: pageNum > 1 ? pageNum : undefined,
   };
 
-  // Add dynamic options
-  Object.entries(params).forEach(([key, value]) => {
-    if (key.startsWith("options_") && value) {
-      (queryParams as Record<string, string | undefined>)[key] = value;
-    }
-  });
+  copyDynamicOptionParams(params, queryParams as Record<string, string | undefined>);
 
   return buildShopUrl(queryParams, `/brands/${brandHandle}`);
 }
@@ -151,12 +132,10 @@ export default async function BrandPage({
       inStock: "true",
     };
 
-    // Add dynamic options
-    Object.entries(params_cache).forEach(([key, value]) => {
-      if (key.startsWith("options_") && value) {
-        (redirectParams as Record<string, string | undefined>)[key] = value;
-      }
-    });
+    copyDynamicOptionParams(
+      params_cache,
+      redirectParams as Record<string, string | undefined>
+    );
 
     redirect(buildShopUrl(redirectParams, `/brands/${handle}`));
   }
@@ -180,17 +159,7 @@ export default async function BrandPage({
     : undefined;
 
   // Parse dynamic options from URL
-  const options = parseDynamicOptions(params_cache);
-
-  // Check if any filters are active
-  const hasFilters =
-    categoryIds.length > 0 ||
-    collectionIds.length > 0 ||
-    params_cache.onSale === "true" ||
-    params_cache.inStock === "true" ||
-    minPrice !== undefined ||
-    maxPrice !== undefined ||
-    Object.keys(options).length > 0;
+  const options = parseDynamicOptionParams(params_cache);
 
   // Fetch products from Meilisearch, filtered by brand
   const result = await searchProducts({
@@ -237,7 +206,7 @@ export default async function BrandPage({
   const totalPages = Math.ceil(result.totalCount / limit);
 
   // Check if any filters are active (for empty state)
-  const filtersActive = hasActiveFilters(params_cache, brand.id);
+  const filtersActive = hasActiveFilters(params_cache);
 
   // Handle empty state
   if (result.products.length === 0) {

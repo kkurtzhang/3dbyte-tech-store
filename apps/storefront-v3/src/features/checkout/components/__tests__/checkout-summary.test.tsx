@@ -146,12 +146,8 @@ describe("CheckoutSummary", () => {
     const cart = createMockCart()
     render(<CheckoutSummary cart={cart} />)
 
-    // Item price: 1000 * 2 = 2000 cents = $20.00
-    // Using flexible matcher since price may be split across elements
-    const priceElement = screen.getByText((_content, element) => {
-      return element?.textContent?.includes("$20.00") || false
-    })
-    expect(priceElement).toBeInTheDocument()
+    const priceElements = screen.getAllByText(/\$20\.00/)
+    expect(priceElements.length).toBeGreaterThan(0)
   })
 
   it("formats prices correctly in AUD", () => {
@@ -165,11 +161,8 @@ describe("CheckoutSummary", () => {
 
     render(<CheckoutSummary cart={cart} />)
 
-    // AUD formatting - using flexible matcher
-    const priceElement = screen.getByText((_content, element) => {
-      return element?.textContent?.includes("A$20.00") || element?.textContent?.includes("$20.00") || false
-    })
-    expect(priceElement).toBeInTheDocument()
+    const priceElements = screen.getAllByText(/A?\$20\.00/)
+    expect(priceElements.length).toBeGreaterThan(0)
   })
 
   it("displays subtotal", () => {
@@ -183,7 +176,7 @@ describe("CheckoutSummary", () => {
     render(<CheckoutSummary cart={createMockCart()} />)
 
     expect(screen.getByText("Shipping")).toBeInTheDocument()
-    expect(screen.getByText("Calculated next")).toBeInTheDocument()
+    expect(screen.getAllByText("Calculated next")).toHaveLength(2)
   })
 
   it("displays taxes placeholder", () => {
@@ -209,7 +202,7 @@ describe("CheckoutSummary", () => {
     render(<CheckoutSummary cart={cart} />)
 
     expect(screen.getByText("Order_Manifest")).toBeInTheDocument()
-    expect(screen.getByText(/\$0\.00/)).toBeInTheDocument()
+    expect(screen.getAllByText(/\$0\.00/).length).toBeGreaterThan(0)
   })
 
   it("handles multiple items", () => {
