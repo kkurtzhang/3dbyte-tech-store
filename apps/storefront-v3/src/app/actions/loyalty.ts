@@ -148,7 +148,6 @@ export async function redeemPointsAction(points: number): Promise<{ success: boo
   try {
     // In production, this would call a loyalty module to redeem points
     // For now, we'll just simulate the redemption
-    console.log(`Redeeming ${points} points`)
     return { success: true }
   } catch (error: any) {
     console.error("Redeem points error:", error)

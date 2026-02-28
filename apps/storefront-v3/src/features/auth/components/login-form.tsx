@@ -67,8 +67,10 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     setIsLoading(true)
     setError(null)
     try {
+      const backendUrl =
+        process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
       // Get Google OAuth URL
-      const response = await fetch("http://localhost:8000/store/auth", {
+      const response = await fetch(`${backendUrl}/store/auth`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

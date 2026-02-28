@@ -53,9 +53,8 @@ export default async function ReturnsPage() {
     if (response?.data?.PageContent) {
       pageContent = response.data.PageContent;
     }
-  } catch (error) {
+  } catch {
     // Use fallback content if Strapi unavailable
-    console.log("Using fallback returns content");
   }
 
   return (

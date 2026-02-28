@@ -57,8 +57,7 @@ export default async function TermsAndConditionsPage() {
     if (response?.data?.PageContent) {
       pageContent = response.data.PageContent;
     }
-  } catch (error) {
-    console.log("Using fallback terms content");
+  } catch {
   }
 
   return (

@@ -5,6 +5,8 @@ import { StoreCart } from "@medusajs/types"
 import { createCart, getCart, addToCart, updateLineItem, deleteLineItem } from "@/lib/medusa/cart"
 
 export const CART_STORAGE_KEY = "_medusa_cart_id"
+const CART_COOKIE = "_medusa_cart_id"
+const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30
 
 interface CartContextType {
   cart: StoreCart | null
@@ -29,11 +31,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const setCartId = (cartId: string): void => {
     if (typeof window === "undefined") return
     localStorage.setItem(CART_STORAGE_KEY, cartId)
+    document.cookie = `${CART_COOKIE}=${encodeURIComponent(cartId)}; Path=/; Max-Age=${COOKIE_MAX_AGE_SECONDS}; SameSite=Lax`
   }
 
   const clearCartId = (): void => {
     if (typeof window === "undefined") return
     localStorage.removeItem(CART_STORAGE_KEY)
+    document.cookie = `${CART_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`
   }
 
   const refreshCart = async () => {
@@ -57,6 +61,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    const cartId = getCartId()
+    if (cartId) {
+      document.cookie = `${CART_COOKIE}=${encodeURIComponent(cartId)}; Path=/; Max-Age=${COOKIE_MAX_AGE_SECONDS}; SameSite=Lax`
+    }
     refreshCart()
   }, [])
 
@@ -79,7 +87,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const cartId = await ensureCart()
       const updatedCart = await addToCart({ cartId, variantId, quantity })
       setCart(updatedCart)
-      console.log("Item added to cart")
     } catch (error) {
       console.error("Failed to add item", error)
       throw error

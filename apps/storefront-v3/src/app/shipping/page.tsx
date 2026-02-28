@@ -54,8 +54,7 @@ export default async function ShippingPage() {
     if (response?.data?.PageContent) {
       pageContent = response.data.PageContent;
     }
-  } catch (error) {
-    console.log("Using fallback shipping content");
+  } catch {
   }
 
   return (

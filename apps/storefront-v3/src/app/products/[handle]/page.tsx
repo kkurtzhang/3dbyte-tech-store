@@ -78,12 +78,6 @@ export default async function ProductPage({
   if (!product) {
     notFound()
   }
-
-  // Debug: Log variant data
-  console.log("SSR: product.variants count:", product.variants?.length)
-  if (product.variants?.length) {
-    console.log("SSR: first variant has images:", product.variants[0].images?.length)
-  }
   
   // Extract variant image URLs as simple string array (survives SSR serialization)
   const variantImageUrls = product.variants?.flatMap((variant) =>
@@ -91,8 +85,6 @@ export default async function ProductPage({
       JSON.stringify({ id: img.id, url: String(img.url), variantId: variant.id })
     )
   ) || []
-  
-  console.log("SSR: variantImageUrls count:", variantImageUrls.length)
 
   // Find matching enriched content
   const enrichedContent = strapiData?.data?.find(

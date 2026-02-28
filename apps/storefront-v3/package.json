@@ -7,10 +7,12 @@
     "dev": "next dev --turbopack -p 3001",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "test:coverage:critical": "jest --coverage --config=jest.critical.config.ts",
+    "test:ci": "pnpm test && pnpm test:coverage:critical"
   },
   "dependencies": {
     "@3dbyte-tech-store/shared-types": "workspace:*",

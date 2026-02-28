@@ -36,7 +36,6 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
 
   // Form Data State
   const [addressData, setAddressData] = useState<any>(null)
-  const [deliveryMethod, setDeliveryMethod] = useState<string>("")
   const [shippingMethodData, setShippingMethodData] = useState<{ name: string; price: number } | null>(null)
   const [clientSecret, setClientSecret] = useState<string | undefined>(undefined)
   
@@ -92,8 +91,6 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
     try {
       const result = await setShippingMethodAction(methodId)
       if (result.success) {
-        setDeliveryMethod(methodId)
-        
         // Get shipping method details
         const optionsResult = await getShippingOptionsAction()
         if (optionsResult.success) {
@@ -158,7 +155,6 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
     try {
       const result = await completeCartAction()
       if (result.success && result.order) {
-        console.log("Order placed:", result.order, "Delivery Method:", deliveryMethod)
         setCompletedSteps((prev) => [...prev, "review", "confirmation"])
         // Redirect to confirmation page
         if (result.order.id) {
