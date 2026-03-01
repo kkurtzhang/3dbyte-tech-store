@@ -9,11 +9,12 @@ interface CheckoutSummaryProps {
 }
 
 export function CheckoutSummary({ cart }: CheckoutSummaryProps) {
-  const formatPrice = (amount: number, currency: string) => {
+  const formatPrice = (amountMinor: number, currency: string) => {
+    const amountMajor = amountMinor / 100
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: currency,
-    }).format(amount)
+    }).format(amountMajor)
   }
 
   const currencyCode = cart.region?.currency_code || "usd"
@@ -52,7 +53,7 @@ export function CheckoutSummary({ cart }: CheckoutSummaryProps) {
               </p>
             </div>
             <div className="flex items-center font-mono text-sm font-medium">
-               {formatPrice(item.unit_price * item.quantity, currencyCode)}
+              {formatPrice((item.unit_price || 0) * item.quantity, currencyCode)}
             </div>
           </div>
         ))}

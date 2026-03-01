@@ -1,0 +1,198 @@
+[
+  {
+    "name": "Spare Parts",
+    "count": 367
+  },
+  {
+    "name": "Nozzle",
+    "count": 99
+  },
+  {
+    "name": "Hotend Assembly",
+    "count": 88
+  },
+  {
+    "name": "Filament",
+    "count": 77
+  },
+  {
+    "name": "Mainboard",
+    "count": 76
+  },
+  {
+    "name": "Upgrade Kit",
+    "count": 75
+  },
+  {
+    "name": "Stepper Motor",
+    "count": 67
+  },
+  {
+    "name": "Fan",
+    "count": 59
+  },
+  {
+    "name": "Hotend Kit",
+    "count": 43
+  },
+  {
+    "name": "Extruder Spares",
+    "count": 39
+  },
+  {
+    "name": "Tools",
+    "count": 39
+  },
+  {
+    "name": "Silicon Socks",
+    "count": 36
+  },
+  {
+    "name": "Extruder",
+    "count": 35
+  },
+  {
+    "name": "Timing Belt",
+    "count": 33
+  },
+  {
+    "name": "Direct Drive",
+    "count": 27
+  },
+  {
+    "name": "Build Surface",
+    "count": 27
+  },
+  {
+    "name": "Thermistor",
+    "count": 27
+  },
+  {
+    "name": "Electronics",
+    "count": 25
+  },
+  {
+    "name": "3D Printing Consumable",
+    "count": 24
+  },
+  {
+    "name": "Heater Cartridge",
+    "count": 24
+  },
+  {
+    "name": "Heat Break",
+    "count": 24
+  },
+  {
+    "name": "Hardware",
+    "count": 23
+  },
+  {
+    "name": "Display",
+    "count": 23
+  },
+  {
+    "name": "3D Printers Kit",
+    "count": 22
+  },
+  {
+    "name": "Heater Block",
+    "count": 22
+  },
+  {
+    "name": "Toolhead",
+    "count": 21
+  },
+  {
+    "name": "Bed",
+    "count": 19
+  },
+  {
+    "name": "Linear Rail",
+    "count": 19
+  },
+  {
+    "name": "Idler Pulley",
+    "count": 15
+  },
+  {
+    "name": "Bearing",
+    "count": 13
+  },
+  {
+    "name": "Bed Leveling",
+    "count": 12
+  },
+  {
+    "name": "Power Supply",
+    "count": 11
+  },
+  {
+    "name": "Nuts & Bolts",
+    "count": 10
+  },
+  {
+    "name": "Project",
+    "count": 8
+  },
+  {
+    "name": "PTFE Tube",
+    "count": 7
+  },
+  {
+    "name": "End Mill",
+    "count": 7
+  },
+  {
+    "name": "Coupling",
+    "count": 6
+  },
+  {
+    "name": "Stepper Driver",
+    "count": 5
+  },
+  {
+    "name": "Bed Accessories",
+    "count": 4
+  },
+  {
+    "name": "Filament-Pack",
+    "count": 4
+  },
+  {
+    "name": "Development Board",
+    "count": 4
+  },
+  {
+    "name": "Service",
+    "count": 4
+  },
+  {
+    "name": "Breakout Board",
+    "count": 3
+  },
+  {
+    "name": "Enclosure",
+    "count": 2
+  },
+  {
+    "name": "Electronics Consumable",
+    "count": 2
+  },
+  {
+    "name": "Unknown",
+    "count": 1
+  },
+  {
+    "name": "POM Wheels",
+    "count": 1
+  },
+  {
+    "name": "Pneumatic Connector",
+    "count": 1
+  },
+  {
+    "name": "Gift Cards",
+    "count": 1
+  }
+]

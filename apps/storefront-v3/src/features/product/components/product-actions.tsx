@@ -3,9 +3,15 @@
 import { useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { StoreProduct, StoreProductOption, StoreProductVariant } from "@medusajs/types"
+import { StoreProduct, StoreProductVariant } from "@medusajs/types"
 import { useCart } from "@/context/cart-context"
 import { useToast } from "@/lib/hooks/use-toast"
+import { NotifyMeButton } from "./notify-me-button"
+import { SizeGuideButton, shouldShowSizeGuide } from "@/components/ui/size-guide"
+import { usePathname } from "next/navigation"
+import { SocialShare } from "./social-share"
+import { StockStatusBadge, getStockStatus } from "@/components/ui/stock-status-badge"
+import { PriceDisplay } from "@/components/ui/price-display"
 
 interface ProductActionsProps {
   product: StoreProduct
@@ -27,6 +33,7 @@ export function ProductActions({
   const { addItem } = useCart()
   const { toast } = useToast()
   const [isAdding, setIsAdding] = useState(false)
+  const pathname = usePathname()
 
   const updateOption = (optionId: string, value: string) => {
     const newOptions = { ...options, [optionId]: value }
@@ -62,36 +69,68 @@ export function ProductActions({
     }
   }
 
-  const formatPrice = (amount: number, currency: string) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency,
-    }).format(amount)
-  }
-
-  // Get price from selected variant or first variant or product
-  const displayPrice = useMemo(() => {
+  // Calculate price and sale info for PriceDisplay
+  const priceInfo = useMemo(() => {
     const variant = selectedVariant || product.variants?.[0]
-    // @ts-expect-error - Medusa types are strict but the fields query includes prices
-    return variant?.calculated_price || variant?.prices?.[0]
+    const variantData = variant as Record<string, unknown> | undefined
+    const calcPrice = variantData?.calculated_price as Record<string, unknown> | undefined
+    const calculatedAmount = calcPrice?.calculated_amount as number | undefined
+    const originalAmount = calcPrice?.original_amount as number | undefined
+    const prices = variantData?.prices as Array<{ amount: number; currency_code: string }> | undefined
+
+    // Use calculated price or fall back to regular price
+    // Note: Medusa v2 returns prices in dollars, not cents
+    const priceAmount = calculatedAmount || originalAmount || prices?.[0]?.amount || 0
+    const currencyCode = prices?.[0]?.currency_code || "usd"
+
+    // Calculate discount
+    const hasDiscount = originalAmount && calculatedAmount && originalAmount > calculatedAmount
+    const discountPercentage = hasDiscount
+      ? Math.round((1 - calculatedAmount / originalAmount) * 100)
+      : undefined
+
+    return {
+      price: { amount: priceAmount, currency_code: currencyCode },
+      originalPrice: hasDiscount ? originalAmount : undefined,
+      discountPercentage,
+    }
   }, [selectedVariant, product.variants])
+
+  // Extract handle from pathname or use product.id
+  const productHandle = pathname?.split("/").pop() || product.id || ""
+
+  // Check if we should show size guide
+  const sizeGuideInfo = shouldShowSizeGuide(product)
+
+  // Get stock status for out-of-stock check
+  const stockStatus = getStockStatus(selectedVariant)
+  const isOutOfStock = stockStatus.status === "out-of-stock"
 
   return (
     <div className="flex flex-col gap-8">
       {/* Price Display */}
       <div className="border-b pb-6">
         <h1 className="text-3xl font-bold tracking-tight mb-2">{product.title}</h1>
-        {displayPrice ? (
-             <div className="text-2xl font-mono text-primary">
-             {formatPrice(displayPrice.calculated_amount || displayPrice.amount, displayPrice.currency_code)}
-           </div>
-        ) : (
-            <div className="text-2xl font-mono text-muted-foreground">Price on request</div>
-        )}
+        <div className="flex items-start gap-3 flex-wrap">
+          <PriceDisplay
+            price={priceInfo.price}
+            originalPrice={priceInfo.originalPrice}
+            discountPercentage={priceInfo.discountPercentage}
+            size="lg"
+          />
+          <StockStatusBadge variant={selectedVariant} />
+        </div>
         {product.description && (
              <p className="mt-4 text-muted-foreground leading-relaxed">{product.description}</p>
         )}
       </div>
+
+      {/* Social Share Buttons */}
+      <SocialShare
+        productTitle={product.title}
+        productDescription={product.description || undefined}
+        productImage={product.thumbnail || undefined}
+      />
 
       {/* Options Selection */}
       <div className="space-y-6">
@@ -121,21 +160,43 @@ export function ProductActions({
             </div>
           </div>
         ))}
+
+        {/* Size Guide Button - Only show for apparel/products with sizes */}
+        {sizeGuideInfo.shouldShow && (
+          <div className="pt-2">
+            <SizeGuideButton 
+              category={sizeGuideInfo.category} 
+              productType={sizeGuideInfo.productType}
+            />
+          </div>
+        )}
       </div>
 
-      {/* Add to Cart */}
+      {/* Add to Cart / Notify Me */}
       <div className="pt-6 border-t">
-        <Button
-            size="lg"
-            className="w-full font-mono text-lg h-14 uppercase tracking-widest"
-            disabled={!selectedVariant || disabled || isAdding}
-            onClick={handleAddToCart}
-        >
-          {isAdding ? "Initiating_Transfer..." : selectedVariant ? "Add_to_System" : "Select_Options"}
-        </Button>
-         <p className="mt-2 text-center text-xs font-mono text-muted-foreground">
-            SECURE_TRANSACTION_PROTOCOL_V3
-          </p>
+        {isOutOfStock ? (
+          <NotifyMeButton
+            productId={product.id}
+            productHandle={productHandle}
+            productTitle={product.title}
+            variantId={selectedVariant?.id}
+            variantTitle={selectedVariant?.title || undefined}
+          />
+        ) : (
+          <>
+            <Button
+                size="lg"
+                className="w-full font-mono text-lg h-14 uppercase tracking-widest"
+                disabled={!selectedVariant || disabled || isAdding}
+                onClick={handleAddToCart}
+            >
+              {isAdding ? "Adding..." : selectedVariant ? "Add to Cart" : "Select Options"}
+            </Button>
+            <p className="mt-2 text-center text-xs font-mono text-muted-foreground">
+                Secure checkout
+            </p>
+          </>
+        )}
       </div>
     </div>
   )

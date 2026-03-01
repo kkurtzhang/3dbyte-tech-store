@@ -2,6 +2,7 @@
 
 import { useMemo } from "react"
 import { ShoppingCart } from "lucide-react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -94,8 +95,15 @@ export function CartSheet() {
             </p>
           </div>
           <SheetFooter>
-             <Button className="w-full font-mono uppercase tracking-widest" size="lg" disabled={!cart || cart.items?.length === 0}>
+             <Button
+                className="w-full font-mono uppercase tracking-widest"
+                size="lg"
+                asChild
+                disabled={!cart || cart.items?.length === 0}
+              >
+               <Link href="/checkout">
                 Proceed_To_Checkout
+               </Link>
              </Button>
           </SheetFooter>
         </div>

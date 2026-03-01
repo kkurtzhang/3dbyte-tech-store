@@ -1,0 +1,106 @@
+{
+  "batch": 1,
+  "generated_at": "2026-02-19T02:01:00.000Z",
+  "total_products": 3,
+  "products": [
+    {
+      "dremc_id": "7581664247977",
+      "title": "CNC Kitchen Threaded Insert M2 / M2.5 / M3 / M4 / M5 / M6 / M8 / M10 / 1.4\"",
+      "handle": "cnc-kitchen-metric-threaded-insert",
+      "vendor": "CNC Kitchen",
+      "product_type": "Spare Parts",
+      "sku": "4262391012598",
+      "price": 19.95,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/cnc-kitchen-threaded-insert-m2-m25-m3-m4-m5-m6-m8-m10-14-4262391010013-4997745.png?v=1755908900",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cnc-kitchen-threaded-insert-m2-m25-m3-m4-m5-m6-m8-m10-14-4262391010013-3333942.png?v=1755908901",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/cnc-kitchen-threaded-insert-m2-m25-m3-m4-m5-m6-m8-m10-14-4262391010013-2278035.png?v=1755908901",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/cnc-kitchen-threaded-insert-m2-m25-m3-m4-m5-m6-m8-m10-14-4262391010013-2993308.png?v=1755908901",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cnc-kitchen-threaded-insert-m2-m25-m3-m4-m5-m6-m8-m10-14-4262391010013-1143475.png?v=1755908901",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cnc-kitchen-threaded-insert-m2-m25-m3-m4-m5-m6-m8-m10-14-4262391010013-6774615.png?v=1755908901"
+      ],
+      "tags": [
+        "3D",
+        "Insert"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable",
+        "3d-printer-parts"
+      ],
+      "category": "accessories",
+      "manufacturer_image_url": "content=http://cnckitchen.store/cdn/shop/files/Insert_Set_200-v2.png",
+      "manufacturer_website": "https://cnckitchen.store/products/gewindeeinsatz-threaded-insert-set-standard-200-stk-pcs",
+      "original_description": "CNC Kitchen Threaded Inserts by CNC Kitchen are a comprehensive metric threaded insert set designed for FDM 3D printed parts. This kit includes sizes ranging from M1.6 to M10, with both metric and imperial 1.4\" options, providing durable and reusable screw threads for your 3D printing projects. The inserts are engineered with a knurled exterior for secure bonding to plastic materials like PLA, PETG, and ABS. Installation is straightforward using a soldering iron set to the filament printing temperature plus 10°C, allowing the plastic to melt around the insert and create a mechanical lock. These heat-set inserts prevent thread wear during repeated assembly and disassembly, making them ideal for functional parts that require regular maintenance or modification."
+    },
+    {
+      "dremc_id": "7584259178665",
+      "title": "CNC Kitchen Soldering Tips V2 for M2.x, M3, M4, M5, M6+1/4\", M8",
+      "handle": "cnc-kitchen-soldering-tips-m2-x-m3-m4-m5-m6-14-m8",
+      "vendor": "CNC Kitchen",
+      "product_type": "Tools",
+      "sku": "CNC-M2-M8",
+      "price": 29.95,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/cnc-kitchen-soldering-tips-v2-for-m2x-m3-m4-m5-m614-m8-cnc-m2-m8-4211085.webp?v=1755908898",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cnc-kitchen-soldering-tips-v2-for-m2x-m3-m4-m5-m614-m8-cnc-m2-m8-2052342.png?v=1755908898",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cnc-kitchen-soldering-tips-v2-for-m2x-m3-m4-m5-m614-m8-cnc-m2-m8-4648291.png?v=1755908898",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cnc-kitchen-soldering-tips-v2-for-m2x-m3-m4-m5-m614-m8-cnc-m2-m8-2364909.png?v=1755908898",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cnc-kitchen-soldering-tips-v2 for-m2x-m3-m4-m5-m614-m8-cnc-m2-m8-7989893.png?v=1755908899",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cnc-kitchen-soldering-tips-v2-for-m2x-m3-m4-m5-m614-m8-cnc-m2-m8-6691339.png?v=1755908899",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cnc-kitchen-soldering-tips-v2-for-m2x-m3-m4-m5-m614-m8-cnc-m2-m8-4864683.png?v=1755908899"
+      ],
+      "tags": [
+        "3D",
+        "Insert",
+        "Tools",
+        "Voron"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable",
+        "3d-printer-parts"
+      ],
+      "category": "accessories",
+      "manufacturer_image_url": "content=http://cnckitchen.store/cdn/shop/files/Shop_Banner_1200x628_c6037676-c16f-4638-b27b-40fea3f16151.png",
+      "manufacturer_website": "https://cnckitchen.store/products/soldering-tips-v2-m2-m8",
+      "original_description": "CNC Kitchen Soldering Tips V2 by CNC Kitchen are precision-engineered soldering iron tips designed specifically for installing metric threaded inserts into 3D printed parts. This set includes tips for M2 through M8 sizes, plus a 1/4\" option, offering comprehensive compatibility with T18 and M900 series soldering irons like Hakko, Lonovo, and Sremtch. The brass alloy construction is 100% lead and cadmium free, meeting environmental safety standards. These soldering tips provide efficient heat transfer with a maximum recommended operating temperature of 280°C, allowing for quick and reliable installation of heat-set inserts. The knurled exterior of the tips ensures positive engagement with the inserts, while the thermal properties help melt the surrounding plastic evenly for a secure mechanical bond."
+    },
+    {
+      "dremc_id": "7832704647337",
+      "title": "Micro Swiss FlowTech™ Hotend for Creality K1 / K1 Max / K1C",
+      "handle": "micro-swiss-flowtech-hotend-for-creality-k1-k1-max-k1c",
+      "vendor": "Micro Swiss",
+      "product_type": "Hotend Assembly",
+      "sku": "M3101",
+      "price": 119.95,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/micro-swiss-flowtech-hotend-for-creality-k1-k1-max-k1c-m3101-3600994.jpg?v=1755908193",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/micro-swiss-flowtech-hotend-for-creality-k1-k1-max-k1c-m3101-1738837.jpg?v=1755908193",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/micro-swiss-flowtech-hotend-for-creality-k1-k1-max-k1c-m3101-7789801.jpg?v=1755908193",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/micro-swiss-flowtech-hotend-for-creality-k1-k1-max-k1c-m3101-6899953.jpg?v=1755908193",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/micro-swiss-flowtech-hotend-for-creality-k1-k1-max-k1c-m3101-6580156.jpg?v=1755908194",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/micro-swiss-flowtech-hotend-for-creality-k1-k1-max-k1c-m3101-4284740.png?v=1755908194",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/micro-swiss-flowtech-hotend-for-creality-k1-k1-max-k1c-m3101-2803480.jpg?v=1755908194",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/micro-swiss-flowtech-hotend-for-creality-k1-k1-max-k1c-m3101-2688609.jpg?v=1755908194"
+      ],
+      "tags": [
+        "3D",
+        "Creality",
+        "FlowTech",
+        "K1",
+        "Micro Swiss"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable",
+        "3d-printer-parts",
+        "3d-printer-hotend-accessories"
+      ],
+      "category": "accessories",
+      "manufacturer_image_url": "content=https://store.micro-swiss.com/cdn/shop/files/FlowTech_Hotend_K1_1200x1200.jpg",
+      "manufacturer_website": "https://store.micro-swiss.com/products/micro-swiss-flowtech-hotend-for-creality-k1-k1-max",
+      "original_description": "Micro Swiss FlowTech Hotend by Micro Swiss is an innovative drop-in upgrade designed specifically for Creality K1, K1 Max, and K1C series 3D printers. This all-metal hotend features a ceramic cylindrical heater combined with a 28.6mm melt zone, delivering exceptional volumetric flow rates for high-speed printing. The FlowTech design combines the nozzle and thermal break into one permanently sealed assembly, eliminating common issues like nozzle seal leaks and simplifying maintenance. With tool-free nozzle changes possible in under 60 seconds, you can quickly switch between different nozzle sizes without hot tightening. The hotend is rated for temperatures up to 300°C and includes a precisely calibrated NTC thermistor, ensuring accurate temperature control across a wide range of 3D printing materials. This upgrade maintains the original z-height, build volume, and firmware settings, making it a true plug-and-play solution for enhancing your K1 series printer's performance."
+    }
+  ]
+}

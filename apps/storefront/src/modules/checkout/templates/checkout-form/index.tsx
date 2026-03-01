@@ -5,6 +5,8 @@ import Addresses from '@modules/checkout/components/addresses'
 import Payment from '@modules/checkout/components/payment'
 import Shipping from '@modules/checkout/components/shipping'
 import { Box } from '@modules/common/components/box'
+import { Heading } from '@modules/common/components/heading'
+import { Text } from '@modules/common/components/text'
 
 export default async function CheckoutForm({
   cart,
@@ -26,6 +28,17 @@ export default async function CheckoutForm({
 
   return (
     <Box className="grid w-full grid-cols-1 gap-y-4">
+      {!customer && (
+        <Box className="bg-primary p-5">
+          <Heading as="h3" className="text-lg text-basic-primary">
+            Checkout as Guest
+          </Heading>
+          <Text className="text-sm text-secondary mt-1">
+            No account required. Provide your email (optional) to track your order
+            and receive updates.
+          </Text>
+        </Box>
+      )}
       <Addresses cart={cart} customer={customer} />
       <Shipping cart={cart} availableShippingMethods={shippingMethods} />
       <Payment cart={cart} availablePaymentMethods={paymentMethods} />

@@ -7,6 +7,7 @@ import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { registerAction } from "@/app/actions/auth"
 
 const registerSchema = z
   .object({
@@ -38,6 +39,7 @@ interface RegisterFormProps {
  */
 export function RegisterForm({ onSuccess }: RegisterFormProps) {
   const [isLoading, setIsLoading] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
 
   const {
     register,
@@ -49,21 +51,23 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true)
+    setError(null)
     try {
-      // TODO: Integrate with Medusa authentication
-      console.log("Register form submitted:", {
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        // Don't log password in production
-      })
+      const result = await registerAction(
+        data.email,
+        data.password,
+        data.firstName,
+        data.lastName
+      )
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      onSuccess?.()
+      if (result.success) {
+        onSuccess?.()
+      } else {
+        setError(result.error || "Registration failed")
+      }
     } catch (error) {
       console.error("Registration error:", error)
+      setError("An unexpected error occurred")
     } finally {
       setIsLoading(false)
     }
@@ -144,6 +148,12 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           </p>
         )}
       </div>
+
+      {error && (
+        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
 
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? "Creating account..." : "Create Account"}

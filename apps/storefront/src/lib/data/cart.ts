@@ -402,7 +402,7 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
         province: formData.get('shipping_address.province'),
         phone: formData.get('shipping_address.phone'),
       },
-      email: formData.get('email'),
+      email: formData.get('email') || undefined,
     } as any
 
     const sameAsShipping = formData.get('same_as_shipping')

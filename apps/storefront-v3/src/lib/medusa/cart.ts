@@ -10,7 +10,7 @@ export async function createCart(regionId?: string): Promise<StoreCart> {
 
 export async function getCart(cartId: string): Promise<StoreCart> {
   const { cart } = await sdk.store.cart.retrieve(cartId, {
-    fields: "*items,*items.variant,*items.variant.product,*region,*total,*subtotal,*tax_total,*discount_total,*shipping_total",
+    fields: "+items,+items.variant,+items.variant.product,+region,*promotions",
   })
   return cart
 }
@@ -97,9 +97,19 @@ export async function initiatePaymentSession({
   cart: StoreCart
   providerId: string
 }): Promise<any> {
-  // @ts-ignore - The SDK types might be slightly off or we need to access differently
-  // based on Source 1: sdk.store.payment.initiatePaymentSession(cart, { provider_id })
   return await sdk.store.payment.initiatePaymentSession(cart, {
     provider_id: providerId,
   })
+}
+
+export async function getShippingOptions(cartId: string): Promise<any[]> {
+  try {
+    const { shipping_options } = await sdk.store.fulfillment.listCartOptions({
+      cart_id: cartId,
+    })
+    return shipping_options || []
+  } catch (error) {
+    console.error("Failed to fetch shipping options:", error)
+    return []
+  }
 }

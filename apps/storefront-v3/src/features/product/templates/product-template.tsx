@@ -1,25 +1,44 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { StoreProduct, StoreProductVariant } from "@medusajs/types"
 import { ProductGallery } from "../components/product-gallery"
 import { ProductActions } from "../components/product-actions"
 import { SpecSheet } from "../components/spec-sheet"
+import { RecentlyViewedProducts } from "@/components/product/recently-viewed-products"
 import { Separator } from "@/components/ui/separator"
 import { useQueryState } from "nuqs"
+import { useRecentlyViewed } from "@/lib/hooks/use-recently-viewed"
+
+interface VariantImageData {
+  id: string
+  url: string
+  variantId: string
+}
 
 interface ProductTemplateProps {
   product: StoreProduct
-  richDescription?: string // From Strapi
+  richDescription?: string
+  variantImageUrls?: string[]
 }
 
-export function ProductTemplate({ product, richDescription }: ProductTemplateProps) {
+export function ProductTemplate({ product, richDescription, variantImageUrls }: ProductTemplateProps) {
   const [variantId, setVariantId] = useQueryState("variant", {
     shallow: false,
     history: "push",
   })
 
   const [options, setOptions] = useState<Record<string, string>>({})
+  const { addToRecentlyViewed } = useRecentlyViewed()
+
+  // Track product views - only add once per visit using a ref
+  const hasTrackedView = useRef(false)
+  useEffect(() => {
+    if (!hasTrackedView.current && product.id) {
+      addToRecentlyViewed(product)
+      hasTrackedView.current = true
+    }
+  }, [product.id, addToRecentlyViewed])
 
   // Derive selected variant from URL or default to first
   const selectedVariant = useMemo(() => {
@@ -83,8 +102,9 @@ export function ProductTemplate({ product, richDescription }: ProductTemplatePro
         <div className="relative">
            <div className="sticky top-24">
              <ProductGallery
-                images={product.images || []}
-                selectedVariantId={selectedVariant?.id}
+                product={product}
+                selectedVariant={selectedVariant}
+                variantImageUrls={variantImageUrls}
              />
            </div>
         </div>
@@ -108,12 +128,17 @@ export function ProductTemplate({ product, richDescription }: ProductTemplatePro
 
            {/* Rich Description from Strapi (if available) */}
            {richDescription && (
-             <div className="prose prose-sm dark:prose-invert">
-                <h3>Product_Analysis</h3>
+             <div className="prose prose-sm dark:prose-invert bg-muted/30 p-6 rounded-lg border">
+                <h3 className="text-lg font-semibold mb-3">Product Description</h3>
                 <div dangerouslySetInnerHTML={{ __html: richDescription }} />
              </div>
            )}
         </div>
+      </div>
+
+      {/* Recently Viewed Products Section */}
+      <div className="mt-12">
+        <RecentlyViewedProducts currentProductId={product.id} />
       </div>
     </div>
   )

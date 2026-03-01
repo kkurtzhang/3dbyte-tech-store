@@ -1,0 +1,170 @@
+---
+title: "Integrating MDX in Next.js"
+slug: "integrating-mdx"
+date: "2026-02-08"
+excerpt: "Learn how to use MDX to create rich, interactive content in your Next.js blog."
+author: "Dev Team"
+tags: ["mdx", "nextjs", "content"]
+published: true
+---
+
+# Integrating MDX in Next.js
+
+MDX lets you use JSX components inside Markdown. This creates powerful possibilities for content creation.
+
+## Why MDX?
+
+- **Rich components**: Use React components in your content
+- **Maintainable**: Keep content and UI logic together
+- **Type-safe**: Full TypeScript support
+- **Flexible**: Works with existing MDX tools
+
+## Basic Setup
+
+First, install the required packages:
+
+```bash
+pnpm add @next/mdx @mdx-js/loader @mdx-js/react next-mdx-remote
+```
+
+## Creating MDX Content
+
+Here's a simple MDX file:
+
+```mdx
+---
+title: "My Post"
+date: "2026-02-08"
+---
+
+# Hello MDX
+
+This is **bold** and *italic* text.
+
+<Link href="/about">About Us</Link>
+```
+
+## Custom Components
+
+You can customize how MDX renders different elements:
+
+```tsx
+import { MDXRemote } from 'next-mdx-remote/rsc';
+
+const components = {
+  h1: ({ children }) => <h1 className="text-3xl">{children}</h1>,
+  // ... other components
+};
+
+export function MDXContent({ source }) {
+  return (
+    <MDXRemote source={source} components={components} />
+  );
+}
+```
+
+## Syntax Highlighting
+
+Add code highlighting with rehype-highlight:
+
+```tsx
+import rehypeHighlight from 'rehype-highlight';
+
+const options = {
+  mdxOptions: {
+    rehypePlugins: [rehypeHighlight],
+  },
+};
+```
+
+## Code Examples
+
+### JavaScript Example
+
+```javascript
+function greet(name) {
+  return `Hello, ${name}!`;
+}
+
+console.log(greet('World'));
+```
+
+### TypeScript Example
+
+```typescript
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+const user: User = {
+  id: 1,
+  name: "John Doe",
+  email: "john@example.com"
+};
+```
+
+### CSS Example
+
+```css
+.button {
+  background-color: #0070f3;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+}
+```
+
+## Tables
+
+| Feature | MDX | Markdown |
+|---------|-----|----------|
+| Components | ✅ | ❌ |
+| JSX | ✅ | ❌ |
+| Interactivity | ✅ | ❌ |
+| Simplicity | ⚠️ | ✅ |
+
+## Lists
+
+### Unordered List
+
+- First item
+- Second item
+  - Nested item
+- Third item
+
+### Ordered List
+
+1. First step
+2. Second step
+3. Third step
+
+## Blockquotes
+
+> MDX gives you the best of both worlds: Markdown's simplicity and React's power.
+>
+> — Anonymous Developer
+
+## Alerts and Callouts
+
+You can create custom components for alerts:
+
+> ⚠️ **Warning**: This is a warning message!
+
+> ℹ️ **Info**: This is an informational message.
+
+## Mathematical Expressions
+
+While not built-in, you can add math support:
+
+Inline math: $E = mc^2$
+
+Block math:
+$$
+\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
+$$
+
+## Conclusion
+
+MDX is a powerful tool for content creators and developers alike. Start using it in your Next.js projects today!

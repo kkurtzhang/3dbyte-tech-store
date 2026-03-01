@@ -3,6 +3,8 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import "@/styles/globals.css";
 import { cn } from "@/lib/utils";
 import { CartProvider } from "@/context/cart-context";
+import { WishlistProvider } from "@/context/wishlist-context";
+import { CompareProvider } from "@/context/compare-context";
 import { Toaster } from "@/components/ui/toaster";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -50,12 +52,16 @@ export default function RootLayout({
         >
           <NuqsAdapter>
             <CartProvider>
-              <div className="relative flex min-h-screen flex-col">
-                <Navbar />
-                <main className="flex-1">{children}</main>
-                <Footer />
-              </div>
-              <Toaster />
+              <WishlistProvider>
+                <CompareProvider>
+                <div className="relative flex min-h-screen flex-col">
+                  <Navbar />
+                  <main className="flex-1">{children}</main>
+                  <Footer />
+                </div>
+                <Toaster />
+                </CompareProvider>
+              </WishlistProvider>
             </CartProvider>
           </NuqsAdapter>
         </ThemeProvider>

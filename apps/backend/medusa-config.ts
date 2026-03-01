@@ -48,13 +48,39 @@ module.exports = defineConfig({
       resolve: "./src/modules/brand",
     },
     {
+      resolve: "./src/modules/wishlist",
+    },
+    {
+      resolve: "./src/modules/reviews",
+    },
+    {
+      resolve: "./src/modules/newsletter",
+    },
+    {
       resolve: "./src/modules/meilisearch",
       options: {
         host: process.env.MEILISEARCH_HOST || "http://localhost:7700",
         apiKey: process.env.MEILISEARCH_API_KEY || "",
-        productIndexName: process.env.MEILISEARCH_PRODUCT_INDEX_NAME || "products",
-        categoryIndexName: process.env.MEILISEARCH_CATEGORY_INDEX_NAME || "categories",
+        productIndexName:
+          process.env.MEILISEARCH_PRODUCT_INDEX_NAME || "products",
+        categoryIndexName:
+          process.env.MEILISEARCH_CATEGORY_INDEX_NAME || "categories",
         brandIndexName: process.env.MEILISEARCH_BRAND_INDEX_NAME || "brands",
+      },
+    },
+    {
+      resolve: "@medusajs/payment",
+      options: {
+        providers: [
+          {
+            resolve: "@medusajs/payment-stripe",
+            id: "stripe",
+            options: {
+              apiKey: process.env.STRIPE_SECRET_KEY,
+              webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+            },
+          },
+        ],
       },
     },
     // {
@@ -69,27 +95,27 @@ module.exports = defineConfig({
       resolve: "@medusajs/draft-order",
       options: {},
     },
-    {
-      resolve: "@lodashventure/medusa-media-manager",
-      options: {
-        storage: {
-          driver: "s3",
-          bucket: process.env.MEDIA_BUCKET,
-          region: process.env.MEDIA_REGION,
-          publicCdn: process.env.MEDIA_ENDPOINT,
-          signed: { enabled: true, ttlSeconds: 3600 },
-        },
-        presets: [
-          { name: "thumbnail", width: 200, height: 200, fit: "cover" },
-          { name: "small", width: 640 },
-          { name: "medium", width: 1024 },
-          { name: "large", width: 1600 },
-        ],
-        generate: { mode: "eager" },
-        svg: { sanitize: true },
-        moderation: { enabled: true },
-        rbac: { deleteRequiresNoUsage: true },
-      },
-    },
+    // {
+    //   resolve: "@lodashventure/medusa-media-manager",
+    //   options: {
+    //     storage: {
+    //       driver: "s3",
+    //       bucket: process.env.MEDIA_BUCKET,
+    //       region: process.env.MEDIA_REGION,
+    //       publicCdn: process.env.MEDIA_ENDPOINT,
+    //       signed: { enabled: true, ttlSeconds: 3600 },
+    //     },
+    //     presets: [
+    //       { name: "thumbnail", width: 200, height: 200, fit: "cover" },
+    //       { name: "small", width: 640 },
+    //       { name: "medium", width: 1024 },
+    //       { name: "large", width: 1600 },
+    //     ],
+    //     generate: { mode: "eager" },
+    //     svg: { sanitize: true },
+    //     moderation: { enabled: true },
+    //     rbac: { deleteRequiresNoUsage: true },
+    //   },
+    // },
   ],
 });

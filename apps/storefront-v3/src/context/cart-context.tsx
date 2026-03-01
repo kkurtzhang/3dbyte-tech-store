@@ -2,8 +2,11 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react"
 import { StoreCart } from "@medusajs/types"
-import { getCartAction, addToCartAction, updateLineItemAction, deleteLineItemAction } from "@/app/actions/cart"
-import { toast } from "@/lib/hooks/use-toast" // We'll need to create this or use a simple alert for now if missing
+import { createCart, getCart, addToCart, updateLineItem, deleteLineItem } from "@/lib/medusa/cart"
+
+export const CART_STORAGE_KEY = "_medusa_cart_id"
+const CART_COOKIE = "_medusa_cart_id"
+const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30
 
 interface CartContextType {
   cart: StoreCart | null
@@ -20,35 +23,73 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<StoreCart | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  const getCartId = (): string | null => {
+    if (typeof window === "undefined") return null
+    return localStorage.getItem(CART_STORAGE_KEY)
+  }
+
+  const setCartId = (cartId: string): void => {
+    if (typeof window === "undefined") return
+    localStorage.setItem(CART_STORAGE_KEY, cartId)
+    document.cookie = `${CART_COOKIE}=${encodeURIComponent(cartId)}; Path=/; Max-Age=${COOKIE_MAX_AGE_SECONDS}; SameSite=Lax`
+  }
+
+  const clearCartId = (): void => {
+    if (typeof window === "undefined") return
+    localStorage.removeItem(CART_STORAGE_KEY)
+    document.cookie = `${CART_COOKIE}=; Path=/; Max-Age=0; SameSite=Lax`
+  }
+
   const refreshCart = async () => {
     try {
-      const cartData = await getCartAction()
+      const cartId = getCartId()
+      if (!cartId) {
+        setCart(null)
+        return
+      }
+
+      const cartData = await getCart(cartId)
       setCart(cartData)
     } catch (error) {
       console.error("Failed to refresh cart", error)
+      // If cart not found, clear the stored ID
+      clearCartId()
+      setCart(null)
     } finally {
       setIsLoading(false)
     }
   }
 
   useEffect(() => {
+    const cartId = getCartId()
+    if (cartId) {
+      document.cookie = `${CART_COOKIE}=${encodeURIComponent(cartId)}; Path=/; Max-Age=${COOKIE_MAX_AGE_SECONDS}; SameSite=Lax`
+    }
     refreshCart()
   }, [])
+
+  const ensureCart = async (): Promise<string> => {
+    let cartId = getCartId()
+
+    if (!cartId) {
+      const newCart = await createCart()
+      cartId = newCart.id
+      setCartId(cartId)
+      setCart(newCart)
+    }
+
+    return cartId
+  }
 
   const addItem = async (variantId: string, quantity: number) => {
     setIsLoading(true)
     try {
-      const result = await addToCartAction(variantId, quantity)
-      if (result.success && result.cart) {
-        setCart(result.cart)
-        // Ideally show toast success
-        console.log("Item added to cart")
-      } else {
-        throw new Error(result.error)
-      }
+      const cartId = await ensureCart()
+      const updatedCart = await addToCart({ cartId, variantId, quantity })
+      setCart(updatedCart)
     } catch (error) {
       console.error("Failed to add item", error)
-      // Ideally show toast error
+      throw error
     } finally {
       setIsLoading(false)
     }
@@ -57,14 +98,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const updateItem = async (lineItemId: string, quantity: number) => {
     setIsLoading(true)
     try {
-      const result = await updateLineItemAction(lineItemId, quantity)
-      if (result.success && result.cart) {
-        setCart(result.cart)
-      } else {
-        throw new Error(result.error)
+      const cartId = getCartId()
+      if (!cartId) {
+        throw new Error("No cart found")
       }
+
+      const updatedCart = await updateLineItem({ cartId, lineItemId, quantity })
+      setCart(updatedCart)
     } catch (error) {
       console.error("Failed to update item", error)
+      throw error
     } finally {
       setIsLoading(false)
     }
@@ -73,14 +116,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const removeItem = async (lineItemId: string) => {
     setIsLoading(true)
     try {
-      const result = await deleteLineItemAction(lineItemId)
-      if (result.success && result.cart) {
-        setCart(result.cart)
-      } else {
-        throw new Error(result.error)
+      const cartId = getCartId()
+      if (!cartId) {
+        throw new Error("No cart found")
       }
+
+      const updatedCart = await deleteLineItem({ cartId, lineItemId })
+      setCart(updatedCart)
     } catch (error) {
       console.error("Failed to remove item", error)
+      throw error
     } finally {
       setIsLoading(false)
     }

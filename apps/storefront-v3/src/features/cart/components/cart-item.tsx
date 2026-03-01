@@ -3,17 +3,21 @@
 import { useMemo, useState } from "react"
 import Image from "next/image"
 import { StoreCartLineItem } from "@medusajs/types"
-import { Minus, Plus, Trash2 } from "lucide-react"
+import { Minus, Plus, Trash2, Bookmark, ImageOff } from "lucide-react"
 import { useCart } from "@/context/cart-context"
+import { useSavedItems } from "@/context/saved-items-context"
 
 interface CartItemProps {
   item: StoreCartLineItem
   currencyCode: string
+  showSaveForLater?: boolean
 }
 
-export function CartItem({ item, currencyCode }: CartItemProps) {
+export function CartItem({ item, currencyCode, showSaveForLater = true }: CartItemProps) {
   const { updateItem, removeItem } = useCart()
+  const { saveItem, isSaved } = useSavedItems()
   const [isUpdating, setIsUpdating] = useState(false)
+  const itemIsSaved = isSaved(item.id)
 
   const handleUpdateQuantity = async (newQuantity: number) => {
     if (newQuantity < 1) return
@@ -32,6 +36,10 @@ export function CartItem({ item, currencyCode }: CartItemProps) {
     } finally {
       setIsUpdating(false)
     }
+  }
+
+  const handleSaveForLater = () => {
+    saveItem(item)
   }
 
   const formatPrice = (amount: number, currency: string) => {
@@ -60,8 +68,8 @@ export function CartItem({ item, currencyCode }: CartItemProps) {
             sizes="80px"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center font-mono text-xs text-muted-foreground">
-            NO_IMG
+          <div className="flex h-full w-full items-center justify-center bg-muted">
+            <ImageOff className="h-8 w-8 text-muted-foreground/50" />
           </div>
         )}
       </div>
@@ -105,6 +113,17 @@ export function CartItem({ item, currencyCode }: CartItemProps) {
             >
                 <Trash2 className="h-4 w-4" />
              </button>
+
+             {showSaveForLater && (
+               <button
+                 onClick={handleSaveForLater}
+                 disabled={itemIsSaved}
+                 title={itemIsSaved ? "Already saved" : "Save for later"}
+                 className="text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
+               >
+                 <Bookmark className={`h-4 w-4 ${itemIsSaved ? "fill-current" : ""}`} />
+               </button>
+             )}
           </div>
 
           <div className="font-mono text-sm font-medium">

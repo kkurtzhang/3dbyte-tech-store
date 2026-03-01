@@ -1,0 +1,144 @@
+---
+title: "Next.js Best Practices for 2026"
+slug: "nextjs-best-practices"
+date: "2026-02-10"
+excerpt: "A comprehensive guide to building modern Next.js applications with the latest features."
+author: "Engineering Team"
+tags: ["nextjs", "react", "web development"]
+published: true
+---
+
+# Next.js Best Practices for 2026
+
+Next.js has evolved significantly, and with the App Router and Server Components, we have powerful new tools at our disposal. Here's how to make the most of them.
+
+## Server Components by Default
+
+Server Components are the default in Next.js 13+. They offer:
+
+- **Zero client-side JavaScript**: Faster initial page loads
+- **Direct database access**: Query data directly from components
+- **Improved security**: Sensitive code never leaves the server
+
+```tsx
+// This is a Server Component by default
+async function UserProfile({ userId }: { userId: string }) {
+  const user = await db.user.findUnique({
+    where: { id: userId }
+  });
+
+  return <div>{user.name}</div>;
+}
+```
+
+## Use Client Components Sparingly
+
+Only use `'use client'` when you need:
+
+1. **Browser APIs**: window, localStorage, etc.
+2. **Event handlers**: onClick, onSubmit, etc.
+3. **State management**: useState, useEffect, etc.
+4. **Browser-only libraries**: chart libraries, animation libraries
+
+```tsx
+'use client';
+
+import { useState } from 'react';
+
+export function Counter() {
+  const [count, setCount] = useState(0);
+  return <button onClick={() => setCount(c => c + 1)}>{count}</button>;
+}
+```
+
+## Data Fetching Patterns
+
+### Server-Side Data Fetching
+
+```tsx
+async function BlogPost({ id }: { id: string }) {
+  const post = await fetch(`https://api.example.com/posts/${id}`, {
+    cache: 'force-cache' // or 'no-store', 'no-cache'
+  }).then(res => res.json());
+
+  return <Article post={post} />;
+}
+```
+
+### Streaming Data
+
+```tsx
+import { Suspense } from 'react';
+
+export default function BlogPage() {
+  return (
+    <div>
+      <h1>Blog</h1>
+      <Suspense fallback={<p>Loading posts...</p>}>
+        <PostsList />
+      </Suspense>
+    </div>
+  );
+}
+```
+
+## Performance Optimization
+
+### Image Optimization
+
+```tsx
+import Image from 'next/image';
+
+<Image
+  src="/hero.jpg"
+  alt="Hero image"
+  width={1200}
+  height={600}
+  priority
+/>
+```
+
+### Dynamic Imports
+
+```tsx
+import dynamic from 'next/dynamic';
+
+const Chart = dynamic(() => import('./Chart'), {
+  loading: () => <p>Loading chart...</p>,
+  ssr: false
+});
+```
+
+## Error Handling
+
+```tsx
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  return (
+    <div>
+      <h2>Something went wrong!</h2>
+      <button onClick={() => reset()}>Try again</button>
+    </div>
+  );
+}
+```
+
+## Key Takeaways
+
+| Feature | When to Use | Benefits |
+|---------|-------------|----------|
+| Server Components | Most content | Performance, security |
+| Client Components | Interactive UI | State, browser APIs |
+| Static Generation | Public pages | SEO, CDN caching |
+| Server Actions | Forms, mutations | Less client code |
+
+> Pro tip: Always test your application with Lighthouse to ensure optimal performance.
+
+## Conclusion
+
+Following these best practices will help you build fast, scalable Next.js applications. Stay tuned for more advanced topics!

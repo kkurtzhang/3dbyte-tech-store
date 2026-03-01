@@ -1,7 +1,7 @@
 "use client"
 
 import { useQueryState } from "nuqs"
-import { useEffect, useState, useTransition } from "react"
+import { useEffect, useState, useTransition, useRef } from "react"
 import { searchProducts } from "@/features/search/actions/search"
 
 interface UseSearchOptions {
@@ -12,14 +12,22 @@ interface UseSearchOptions {
 export function useSearch({ defaultValue = "", initialHits = [] }: UseSearchOptions = {}) {
   const [query, setQuery] = useQueryState("q", {
     defaultValue,
-    shallow: false // We want to update server-side props/URL
+    shallow: false // We want to update server-side props/URL (triggers server refresh)
   })
 
   const [hits, setHits] = useState(initialHits)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const isInitialMount = useRef(true)
 
   useEffect(() => {
+    // Skip search on initial mount - server already rendered with correct data
+    // Only search client-side when query actually changes
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return
+    }
+
     // If query is null (cleared), treat as empty string
     const term = query || ""
 

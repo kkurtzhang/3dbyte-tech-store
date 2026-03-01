@@ -16,10 +16,11 @@
     "@3dbyte-tech-store/shared-types": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.3.3",
     "@3dbyte-tech-store/shared-config": "workspace:*",
     "@types/jest": "^29.5.0",
-    "jest": "^29.5.0"
+    "jest": "^29.5.0",
+    "ts-jest": "^29.4.6",
+    "typescript": "^5.3.3"
   },
   "files": [
     "dist"

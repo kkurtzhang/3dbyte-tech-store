@@ -1,16 +1,20 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { loginAction } from "@/app/actions/auth"
+import { GoogleIcon } from "@/components/ui/google-icon"
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z.string().min(1, "Password is required"),
 })
 
 type LoginFormData = z.infer<typeof loginSchema>
@@ -24,11 +28,13 @@ interface LoginFormProps {
  * Features:
  * - Email and password validation using zod
  * - Form state management with react-hook-form
- * - Forgot password link
+ * - Integration with Medusa authentication
  * - Error display for validation
  */
 export function LoginForm({ onSuccess }: LoginFormProps) {
+  const router = useRouter()
   const [isLoading, setIsLoading] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
 
   const {
     register,
@@ -40,23 +46,75 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true)
+    setError(null)
     try {
-      // TODO: Integrate with Medusa authentication
-      console.log("Login form submitted:", data)
+      const result = await loginAction(data.email, data.password)
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      onSuccess?.()
+      if (result.success) {
+        router.refresh()
+        onSuccess?.()
+      } else {
+        setError(result.error || "Login failed")
+      }
     } catch (error) {
       console.error("Login error:", error)
+      setError("An unexpected error occurred")
     } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleGoogleLogin = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const backendUrl =
+        process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
+      // Get Google OAuth URL
+      const response = await fetch(`${backendUrl}/store/auth`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to get Google auth URL")
+      }
+
+      const data = await response.json()
+      window.location.href = data.auth_url
+    } catch (error) {
+      console.error("Google login error:", error)
+      setError("Failed to initiate Google login")
       setIsLoading(false)
     }
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        onClick={handleGoogleLogin}
+        disabled={isLoading}
+      >
+        <GoogleIcon className="mr-2 h-4 w-4" />
+        Continue with Google
+      </Button>
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">
+            Or continue with email
+          </span>
+        </div>
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="login-email">Email</Label>
         <Input
@@ -74,12 +132,12 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <Label htmlFor="login-password">Password</Label>
-          <a
-            href="#"
+          <Link
+            href="/contact"
             className="text-sm text-muted-foreground hover:text-primary transition-colors"
           >
             Forgot password?
-          </a>
+          </Link>
         </div>
         <Input
           id="login-password"
@@ -92,6 +150,12 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
           <p className="text-sm text-destructive">{errors.password.message}</p>
         )}
       </div>
+
+      {error && (
+        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
 
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? "Signing in..." : "Sign In"}

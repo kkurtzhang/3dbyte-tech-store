@@ -13,6 +13,7 @@ import Divider from '@modules/common/components/divider'
 import { Text } from '@modules/common/components/text'
 import { toast } from '@modules/common/components/toast'
 import OptionSelect from '@modules/products/components/product-actions/option-select'
+import WishlistButton from '@modules/products/components/wishlist-button'
 import { isEqual } from 'lodash'
 import { VariantColor } from 'types/strapi'
 
@@ -206,6 +207,11 @@ export default function ProductActions({
                 ? 'Out of stock'
                 : 'Add to cart'}
           </Button>
+          <WishlistButton
+            product={product}
+            variant={selectedVariant}
+            disabled={!!disabled}
+          />
         </Box>
         {maxQuantity === 0 && inStock && (
           <Text size="sm" className="text-negative">

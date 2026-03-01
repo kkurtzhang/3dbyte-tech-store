@@ -2,6 +2,7 @@ import { getCartAction } from "@/app/actions/cart"
 import { redirect } from "next/navigation"
 import { CheckoutForm } from "@/features/checkout/components/checkout-form"
 import { CheckoutSummary } from "@/features/checkout/components/checkout-summary"
+import { NewsletterSignup } from "@/components/layout/newsletter-signup"
 
 export default async function CheckoutPage() {
   const cart = await getCartAction()
@@ -16,8 +17,9 @@ export default async function CheckoutPage() {
         <h1 className="mb-8 text-2xl font-bold tracking-tight">System_Acquisition</h1>
         <CheckoutForm cart={cart} />
       </div>
-      <div className="lg:col-span-5">
+      <div className="lg:col-span-5 space-y-6">
         <CheckoutSummary cart={cart} />
+        <NewsletterSignup compact={true} variant="minimal" />
       </div>
     </div>
   )

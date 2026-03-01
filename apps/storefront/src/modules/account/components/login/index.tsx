@@ -11,6 +11,7 @@ import { Input } from '@modules/common/components/input'
 import { toast } from '@modules/common/components/toast'
 
 import RegisterPrompt from './register-prompt'
+import { GoogleIcon } from './google-icon'
 
 type Props = {
   setCurrentView: (view: LOGIN_VIEW) => void
@@ -22,6 +23,31 @@ const Login = ({ setCurrentView }: Props) => {
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
     []
   )
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleGoogleLogin = async () => {
+    setIsLoading(true)
+    try {
+      const response = await fetch('/store/auth', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to get Google OAuth URL')
+      }
+
+      const data = await response.json()
+      window.location.href = data.auth_url
+    } catch (error) {
+      console.error('Google login error:', error)
+      toast('error', 'Failed to initialize Google login')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -82,6 +108,31 @@ const Login = ({ setCurrentView }: Props) => {
         <Heading as="h2" className="text-xl sm:text-2xl">
           Log in
         </Heading>
+
+        {/* Google Login Button */}
+        <Button
+          type="button"
+          variant="secondary"
+          className="w-full border border-basic-secondary"
+          onClick={handleGoogleLogin}
+          disabled={isLoading}
+        >
+          <Box className="flex items-center justify-center gap-2">
+            <GoogleIcon />
+            <span>Continue with Google</span>
+          </Box>
+        </Button>
+
+        {/* Divider */}
+        <Box className="relative my-4">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-basic-secondary" />
+          </div>
+          <Box className="relative flex justify-center text-xs uppercase">
+            <span className="bg-primary px-2 text-secondary">Or</span>
+          </Box>
+        </Box>
+
         <form onSubmit={handleSubmit}>
           <div className="flex flex-col gap-y-4">
             <Input

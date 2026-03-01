@@ -1,29 +1,47 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import Link from "next/link"
-import { Search, User } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { CartSheet } from "@/features/cart/components/cart-sheet"
-import { ThemeToggle } from "./theme-toggle"
-import { MobileMenu } from "./mobile-menu"
-import { SearchCommandDialog } from "@/components/search/search-command-dialog"
-import { AuthSheet } from "@/features/auth/components/auth-sheet"
+import * as React from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Search, User, Heart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CartSheet } from "@/features/cart/components/cart-sheet";
+import { ThemeToggle } from "./theme-toggle";
+import { MobileMenu } from "./mobile-menu";
+import { SearchCommandDialog } from "@/components/search/search-command-dialog";
+import { AuthSheet } from "@/features/auth/components/auth-sheet";
+import { logoutAction, getSessionAction } from "@/app/actions/auth";
+import { useWishlist } from "@/context/wishlist-context";
 
-/**
- * Navbar component for the main site navigation.
- * Features:
- * - Logo with "The Lab" badge (left)
- * - Desktop navigation links (center)
- * - Action buttons: Search (Cmd+K), Account, Cart, Theme Toggle (right)
- * - Mobile hamburger menu
- * - Sticky header with backdrop blur
- * - Command palette search dialog
- * - Authentication sheet for quick login/register
- */
 export function Navbar() {
-  const [searchOpen, setSearchOpen] = React.useState(false)
-  const [authOpen, setAuthOpen] = React.useState(false)
+  const [searchOpen, setSearchOpen] = React.useState(false);
+  const [authOpen, setAuthOpen] = React.useState(false);
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const router = useRouter();
+  const { wishlist } = useWishlist();
+
+  React.useEffect(() => {
+    checkSession();
+  }, []);
+
+  async function checkSession() {
+    try {
+      const result = await getSessionAction();
+      setIsLoggedIn(result.success);
+    } catch (error) {
+      setIsLoggedIn(false);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleLogout() {
+    await logoutAction();
+    setIsLoggedIn(false);
+    router.push("/");
+    router.refresh();
+  }
 
   return (
     <>
@@ -44,16 +62,34 @@ export function Navbar() {
           {/* Center Section: Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
             <Link
-              href="/products"
+              href="/shop"
               className="text-sm font-medium transition-colors hover:text-primary"
             >
-              Products
+              Shop
             </Link>
             <Link
-              href="/resources"
+              href="/brands"
               className="text-sm font-medium transition-colors hover:text-primary"
             >
-              Resources
+              Brands
+            </Link>
+            <Link
+              href="/blog"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Blog
+            </Link>
+            <Link
+              href="/gift-cards"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Gift Cards
+            </Link>
+            <Link
+              href="/about"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              About
             </Link>
           </nav>
 
@@ -74,15 +110,51 @@ export function Navbar() {
               <span className="text-xs">⌘</span>K
             </kbd>
 
-            {/* Account Trigger */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setAuthOpen(true)}
-            >
-              <User className="h-5 w-5" />
-              <span className="sr-only">Account</span>
-            </Button>
+            {/* Account */}
+            {isLoading ? (
+              <Button variant="ghost" size="icon" disabled>
+                <User className="h-5 w-5 animate-pulse" />
+              </Button>
+            ) : isLoggedIn ? (
+              <div className="flex items-center gap-2">
+                <Link href="/account">
+                  <Button variant="ghost" size="sm">
+                    <User className="h-5 w-5 mr-2" />
+                    My Account
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="text-muted-foreground"
+                >
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setAuthOpen(true)}
+              >
+                <User className="h-5 w-5 mr-2" />
+                Sign In
+              </Button>
+            )}
+
+            {/* Wishlist */}
+            <Link href="/wishlist">
+              <Button variant="ghost" size="icon" className="relative">
+                <Heart className="h-5 w-5" />
+                {wishlist.length > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                    {wishlist.length}
+                  </span>
+                )}
+                <span className="sr-only">Wishlist</span>
+              </Button>
+            </Link>
 
             {/* Cart Sheet */}
             <CartSheet />
@@ -99,5 +171,5 @@ export function Navbar() {
       {/* Auth Sheet */}
       <AuthSheet open={authOpen} onOpenChange={setAuthOpen} />
     </>
-  )
+  );
 }

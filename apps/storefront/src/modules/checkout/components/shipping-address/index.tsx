@@ -219,14 +219,13 @@ const ShippingAddress = ({
           data-testid="shipping-province-input"
         />
         <Input
-          label="Email"
+          label="Email (optional - for order tracking)"
           name="email"
           type="email"
           title="Enter a valid email address."
           autoComplete="email"
           value={values.email}
           onChange={handleChange}
-          required
           error={errors?.email as string}
           data-testid="billing-email-input"
         />

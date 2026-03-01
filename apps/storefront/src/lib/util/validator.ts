@@ -62,7 +62,7 @@ export const checkoutFormValidationSchema = Yup.object({
   }),
   email: Yup.string()
     .email('Invalid email address')
-    .required('Please enter email'),
+    .optional(),
   same_as_shipping: Yup.boolean(),
 })
 

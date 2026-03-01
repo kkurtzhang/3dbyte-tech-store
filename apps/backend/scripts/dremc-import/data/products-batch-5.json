@@ -1,0 +1,2066 @@
+{
+  "batch": 5,
+  "extracted_at": "2026-02-19T05:09:21.071Z",
+  "total_products": 50,
+  "products": [
+    {
+      "dremc_id": 7880183349417,
+      "title": "Creality K1 Max Toolhead Wiring Cable Loom",
+      "handle": "creality-k1-max-toolhead-wiring-cable-loom",
+      "vendor": "Creality",
+      "product_type": "Spare Parts",
+      "sku": "3103110569",
+      "price": 19.45,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-max-toolhead-wiring-cable-loom-3103110569-7251726.jpg?v=1755908032"
+      ],
+      "tags": [
+        "3D",
+        "Cable",
+        "Creality",
+        "K1"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>For Creality K1 Toolhead Wiring to Toolhead PCB (Cable Length: 138cm)</p>\n<p>Creality Part Number: 3103110569</p>\n<h3>Compatible Printers</h3>\n<ul>\n<li>Creality K1 Max (Best Suited) </li>\n<li>Also suitable Creality K1 (K1C / K1 : <a href=\"https://store.dremc.com.au/products/creality-k1c-max-toolhead-wiring\">https://store.dremc.com.au/products/creality-k1c-max-toolhead-wiring</a>) (Just require additional cable management of extra 20cm length)  (Part Number: 3103110606)</li>\n</ul>",
+      "variants": [
+        {
+          "id": 43529636708521,
+          "title": "Default Title",
+          "sku": "3103110569",
+          "price": 19.45
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7781175591081,
+      "title": "Gates Powergrip® RF 2GT Belt for Creality - Ender 3 V3 SE / KE",
+      "handle": "gates-powergrip-rf-2gt-belt-for-creality-ender-3-v3-se",
+      "vendor": "Gates",
+      "product_type": "Timing Belt",
+      "sku": "LL-2GT-6-RF-711",
+      "price": 12.95,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/gates-powergrip-rf-2gt-belt-for-creality-ender-3-max-ll-2gt-rf-931-2475016.jpg?v=1755906808",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/gates-powergrip-rf-2gt-belt-for-creality-ender-3-max-ll-2gt-rf-931-9181919.jpg?v=1755906808",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/gates-powergrip-rf-2gt-belt-for-creality-ender-3-v3-se-ke-ll-2gt-6-rf-711-5536026.jpg?v=1755908270",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/gates-powergrip-rf-2gt-belt-for-creality-ender-3-v3-se-ke-ll-2gt-6-rf-711-8953383.jpg?v=1755908270"
+      ],
+      "tags": [
+        "3D",
+        "3D Belt",
+        "Ender 3 V3",
+        "Gates"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<ul></ul>\n<p>Replacement Pre-Crimped Belts for Creality Ender 3 V3 SE or KE, using Gates PowerGrip RF for improve reliability, pre-cut to length and terminated with custom copper ferrules for plug and play replacement. </p>\n<h3>Why choose Gates RF belts</h3>\n<ul>\n<li>Their special 3-ply construction gives the best of all worlds: the nylon tooth facing material increases lubricity of the belt surface, fiberglass tensile cord adds exceptional strength and resistance to stretching, and a neoprene body ensures a supple and flexible surface that won't crack or deform, even in high heat printers. RF has dust proof coating on belt to improve longevity, especially in Australia. </li>\n</ul>\n<p>If you don't see your belt here and need a specific length, please open a <a href=\"https://store.dremc.com.au/pages/contact-us\" title=\"Contact DREMC\" rel=\"noopener\" target=\"_blank\">support ticket</a> and we'll be happy to assist or check our other <a href=\"https://store.dremc.com.au/collections/timing-belt\" title=\"Timing Belts - Pre-Crimped\" target=\"_blank\">product collection </a>for other printer models. </p>\n<h3>Specification: </h3>\n<ul>\n<li>Belt Materials Gates LL-2GT-6 RF</li>\n<li>The length varies according to the chosen option and is indicated in the SKU—for example, the length is highlighted in bold in LL-2GT-6-RF-<strong>711</strong>.<strong></strong>\n</li>\n</ul>\n<h3>Compatibility Note: </h3>\n<p>Depending on your selection</p>\n<h4>Printers: </h4>\n<ul>\n<li>Ender 3 V3 SE</li>\n<li>Ender 3 V3 KE</li>\n</ul>\n<p><strong>Note 1:</strong> X Axis belt is same length for Ender 3 V3 KE and Ender 3 V3 SE (Only X Axis)</p>\n<p><strong>Note 2: </strong>Depending on length, gates label may not be present on pre-crimped belt as label only appear every 1500mm. Our belts are usually cut roughly 1-2 mm longer compare to Creality specs. Copper sleeves as shown in product photo may vary between batches. <strong></strong></p>\n<h3>Documentation:</h3>\n<p>Replacement Guide: <a href=\"https://support.dremc.com.au/en/support/solutions/articles/51000365366-how-to-replace-x-y-belts-on-ender-3-v3-se\" target=\"_blank\" title=\"How to replace X/Y Belts on Ender 3 V3 SE\" rel=\"noopener\">https://support.dremc.com.au/en/support/solutions/articles/51000365366-how-to-replace-x-y-belts-on-ender-3-v3-se</a></p>\n<p>Additional Advance Belt Tension Guide: <a href=\"https://support.dremc.com.au/en/support/solutions/articles/51000433869-belt-tension-guide\" rel=\"noopener\" title=\"Belt Tension Guide\" target=\"_blank\">https://support.dremc.com.au/en/support/solutions/articles/51000433869-belt-tension-guide</a></p>\n<p> </p>",
+      "variants": [
+        {
+          "id": 43208698626217,
+          "title": "Ender 3 V3 SE / X Axis",
+          "sku": "LL-2GT-6-RF-711",
+          "price": 12.95
+        },
+        {
+          "id": 43208698658985,
+          "title": "Ender 3 V3 SE / Y Axis",
+          "sku": "LL-2GT-6-RF-629",
+          "price": 12.95
+        },
+        {
+          "id": 43700732035241,
+          "title": "Ender 3 V3 KE / Y Axis",
+          "sku": "LL-2GT-6-RF-641",
+          "price": 12.95
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 8335228305577,
+      "title": "Creality K2 Plus Replacement Toolhead Wiring Cable Loom",
+      "handle": "creality-k2-plus-replacement-toolhead-wiring-cable-loom",
+      "vendor": "Creality",
+      "product_type": "Spare Parts",
+      "sku": "3103110894",
+      "price": 22.45,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k2-plus-replacement-toolhead-wiring-cable-loom-3103110752-7341142.jpg?v=1755907197"
+      ],
+      "tags": [
+        "3D",
+        "Creality",
+        "Creality K2"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>Replacement OEM Creality K2 Plus Replacement Toolhead Wiring Cable Loom (Nozzle Adapter Cable - 3103110752 / 3103110894 ) </p>\n<h3>What is Included: </h3>\n<ul>\n<li>1x Creality K2 Plus Replacement Toolhead Wiring Cable Loom (3103110894) - 12Pin DLL PHB Connector</li>\n</ul>\n<h3>Suitable for</h3>\n<ul>\n<li>Creality K2 Plus<br>\n</li>\n</ul>\n<h3>Documentation: <a href=\"https://support.dremc.com.au/en/support/solutions/articles/51000492417-creality-k2-plus-toolhead-wiring-replacement-guide\" rel=\"noopener\" target=\"_blank\"></a>\n</h3>\n<p><a href=\"https://support.dremc.com.au/en/support/solutions/articles/51000492417-creality-k2-plus-toolhead-wiring-replacement-guide\" rel=\"noopener\" title=\"How to Replace K2 Plus Cable Loom\" target=\"_blank\">https://support.dremc.com.au/en/support/solutions/articles/51000492417-creality-k2-plus-toolhead-wiring-replacement-guide</a></p>\n<p>Install Video: <a href=\"https://www.youtube.com/watch?v=MI9-isOtg-g\" title=\"Replace Nozzle Adapter Cable\" rel=\"noopener\" target=\"_blank\">https://www.youtube.com/watch?v=MI9-isOtg-g</a></p>\n<p>Note: Some newer version have one end of the cable loom with red heat shrink, that end plugs into the toolhead end (stock sent randomly) (New Part Number: 3103110894) </p>\n<h3>Product History</h3>\n<p>Since 22 January 2026, we are shipping newer 3103110894 which is updated/improved SKU and has replaced previous SKU. </p>\n<p><br></p>\n<p> </p>",
+      "variants": [
+        {
+          "id": 44963165012137,
+          "title": "Default Title",
+          "sku": "3103110894",
+          "price": 22.45
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7884951519401,
+      "title": "Creality K1C / K1 Max (2024) 3010 Hotend / 4020 Part Fan",
+      "handle": "creality-k1c-3010-hotend-4020-part-fan",
+      "vendor": "Creality",
+      "product_type": "Fan",
+      "sku": "3205010394",
+      "price": 15.45,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1c-k1-max-2024-3010-hotend-4020-part-fan-3205010394-5192770.jpg?v=1755908028",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1c-k1-max-2024-3010-hotend-4020-part-fan-3205010394-5172963.jpg?v=1755908029",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1c-k1-max-2024-3010-hotend-4020-part-fan-3205010392-4896672.jpg?v=1755908029",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1c-k1-max-2024-3010-hotend-4020-part-fan-3205010392-3476430.jpg?v=1755908029"
+      ],
+      "tags": [
+        "3D",
+        "Creality",
+        "Fan",
+        "K1"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>Official OEM replacement fan for K1C from Creality. (Note: Also suitable for K1 Series using Unicorn Nozzle) (Sold Individually depending on your selection)</p>\n<h3>Support Printers:</h3>\n<div class=\"tabs-content base-page\">\n<div class=\"adaptive-wrapper\">\n<div class=\"content\">\n<ul>\n<li>K1C<br>\n</li>\n<li>K1 Max (2024/2025) Using Unicorn Nozzle<br>\n</li>\n<li>K1 SE</li>\n<li>K1 (2024/2025) Using Unicorn Nozzle</li>\n</ul>\n<p>How to distinguish which version of hotend you have: <a rel=\"noopener\" href=\"https://support.dremc.com.au/support/solutions/articles/51000426953-k1-k1-max-how-to-distinguish-which-hotend-you-have\" target=\"_blank\">https://support.dremc.com.au/support/solutions/articles/51000426953-k1-k1-max-how-to-distinguish-which-hotend-you-have</a><br></p>\n<h3>Fan Specifications: </h3>\n<ul>\n<li>Axial Fan_3010_24V_0.1A_12000±10%_L40_1.25-3P</li>\n<li>Blower Fan_4020_24V_0.3A_12k±10%_L60_1.25-4P</li>\n</ul>\n<h3>Documentation: </h3>\n<p>How to replace fan: <a rel=\"noopener\" href=\"https://support.dremc.com.au/en/support/solutions/articles/51000348048-creality-k1-k1-max-how-to-replace-hotend-assembly\" target=\"_blank\">https://support.dremc.com.au/en/support/solutions/articles/51000348048-creality-k1-k1-max-how-to-replace-hotend-assembly</a></p>\n</div>\n</div>\n</div>",
+      "variants": [
+        {
+          "id": 43555682418857,
+          "title": "Hotend Cooling Fan (3010)",
+          "sku": "3205010394",
+          "price": 15.45
+        },
+        {
+          "id": 43555682386089,
+          "title": "Part Cooling Fan (4020)",
+          "sku": "3205010392",
+          "price": 16.45
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7470361346217,
+      "title": "2M BL Touch Cable - Trianglelab",
+      "handle": "2m-bl-touch-cable",
+      "vendor": "Trianglelab",
+      "product_type": "Spare Parts",
+      "sku": "26814377",
+      "price": 9,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/2m-bl-touch-cable-trianglelab-26814377-2665983.png?v=1755909223",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/rn-image_picker_lib_temp_f5708052-3b68-49e8-9bb6-ef4c41615e2f.heic?v=1745213276"
+      ],
+      "tags": [
+        "3D",
+        "BL-TOUCH",
+        "Cable",
+        "Creality",
+        "Probe"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p><span style=\"font-family: Arial;\" face=\"Arial\">Replacement Bl Touch Cable</span></p>\n<ul>\n<li><span style=\"font-family: Arial;\" face=\"Arial\">Cable Length: 2000mm Long (2 meters)</span></li>\n<li><span style=\"font-family: Arial;\" face=\"Arial\">Note: current batch its JST 2.54 / 2.5 (3+2 pin connector) </span></li>\n<li><span style=\"font-family: Arial;\" face=\"Arial\">Don't relay on the cable colour, match bl touch pin out to pin out on mainboard.</span></li>\n</ul>\n<h3><span style=\"font-family: Arial;\" face=\"Arial\">Item Include:</span></h3>\n<ul>\n<li><span style=\"font-family: Arial;\" face=\"Arial\">1x 2000mm Bl Touch Cable <br></span></li>\n<li><span style=\"font-family: Arial;\" face=\"Arial\">Note: BL Touch is not included. <br></span></li>\n</ul>\n<p><br></p>",
+      "variants": [
+        {
+          "id": 42149726814377,
+          "title": "Default Title",
+          "sku": "26814377",
+          "price": 9
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 8335228043433,
+      "title": "Creality K2 Series Heater/Thermistor Breakout Board",
+      "handle": "creality-k2-toolhead-heater-thermistor-breakout-board",
+      "vendor": "Creality",
+      "product_type": "Spare Parts",
+      "sku": "4004010288",
+      "price": 15.45,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k2-toolhead-heaterthermeristor-board-breakout-board-2101030239-3868451.jpg?v=1755907201",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k2-toolhead-heaterthermeristor-board-breakout-board-2101030239-2630161.jpg?v=1755907201",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k2-toolhead-heaterthermeristor-board-breakout-board-2101030239-9538286.jpg?v=1755907201",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k2-toolhead-heaterthermeristor-board-breakout-board-2101030239-3122217.jpg?v=1755907202",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k2-toolhead-heaterthermeristor-board-breakout-board-2101030239-2221867.jpg?v=1755907205",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k2-toolhead-heaterthermeristor-board-breakout-board-2101030239-2492958.jpg?v=1755907203"
+      ],
+      "tags": [
+        "3D",
+        "Creality",
+        "Creality K2"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>Original OEM Toolhead Heater/Thermeristor Board Breakout Board for Creality K2 Plus, K2 Pro, K2. This is the board beside the hotend that the heater and thermistor plug into.</p>\n<p>Note: newer batch are black connector, may may differ depending on production batch.</p>\n<p>Creality SKU: <span class=\"value\">4004010288</span> / 2101030239 (Cross compatible the one starting 2 is older part number, with different colour connector housing, otherwise both are backward compatible with each) </p>\n<h3>Compatibility: </h3>\n<ul>\n<li>Creality K2 Plus<br>\n</li>\n<li>Creality K2 Pro</li>\n<li>Creality K2</li>\n</ul>\n<p>Note: not compatible for Creality K2 KE</p>\n<h3>Manufacturer Information:</h3>\n<div class=\"goods-name\">K2/K2 Pro/K2 Plus Hotend Adapter Board_37×12×1.6_1</div>",
+      "variants": [
+        {
+          "id": 44963164553385,
+          "title": "Default Title",
+          "sku": "4004010288",
+          "price": 15.45
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7510581215401,
+      "title": "Molex Microfit 3.0 Crimp Socket (For Receptacle) - 43030-0001 - (1x)",
+      "handle": "molex-microfit-3-0-crimp-socket-for-receptacle",
+      "vendor": "Molex",
+      "product_type": "Spare Parts",
+      "sku": "43030-0001",
+      "price": 0.5,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/molex-microfit-30-crimp-socket-for-receptacle-43030-0001-1x-43030-0001-5438514.jpg?v=1762324104",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/molex-microfit-30-crimp-socket-for-receptacle-sold-individually-43030-0001-5866746.jpg?v=1762306421"
+      ],
+      "tags": [
+        "3D",
+        "Connector"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p><strong>Sold Individually </strong></p>\n<p>The 43030-0001 crimp socket fits Micro-Fit 3.0™ receptacles and panel mount housings, working with 20-24 AWG wires. Made from phosphor bronze with a tin finish, it ensures reliable conductivity and corrosion resistance. Ideal for customising cables on 3D printers and related electronics.</p>\n<div>Pin <a href=\"https://cdn.shopify.com/s/files/1/0541/6638/8905/files/PS-44300-001.pdf?v=1657161352\" title=\"44300-001\" rel=\"noopener\" target=\"_blank\">Datasheet</a>\n</div>\n<div><br></div>\n<div>\n<p class=\"ProductOverviewstyles__LongDescription-sc-1jnwldg-2 kTlirh\"><br></p>\n</div>",
+      "variants": [
+        {
+          "id": 42283619877033,
+          "title": "Default Title",
+          "sku": "43030-0001",
+          "price": 0.5
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7671899848873,
+      "title": "Wago Terminal Block (2 Way / 3 Way / 5 Way)",
+      "handle": "wago-221-412-2-way-terminal-block",
+      "vendor": "Wago",
+      "product_type": "Spare Parts",
+      "sku": "221-412",
+      "price": 2,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/wago-terminal-block-2-way-3-way-5-way-221-412-7076765.jpg?v=1755908761",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/wago-terminal-block-2-way-3-way-5-way-221-412-9211338.jpg?v=1755908761",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/wago-terminal-block-2-way-3-way-5-way-221-413-5870726.jpg?v=1755908761",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/wago-terminal-block-2-way-3-way-5-way-221-413-6751583.jpg?v=1755908761",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/wago-terminal-block-2-way-3-way-5-way-221-415-7188463.jpg?v=1755908761"
+      ],
+      "tags": [
+        "3D",
+        "Cable",
+        "Connector",
+        "Spare"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<ul>\n<li>Ease of use – pull the lever up, insert a conductor and push the lever back down</li>\n<li>Easily terminate conductors from 0.14 to 4 mm² (14 AWG to 24 AWG)<br>\n</li>\n<li>Suitable up to 85c</li>\n<li>Connect solid, stranded and fine-stranded conductors</li>\n<li>Save time for installers and device manufacturers</li>\n<li>Quickly install devices with higher power consumption</li>\n<li>Safely install long cable runs with larger conductor cross sections</li>\n</ul>\n<h3>What is Include:</h3>\n<ul>\n<li>1x Wago (Depending on your selection) </li>\n</ul>",
+      "variants": [
+        {
+          "id": 42806850453673,
+          "title": "221-412 2 Way",
+          "sku": "221-412",
+          "price": 2
+        },
+        {
+          "id": 42806850486441,
+          "title": "221-413 3 Way",
+          "sku": "221-413",
+          "price": 2.95
+        },
+        {
+          "id": 42806850519209,
+          "title": "221-415 5 Way",
+          "sku": "221-415",
+          "price": 3.95
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7572995768489,
+      "title": "GDSTIME GDA Dual Bearing 3010 Axial Fan 24v",
+      "handle": "gdstime-gda-dual-bearing-3010-axial-fan-24v",
+      "vendor": "GDSTIME",
+      "product_type": "Fan",
+      "sku": "GDA3010B24N1CX25215",
+      "price": 16,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/gdstime-gdb-3010-axial-fan-24v-gda3010b24n1cx25215-8988837.jpg?v=1755908896",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/gdstime-gdb-3010-axial-fan-24v-gda3010b24n1cx25215-5015051.jpg?v=1755908896"
+      ],
+      "tags": [
+        "3D",
+        "Fan"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "\n<p>This high-quality 3010 axial fan is an ideal replacement for the Creality CR-6SE hotend fan, DirtyBird toolhead or dragon burner. Installation may requires soldering to the existing wires using a soldering sleeve or re-pin connector, or trimming the wires to fit your setup.</p>\n<p><strong>Important</strong>: The fan hub support is very thin; avoid applying pressure to the fan through the delicate vein supports when fitting it into a press-fit location.</p>\n<h3>Fan Specifications:</h3>\n<ul>\n<li>Dimensions: 30x30x10mm</li>\n<li>Bearing type: Dual Ball</li>\n<li>Connector: XH2.54-2Pin</li>\n<li>Rated Current: 0.06Amp±10% </li>\n<li>Rated Voltage: DC 24V</li>\n<li>Rated Speed: 12 000RPM±10%</li>\n<li>Air flow: 4.7 CFM</li>\n<li>Noise: 27.46dBA±10%</li>\n<li>Average life: 50 000 Hrs @ 40c</li>\n<li>Cable Length: 25cm</li>\n<li>Weight: 8g/pcs</li>\n<li>Power: 1W</li>\n<li>Air Pressure: 0.47In H2O</li>\n<li>Operating Temperature: -20-75℃ (Reduce life expectancy above 70℃)</li>\n</ul>",
+      "variants": [
+        {
+          "id": 42507410833577,
+          "title": "Default Title",
+          "sku": "GDA3010B24N1CX25215",
+          "price": 16
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 8011636146345,
+      "title": "LDO ABS Filament 1.75mm 1kg",
+      "handle": "ldo-abs-filament-1-75mm-1kg",
+      "vendor": "LDO",
+      "product_type": "Filament",
+      "sku": "LDO-LDOF-ABS-BLACK",
+      "price": 21,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/ldo-abs-filament-175mm-1kg-ldo-ldof-abs-blue-7419000.jpg?v=1755907811",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/ldo-abs-filament-175mm-1kg-ldo-ldof-abs-blue-4123328.jpg?v=1755907811",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/ldo-abs-filament-175mm-1kg-ldo-ldof-abs-white-3458217.jpg?v=1755907812",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/ldo-abs-filament-175mm-1kg-ldo-ldof-abs-purple-9177473.jpg?v=1755907811",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/ldo-abs-filament-175mm-1kg-ldo-ldof-abs-black-1420872.jpg?v=1755907812",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/ldo-abs-filament-175mm-1kg-ldo-ldof-abs-teal-7742156.jpg?v=1755907812",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/ldo-abs-filament-175mm-1kg-ldo-ldof-abs-lemon-3077288.jpg?v=1755907812"
+      ],
+      "tags": [
+        "1.75mm",
+        "3D",
+        "3D Consumable",
+        "ABS"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<div>\n<div data-mce-fragment=\"1\" class=\"p-details__content --wysiwyg\">\n<p data-mce-fragment=\"1\">With the high-quality <strong data-mce-fragment=\"1\">ABS filaments from LDO Motors,</strong> you can prepare for the next level of 3D printing! First-class surfaces and sharp details, rounded off with high stiffness and toughness, coupled with high durability and temperature resistance, deliver flawless results that let you experiment in all directions and expand your printing possibilities</p>\n</div>\n<a data-mce-fragment=\"1\" href=\"https://support.dremc.com.au/en/support/solutions/articles/51000342355-dremc-filament-snap-on-addon\"></a>\n</div>\n<h3 data-mce-fragment=\"1\" style=\"text-align: center;\">Printing Settings</h3>\n<p>For best results, dry filament using a filament drier before use or print from dryer running or dry box. Keep in an airtight container or included mylar bag for medium/long term storage with silica desiccant. [If you hear popping or inconsistent extrusion while purging filament, suggest drying before printing for best results] <a href=\"https://support.dremc.com.au/support/solutions/articles/51000292935-filament-drying-time-recommendation\" title=\"3D Printing Drying Guide\">Filament Drying Guide</a></p>\n<p>Empty Spool: 158.5g</p>\n<table data-mce-fragment=\"1\" style=\"height: 405px;\" class=\"table table-sm\">\n<tbody data-mce-fragment=\"1\">\n<tr data-mce-fragment=\"1\" style=\"height: 19px;\">\n<th data-mce-fragment=\"1\" scope=\"row\" style=\"width: 206px; height: 19px;\">Nozzle Temperature</th>\n<td data-mce-fragment=\"1\" style=\"width: 693px; height: 19px;\">220°C - 260°C</td>\n</tr>\n<tr data-mce-fragment=\"1\" style=\"height: 38px;\">\n<th data-mce-fragment=\"1\" scope=\"row\" style=\"width: 206px; height: 38px;\">Build Plate Temperature</th>\n<td data-mce-fragment=\"1\" style=\"width: 693px; height: 38px;\">100°C - 110°C<br data-mce-fragment=\"1\">\n</td>\n</tr>\n<tr data-mce-fragment=\"1\" style=\"height: 38px;\">\n<th data-mce-fragment=\"1\" scope=\"row\" style=\"width: 206px; height: 38px;\">Build Surface Material</th>\n<td data-mce-fragment=\"1\" colspan=\"1\" style=\"width: 693px; height: 38px;\">Works well with most common build surfaces. We recommended <a href=\"https://store.dremc.com.au/collections/pei-build-plate\" target=\"_blank\">PEI Build Plate</a> (Smooth/Texture suitable)</td>\n</tr>\n<tr data-mce-fragment=\"1\" style=\"height: 38px;\">\n<th data-mce-fragment=\"1\" scope=\"row\" style=\"width: 206px; height: 38px;\">Build Surface Treatment</th>\n<td data-mce-fragment=\"1\" colspan=\"1\" style=\"width: 693px; height: 38px;\">Typically none required. Some surfaces such as glass work best with PVA glue stick or <a href=\"https://store.dremc.com.au/products/magigoo-original\">Magigoo</a> .</td>\n</tr>\n<tr data-mce-fragment=\"1\" style=\"height: 57px;\">\n<th data-mce-fragment=\"1\" scope=\"row\" style=\"width: 206px; height: 57px;\"><span>Enclosure / Heater Chambers</span></th>\n<td data-mce-fragment=\"1\" style=\"width: 693px; height: 57px;\">\n<p><span>At minimal passive enclosure. <br data-mce-fragment=\"1\">60-80˚C+ may be required for higher density and larger geometries.</span></p>\n<p>Recommend VOC/Air Filtering/fume extraction or print in well ventilated room with fume extraction. </p>\n</td>\n</tr>\n<tr data-mce-fragment=\"1\" style=\"height: 38px;\">\n<th data-mce-fragment=\"1\" scope=\"row\" style=\"width: 206px; height: 38px;\">Cooling Fan</th>\n<td data-mce-fragment=\"1\" colspan=\"1\" style=\"width: 693px; height: 38px;\">\n<span>LOW for better surface quality</span><br><span>OFF for better strength</span>\n</td>\n</tr>\n<tr data-mce-fragment=\"1\" style=\"height: 19px;\">\n<th data-mce-fragment=\"1\" scope=\"row\" style=\"width: 206px; height: 19px;\">Printing Speed</th>\n<td data-mce-fragment=\"1\" colspan=\"1\" style=\"width: 693px; height: 19px;\">30 mm/s - 100 mm/s</td>\n</tr>\n<tr data-mce-fragment=\"1\" style=\"height: 133px;\">\n<th data-mce-fragment=\"1\" scope=\"row\" style=\"width: 206px; height: 133px;\">Retraction</th>\n<td data-mce-fragment=\"1\" colspan=\"1\" style=\"width: 693px; height: 133px;\">The ideal retraction settings vary from printer to printer. If you find the retraction settings are causing gaps in your part, the following settings may help.<br data-mce-fragment=\"1\">Direct Drive: Retraction distance of 0.5 - 1mm with retraction speed of 20mm/s<br data-mce-fragment=\"1\">Bowden: Retraction distance of 2 - 3mm with retraction speed of 20 - 40mm/s</td>\n</tr>\n<tr data-mce-fragment=\"1\" style=\"height: 16.4375px;\">\n<th data-mce-fragment=\"1\" scope=\"row\" style=\"width: 206px; height: 16.4375px;\"><span>Drying Recommendation </span></th>\n<td data-mce-fragment=\"1\" style=\"width: 693px; height: 16.4375px;\">\n<span>~50°c for 4-6hrs (Only dry if filament is wet, over drying/repeat drying can damage filament) </span><span data-mce-fragment=\"1\"> </span><span data-mce-fragment=\"1\">(</span><a data-mce-fragment=\"1\" href=\"https://support.dremc.com.au/en/support/solutions/articles/51000292935-filament-drying-time-recommendation\" title=\"Filament Drying Guide\" aria-describedby=\"a11y-new-window-message\" target=\"_blank\">Filament Dryer Guide</a><span data-mce-fragment=\"1\">)</span>\n</td>\n</tr>\n<tr data-mce-fragment=\"1\" style=\"height: 10px;\">\n<th data-mce-fragment=\"1\" scope=\"row\" style=\"width: 206px; height: 10px;\"><span>Storage</span></th>\n<td data-mce-fragment=\"1\" style=\"width: 693px; height: 10px;\">Keeping filament in an airtight container with new/dried desiccant. <br>\n</td>\n</tr>\n</tbody>\n</table>\n<p data-mce-fragment=\"1\"><em data-mce-fragment=\"1\">Based on 0.5 mm nozzle. Printing conditions may vary with different printers and nozzle diameters.</em></p>",
+      "variants": [
+        {
+          "id": 43978894803113,
+          "title": "Black",
+          "sku": "LDO-LDOF-ABS-BLACK",
+          "price": 21
+        },
+        {
+          "id": 43978894835881,
+          "title": "Blue",
+          "sku": "LDO-LDOF-ABS-BLUE",
+          "price": 21
+        },
+        {
+          "id": 43978898440361,
+          "title": "Purple",
+          "sku": "LDO-LDOF-ABS-PURPLE",
+          "price": 21
+        },
+        {
+          "id": 43978898473129,
+          "title": "White",
+          "sku": "LDO-LDOF-ABS-WHITE",
+          "price": 21
+        },
+        {
+          "id": 44761923387561,
+          "title": "Lemon Lime",
+          "sku": "LDO-LDOF-ABS-LEMON",
+          "price": 21
+        },
+        {
+          "id": 44761929711785,
+          "title": "Light Blue",
+          "sku": "LDO-LDOF-ABS-TEAL",
+          "price": 21
+        },
+        {
+          "id": 46735338799273,
+          "title": "Dark Teal",
+          "sku": null,
+          "price": 21
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7768234197161,
+      "title": "Creality K1 Max Texture or Smooth PEI Build Plate 315x310mm",
+      "handle": "creality-k1-max-texture-pei-build-plate-315-310mm",
+      "vendor": "Creality",
+      "product_type": "Build Surface",
+      "sku": "4004090105",
+      "price": 48.45,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-max-texture-or-smooth-pei-build-plate-315310mm-4004090107-9671769.webp?v=1755908339",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-max-texture-or-smooth-pei-build-plate-315310mm-4004090105-8327512.webp?v=1755908339",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-max-texture-or-smooth-pei-build-plate-315310mm-4004090105-4003512.jpg?v=1755908340",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-max-texture-or-smooth-pei-build-plate-315310mm-4004090105-4446386.jpg?v=1755908340",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-max-texture-or-smooth-pei-build-plate-315310mm-4004090105-6827860.jpg?v=1755908340",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-max-texture-or-smooth-pei-build-plate-315310mm-4004090105-9211128.jpg?v=1755908340",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-max-texture-or-smooth-pei-build-plate-315310mm-4004090105-7014518.jpg?v=1755908340"
+      ],
+      "tags": [
+        "3D",
+        "Creality",
+        "K1",
+        "PEI Plate"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>The Creality K1 Max Build Plate provides a 315 x 310mm surface with either a textured or smooth PEI finish. It ensures strong print adhesion and easy removal, improving print quality and reliability for your K1 Max 3D printer.</p>\n<h3>What is Included:</h3>\n<ul>\n<li>1x Creality PEI 315x310 for Creality K1 Max</li>\n<li>1x Spare replacement magnet</li>\n</ul>\n<p>Texture or Smooth [Depending on your selection]</p>\n<p>Note 1: If you have issues with adhesive use bed adhesive on PEI, some filament will require glue to decrease bed adhesion as some materials may stick too well. If un-sure please reach out to support. </p>\n<p>Note 2: As always setting up new build surface, re-configure your z off-set and re-level your bed. (ie when you switch between smooth/texture). </p>\n<h3>Official Printer Supported:</h3>\n<p><strong>(or any 315x310 printer is also suitable, measure your stock bed for compatible) <br></strong></p>\n<ul>\n<li>\n<span style=\"font-size: 0.875rem;\">K1 Max</span><br>\n</li>\n<li><span style=\"font-size: 0.875rem;\">Ender 3 S1 Plus</span></li>\n</ul>\n<h3>Shipping Note: </h3>\n<p>We ship items in a flat cardboard sandwich box to prevent warping during transit. This item cannot be combined with non-flat items for shipping, so please expect additional freight costs when bundling it with smaller parts or filament. If we can bundle smaller items within the same box, we will update the shipping total before processing your payment. Otherwise, feel free to contact support for a customised quote.</p>",
+      "variants": [
+        {
+          "id": 43233770733737,
+          "title": "Texture PEI",
+          "sku": "4004090105",
+          "price": 48.45
+        },
+        {
+          "id": 43233770766505,
+          "title": "Smooth PEI",
+          "sku": "4004090107",
+          "price": 54.45
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 8476611248297,
+      "title": "Creality K1C/K1 Max 2025 OEM Ceramic Hotend Kit",
+      "handle": "creality-k1c-k1-max-2025-official-ceramic-hotend-kit",
+      "vendor": "Creality",
+      "product_type": "Hotend Assembly",
+      "sku": "4001030147",
+      "price": 58.45,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1ck1-max-2025-oem-ceramic-hotend-kit-4001030147-1419070.png?v=1755906982",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1ck1-max-2025-oem-ceramic-hotend-kit-4001030147-7235400.jpg?v=1755906981",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1ck1-max-2025-oem-ceramic-hotend-kit-4001030147-3666119.png?v=1755906982",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1ck1-max-2025-oem-ceramic-hotend-kit-4001030147-7548086.png?v=1755906982",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1ck1-max-2025-oem-ceramic-hotend-kit-4001030147-5340952.png?v=1755906982"
+      ],
+      "tags": [
+        "3D",
+        "Creality",
+        "K1"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>OEM Replacement Creality Hotend Replacement Kit suitable for K1C (2025) or newer K1 Max (<strong>2025</strong>) with Unicorn Nozzle Type with new connector type for 2025 toolhead board. </p>\n<h3>Hotend Features:</h3>\n<ul>\n<li>Hardened Steel Tip Nozzle 0.4mm (Uni-body nozzle/heat break) </li>\n<li>24V 60W Heater</li>\n</ul>\n<p>Nozzle: <a href=\"https://store.dremc.com.au/search?sort_by=relevance&amp;q=unicorn+nozzle&amp;type=product&amp;filter.v.price.gte=&amp;filter.v.price.lte=&amp;filter.p.product_type=Nozzle\" target=\"_blank\" rel=\"noopener\">K1C Hardened Steel Nozzles</a></p>\n<h3>Compatible Models:</h3>\n<ul>\n<li>K1C (2025)</li>\n<li>K1 Max (2025)</li>\n<li>K1 SE (2025)</li>\n</ul>\n<h3>Documentation: </h3>\n<p>Do you know which version you have? If not, check this documentation: (<a href=\"https://support.dremc.com.au/support/solutions/articles/51000426953-k1-k1-max-how-to-distinguish-which-hotend-you-have\" target=\"_blank\" rel=\"noopener\">https://support.dremc.com.au/support/solutions/articles/51000426953-k1-k1-max-how-to-distinguish-which-hotend-you-have</a>) <strong><span data-spm-anchor-id=\"a2g0o.detail.1000023.i5.30421c2fiGHhep\">Please note, not suitable for 2024 K1 Max Or older 2024 K1 Series due to different thermistor connector</span></strong></p>\n<p>K1C Specific Change Nozzle Documentation: <a href=\"https://support.dremc.com.au/en/support/solutions/articles/51000348048-creality-k1-k1-max-how-to-replace-hotend-assembly\" target=\"_blank\" rel=\"noopener\">https://support.dremc.com.au/en/support/solutions/articles/51000348048-creality-k1-k1-max-how-to-replace-hotend-assembly</a></p>\n<p>Older K1 2024 Hotend: <a href=\"https://store.dremc.com.au/products/creality-k1-official-ceramic-heating-block-hotend-kit-for-creality-k1c\" target=\"_blank\" rel=\"noopener\">https://store.dremc.com.au/products/creality-k1-official-ceramic-heating-block-hotend-kit-for-creality-k1c</a></p>\n<p>Older K1 2023, K1 Max 2023 Hotend: <a href=\"https://store.dremc.com.au/products/upgraded-creality-k1-ceramic-heating-block-kit-for-creality-k1-k1-max\" target=\"_blank\" rel=\"noopener\">https://store.dremc.com.au/products/upgraded-creality-k1-ceramic-heating-block-kit-for-creality-k1-k1-max</a></p>\n<p> </p>",
+      "variants": [
+        {
+          "id": 45633759641769,
+          "title": "Stock 0.4mm /w Hardened Steel Tip Nozzle",
+          "sku": "4001030147",
+          "price": 58.45
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7083809276073,
+      "title": "CR 6 SE Full Assembled Hotend Kit",
+      "handle": "cr-6-se-full-hotend-kit",
+      "vendor": "Creality",
+      "product_type": "Hotend Assembly",
+      "sku": "4001030016",
+      "price": 69.45,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/cr-6-se-full-assembled-hotend-kit-4001030016-9972176.webp?v=1755909890",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cr-6-se-full-assembled-hotend-kit-4001030016-6684010.jpg?v=1755909890",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cr-6-se-full-assembled-hotend-kit-4001030016-2199478.jpg?v=1755909891",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cr-6-se-full-assembled-hotend-kit-4001030016-4486857.jpg?v=1755909891",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cr-6-se-full-assembled-hotend-kit-4001030016-8166826.jpg?v=1755909891",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cr-6-se-full-assembled-hotend-kit-4001030016-6766035.jpg?v=1755909892",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cr-6-se-full-assembled-hotend-kit-4001030016-5002521.jpg?v=1755909892",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cr-6-se-full-assembled-hotend-kit-4001030016-2388186.jpg?v=1755909892",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cr-6-se-full-assembled-hotend-kit-4001030016-5254192.jpg?v=1755909892",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cr-6-se-full-assembled-hotend-kit-4001030016-5444465.jpg?v=1755909892",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cr-6-se-full-assembled-hotend-kit-4001030016-1724657.jpg?v=1755909911",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cr-6-se-full-assembled-hotend-kit-4001030016-8484335.jpg?v=1755909911"
+      ],
+      "tags": [
+        "3D",
+        "CR-6 SE",
+        "Hotend"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>Replacement CR 6 SE Assembly, include hotend, part cooling, carriage. </p>\n<h3>Supported Printers:</h3>\n<ul>\n<li>CR6 SE</li>\n<li>CR 6 SE Max (note: for Max you will require supply your own PTFE as provided is only suitable for smaller CR 6 SE printer.)<br>\n</li>\n</ul>\n<p><br></p>",
+      "variants": [
+        {
+          "id": 40845306003625,
+          "title": "Default Title",
+          "sku": "4001030016",
+          "price": 69.45
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 8527840706729,
+      "title": "Pinecil – Smart Mini Portable Soldering Iron (Version 2)",
+      "handle": "pinecil-smart-mini-portable-soldering-iron-version-2",
+      "vendor": "Pine64",
+      "product_type": "Hardware",
+      "sku": "PINECIL-BB2",
+      "price": 74.45,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/pinecil-smart-mini-portable-soldering-iron-version-2-pinecil-bb2-6446351.jpg?v=1755906832",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/pinecil-smart-mini-portable-soldering-iron-version-2-pinecil-bb2-9429741.jpg?v=1755906832",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/pinecil-smart-mini-portable-soldering-iron-version-2-pinecil-bb2-3881214.jpg?v=1755906832",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/pinecil-smart-mini-portable-soldering-iron-version-2-pinecil-bb2-7866834.jpg?v=1755906832",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/pinecil-smart-mini-portable-soldering-iron-version-2-pinecil-bb2-3686367.jpg?v=1755906832"
+      ],
+      "tags": [
+        "3D",
+        "Tools"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>A smart and affordable soldering iron running on a RISC-V SoC and featuring an open-source firmware. Portable and powerful. - Original PINECIL <br></p>\n<p><span class=\"a-list-item\">Note: A <a href=\"https://store.dremc.com.au/products/usb-type-c-to-usb-type-c-silicone-power-charging-cable-1-5-1-meter-length?variant=45796762353833\" title=\"USB Type-C To Type-C Silicone Power Charging Cable – 1.5/1 meter length\" rel=\"noopener\" target=\"_blank\">power cable</a> (Type C or Barrel Jack Cable)/power source (battery bank/ power supply) is not included. Please check below documentation for supported power source. </span></p>\n<h3>Feature: </h3>\n<ul>\n<li>Dual power input design: 1) USB-C supports both PD and QC 3.0 and; 2) DC5525 barrel DC jack.</li>\n<li><span class=\"a-list-item\">Speedy Rapid Warmup: Reaches operating temperature in 6 seconds. Support for on-demand rapid boost feature.</span></li>\n<li><span class=\"a-list-item\">Adjustable soldering tip temperature which can be set between 100° C and 400° C using the adjustment buttons and an easy-to-read OLED display. </span></li>\n<li><span class=\"a-list-item\">Portable: it features a sleek and slim design, comprised of an SAE 304 stainless steel core housed inside a polycarbonate shell. </span></li>\n<li><span class=\"a-list-item\">Auto standby mode engages when it is not in use ensuring the user safety.</span></li>\n</ul>\n<p><span class=\"a-list-item\">More Info: <a rel=\"noopener\" href=\"https://wiki.pine64.org/wiki/Pinecil\" target=\"_blank\">https://wiki.pine64.org/wiki/Pinecil</a></span></p>\n<p><span class=\"a-list-item\">Documentation: <a rel=\"noopener\" title=\"Pinecil Documentation\" href=\"https://pine64.org/documentation/Pinecil/\" target=\"_blank\">https://pine64.org/documentation/Pinecil/</a></span></p>\n<h3><span class=\"a-list-item\">Specification: </span></h3>\n<h4>BODY</h4>\n<ul>\n<li>Dimensions:  155mm with solder tip / 103mm without solder tip x 12.8mm x 16.2mm</li>\n<li>Weight: 28g with solder tip / 18g without solder tip</li>\n<li>Build:  Plastic with metal clip (Handle)</li>\n<li>Color: Black (case)/ Green (Sleeve)</li>\n</ul>\n<h4>PLATFORM</h4>\n<ul>\n<li>OS: Ralim’s IronOS build</li>\n<li>Chipset: Bouffalo BL-706</li>\n<li>CPU: 32-bit RV32IMAFC RISC-V “SiFive E24 Core” @ 144 MHz</li>\n</ul>\n<h4>DISPLAY</h4>\n<ul>\n<li>Type: OLED White Colour Monochrome Display</li>\n<li>Size: 0.69 inches</li>\n<li>Resolution: 96x16pixels</li>\n</ul>\n<h4>MEMORY</h4>\n<ul>\n<li>Internal Flash Memory: 192KB</li>\n<li>System Memory: 132KB SRAM</li>\n<li>Expansion: None</li>\n</ul>\n<h4>POWER PORTS</h4>\n<ul>\n<li>USB type C: PD and QC 3.0 12V-20V 3A</li>\n<li>Barrel Jack: DC5525, 12V-24V DC 3A</li>\n</ul>\n<h4>TIP</h4>\n<ul>\n<li>Type B2</li>\n<li>Length: 86mm</li>\n<li>Weight: 8.2g</li>\n</ul>\n<h4>FEATURES</h4>\n<ul>\n<li>Capable received power from either USB-C port or barrel jack.</li>\n<li>GPIO break-out thru USB-C port</li>\n</ul>\n<h4>CERTIFICATION</h4>\n<ul>\n<li>FCC</li>\n<li>CE RED</li>\n<li>ROHS</li>\n</ul>\n<h3>PACKAGE CONTENTS</h3>\n<ul>\n<li>Pinecil Soldering Iron version 2</li>\n<li>ST (Short Tip)-B2 Soldering Tip</li>\n</ul>",
+      "variants": [
+        {
+          "id": 45796567285929,
+          "title": "Default Title",
+          "sku": "PINECIL-BB2",
+          "price": 74.45
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 8347749974185,
+      "title": "FlowTech™ CHT High Flow - CM2™ Nozzle",
+      "handle": "flowtech-cht-high-flow-cm2-nozzle",
+      "vendor": "Micro Swiss",
+      "product_type": "Nozzle",
+      "sku": "M2907-04",
+      "price": 55.45,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/flowtech-cht-high-flow-cm2-nozzle-m2907-04-9502520.jpg?v=1755907179",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/flowtech-cht-high-flow-cm2-nozzle-m2907-04-3301524.jpg?v=1755907179",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/flowtech-cht-high-flow-cm2-nozzle-m2907-04-6034047.jpg?v=1755907179",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/flowtech-cht-high-flow-cm2-nozzle-m2907-04-3563050.jpg?v=1755907179",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/flowtech-cht-high-flow-cm2-nozzle-m2907-08-4881422.jpg?v=1755907179",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/flowtech-cht-high-flow-cm2-nozzle-m2907-10-4252216.jpg?v=1755907180"
+      ],
+      "tags": [
+        "3D",
+        "CHT",
+        "FlowTech",
+        "K1",
+        "Nozzle"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<div class=\"smart-tabs-content-block smart-tabs-content-block-active\" id=\"smart-tabs-content-0\">\n<div id=\"smart-tabs-content-0\" class=\"smart-tabs-content-block smart-tabs-content-block-active\">\n<p>Microswiss and Bondtech have partnered to bring the <strong>High Flow</strong>, Hardened Tip CM2™ nozzle to the FlowTech ecosystem. This new nozzle incorporates proprietary CHT technology, specifically designed to enhance the filament flow rate. Core of the nozzle is made of high-temperature <strong>Copper Chromium Zirconium</strong> and plated with an Electroless Nickel Plating. This special alloy retains its strength at much higher temperatures compared to a regular copper alloy. The tip of the nozzle is made of <strong>M2 Hardened High Speed Steel</strong> and coated with a special  <strong>WS2 </strong>nonstick nano coating.</p>\n<h3>CHT - CM2™ Nozzle Features:</h3>\n<ul>\n<li>\n<strong>Copper Chromium Zirconium body<br><br></strong>\n<ul>\n<li><em>Plated with an Electroless Nickel Plating<br><br></em></li>\n</ul>\n</li>\n<li>\n<strong>M2 Hardened High Speed Steel insert</strong>\n<ul>\n<li><em>Plated with an Electroless Nickel Plating</em></li>\n<li><em>Coated with nonstick nano WS2 coating.</em></li>\n<li><em>Coefficient of friction: 0.035</em></li>\n<li>\n<em><span>Heat-treated hardness:  68 HRC<br><br></span></em><em><span></span></em><em><span></span></em>\n</li>\n</ul>\n</li>\n<li>\n<strong>High Flow CHT Technology</strong><strong></strong>\n<ul>\n<li>The FlowTech nozzle, equipped with Bondtech CHT technology, can achieve a maximum volumetric flow rate of up to <strong>50 mm³/sec <br></strong>\n</li>\n<li>More uniform layer deposition is achieved by <strong>splitting the filament  flow into multiple chambers</strong> as it passes through the melt zone. This reduces gaps and weak points between layers<strong><br><br></strong>\n</li>\n</ul>\n</li>\n<li>\n<strong>Orifice size available:</strong><span> </span>.4mm, .6mm, .8mm, 1.0mm<br><br>\n</li>\n<li>\n<strong>Limited lifetime warranty against wear<br></strong><a href=\"https://support.dremc.com.au/support/solutions/articles/51000278760-manufacturer-warranty#CM2%E2%84%A2-Nozzle-Warranty-%C2%A0-%C2%A0\" title=\"Warranty CM2\" rel=\"noopener\" target=\"_blank\">Warranty</a>\n</li>\n</ul>\n<p><br><em>Made in Sweden by Bondtech</em><br><em>Assembled in USA by Microswiss</em><em></em></p>\n<h3><em>Supported Hotends:</em></h3>\n<ul>\n<li><em>FlowTech™ Hotend for Creality K1 / K1 Max / K1C (M3101)</em></li>\n<li><em>FlowTech™ Hotend for Creality CR-10 SE (M3102)</em></li>\n<li><em>FlowTech™ Hotend for Creality Ender 3 V3 KE (M3103)</em></li>\n<li><em>FlowTech™ Hotend for Creality Ender 3 V3 SE (M3105)</em></li>\n<li><em>FlowTech™ Hotend for Creality Ender 3 V3 (M3106)</em></li>\n<li><em>FlowTech™ Hotend for Elegoo Neptune 4 / 4 Pro (M3107)</em></li>\n<li><em>FlowTech™ Hotend for Elegoo Neptune 4 Plus/ 4 Max (M3108)</em></li>\n<li><em>FlowTech™ Hotend for Sovol SV08 (M3110)</em></li>\n<li><em>FlowTech™ Hotend for Bambu Lab X1 and P1 Series (M3119)</em></li>\n<li><em>FlowTech™ Hotend for Creality K2 Plus (M3111)</em></li>\n</ul>\n</div>\n</div>",
+      "variants": [
+        {
+          "id": 45025551974569,
+          "title": ".4mm",
+          "sku": "M2907-04",
+          "price": 55.45
+        },
+        {
+          "id": 45025552007337,
+          "title": ".6mm",
+          "sku": "M2907-06",
+          "price": 55.45
+        },
+        {
+          "id": 45025552040105,
+          "title": ".8mm",
+          "sku": "M2907-08",
+          "price": 55.45
+        },
+        {
+          "id": 45025552072873,
+          "title": "1.0mm",
+          "sku": "M2907-10",
+          "price": 55.45
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7528023556265,
+      "title": "Bi-Metal Titanium Alloy Heat Break For Ender 3 / 5 / CR10 Series",
+      "handle": "bi-metal-titanium-alloy-heat-break-for-ender-3-5-cr10-series",
+      "vendor": "Trianglelab",
+      "product_type": "Heat Break",
+      "sku": "90197161",
+      "price": 25.95,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/titanium-alloy-all-metal-heat-break-for-ender-3-5-cr10-series-90197161-7021417.webp?v=1755909061",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/titanium-alloy-all-metal-heat-break-for-ender-3-5-cr10-series-90197161-2955292.jpg?v=1755909060",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/titanium-alloy-all-metal-heat-break-for-ender-3-5-cr10-series-90197161-7763092.jpg?v=1755909061",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/titanium-alloy-all-metal-heat-break-for-ender-3-5-cr10-series-90197161-4412895.jpg?v=1755909061",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/titanium-alloy-all-metal-heat-break-for-ender-3-5-cr10-series-90197161-4907203.jpg?v=1755909061"
+      ],
+      "tags": [
+        "3D",
+        "Ender 3  Max",
+        "Ender 3 Series",
+        "Ender 3 v2",
+        "HeatBreak"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>This bi-metal heat break combines a titanium alloy front to reduce heat transfer with a copper alloy back for efficient heat dissipation, improving thermal management in Ender 3, 5, and CR10 printers and increase maximum printing temperature and reduce the often consumable PTFE Heat Breaks. </p>\n<h3 data-mce-fragment=\"1\"><strong data-mce-fragment=\"1\"><span data-mce-fragment=\"1\">Compatible</span></strong></h3>\n<ul>\n<li>Ender 3 Series (Ender 3, Ender 3 Pro, Ender 3 V2, Ender 3 Max) </li>\n<li>Ender 5</li>\n<li>CR-10</li>\n<li>MK8 Hotends</li>\n</ul>\n<h3> What is Included:</h3>\n<ul>\n<li>1x Trianglelabs Ender 3/CR10 Compatible All Metal Heat Break</li>\n</ul>\n<h3>Documentation: </h3>\n<p>Note: This heat break is not best suited extensive abrasive such as CF/GF filled filaments.</p>\n<p>Thermal paste between the copper section(cold end) with heat sink is unnecessary if you're printing below 280 degrees when using all metal hotend but is recommend by manufacturer.</p>\n<p>In our in house testing, the measurable surface temperature is within marginal of error and still well below standard compare to a metal heat break. We recommend GD900 or <a href=\"https://store.dremc.com.au/products/ag-silver-thermal-paste-sachet-0-5g?_pos=1&amp;_sid=00b5e84a7&amp;_ss=r\" target=\"_blank\">AG Silver Thermal Paste Sachet</a> or<a href=\"https://store.dremc.com.au/products/thermal-paste-satchet-0-5g?_pos=1&amp;_sid=4018528ab&amp;_ss=r\"> AG Thermal Paste</a>. <br></p>",
+      "variants": [
+        {
+          "id": 42360490197161,
+          "title": "Default Title",
+          "sku": "90197161",
+          "price": 25.95
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7419979858089,
+      "title": "Sunon 24V 4010 Magnetic Suspension Bearing Axial Cooling Fan",
+      "handle": "sunon-24v-magnetic-suspension-bearing-exturder-cooling-fan",
+      "vendor": "Sunon",
+      "product_type": "Fan",
+      "sku": "MF40102VX-1Q03C-A99",
+      "price": 19,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/sunon-24v-4010-magnetic-suspension-bearing-axial-cooling-fan-mf40102vx-1q03c-a99-9753429.jpg?v=1755909418"
+      ],
+      "tags": [
+        "3D",
+        "Fan"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>Sunon's MF40102VX-1Q03C-A99 is a compact 24V axial fan engineered for 3D printers and similar applications where airflow is required. Featuring magnetic suspension bearing technology, it delivers 11 CFM airflow at 10,000 RPM with higher than typical noise (36.8 dBA). Rated for 60,000 hours at 40°C and 65% humidity, this low-power unit (1.92W) operates across -10°C to 60°C. Not recommended for active enclosed systems due to temperature constraints; expect reduced lifespan in high-heat environments. Compact 40×40×10mm form factor suits tight mounting spaces.</p>\n<h3>Specification; </h3>\n<ul>\n<li>Model: MF40102VX-1Q03C-A99</li>\n<li>Note: Not suitable for active enclosed printers, rated operating temp range -10c-60c, please refer to attached datasheet. Suitable for open printers, or may expect shorter life expectancy <br>\n</li>\n<li>Life: 60,000 Hours at 40 deg. C, 65% humidity, 90% CL.</li>\n<li>Size: 40*40*10mm</li>\n<li>Voltage: DC24V</li>\n<li>Current: 0.088A</li>\n<li>Power: 1.92W</li>\n<li>Speed: 10000RPM+- 10%</li>\n<li><strong>Noise: 36.8DBA</strong></li>\n<li>Weight:15.6G</li>\n<li>Bearing: magnetic suspension bearing</li>\n<li>Air Pressure: 0.29 mmH20</li>\n<li>\n<p>Airflow : 11 CFM</p>\n</li>\n</ul>\n<p>Sunon recommended no PWM is used</p>\n<p><a href=\"https://cdn.shopify.com/s/files/1/0541/6638/8905/files/MF40102VX-1Q03C-A99_C456910.pdf?v=1665663563\">Datasheet</a></p>\n<h3>Documentation:</h3>\n<p>As it Maglev/Vapo bearing is not suitable to mounted fan facing down as it fan bearing can quickly degrade, in setup down such as mainboard cooling. </p>\n<p>Cable Length (~24cm) Please ensure polarity is correct when installing the fan. This is classified as advance kit as it require either crimping new connection skills or joining two wire via soldering sleeves for instance as 30 cm in most case is not long enough to reach from hotend to mainboard but quite suitable for enclosure fan(mounted fan facing up) or for toolhead with breakout board or can board. <br></p>\n<p><strong>Do note, this is higher sound volume than most stock fans</strong> but performs and last significantly longer than traditional bearings(Sleeves Bearings). These fans are much more suitable for component cooling for high flow hotends/all metal hotends, it can generate a significantly higher air pressure and airflow.</p>",
+      "variants": [
+        {
+          "id": 41973249147049,
+          "title": "Default Title",
+          "sku": "MF40102VX-1Q03C-A99",
+          "price": 19
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 6563040788649,
+      "title": "Micro Swiss All Metal Hotend Kit for Creality CR-10s PRO / CR-10 Max / Ender 3 V2 Neo",
+      "handle": "micro-swiss-all-metal-hotend-kit-for-cr-10s-ender-3-v2-neo",
+      "vendor": "Micro Swiss",
+      "product_type": "Hotend Kit",
+      "sku": "M2591-04",
+      "price": 115,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/micro-swiss-all-metal-hotend-kit-for-creality-cr-10s-pro-cr-10-max-ender-3-v2-neo-m2591-04-7043268.jpg?v=1755910006",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/micro-swiss-all-metal-hotend-kit-for-creality-cr-10s-pro-cr-10-max-ender-3-v2-neo-m2591-04-5011278.jpg?v=1755910006"
+      ],
+      "tags": [
+        "3D",
+        "All Metal Hotend",
+        "Creality",
+        "Micro Swiss"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<div id=\"smart-tabs-content-0\" class=\"smart-tabs-content-block smart-tabs-content-block-clone\" data-mce-fragment=\"1\">This all-metal hotend kit fits Creality CR-10s Pro, CR-10 Max, and Ender 3 V2 Neo printers with no modifications needed. Its unique cooling block design removes the thermal tube, improving heat dissipation. The Grade 5 Titanium heat break offers strong thermal isolation for a precise melt zone.\n<p data-mce-fragment=\"1\"> </p>\n<p data-mce-fragment=\"1\"><span data-mce-fragment=\"1\"><em data-mce-fragment=\"1\">CNC Machined and Assembled in USA</em></span></p>\n<p><a href=\"https://store.dremc.com.au/collections/mk8-nozzle\" title=\"MK8 Nozzle\">Extra MK8 Nozzles</a>:  - Note: Original CR10S Pro Hotend nozzles is not compatible with this hotend due to different pitch on CR10S Pro Nozzle, Micro Swiss hotend use standard MK8 Nozzle </p>\n<h3 data-mce-fragment=\"1\"><span data-mce-fragment=\"1\">Kit Include:</span></h3>\n<div id=\"smart-tabs-content-2\" class=\"smart-tabs-content-block smart-tabs-content-block-clone\">\n<ul>\n<li>Aluminum Cooling Block</li>\n<li>Grade 5 Titanium Heat Break</li>\n<li>Aluminum Heater Block</li>\n<li>Brass Plated Wear Resistant MK8 .4mm Nozzle</li>\n<li>Silicone Sock</li>\n<li>Hardware kit</li>\n</ul>\n</div>\n<h3 data-mce-fragment=\"1\"><span data-mce-fragment=\"1\">Supported Printers:</span></h3>\n<div id=\"smart-tabs-content-1\" class=\"smart-tabs-content-block smart-tabs-content-block-clone\">\n<ul>\n<li>CR-10s Pro</li>\n<li>CR-10s Pro V2</li>\n<li>CR-10 Max</li>\n<li>Ender 3 Neo</li>\n<li>Ender 3 V2 Neo</li>\n</ul>\n</div>\n<div id=\"smart-tabs-content-1\" class=\"smart-tabs-content-block smart-tabs-content-block-clone\">\n<h3>Installation video:</h3>\n<p><iframe src=\"https://www.youtube.com/embed/5lA4qTjarCM\" width=\"560\" height=\"315\"></iframe></p>\n<p> </p>\n</div>\n</div>",
+      "variants": [
+        {
+          "id": 39326948098217,
+          "title": "Default Title",
+          "sku": "M2591-04",
+          "price": 115
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7887558738089,
+      "title": "Daylight & Daylight Neo (RGB) Daylight LED Bar (1pc) by Mellow3D",
+      "handle": "daylight-daylight-neo-rgb-daylight-led-bar-by-mellow3d",
+      "vendor": "Mellow3D",
+      "product_type": "Upgrade Kit",
+      "sku": "10VORONWLED158",
+      "price": 10.45,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/daylight-daylight-neo-rgb-daylight-led-bar-1pc-by-mellow3d-10voronwled158-4660380.webp?v=1755908030",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/daylight-daylight-neo-rgb-daylight-led-bar-1pc-by-mellow3d-10voronwled158-9019219.webp?v=1755908029",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/daylight-daylight-neo-rgb-daylight-led-bar-1pc-by-mellow3d-10voronwled158-1530914.webp?v=1755908030",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/daylight-daylight-neo-rgb-daylight-led-bar-1pc-by-mellow3d-10voronwled158-2552056.webp?v=1755908030",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/daylight-daylight-neo-rgb-daylight-led-bar-1pc-by-mellow3d-10voronwled158-3879100.webp?v=1755908030",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/daylight-daylight-neo-rgb-daylight-led-bar-1pc-by-mellow3d-10voronwled158-9763776.webp?v=1755908030",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/daylight-daylight-neo-rgb-daylight-led-bar-1pc-by-mellow3d-10voronwled158-9762095.webp?v=1755908030",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/daylight-daylight-neo-rgb-daylight-led-bar-1pc-by-mellow3d-10voronwled158-2821576.jpg?v=1755908030",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/daylight-daylight-neo-rgb-daylight-led-bar-1pc-by-mellow3d-10voronrled158-5276556.jpg?v=1755908031",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/daylight-daylight-neo-rgb-daylight-led-bar-1pc-by-mellow3d-10voronwled270-1100849.jpg?v=1755908031",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/daylight-daylight-neo-rgb-daylight-led-bar-1pc-by-mellow3d-10voronrled270-9769331.jpg?v=1755908050",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/daylight-daylight-neo-rgb-daylight-led-bar-1pc-by-mellow3d-10voronwled370-6044771.jpg?v=1755908050",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/daylight-daylight-neo-rgb-daylight-led-bar-1pc-by-mellow3d-10voronrled370-6633182.jpg?v=1755908050"
+      ],
+      "tags": [
+        "3D",
+        "v0.1",
+        "v1.8",
+        "v2.4",
+        "Voron"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>The original Daylight on a Stick is a chain able 24V LED bar, to be used with high quality 4000K LEDs to give the illusion of daylight in your Voron. Great when making photo's of your prints, or for RGB version integrate print status and notification via klipper macros.</p>\n<h3>Documentation: </h3>\n<p>Reference URL: <a href=\"https://github.com/VoronDesign/Voron-Hardware/tree/master/Daylight\">https://github.com/VoronDesign/Voron-Hardware/tree/master/Daylight</a></p>\n<h3>What is Included: </h3>\n<ul>\n<li>1x Daylight / Neo LED Bar (length and variant, depending selection)</li>\n</ul>\n<p>Sold Individually, in case you need 3x but for most printer 2x is require for even lighting or extra one single bar for front led or single front LED for smaller printers. <br></p>\n<h3>Shipping Note: </h3>\n<p>Note: This are packaged in long cardboard box (apart from smaller 158mm), so are split shipped compare other spares. If you need bundle smaller parts, contact us for customised shipping quote, otherwise if we can bundle parts together we will update and reduce shipping total. </p>\n<h3>Led Specification:</h3>\n<ul>\n<li>RGB LED: 5V</li>\n<li>WHITE LED: 24V</li>\n<li>Model: 2835/5050</li>\n<li>Terminal: XH2.54-3P/2P</li>\n<li>FOR Voron 0.1/0.2/2.4 3D Printer</li>\n<li>Length: Approx.158mm/270mm/370mm</li>\n</ul>\n<h3>Recommended Printers:</h3>\n<ul>\n<li>185mm for Voron 0</li>\n<li>270mm for Voron 2.4/Trident 300/350<br>\n</li>\n<li>370mm for Voron 2.4/Trident 350 or Larger Printers</li>\n</ul>\n<h3>Product History:</h3>\n<ul>\n<li>Mellow has updated the white led from 6500k to 4000k, some batch we have on hand (which are older may still be older 6500k), all new batch/orders will be 4000k which should yield better photos/video in term of colour profile. </li>\n</ul>\n<p> </p>",
+      "variants": [
+        {
+          "id": 43567191228585,
+          "title": "158mm White Led",
+          "sku": "10VORONWLED158",
+          "price": 10.45
+        },
+        {
+          "id": 43567191261353,
+          "title": "158mm RGB Led",
+          "sku": "10VORONRLED158",
+          "price": 11.45
+        },
+        {
+          "id": 43567191294121,
+          "title": "270mm White Led",
+          "sku": "10VORONWLED270",
+          "price": 12.45
+        },
+        {
+          "id": 43567191326889,
+          "title": "270mm RGB Led",
+          "sku": "10VORONRLED270",
+          "price": 13.45
+        },
+        {
+          "id": 43567192703145,
+          "title": "370mm White Led",
+          "sku": "10VORONWLED370",
+          "price": 14.45
+        },
+        {
+          "id": 43567192735913,
+          "title": "370mm RGB Led",
+          "sku": "10VORONRLED370",
+          "price": 15.45
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7283975946409,
+      "title": "Micro Swiss Bowden Dual Gear Extruder",
+      "handle": "micro-swiss-bowden-dual-gear-extruder",
+      "vendor": "Micro Swiss",
+      "product_type": "Extruder",
+      "sku": "M2714",
+      "price": 79.95,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/micro-swiss-bowden-dual-gear-extruder-m2714-2451938.png?v=1755909590",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/micro-swiss-bowden-dual-gear-extruder-m2714-9513828.png?v=1755909590"
+      ],
+      "tags": [
+        "3D",
+        "Bowden Extruder",
+        "Extruder",
+        "Micro Swiss"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>The Micro Swiss Bowden Dual Gear Extruder is built with the same precision and quality as the Micro Swiss Direct Drive extruders. It is engineered for easy bolt-on installation, making it compatible with most Bowden extruder systems using Nema 17 stepper motor.</p>\n<h3>Features:</h3>\n<ul>\n<li data-mce-fragment=\"1\">Dual-drive train</li>\n<li data-mce-fragment=\"1\">Hardened tool steel, CNC precision cut gears</li>\n<li data-mce-fragment=\"1\">Adjustable filament grip</li>\n<li data-mce-fragment=\"1\">Easy filament loading</li>\n<li data-mce-fragment=\"1\">Outstanding extrusion control</li>\n<li data-mce-fragment=\"1\">E-steps value:<span data-mce-fragment=\"1\"> </span><strong data-mce-fragment=\"1\">130</strong>\n</li>\n</ul>\n<p data-mce-fragment=\"1\"><em data-mce-fragment=\"1\"><span data-mce-fragment=\"1\" class=\"a-text-italic\">CNC Machined and Assembled in USA</span></em></p>\n<h3 data-mce-fragment=\"1\">Support Printers:</h3>\n<ul>\n<li>Bowden extruder machines</li>\n<li>Fits NEMA 17 size stepper motors</li>\n</ul>\n<h3>What is included:</h3>\n<ul>\n<li><strong>Stepper motor is NOT included</strong></li>\n</ul>\n<ul>\n<li>1 x Main Extruder body<br>\n</li>\n<li>1 x Extruder Lever with gear</li>\n<li>1 x Spring Pin</li>\n<li>1 x Spring</li>\n<li>1 x Motor Gear</li>\n<li>1 x Knob</li>\n<li>1 x Shoulder Pin</li>\n<li>1 x Reverse polarities cable</li>\n<li>3 x M3 x 8 Motor Mounting Screws</li>\n<li>2 x Brass compression sleeves</li>\n<li>1 x Compression nut</li>\n<li>1 x Capricorn Liner</li>\n<li>1 x E-Clip Retaining Ring</li>\n</ul>",
+      "variants": [
+        {
+          "id": 41564966518953,
+          "title": "Default Title",
+          "sku": "M2714",
+          "price": 79.95
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7952211771561,
+      "title": "Creality K1/K1 Max/K1C (2023/2024) Complete Hotend (with Heat Sink)",
+      "handle": "creality-k1-k1-max-k1c-2023-2024-complete-hotend",
+      "vendor": "Creality",
+      "product_type": "Hotend Assembly",
+      "sku": "4001030132",
+      "price": 67.45,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1k1-maxk1c-20232024-heating-block-kit-with-heat-sink-4001030132-6755013.jpg?v=1755907809",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-maxk1c-2025-complete-hotend-with-heat-sink-4001030146-1407813.jpg?v=1755906837",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-maxk1c-2025-complete-hotend-with-heat-sink-4001030146-6078699.jpg?v=1755906837",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-maxk1c-2025-complete-hotend-with-heat-sink-4001030146-1700999.jpg?v=1755906837",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-maxk1c-2025-complete-hotend-with-heat-sink-4001030146-8148338.jpg?v=1755906837",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-maxk1c-2025-complete-hotend-with-heat-sink-4001030146-7387800.jpg?v=1755906838",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-maxk1c-2025-complete-hotend-with-heat-sink-4001030146-7995829.jpg?v=1755906838",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-maxk1c-2025-complete-hotend-with-heat-sink-4001030146-3599000.jpg?v=1755906838",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-maxk1c-2025-complete-hotend-with-heat-sink-4001030146-2474218.jpg?v=1755906838"
+      ],
+      "tags": [
+        "3D",
+        "Creality",
+        "K1"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>Replacement Creality K1 and Creality K1 Max to Quick Swap Creality Unicorn Style Hotend* with heat sink [Not suitable for K1 Series 2025 version, this only suitable for K1 Series 2023/2024 version]</p>\n<h3>Hotend Features: </h3>\n<ul>\n<li>Hardened Steel Tip/Copper Body Nozzle 0.4mm Integrated Heat Break </li>\n<li>24V 60W Heater</li>\n<li>High Thermal Conductivity</li>\n<li>High Flow Printing</li>\n<li>300°C High Temperature Resistance</li>\n</ul>\n<p>*You will need use Creality Unicorn style nozzle if you previous hotend is 2023 version. </p>\n<h3>Suitable for:</h3>\n<p>Note: Only suitable for 2023/2024 version of the toolhead board. </p>\n<ul>\n<li>K1</li>\n<li>K1 Max</li>\n<li>K1C</li>\n</ul>\n<h3>Documentation: </h3>\n<p>Do you know which version you have? If not, check this documentation: (<a href=\"https://support.dremc.com.au/support/solutions/articles/51000426953-k1-k1-max-how-to-distinguish-which-hotend-you-have\" target=\"_blank\" rel=\"noopener\" aria-describedby=\"a11y-new-window-message\">https://support.dremc.com.au/support/solutions/articles/51000426953-k1-k1-max-how-to-distinguish-which-hotend-you-have</a>) <strong><span data-spm-anchor-id=\"a2g0o.detail.1000023.i5.30421c2fiGHhep\">Please note, not suitable for 2025 K1 Max Or newer 2025 K1 Series due to different thermistor connector. <br></span></strong></p>\n<p><span data-spm-anchor-id=\"a2g0o.detail.1000023.i5.30421c2fiGHhep\">Newer 2025 Listing: <a title=\"Creality K1 Max/K1C (2025) Complete Hotend (with Heat Sink)\" href=\"https://store.dremc.com.au/products/creality-k1-max-k1c-2025-heating-block-kit-with-heat-sink\" target=\"_blank\" rel=\"noopener\">https://store.dremc.com.au/products/creality-k1-max-k1c-2025-heating-block-kit-with-heat-sink</a></span><strong><span data-spm-anchor-id=\"a2g0o.detail.1000023.i5.30421c2fiGHhep\"><br></span></strong></p>\n<p>Older K1 and K1 Max heat sink, see this listing: <a href=\"https://store.dremc.com.au/products/creality-k1-k1-max-replacement-heat-sink\" target=\"_blank\" rel=\"noopener\">https://store.dremc.com.au/products/creality-k1-k1-max-replacement-heat-sink</a></p>\n<p>For K1C Stock Hotend: <a href=\"https://store.dremc.com.au/products/creality-k1c-max-replacement-heat-sink?_pos=4&amp;_sid=b26a9c28f&amp;_ss=r\">https://store.dremc.com.au/products/creality-k1c-max-replacement-heat-sink</a></p>\n<p>Install Guide: <a href=\"https://support.dremc.com.au/en/support/solutions/articles/51000431629-k1-series-ceramic-heating-block-kit%E2%80%94quick-swap-nozzle-kit-install-guide\" target=\"_blank\" rel=\"noopener\">https://support.dremc.com.au/en/support/solutions/articles/51000431629-k1-series-ceramic-heating-block-kit—quick-swap-nozzle-kit-install-guide</a></p>\n<p> </p>",
+      "variants": [
+        {
+          "id": 43796770160809,
+          "title": "Default Title",
+          "sku": "4001030132",
+          "price": 67.45
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7746582675625,
+      "title": "Creality K1 /K1 Max 3010 Hotend / 4020 Part Fan",
+      "handle": "creality-k1-k1-max-hotend-part-cooling-fan",
+      "vendor": "Creality",
+      "product_type": "Fan",
+      "sku": "4004110133",
+      "price": 16.45,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-k1-max-3010-hotend-4020-part-fan-4004110133-7460265.jpg?v=1755908509",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-k1-max-3010-hotend-4020-part-fan-4004110133-3982498.jpg?v=1755908508",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-k1-max-3010-hotend-4020-part-fan-3205010334-1846288.jpg?v=1755908508",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-k1-max-3010-hotend-4020-part-fan-3205010334-5245025.jpg?v=1755908509"
+      ],
+      "tags": [
+        "3D",
+        "Creality",
+        "Fan",
+        "K1"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>Official OEM replacement fan for K1 / K1 Max from Creality. (Sold Individually depending on your selection)<br></p>\n<h3>Support Printers:</h3>\n<div class=\"tabs-content base-page\">\n<div class=\"adaptive-wrapper\">\n<div class=\"content\">\n<ul>\n<li>K1 (2023)<br>\n</li>\n<li>K1 Max (2023)<br>\n</li>\n</ul>\n<h3>Fan Specifications: </h3>\n<ul>\n<li>Axial Fan_Ball_3010_24V_12000±10%_L50_1.25-3P</li>\n<li>Blower fan_ball_4020_24V_12000±10%_L100_1.25</li>\n</ul>\n<p>Note: (Part cooling only, newer is also suitable) <a rel=\"noopener\" href=\"https://store.dremc.com.au/products/creality-k1c-3010-hotend-4020-part-fan?variant=43555682386089\" target=\"_blank\">https://store.dremc.com.au/products/creality-k1c-3010-hotend-4020-part-fan?variant=43555682386089</a></p>\n<h3>Documentation: </h3>\n<p>How to distinguish which version of hotend you have: <a href=\"https://support.dremc.com.au/support/solutions/articles/51000426953-k1-k1-max-how-to-distinguish-which-hotend-you-have\" rel=\"noopener\" target=\"_blank\">https://support.dremc.com.au/support/solutions/articles/51000426953-k1-k1-max-how-to-distinguish-which-hotend-you-have</a></p>\n<p>How to replace fan: <a rel=\"noopener\" href=\"https://support.dremc.com.au/en/support/solutions/articles/51000348048-creality-k1-k1-max-how-to-replace-hotend-assembly\" target=\"_blank\">https://support.dremc.com.au/en/support/solutions/articles/51000348048-creality-k1-k1-max-how-to-replace-hotend-assembly</a></p>\n</div>\n</div>\n</div>",
+      "variants": [
+        {
+          "id": 43067722793129,
+          "title": "Hotend Cooling Fan (3010)",
+          "sku": "4004110133",
+          "price": 16.45
+        },
+        {
+          "id": 43067722760361,
+          "title": "Part Cooling Fan (4020)",
+          "sku": "3205010334",
+          "price": 12.45
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7385909002409,
+      "title": "CR 6 SE Titanium alloy All Metal Heat Break For CR-6 SE Ender 3 Neo",
+      "handle": "trianglelab-cr6-se-titanium-alloy-bi-metal-heatbreak-for-cr-6-se",
+      "vendor": "Trianglelab",
+      "product_type": "Heat Break",
+      "sku": "TL-68074409",
+      "price": 27.95,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cr-6-se-titanium-alloy-all-metal-heat-break-for-cr-6-se-ender-3-neo-tl-68074409-2254530.jpg?v=1755909465",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cr-6-se-titanium-alloy-all-metal-heat-break-for-cr-6-se-ender-3-neo-tl-68074409-4616955.jpg?v=1755909465",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cr-6-se-titanium-alloy-all-metal-heat-break-for-cr-6-se-ender-3-neo-tl-68074409-2331384.jpg?v=1755909465",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cr-6-se-titanium-alloy-all-metal-heat-break-for-cr-6-se-ender-3-neo-tl-68074409-9442699.jpg?v=1755909466"
+      ],
+      "tags": [
+        "3D",
+        "CR-10 Smart",
+        "CR-6 SE",
+        "Ender 3 Neo",
+        "HeatBreak"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p data-spm-anchor-id=\"a2g0o.detail.1000023.i10.346d5b2efuAQ4P\"><span>This is a branch design of the All Metal heatbreak. It’s thermal blocking front end is made of titanium alloy and the back end is made of copper alloy material.</span></p>\n<h4><strong><span>Heat Conduction</span></strong></h4>\n<p data-spm-anchor-id=\"a2g0o.detail.1000023.i9.346d5b2efuAQ4P\"><span>This Heatbtreak is made from two components, Copper alloy and Titanium alloy. Titanium alloy reduces heat upward conduction at the heating position, and copper for heat dissipation to accelerate heat conduction.</span></p>\n<h3 data-mce-fragment=\"1\"><strong data-mce-fragment=\"1\"><span data-mce-fragment=\"1\">Compatible </span></strong></h3>\n<p data-mce-fragment=\"1\"><strong data-mce-fragment=\"1\"><span data-mce-fragment=\"1\">[ Stock Hotend Assembly ]<br></span></strong></p>\n<ul>\n<li><span data-mce-fragment=\"1\">CR6 SE / MAX</span></li>\n<li><span data-mce-fragment=\"1\">CR-6 SE</span></li>\n<li><span data-mce-fragment=\"1\">CR-6 MAX</span></li>\n<li><span data-mce-fragment=\"1\">Ender 3 Neo</span></li>\n<li><span data-mce-fragment=\"1\">Ender 3 v2 Neo</span></li>\n<li><span data-mce-fragment=\"1\">Ender 3 Max Neo</span></li>\n<li><span data-mce-fragment=\"1\">CR10 Smart</span></li>\n</ul>\n<h3>Documentation: </h3>\n<p>Note: This heat break is not suitable for extensive abrasive such as CF/GF filled filaments.</p>\n<p>Thermal paste between the copper section(cold end) with heat sink is unnecessary if you're printing below 280 degrees when using all metal hotend but is recommend by manufacturer.</p>\n<p>In our in house testing, the measurable surface temperature is within marginal of error and still well below standard compare to a metal heat break. We recommend GD900 or <a href=\"https://store.dremc.com.au/products/ag-silver-thermal-paste-sachet-0-5g?_pos=1&amp;_sid=00b5e84a7&amp;_ss=r\" target=\"_blank\">AG Silver Thermal Paste Sachet</a> or<a href=\"https://store.dremc.com.au/products/thermal-paste-satchet-0-5g?_pos=1&amp;_sid=4018528ab&amp;_ss=r\"> AG Thermal Paste</a>.</p>",
+      "variants": [
+        {
+          "id": 41891768074409,
+          "title": "Default Title",
+          "sku": "TL-68074409",
+          "price": 27.95
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7198136533161,
+      "title": "Creality Ender Plus 3D Printer Enclosure for Ender 3 Series and Ender 5",
+      "handle": "creality-3d-printer-enclosure-for-ender-3-5-series",
+      "vendor": "Creality",
+      "product_type": "Enclosure",
+      "sku": "4008030061",
+      "price": 69.45,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-ender-plus-3d-printer-enclosure-for-ender-3-series-and-ender-5-4008030061-3740696.jpg?v=1755909648",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-ender-plus-3d-printer-enclosure-for-ender-3-series-and-ender-5-4008030061-9883232.jpg?v=1755909648",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-ender-plus-3d-printer-enclosure-for-ender-3-series-and-ender-5-4008030061-2189517.jpg?v=1755909648",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-ender-plus-3d-printer-enclosure-for-ender-3-series-and-ender-5-4008030061-7344630.jpg?v=1755909649",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-ender-plus-3d-printer-enclosure-for-ender-3-series-and-ender-5-4008030061-7180313.jpg?v=1755909649",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-ender-plus-3d-printer-enclosure-for-ender-3-series-and-ender-5-4008030061-1913966.jpg?v=1755909649",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-ender-plus-3d-printer-enclosure-for-ender-3-series-and-ender-5-4008030061-9176930.jpg?v=1755909649",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-ender-plus-3d-printer-enclosure-for-ender-3-series-and-ender-5-4008030061-4183245.jpg?v=1755909650",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-ender-plus-3d-printer-enclosure-for-ender-3-series-and-ender-5-4008030061-8783547.jpg?v=1755909650",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-ender-plus-3d-printer-enclosure-for-ender-3-series-and-ender-5-4008030061-5024345.jpg?v=1755909650",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-ender-plus-3d-printer-enclosure-for-ender-3-series-and-ender-5-4008030061-8285219.jpg?v=1755909716"
+      ],
+      "tags": [
+        "3D",
+        "Enclosure"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<div>\n<p>The Creality Small 3D Printer Enclosure provides a controlled environment for your printer, ensuring consistent and optimal printing conditions. It is made from high-quality materials, featuring a sturdy frame and transparent panels that offer a clear view of your printing process while keeping the external elements at bay.</p>\n<h3>Features: </h3>\n</div>\n<ul>\n<li>Good Insulation Effect</li>\n<li>Folding and Stretching without Folds</li>\n<li>Minimizes warping, layer separation, and printing imperfections.</li>\n<li>Front door and removable top panel for convenient access.</li>\n</ul>\n<h3>Compatible Printers  </h3>\n<ul>\n<li>Ender-2, Ender-2 pro, CP-01</li>\n<li>Ender-3, Ender-3s, Ender-3pro, Ender-3 V2, Ender-3 Max, Ender-3 S1, Ender-3 S1 Pro, Ender-3 S1 Plus, CR-6 SE</li>\n<li>Ender 3 Neo, Ender-3 V2 Neo, Ender 3 Max Neo</li>\n<li>Ender 5, Ender 5 Pro, Ender 5</li>\n</ul>\n<p>Order after 24/03/24 will be shipped with updated enclosure with exhaust outlet on the right side and sight increase in enclosure size to support Ender 5 Series Printers. [Photo is showing latest version] Exhaust Fan or duct is <strong>not included</strong></p>\n<p>May support other printers, please double check dimension before purchase.</p>\n<h3>Enclosure Size:</h3>\n<ul>\n<li>550mm×650mm×750mm</li>\n</ul>\n<p><span>(Please account of bed slinger movement and spool when specing out enclosure). For extensively higher temperature printing, relocate your PSU and electronics (MCU) outside of enclosure when possible, increase life of those components. </span></p>\n<h3><span>Documentation: <a title=\"Creality Enclosure Tent Overview and How To Install\" href=\"https://support.dremc.com.au/en/support/solutions/articles/51000372820-creality-enclosure-tent-overview-and-how-to-install\"></a></span></h3>\n<p><span><a title=\"Creality Enclosure Tent Overview and How To Install\" href=\"https://support.dremc.com.au/en/support/solutions/articles/51000372820-creality-enclosure-tent-overview-and-how-to-install\">https://support.dremc.com.au/en/support/solutions/articles/51000372820-creality-enclosure-tent-overview-and-how-to-install</a></span></p>",
+      "variants": [
+        {
+          "id": 41254803800233,
+          "title": "Default Title",
+          "sku": "4008030061",
+          "price": 69.45
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 8292480385193,
+      "title": "Creality K1 Series X Axis Toolhead Carriage",
+      "handle": "creality-k1-series-x-axis-toolhead-carriage",
+      "vendor": "Creality",
+      "product_type": "Spare Parts",
+      "sku": "C-897",
+      "price": 15.45,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/Creality_K1_Series_X_Axis_Toolhead_Carriage.heic?v=1752561314",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/Creality_K1_Series_X_Axis_Toolhead_Carriage_Front.heic?v=1752561329",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/Creality_K1_Series_X_Axis_Toolhead_Carriage_Side.heic?v=1752561343"
+      ],
+      "tags": [
+        "3D",
+        "Creality",
+        "K1"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>Replacement X Axis Toolhead Carriage for K1 series 3d printers.</p>\n<h3>Suitable for</h3>\n<ul>\n<li>Creality K1 Max<br>\n</li>\n<li>Creality K1</li>\n<li>Creality K1C<br>\n</li>\n<li>Creality K1SE</li>\n</ul>\n<h3>Documentation:</h3>\n<p>[Advance Guide - Contact our support if you require dis assembly guide or questions, otherwise you see teardown video/livestream: <a rel=\"noopener\" title=\"K1 Teardown Video\" href=\"https://www.youtube.com/live/BEpcnl-cIKI?si=VeOrNEcvvMpUFWJp\" target=\"_blank\">https://www.youtube.com/live/BEpcnl-cIKI?si=VeOrNEcvvMpUFWJp</a>)<br></p>\n<p>Note: Linear Bearing/Sleeve is not included, either reuse existing or source replacement (ensure you get correct length version)</p>\n<p>Bearing Sleeves are sold here: <a href=\"https://store.dremc.com.au/products/self-lubricating-brass-bearing-10-14-45mm-for-creality-k1-series\" title=\"https://store.dremc.com.au/products/self-lubricating-brass-bearing-10-14-45mm-for-creality-k1-series\">https://store.dremc.com.au/products/self-lubricating-brass-bearing-10-14-45mm-for-creality-k1-series</a></p>",
+      "variants": [
+        {
+          "id": 44761382813865,
+          "title": "Default Title",
+          "sku": "C-897",
+          "price": 15.45
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7083854266537,
+      "title": "Creality CR 6 SE Hotend Kit with PTFE Tube + Heater Cartridge + Thermistors",
+      "handle": "cr-6-se-hotend-kit",
+      "vendor": "Creality",
+      "product_type": "Hotend Assembly",
+      "sku": "4001030042",
+      "price": 45.45,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-cr-6-se-hotend-kit-with-ptfe-tube-heater-cartridge-thermistors-4001030042-3055534.jpg?v=1755909837",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-cr-6-se-hotend-kit-with-ptfe-tube-heater-cartridge-thermistors-4001030042-9279771.jpg?v=1755909837",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-cr-6-se-hotend-kit-with-ptfe-tube-heater-cartridge-thermistors-4001030042-7329868.jpg?v=1755909837",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-cr-6-se-hotend-kit-with-ptfe-tube-heater-cartridge-thermistors-4001030042-5072938.jpg?v=1755909837",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-cr-6-se-hotend-kit-with-ptfe-tube-heater-cartridge-thermistors-4001030042-8794388.jpg?v=1755909837",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-cr-6-se-hotend-kit-with-ptfe-tube-heater-cartridge-thermistors-4001030042-3126360.jpg?v=1755909837",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-cr-6-se-hotend-kit-with-ptfe-tube-heater-cartridge-thermistors-4001030042-2243830.jpg?v=1755909837",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-cr-6-se-hotend-kit-with-ptfe-tube-heater-cartridge-thermistors-4001030042-2575556.jpg?v=1755909838"
+      ],
+      "tags": [
+        "3D",
+        "CR-5 PRO",
+        "CR-6 SE",
+        "Hotend"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>This OEM CR 6 SE Hotend Kit is a replacement for your Creality CR-6 SE. </p>\n<h3>What is Include: </h3>\n<ul>\n<li>Kit includes a PTFE Tube, Heater Cartridge, and Thermistors, a hotend.</li>\n</ul>\n<h3>Suitable for</h3>\n<ul>\n<li>CR6 SE</li>\n<li>CR-6 SE Max (You need sourced longer <a title=\"1.2m PTFE Capricorn\" href=\"https://store.dremc.com.au/products/1-2m-capricorn-ptfe-tube-kit-for-ender-series-and-cr10-series\">PTFE</a>)</li>\n<li>CR 5 Pro Hotend.</li>\n</ul>\n<p> </p>\n<div>\n<div> </div>\n</div>\n<div> </div>",
+      "variants": [
+        {
+          "id": 40845467091113,
+          "title": "Default Title",
+          "sku": "4001030042",
+          "price": 45.45
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7663698378921,
+      "title": "Bondtech CHT BiMetal RepRap V6 Coated Nozzle - Hardened Vanadium Steel",
+      "handle": "bondtech-cht-bimetal-reprap-coated-nozzle-hardened-steel",
+      "vendor": "Bondtech",
+      "product_type": "Nozzle",
+      "sku": "600-A-CHT-MOS-175-40",
+      "price": 63.45,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/bondtech-cht-bimetal-reprap-v6-coated-nozzle-hardened-vanadium-steel-600-a-cht-mos-175-40-7304112.jpg?v=1755908827",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/bondtech-cht-bimetal-reprap-v6-coated-nozzle-hardened-vanadium-steel-600-a-cht-mos-175-40-8536798.webp?v=1755908827",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/bondtech-cht-bimetal-reprap-v6-coated-nozzle-hardened-vanadium-steel-600-a-cht-mos-175-40-3082475.jpg?v=1755908827",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/bondtech-cht-bimetal-reprap-v6-coated-nozzle-hardened-vanadium-steel-600-a-cht-mos-175-t-3827468.jpg?v=1755908827",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/bondtech-cht-bimetal-reprap-v6-coated-nozzle-hardened-vanadium-steel-600-a-cht-mos-175-40-9215008.jpg?v=1755908828",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/bondtech-cht-bimetal-reprap-v6-coated-nozzle-hardened-vanadium-steel-noz01cht41058-3320982.jpg?v=1755908829",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/bondtech-cht-bimetal-reprap-v6-coated-nozzle-hardened-vanadium-steel-600-a-cht-mos-175-60-4017676.jpg?v=1755908828",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/bondtech-cht-bimetal-reprap-v6-coated-nozzle-hardened-vanadium-steel-600-a-cht-mos-175-80-3197867.jpg?v=1755908828",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/bondtech-cht-bimetal-reprap-v6-coated-nozzle-hardened-vanadium-steel-600-a-cht-mos-175-10-6191071.jpg?v=1755908828"
+      ],
+      "tags": [
+        "3D",
+        "CHT",
+        "Nozzle",
+        "V6"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<div class=\"product-short-description\">\n<p>This Bondtech CHT BiMetal ™ RepRap M6 nozzle <strong>increases the melting capacity</strong> of your hotend, to <strong>build faster</strong> and to <strong>save your time</strong>. It also <strong>improves the layer adhesion</strong> of your 3D prints to create <strong>stronger parts</strong>. Important to notice this nozzle is <strong>resistant to particle or fiber loaded abrasive materials</strong>.</p>\n<p><strong>Increase</strong> the <strong>Max Volumetric Flow</strong> of your RepRap M6 style heat block <strong>by 50%</strong></p>\n<p><strong><strong style=\"color: blue;\">Nozzle is supplied with Nickel Coating. [First Photo is how nozzle looks before coating, second photo is actual nozzle appearance after coating] </strong></strong></p>\n<p>They are <strong>manufactured by Bondtech in-house</strong>, and will fit the following blocks/printers:</p>\n<div style=\"columns: 2;\">\n<ul>\n<li>Mosquito® / Magnum</li>\n<li>Mosquito® Liquid</li>\n<li>Mosquito® Magnum+</li>\n<li>Copperhead™</li>\n<li>E3D Chimera and Kraken</li>\n<li>E3D V4, V5 and V6 blocks</li>\n<li>Prusa i3, Prusa Mini</li>\n<li>RepRap M6</li>\n</ul>\n</div>\n</div>\n<p> </p>\n<div>\n<blockquote style=\"color: red;\">\n<h4><span style=\"color: #000000;\">ALERT : Avoid Cold Change Of Bondtech CHT Nozzles</span></h4>\n<p>Heat up the heat block up to 280C, or at least above 250C, before removing or tightening any Bondtech CHT nozzle. <strong>Use at most 1 Nm torque</strong>. Recommended Torque is 0.5 Nm.</p>\n<h4><span style=\"color: #000000;\">ALERT : Size limitation for fiber loaded filaments</span></h4>\n<p><strong>For Carbon or Glass fiber loaded abrasive filaments use only 0.6, 0.8 and 1.0mm nozzle size.</strong></p>\n<h4><span style=\"color: #000000;\">ALERT : For particle loaded filaments</span></h4>\n<p>For metal, wood, glitter or other particle loaded abrasive filaments you may use the 0.4mm nozzle size.</p>\n</blockquote>\n</div>\n<hr>\n<h4><big>Features</big></h4>\n<ul>\n<li style=\"list-style-type: none;\">\n<ul>\n<li>\n<strong>Copper body</strong>;</li>\n<li>\n<strong>Hardened Vanadium Steel inserts</strong>;</li>\n<li>\n<strong>Nickel Coating</strong>;</li>\n<li>\n<strong>1 unit per pack</strong>;</li>\n<li>Available sizes : 0.40, 0.60, 0.80, and 1.0mm;</li>\n<li>\n<strong>Optimized</strong> for 1.75mm filament;</li>\n<li>\n<strong>Compatible with</strong> 2.85mm filament.</li>\n<li>Requires 6mm wrench'</li>\n<li>\n<strong>4 units pack</strong> (0.40, 0.60, 0.80, and 1.0mm)</li>\n</ul>\n</li>\n</ul>\n<div id=\"gap-481731890\" class=\"gap-element clearfix\" style=\"display: block; height: auto;\"></div>\n<h4>Bondtech CHT BiMetal RepRap Coated Nozzle <big>Advantages</big>\n</h4>\n<ul>\n<li>Abrasive-proof to work with Carbon and Glass fiber composite materials;</li>\n<li>Higher melt capacity by increasing the surface area of the heating walls</li>\n<li>Flow Rate gains between 25 and <strong>65%</strong> (check picture with test data)</li>\n<li>Competitive price/performance price</li>\n<li>Machined with ultra-precision</li>\n<li>Copper body and Hardened Vanadium Steel inserts nozzle with Nickel coated surface</li>\n<li>Follows nozzle standard:\n<ul>\n<li>RepRap M6 (M6×1×7.5×12.5)</li>\n</ul>\n</li>\n<li><strong>May be used with 1.75 or 2.85mm hotends.</strong></li>\n</ul>\n<p>Flow Rate gains may vary. Results depend on the hardware, materials and print settings used.</p>\n<p> </p>",
+      "variants": [
+        {
+          "id": 42773257060521,
+          "title": "0.4mm",
+          "sku": "600-A-CHT-MOS-175-40",
+          "price": 63.45
+        },
+        {
+          "id": 44223982862505,
+          "title": "0.5mm",
+          "sku": "NOZ01CHT41058",
+          "price": 63.45
+        },
+        {
+          "id": 42773257126057,
+          "title": "0.6mm",
+          "sku": "600-A-CHT-MOS-175-60",
+          "price": 63.45
+        },
+        {
+          "id": 42773257158825,
+          "title": "0.8mm",
+          "sku": "600-A-CHT-MOS-175-80",
+          "price": 63.45
+        },
+        {
+          "id": 42773257191593,
+          "title": "1.0mm",
+          "sku": "600-A-CHT-MOS-175-10",
+          "price": 63.45
+        },
+        {
+          "id": 42773257289897,
+          "title": "4 Pack [Mixed Sizes]",
+          "sku": "600-A-CHT-MOS-175-T",
+          "price": 249.95
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7510576005289,
+      "title": "Molex Microfit 3.0 Connector 2 Pin Kit (72pc)",
+      "handle": "molex-microfit-3-0-connector-kit",
+      "vendor": "Molex",
+      "product_type": "Spare Parts",
+      "sku": "MM3-2PIN-KIT",
+      "price": 19.95,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/molex-microfit-30-connector-2-pin-kit-72pc-mm3-2pin-kit-7425829.jpg?v=1755909115",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/molex-microfit-30-connector-2-pin-kit-72pc-mm3-2pin-kit-1593516.jpg?v=1755909115",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/molex-microfit-30-connector-2-pin-kit-72pc-mm3-2pin-kit-9682045.jpg?v=1755909116"
+      ],
+      "tags": [
+        "3D",
+        "Connector"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<div id=\"product-description-short-421\" data-mce-fragment=\"1\">\n<p><strong>Molex Microfit 3.0 Connector Kit</strong><br></p>\n<p>Use this set of genuine Molex Microfit 3.0 connectors, receptacles, pins, and sockets to make reliable and high quality wire to wire and wire to board connections on your 3D Printer, CNC machine, robotics project, and more.</p>\n<h3>What is Included: </h3>\n<ul>\n<li>2 pin connectors + receptacles 10x (43640-0201) 10x (43645-0200)</li>\n<li>26 male and 26 female terminals (43031-0001 &amp; 43030-0001)</li>\n</ul>\n<h3>Specification:</h3>\n<ul>\n<li>\n<span role=\"presentation\" dir=\"ltr\">Operating Temp:</span><span role=\"presentation\" dir=\"ltr\"> </span><span role=\"presentation\" dir=\"ltr\">-40°C to +105°C <br></span>\n</li>\n<li><span role=\"presentation\" dir=\"ltr\">Max Current: 6.5A (Please note, this max supported current depends on your wire gauge, please refer to attached data sheet for table). As Wire-Wire/Wire-Board current differs. </span></li>\n</ul>\n<h3>Datasheet:</h3>\n<p><a href=\"https://cdn.shopify.com/s/files/1/0541/6638/8905/files/436450200_sd.pdf?v=1657161156\" target=\"_blank\">43645-0200</a></p>\n<p><a href=\"https://cdn.shopify.com/s/files/1/0541/6638/8905/files/436400201_sd.pdf?v=1657161270\" target=\"_blank\">43640-0201</a></p>\n<p><a href=\"https://cdn.shopify.com/s/files/1/0541/6638/8905/files/PS-44300-001.pdf?v=1657161352\">43031-0001</a></p>\n<p><a href=\"https://cdn.shopify.com/s/files/1/0541/6638/8905/files/PS-44300-001.pdf?v=1657161352\" target=\"_blank\">43030-0001</a></p>\n<h3>Do you need more terminals or headers?</h3>\n<p><a href=\"https://store.dremc.com.au/search?type=product&amp;options%5Bprefix%5D=last&amp;options%5Bunavailable_products%5D=last&amp;q=Molex+Microfit+Crimp\">Terminals</a><br></p>\n<p><a href=\"https://store.dremc.com.au/search?sort_by=relevance&amp;q=molex+3.0&amp;type=product&amp;options%5Bprefix%5D=last&amp;options%5Bunavailable_products%5D=last&amp;filter.v.price.gte=&amp;filter.v.price.lte=&amp;filter.p.vendor=Molex\">Headers</a></p>\n</div>",
+      "variants": [
+        {
+          "id": 42283604476073,
+          "title": "Default Title",
+          "sku": "MM3-2PIN-KIT",
+          "price": 19.95
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7083843551401,
+      "title": "Mean Well LRS-350-24 24V 350W Power Supply",
+      "handle": "mean-well-lrs-350-24-24v-350w-power-supply",
+      "vendor": "Mean Well",
+      "product_type": "Power Supply",
+      "sku": "LRS-350-24",
+      "price": 74.65,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/mean-well-lrs-350-24-24v-350w-power-supply-lrs-350-24-2144867.jpg?v=1755909885",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/mean-well-lrs-350-24-24v-350w-power-supply-lrs-350-24-3503662.jpg?v=1755909885",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/mean-well-lrs-350-24-24v-350w-power-supply-lrs-350-24-6883882.jpg?v=1755909885"
+      ],
+      "tags": [
+        "3D",
+        "CR-6 SE",
+        "Ender 3 Neo",
+        "Ender 3 Series",
+        "Ender 3 v2",
+        "Ender 6",
+        "Power Supply"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p><span>The LRS-350 series of single-output 350 W enclosed style power supply is a low profile, highly efficient enclosed product. The LRS-350 series has been designed for use within demanding applications, thanks to a metallic meshing &amp; air convection to ensure optimum heat dissipation.</span></p>\n<p><span>The LRS-350 series has been designed with efficiency in mind, delivering an extremely low no load power consumption. Installation into more testing environments can be done thanks to 5G anti-vibration capability.</span></p>\n<h3><span>Basic Information: </span></h3>\n<ul>\n<li>Rated Power: 350 Watts</li>\n<li>Output : 24V</li>\n<li>Model: LRS-350 24V 350W</li>\n<li>Manufacturer: Mean Well</li>\n<li>Sourced from a Taiwan Mean Well Distributor</li>\n<li><span>Compliance with the Australian RMC regulations</span></li>\n<li><span>3 Years Manufacturer Warranty</span></li>\n</ul>\n<h3>Support Printers:</h3>\n<table border=\"1\">\n<tbody>\n<tr>\n<td>CR-4026</td>\n<td>CR-4040</td>\n<td>CR-5060</td>\n<td>CR-5080</td>\n<td>CR-3040S</td>\n</tr>\n<tr>\n<td>CR-3040</td>\n<td>CR-5S</td>\n<td>CR-8S</td>\n<td>CR-5</td>\n<td>CR-2020</td>\n</tr>\n<tr>\n<td>Ender-3 PRO</td>\n<td>Ender-3v2</td>\n<td>CR6 SE</td>\n<td>Ender-6</td>\n<td>CR-5 Pro</td>\n</tr>\n<tr>\n<td>Ender 3 S1</td>\n<td>Ender 3 S1 Pro</td>\n<td>K1</td>\n<td></td>\n<td></td>\n</tr>\n</tbody>\n</table>\n<p> </p>\n<h3 data-testid=\"descriptive-content-main-header\">Features and Benefits</h3>\n<ul>\n<li><span>Selectable AC input with a 5 second 300 V ac surge input.</span></li>\n<li><span>Up to 90% efficiency rating, with less than 0.5 W no load power consumption.</span></li>\n<li><span>5G vibration resistance.</span></li>\n<li><span>Free air convection cooling.</span></li>\n<li><span>Compliance with the Australian RMC regulations</span></li>\n</ul>\n<h4 data-testid=\"descriptive-content-main-header\">Typical Applications</h4>\n<ul>\n<li><span>Industrial automation &amp; control machinery.</span></li>\n<li><span>Mechanical &amp; electrical equipment.</span></li>\n<li><span>Household appliances.</span></li>\n</ul>",
+      "variants": [
+        {
+          "id": 40845411123369,
+          "title": "Default Title",
+          "sku": "LRS-350-24",
+          "price": 74.65
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7941075927209,
+      "title": "Creality 42-60/42-48 Stepper A/B (X/Y) Axis Motor for K1 / K1 Max / K1C",
+      "handle": "creality-stepper-x-y-axis-motor-for-k1",
+      "vendor": "Creality",
+      "product_type": "Stepper Motor",
+      "sku": "3204120166",
+      "price": 25.95,
+      "compare_at_price": 34.45,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/IMG-1433.heic?v=1715340994",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/IMG-1429.heic?v=1715341025",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-42-6042-48-stepper-ab-xy-axis-motor-for-k1-k1-max-k1c-3204120209-8470821.png?v=1755907812",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-42-6042-48-stepper-ab-xy-axis-motor-for-k1-k1-max-k1c-3204120208-7742062.png?v=1755907813"
+      ],
+      "tags": [
+        "3D",
+        "Creality",
+        "K1",
+        "NEMA 17",
+        "Stepper Motor"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>Genuine Creality Replacement Stepper Motor for A/B or X/Y Stepper motor, please select the correct motors for your printer model<br></p>\n<p>Support Printers: Creality K1(2023), Creality K1 Max(2023) or Creality K1C(2024), Creality K1 Max (2024) <strong>[Please make sure you have correct version of printer, if you have Unicorn hotend (integrated nozzle/heat break) you have 2024 version].  </strong></p>\n<p><strong>If you're unsure please send us your motor you wish to replace and your printer serial number to support. </strong> <br></p>\n<h3>Compatible Table: <br>\n</h3>\n<ul>\n<li>X Axis (2023) K1 &amp; K1 Max 2023</li>\n<li>Y Axis (2023) K1 &amp; K1 Max 2023</li>\n<li>X Axis (2024) K1C &amp; K1 MAX 2024</li>\n<li>Y Axis (2024) K1C &amp; K1 MAX 2024</li>\n</ul>\n<h3>Documentation:</h3>\n<p><a href=\"https://support.dremc.com.au/en/support/solutions/articles/51000412616-creality-k1-k1-max-replace-x-and-y-axis-motors\" target=\"_blank\" title=\" Creality K1 /K1 MAX Replace X and Y axis motors\" rel=\"noopener\">https://support.dremc.com.au/en/support/solutions/articles/51000412616-creality-k1-k1-max-replace-x-and-y-axis-motors</a></p>",
+      "variants": [
+        {
+          "id": 43765130821801,
+          "title": "X Axis (2023)",
+          "sku": "3204120166",
+          "price": 25.95
+        },
+        {
+          "id": 43765130854569,
+          "title": "Y Axis (2023)",
+          "sku": "3204120167",
+          "price": 25.95
+        },
+        {
+          "id": 43765130887337,
+          "title": "X Axis (2024)",
+          "sku": "3204120209",
+          "price": 34.45
+        },
+        {
+          "id": 43765130920105,
+          "title": "Y Axis (2024)",
+          "sku": "3204120208",
+          "price": 34.45
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7727851438249,
+      "title": "VLMP 2 Heat Set Insert Press Hardware Kit",
+      "handle": "vlmp-2-heat-set-insert-press-hardware-kit",
+      "vendor": "Vector 3D",
+      "product_type": "Project",
+      "sku": "V3D-VLMP2-HW",
+      "price": 99.95,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/vlmp-2-heat-set-insert-press-v3d-vlmp2-hw-3898906.jpg?v=1755908582",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/vlmp-2-heat-set-insert-press-v3d-vlmp2-hw-3044860.jpg?v=1755908582"
+      ],
+      "tags": [
+        "3D",
+        "Voron"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<div class=\"product__description rte quick-add-hidden\">\n<p>The VLMP 2 represents a refined evolution of its predecessor, engineered for professionals who demand consistency and precision. This robust insert press delivers the structural integrity and accuracy required for reliable, repeatable heat set operations across production runs. Built for durability and performance, it's the choice for users seeking industrial-grade results in a compact form factor.<br></p>\n<ol>\n<li>Direct and easy upgrade from VLMP 1 (<a title=\"VLMP 2 Upgrade Kit\" href=\"https://store.dremc.com.au/products/vlmp-2-upgrade-kit\">upgrade kit</a>).</li>\n<li>Fully enclosed idler to prevent belt hop.</li>\n<li>Wider base for greater stability.</li>\n<li>Accessible storage for inserts.</li>\n<li>Fully covered and adjustable counterweight.</li>\n<li>Aggressive aesthetic design.<br>\n</li>\n<li>Cost effective parts for easy spares and repairs.</li>\n</ol>\n<p><strong>Digital Files will be automatically emailed once hardware kit has been shipped. [Sometimes its can be filtered in spam, if you did not get email, please reach out with order number and we will re-emailed the download link]</strong></p>\n<p>Assembly Video: <a href=\"https://youtu.be/rs1pPcZR2PI\" target=\"_blank\">Video</a><br></p>\n<p>Guide: [Will be included with your digital files downloads]<br></p>\n<h3>What is Included: </h3>\n<h4>Hardware Kit:</h4>\n<ol>\n<li>All hardware needed for assembly (<strong>Does not include soldering iron</strong>)</li>\n<li>STLs for printed parts (digital files will be emailed once hardware order has been fulfilled) (<strong>Pre-Printed Parts are not included</strong>)</li>\n</ol>\n<h4> Not included</h4>\n<ol>\n<li>Tools for assembly</li>\n<li>filament or printed parts</li>\n<li>Soldering Iron</li>\n</ol>\n<p>Note: If you require printed parts or soldering iron, please contact us for quote. <strong></strong></p>\n<h3><strong>Digital Files License</strong></h3>\n<p>The license for files included with this purchase permit you do download and print them, and also modify them for personal use, but you may not redistribute them, nor sell or trade printed parts.<br><br></p>\n<p><strong>Soldering Iron (Not Included)</strong></p>\n<p>For the soldering iron we recommend the Handskit 927 with the CNC Kitchen M900 Tips or Pencil + CNC Kitchen Inserts. The 927/Pencil is great as it doesn't require a separate base station, is adjustable in small increments, has a built in display and sleeps after a short period just in case you leave it on by accident. The correct size tips ensure your iron won't get stuck on the inserts too, a must have.</p>\n<p>If you want to purchase a separate soldering iron, here are a few tips to help you get a suitable model.</p>\n<ul>\n<li>Ensure it can reach around 300C or the melting point +30C of the plastic you want inserts pressed into.</li>\n<li>Ensure the iron uses common exchangeable tips such as those by CNCKitchen.</li>\n<li>Ensure it has accurate temperature control with read-out</li>\n<li>Ensure the iron has an on/off switch.</li>\n<li>Additionally soldering stations with removable soldering irons may be a useful option.</li>\n</ul>\n<p><strong>Grip Information:</strong></p>\n<ul>\n<li>The grip ideally needs to be printed from ABS and be just the right size for your soldering iron.</li>\n<li>You get the Autodesk fusion CAD file (and common STLs) for the grip with your purchase as the grip itself is an open source design. We also have a<span> </span><a aria-describedby=\"a11y-new-window-message\" rel=\"noopener\" href=\"https://docs.google.com/spreadsheets/d/1vC5II_Q6wXpucuHBkBCWidh8xcnH_h2uj1icpmaTfh4/edit?usp=sharing\" target=\"_blank\">database</a><span> </span>that stores common sizes for various soldering iron models so you can make it yourself in just the right size.</li>\n<li>For the easiest route, we sell grips for the VLMP soldering iron (Handskit 927) made from ABS and guaranteed to work. If you have a grip from VLMP 1, this will work too.</li>\n<li>Once you have a good grip size for your iron, be sure to share it to our database to help others too by filling in<span> </span><a aria-describedby=\"a11y-new-window-message\" rel=\"noopener\" href=\"https://docs.google.com/forms/d/e/1FAIpQLScNfBSY307_CKq6lQztPcuuIIXtcjVk9Pl5cTyyB9eGZLRAHQ/viewform\" target=\"_blank\">this form</a>.</li>\n</ul>\n<h3>Product History: </h3>\n<p><strong>Note: Orders after 1 May 2024 are shipping VLMP 2. [ Upgrade kit from VLMP 1 Listing (<a title=\"VLMP 2 Upgrade Kit\" rel=\"noopener\" href=\"https://store.dremc.com.au/products/vlmp-2-upgrade-kit\" target=\"_blank\">https://store.dremc.com.au/products/vlmp-2-upgrade-kit</a>)]</strong></p>\n</div>",
+      "variants": [
+        {
+          "id": 43019867685033,
+          "title": "Hardware Kit Only",
+          "sku": "V3D-VLMP2-HW",
+          "price": 99.95
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7432503034025,
+      "title": "LDO Orbiter Extruder Kit V2.0",
+      "handle": "ldo-orbiter-extruder-kit-v2-0",
+      "vendor": "LDO",
+      "product_type": "Extruder",
+      "sku": "LDO-OB-V2",
+      "price": 108.45,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/ldo-orbiter-extruder-kit-v20-ldo-ob-v2-8119852.jpg?v=1755909338",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/ldo-orbiter-extruder-kit-v20-ldo-ob-v2-7720083.jpg?v=1755909338",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/ldo-orbiter-extruder-kit-v20-ldo-ob-v2-4742140.jpg?v=1755909338",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/ldo-orbiter-extruder-kit-v20-ldo-ob-v2-6217447.jpg?v=1755909338"
+      ],
+      "tags": [
+        "3D",
+        "Direct Drive Extruder",
+        "EOL",
+        "gw-bis-hide",
+        "LDO"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<div data-mce-fragment=\"1\" class=\"woocommerce-Tabs-panel woocommerce-Tabs-panel--description panel entry-content wc-tab\" id=\"tab-description\" role=\"tabpanel\" aria-labelledby=\"tab-title-description\">\n<div data-mce-fragment=\"1\" class=\"post-content\">\n<h3 data-mce-fragment=\"1\" class=\"fusion-woocommerce-tab-title fusion-responsive-typography-calculated\" style=\"--fontsize: 24; line-height: 1.33;\" data-fontsize=\"24\" data-lineheight=\"32px\">A high precision, light weight, direct drive, planetary extruder system. (DREMC is an official Reseller/Distributor )<br>\n</h3>\n<p data-mce-fragment=\"1\">A design by Dr. Lorincz Rober in cooperation with LDO. For more information visit <span data-mce-fragment=\"1\"><a data-mce-fragment=\"1\" href=\"https://orbiterprojects.com/\">https://orbiterprojects.com/</a>.</span><br></p>\n<p data-mce-fragment=\"1\"><span data-mce-fragment=\"1\">Filament Sensor Add-on: <a href=\"https://store.dremc.com.au/products/orbiter-extruder-v2-0-filament-sensor\">https://store.dremc.com.au/products/orbiter-extruder-v2-0-filament-sensor</a></span></p>\n<p data-mce-fragment=\"1\"><span data-mce-fragment=\"1\">Assembled completed Orbiter V2.0 Extruder with LDO-36STH20-1004AH high temperature pancake stepper motor</span></p>\n<p data-mce-fragment=\"1\">Ender 3 E<span data-mce-fragment=\"1\">pogee Guide: </span><a title=\"Ender 3 Apogee Orbiter Guide\" href=\"https://docs.ldomotors.com/en/orbiter/apogee/installation_guide\" target=\"_blank\">https://docs.ldomotors.com/en/orbiter/apogee/installation_guide</a></p>\n<p data-mce-fragment=\"1\"><span data-mce-fragment=\"1\"><span data-mce-fragment=\"1\" style=\"border-block: unset; border-inline: unset; border-start-start-radius: unset; border-start-end-radius: unset; border-end-start-radius: unset; border-end-end-radius: unset; overflow-inline: unset; overflow-block: unset; overscroll-behavior-inline: unset; overscroll-behavior-block: unset; margin-block: unset; margin-inline: unset; scroll-margin-block: unset; scroll-margin-inline: unset; padding-block: unset; padding-inline: unset; scroll-padding-block: unset; scroll-padding-inline: unset; inset-block: unset; inset-inline: unset; block-size: unset; min-block-size: unset; max-block-size: unset; inline-size: unset; min-inline-size: unset; max-inline-size: unset; background: unset; background-blend-mode: unset; border: unset; border-radius: unset; box-decoration-break: unset; -moz-float-edge: unset; display: unset; position: fixed; float: unset; clear: unset; vertical-align: unset; overflow: unset; overflow-anchor: unset; transition: unset; animation: unset; transform: unset; rotate: unset; scale: unset; translate: unset; offset: unset; scroll-behavior: unset; scroll-snap-align: unset; scroll-snap-type: unset; overscroll-behavior: unset; isolation: unset; break-after: unset; break-before: unset; break-inside: unset; resize: unset; perspective: unset; perspective-origin: unset; backface-visibility: unset; transform-box: unset; transform-style: unset; transform-origin: unset; contain: unset; appearance: unset; -moz-orient: unset; will-change: unset; shape-image-threshold: unset; shape-margin: unset; shape-outside: unset; touch-action: unset; -webkit-line-clamp: unset; columns: unset; column-fill: unset; column-rule: unset; column-span: unset; content: unset; counter-increment: unset; counter-reset: unset; counter-set: unset; opacity: unset; box-shadow: unset; clip: rect(0px, 0px, 0px, 0px); filter: unset; mix-blend-mode: unset; font: unset; font-synthesis: unset; visibility: unset; writing-mode: unset; text-orientation: unset; color-adjust: unset; image-rendering: unset; image-orientation: unset; dominant-baseline: unset; text-anchor: unset; color-interpolation: unset; color-interpolation-filters: unset; fill: unset; fill-opacity: unset; fill-rule: unset; shape-rendering: unset; stroke: unset; stroke-width: unset; stroke-linecap: unset; stroke-linejoin: unset; stroke-miterlimit: unset; stroke-opacity: unset; stroke-dasharray: unset; stroke-dashoffset: unset; clip-rule: unset; marker: unset; paint-order: unset; border-collapse: unset; empty-cells: unset; caption-side: unset; border-spacing: unset; color: unset; text-transform: unset; hyphens: unset; -moz-text-size-adjust: unset; text-indent: unset; overflow-wrap: unset; word-break: unset; text-justify: unset; text-align-last: unset; text-align: unset; letter-spacing: unset; word-spacing: unset; white-space: pre; text-shadow: unset; text-emphasis: unset; text-emphasis-position: unset; tab-size: unset; line-break: unset; -webkit-text-fill-color: unset; -webkit-text-stroke: unset; ruby-align: unset; ruby-position: unset; text-combine-upright: unset; text-rendering: unset; text-underline-offset: unset; text-underline-position: unset; text-decoration-skip-ink: unset; cursor: unset; pointer-events: unset; -moz-user-input: unset; -moz-user-modify: unset; -moz-user-focus: unset; caret-color: unset; scrollbar-color: unset; list-style: unset; quotes: unset; -moz-image-region: unset; margin: unset; scroll-margin: unset; outline: unset; outline-offset: unset; padding: unset; scroll-padding: unset; top: 0px; right: unset; bottom: unset; left: unset; z-index: unset; flex-flow: unset; place-content: unset; place-items: unset; flex: unset; place-self: unset; order: unset; width: unset; min-width: unset; max-width: unset; height: unset; min-height: unset; max-height: unset; box-sizing: unset; object-fit: unset; object-position: unset; grid-area: unset; grid: unset; gap: unset; aspect-ratio: unset; vector-effect: unset; stop-color: unset; stop-opacity: unset; flood-color: unset; flood-opacity: unset; lighting-color: unset; mask-type: unset; clip-path: unset; mask: unset; x: unset; y: unset; cx: unset; cy: unset; rx: unset; ry: unset; r: unset; table-layout: unset; text-overflow: unset; text-decoration: unset; ime-mode: unset; scrollbar-width: unset; user-select: text; -moz-window-dragging: unset; -moz-force-broken-image-icon: unset; -moz-box-align: unset; -moz-box-direction: unset; -moz-box-flex: unset; -moz-box-orient: unset; -moz-box-pack: unset; -moz-box-ordinal-group: unset;\">https://store.dremc.com.au/products/orbiter-extruder-v2-0-filament-sensor?utm_source=copyToPasteBoard&amp;utm_medium=product-links&amp;utm_content=web</span></span></p>\n<p data-mce-fragment=\"1\">Improvements and features over previous versions of Orbiter:</p>\n<ul data-mce-fragment=\"1\">\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">Shorter hardened drive gears <b data-mce-fragment=\"1\"><strong data-mce-fragment=\"1\">11mm vs 15mm</strong></b> manufactured by Bondtech</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">Weight reduced to ~<b data-mce-fragment=\"1\"><strong data-mce-fragment=\"1\">135 grams</strong></b>\n</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">Smaller more compact dimensions (<b data-mce-fragment=\"1\"><strong data-mce-fragment=\"1\">11.6% shorter</strong></b>)</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">New motor design offers <b data-mce-fragment=\"1\"><strong data-mce-fragment=\"1\">~40% increase </strong></b>in extrusion force in real printing conditions and much improved acceleration performance</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">Flipped drive gears – filament path closer to the extruder center for a more balanced design and perfect fit on delta printers as well</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">Stainless steel filament exit guide with 0.2-0.3mm clearance to drive gears for best TPU printing experience and extreme wear resistance when using abrasive filaments.</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">High temperature resistant housings, GPA12</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">Machined PEEK secondary drive gear sleeve</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">Tension mechanism with grab screw design</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">Mounting screws in line with filament exit path – improving housing stiffness and easier mounting</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">Perfectly aligned filament path</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">New smaller and more stylish PTFE tube input coupler</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">Motor position rotated by additional 10 degrees for easier maintenance and assembly</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">Extremely low backlash ~0.06mm</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">Filament sensor add on with auto load and unload button add on feature</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">And many more small changes to improve mechanical accuracy and design look</li>\n</ul>\n<p data-mce-fragment=\"1\"><strong data-mce-fragment=\"1\">Basic Configuration</strong></p>\n<ul data-mce-fragment=\"1\">\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">Steps: 690 steps/mm @ 16 micro-stepping</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">Max. instantaneous speed change (jerk): 600mm/min(RRF), 10mm/s (Marlin) (recommended 300/5)</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">Pressure advance: 0.02~0.03s – to be calibrated</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">Retraction: 1~1.5mm – to be calibrated</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">Retraction speed: 120mm/s, reduce it to 30mm/s when printing TPU</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">Motor current: <b data-mce-fragment=\"1\"><strong data-mce-fragment=\"1\">1.2A Peak</strong></b> or <b data-mce-fragment=\"1\"><strong data-mce-fragment=\"1\">0.85A RMS (</strong></b><b data-mce-fragment=\"1\"><strong data-mce-fragment=\"1\">LDO-36STH20-1004AHG</strong></b><b data-mce-fragment=\"1\"><strong data-mce-fragment=\"1\">)</strong></b>\n</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">Max. acceleration: 8000 mm/s2 <b data-mce-fragment=\"1\"><strong data-mce-fragment=\"1\">*</strong></b>\n</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">Normal motor operating temperature: 65-75°C</li>\n<li data-mce-fragment=\"1\" style=\"font-weight: 500;\">Drive motor with stealth chop disabled!</li>\n</ul>\n<p data-mce-fragment=\"1\" style=\"font-weight: 500;\"><b data-mce-fragment=\"1\"><strong data-mce-fragment=\"1\">* </strong></b>The extruder itself without filament can handle acceleration up to 25000mm/s<sup data-mce-fragment=\"1\">2</sup>. Adding weight of the filament it drags along its recommended to have acceleration limit set not above 8000mm/s<sup data-mce-fragment=\"1\">2</sup>. To reduce clicking noise of the extruder (due to fast direction change) you may limit acceleration to 3000mm/s2</p>\n<p data-mce-fragment=\"1\">For more information please visit the Orbiter website here:</p>\n<div data-mce-fragment=\"1\" class=\"video-shortcode\">\n<blockquote data-mce-fragment=\"1\" class=\"wp-embedded-content\" data-secret=\"yCXE7WO6VT\">\n<p data-mce-fragment=\"1\"><a data-mce-fragment=\"1\" href=\"https://orbiterprojects.com/orbiter-v2-0/\">Orbiter v2.0</a></p>\n</blockquote>\n<p data-mce-fragment=\"1\"><iframe data-mce-fragment=\"1\" height=\"338\" width=\"600\" loading=\"lazy\" class=\"wp-embedded-content entered lazyloaded\" style=\"position: absolute; clip: rect(1px, 1px, 1px, 1px);\" title=\"“Orbiter v2.0” — ORBITER PROJECTS\" src=\"https://orbiterprojects.com/orbiter-v2-0/embed/#?secret=yCXE7WO6VT\" data-secret=\"yCXE7WO6VT\" data-rocket-lazyload=\"fitvidscompatible\" data-lazy-src=\"https://orbiterprojects.com/orbiter-v2-0/embed/#?secret=yCXE7WO6VT\" data-ll-status=\"loaded\"></iframe></p>\n</div>\n<p data-mce-fragment=\"1\">Documentation: <a href=\"https://support.dremc.com.au/en/support/solutions/articles/51000302922-ldo-orbiter-extruder-kit-v2-0\" target=\"_blank\">https://support.dremc.com.au/en/support/solutions/articles/51000302922-ldo-orbiter-extruder-kit-v2-0</a></p>\n</div>\n</div>",
+      "variants": [
+        {
+          "id": 42008843583657,
+          "title": "Default Title",
+          "sku": "LDO-OB-V2",
+          "price": 108.45
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7378557862057,
+      "title": "Creality Direct Drive Sprite Extruder Pro Kit (300°C) for Ender 3 Series (Pro, V2, Max)",
+      "handle": "creality-direct-drive-sprite-extruder-pro-kit-for-ender-3",
+      "vendor": "Creality",
+      "product_type": "Upgrade Kit",
+      "sku": "4001020036",
+      "price": 152,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-direct-drive-sprite-extruder-pro-kit-3000c-for-ender-3-series-pro-v2-max-4001020036-7481904.jpg?v=1755909470",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-direct-drive-sprite-extruder-pro-kit-3000c-for-ender-3-series-pro-v2-max-4001020036-6454487.jpg?v=1755909470",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-direct-drive-sprite-extruder-pro-kit-3000c-for-ender-3-series-pro-v2-max-4001020036-7228990.png?v=1755909470",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-direct-drive-sprite-extruder-pro-kit-3000c-for-ender-3-series-pro-v2-max-4001020036-5416798.jpg?v=1755909471",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-direct-drive-sprite-extruder-pro-kit-3000c-for-ender-3-series-pro-v2-max-4001020036-7839265.jpg?v=1755909471",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-direct-drive-sprite-extruder-pro-kit-3000c-for-ender-3-series-pro-v2-max-4001020036-5109479.jpg?v=1755909471",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-direct-drive-sprite-extruder-pro-kit-3000c-for-ender-3-series-pro-v2-max-4001020036-7713664.jpg?v=1755909471",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-direct-drive-sprite-extruder-pro-kit-3000c-for-ender-3-series-pro-v2-max-4001020036-7024237.jpg?v=1755909472",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-direct-drive-sprite-extruder-pro-kit-3000c-for-ender-3-series-pro-v2-max-4001020036-3779900.jpg?v=1755909472",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-direct-drive-sprite-extruder-pro-kit-3000c-for-ender-3-series-pro-v2-max-4001020036-6103656.jpg?v=1755909472",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-direct-drive-sprite-extruder-pro-kit-3000c-for-ender-3-series-pro-v2-max-4001020036-1636143.jpg?v=1755909520",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-direct-drive-sprite-extruder-pro-kit-3000c-for-ender-3-series-pro-v2-max-4001020036-3637448.jpg?v=1755909520",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-direct-drive-sprite-extruder-pro-kit-3000c-for-ender-3-series-pro-v2-max-4001020036-8124582.jpg?v=1755909520",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-direct-drive-sprite-extruder-pro-kit-3000c-for-ender-3-series-pro-v2-max-4001020036-5876974.jpg?v=1755909520",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-direct-drive-sprite-extruder-pro-kit-3000c-for-ender-3-series-pro-v2-max-4001020036-1750713.jpg?v=1755909520"
+      ],
+      "tags": [
+        "3D",
+        "Creality",
+        "Direct Drive Extruder",
+        "Ender 3  Max",
+        "Ender 3 Series",
+        "Ender 3 v2",
+        "Sprite Extruder"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<ul>\n<li>Convenient Retrofit, Improved Performance</li>\n<li>Compact and Lightweight (288g)</li>\n<li>3.5:1 Gear Ratio</li>\n<li>All-metal hotend for high temperature printing, (Max 300 Degrees Celsius).</li>\n</ul>\n<h3>Suitable For:</h3>\n<ul>\n<li>Ender 3</li>\n<li>Ender 3 Pro</li>\n<li>Ender 3 v2</li>\n<li>Ender 3 Pro</li>\n</ul>\n<p>Note: You will need to plug in heater into breakout board before starting pre-heating or any prints.</p>\n<p> </p>\n<h3>Quick Start Guide:</h3>\n<p><strong>Support Desk:</strong> <a href=\"https://support.dremc.com.au/en/support/solutions/articles/51000302250-creality-all-metal-direct-drive-sprite-extruder-pro-kit-install-guide\">https://support.dremc.com.au/en/support/solutions/articles/51000302250-creality-all-metal-direct-drive-sprite-extruder-pro-kit-install-guide</a></p>\n<h4><strong>Advance Guide:</strong></h4>\n<p><a href=\"https://support.dremc.com.au/a/solutions/articles/51000298817\">https://support.dremc.com.au/a/solutions/articles/51000298817</a></p>\n<p><strong>Replacement Cable Loom:</strong> <a href=\"https://store.dremc.com.au/products/sprite-upgrade-main-cable-loom\">https://store.dremc.com.au/products/sprite-upgrade-main-cable-loom</a></p>\n<p>We do recommended the dual axis kit or z belted kit with Sprite Extruder due to additional extruder/hotend carriage weight: <a href=\"https://store.dremc.com.au/products/dual-screw-rod-upgrade-kit-double-screw-for-ender-3-series?_pos=3&amp;_sid=001784179&amp;_ss=r\">https://store.dremc.com.au/products/dual-screw-rod-upgrade-kit-double-screw-for-ender-3-series</a></p>\n<p><a title=\"Ender 3 Z Belted Kit\" href=\"https://store.dremc.com.au/products/belt-driven-ender-3-kevinakasam\">https://store.dremc.com.au/products/belt-driven-ender-3-kevinakasam</a></p>\n<p><iframe title=\"A YouTube video\" src=\"https://www.youtube.com/embed/xMQ0ZNttOWE\" width=\"560\" height=\"315\" frameborder=\"0\" allowfullscreen=\"allowfullscreen\"></iframe></p>\n<p> </p>\n<p> </p>",
+      "variants": [
+        {
+          "id": 41875655360681,
+          "title": "Default Title",
+          "sku": "4001020036",
+          "price": 152
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7578059014313,
+      "title": "BTT PI TFT43 / TFT50 / TFT70 V2.1 with Touch Screen PI TFT",
+      "handle": "btt-pitft50-v2-0-with-5-inch-touch-screen-2021-version",
+      "vendor": "BIGTREETECH",
+      "product_type": "Display",
+      "sku": "1040000042",
+      "price": 71.5,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/btt-pi-tft43-tft50-tft70-v21-with-touch-screen-pi-tft-1040000042-7036258.jpg?v=1755908897",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/btt-pi-tft43-tft50-tft70-v21-with-touch-screen-pi-tft-1040000042-5517862.jpg?v=1755908897",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/btt-pi-tft43-tft50-tft70-v21-with-touch-screen-pi-tft-1040000042-2612548.jpg?v=1755908898",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/btt-pi-tft43-tft50-tft70-v21-with-touch-screen-pi-tft-1040000042-8976885.jpg?v=1755908898",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/btt-pi-tft43-tft50-tft70-v21-with-touch-screen-pi-tft-1040000042-6232304.jpg?v=1755908898",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/btt-pi-tft43-tft50-tft70-v21-with-touch-screen-pi-tft-1040000042-2698417.jpg?v=1755908898"
+      ],
+      "tags": [
+        "3D",
+        "BIGTREETECH",
+        "Display",
+        "Voron"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>Compatible with Klipper Screen and OctoPrint screens, this BTT PI TFT V2.1 touchscreen works seamlessly with Voron 2.4, Trident, and other 3D printers, and also suitable as general touch screen for Raspberry Pi communication via DSI. </p>\n<ul class=\"a-unordered-list a-vertical a-spacing-mini\">\n<li>\n<strong><span class=\"a-list-item\"> </span></strong><span class=\"a-list-item\">This is a 4.3/5/7-inch LCD touch screen with a resolution of 800 x 480 for Raspberry-Pi. The display area can reach 108 x 64.8mm.</span>\n</li>\n<li><span class=\"a-list-item\"> Adapt to the Raspberry-Pi DSI display interface, directly driven by DSI; with a capacitive touch panel. Supports 5-point touch.</span></li>\n<li><span class=\"a-list-item\">The unique hole design on the back allows you to install the Raspberry-Pi directly. PI TFT50 display adopts Raspberry-Pi power supply design, no external power supply is needed.</span></li>\n<li><span class=\"a-list-item\">The PI TFT50 display supports hardware backlight adjustment, and the backlight brightness can be adjusted by rotating the potentiometer behind the screen.</span></li>\n<li><span class=\"a-list-item\">Flip Function is not available on TFT43</span></li>\n<li><span class=\"a-list-item\">Not compatible with BTT CB1</span></li>\n</ul>\n<h3><span class=\"a-list-item\">What is Included:</span></h3>\n<ul>\n<li><span class=\"a-list-item\">1x BTT Touch Screen </span></li>\n<li><span class=\"a-list-item\">1x CSI/DSI Short Display Cable (intended when PI is mounted on back of the display)</span></li>\n<li><span class=\"a-list-item\">4x Mounting Hardware</span></li>\n</ul>\n<p><span class=\"a-list-item\">Note: Raspberry pi is not included. </span></p>\n<h3><span class=\"a-list-item\">Documentation: </span></h3>\n<p><span class=\"a-list-item\">GitHub: <a href=\"https://github.com/bigtreetech/BIGTREETECH-TouchScreenHardware/tree/master/BTT%20Pi%20TFT50%20V2.0%20Github\" target=\"_blank\">https://github.com/bigtreetech/BIGTREETECH-TouchScreenHardware/tree/master/BTT%20Pi%20TFT50%20V2.0%20Github</a></span></p>\n<p><span class=\"a-list-item\">Trident/2,4 PiTFT50 Mount: <a href=\"https://mods.vorondesign.com/details/mn2APihm7NkJZhoskam1CQ\" target=\"_blank\">https://mods.vorondesign.com/details/mn2APihm7NkJZhoskam1CQ</a></span></p>",
+      "variants": [
+        {
+          "id": 42818392424617,
+          "title": "TFT43",
+          "sku": "1040000042",
+          "price": 71.5
+        },
+        {
+          "id": 42734937407657,
+          "title": "TFT50",
+          "sku": "1040000043",
+          "price": 88.45
+        },
+        {
+          "id": 42734937440425,
+          "title": "TFT70",
+          "sku": "1040000044",
+          "price": 99.95
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7413401977001,
+      "title": "Ender-3 S1 / Ender 3 V2 / Ender 3 V3 LED Light Bar Kit",
+      "handle": "ender-3-series-led-light-bar-kit",
+      "vendor": "Creality",
+      "product_type": "Upgrade Kit",
+      "sku": "4004010208",
+      "price": 29.95,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/ender-3-s1-ender-3-v2-ender-3-v3-led-light-bar-kit-4004010208-7539630.jpg?v=1769083340",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/ender-3-s1-ender-3-v2-ender-3-v3-led-light-bar-kit-4004010208-3893018.jpg?v=1769083340",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/ender-3-s1-ender-3-v2-ender-3-v3-led-light-bar-kit-4004010208-9595163.jpg?v=1769083340",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/ender-3-s1-ender-3-v2-ender-3-v3-led-light-bar-kit-4004010208-6508747.jpg?v=1769083340",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/ender-3-s1-ender-3-v2-ender-3-v3-led-light-bar-kit-4004010208-9915469.jpg?v=1769083340",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/ender-3-s1-ender-3-v2-ender-3-v3-led-light-bar-kit-4004010208-8935832.jpg?v=1769083340",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/ender-3-s1-ender-3-v2-ender-3-v3-led-light-bar-kit-4004010208-5218382.jpg?v=1769083340",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/ender-3-s1-ender-3-v2-ender-3-v3-led-light-bar-kit-4004010208-8104120.jpg?v=1769083340",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/ender-3-s1-ender-3-v2-ender-3-v3-led-light-bar-kit-4004010236-2376103.jpg?v=1769083340",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/ender-3-s1-ender-3-v2-ender-3-v3-led-light-bar-kit-4004010236-8902481.jpg?v=1769083340",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/ender-3-s1-ender-3-v2-ender-3-v3-led-light-bar-kit-4004010208-1287960.jpg?v=1755909466",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/ender-3-s1-ender-3-v2-ender-3-v3-led-light-bar-kit-4004010208-8207113.jpg?v=1755909466",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/ender-3-s1-ender-3-v2-ender-3-v3-led-light-bar-kit-4004010208-3225094.jpg?v=1755909466",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/ender-3-s1-ender-3-v2-ender-3-v3-led-light-bar-kit-4004010208-8092494.png?v=1755909467",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/ender-3-s1-ender-3-v2-ender-3-v3-led-light-bar-kit-4004010247-9757769.jpg?v=1755909467",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/ender-3-s1-ender-3-v2-ender-3-v3-led-light-bar-kit-4004010240-7653943.jpg?v=1755909467",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/ender-3-s1-ender-3-v2-ender-3-v3-led-light-bar-kit-4004010255-1254788.png?v=1755909467",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/ender-3-s1-ender-3-v2-ender-3-v3-led-light-bar-kit-4004010256-9968606.png?v=1755909467"
+      ],
+      "tags": [
+        "3D",
+        "Ender 3 Neo",
+        "Ender 3 S1",
+        "Ender 3 v2",
+        "Ender 3 V3",
+        "gw-bis-hide"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<div>\n<p>Upgrade your print visibility with this purpose-built LED lighting solution for Ender-3 S1, Ender-3 V2 Neo, and Ender-3 V3 machines. The kit features a high-intensity LED bar paired with a precision-engineered aluminum mounting bracket, eliminating shadows and glare across your build platform. Ready-to-install with factory-matched power connectors, it integrates seamlessly into your existing setup without modification. Essential for monitoring your prints. </p>\n<h3>Features: </h3>\n</div>\n<ul>\n<li>LED Chip, Energy and Power Saving</li>\n<li>Easy Installation, Soft Light</li>\n<li>No Strobe</li>\n<li>24V 5W LED (Compatibility with range of Ender 3 Printer, depending on product selection) </li>\n</ul>\n<p><strong>Note</strong>: Install can take up to 30-60 minutes as some install may require you feed wiring through extrusion and require dis-assembly depending on the model. Some model is consider an intermediate skill level. </p>\n<p><strong data-start=\"0\" data-end=\"9\" data-is-only-node=\"\">Shipping Note:</strong> This item is shipped in a long box, separate from smaller spare parts or build plates. For larger orders, we can consolidate shipping—just contact us, or we will update the order total after placement if possible, provided we have a suitable large box on hand.</p>\n<h3><strong>Compatibility </strong></h3>\n<p>Kit include written kit, if you have miss place it and there is no video, contact us and we can provide PDF copy, otherwise please see below video, depending on printer you're fitting it on. <strong><br></strong></p>\n<ul>\n<li>Ender 3 S1: Ender 3 S1 , Ender 3 S1 Pro (JST connector, connect directly to bottom LED port) (<a rel=\"noopener\" href=\"https://youtu.be/ACyxi-9Bzeo?si=zwBYAxuRGA9tXCSI&amp;t=438\" target=\"_blank\">https://youtu.be/ACyxi-9Bzeo?si=zwBYAxuRGA9tXCSI&amp;t=438</a>)</li>\n<li>Ender 3 V2:  Ender 3 V2 Neo/Ender 3/Ender 3 Pro/Ender 3S/Ender 3 V2 (Screw terminals) (Install Video: <a href=\"https://www.youtube.com/watch?v=W62QReagZZc\" rel=\"noopener\" target=\"_blank\">https://www.youtube.com/watch?v=W62QReagZZc</a>)</li>\n<li>Ender 3 Max Neo: Ender 3 Max, Ender 3 Max Neo, CR-10 S PRO V2 (Similar to Ender 3 V2 kits). <br>\n</li>\n<li>Ender 3 V3 SE/KE: Ender 3 V3 SE, Ender 3 V3 KE (Install Video: <a href=\"https://www.youtube.com/watch?v=-ebn8vLFhCM\" rel=\"noopener\" target=\"_blank\">https://www.youtube.com/watch?v=-ebn8vLFhCM</a>)</li>\n<li>Ender 3 V3: Ender 3 V3 (Install Video: <a href=\"https://youtu.be/ACyxi-9Bzeo?si=gLrfxy3BBSFFhi-n&amp;t=739\" rel=\"noopener\" target=\"_blank\">https://youtu.be/ACyxi-9Bzeo?si=gLrfxy3BBSFFhi-n&amp;t=739</a>)</li>\n<li>Ender 3 V3 Plus: Ender 3 V3 Plus (Install Video: <a href=\"https://youtu.be/ACyxi-9Bzeo?si=gLrfxy3BBSFFhi-n&amp;t=739\" rel=\"noopener\" target=\"_blank\">https://youtu.be/ACyxi-9Bzeo?si=gLrfxy3BBSFFhi-n&amp;t=739</a>)<br>\n</li>\n</ul>",
+      "variants": [
+        {
+          "id": 42846849859753,
+          "title": "Ender 3 S1",
+          "sku": "4004010208",
+          "price": 29.95
+        },
+        {
+          "id": 42846849892521,
+          "title": "Ender 3 V2 Neo",
+          "sku": "4004010236",
+          "price": 29.95
+        },
+        {
+          "id": 43487641698473,
+          "title": "Ender 3 Max Neo",
+          "sku": "4004010240",
+          "price": 29.95
+        },
+        {
+          "id": 43253940322473,
+          "title": "Ender 3 V3 SE/KE",
+          "sku": "4004010247",
+          "price": 29.95
+        },
+        {
+          "id": 44276430176425,
+          "title": "Ender 3 V3",
+          "sku": "4004010256",
+          "price": 29.95
+        },
+        {
+          "id": 44276430274729,
+          "title": "Ender 3 V3 Plus",
+          "sku": "4004010255",
+          "price": 29.95
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7512134123689,
+      "title": "GDSTIME GDA Dual Bearing 4010 Axial Fan 24v",
+      "handle": "gdstime-gdb4010-axial-fan",
+      "vendor": "GDSTIME",
+      "product_type": "Fan",
+      "sku": "GDA4010B24N75X252207F",
+      "price": 16,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/gdstime-gda-4010-axial-fan-24v-gda4010b24n75x252207f-6110629.jpg?v=1758632820",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/gdstime-gda-4010-axial-fan-24v-gda4010b24n75x252207f-1352694.jpg?v=1758632820",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/gdstime-gda-4010-axial-fan-24v-gda4010b24n75x252207f-3430733.jpg?v=1758632820",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/gdstime-gda-4010-axial-fan-24v-gda4010b24n75x252207f-3095784.jpg?v=1758632820"
+      ],
+      "tags": [
+        "3D",
+        "Fan"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>This high-quality 4010 axial fan serves as a reliable replacement for the Creality 4010 hotend fan. Installation requires soldering the wires using a soldering sleeve or connector to integrate with existing wiring. Also suitable for community tool heads such as stealth burner.</p>\n<p>Designed as a direct replacement for Ender 3 and Ender 5 enclosure or mainboard fans, this unit may necessitate re-pinning the connector or removing and reversing the JST header on the mainboard for proper installation.</p>\n<h3>Fan Specification: </h3>\n<ul>\n<li>Dimensions: 40x40x10mm</li>\n<li>Connector:XH2.54-2P</li>\n<li>Rated Voltage: DC 24V</li>\n<li>Rated Current: 0.09±10%Amp</li>\n<li>Rated Speed: 7500±10%rpm</li>\n<li>Air flow: 8.29CFM</li>\n<li>Noise: 29.8±10%dBA</li>\n<li>Bearing Type: Dual Ball</li>\n<li>Average life: 50 000 Hrs @ 40c</li>\n<li>Cable Length: 20cm</li>\n<li>Weight: 15g/pcs</li>\n<li>Operating Temperature: -20-75℃ (Reduce life expectancy above 70℃)</li>\n</ul>",
+      "variants": [
+        {
+          "id": 42288882712745,
+          "title": "Default Title",
+          "sku": "GDA4010B24N75X252207F",
+          "price": 16
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7335786250409,
+      "title": "V6 Compatible Titanium Alloy Heat Break 1.75mm by Trianglelab",
+      "handle": "1pc-triangle-lab-v6-titanium-alloy-heat-break-1-75mm",
+      "vendor": "Trianglelab",
+      "product_type": "Heat Break",
+      "sku": "32853548000",
+      "price": 12.45,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/v6-compatible-titanium-alloy-heat-break-175mm-trianglelab-32853548000-5548844.jpg?v=1755909521",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/v6-compatible-titanium-alloy-heat-break-175mm-trianglelab-32853548000-8793710.jpg?v=1755909521",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/v6-compatible-titanium-alloy-heat-break-175mm-trianglelab-32853548000-1202124.jpg?v=1755909522"
+      ],
+      "tags": [
+        "3D",
+        "Artillery X1",
+        "Artillery X2",
+        "Genius",
+        "Genius Pro",
+        "HeatBreak",
+        "V6"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>High quality Triangle Lab GRADE 5 titanium alloy heat break. This material is used specifically in the aerospace industry and has a lower thermal conductivity than stainless steel. Due to the lower thermal conductivity, a better defined melting zone is possible.</p>\n<p>The extremely smooth surface structure significantly increases the reliability in extrusion. Less blockages and lower extrusion forces are also another positive advantage of the smooth surfaces.</p>\n<p>The V6 heat breaks are compatible with all E3D V6 hotends and original Prusa i3 devices or other V6 clones. For Prusa MMU, our recommenced is <a href=\"https://store.dremc.com.au/products/prusa-specific-heatbreak-mk2-mk3\" title=\"Prusa Specific Heat Break (MK2, MK3)\">Prusa specific Heat Break</a>. </p>\n<h3>What is Include:</h3>\n<ul>\n<li>1x V6 Titanium Alloy Heat Break</li>\n</ul>\n<h3>Compatibility </h3>\n<ul>\n<li>V6 Heater Block, Volcano Heater Block, Artillery X1/X2 and Genius. [Please verify with your printer, as artillery have smooth and thread version, if smooth you will need kraken compatible heat break]<br>\n</li>\n</ul>",
+      "variants": [
+        {
+          "id": 41729758331049,
+          "title": "Default Title",
+          "sku": "32853548000",
+          "price": 12.45
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7750435373225,
+      "title": "PT1000 Pro High temperature thermistor (450°C) M4 / M3 Screw In",
+      "handle": "pt1000-pro-high-temperature-thermistor-400-c-m4-m3-screw-in",
+      "vendor": "Trianglelab",
+      "product_type": "Thermistor",
+      "sku": "43665065",
+      "price": 24.45,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/pt1000-pro-high-temperature-thermistor-4500c-m4-m3-screw-in-43665065-3581760.jpg?v=1755908507",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/pt1000-pro-high-temperature-thermistor-4500c-m4-m3-screw-in-43665065-8077803.jpg?v=1755908507",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/pt1000-pro-high-temperature-thermistor-4500c-m4-m3-screw-in-43665065-6393585.jpg?v=1755908507",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/pt1000-pro-high-temperature-thermistor-4500c-m4-m3-screw-in-44418729-2656491.jpg?v=1755908507"
+      ],
+      "tags": [
+        "3D",
+        "Ender 3 Series",
+        "Ender 3 v2",
+        "Ender 5 Series",
+        "Spare",
+        "Thermistor"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>The PT1000 Pro High temperature thermistor measures temperatures up to 450°C and fits into M4/M3 screw-in models. It is the ideal choice for high-temperature applications, offering reliable, accurate readings. Its sturdy design ensures long-term reliability.</p>\n<ul>\n<li>High Temperature PT1000 Sensor up to 450°C, it possible without amplifier board with default 4.7k pull up resistor but will get lower accuracy. To get full benefits you will need board that supports PT1000 by default like some Bigtreetech boards or replace the 4.7K pullup resister of the thermistor pins with a included 1K 0.1% resister, require SMD soldering. <br>\n</li>\n<li>High Accuracy within 1%<br>\n</li>\n</ul>\n<p><span style=\"color: #ff2a00;\"><strong>NOTE: Should only be hand tightened while module is not connected to the extension wire. Depending on batch, style of M3 screw may differ from pictured. </strong> </span></p>\n<h3>Specs:</h3>\n<ul>\n<li>Extension Cable: 2M</li>\n<li>Thermistor : PT1000</li>\n<li>Thermistor Screw in: M4 or M3.</li>\n</ul>\n<h3>Additional Compatibility: </h3>\n<p><br>M4 is suitable for replacement Rapido V2 hotend(Note: Double check your heater block, as newer V2 may be using bare style available here), while M3 is suitable for most heater blocks existing retaining thermistor such as MK8/V6/Volcano heater blocks or Mellow vz goliath Hotend. We cannot guarantee compatible with clone blocks, as they may differ in threading pitch or size.  </p>\n<p>Note: As this is molex connector, ensure you plug in to correct quick connector if plan to use as long side DRHOTSWAP or if you using molex as quick connector for your hotend. </p>\n<h3>Documentation: </h3>\n<p>Firmware changes required in most case which coming from other thermeristor type. <br></p>\n<p><strong>For Klipper: </strong></p>\n<div align=\"start\">Default 4.7Kpullup resistor, set thermistor type to PT1000. </div>\n<p> </p>\n<p><strong>For Duet2 Wifi</strong></p>\n<p>M308 S1 P\"e0temp\" Y\"pt1000\" R2000 ;two 1K resistors in series for better accuracy</p>\n<p> </p>\n<p><strong>Marlin:</strong></p>\n<div align=\"start\">Default 4.7Kpullup resistor please choose sensor '1047'</div>\n<div align=\"start\">If you have replaced pullup with 1K resistor please choose sensor '1010'</div>\n<div align=\"start\"><br></div>\n<div align=\"start\">Configuration.h:</div>\n<div align=\"start\">*1047 : Pt1000 with 4k7 pullup</div>\n<div align=\"start\">*1010 : Pt1000 with 1k pullup(non standard)</div>\n<div align=\"start\">#define TEMP_SENSOR_0 1010</div>\n<div align=\"start\">#define TEMP_SENSOR_1 0</div>\n<div align=\"start\">#define TEMP_SENSOR_2 0</div>\n<div align=\"start\">#define TEMP_SENSOR_3 0</div>\n<div align=\"start\">#define TEMP_SENSOR_4 0</div>\n<div align=\"start\">#define TEMP_SENSOR_BED 1</div>\n<div align=\"start\">thermistortable_1010.h:</div>\n<div align=\"start\">// Pt1000 with 1k0 pullup</div>\n<div align=\"start\">const short temptable_1010[][2] PROGMEM = {</div>\n<div align=\"start\">PtLine(    0, 1000, 1000)</div>\n<div align=\"start\">PtLine(  25, 1000, 1000)</div>\n<div align=\"start\">PtLine(  50, 1000, 1000)</div>\n<div align=\"start\">PtLine(  75, 1000, 1000)</div>\n<div align=\"start\">PtLine(100, 1000, 1000)</div>\n<div align=\"start\">PtLine(125, 1000, 1000)</div>\n<div align=\"start\">PtLine(150, 1000, 1000)</div>\n<div align=\"start\">PtLine(175, 1000, 1000)</div>\n<div align=\"start\">PtLine(200, 1000, 1000)</div>\n<div align=\"start\">PtLine(225, 1000, 1000)</div>\n<div align=\"start\">PtLine(250, 1000, 1000)</div>\n<div align=\"start\">PtLine(275, 1000, 1000)</div>\n<div align=\"start\">PtLine(300, 1000, 1000)</div>\n<div align=\"start\">PtLine(325, 1000, 1000)</div>\n<div align=\"start\">PtLine(350, 1000, 1000)</div>\n<div align=\"start\">PtLine(375, 1000, 1000)</div>\n<div align=\"start\">PtLine(400, 1000, 1000)</div>\n<div align=\"start\">PtLine(425, 1000, 1000)</div>\n<div align=\"start\">PtLine(450, 1000, 1000)</div>\n<div align=\"start\">};</div>\n<div align=\"start\">thermistortable_1047.h:</div>\n<div align=\"start\">// Pt1000 with 4k7 pullup</div>\n<div align=\"start\">const short temptable_1047[][2] PROGMEM = {</div>\n<div align=\"start\">// only a few values are needed as the curve is very flat</div>\n<div align=\"start\">PtLine(    0, 1000, 4700)</div>\n<div align=\"start\">PtLine(  50, 1000, 4700)</div>\n<div align=\"start\">PtLine(100, 1000, 4700)</div>\n<div align=\"start\">PtLine(150, 1000, 4700)</div>\n<div align=\"start\">PtLine(200, 1000, 4700)</div>\n<div align=\"start\">PtLine(250, 1000, 4700)</div>\n<div align=\"start\">PtLine(300, 1000, 4700)</div>\n<div align=\"start\">PtLine(350, 1000, 4700)</div>\n<div align=\"start\">PtLine(400, 1000, 4700)</div>\n<div align=\"start\">PtLine(450, 1000, 4700)</div>\n<div align=\"start\">};</div>",
+      "variants": [
+        {
+          "id": 43084243665065,
+          "title": "M3",
+          "sku": "43665065",
+          "price": 24.45
+        },
+        {
+          "id": 43084244418729,
+          "title": "M4",
+          "sku": "44418729",
+          "price": 24.45
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7353176653993,
+      "title": "Revo™ Nozzle Tip Socks",
+      "handle": "revo-nozzle-tip-socks",
+      "vendor": "E3D",
+      "product_type": "Silicon Socks",
+      "sku": "REVO-FL-SOCK-PACK",
+      "price": 19,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/revo-nozzle-tip-socks-revo-fl-sock-pack-6603004.jpg?v=1755909520",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/revo-nozzle-tip-socks-revo-fl-sock-pack-7493859.jpg?v=1755909521",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/revo-nozzle-tip-socks-revo-fl-sock-pack-7814967.jpg?v=1755909521",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/revo-nozzle-tip-socks-revo-fl-sock-pack-2807784.jpg?v=1755909521",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/revo-nozzle-tip-socks-revo-fl-sock-pack-3363310.jpg?v=1755909521",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/revo-nozzle-tip-socks-rc-sock-core-blk-3pk-6473869.jpg?v=1755909521"
+      ],
+      "tags": [
+        "3D",
+        "E3D",
+        "E3D REVO"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>Swap your 3D printer’s nozzles in less than 60 seconds without tools or hot tightening – just use your fingers! If you can unscrew a tube of toothpaste, you can use a Revo Nozzle. Just screw one in to any Revo cold side and you’re ready to 3D print.</p>\n<ul>\n<li>Compatible with Revo cold sides, including Revo Six, Revo Micro, and Revo Hemera</li>\n<li>No need to hot tighten – each Revo Nozzle is a factory-assembled nozzle and heatbreak in one</li>\n<li>Works with a Revo HeaterCore for <a title=\" E3D Revo(v7) vs HF Dragon Heatup Comparison \" href=\"https://www.youtube.com/watch?v=pMNrQVcMKIo\">faster heat-ups</a> and greater efficiency than most HotEnds on the market</li>\n<li>Compatible with popular FDM 3D printers, such as Creality, Ender, Prusa, Anet, Biqu, Monoprice, and many more</li>\n</ul>\n<p><strong>Experiment freely.</strong> With nozzle swapping this easy, you’re free to experiment with nozzle sizes you might not have used before. Set your 3D printer up for ultra-fine or ultra-thick extrusion widths in no time at all. Print large objects in less time, or tiny objects with high resolution.</p>\n<p><strong>Frustration-free.</strong> Each Revo Nozzle is a preassembled nozzle and heatbreak in one unit, so there’s no hazardous hot tightening and no chance of incorrect assembly. Say goodbye to frustrating HotEnd leaks and enjoy reliable 3D printing!</p>\n<p><strong>Rapid identification.</strong> Identify nozzle sizes at a glance thanks to a colour-coded silicone sock. Plus, each Revo Nozzle has its size engraved into it with easy-to-read numbers, so there are no confusing identification markers to learn!</p>\n<p><strong>An expanding range.</strong> We’re ready to make RapidChange Nozzles in any size. At launch, we’re introducing brass nozzles in 0.25mm, 0.4mm, 0.6mm and 0.8mm, with many more compatible nozzles to follow later. Wear-resistant and high flow variants are already on our roadmap and will follow over time.</p>\n<p> </p>\n<p> </p>",
+      "variants": [
+        {
+          "id": 41798816596137,
+          "title": "Fully Loaded Sock Pack",
+          "sku": "REVO-FL-SOCK-PACK",
+          "price": 19
+        },
+        {
+          "id": 43030141239465,
+          "title": "Black (Heater Core) (3pc)",
+          "sku": "RC-SOCK-CORE-BLK-3PK",
+          "price": 9.95
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7073925071017,
+      "title": "CR 6 SE / Max Heating Heater Tube L60mm",
+      "handle": "cr-6-max-heating-tube-l60mm",
+      "vendor": "Creality",
+      "product_type": "Heater Cartridge",
+      "sku": "3103010017",
+      "price": 11,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/cr-6-se-max-heating-heater-tube-l60mm-3103010017-4091572.png?v=1755909884"
+      ],
+      "tags": [
+        "3D",
+        "CR-6 Max",
+        "CR-6 SE",
+        "Heater Cartridge"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>Replacement Heater Module for Creality CR6 Max / CR6 SE</p>\n<h3>Heater Specifications:</h3>\n<ul>\n<li>24V 40W，Φ6*20，L60mm with XH2.54-2P Terminal</li>\n</ul>\n<p>Supplier/OEM: Creality</p>\n<p>Heater wire may be white/red depending on the batch.</p>\n<div class=\"tabs-content base-page\">\n<div class=\"adaptive-wrapper\">\n<div class=\"content\">\n<h3>Suitable for:</h3>\n<ul>\n<li>CR6 Max</li>\n<li>CR6 SE</li>\n</ul>\n</div>\n</div>\n</div>",
+      "variants": [
+        {
+          "id": 40805417156777,
+          "title": "Default Title",
+          "sku": "3103010017",
+          "price": 11
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7627140366505,
+      "title": "Micro Swiss NG™ Direct Drive Extruder for Creality Ender 5 / 5 Pro / 5 Plus",
+      "handle": "micro-swiss-ng-extruder-for-creality-ender-5-5-plus",
+      "vendor": "Micro Swiss",
+      "product_type": "Toolhead",
+      "sku": "M3202",
+      "price": 219,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/micro-swiss-ng-direct-drive-extruder-for-creality-ender-5-5-pro-5-plus-m3202-5404072.png?v=1755908881",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/micro-swiss-ng-direct-drive-extruder-for-creality-ender-5-5-pro-5-plus-m3202-5948883.png?v=1755908881",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/micro-swiss-ng-direct-drive-extruder-for-creality-ender-5-5-pro-5-plus-m3202-8719540.png?v=1755908881",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/micro-swiss-ng-direct-drive-extruder-for-creality-ender-5-5-pro-5-plus-m3202-3457052.png?v=1755908882"
+      ],
+      "tags": [
+        "3D",
+        "Direct Drive Extruder",
+        "Ender 5",
+        "Ender 5 Plus",
+        "Extruder",
+        "Micro Swiss"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>Designed specifically for the Ender 5 Series—including Ender 5, Ender 5 Pro, and Ender 5 Plus—this extruder addresses the limitations of existing models to deliver an improved printing performance. Its Bevel Gear design enables the industry's shortest filament path, measuring less than 41mm. Additionally, the innovative motor placement ensures a compact, low-overhang structure, enhancing overall system stiffness and reliability.</p>\n<h3>Features:</h3>\n<ul>\n<li>\n<p>Lightweight</p>\n</li>\n<li>\n<p>3:1 Gear ratio</p>\n</li>\n<li>\n<p>Adaptable to wide range of 3D Printers</p>\n</li>\n<li>\n<p>Hardened steel, precision cut Dual Gear drive</p>\n</li>\n<li>\n<p>Industry shortest, highly constrained, TwinClad XT™ plated filament path</p>\n</li>\n<li>\n<p>Bevel Gear system allows a low overhang extruder mount</p>\n</li>\n<li>\n<p>Integrated with a Micro Swiss All Metal Hotend</p>\n</li>\n</ul>\n<p><em>Made in USA by Micro Swiss</em></p>\n<h3>Support Printers:</h3>\n<ul>\n<li>Ender 5</li>\n<li>Ender 5 Pro</li>\n<li>Ender 5 Plus</li>\n</ul>\n<h3>What is included:</h3>\n<ul>\n<li>1x Master Extruder Assembly </li>\n<li>1x Adaptation plate</li>\n<li>1x Stepper motor</li>\n<li>1x Fan Shroud</li>\n<li>1x Custom extension cable</li>\n<li>1x Hotend assembly</li>\n<li>1x Printed Endstop Bracket</li>\n<li>1x Printed BLTouch bracket</li>\n</ul>\n<h4>Hardware:</h4>\n<ul>\n<li>1x Eccentric nut</li>\n<li>1x M5 x .8 x 30mm CAP SCREW</li>\n<li>1x 5mm ID 10mm OD Washer</li>\n<li>1x M5 x .8 Nylon Lock Nut</li>\n<li>2x M5 x .8 x 20mm Nylon Patch CAP SCREWs</li>\n<li>4x M2.2 x 8mm Thread Forming Screw for Plastic</li>\n<li>4x M3 x 12mm Thread Forming Screw for Plastic</li>\n<li>1x 7mm spanner wrench </li>\n</ul>\n<h3>Documentation: </h3>\n<p>PDF:<br><a title=\"M3202 Micro Swiss NG Install Guide PDF\" rel=\"noopener noreferrer\" href=\"https://cdn.shopify.com/s/files/1/1210/0176/files/M3202_Installation_Instructions.pdf?v=1677619071\" target=\"_blank\">Installation Instructions - PDF</a><br><br>Video Guide:<br><a title=\"M3202 Micro Swiss NG Install Guide Video\" rel=\"noopener\" href=\"https://youtu.be/ralgT1ZyUv8\" target=\"_blank\">By Daniel at ModBot</a></p>\n<p>Resources:</p>\n<ul>\n<li><a rel=\"noopener\" href=\"https://www.thingiverse.com/thing:5358828/files\" title=\"Printable NG shroud and brackets\" target=\"_blank\">Printable shrouds and brackets</a></li>\n<li><a title=\"Micro Swiss NG GCode ESTEP\" rel=\"noopener\" href=\"https://cdn.shopify.com/s/files/1/1210/0176/files/MS_NG_ESTEP400.gcode\" target=\"_blank\">g-code for e-steps</a></li>\n</ul>",
+      "variants": [
+        {
+          "id": 42662617120937,
+          "title": "Default Title",
+          "sku": "M3202",
+          "price": 219
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7843435020457,
+      "title": "Creality Ender 3 V3 SE / KE Main Cable Loom Only",
+      "handle": "creality-ender-3-v3-se-main-cable-loom-only",
+      "vendor": "Creality",
+      "product_type": "Spare Parts",
+      "sku": "22440105",
+      "price": 21.95,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-ender-3-v3-se-ke-main-cable-loom-only-22440105-3848947.png?v=1755908187"
+      ],
+      "tags": [
+        "3D",
+        "Cable",
+        "Ender 3 V3"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p><span size=\"4\">Replacement Main Toolhead Cable Loom for Ender 3 V3 SE / KE<br></span></p>\n<p><span size=\"4\">Creality Part Number: 3103110535</span></p>\n<h3><span size=\"4\">Supported Printer:</span></h3>\n<ul>\n<li>Ender 3 V3 SE</li>\n<li>Ender 3 V3 KE</li>\n</ul>\n<p>Note: Pictured is Ender 3 S1 Cable Loom, wiring may looks slightly different but is suitable for Ender 3 V3 SE / <span size=\"4\">KE</span> Only, other printer may not be compatible. <br></p>\n<p><br></p>\n<p><br></p>",
+      "variants": [
+        {
+          "id": 43407222440105,
+          "title": "Default Title",
+          "sku": "22440105",
+          "price": 21.95
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7843420176553,
+      "title": "Creality Ender 3 V3 SE Toolhead PCB",
+      "handle": "creality-ender-3-v3-se-toolhead-pcb",
+      "vendor": "Creality",
+      "product_type": "Mainboard",
+      "sku": "2101030198",
+      "price": 16.45,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/FullSizeRender_21769ed9-9a69-4aa9-bb26-563e770e4759.heic?v=1706504025",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/IMG-1114.heic?v=1706504025"
+      ],
+      "tags": [
+        "3D",
+        "Creality",
+        "Ender 3 V3",
+        "Mainboard"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>Creality Ender 3 V3 SE Spare replacement toolhead PCB<br></p>\n<p>Creality Part Number: 2101030198</p>\n<h3>Supported Printers</h3>\n<ul>\n<li>Ender 3 V3 SE<br>\n</li>\n</ul>\n<p><br></p>",
+      "variants": [
+        {
+          "id": 43407139438761,
+          "title": "Default Title",
+          "sku": "2101030198",
+          "price": 16.45
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7327641698473,
+      "title": "Extension Cable for Micro Swiss Direct Drive Extruder",
+      "handle": "extension-cable-for-direct-drive-extruder",
+      "vendor": "Micro Swiss",
+      "product_type": "Spare Parts",
+      "sku": "M2702",
+      "price": 14.5,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/extension-cable-for-micro-swiss-direct-drive-extruder-m2702-1042271.png?v=1755909576"
+      ],
+      "tags": [
+        "3D",
+        "Extruder Spares",
+        "Micro Swiss",
+        "Spare"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<div class=\"smart-tabs-content-wrapper\" data-mce-fragment=\"1\">\n<div class=\"smart-tabs-content-block smart-tabs-content-block-active\" id=\"smart-tabs-content-0\" data-mce-fragment=\"1\">\n<p data-mce-fragment=\"1\">This is a spare Extension Cable for Micro Swiss Direct Drive kit for CR-10 / Ender printers. </p>\n<ul data-mce-fragment=\"1\">\n<li data-mce-fragment=\"1\">67cm long</li>\n</ul>\n<p>Only works with original Micro Swiss Direct Drive Extruders:</p>\n<ul data-mce-fragment=\"1\">\n<li data-mce-fragment=\"1\">M2601 - Micro Swiss Direct Drive Extruder for Creality CR-10 / Ender 3 Printers With Hotend</li>\n<li data-mce-fragment=\"1\">M2603 - Micro Swiss Direct Drive Extruder for Creality Ender 5</li>\n<li data-mce-fragment=\"1\">M2605 - Micro Swiss Direct Drive Extruder for Linear Rail System</li>\n<li data-mce-fragment=\"1\">M2607 - Micro Swiss Direct Drive Extruder for ExoSlide System</li>\n</ul>\n<p><span style=\"color: #ff2a00;\">*Will not work with Micro Swiss NG™ Direct Drive Extruder</span></p>\n</div>\n</div>",
+      "variants": [
+        {
+          "id": 41708733005993,
+          "title": "Default Title",
+          "sku": "M2702",
+          "price": 14.5
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 6933086044329,
+      "title": "4x Creality  Aluminium Metal Levelling Nut + Spring For Ender 3 CR10",
+      "handle": "4x-creality-aluminium-metal-levelling-nut-spring-for-ender-3",
+      "vendor": "Creality",
+      "product_type": "Upgrade Kit",
+      "sku": "4007010136",
+      "price": 14.95,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/4x-creality-aluminium-metal-levelling-nut-spring-for-ender-3-cr10-4007010136-5481027.jpg?v=1755909916",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/4x-creality-aluminium-metal-levelling-nut-spring-for-ender-3-cr10-4007010136-1025805.jpg?v=1755909916",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/4x-creality-aluminium-metal-levelling-nut-spring-for-ender-3-cr10-4007010136-6736493.jpg?v=1755909916",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/4x-creality-aluminium-metal-levelling-nut-spring-for-ender-3-cr10-4007010136-7139880.jpg?v=1755909916",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/4x-creality-aluminium-metal-levelling-nut-spring-for-ender-3-cr10-4007010136-3104811.jpg?v=1755909916",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/4x-creality-aluminium-metal-levelling-nut-spring-for-ender-3-cr10-4007010136-1087636.jpg?v=1755909917",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/4x-creality-aluminium-metal-levelling-nut-spring-for-ender-3-cr10-4007010136-5624236.jpg?v=1755909917"
+      ],
+      "tags": [
+        "3D",
+        "Bed Accessories",
+        "CR 10 Series",
+        "Ender 3 Series",
+        "Ender 3 v2",
+        "Ender 5 Plus",
+        "Ender 5 Series",
+        "Ender 6"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>These 4 Creality Large Red Aluminium Metal Levelling Nuts + Stiff Springs, to replace worn spring or stock plastic adjustment knobs.</p>\n<h3>Applicable Printers: </h3>\n<ul>\n<li>Ender 3 <span data-mce-fragment=\"1\">Series</span>\n</li>\n<li>Ender 5 <span data-mce-fragment=\"1\">Series</span>\n</li>\n<li>CR10 Series</li>\n<li>Suitable for printer using M4 fasteners to retain/adjust the bed. </li>\n</ul>\n<h3>What is Include: </h3>\n<ul>\n<li>4x Red Aluminium Alloy Leveling Nut</li>\n<li>4x Stiff Spring (25mm Height Spring)</li>\n</ul>\n<p> </p>",
+      "variants": [
+        {
+          "id": 40303046525097,
+          "title": "Default Title",
+          "sku": "4007010136",
+          "price": 14.95
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 6561698381993,
+      "title": "Micro Swiss M2 Hardened High Speed Steel Nozzle - MK8 (CR10 / Ender / Tornado / MakerBot)",
+      "handle": "m2-hardened-steel-nozzle-mk8-cr10-ender-tornado-makerbot",
+      "vendor": "Micro Swiss",
+      "product_type": "Nozzle",
+      "sku": "M2500-04",
+      "price": 36,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/micro-swiss-m2-hardened-high-speed-steel-nozzle-mk8-cr10-ender-tornado-makerbot-m2500-04-1078624.jpg?v=1755910011",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/micro-swiss-m2-hardened-high-speed-steel-nozzle-mk8-cr10-ender-tornado-makerbot-m2500-04-1789073.jpg?v=1755910011",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/micro-swiss-m2-hardened-high-speed-steel-nozzle-mk8-cr10-ender-tornado-makerbot-m2500-04-7116710.png?v=1755910011",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/micro-swiss-m2-hardened-high-speed-steel-nozzle-mk8-cr10-ender-tornado-makerbot-m2500-04-1657744.png?v=1755910011",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/micro-swiss-m2-hardened-high-speed-steel-nozzle-mk8-cr10-ender-tornado-makerbot-m2500-04-4021077.jpg?v=1755910011",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/micro-swiss-m2-hardened-high-speed-steel-nozzle-mk8-cr10-ender-tornado-makerbot-m2500-06-1162660.jpg?v=1755910012",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/micro-swiss-m2-hardened-high-speed-steel-nozzle-mk8-cr10-ender-tornado-makerbot-m2500-08-8150201.jpg?v=1755910012",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/micro-swiss-m2-hardened-high-speed-steel-nozzle-mk8-cr10-ender-tornado-makerbot-m2500-08-1221897.jpg?v=1755910012"
+      ],
+      "tags": [
+        "3D",
+        "Creality",
+        "M2 High",
+        "Micro Swiss",
+        "MK8",
+        "Nozzle"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p><span>The M2 nozzles are designed for high temperatures, abrasion resistance and with superior non-stick properties. Nozzles are machined from M2 high speed steel, hardened and tempered to 68 HRC, plated with Electroless Nickel Plating, and coated with WS2 coating.</span></p>\n<p>The M2 nozzle can operate up to <strong>450C</strong> without losing the hardness.</p>\n<p><em>Made in USA by Micro Swiss</em></p>\n<h3>Nozzle Specification: </h3>\n<ul>\n<li>\n<strong><span>M2 Hardened High Speed Steel: </span></strong><span>68 HRC</span>\n</li>\n<li><span><strong>Plating: </strong>Electroless Nickel</span></li>\n<li><span><strong>Plating Hardness: </strong>70-73 HRC</span></li>\n<li>\n<span><strong>Coating: </strong></span><span>WS2 coating</span>\n</li>\n<li><span><strong>Coefficient of friction: </strong>0.035</span></li>\n<li>\n<strong>Orifice size available:</strong> .4mm, .6mm, .8mm</li>\n</ul>\n<h3>Item Include:</h3>\n<ul>\n<li>1 x M2 Hardened High Speed Steel Nozzle for MK8 </li>\n</ul>\n<h3>Dimension:</h3>\n<div id=\"smart-tabs-content-2\" class=\"smart-tabs-content-block smart-tabs-content-block-active\">\n<ul>\n<li>Threads: M6x1.0</li>\n<li>Thread length: 5mm</li>\n<li>Overall length: 13mm</li>\n</ul>\n<h3>Supported Printers: </h3>\n<div id=\"smart-tabs-content-1\" class=\"smart-tabs-content-block smart-tabs-content-block-active\">\n<ul>\n<li>Alfawise U20</li>\n<li>Alfawise U30</li>\n<li>Anet A8</li>\n<li>BQ Prusa I3 Hephestos</li>\n<li>BQ Witbox</li>\n<li>CraftBot 2</li>\n<li>CraftBot PLUS</li>\n<li>CR-10</li>\n<li>CR-10 V2</li>\n<li>CR-10 MINI</li>\n<li>CR-10-S4</li>\n<li>CR-10-S5</li>\n<li>CR-10S</li>\n<li>Ender 2</li>\n<li>Ender 3</li>\n<li>Ender 3 V2</li>\n<li>Ender 3 Pro</li>\n<li>Ender 3 Max</li>\n<li>Ender 5</li>\n<li>Ender 5 Plus</li>\n<li>Ender 5 Pro</li>\n<li>Ender 6</li>\n<li>Flsun QQ-S</li>\n<li>Geeetech A10, A20, A30</li>\n<li>MakerBot Replicator 1</li>\n<li>MakerBot Replicator 2</li>\n<li>MakerBot Replicator 2x</li>\n<li>MakerBot Replicator 5th Gen</li>\n<li>MakerBot Replicator Mini</li>\n<li>MakerBot Replicator z18</li>\n<li>Micro Swiss All Metal Hotend for CR-10 (M2583-04)</li>\n<li>Micro Swiss All Metal Hotend for CR-10s Pro (M2591-04)</li>\n<li>Snapmaker 3-in-1 3D Printer</li>\n<li>Tevo Tornado</li>\n<li>TronXY X5S</li>\n</ul>\n</div>\n</div>\n<p> </p>",
+      "variants": [
+        {
+          "id": 39322701234345,
+          "title": "0.4mm",
+          "sku": "M2500-04",
+          "price": 36
+        },
+        {
+          "id": 39322701267113,
+          "title": "0.6mm",
+          "sku": "M2500-06",
+          "price": 36
+        },
+        {
+          "id": 40587837800617,
+          "title": "0.8mm",
+          "sku": "M2500-08",
+          "price": 36
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 8291459236009,
+      "title": "Creality K1 Series Replacement Hotend Cover",
+      "handle": "creality-k1-series-replacement-hotend-cover",
+      "vendor": "Creality",
+      "product_type": "Spare Parts",
+      "sku": "3203010968",
+      "price": 9.95,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-series-replacement-hotend-cover-3203010968-6091302.jpg?v=1755907360",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-series-replacement-hotend-cover-3203010968-1532086.jpg?v=1755907360"
+      ],
+      "tags": [
+        "3D",
+        "Creality",
+        "Fan",
+        "K1"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>Replacement hot end/tool head cover for K1 series 3d printers. (SKU: 3203010968)</p>\n<h3>Compatibility:</h3>\n<ul>\n<li>Creality K1 Max<br>\n</li>\n<li>Creality K1</li>\n<li>Creality K1C<br>\n</li>\n</ul>\n<p>Not suitable for Ender 3 V3 / V3 Plus, those sold here in a <a title=\"Creality Ender 3 V3 / V3 Plus Replacement Hotend Cover\" href=\"https://store.dremc.com.au/products/creality-ender-3-v3-v3-plus-replacement-hotend-cover\"><span class=\"product-meta__sku\"><span class=\"product-meta__sku-number\">3203011020 </span></span>separate listing</a>. </p>\n<h3>What is Included: </h3>\n<ul>\n<li>1x Hotend/Tool head cover</li>\n</ul>\n<h3>Documentation: </h3>\n<p>Note: only include fan cover, you need re-use existing fan duct, fan or other accessories such as fans. </p>\n<p>Fan Duct - sold Separately: <a href=\"https://store.dremc.com.au/products/creality-k1-series-stock-printed-fan-duct\" title=\"K1 Series Fan Duct Printable\">https://store.dremc.com.au/products/creality-k1-series-stock-printed-fan-duct</a></p>\n<p>DIY Printable Fan Ducts: <a rel=\"noopener\" title=\"Creality K1 Fan Duct CAD\" href=\"https://www.printables.com/model/682577-creality-k1-fan-duct-cad\" target=\"_blank\">https://www.printables.com/model/682577-creality-k1-fan-duct-cad</a></p>",
+      "variants": [
+        {
+          "id": 44754637914281,
+          "title": "Default Title",
+          "sku": "3203010968",
+          "price": 9.95
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7879528186025,
+      "title": "Bigtreetech Eddy Sensor",
+      "handle": "btt-eddy-sensor",
+      "vendor": "BIGTREETECH",
+      "product_type": "Bed Leveling",
+      "sku": "1060000663",
+      "price": 29.95,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/bigtreetech-eddy-sensor-1060000663-8034745.png?v=1755908039",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/bigtreetech-eddy-sensor-1060000663-1900648.png?v=1755908039",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/bigtreetech-eddy-sensor-1060000663-3849528.png?v=1755908039",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/bigtreetech-eddy-sensor-1060000663-7269473.png?v=1755908039",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/bigtreetech-eddy-sensor-1060000663-6470372.png?v=1755908039",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/bigtreetech-eddy-sensor-1060000663-3264258.png?v=1755908040",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/bigtreetech-eddy-sensor-1060000663-6132996.png?v=1755908040",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/bigtreetech-eddy-sensor-1060000663-1370842.png?v=1755908040",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/bigtreetech-eddy-sensor-1060000663-9467820.png?v=1755908040",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/bigtreetech-eddy-sensor-1060000663-3843795.png?v=1755908041"
+      ],
+      "tags": [
+        "3D",
+        "Probe"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<ul>\n<li>𝐇𝐢𝐠𝐡 𝐀𝐜𝐜𝐮𝐫𝐚𝐜𝐲: Offers meticulous measurements with an accuracy of 0.0005mm.</li>\n<li>𝐇𝐢𝐠𝐡-𝐒𝐩𝐞𝐞𝐝 𝐋𝐞𝐯𝐞𝐥𝐢𝐧𝐠: Completes bed leveling in just 20 seconds on a typical size printer.</li>\n<li>𝐅𝐞𝐚𝐭𝐡𝐞𝐫-𝐋𝐢𝐠𝐡𝐭 &amp; 𝐂𝐨𝐦𝐩𝐚𝐜𝐭: Lightweight at 6g, reducing the influence of motion inertia, while its compact size ensures broad compatibility.</li>\n<li>𝐓𝐞𝐦𝐩𝐞𝐫𝐚𝐭𝐮𝐫𝐞 𝐂𝐨𝐦𝐩𝐞𝐧𝐬𝐚𝐭𝐢𝐨𝐧: Integrates with Klipper's temperature compensation feature to boost leveling precision and avoid temperature drift. (𝐍𝐨𝐭𝐞: Currently, only Eddy V1.0 supports temperature compensation, not Eddy Coil.)</li>\n<li>What sets Eddy apart is its custom-engineered casing, designed to eliminate the worry of reserving space for installation! Specifically, it's perfectly sized for tool-free installation on the 𝐎𝐦𝐫𝐨𝐧 𝐓𝐋-𝐐𝟓𝐌𝐂𝟐 &amp; 𝐏𝐋-𝟎𝟖𝐍 𝐦𝐨𝐮𝐧𝐭𝐬 of the 𝐕𝐨𝐫𝐨𝐧 𝐒𝐭𝐞𝐚𝐥𝐭𝐡𝐛𝐮𝐫𝐧𝐞𝐫.</li>\n<li>Max operating condition: <strong>&lt;60c</strong><br>\n</li>\n</ul>\n<h3>Documentation: <a rel=\"noopener\" href=\"https://github.com/bigtreetech/Eddy\" target=\"_blank\"></a>\n</h3>\n<p><a rel=\"noopener\" href=\"https://github.com/bigtreetech/Eddy\" target=\"_blank\">https://github.com/bigtreetech/Eddy</a></p>\n<h3 dir=\"auto\">Compatible Products:</h3>\n<ul dir=\"auto\">\n<li>Eddy V1.0 + BIGTREETECH Pi 2 / Pi</li>\n<li>Eddy V1.0 + Manta M8P + CB2 / CB1</li>\n<li>Eddy V1.0 + Manta E3EZ + CB2 / CB1</li>\n<li>Eddy V1.0 + Octopus MaxEZ + BIGTREETECH Pi 2 / Pi</li>\n<li>Eddy Coil + EBB 36 CAN</li>\n<li>Eddy Coil + EBB 42 CAN</li>\n</ul>\n<p>𝐍𝐨𝐭𝐞: The spring steel sheet with a magnetic sticker heatbed solution works well with Eddy series, however it is essential to avoid interference from standalone magnets, such as those used in circular magnet heatbed configurations.</p>",
+      "variants": [
+        {
+          "id": 43525990482089,
+          "title": "Eddy Coil",
+          "sku": "1060000663",
+          "price": 29.95
+        },
+        {
+          "id": 44902691504297,
+          "title": "Eddy Duo (USB or CAN)",
+          "sku": "1060000710",
+          "price": 39.95
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7740536127657,
+      "title": "Creality K1 Black Texture PEI  Build Plate 235*235mm",
+      "handle": "creality-k1-black-smooth-pei-build-plate-kit-235-235mm",
+      "vendor": "Creality",
+      "product_type": "Build Surface",
+      "sku": "4004090102",
+      "price": 35.95,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-black-texture-pei-build-plate-235235mm-4004090102-6320576.jpg?v=1755908587",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-black-texture-pei-build-plate-235235mm-4004090102-3534409.jpg?v=1755908587",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-black-texture-pei-build-plate-235235mm-4004090102-9625388.jpg?v=1755908588",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-black-texture-pei-build-plate-235235mm-4004090102-7082866.jpg?v=1755908587",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-black-texture-pei-build-plate-235235mm-4004090102-3766668.jpg?v=1755908588",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-black-texture-pei-build-plate-235235mm-4004090102-6878578.jpg?v=1755908588",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-black-texture-pei-build-plate-235235mm-4004090102-2408930.jpg?v=1755908589",
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/files/creality-k1-black-texture-pei-build-plate-235235mm-4004090102-4139725.jpg?v=1755908588"
+      ],
+      "tags": [
+        "3D",
+        "Creality",
+        "Ender 3 S1",
+        "Ender 3 S1 Pro",
+        "Ender 3 Series",
+        "Ender 5",
+        "Ender 5 S1",
+        "K1",
+        "PEI Plate"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p>The Creality K1 Black Texture PEI Build Plate (235 x 235mm) provides a durable, heat-resistant surface ideal for PETG, TPU, ABS, ASA (with enclosure), and PLA (may need adhesive or brim). For PLA, using the PC side is recommended.</p>\n<h3>Features:</h3>\n<ul>\n<li>Textured Surface (PC and PEI) (PEI is rougher textured, while the PC is lighter textured)<br>\n</li>\n<li>PLA prints with small contact area may require brim on textured PEI.</li>\n<li>No adhesive is required for PETG on textured PEI</li>\n<li>First layer may require more squished on textured PEI compare to PC textured side</li>\n</ul>\n<h3>What is Included:</h3>\n<ul>\n<li>1x Creality Double PEI/PC Texture PEI </li>\n<li>1x Spare Magnetic Sheet </li>\n</ul>\n<p>Note 1: one side is texture PEI while other is PC texture sticker </p>\n<p>Note 2: If you have issues with adhesive use bed adhesive on PEI, some filament will require <a href=\"https://store.dremc.com.au/collections/magigoo\">bed adhesive</a>. If un-sure please reach out to support. <br></p>\n<p>Note 3: As always setting up new build surface, re-configure your z off-set and re-level your bed. (ie when you switch between smooth/texture). </p>\n<h3>Printer Compatibility:</h3>\n<ul>\n<li>Ender 3 S1</li>\n<li>Ender 3 S1 Pro</li>\n<li>Ender 5 S1</li>\n<li>Creality K1</li>\n<li>Ender 3</li>\n<li>Ender 3 pro</li>\n<li>Ender 3s</li>\n<li>Ender 5</li>\n<li>CR20 PRO/CR20</li>\n<li>Ender 5 Pro</li>\n<li>Other Ender 3 Clone but we cannot confirm compatible on every clone that release every couple of months. Please measure your stock bed and buy according to your existing bed size.</li>\n</ul>",
+      "variants": [
+        {
+          "id": 43045871747241,
+          "title": "Default Title",
+          "sku": "4004090102",
+          "price": 35.95
+        }
+      ],
+      "mapped_category": "accessories"
+    },
+    {
+      "dremc_id": 7612803023017,
+      "title": "Creality CR Touch Auto Bed Probe Only Spare",
+      "handle": "creality-cr-touch-auto-bed-probe-only-spare",
+      "vendor": "Creality",
+      "product_type": "Bed Leveling",
+      "sku": "4001010034",
+      "price": 49.95,
+      "compare_at_price": null,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0541/6638/8905/products/creality-cr-touch-auto-bed-probe-only-spare-4001010034-1967335.jpg?v=1755908879"
+      ],
+      "tags": [
+        "3D",
+        "Creality",
+        "Probe"
+      ],
+      "collection_handles": [
+        "3d-printer-accessories-and-consumable"
+      ],
+      "body_html": "<p><strong>Note: </strong>This kit only include CR Touch Probe only, does not include any instructions/manual or mounting bracket. This spare is design for Creality Neo replacement probe. <strong></strong></p>\n<h3>What is Included:</h3>\n<ul>\n<li>1x Genuine Creality CR-Touch Sensor</li>\n<li>2x Mounting Screws</li>\n</ul>\n<h3>Features: </h3>\n<ul>\n<li>Multi-point detection Smart compensation;</li>\n<li>High precision Low power consumption</li>\n</ul>\n<h3>Documentation:</h3>\n<p>This is best suited for advance users or replacing worn unit or for Hero Me Gen 6 system where mount is printable.<strong><br></strong></p>\n<p><strong>More Info: </strong><a href=\"https://support.dremc.com.au/support/solutions/articles/51000230110-cr-touch-install-guide\" title=\"CR Touch Install Guide\">https://support.dremc.com.au/support/solutions/articles/51000230110-cr-touch-install-guide</a><strong><a href=\"https://support.dremc.com.au/support/solutions/articles/51000230110-cr-touch-install-guide\" title=\"CR Touch Install Guide\"></a></strong></p>\n<h3>Compatible Printers:</h3>\n<div class=\"tabs-content base-page\">\n<div class=\"adaptive-wrapper\">\n<div class=\"content\">\n<div>\n<div data-zone-id=\"0\" data-line-index=\"0\" data-line=\"true\">\n<ul>\n<li>Ender-5 S1</li>\n<li>Ender-3 Max Neo</li>\n<li>Ender-3 Neo</li>\n<li>Ender-3 S1 Plus</li>\n<li>Ender-3 S1 Pro</li>\n<li>Ender-3 S1</li>\n<li>Ender-3 V2 Neo</li>\n<li>CR-10 Smart Pro</li>\n<li>CR-200B Pro</li>\n<li>Sermoon V2</li>\n<li>CR-M4</li>\n<li>CR-10 SE</li>\n<li>Ender 3 V3 SE</li>\n<li>Ender 3 V3 KE</li>\n</ul>\n</div>\n</div>\n</div>\n</div>\n</div>",
+      "variants": [
+        {
+          "id": 42616569692329,
+          "title": "Default Title",
+          "sku": "4001010034",
+          "price": 49.95
+        }
+      ],
+      "mapped_category": "accessories"
+    }
+  ]
+}

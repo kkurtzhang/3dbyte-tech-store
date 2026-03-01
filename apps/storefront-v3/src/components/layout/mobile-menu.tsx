@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import { Menu, Search, User } from "lucide-react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import { Menu, Search, User } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet"
-import { Separator } from "@/components/ui/separator"
-import { ThemeToggle } from "./theme-toggle"
+} from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
+import { ThemeToggle } from "./theme-toggle";
 
 /**
  * MobileMenu component for navigation on mobile devices.
@@ -39,16 +39,22 @@ export function MobileMenu() {
           {/* Main Navigation Links */}
           <div className="flex flex-col space-y-3">
             <Link
-              href="/products"
+              href="/shop"
               className="text-sm font-medium transition-colors hover:text-primary"
             >
-              Products
+              Shop
             </Link>
             <Link
-              href="/resources"
+              href="/brands"
               className="text-sm font-medium transition-colors hover:text-primary"
             >
-              Resources
+              Brands
+            </Link>
+            <Link
+              href="/blog"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Blog
             </Link>
           </div>
 
@@ -82,5 +88,5 @@ export function MobileMenu() {
         </nav>
       </SheetContent>
     </Sheet>
-  )
+  );
 }

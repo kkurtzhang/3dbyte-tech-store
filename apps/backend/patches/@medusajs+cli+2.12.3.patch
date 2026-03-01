@@ -1,0 +1,13 @@
+diff --git a/node_modules/@medusajs/cli/cli.js b/node_modules/@medusajs/cli/cli.js
+index c2cf966..71fa670 100755
+--- a/node_modules/@medusajs/cli/cli.js
++++ b/node_modules/@medusajs/cli/cli.js
+@@ -2,7 +2,7 @@
+ 
+ try {
+   require("ts-node").register({})
+-  require("tsconfig-paths").register({})
++  require("tsconfig-paths").register()
+ } catch (e) {
+   const isProduction = process.env.NODE_ENV === "production"
+   if (!isProduction) {
