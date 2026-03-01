@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_homepage_feature_tags",
+  "info": {
+    "displayName": "FeatureTag"
+  },
+  "options": {},
+  "attributes": {
+    "Text": {
+      "type": "string",
+      "required": true
+    }
+  }
+}
