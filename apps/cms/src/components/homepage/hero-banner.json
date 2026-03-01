@@ -6,6 +6,10 @@
   },
   "options": {},
   "attributes": {
+    "Eyebrow": {
+      "type": "string",
+      "required": false
+    },
     "Headline": {
       "type": "string",
       "required": true
@@ -19,6 +23,18 @@
       "type": "component",
       "repeatable": false,
       "component": "homepage.cta"
+    },
+    "SecondaryCTA": {
+      "displayName": "SecondaryCTA",
+      "type": "component",
+      "repeatable": false,
+      "component": "homepage.cta"
+    },
+    "FeatureTags": {
+      "displayName": "FeatureTags",
+      "type": "component",
+      "repeatable": true,
+      "component": "homepage.feature-tag"
     },
     "Image": {
       "allowedTypes": [

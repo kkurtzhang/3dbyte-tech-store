@@ -21,6 +21,19 @@
       "type": "component",
       "repeatable": false,
       "component": "homepage.hero-banner"
+    },
+    "QuickLinksHeading": {
+      "type": "string"
+    },
+    "QuickLinks": {
+      "type": "component",
+      "repeatable": true,
+      "component": "homepage.cta"
+    },
+    "TrustStats": {
+      "type": "component",
+      "repeatable": true,
+      "component": "homepage.stat"
     }
   }
 }
