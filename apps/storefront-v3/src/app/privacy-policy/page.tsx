@@ -8,6 +8,10 @@ export const metadata: Metadata = {
 
 export const revalidate = 3600;
 
+function stripLeadingMarkdownH2(content: string): string {
+  return content.replace(/^\s*##\s+Privacy Policy\s*\n+/i, "");
+}
+
 const FALLBACK_CONTENT = `
 ## Privacy Policy
 
@@ -53,7 +57,7 @@ export default async function PrivacyPolicyPage() {
     const { getContentPage } = await import("@/lib/strapi/content");
     const response = await getContentPage("privacy-policy");
     if (response?.data?.PageContent) {
-      pageContent = response.data.PageContent;
+      pageContent = stripLeadingMarkdownH2(response.data.PageContent);
     }
   } catch {
   }

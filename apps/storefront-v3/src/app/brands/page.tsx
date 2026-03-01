@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { searchBrands } from "@/lib/search/brands";
+import { getBrandDescriptions } from "@/lib/strapi/content";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata: Metadata = {
@@ -9,7 +10,23 @@ export const metadata: Metadata = {
 };
 
 export default async function BrandsPage() {
-  const { hits: brands } = await searchBrands({ limit: 100 });
+  const [{ hits: brands }, brandDescriptionsResponse] = await Promise.all([
+    searchBrands({ limit: 100 }),
+    getBrandDescriptions().catch(() => ({ data: [] })),
+  ]);
+
+  const descriptionByHandle = new Map(
+    brandDescriptionsResponse.data.map((entry) => [
+      entry.brand_handle,
+      entry.rich_description || entry.seo_description || "",
+    ])
+  );
+
+  const summarize = (html: string) =>
+    html
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
 
   return (
     <div className="container py-8 md:py-12">
@@ -34,8 +51,8 @@ export default async function BrandsPage() {
                     {brand.description}
                   </p>
                 ) : (
-                  <p className="text-sm text-muted-foreground italic">
-                    No description available.
+                  <p className="text-sm text-muted-foreground line-clamp-3">
+                    {summarize(descriptionByHandle.get(brand.handle) || "Premium 3D printing products and accessories.")}
                   </p>
                 )}
               </CardContent>

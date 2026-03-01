@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { 
@@ -18,6 +19,8 @@ export default function Error({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  const router = useRouter()
+
   useEffect(() => {
     // Log the error to an error reporting service
     console.error("Error:", error)
@@ -104,13 +107,14 @@ export default function Error({
 
         {/* Back Link */}
         <div className="mt-10 text-center">
-          <Link 
-            href="javascript:history.back()" 
+          <button
+            type="button"
+            onClick={() => router.back()}
             className="text-sm text-muted-foreground hover:text-primary font-medium inline-flex items-center gap-1 transition-colors"
           >
             <ArrowLeft className="h-3 w-3" />
             Go back to previous page
-          </Link>
+          </button>
         </div>
       </div>
     </div>

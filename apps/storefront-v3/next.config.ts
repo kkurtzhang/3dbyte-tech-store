@@ -1,7 +1,5 @@
 import type { NextConfig } from "next";
 import createMDX from "@next/mdx";
-import rehypeHighlight from "rehype-highlight";
-import remarkGfm from "remark-gfm";
 
 const imageHostnames = [
   process.env.NEXT_PUBLIC_SPACE_DOMAIN,
@@ -47,6 +45,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "picsum.photos",
       },
+      {
+        protocol: "https",
+        hostname: "cdn.shopify.com",
+      },
       ...imageHostnames.map((hostname) => ({
         protocol: "https" as const,
         hostname,
@@ -58,8 +60,8 @@ const nextConfig: NextConfig = {
 const withMDX = createMDX({
   extension: /\.mdx?$/,
   options: {
-    rehypePlugins: [rehypeHighlight],
-    remarkPlugins: [remarkGfm],
+    rehypePlugins: ["rehype-highlight"],
+    remarkPlugins: ["remark-gfm"],
   },
 });
 

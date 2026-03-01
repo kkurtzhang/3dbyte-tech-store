@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Package, MapPin, CreditCard, ArrowRight, AlertCircle, CheckCircle } from "lucide-react"
 import { lookupOrder } from "@/app/actions/track-order"
@@ -360,9 +361,9 @@ function LookupForm() {
 
       <p className="text-center text-sm text-muted-foreground mt-6">
         Need help?{" "}
-        <a href="/contact" className="text-primary hover:underline">
+        <Link href="/contact" className="text-primary hover:underline">
           Contact us
-        </a>
+        </Link>
       </p>
     </div>
   )

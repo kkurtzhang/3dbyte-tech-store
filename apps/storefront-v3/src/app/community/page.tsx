@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import {
   MessageCircle,
   Users,
@@ -15,6 +16,9 @@ export const metadata: Metadata = {
 };
 
 export default function CommunityPage() {
+  const discordUrl = "https://discord.gg/3dbyte";
+  const githubUrl = "https://github.com/3dbyte-tech";
+
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
@@ -30,14 +34,16 @@ export default function CommunityPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="#discord"
+              href={discordUrl}
+              target="_blank"
+              rel="noreferrer"
               className="inline-flex items-center justify-center px-8 py-4 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold rounded-lg transition-all duration-200"
             >
               <MessageCircle className="w-5 h-5 mr-2" />
               Join Discord
             </a>
-            <a 
-              href="#features" 
+            <a
+              href="#features"
               className="inline-flex items-center justify-center px-8 py-4 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-all duration-200 border border-slate-600"
             >
               Explore Community
@@ -67,25 +73,27 @@ export default function CommunityPage() {
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-3">Discord Server</h3>
               <p className="text-slate-600 mb-6">
-                Real-time conversations with over 10,000 members. Get help, share prints, 
-                and chat with fellow enthusiasts in topic-specific channels.
+                Real-time conversations with makers and engineers. Get help, share prints,
+                and discuss upgrades, slicer settings, and tuning.
               </p>
               <ul className="space-y-3 mb-6">
                 <li className="flex items-center text-slate-700">
                   <Star className="w-4 h-4 text-indigo-500 mr-2" />
-                  10,000+ active members
+                  Active maker channels
                 </li>
                 <li className="flex items-center text-slate-700">
                   <Star className="w-4 h-4 text-indigo-500 mr-2" />
-                  50+ topic channels
+                  Build logs and showcase threads
                 </li>
                 <li className="flex items-center text-slate-700">
                   <Star className="w-4 h-4 text-indigo-500 mr-2" />
-                  Live help from experts
+                  Fast troubleshooting support
                 </li>
               </ul>
               <a 
-                href="#" 
+                href={discordUrl}
+                target="_blank"
+                rel="noreferrer"
                 className="inline-flex items-center text-indigo-600 font-semibold hover:text-indigo-700 transition-colors"
               >
                 Join Server <ArrowRight className="w-4 h-4 ml-1" />
@@ -99,29 +107,29 @@ export default function CommunityPage() {
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-3">Community Forum</h3>
               <p className="text-slate-600 mb-6">
-                Deep-dive discussions, tutorials, and detailed troubleshooting. 
-                Searchable archives mean answers are always just a click away.
+                Long-form discussions, tuning notes, and printable project write-ups
+                from the 3DByte ecosystem.
               </p>
               <ul className="space-y-3 mb-6">
                 <li className="flex items-center text-slate-700">
                   <Star className="w-4 h-4 text-emerald-500 mr-2" />
-                  25,000+ discussions
+                  Setup and tuning guides
                 </li>
                 <li className="flex items-center text-slate-700">
                   <Star className="w-4 h-4 text-emerald-500 mr-2" />
-                  Expert tutorials
+                  Curated how-to content
                 </li>
                 <li className="flex items-center text-slate-700">
                   <Star className="w-4 h-4 text-emerald-500 mr-2" />
-                  Print gallery
+                  Community build showcases
                 </li>
               </ul>
-              <a 
-                href="#" 
+              <Link
+                href="/guides"
                 className="inline-flex items-center text-emerald-600 font-semibold hover:text-emerald-700 transition-colors"
               >
                 Browse Forum <ArrowRight className="w-4 h-4 ml-1" />
-              </a>
+              </Link>
             </div>
 
             {/* Events */}
@@ -131,8 +139,8 @@ export default function CommunityPage() {
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-3">Events & Meetups</h3>
               <p className="text-slate-600 mb-6">
-                Virtual and in-person events ranging from print challenges to 
-                maker meetups. Connect, compete, and celebrate with your community.
+                Product launches, calibration sessions, and community challenges.
+                Join live events and stay informed through updates.
               </p>
               <ul className="space-y-3 mb-6">
                 <li className="flex items-center text-slate-700">
@@ -145,15 +153,15 @@ export default function CommunityPage() {
                 </li>
                 <li className="flex items-center text-slate-700">
                   <Star className="w-4 h-4 text-amber-500 mr-2" />
-                  Annual conference
+                  Product update streams
                 </li>
               </ul>
-              <a 
-                href="#" 
+              <Link
+                href="/blog"
                 className="inline-flex items-center text-amber-600 font-semibold hover:text-amber-700 transition-colors"
               >
                 View Events <ArrowRight className="w-4 h-4 ml-1" />
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -167,7 +175,7 @@ export default function CommunityPage() {
               What Our Members Say
             </h2>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Join thousands of satisfied members who've found their tribe in our community.
+              Feedback from makers using 3DByte components in real projects.
             </p>
           </div>
 
@@ -262,14 +270,18 @@ export default function CommunityPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="#"
+              href={discordUrl}
+              target="_blank"
+              rel="noreferrer"
               className="inline-flex items-center justify-center px-8 py-4 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold rounded-lg transition-all duration-200"
             >
               <MessageCircle className="w-5 h-5 mr-2" />
               Join Discord Now
             </a>
-            <a 
-              href="#" 
+            <a
+              href={githubUrl}
+              target="_blank"
+              rel="noreferrer"
               className="inline-flex items-center justify-center px-8 py-4 bg-transparent hover:bg-slate-800 text-white font-semibold rounded-lg transition-all duration-200 border border-slate-600"
             >
               <Calendar className="w-5 h-5 mr-2" />

@@ -40,7 +40,7 @@ export default async function AboutPage() {
         <div className="container">
           <div className="mx-auto max-w-4xl text-center">
             <p className="mb-4 font-mono text-sm text-primary">
-              {`{ ABOUT_3DBYTE }`}
+              ABOUT 3DBYTE
             </p>
             <h1 className="mb-6 text-4xl font-bold tracking-tight md:text-6xl lg:leading-[1.1]">
               Engineering the future of additive manufacturing,{" "}
@@ -70,7 +70,7 @@ export default async function AboutPage() {
         <section>
           <div className="mb-12 text-center">
             <p className="mb-2 font-mono text-sm text-primary">
-              {`<TIMELINE />`}
+              TIMELINE
             </p>
             <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
               Our Story
@@ -116,7 +116,7 @@ export default async function AboutPage() {
         <section>
           <div className="mb-12 text-center">
             <p className="mb-2 font-mono text-sm text-primary">
-              {`<TEAM />`}
+              TEAM
             </p>
             <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
               Meet Our Team
@@ -160,7 +160,7 @@ export default async function AboutPage() {
         <section>
           <div className="mb-12 text-center">
             <p className="mb-2 font-mono text-sm text-primary">
-              {`<VALUES />`}
+              VALUES
             </p>
             <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
               Our Values

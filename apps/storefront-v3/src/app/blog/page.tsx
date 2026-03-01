@@ -32,6 +32,13 @@ export default async function BlogPage({
   } catch {
   }
 
+  const normalizeCategory = (title: string) => {
+    const lower = title.trim().toLowerCase();
+    if (lower === "all post" || lower === "all posts") return "All Posts";
+    if (lower === "ranking") return "Featured";
+    return title;
+  };
+
   return (
     <div className="container py-12 md:py-16">
       <div className="mb-12">
@@ -63,7 +70,7 @@ export default async function BlogPage({
                     category === cat.Slug ? "bg-primary text-primary-foreground" : "hover:bg-muted"
                   }`}
                 >
-                  {cat.Title}
+                  {normalizeCategory(cat.Title)}
                 </Link>
               ))}
             </div>
@@ -123,7 +130,7 @@ export default async function BlogPage({
                       </time>
                       {post.Categories?.[0] && (
                         <span className="px-2 py-1 rounded-full bg-muted text-xs">
-                          {post.Categories[0].Title}
+                          {normalizeCategory(post.Categories[0].Title)}
                         </span>
                       )}
                     </div>

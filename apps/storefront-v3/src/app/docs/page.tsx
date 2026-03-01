@@ -74,8 +74,9 @@ export default function DocsPage() {
 
             <Alert>
               <AlertDescription>
-                <strong>Note:</strong> All API requests require authentication.
-                Sign up for an API key in your account settings.
+                <strong>Note:</strong> Storefront requests require your Medusa
+                publishable key. Customer endpoints additionally require a signed-in
+                customer session.
               </AlertDescription>
             </Alert>
 
@@ -155,7 +156,7 @@ export default function DocsPage() {
                 <AccordionTrigger className="hover:no-underline">
                   <div className="flex items-center gap-3">
                     <Badge>GET</Badge>
-                    <span className="font-semibold">/api/products</span>
+                    <span className="font-semibold">/store/products</span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="space-y-4">
@@ -171,9 +172,9 @@ export default function DocsPage() {
                     <ul className="space-y-1 text-sm">
                       <li>
                         <code className="bg-muted px-2 py-1 rounded">
-                          page
+                          offset
                         </code>{" "}
-                        - Page number (default: 1)
+                        - Starting index for pagination (default: 0)
                       </li>
                       <li>
                         <code className="bg-muted px-2 py-1 rounded">
@@ -203,7 +204,7 @@ export default function DocsPage() {
                 <AccordionTrigger className="hover:no-underline">
                   <div className="flex items-center gap-3">
                     <Badge>GET</Badge>
-                    <span className="font-semibold">/api/products/{`{handle}`}</span>
+                    <span className="font-semibold">/store/products/{`{handle}`}</span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="space-y-4">
@@ -240,7 +241,7 @@ export default function DocsPage() {
                 <AccordionTrigger className="hover:no-underline">
                   <div className="flex items-center gap-3">
                     <Badge>POST</Badge>
-                    <span className="font-semibold">/api/cart/items</span>
+                    <span className="font-semibold">/store/carts/{`{cart_id}`}/line-items</span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="space-y-4">
@@ -255,13 +256,7 @@ export default function DocsPage() {
                     <ul className="space-y-1 text-sm">
                       <li>
                         <code className="bg-muted px-2 py-1 rounded">
-                          productId
-                        </code>{" "}
-                        - Product ID (string, required)
-                      </li>
-                      <li>
-                        <code className="bg-muted px-2 py-1 rounded">
-                          variantId
+                          variant_id
                         </code>{" "}
                         - Product variant ID (string, required)
                       </li>
@@ -287,7 +282,7 @@ export default function DocsPage() {
                 <AccordionTrigger className="hover:no-underline">
                   <div className="flex items-center gap-3">
                     <Badge>POST</Badge>
-                    <span className="font-semibold">/api/checkout</span>
+                    <span className="font-semibold">/store/carts/{`{cart_id}`}/complete</span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="space-y-4">
@@ -302,15 +297,9 @@ export default function DocsPage() {
                     <ul className="space-y-1 text-sm">
                       <li>
                         <code className="bg-muted px-2 py-1 rounded">
-                          cartId
+                          cart_id
                         </code>{" "}
-                        - Cart ID (string, required)
-                      </li>
-                      <li>
-                        <code className="bg-muted px-2 py-1 rounded">
-                          email
-                        </code>{" "}
-                        - Customer email (string, required)
+                        - Cart identifier in the path (string, required)
                       </li>
                     </ul>
                   </div>
@@ -351,14 +340,15 @@ export default function DocsPage() {
                   </CardHeader>
                   <CardContent>
                     <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
-                      <code>{`const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
+                      <code>{`const BASE_URL = process.env.NEXT_PUBLIC_MEDUSA_URL || "http://localhost:9000";
+const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY;
 
 async function getProducts() {
   const response = await fetch(
-    'https://api.example.com/products?page=1&limit=20',
+    \`\${BASE_URL}/store/products?limit=20\`,
     {
       headers: {
-        'Authorization': \`Bearer \${API_KEY}\`,
+        'x-publishable-api-key': PUBLISHABLE_KEY,
         'Content-Type': 'application/json',
       },
     }
@@ -374,7 +364,7 @@ async function getProducts() {
 
 // Usage
 const products = await getProducts();
-console.log(products);`}</code>
+console.log(products.products);`}</code>
                     </pre>
                   </CardContent>
                 </Card>
@@ -386,18 +376,20 @@ console.log(products);`}</code>
                   </CardHeader>
                   <CardContent>
                     <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
-                      <code>{`async function addToCart(productId, variantId, quantity = 1) {
+                      <code>{`const BASE_URL = process.env.NEXT_PUBLIC_MEDUSA_URL || "http://localhost:9000";
+const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY;
+
+async function addToCart(cartId, variantId, quantity = 1) {
   const response = await fetch(
-    'https://api.example.com/cart/items',
+    \`\${BASE_URL}/store/carts/\${cartId}/line-items\`,
     {
       method: 'POST',
       headers: {
-        'Authorization': \`Bearer \${API_KEY}\`,
+        'x-publishable-api-key': PUBLISHABLE_KEY,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        productId,
-        variantId,
+        variant_id: variantId,
         quantity,
       }),
     }
@@ -412,7 +404,7 @@ console.log(products);`}</code>
 }
 
 // Usage
-const cart = await addToCart('prod_123', 'var_456', 2);
+const cart = await addToCart('cart_123', 'variant_456', 2);
 console.log(cart);`}</code>
                     </pre>
                   </CardContent>
@@ -430,15 +422,16 @@ console.log(cart);`}</code>
                       <code>{`import requests
 import os
 
-API_KEY = os.environ.get('API_KEY')
+BASE_URL = os.environ.get('MEDUSA_URL', 'http://localhost:9000')
+PUBLISHABLE_KEY = os.environ.get('MEDUSA_PUBLISHABLE_KEY')
 
 def get_products(page=1, limit=20):
-    """Fetch products from the API"""
+    """Fetch products from Medusa Store API"""
     response = requests.get(
-        'https://api.example.com/products',
-        params={'page': page, 'limit': limit},
+        f'{BASE_URL}/store/products',
+        params={'offset': (page - 1) * limit, 'limit': limit},
         headers={
-            'Authorization': f'Bearer {API_KEY}',
+            'x-publishable-api-key': PUBLISHABLE_KEY,
             'Content-Type': 'application/json',
         }
     )
@@ -448,7 +441,7 @@ def get_products(page=1, limit=20):
 
 # Usage
 products = get_products()
-print(products)`}</code>
+print(products.get("products", []))`}</code>
                     </pre>
                   </CardContent>
                 </Card>
@@ -460,17 +453,16 @@ print(products)`}</code>
                   </CardHeader>
                   <CardContent>
                     <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
-                      <code>{`def add_to_cart(product_id, variant_id, quantity=1):
+                      <code>{`def add_to_cart(cart_id, variant_id, quantity=1):
     """Add an item to the cart"""
     response = requests.post(
-        'https://api.example.com/cart/items',
+        f'{BASE_URL}/store/carts/{cart_id}/line-items',
         json={
-            'productId': product_id,
-            'variantId': variant_id,
+            'variant_id': variant_id,
             'quantity': quantity,
         },
         headers={
-            'Authorization': f'Bearer {API_KEY}',
+            'x-publishable-api-key': PUBLISHABLE_KEY,
             'Content-Type': 'application/json',
         }
     )
@@ -479,7 +471,7 @@ print(products)`}</code>
     return response.json()
 
 # Usage
-cart = add_to_cart('prod_123', 'var_456', 2)
+cart = add_to_cart('cart_123', 'variant_456', 2)
 print(cart)`}</code>
                     </pre>
                   </CardContent>
@@ -494,8 +486,8 @@ print(cart)`}</code>
                   </CardHeader>
                   <CardContent>
                     <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
-                      <code>{`curl -X GET "https://api.example.com/products?page=1&limit=20" \\
-  -H "Authorization: Bearer YOUR_API_KEY" \\
+                      <code>{`curl -X GET "http://localhost:9000/store/products?limit=20" \\
+  -H "x-publishable-api-key: YOUR_PUBLISHABLE_KEY" \\
   -H "Content-Type: application/json"`}</code>
                     </pre>
                   </CardContent>
@@ -508,12 +500,11 @@ print(cart)`}</code>
                   </CardHeader>
                   <CardContent>
                     <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
-                      <code>{`curl -X POST "https://api.example.com/cart/items" \\
-  -H "Authorization: Bearer YOUR_API_KEY" \\
+                      <code>{`curl -X POST "http://localhost:9000/store/carts/cart_123/line-items" \\
+  -H "x-publishable-api-key: YOUR_PUBLISHABLE_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "productId": "prod_123",
-    "variantId": "var_456",
+    "variant_id": "variant_456",
     "quantity": 2
   }'`}</code>
                     </pre>

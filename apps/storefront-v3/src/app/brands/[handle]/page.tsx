@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { getBrandByHandle } from "@/lib/search/brands";
+import { getBrandDescriptionByHandle } from "@/lib/strapi/content";
 import { searchProducts } from "@/lib/search/products";
 import { ProductGrid } from "@/features/shop/components/product-grid";
 import {
@@ -45,7 +46,10 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { handle } = await params;
-  const brand = await getBrandByHandle(handle);
+  const [brand, brandDescription] = await Promise.all([
+    getBrandByHandle(handle),
+    getBrandDescriptionByHandle(handle).catch(() => null),
+  ]);
 
   if (!brand) {
     return {
@@ -53,10 +57,15 @@ export async function generateMetadata({
     };
   }
 
+  const title = brandDescription?.seo_title || brand.name;
+  const description =
+    brandDescription?.seo_description ||
+    brand.description ||
+    `Shop ${brand.name} products at 3D Byte Tech Store.`;
+
   return {
-    title: brand.name,
-    description:
-      brand.description || `Shop ${brand.name} products at 3D Byte Tech Store.`,
+    title,
+    description,
   };
 }
 
@@ -109,11 +118,20 @@ export default async function BrandPage({
   searchParams,
 }: PageProps) {
   const { handle } = await params;
-  const brand = await getBrandByHandle(handle);
+  const [brand, brandDescription] = await Promise.all([
+    getBrandByHandle(handle),
+    getBrandDescriptionByHandle(handle).catch(() => null),
+  ]);
 
   if (!brand) {
     notFound();
   }
+
+  const displayName = brandDescription?.brand_name || brand.name;
+  const summary =
+    brandDescription?.seo_description ||
+    brand.description ||
+    "Explore products from this brand.";
 
   const params_cache = await searchParams;
 
@@ -186,8 +204,17 @@ export default async function BrandPage({
         header={
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">{brand.name}</h1>
-              {brand.description && (
+              <h1 className="text-2xl font-bold tracking-tight">{displayName}</h1>
+              <p className="font-mono text-sm text-muted-foreground">
+                {summary}
+              </p>
+              {brandDescription?.rich_description && (
+                <div
+                  className="prose prose-sm mt-3 max-w-none text-muted-foreground dark:prose-invert"
+                  dangerouslySetInnerHTML={{ __html: brandDescription.rich_description }}
+                />
+              )}
+              {!brandDescription?.rich_description && brand.description && (
                 <p className="font-mono text-sm text-muted-foreground">
                   {brand.description}
                 </p>
@@ -215,9 +242,9 @@ export default async function BrandPage({
         header={
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">{brand.name}</h1>
+              <h1 className="text-2xl font-bold tracking-tight">{displayName}</h1>
               <p className="font-mono text-sm text-muted-foreground">
-                {brand.description || "0 products"}
+                {summary}
               </p>
             </div>
             <ShopSort basePath={`/brands/${handle}`} />
@@ -254,12 +281,8 @@ export default async function BrandPage({
       header={
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">{brand.name}</h1>
-            {brand.description && (
-              <p className="font-mono text-sm text-muted-foreground">
-                {brand.description}
-              </p>
-            )}
+            <h1 className="text-2xl font-bold tracking-tight">{displayName}</h1>
+            <p className="font-mono text-sm text-muted-foreground">{summary}</p>
             <p className="font-mono text-sm text-muted-foreground">
               {result.totalCount}{" "}
               {result.totalCount === 1 ? "product" : "products"}

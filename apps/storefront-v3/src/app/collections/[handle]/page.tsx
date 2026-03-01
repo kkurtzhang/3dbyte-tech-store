@@ -1,6 +1,8 @@
-import { notFound } from "next/navigation"
 import type { Metadata } from "next"
+import Link from "next/link"
+import { notFound } from "next/navigation"
 import { getCollectionByHandle } from "@/lib/medusa/collections"
+import { getCollectionDescriptionByHandle } from "@/lib/strapi/content"
 import { searchProducts } from "@/lib/search/products"
 import { ProductGrid } from "@/features/shop/components/product-grid"
 import { ShopSort, type SortOption } from "@/features/shop/components/shop-sort"
@@ -80,12 +82,18 @@ export default async function CollectionPage({
   const limit = 20
   const sort = search.sort || "newest"
 
-  // Fetch collection data
-  const collection = await getCollectionByHandle(handle)
+  // Fetch collection data from Medusa and Strapi in parallel
+  const [collection, collectionContent] = await Promise.all([
+    getCollectionByHandle(handle),
+    getCollectionDescriptionByHandle(handle).catch(() => null),
+  ])
 
   if (!collection) {
     notFound()
   }
+
+  const displayTitle = collectionContent?.Title?.trim() || collection.title
+  const displayDescription = collectionContent?.Description?.trim() || null
 
   // Parse filter params from URL
   const categoryIds = search.category?.split(",").filter(Boolean) || []
@@ -119,10 +127,10 @@ export default async function CollectionPage({
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl font-bold tracking-tight">
-                {collection.title}
+                {displayTitle}
               </h1>
               <p className="mt-2 font-mono text-sm text-muted-foreground">
-                Unable to load products
+                {displayDescription || "Unable to load products"}
               </p>
             </div>
           </div>
@@ -142,10 +150,10 @@ export default async function CollectionPage({
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl font-bold tracking-tight">
-                {collection.title}
+                {displayTitle}
               </h1>
               <p className="mt-2 font-mono text-sm text-muted-foreground">
-                0 products
+                {displayDescription || "0 products"}
               </p>
             </div>
             <ShopSort basePath={`/collections/${handle}`} />
@@ -191,9 +199,16 @@ export default async function CollectionPage({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
-              {collection.title}
+              {displayTitle}
             </h1>
-            <p className="mt-2 font-mono text-sm text-muted-foreground">
+            {displayDescription && (
+              <p className="mt-2 font-mono text-sm text-muted-foreground">
+                {displayDescription}
+              </p>
+            )}
+            <p
+              className={`font-mono text-sm text-muted-foreground ${displayDescription ? "" : "mt-2"}`}
+            >
               {result.totalCount}{" "}
               {result.totalCount === 1 ? "product" : "products"}
               {result.degradedMode && (
@@ -226,7 +241,7 @@ export default async function CollectionPage({
                 const isCurrent = pageNum === page
 
                 return (
-                  <a
+                  <Link
                     key={pageNum}
                     href={buildCollectionUrl(handle, pageNum, sort, {
                       category: search.category,
@@ -245,7 +260,7 @@ export default async function CollectionPage({
                     aria-current={isCurrent ? "page" : undefined}
                   >
                     {pageNum}
-                  </a>
+                  </Link>
                 )
               })}
             </nav>
@@ -260,7 +275,10 @@ export async function generateMetadata({
   params,
 }: CollectionPageProps): Promise<Metadata> {
   const { handle } = await params
-  const collection = await getCollectionByHandle(handle)
+  const [collection, collectionContent] = await Promise.all([
+    getCollectionByHandle(handle),
+    getCollectionDescriptionByHandle(handle).catch(() => null),
+  ])
 
   if (!collection) {
     return {
@@ -268,8 +286,13 @@ export async function generateMetadata({
     }
   }
 
+  const displayTitle = collectionContent?.Title?.trim() || collection.title
+  const displayDescription =
+    collectionContent?.Description?.trim() ||
+    `Browse ${collection.title} collection.`
+
   return {
-    title: `${collection.title} | Collection`,
-    description: `Browse ${collection.title} collection.`,
+    title: `${displayTitle} | Collection`,
+    description: displayDescription,
   }
 }

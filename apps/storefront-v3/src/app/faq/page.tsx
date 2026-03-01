@@ -2,25 +2,27 @@ import { Metadata } from "next";
 import { getFAQ } from "@/lib/strapi/content";
 import { FAQAccordion } from "@/features/cms/components/faq-accordion";
 import { SidebarBookmarks } from "@/features/cms/components/sidebar-bookmarks";
+import { FAQSection } from "@/lib/strapi/types";
 
 // Force dynamic rendering to avoid build-time CMS dependency
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: "FAQ",
-  description: "Frequently Asked Questions about our products and services.",
+  description: "Frequently asked questions about orders, shipping, returns, and support.",
 };
 
 export default async function FAQPage() {
-  let FAQSection: any[] = [];
+  let faqSections: FAQSection[] = [];
+
   try {
     const response = await getFAQ();
-    FAQSection = response.data?.FAQSection || [];
-  } catch (error) {
-    console.error("Failed to fetch FAQ data from CMS:", error);
+    faqSections = response.data?.FAQSection || [];
+  } catch {
+    faqSections = [];
   }
 
-  const bookmarks = FAQSection.map((section) => ({
+  const bookmarks = faqSections.map((section) => ({
     id: section.Bookmark,
     label: section.Title,
   }));
@@ -43,9 +45,20 @@ export default async function FAQPage() {
         </aside>
 
         <div className="space-y-16">
-          {FAQSection.map((section, index) => (
-            <FAQAccordion key={index} data={section} />
-          ))}
+          {faqSections.length > 0 ? (
+            faqSections.map((section) => <FAQAccordion key={section.id} data={section} />)
+          ) : (
+            <section className="rounded-lg border bg-card p-6">
+              <h2 className="text-xl font-semibold mb-2">FAQ content is being updated</h2>
+              <p className="text-muted-foreground">
+                Please check back shortly, or contact support at{" "}
+                <a href="mailto:support@3dbyte.tech" className="underline underline-offset-4">
+                  support@3dbyte.tech
+                </a>
+                .
+              </p>
+            </section>
+          )}
         </div>
       </div>
     </div>

@@ -1,6 +1,16 @@
 import { strapiClient } from "./client";
 import qs from "qs";
-import { StrapiResponse, AboutUsData, FAQData, LegalPageData, BlogListResponse, BlogCategoryListResponse } from "./types";
+import {
+  StrapiResponse,
+  AboutUsData,
+  FAQData,
+  LegalPageData,
+  BlogListResponse,
+  BlogCategoryListResponse,
+  HomepageData,
+  BrandDescriptionData,
+  CollectionDescriptionData,
+} from "./types";
 
 export async function getStrapiContent<T = any>(
   collectionType: string,
@@ -90,6 +100,140 @@ export async function getContentPage(slug: string) {
   // terms-and-conditions -> terms-and-condition
 
   return strapiClient.fetch<StrapiResponse<LegalPageData>>(`/${slug}`);
+}
+
+export async function getHomepage() {
+  const query = qs.stringify(
+    {
+      populate: {
+        HeroBanner: {
+          populate: {
+            CTA: true,
+            SecondaryCTA: true,
+            FeatureTags: true,
+            Image: true,
+          },
+        },
+        MidBanner: {
+          populate: {
+            CTA: true,
+            SecondaryCTA: true,
+            FeatureTags: true,
+            Image: true,
+          },
+        },
+        QuickLinks: true,
+        TrustStats: true,
+      },
+    },
+    { encodeValuesOnly: true }
+  );
+
+  return strapiClient.fetch<StrapiResponse<HomepageData>>(`/homepage?${query}`);
+}
+
+export async function getBrandDescriptions() {
+  const query = qs.stringify(
+    {
+      pagination: {
+        page: 1,
+        pageSize: 200,
+      },
+      sort: ["brand_name:asc"],
+      populate: {
+        brand_logo: true,
+      },
+    },
+    { encodeValuesOnly: true }
+  );
+
+  return strapiClient.fetch<StrapiResponse<BrandDescriptionData[]>>(
+    `/brand-descriptions?${query}`,
+    {
+      tags: ["brand-descriptions"],
+    }
+  );
+}
+
+export async function getBrandDescriptionByHandle(handle: string) {
+  const query = qs.stringify(
+    {
+      filters: {
+        brand_handle: {
+          $eq: handle,
+        },
+      },
+      pagination: {
+        page: 1,
+        pageSize: 1,
+      },
+      populate: {
+        brand_logo: true,
+      },
+    },
+    { encodeValuesOnly: true }
+  );
+
+  const response = await strapiClient.fetch<StrapiResponse<BrandDescriptionData[]>>(
+    `/brand-descriptions?${query}`,
+    {
+      tags: [`brand-description-${handle}`],
+    }
+  );
+
+  return response.data[0] || null;
+}
+
+export async function getCollectionDescriptions() {
+  const query = qs.stringify(
+    {
+      pagination: {
+        page: 1,
+        pageSize: 200,
+      },
+      sort: ["Title:asc"],
+      populate: {
+        Image: true,
+      },
+    },
+    { encodeValuesOnly: true }
+  );
+
+  return strapiClient.fetch<StrapiResponse<CollectionDescriptionData[]>>(
+    `/collections?${query}`,
+    {
+      tags: ["collections-content"],
+    }
+  );
+}
+
+export async function getCollectionDescriptionByHandle(handle: string) {
+  const query = qs.stringify(
+    {
+      filters: {
+        Handle: {
+          $eq: handle,
+        },
+      },
+      pagination: {
+        page: 1,
+        pageSize: 1,
+      },
+      populate: {
+        Image: true,
+      },
+    },
+    { encodeValuesOnly: true }
+  );
+
+  const response = await strapiClient.fetch<StrapiResponse<CollectionDescriptionData[]>>(
+    `/collections?${query}`,
+    {
+      tags: [`collection-content-${handle}`],
+    }
+  );
+
+  return response.data[0] || null;
 }
 
 export interface RichTextContent {

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -169,9 +170,9 @@ export function NewsletterSignup({ compact = false, variant = "default" }: Newsl
 
       <p className="mt-3 text-[10px] text-muted-foreground">
         By subscribing, you agree to our{" "}
-        <a href="/privacy-policy" className="underline hover:text-foreground">
+        <Link href="/privacy-policy" className="underline hover:text-foreground">
           Privacy Policy
-        </a>
+        </Link>
         . We respect your inbox and will only send valuable content.
       </p>
     </div>

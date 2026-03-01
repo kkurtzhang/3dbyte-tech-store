@@ -19,14 +19,37 @@ const SUBJECTS = [
 export function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setError(null);
     setIsSubmitting(true);
+    const formData = new FormData(e.currentTarget);
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const name = String(formData.get("name") || "").trim();
+    const email = String(formData.get("email") || "").trim();
+    const subject = String(formData.get("subject") || "").trim();
+    const message = String(formData.get("message") || "").trim();
 
+    if (!name || !email || !subject || !message) {
+      setError("Please complete all fields before sending your request.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const subjectLine = `[3DByte Support] ${subject}`;
+    const body = [
+      `Name: ${name}`,
+      `Email: ${email}`,
+      "",
+      "Message:",
+      message,
+    ].join("\n");
+
+    const mailtoHref = `mailto:support@3dbyte.tech?subject=${encodeURIComponent(subjectLine)}&body=${encodeURIComponent(body)}`;
+
+    window.location.href = mailtoHref;
     setIsSubmitting(false);
     setSubmitted(true);
   }
@@ -39,7 +62,7 @@ export function ContactForm() {
         </div>
         <h3 className="text-xl font-semibold mb-2">Message Sent!</h3>
         <p className="text-muted-foreground mb-4">
-          Thank you for reaching out. We'll get back to you within 24 hours.
+          Your email draft has been opened. Send it to reach our support team.
         </p>
         <Button
           variant="outline"
@@ -109,6 +132,12 @@ export function ContactForm() {
           required
         />
       </div>
+
+      {error && (
+        <p className="text-sm text-destructive" role="alert">
+          {error}
+        </p>
+      )}
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isSubmitting ? (

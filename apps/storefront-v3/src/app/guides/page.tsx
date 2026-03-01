@@ -1,5 +1,8 @@
 import { Metadata } from "next";
+import Link from "next/link";
 import { Search, BookOpen, Wrench, Layers, Printer, Scissors, Thermometer, Zap, Settings, Package, ArrowRight, Clock, Star } from "lucide-react";
+import { NewsletterSignup } from "@/components/layout/newsletter-signup";
+import { ContentSearchBox } from "@/features/search/components/content-search-box";
 
 export const metadata: Metadata = {
   title: "3D Printing Guides",
@@ -110,10 +113,10 @@ export default function GuidesPage() {
   ];
 
   const quickLinks = [
-    { title: "Getting Started with 3D Printing", icon: Zap },
-    { title: "Nozzle Maintenance Guide", icon: Wrench },
-    { title: "SD Card Setup for Klipper", icon: Package },
-    { title: "Voltage Theory Explained", icon: Thermometer },
+    { title: "Getting Started with 3D Printing", icon: Zap, href: "/blog" },
+    { title: "Nozzle Maintenance Guide", icon: Wrench, href: "/blog" },
+    { title: "SD Card Setup for Klipper", icon: Package, href: "/docs" },
+    { title: "Voltage Theory Explained", icon: Thermometer, href: "/docs" },
   ];
 
   return (
@@ -130,14 +133,10 @@ export default function GuidesPage() {
 
       {/* Search Section */}
       <div className="mb-16 max-w-2xl mx-auto">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <input
-            type="search"
-            placeholder="Search guides..."
-            className="w-full rounded-lg border bg-background pl-12 pr-4 py-4 text-base focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
+        <ContentSearchBox
+          scope="guides"
+          placeholder="Search guides and tutorials..."
+        />
       </div>
 
       {/* Featured Guides */}
@@ -232,9 +231,9 @@ export default function GuidesPage() {
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {quickLinks.map((link) => (
-            <a
+            <Link
               key={link.title}
-              href="#"
+              href={link.href}
               className="group flex items-center gap-3 p-4 rounded-lg border hover:border-primary transition-colors hover:bg-accent/50"
             >
               <div className="rounded-lg bg-primary/10 p-2 group-hover:bg-primary/20 transition-colors">
@@ -244,7 +243,7 @@ export default function GuidesPage() {
                 {link.title}
               </span>
               <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors ml-auto" />
-            </a>
+            </Link>
           ))}
         </div>
       </section>
@@ -258,39 +257,29 @@ export default function GuidesPage() {
           <p className="text-muted-foreground mb-6">
             Get the latest 3D printing guides, tutorials, and tips delivered to your inbox.
           </p>
-          <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-1 rounded-lg border bg-background px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            <button
-              type="submit"
-              className="rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              Subscribe
-            </button>
-          </form>
+          <div className="max-w-md mx-auto">
+            <NewsletterSignup compact variant="minimal" />
+          </div>
         </div>
       </section>
 
       {/* Quick Links Footer */}
       <section className="mt-16 pt-16 border-t">
         <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
-          <a href="/help" className="hover:text-primary transition-colors flex items-center gap-1">
+          <Link href="/help" className="hover:text-primary transition-colors flex items-center gap-1">
             <BookOpen className="h-4 w-4" />
             Help Center
-          </a>
+          </Link>
           <span className="hidden sm:inline">•</span>
-          <a href="/faq" className="hover:text-primary transition-colors flex items-center gap-1">
+          <Link href="/faq" className="hover:text-primary transition-colors flex items-center gap-1">
             <Search className="h-4 w-4" />
             FAQ
-          </a>
+          </Link>
           <span className="hidden sm:inline">•</span>
-          <a href="/contact" className="hover:text-primary transition-colors flex items-center gap-1">
+          <Link href="/contact" className="hover:text-primary transition-colors flex items-center gap-1">
             <Wrench className="h-4 w-4" />
             Contact Support
-          </a>
+          </Link>
         </div>
       </section>
     </div>
