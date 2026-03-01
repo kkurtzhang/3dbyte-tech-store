@@ -3,3 +3,6 @@
 startup_timeout_sec=20
 command = "uvx"
 args = ["-n", "meilisearch-mcp"]
+
+[sandbox_workspace_write]
+network_access = true
