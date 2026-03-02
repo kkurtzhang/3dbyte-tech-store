@@ -109,7 +109,7 @@ async function findBlogBySlug(slug) {
 }
 
 async function createBlog(data) {
-  const url = `${STRAPI_URL}/api/blogs?status=published`
+  const url = `${STRAPI_URL}/api/blogs`
   if (DRY_RUN) {
     return { dryRun: true, data }
   }
@@ -125,7 +125,7 @@ async function createBlog(data) {
 }
 
 async function updateBlog(documentId, data) {
-  const url = `${STRAPI_URL}/api/blogs/${documentId}?status=published`
+  const url = `${STRAPI_URL}/api/blogs/${documentId}`
   if (DRY_RUN) {
     return { dryRun: true, data }
   }

@@ -1,6 +1,7 @@
 const STRAPI_URL = (process.env.STRAPI_URL || "http://localhost:1337").replace(/\/$/, "")
 const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN
 const MEDUSA_URL = (process.env.MEDUSA_URL || "http://localhost:9000").replace(/\/$/, "")
+const MEDUSA_DB_URL = process.env.MEDUSA_DB_URL || ""
 const DEFAULT_COLLECTION_IMAGE_ID = Number(process.env.STRAPI_DEFAULT_COLLECTION_IMAGE_ID || 0) || null
 const DRY_RUN = process.env.DRY_RUN === "1"
 
@@ -79,6 +80,34 @@ async function fetchMedusaCollections() {
   return Array.isArray(body.collections) ? body.collections : []
 }
 
+async function fetchMedusaCollectionsFromDb() {
+  if (!MEDUSA_DB_URL) {
+    throw new Error("MEDUSA_DB_URL is not set for DB fallback")
+  }
+
+  const { Client } = await import("pg")
+  const client = new Client({ connectionString: MEDUSA_DB_URL })
+  await client.connect()
+
+  try {
+    const result = await client.query(`
+      select id, handle, title
+      from product_collection
+      where deleted_at is null
+      order by created_at asc
+    `)
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      handle: row.handle,
+      title: row.title,
+      metadata: {},
+    }))
+  } finally {
+    await client.end()
+  }
+}
+
 async function createCollection(data) {
   const url = `${STRAPI_URL}/api/collections?status=published`
   if (DRY_RUN) {
@@ -118,10 +147,15 @@ async function main() {
     console.log("DRY_RUN enabled")
   }
 
-  const [medusaCollections, strapiCollections] = await Promise.all([
-    fetchMedusaCollections(),
-    fetchAllStrapiCollections(),
-  ])
+  let medusaCollections
+  try {
+    medusaCollections = await fetchMedusaCollections()
+  } catch (error) {
+    console.warn(`Medusa API unavailable, using DB fallback: ${error.message}`)
+    medusaCollections = await fetchMedusaCollectionsFromDb()
+  }
+
+  const strapiCollections = await fetchAllStrapiCollections()
 
   const strapiByHandle = new Map(
     strapiCollections
