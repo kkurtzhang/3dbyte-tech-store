@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_help_popular_resources",
+  "info": {
+    "displayName": "Popular Resource"
+  },
+  "options": {},
+  "attributes": {
+    "Title": {
+      "type": "string",
+      "required": true
+    },
+    "Category": {
+      "type": "string"
+    },
+    "Href": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_guides_quick_links",
+  "info": {
+    "displayName": "Quick Link"
+  },
+  "options": {},
+  "attributes": {
+    "Title": {
+      "type": "string",
+      "required": true
+    },
+    "Href": {
+      "type": "string",
+      "required": true
+    },
+    "Icon": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "collectionName": "components_help_categories",
+  "info": {
+    "displayName": "Category"
+  },
+  "options": {},
+  "attributes": {
+    "Title": {
+      "type": "string",
+      "required": true
+    },
+    "Description": {
+      "type": "text"
+    },
+    "Href": {
+      "type": "string",
+      "required": true
+    },
+    "Icon": {
+      "type": "string"
+    },
+    "Articles": {
+      "type": "component",
+      "repeatable": true,
+      "component": "help.article"
+    }
+  }
+}

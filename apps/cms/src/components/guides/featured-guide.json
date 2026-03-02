@@ -1,0 +1,31 @@
+{
+  "collectionName": "components_guides_featured_guides",
+  "info": {
+    "displayName": "Featured Guide"
+  },
+  "options": {},
+  "attributes": {
+    "Title": {
+      "type": "string",
+      "required": true
+    },
+    "Category": {
+      "type": "string"
+    },
+    "ReadTime": {
+      "type": "string"
+    },
+    "Rating": {
+      "type": "string"
+    },
+    "Description": {
+      "type": "text"
+    },
+    "Href": {
+      "type": "string"
+    },
+    "Icon": {
+      "type": "string"
+    }
+  }
+}

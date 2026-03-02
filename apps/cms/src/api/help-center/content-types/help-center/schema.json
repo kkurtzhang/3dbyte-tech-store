@@ -1,0 +1,37 @@
+{
+  "kind": "singleType",
+  "collectionName": "help_centers",
+  "info": {
+    "singularName": "help-center",
+    "pluralName": "help-centers",
+    "displayName": "Help Center",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Heading": {
+      "type": "string"
+    },
+    "Subheading": {
+      "type": "text"
+    },
+    "Categories": {
+      "type": "component",
+      "repeatable": true,
+      "component": "help.category"
+    },
+    "PopularResources": {
+      "type": "component",
+      "repeatable": true,
+      "component": "help.popular-resource"
+    },
+    "ContactOptions": {
+      "type": "component",
+      "repeatable": true,
+      "component": "help.contact-option"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_help_articles",
+  "info": {
+    "displayName": "Article"
+  },
+  "options": {},
+  "attributes": {
+    "Title": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

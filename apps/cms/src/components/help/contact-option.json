@@ -1,0 +1,29 @@
+{
+  "collectionName": "components_help_contact_options",
+  "info": {
+    "displayName": "Contact Option"
+  },
+  "options": {},
+  "attributes": {
+    "Title": {
+      "type": "string",
+      "required": true
+    },
+    "Description": {
+      "type": "text"
+    },
+    "Value": {
+      "type": "string"
+    },
+    "Action": {
+      "type": "string"
+    },
+    "Href": {
+      "type": "string",
+      "required": true
+    },
+    "Icon": {
+      "type": "string"
+    }
+  }
+}
