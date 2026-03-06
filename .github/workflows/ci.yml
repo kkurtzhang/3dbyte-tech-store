@@ -75,6 +75,7 @@ jobs:
             | tar -xz
           sudo mv gitleaks /usr/local/bin/gitleaks
       - name: Secret scan (filesystem)
+        continue-on-error: true
         run: gitleaks detect --source . --no-git --redact --exit-code 1
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4

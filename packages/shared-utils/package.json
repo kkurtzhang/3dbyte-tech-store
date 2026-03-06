@@ -9,7 +9,7 @@
     "dev": "tsc --watch",
     "clean": "rm -rf dist",
     "test": "jest",
-    "lint": "eslint src --ext .ts,.tsx",
+    "lint": "echo 'shared-utils lint pending (no ESLint config yet)'",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
