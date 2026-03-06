@@ -69,10 +69,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Secret scan (gitleaks)
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install gitleaks
+        run: |
+          curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz \
+            | tar -xz
+          sudo mv gitleaks /usr/local/bin/gitleaks
+      - name: Secret scan (filesystem)
+        run: gitleaks detect --source . --no-git --redact --exit-code 1
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
