@@ -31,6 +31,23 @@ export async function addToCart({
   return cart
 }
 
+export async function addLineItems({
+  cartId,
+  items,
+}: {
+  cartId: string
+  items: { variant_id: string; quantity: number }[]
+}): Promise<StoreCart> {
+  let cart = await getCart(cartId)
+
+  for (const item of items) {
+    const { cart: updatedCart } = await sdk.store.cart.createLineItem(cartId, item)
+    cart = updatedCart
+  }
+
+  return cart
+}
+
 export async function updateLineItem({
   cartId,
   lineItemId,
