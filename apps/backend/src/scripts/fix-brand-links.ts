@@ -1,6 +1,7 @@
 import { ExecArgs } from "@medusajs/framework/types";
 import { Modules } from "@medusajs/framework/utils";
 import { BRAND_MODULE } from "../modules/brand";
+import BrandModuleService from "../modules/brand/service";
 
 // Vendor name to brand name mapping (for mismatches)
 const VENDOR_TO_BRAND: Record<string, string> = {
@@ -49,8 +50,8 @@ const VENDOR_TO_BRAND: Record<string, string> = {
 };
 
 export default async function ({ container }: ExecArgs) {
-  const productModule = container.resolve(Modules.PRODUCT);
-  const brandModule = container.resolve(BRAND_MODULE);
+  const productModule = container.resolve(Modules.PRODUCT) as any;
+  const brandModule = container.resolve(BRAND_MODULE) as BrandModuleService;
   
   console.log('=== FIXING BRAND LINKS ===\n');
   

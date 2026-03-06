@@ -1,8 +1,9 @@
 import { ExecArgs } from "@medusajs/framework/types";
 import { BRAND_MODULE } from "../modules/brand";
+import BrandModuleService from "../modules/brand/service";
 
 export default async function ({ container }: ExecArgs) {
-  const brandModuleService = container.resolve(BRAND_MODULE);
+  const brandModuleService = container.resolve(BRAND_MODULE) as BrandModuleService;
   
   // Get all brands
   const brands = await brandModuleService.listBrands({}, { 

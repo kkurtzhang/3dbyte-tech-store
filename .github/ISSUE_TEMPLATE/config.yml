@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Team operating rules
+    url: https://github.com/kkurtzhang/3dbyte-tech-store/blob/main/docs/team/team-operating-rules-v1.md
+    about: Read required quality gates and escalation rules before opening issues.

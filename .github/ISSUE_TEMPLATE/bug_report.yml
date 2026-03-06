@@ -1,0 +1,30 @@
+name: Bug report
+description: Report a reproducible bug
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is broken?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+      description: Exact steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact / severity
+      description: Mention checkout/payment/auth impact if relevant
