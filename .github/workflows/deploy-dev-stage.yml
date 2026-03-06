@@ -59,3 +59,37 @@ jobs:
           done
           echo "Timed out waiting for SSM deploy command"
           exit 1
+
+      - name: Post-deploy health check (containers + local HTTP)
+        run: |
+          HEALTH_CMD=$(aws ssm send-command \
+            --instance-ids "${{ secrets.AWS_INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --comment "GitHub Actions dev-stage health check" \
+            --parameters commands='["docker ps --format \"{{.Names}}\" | grep -E \"^(3dbyte-cms|3dbyte-redis|3dbyte-meilisearch)$\"","CODE=$(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:1337/admin || true)","echo cms_admin_status=$CODE","test \"$CODE\" = \"200\" -o \"$CODE\" = \"301\" -o \"$CODE\" = \"302\""]' \
+            --query 'Command.CommandId' --output text)
+
+          for i in {1..30}; do
+            STATUS=$(aws ssm get-command-invocation \
+              --command-id "$HEALTH_CMD" \
+              --instance-id "${{ secrets.AWS_INSTANCE_ID }}" \
+              --query 'Status' --output text || true)
+            echo "Health status: $STATUS"
+            if [ "$STATUS" = "Success" ]; then
+              aws ssm get-command-invocation \
+                --command-id "$HEALTH_CMD" \
+                --instance-id "${{ secrets.AWS_INSTANCE_ID }}" \
+                --query 'StandardOutputContent' --output text
+              exit 0
+            fi
+            if [ "$STATUS" = "Failed" ] || [ "$STATUS" = "TimedOut" ] || [ "$STATUS" = "Cancelled" ]; then
+              aws ssm get-command-invocation \
+                --command-id "$HEALTH_CMD" \
+                --instance-id "${{ secrets.AWS_INSTANCE_ID }}" \
+                --query 'StandardErrorContent' --output text || true
+              exit 1
+            fi
+            sleep 5
+          done
+          echo "Timed out waiting for health-check command"
+          exit 1
