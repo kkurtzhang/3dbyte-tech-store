@@ -33,14 +33,13 @@ ENV PATH=/opt/node_modules/.bin:$PATH
 COPY packages ./packages
 COPY apps/cms ./apps/cms
 
-# Build shared packages
-RUN pnpm --filter @3dbyte-tech-store/shared-types build
-RUN pnpm --filter @3dbyte-tech-store/shared-utils build
-
-# Keep the workspace as-is at /opt, just ensure everything is built
+# Build shared packages needed by CMS at runtime
 RUN pnpm --filter @3dbyte-tech-store/shared-types build && \
-    pnpm --filter @3dbyte-tech-store/shared-utils build && \
-    pnpm --filter @3dbyte-tech-store/cms build
+    pnpm --filter @3dbyte-tech-store/shared-utils build
+
+# NOTE: Skip `strapi build` in image build for dev-stage.
+# On small instances (t4g.small), admin build can OOM during docker build.
+# `pnpm run develop` will run the dev server at container start.
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
