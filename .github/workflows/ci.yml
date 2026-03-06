@@ -48,7 +48,7 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test
+      - run: pnpm turbo run test --only
 
   e2e-smoke:
     name: e2e-smoke
