@@ -1,0 +1,61 @@
+name: deploy-dev-stage
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref to deploy (branch/tag/sha)"
+        required: false
+        default: "main"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Trigger SSM deploy command
+        id: trigger
+        run: |
+          CMD_ID=$(aws ssm send-command \
+            --instance-ids "${{ secrets.AWS_INSTANCE_ID }}" \
+            --document-name "AWS-RunShellScript" \
+            --comment "GitHub Actions dev-stage deploy" \
+            --parameters commands='["/usr/local/bin/deploy-3dbyte-tech-store.sh"]' \
+            --query 'Command.CommandId' --output text)
+          echo "command_id=$CMD_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for SSM command
+        run: |
+          for i in {1..60}; do
+            STATUS=$(aws ssm get-command-invocation \
+              --command-id "${{ steps.trigger.outputs.command_id }}" \
+              --instance-id "${{ secrets.AWS_INSTANCE_ID }}" \
+              --query 'Status' --output text || true)
+            echo "Status: $STATUS"
+            if [ "$STATUS" = "Success" ]; then
+              aws ssm get-command-invocation \
+                --command-id "${{ steps.trigger.outputs.command_id }}" \
+                --instance-id "${{ secrets.AWS_INSTANCE_ID }}" \
+                --query 'StandardOutputContent' --output text
+              exit 0
+            fi
+            if [ "$STATUS" = "Failed" ] || [ "$STATUS" = "TimedOut" ] || [ "$STATUS" = "Cancelled" ]; then
+              aws ssm get-command-invocation \
+                --command-id "${{ steps.trigger.outputs.command_id }}" \
+                --instance-id "${{ secrets.AWS_INSTANCE_ID }}" \
+                --query 'StandardErrorContent' --output text || true
+              exit 1
+            fi
+            sleep 10
+          done
+          echo "Timed out waiting for SSM deploy command"
+          exit 1
