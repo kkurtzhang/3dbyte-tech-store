@@ -1,0 +1,24 @@
+name: Feature request
+description: Propose a product or engineering feature
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: What user/business outcome should this achieve?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Testable criteria for done
+    validations:
+      required: true
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks / constraints
+      description: Security, cost, compatibility, timeline constraints
