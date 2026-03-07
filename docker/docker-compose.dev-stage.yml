@@ -1,7 +1,7 @@
 services:
   cms:
     container_name: 3dbyte-cms
-    image: ${CMS_IMAGE:-3dbyte-tech/cms:dev-latest}
+    image: ${CMS_IMAGE:-3dbytetech/cms:dev-latest}
     restart: unless-stopped
     env_file:
       - ../apps/cms/.env

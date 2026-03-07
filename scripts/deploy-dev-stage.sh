@@ -3,7 +3,7 @@ set -euo pipefail
 
 REPO_DIR="/opt/3dbyte-tech-store"
 COMPOSE_FILE="docker/docker-compose.dev-stage.yml"
-IMAGE_NAME="${CMS_IMAGE:-3dbyte-tech/cms:dev-latest}"
+IMAGE_NAME="${CMS_IMAGE:-3dbytetech/cms:dev-latest}"
 
 cd "$REPO_DIR"
 

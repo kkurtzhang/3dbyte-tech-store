@@ -56,5 +56,5 @@ jobs:
           platforms: linux/arm64
           push: true
           tags: |
-            3dbyte-tech/cms:${{ steps.meta.outputs.tag }}
-            3dbyte-tech/cms:${{ steps.meta.outputs.sha_tag }}
+            3dbytetech/cms:${{ steps.meta.outputs.tag }}
+            3dbytetech/cms:${{ steps.meta.outputs.sha_tag }}
