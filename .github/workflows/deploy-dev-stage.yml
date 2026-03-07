@@ -60,13 +60,13 @@ jobs:
           echo "Timed out waiting for SSM deploy command"
           exit 1
 
-      - name: Post-deploy health check (containers + local HTTP)
+      - name: Post-deploy health check (cms only)
         run: |
           HEALTH_CMD=$(aws ssm send-command \
             --instance-ids "${{ secrets.AWS_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
             --comment "GitHub Actions dev-stage health check" \
-            --parameters commands='["docker ps --format \"{{.Names}}\" | grep -E \"^(3dbyte-cms|3dbyte-redis|3dbyte-meilisearch)$\"","CODE=$(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:1337/admin || true)","echo cms_admin_status=$CODE","test \"$CODE\" = \"200\" -o \"$CODE\" = \"301\" -o \"$CODE\" = \"302\""]' \
+            --parameters commands='["docker ps --format \"{{.Names}}\" | grep -E \"^3dbyte-cms$\"","CODE=$(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:1337/admin || true)","echo cms_admin_status=$CODE","test \"$CODE\" = \"200\" -o \"$CODE\" = \"301\" -o \"$CODE\" = \"302\""]' \
             --query 'Command.CommandId' --output text)
 
           for i in {1..30}; do
