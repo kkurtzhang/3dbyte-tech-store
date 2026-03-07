@@ -92,6 +92,10 @@ MEILISEARCH_HOST=http://localhost:7700
 
 ## Gotchas
 
+- **Schema governance (team policy)**:
+  - Do **not** edit CMS schema/content-type files directly for normal model updates.
+  - Use Strapi Admin/API flows for schema/content model changes.
+  - Any code-level CMS extension (new plugin, plugin config extension, lifecycle/custom code) requires explicit founder approval before implementation.
 - **Populate depth**: Deep population kills performance - specify only needed fields
 - **Draft & Publish**: Remember to publish entries for API access
 - **Permissions**: Public access requires explicit configuration in Settings

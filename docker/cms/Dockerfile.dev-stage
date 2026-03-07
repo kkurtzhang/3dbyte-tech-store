@@ -1,0 +1,48 @@
+FROM node:22-alpine
+
+RUN apk update && apk add --no-cache \
+    build-base \
+    gcc \
+    autoconf \
+    automake \
+    zlib-dev \
+    libpng-dev \
+    nasm \
+    bash \
+    vips-dev \
+    git
+
+WORKDIR /opt
+
+RUN corepack enable && corepack prepare pnpm@10.12.1 --activate
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages/shared-types/package.json ./packages/shared-types/
+COPY packages/shared-utils/package.json ./packages/shared-utils/
+COPY packages/shared-config/package.json ./packages/shared-config/
+COPY apps/cms/package.json ./apps/cms/
+
+RUN pnpm install --frozen-lockfile
+
+ENV PATH=/opt/node_modules/.bin:$PATH
+
+COPY packages ./packages
+COPY apps/cms ./apps/cms
+
+RUN pnpm --filter @3dbyte-tech-store/shared-types build && \
+    pnpm --filter @3dbyte-tech-store/shared-utils build
+
+# NOTE: skip `strapi build` on t4g.small to avoid OOM during image build.
+# Dev-stage container runs Strapi directly.
+
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S strapi -u 1001 && \
+    chown -R strapi:nodejs /opt
+
+USER strapi
+WORKDIR /opt/apps/cms
+
+EXPOSE 1337
+
+CMD ["node", "/opt/apps/cms/node_modules/@strapi/strapi/bin/strapi.js", "develop"]

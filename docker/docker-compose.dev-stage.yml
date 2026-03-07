@@ -1,0 +1,17 @@
+services:
+  cms:
+    container_name: 3dbyte-cms
+    image: ${CMS_IMAGE:-3dbyte-tech/cms:dev-latest}
+    restart: unless-stopped
+    env_file:
+      - ../apps/cms/.env
+    environment:
+      - NODE_ENV=development
+      - HOST=0.0.0.0
+      - PORT=1337
+      - COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+    ports:
+      - "1337:1337"
+    volumes:
+      - ../apps/cms/public/uploads:/opt/apps/cms/public/uploads
+    command: ["node", "/opt/apps/cms/node_modules/@strapi/strapi/bin/strapi.js", "start"]
