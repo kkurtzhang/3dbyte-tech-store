@@ -15,6 +15,9 @@ module.exports = defineConfig({
     },
     redisUrl: process.env.REDIS_URL,
   },
+  admin: {
+    disable: process.env.MEDUSA_ADMIN_DISABLE === "true",
+  },
   modules: [
     {
       resolve: "./src/modules/strapi",
