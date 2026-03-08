@@ -13,11 +13,11 @@ RUN corepack enable && pnpm install --frozen-lockfile
 
 COPY . .
 
-RUN pnpm --filter @3dbyte-tech-store/backend build
+WORKDIR /opt/apps/backend
+RUN pnpm build
 
 ENV NODE_ENV=production
 ENV PORT=9000
 EXPOSE 9000
 
-WORKDIR /opt/apps/backend
 CMD ["pnpm", "start"]
