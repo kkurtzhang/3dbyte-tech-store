@@ -49,6 +49,12 @@ jobs:
               exit 0
             fi
             if [ "$STATUS" = "Failed" ] || [ "$STATUS" = "TimedOut" ] || [ "$STATUS" = "Cancelled" ]; then
+              echo "--- SSM deploy STDOUT ---"
+              aws ssm get-command-invocation \
+                --command-id "${{ steps.trigger.outputs.command_id }}" \
+                --instance-id "${{ secrets.AWS_INSTANCE_ID }}" \
+                --query 'StandardOutputContent' --output text || true
+              echo "--- SSM deploy STDERR ---"
               aws ssm get-command-invocation \
                 --command-id "${{ steps.trigger.outputs.command_id }}" \
                 --instance-id "${{ secrets.AWS_INSTANCE_ID }}" \
