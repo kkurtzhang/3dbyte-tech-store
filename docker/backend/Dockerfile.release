@@ -1,0 +1,23 @@
+FROM node:20-alpine
+
+RUN apk add --no-cache libc6-compat
+WORKDIR /opt
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/backend/package.json apps/backend/package.json
+COPY packages/shared-types/package.json packages/shared-types/package.json
+COPY packages/shared-utils/package.json packages/shared-utils/package.json
+COPY packages/shared-config/package.json packages/shared-config/package.json
+
+RUN corepack enable && pnpm install --frozen-lockfile
+
+COPY . .
+
+RUN pnpm --filter @3dbyte-tech-store/backend build
+
+ENV NODE_ENV=production
+ENV PORT=9000
+EXPOSE 9000
+
+WORKDIR /opt/apps/backend
+CMD ["pnpm", "start"]

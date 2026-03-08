@@ -15,3 +15,15 @@ services:
     volumes:
       - ../apps/cms/public/uploads:/opt/apps/cms/public/uploads
     command: ["node", "/opt/apps/cms/node_modules/@strapi/strapi/bin/strapi.js", "start"]
+
+  backend:
+    container_name: 3dbyte-backend
+    image: ${BACKEND_IMAGE:-3dbytetech/backend:dev-latest}
+    restart: unless-stopped
+    env_file:
+      - ../apps/backend/.env
+    environment:
+      - NODE_ENV=production
+      - PORT=9000
+    ports:
+      - "9000:9000"
