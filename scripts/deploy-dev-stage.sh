@@ -32,28 +32,54 @@ if [ ! -f apps/backend/.env ]; then
 fi
 
 # Backend DB preflight (redacted)
-if grep -q '^DATABASE_URL=' apps/backend/.env; then
-  DB_URL_LINE="$(grep '^DATABASE_URL=' apps/backend/.env | head -n1)"
-  DB_URL="${DB_URL_LINE#DATABASE_URL=}"
-  DB_HOST="$(printf '%s' "$DB_URL" | sed -E 's#.*@([^:/?]+).*#\1#')"
-  DB_PORT="$(printf '%s' "$DB_URL" | sed -nE 's#.*:([0-9]+)/.*#\1#p')"
-  [ -z "$DB_PORT" ] && DB_PORT=5432
-  if [ -n "$DB_HOST" ] && [ "$DB_HOST" != "$DB_URL" ]; then
-    echo "[deploy] backend DATABASE_URL host=$DB_HOST port=$DB_PORT"
-  else
-    echo "[deploy] WARNING: backend DATABASE_URL not parseable"
-  fi
+# Resolve DATABASE_URL robustly (supports quotes and ${POSTGRES_URL} indirection)
+get_env_val() {
+  local key="$1"
+  local file="$2"
+  awk -F= -v k="$key" '$1==k {sub($1"=",""); print; exit}' "$file"
+}
 
-  # Common EC2 container gotcha: localhost in DATABASE_URL points to container itself.
-  if printf '%s' "$DB_URL" | grep -Eq '@(localhost|127\.0\.0\.1)(:|/)'; then
-    cp apps/backend/.env "apps/backend/.env.bak.$(date +%Y%m%d-%H%M%S)"
-    sed -E -i '' 's#(DATABASE_URL=.*@)(localhost|127\.0\.0\.1)(:|/)#\1host.docker.internal\3#' apps/backend/.env 2>/dev/null \
-      || sed -E -i 's#(DATABASE_URL=.*@)(localhost|127\.0\.0\.1)(:|/)#\1host.docker.internal\3#' apps/backend/.env
-    echo "[deploy] patched backend DATABASE_URL host: localhost -> host.docker.internal"
-  fi
-else
-  echo "[deploy] ERROR: apps/backend/.env missing DATABASE_URL" >&2
+DB_URL_RAW="$(get_env_val DATABASE_URL apps/backend/.env)"
+POSTGRES_URL_RAW="$(get_env_val POSTGRES_URL apps/backend/.env)"
+
+# trim surrounding quotes if present
+DB_URL="${DB_URL_RAW%\"}"; DB_URL="${DB_URL#\"}"
+POSTGRES_URL="${POSTGRES_URL_RAW%\"}"; POSTGRES_URL="${POSTGRES_URL#\"}"
+
+# resolve indirection like DATABASE_URL=${POSTGRES_URL}
+if [ -n "$POSTGRES_URL" ] && { [ "$DB_URL" = "${POSTGRES_URL}" ] || [ "$DB_URL" = "\${POSTGRES_URL}" ] || [ "$DB_URL" = "${POSTGRES_URL_RAW}" ]; }; then
+  DB_URL="$POSTGRES_URL"
+fi
+
+if [ -z "$DB_URL" ]; then
+  echo "[deploy] ERROR: backend DATABASE_URL unresolved/empty" >&2
   exit 1
+fi
+
+# Common EC2 container gotcha: localhost in DATABASE_URL points to container itself.
+if printf '%s' "$DB_URL" | grep -Eq '@(localhost|127\.0\.0\.1)(:|/)'; then
+  DB_URL="$(printf '%s' "$DB_URL" | sed -E 's#@(localhost|127\.0\.0\.1)(:|/)#@host.docker.internal\2#')"
+  echo "[deploy] patched backend DATABASE_URL host: localhost -> host.docker.internal"
+fi
+
+# Write back resolved DATABASE_URL for compose container env
+cp apps/backend/.env "apps/backend/.env.bak.$(date +%Y%m%d-%H%M%S)"
+TMP_ENV="$(mktemp)"
+awk -v db="$DB_URL" '
+  BEGIN{done=0}
+  /^DATABASE_URL=/{print "DATABASE_URL=" db; done=1; next}
+  {print}
+  END{if(!done) print "DATABASE_URL=" db}
+' apps/backend/.env > "$TMP_ENV"
+mv "$TMP_ENV" apps/backend/.env
+
+DB_HOST="$(printf '%s' "$DB_URL" | sed -E 's#.*@([^:/?]+).*#\1#')"
+DB_PORT="$(printf '%s' "$DB_URL" | sed -nE 's#.*:([0-9]+)/.*#\1#p')"
+[ -z "$DB_PORT" ] && DB_PORT=5432
+if [ -n "$DB_HOST" ] && [ "$DB_HOST" != "$DB_URL" ]; then
+  echo "[deploy] backend DATABASE_URL host=$DB_HOST port=$DB_PORT"
+else
+  echo "[deploy] WARNING: backend DATABASE_URL not parseable"
 fi
 
 chmod 644 apps/cms/.env apps/backend/.env || true
