@@ -25,6 +25,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=9000
+    command: ["pnpm", "start", "--", "--no-admin"]
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
