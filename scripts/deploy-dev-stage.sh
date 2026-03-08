@@ -82,11 +82,30 @@ else
   echo "[deploy] WARNING: backend DATABASE_URL not parseable"
 fi
 
+# Ensure minimum required backend secrets for boot
+if ! grep -q '^STRIPE_SECRET_KEY=' apps/backend/.env || [ -z "$(get_env_val STRIPE_SECRET_KEY apps/backend/.env)" ]; then
+  echo 'STRIPE_SECRET_KEY=sk_test_dev_placeholder' >> apps/backend/.env
+  echo '[deploy] injected STRIPE_SECRET_KEY placeholder for dev-stage boot'
+fi
+if ! grep -q '^STRIPE_WEBHOOK_SECRET=' apps/backend/.env || [ -z "$(get_env_val STRIPE_WEBHOOK_SECRET apps/backend/.env)" ]; then
+  echo 'STRIPE_WEBHOOK_SECRET=whsec_dev_placeholder' >> apps/backend/.env
+fi
+
 chmod 644 apps/cms/.env apps/backend/.env || true
 
 echo "[deploy] pull-only mode: CMS=$CMS_IMAGE BACKEND=$BACKEND_IMAGE"
 docker pull "$CMS_IMAGE"
 docker pull "$BACKEND_IMAGE"
+
+# Run DB migrations before app boot (idempotent)
+set +e
+CMS_IMAGE="$CMS_IMAGE" BACKEND_IMAGE="$BACKEND_IMAGE" \
+  docker compose -f "$COMPOSE_FILE" run --rm --no-deps backend sh -lc "pnpm medusa db:migrate"
+MIG_RC=$?
+set -e
+if [ "$MIG_RC" -ne 0 ]; then
+  echo "[deploy] WARNING: medusa db:migrate returned rc=$MIG_RC (continuing to app boot for visibility)"
+fi
 
 CMS_IMAGE="$CMS_IMAGE" BACKEND_IMAGE="$BACKEND_IMAGE" \
   docker compose -f "$COMPOSE_FILE" up -d --force-recreate --no-build cms backend
