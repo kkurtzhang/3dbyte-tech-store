@@ -14,7 +14,10 @@ RUN corepack enable && pnpm install --frozen-lockfile
 COPY . .
 
 WORKDIR /opt/apps/backend
-RUN pnpm build
+RUN pnpm build && \
+    if [ -f .medusa/server/public/admin/index.html ] && [ ! -f .medusa/server/public/index.html ]; then \
+      cp -R .medusa/server/public/admin/* .medusa/server/public/; \
+    fi
 
 ENV NODE_ENV=production
 ENV PORT=9000
