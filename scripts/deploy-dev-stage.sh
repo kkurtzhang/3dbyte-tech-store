@@ -98,9 +98,10 @@ fi
 chmod 644 apps/cms/.env apps/backend/.env || true
 
 # Smart deploy: only recreate services whose image digest changed (unless FORCE_RECREATE=1)
-services=(backend)
+# Backend deploys include both server and worker because they share the same image.
+services=(backend worker)
 if [ "$DEPLOY_BACKEND_ONLY" != "1" ]; then
-  services=(cms backend)
+  services=(cms backend worker)
 fi
 
 declare -a recreate_services=()
@@ -108,6 +109,9 @@ for svc in "${services[@]}"; do
   if [ "$svc" = "cms" ]; then
     img="$CMS_IMAGE"
     container="3dbyte-cms"
+  elif [ "$svc" = "worker" ]; then
+    img="$BACKEND_IMAGE"
+    container="3dbyte-worker"
   else
     img="$BACKEND_IMAGE"
     container="3dbyte-backend"
@@ -185,6 +189,16 @@ if [ "$BACKEND_CODE" != "200" ] && [ "$BACKEND_CODE" != "204" ]; then
   echo "[deploy] backend health check failed" >&2
   docker logs --tail=160 3dbyte-backend || true
   exit 1
+fi
+
+if printf '%s\n' "${services[@]}" | grep -qx 'worker'; then
+  WORKER_STATE="$(docker inspect -f '{{.State.Status}}' 3dbyte-worker 2>/dev/null || true)"
+  echo "[deploy] worker_state=$WORKER_STATE"
+  if [ "$WORKER_STATE" != "running" ]; then
+    echo "[deploy] worker failed to stay running" >&2
+    docker logs --tail=160 3dbyte-worker || true
+    exit 1
+  fi
 fi
 
 echo "[deploy] success"
