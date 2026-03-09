@@ -1,4 +1,4 @@
-import z from "zod";
+import { z } from "@medusajs/framework/zod";
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework";
 import { LinkDefinition } from "@medusajs/framework/types";
 import { Modules } from "@medusajs/utils";

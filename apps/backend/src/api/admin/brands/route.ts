@@ -1,6 +1,6 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { createBrandWorkflow } from "../../../workflows/brand/create-brand";
-import z from "zod";
+import { z } from "@medusajs/framework/zod";
 import { PostAdminCreateBrand } from "./validators";
 import {
   AdminBrandResponse,

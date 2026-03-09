@@ -1,5 +1,5 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
-import z from "zod";
+import { z } from "@medusajs/framework/zod";
 import { updateBrandWorkflow } from "../../../../workflows/brand/update-brand";
 import { PostAdminUpdateBrand } from "../validators";
 import { deleteBrandWorkflow } from "../../../../workflows/brand/delete-brand";

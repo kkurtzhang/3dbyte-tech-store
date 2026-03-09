@@ -1,4 +1,4 @@
-import z from "zod";
+import { z } from "@medusajs/framework/zod";
 import { PostAdminLinkProductsToBrand } from "../../validators";
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework";
 import { Modules } from "@medusajs/framework/utils";

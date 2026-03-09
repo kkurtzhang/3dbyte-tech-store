@@ -11,7 +11,7 @@ import {
   DeleteAdminLinkProductsBrand,
   DeleteAdminBatchLinkProductsBrand,
 } from "./admin/brands/validators";
-import z from "zod";
+import { z } from "@medusajs/framework/zod";
 import { createFindParams } from "@medusajs/medusa/api/utils/validators";
 import { storeSearchRoutesMiddlewares } from "./store/search/middlewares";
 
