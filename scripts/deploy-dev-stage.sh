@@ -82,6 +82,16 @@ else
   echo "[deploy] WARNING: backend DATABASE_URL not parseable"
 fi
 
+# Redis preflight: localhost inside container is usually wrong on EC2 docker runtime.
+REDIS_URL_RAW="$(get_env_val REDIS_URL apps/backend/.env)"
+REDIS_URL="${REDIS_URL_RAW%\"}"; REDIS_URL="${REDIS_URL#\"}"
+if [ -n "$REDIS_URL" ] && printf '%s' "$REDIS_URL" | grep -Eq '://(localhost|127\.0\.0\.1)(:|/|$)'; then
+  TMP_ENV="$(mktemp)"
+  awk 'BEGIN{done=0} /^REDIS_URL=/{print "# REDIS_URL disabled by deploy script (localhost is invalid inside container)"; done=1; next} {print} END{if(!done) print "# REDIS_URL disabled by deploy script"}' apps/backend/.env > "$TMP_ENV"
+  mv "$TMP_ENV" apps/backend/.env
+  echo "[deploy] disabled REDIS_URL that pointed to localhost/127.0.0.1"
+fi
+
 # Ensure minimum required backend secrets for boot
 if ! grep -q '^STRIPE_SECRET_KEY=' apps/backend/.env || [ -z "$(get_env_val STRIPE_SECRET_KEY apps/backend/.env)" ]; then
   echo 'STRIPE_SECRET_KEY=sk_test_dev_placeholder' >> apps/backend/.env
