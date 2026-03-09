@@ -19,12 +19,11 @@ RUN pnpm build && \
       cp -R .medusa/server/public/admin/* .medusa/server/public/; \
     fi
 
-# Run from built server directory, but use root-installed workspace deps/CLI.
+# Run from built server directory, using the concrete backend workspace Medusa binary.
 WORKDIR /opt/apps/backend/.medusa/server
-ENV PATH="/opt/node_modules/.bin:/opt/apps/backend/node_modules/.bin:${PATH}"
 
 ENV NODE_ENV=production
 ENV PORT=9000
 EXPOSE 9000
 
-CMD ["sh", "-lc", "medusa start"]
+CMD ["sh", "-lc", "/opt/apps/backend/node_modules/.bin/medusa start"]
