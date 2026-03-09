@@ -5,6 +5,7 @@ REPO_DIR="/opt/3dbyte-tech-store"
 COMPOSE_FILE="docker/docker-compose.dev-stage.yml"
 CMS_IMAGE="${CMS_IMAGE:-3dbytetech/cms:dev-latest}"
 BACKEND_IMAGE="${BACKEND_IMAGE:-3dbytetech/backend:dev-latest}"
+DEPLOY_BACKEND_ONLY="${DEPLOY_BACKEND_ONLY:-1}"
 
 cd "$REPO_DIR"
 
@@ -104,7 +105,11 @@ fi
 chmod 644 apps/cms/.env apps/backend/.env || true
 
 echo "[deploy] pull-only mode: CMS=$CMS_IMAGE BACKEND=$BACKEND_IMAGE"
-docker pull "$CMS_IMAGE"
+if [ "$DEPLOY_BACKEND_ONLY" = "1" ]; then
+  echo "[deploy] backend-only mode enabled (skip cms pull/recreate)"
+else
+  docker pull "$CMS_IMAGE"
+fi
 docker pull "$BACKEND_IMAGE"
 
 # Run DB migrations before app boot (idempotent)
@@ -117,25 +122,32 @@ if [ "$MIG_RC" -ne 0 ]; then
   echo "[deploy] WARNING: medusa db:migrate returned rc=$MIG_RC (continuing to app boot for visibility)"
 fi
 
-CMS_IMAGE="$CMS_IMAGE" BACKEND_IMAGE="$BACKEND_IMAGE" \
-  docker compose -f "$COMPOSE_FILE" up -d --force-recreate --no-build cms backend
+if [ "$DEPLOY_BACKEND_ONLY" = "1" ]; then
+  CMS_IMAGE="$CMS_IMAGE" BACKEND_IMAGE="$BACKEND_IMAGE" \
+    docker compose -f "$COMPOSE_FILE" up -d --force-recreate --no-build backend
+else
+  CMS_IMAGE="$CMS_IMAGE" BACKEND_IMAGE="$BACKEND_IMAGE" \
+    docker compose -f "$COMPOSE_FILE" up -d --force-recreate --no-build cms backend
+fi
 
 docker compose -f "$COMPOSE_FILE" ps
 
-CMS_CODE="000"
-for _ in $(seq 1 24); do
-  CMS_CODE="$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:1337/admin || true)"
-  if [ "$CMS_CODE" = "200" ] || [ "$CMS_CODE" = "301" ] || [ "$CMS_CODE" = "302" ]; then
-    break
-  fi
-  sleep 5
-done
+if [ "$DEPLOY_BACKEND_ONLY" != "1" ]; then
+  CMS_CODE="000"
+  for _ in $(seq 1 24); do
+    CMS_CODE="$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:1337/admin || true)"
+    if [ "$CMS_CODE" = "200" ] || [ "$CMS_CODE" = "301" ] || [ "$CMS_CODE" = "302" ]; then
+      break
+    fi
+    sleep 5
+  done
 
-echo "[deploy] cms_admin_status=$CMS_CODE"
-if [ "$CMS_CODE" != "200" ] && [ "$CMS_CODE" != "301" ] && [ "$CMS_CODE" != "302" ]; then
-  echo "[deploy] cms admin health check failed" >&2
-  docker logs --tail=120 3dbyte-cms || true
-  exit 1
+  echo "[deploy] cms_admin_status=$CMS_CODE"
+  if [ "$CMS_CODE" != "200" ] && [ "$CMS_CODE" != "301" ] && [ "$CMS_CODE" != "302" ]; then
+    echo "[deploy] cms admin health check failed" >&2
+    docker logs --tail=120 3dbyte-cms || true
+    exit 1
+  fi
 fi
 
 BACKEND_CODE="000"
