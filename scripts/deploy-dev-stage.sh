@@ -176,7 +176,7 @@ if [ "$DEPLOY_BACKEND_ONLY" != "1" ] && printf '%s\n' "${services[@]}" | grep -q
 fi
 
 BACKEND_CODE="000"
-for _ in $(seq 1 24); do
+for _ in $(seq 1 48); do
   BACKEND_CODE="$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:9000/health || true)"
   if [ "$BACKEND_CODE" = "200" ] || [ "$BACKEND_CODE" = "204" ]; then
     break
