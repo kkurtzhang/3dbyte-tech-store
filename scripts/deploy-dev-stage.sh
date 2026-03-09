@@ -127,6 +127,10 @@ for svc in "${services[@]}"; do
   fi
 done
 
+# Ensure meilisearch is running before backend migration/start
+CMS_IMAGE="$CMS_IMAGE" BACKEND_IMAGE="$BACKEND_IMAGE" \
+  docker compose -f "$COMPOSE_FILE" up -d --no-build meilisearch
+
 # Run backend migrations only when backend will be recreated or forced
 if [ "$FORCE_RECREATE" = "1" ] || printf '%s\n' "${recreate_services[@]:-}" | grep -qx 'backend'; then
   set +e

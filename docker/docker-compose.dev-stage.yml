@@ -1,4 +1,15 @@
 services:
+  meilisearch:
+    container_name: 3dbyte-meilisearch
+    image: getmeili/meilisearch:v1.12
+    restart: unless-stopped
+    environment:
+      - MEILI_NO_ANALYTICS=true
+    volumes:
+      - meilisearch_data:/meili_data
+    ports:
+      - "7700:7700"
+
   cms:
     container_name: 3dbyte-cms
     image: ${CMS_IMAGE:-3dbytetech/cms:dev-latest}
@@ -20,6 +31,8 @@ services:
     container_name: 3dbyte-backend
     image: ${BACKEND_IMAGE:-3dbytetech/backend:dev-latest}
     restart: unless-stopped
+    depends_on:
+      - meilisearch
     env_file:
       - ../apps/backend/.env
     environment:
@@ -29,3 +42,6 @@ services:
       - "host.docker.internal:host-gateway"
     ports:
       - "9000:9000"
+
+volumes:
+  meilisearch_data:
