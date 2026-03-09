@@ -113,11 +113,12 @@ for svc in "${services[@]}"; do
     container="3dbyte-backend"
   fi
 
+  old_img_id="$(docker inspect -f '{{.Image}}' "$container" 2>/dev/null || true)"
+
   echo "[deploy] pulling $svc image: $img"
   docker pull "$img"
 
   new_img_id="$(docker image inspect -f '{{.Id}}' "$img" 2>/dev/null || true)"
-  old_img_id="$(docker inspect -f '{{.Image}}' "$container" 2>/dev/null || true)"
 
   if [ "$FORCE_RECREATE" = "1" ] || [ -z "$old_img_id" ] || [ "$old_img_id" != "$new_img_id" ]; then
     recreate_services+=("$svc")
@@ -138,21 +139,13 @@ docker rm -f 3dbyte-meilisearch >/dev/null 2>&1 || true
 CMS_IMAGE="$CMS_IMAGE" BACKEND_IMAGE="$BACKEND_IMAGE" \
   docker compose -f "$COMPOSE_FILE" up -d --no-build meilisearch
 
-# Run backend migrations only when backend will be recreated or forced
-if [ "$FORCE_RECREATE" = "1" ] || printf '%s\n' "${recreate_services[@]:-}" | grep -qx 'backend'; then
-  set +e
-  CMS_IMAGE="$CMS_IMAGE" BACKEND_IMAGE="$BACKEND_IMAGE" \
-    docker compose -f "$COMPOSE_FILE" run --rm --no-deps backend sh -lc "pnpm medusa db:migrate"
-  MIG_RC=$?
-  set -e
-  if [ "$MIG_RC" -ne 0 ]; then
-    echo "[deploy] WARNING: medusa db:migrate returned rc=$MIG_RC (continuing to app boot for visibility)"
-  fi
-fi
-
+# Runtime migration is handled inside backend container startup via predeploy.
 if [ "${#recreate_services[@]}" -gt 0 ]; then
   CMS_IMAGE="$CMS_IMAGE" BACKEND_IMAGE="$BACKEND_IMAGE" \
     docker compose -f "$COMPOSE_FILE" up -d --force-recreate --no-build "${recreate_services[@]}"
+
+  # Trim superseded Docker images/layers after successful recreate to reduce storage pressure.
+  docker image prune -af >/dev/null 2>&1 || true
 else
   echo "[deploy] no service image changed; skip recreate"
 fi
