@@ -17,15 +17,14 @@ WORKDIR /opt/apps/backend
 RUN pnpm build && \
     if [ -f .medusa/server/public/admin/index.html ] && [ ! -f .medusa/server/public/index.html ]; then \
       cp -R .medusa/server/public/admin/* .medusa/server/public/; \
-    fi && \
-    cd .medusa/server && \
-    CI=true pnpm install --prod --ignore-scripts
+    fi
 
-# Run from built server directory to avoid static path resolution issues.
+# Run from built server directory, but use root-installed workspace deps/CLI.
 WORKDIR /opt/apps/backend/.medusa/server
+ENV PATH="/opt/node_modules/.bin:/opt/apps/backend/node_modules/.bin:${PATH}"
 
 ENV NODE_ENV=production
 ENV PORT=9000
 EXPOSE 9000
 
-CMD ["sh", "-lc", "CI=true pnpm run predeploy && CI=true pnpm start"]
+CMD ["sh", "-lc", "medusa start"]
