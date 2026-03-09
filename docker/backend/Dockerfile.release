@@ -26,4 +26,4 @@ ENV NODE_ENV=production
 ENV PORT=9000
 EXPOSE 9000
 
-CMD ["sh", "-lc", "CI=true pnpm install --frozen-lockfile --prod && CI=true pnpm run predeploy && CI=true pnpm start"]
+CMD ["sh", "-lc", "CI=true pnpm install --frozen-lockfile --prod --ignore-scripts && CI=true pnpm run predeploy && CI=true pnpm start"]
