@@ -39,10 +39,29 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=9000
+      - MEDUSA_WORKER_MODE=server
+      - DISABLE_MEDUSA_ADMIN=false
+      - MEDUSA_BACKEND_URL=${MEDUSA_BACKEND_URL:-https://api-dev.3dbytetech.com}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
       - "9000:9000"
+
+  worker:
+    container_name: 3dbyte-worker
+    image: ${BACKEND_IMAGE:-3dbytetech/backend:dev-latest}
+    restart: unless-stopped
+    depends_on:
+      - meilisearch
+    env_file:
+      - ../apps/backend/.env
+    environment:
+      - NODE_ENV=production
+      - MEDUSA_WORKER_MODE=worker
+      - DISABLE_MEDUSA_ADMIN=true
+      - MEDUSA_BACKEND_URL=${MEDUSA_BACKEND_URL:-https://api-dev.3dbytetech.com}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
   meilisearch_data:
