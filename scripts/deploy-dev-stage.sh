@@ -128,6 +128,11 @@ for svc in "${services[@]}"; do
 done
 
 # Ensure meilisearch is running before backend migration/start
+# Reuse backend MEILISEARCH_API_KEY as MEILI_MASTER_KEY for meilisearch container.
+MEILISEARCH_API_KEY_RAW="$(get_env_val MEILISEARCH_API_KEY apps/backend/.env)"
+MEILI_MASTER_KEY="${MEILISEARCH_API_KEY_RAW%\"}"; MEILI_MASTER_KEY="${MEILI_MASTER_KEY#\"}"
+export MEILI_MASTER_KEY
+
 # If an old container with the same explicit name exists outside current compose metadata, remove it.
 docker rm -f 3dbyte-meilisearch >/dev/null 2>&1 || true
 CMS_IMAGE="$CMS_IMAGE" BACKEND_IMAGE="$BACKEND_IMAGE" \
