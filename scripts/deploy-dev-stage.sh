@@ -128,6 +128,8 @@ for svc in "${services[@]}"; do
 done
 
 # Ensure meilisearch is running before backend migration/start
+# If an old container with the same explicit name exists outside current compose metadata, remove it.
+docker rm -f 3dbyte-meilisearch >/dev/null 2>&1 || true
 CMS_IMAGE="$CMS_IMAGE" BACKEND_IMAGE="$BACKEND_IMAGE" \
   docker compose -f "$COMPOSE_FILE" up -d --no-build meilisearch
 
