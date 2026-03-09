@@ -26,4 +26,4 @@ ENV NODE_ENV=production
 ENV PORT=9000
 EXPOSE 9000
 
-CMD ["pnpm", "start"]
+CMD ["sh", "-lc", "pnpm install --frozen-lockfile --prod && pnpm start"]
