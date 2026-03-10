@@ -24,7 +24,7 @@ coverage
 .cache
 
 # Unneeded app/runtime payloads for backend image
-apps/cms
+# Keep apps/cms available because the CMS image build uses the repo-root context.
 storefront
 
 # Local agent / editor noise

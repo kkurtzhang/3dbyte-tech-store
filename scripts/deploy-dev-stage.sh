@@ -87,6 +87,17 @@ if [ -n "$REDIS_URL" ] && printf '%s' "$REDIS_URL" | grep -Eq '://(localhost|127
   echo "[deploy] disabled REDIS_URL that pointed to localhost/127.0.0.1"
 fi
 
+for env_file in apps/backend/.env apps/cms/.env; do
+  MEILISEARCH_HOST_RAW="$(get_env_val MEILISEARCH_HOST "$env_file")"
+  MEILISEARCH_HOST="${MEILISEARCH_HOST_RAW%\"}"; MEILISEARCH_HOST="${MEILISEARCH_HOST#\"}"
+  if [ -n "$MEILISEARCH_HOST" ] && printf '%s' "$MEILISEARCH_HOST" | grep -Eq '^https?://(localhost|127\.0\.0\.1)(:|/|$)'; then
+    TMP_ENV="$(mktemp)"
+    awk 'BEGIN{done=0} /^MEILISEARCH_HOST=/{print "MEILISEARCH_HOST=http://meilisearch:7700"; done=1; next} {print} END{if(!done) print "MEILISEARCH_HOST=http://meilisearch:7700"}' "$env_file" > "$TMP_ENV"
+    mv "$TMP_ENV" "$env_file"
+    echo "[deploy] patched $(basename "$(dirname "$env_file")") MEILISEARCH_HOST: localhost -> http://meilisearch:7700"
+  fi
+done
+
 if ! grep -q '^STRIPE_SECRET_KEY=' apps/backend/.env || [ -z "$(get_env_val STRIPE_SECRET_KEY apps/backend/.env)" ]; then
   echo 'STRIPE_SECRET_KEY=sk_test_dev_placeholder' >> apps/backend/.env
   echo '[deploy] injected STRIPE_SECRET_KEY placeholder for dev-stage boot'
@@ -132,10 +143,24 @@ for svc in "${services[@]}"; do
   fi
 done
 
-# Ensure meilisearch is running before backend migration/start
-# Reuse backend MEILISEARCH_API_KEY as MEILI_MASTER_KEY for meilisearch container.
-MEILISEARCH_API_KEY_RAW="$(get_env_val MEILISEARCH_API_KEY apps/backend/.env)"
-MEILI_MASTER_KEY="${MEILISEARCH_API_KEY_RAW%\"}"; MEILI_MASTER_KEY="${MEILI_MASTER_KEY#\"}"
+# Ensure meilisearch is running before backend migration/start.
+# Use a deterministic file-backed key source: MEILI_MASTER_KEY in backend .env,
+# falling back to MEILISEARCH_API_KEY if needed, then sync that same value into CMS.
+MEILI_MASTER_KEY_RAW="$(get_env_val MEILI_MASTER_KEY apps/backend/.env)"
+MEILI_MASTER_KEY="${MEILI_MASTER_KEY_RAW%\"}"; MEILI_MASTER_KEY="${MEILI_MASTER_KEY#\"}"
+if [ -z "$MEILI_MASTER_KEY" ]; then
+  MEILISEARCH_API_KEY_RAW="$(get_env_val MEILISEARCH_API_KEY apps/backend/.env)"
+  MEILI_MASTER_KEY="${MEILISEARCH_API_KEY_RAW%\"}"; MEILI_MASTER_KEY="${MEILI_MASTER_KEY#\"}"
+fi
+TMP_ENV="$(mktemp)"
+awk -v key="$MEILI_MASTER_KEY" 'BEGIN{done=0} /^MEILI_MASTER_KEY=/{print "MEILI_MASTER_KEY=" key; done=1; next} {print} END{if(!done) print "MEILI_MASTER_KEY=" key}' apps/backend/.env > "$TMP_ENV"
+mv "$TMP_ENV" apps/backend/.env
+TMP_ENV="$(mktemp)"
+awk -v key="$MEILI_MASTER_KEY" 'BEGIN{done=0} /^MEILISEARCH_API_KEY=/{print "MEILISEARCH_API_KEY=" key; done=1; next} {print} END{if(!done) print "MEILISEARCH_API_KEY=" key}' apps/backend/.env > "$TMP_ENV"
+mv "$TMP_ENV" apps/backend/.env
+TMP_ENV="$(mktemp)"
+awk -v key="$MEILI_MASTER_KEY" 'BEGIN{done=0} /^MEILISEARCH_API_KEY=/{print "MEILISEARCH_API_KEY=" key; done=1; next} {print} END{if(!done) print "MEILISEARCH_API_KEY=" key}' apps/cms/.env > "$TMP_ENV"
+mv "$TMP_ENV" apps/cms/.env
 export MEILI_MASTER_KEY
 
 # If an old container with the same explicit name exists outside current compose metadata, remove it.
