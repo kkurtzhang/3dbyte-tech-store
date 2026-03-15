@@ -5,6 +5,8 @@ REPO_DIR="/opt/3dbyte-tech-store"
 COMPOSE_FILE="docker/docker-compose.dev-stage.yml"
 CMS_IMAGE="${CMS_IMAGE:-3dbytetech/cms:dev-latest}"
 BACKEND_IMAGE="${BACKEND_IMAGE:-3dbytetech/backend:dev-latest}"
+DEPLOY_BACKEND_ONLY="${DEPLOY_BACKEND_ONLY:-1}"
+FORCE_RECREATE="${FORCE_RECREATE:-0}"
 
 cd "$REPO_DIR"
 
@@ -31,8 +33,6 @@ if [ ! -f apps/backend/.env ]; then
   fi
 fi
 
-# Backend DB preflight (redacted)
-# Resolve DATABASE_URL robustly (supports quotes and ${POSTGRES_URL} indirection)
 get_env_val() {
   local key="$1"
   local file="$2"
@@ -42,11 +42,9 @@ get_env_val() {
 DB_URL_RAW="$(get_env_val DATABASE_URL apps/backend/.env)"
 POSTGRES_URL_RAW="$(get_env_val POSTGRES_URL apps/backend/.env)"
 
-# trim surrounding quotes if present
 DB_URL="${DB_URL_RAW%\"}"; DB_URL="${DB_URL#\"}"
 POSTGRES_URL="${POSTGRES_URL_RAW%\"}"; POSTGRES_URL="${POSTGRES_URL#\"}"
 
-# resolve indirection like DATABASE_URL=${POSTGRES_URL}
 if [ -n "$POSTGRES_URL" ] && { [ "$DB_URL" = "${POSTGRES_URL}" ] || [ "$DB_URL" = "\${POSTGRES_URL}" ] || [ "$DB_URL" = "${POSTGRES_URL_RAW}" ]; }; then
   DB_URL="$POSTGRES_URL"
 fi
@@ -56,13 +54,11 @@ if [ -z "$DB_URL" ]; then
   exit 1
 fi
 
-# Common EC2 container gotcha: localhost in DATABASE_URL points to container itself.
 if printf '%s' "$DB_URL" | grep -Eq '@(localhost|127\.0\.0\.1)(:|/)'; then
   DB_URL="$(printf '%s' "$DB_URL" | sed -E 's#@(localhost|127\.0\.0\.1)(:|/)#@host.docker.internal\2#')"
   echo "[deploy] patched backend DATABASE_URL host: localhost -> host.docker.internal"
 fi
 
-# Write back resolved DATABASE_URL for compose container env
 cp apps/backend/.env "apps/backend/.env.bak.$(date +%Y%m%d-%H%M%S)"
 TMP_ENV="$(mktemp)"
 awk -v db="$DB_URL" '
@@ -82,7 +78,26 @@ else
   echo "[deploy] WARNING: backend DATABASE_URL not parseable"
 fi
 
-# Ensure minimum required backend secrets for boot
+REDIS_URL_RAW="$(get_env_val REDIS_URL apps/backend/.env)"
+REDIS_URL="${REDIS_URL_RAW%\"}"; REDIS_URL="${REDIS_URL#\"}"
+if [ -n "$REDIS_URL" ] && printf '%s' "$REDIS_URL" | grep -Eq '://(localhost|127\.0\.0\.1)(:|/|$)'; then
+  TMP_ENV="$(mktemp)"
+  awk 'BEGIN{done=0} /^REDIS_URL=/{print "# REDIS_URL disabled by deploy script (localhost is invalid inside container)"; done=1; next} {print} END{if(!done) print "# REDIS_URL disabled by deploy script"}' apps/backend/.env > "$TMP_ENV"
+  mv "$TMP_ENV" apps/backend/.env
+  echo "[deploy] disabled REDIS_URL that pointed to localhost/127.0.0.1"
+fi
+
+for env_file in apps/backend/.env apps/cms/.env; do
+  MEILISEARCH_HOST_RAW="$(get_env_val MEILISEARCH_HOST "$env_file")"
+  MEILISEARCH_HOST="${MEILISEARCH_HOST_RAW%\"}"; MEILISEARCH_HOST="${MEILISEARCH_HOST#\"}"
+  if [ -n "$MEILISEARCH_HOST" ] && printf '%s' "$MEILISEARCH_HOST" | grep -Eq '^https?://(localhost|127\.0\.0\.1)(:|/|$)'; then
+    TMP_ENV="$(mktemp)"
+    awk 'BEGIN{done=0} /^MEILISEARCH_HOST=/{print "MEILISEARCH_HOST=http://meilisearch:7700"; done=1; next} {print} END{if(!done) print "MEILISEARCH_HOST=http://meilisearch:7700"}' "$env_file" > "$TMP_ENV"
+    mv "$TMP_ENV" "$env_file"
+    echo "[deploy] patched $(basename "$(dirname "$env_file")") MEILISEARCH_HOST: localhost -> http://meilisearch:7700"
+  fi
+done
+
 if ! grep -q '^STRIPE_SECRET_KEY=' apps/backend/.env || [ -z "$(get_env_val STRIPE_SECRET_KEY apps/backend/.env)" ]; then
   echo 'STRIPE_SECRET_KEY=sk_test_dev_placeholder' >> apps/backend/.env
   echo '[deploy] injected STRIPE_SECRET_KEY placeholder for dev-stage boot'
@@ -93,43 +108,100 @@ fi
 
 chmod 644 apps/cms/.env apps/backend/.env || true
 
-echo "[deploy] pull-only mode: CMS=$CMS_IMAGE BACKEND=$BACKEND_IMAGE"
-docker pull "$CMS_IMAGE"
-docker pull "$BACKEND_IMAGE"
-
-# Run DB migrations before app boot (idempotent)
-set +e
-CMS_IMAGE="$CMS_IMAGE" BACKEND_IMAGE="$BACKEND_IMAGE" \
-  docker compose -f "$COMPOSE_FILE" run --rm --no-deps backend sh -lc "pnpm medusa db:migrate"
-MIG_RC=$?
-set -e
-if [ "$MIG_RC" -ne 0 ]; then
-  echo "[deploy] WARNING: medusa db:migrate returned rc=$MIG_RC (continuing to app boot for visibility)"
+# Smart deploy: only recreate services whose image digest changed (unless FORCE_RECREATE=1)
+# Backend deploys include both server and worker because they share the same image.
+services=(backend worker)
+if [ "$DEPLOY_BACKEND_ONLY" != "1" ]; then
+  services=(cms backend worker)
 fi
 
+declare -a recreate_services=()
+for svc in "${services[@]}"; do
+  if [ "$svc" = "cms" ]; then
+    img="$CMS_IMAGE"
+    container="3dbyte-cms"
+  elif [ "$svc" = "worker" ]; then
+    img="$BACKEND_IMAGE"
+    container="3dbyte-worker"
+  else
+    img="$BACKEND_IMAGE"
+    container="3dbyte-backend"
+  fi
+
+  old_img_id="$(docker inspect -f '{{.Image}}' "$container" 2>/dev/null || true)"
+
+  echo "[deploy] pulling $svc image: $img"
+  docker pull "$img"
+
+  new_img_id="$(docker image inspect -f '{{.Id}}' "$img" 2>/dev/null || true)"
+
+  if [ "$FORCE_RECREATE" = "1" ] || [ -z "$old_img_id" ] || [ "$old_img_id" != "$new_img_id" ]; then
+    recreate_services+=("$svc")
+    echo "[deploy] mark recreate: $svc"
+  else
+    echo "[deploy] skip recreate (image unchanged): $svc"
+  fi
+done
+
+# Ensure meilisearch is running before backend migration/start.
+# Use a deterministic file-backed key source: MEILI_MASTER_KEY in backend .env,
+# falling back to MEILISEARCH_API_KEY if needed, then sync that same value into CMS.
+MEILI_MASTER_KEY_RAW="$(get_env_val MEILI_MASTER_KEY apps/backend/.env)"
+MEILI_MASTER_KEY="${MEILI_MASTER_KEY_RAW%\"}"; MEILI_MASTER_KEY="${MEILI_MASTER_KEY#\"}"
+if [ -z "$MEILI_MASTER_KEY" ]; then
+  MEILISEARCH_API_KEY_RAW="$(get_env_val MEILISEARCH_API_KEY apps/backend/.env)"
+  MEILI_MASTER_KEY="${MEILISEARCH_API_KEY_RAW%\"}"; MEILI_MASTER_KEY="${MEILI_MASTER_KEY#\"}"
+fi
+TMP_ENV="$(mktemp)"
+awk -v key="$MEILI_MASTER_KEY" 'BEGIN{done=0} /^MEILI_MASTER_KEY=/{print "MEILI_MASTER_KEY=" key; done=1; next} {print} END{if(!done) print "MEILI_MASTER_KEY=" key}' apps/backend/.env > "$TMP_ENV"
+mv "$TMP_ENV" apps/backend/.env
+TMP_ENV="$(mktemp)"
+awk -v key="$MEILI_MASTER_KEY" 'BEGIN{done=0} /^MEILISEARCH_API_KEY=/{print "MEILISEARCH_API_KEY=" key; done=1; next} {print} END{if(!done) print "MEILISEARCH_API_KEY=" key}' apps/backend/.env > "$TMP_ENV"
+mv "$TMP_ENV" apps/backend/.env
+TMP_ENV="$(mktemp)"
+awk -v key="$MEILI_MASTER_KEY" 'BEGIN{done=0} /^MEILISEARCH_API_KEY=/{print "MEILISEARCH_API_KEY=" key; done=1; next} {print} END{if(!done) print "MEILISEARCH_API_KEY=" key}' apps/cms/.env > "$TMP_ENV"
+mv "$TMP_ENV" apps/cms/.env
+export MEILI_MASTER_KEY
+
+# If an old container with the same explicit name exists outside current compose metadata, remove it.
+docker rm -f 3dbyte-meilisearch >/dev/null 2>&1 || true
 CMS_IMAGE="$CMS_IMAGE" BACKEND_IMAGE="$BACKEND_IMAGE" \
-  docker compose -f "$COMPOSE_FILE" up -d --force-recreate --no-build cms backend
+  docker compose -f "$COMPOSE_FILE" up -d --no-build meilisearch
+
+# Runtime migration is handled inside backend container startup via predeploy.
+if [ "${#recreate_services[@]}" -gt 0 ]; then
+  CMS_IMAGE="$CMS_IMAGE" BACKEND_IMAGE="$BACKEND_IMAGE" \
+    docker compose -f "$COMPOSE_FILE" up -d --force-recreate --no-build "${recreate_services[@]}"
+
+  # Trim superseded Docker images/layers after successful recreate to reduce storage pressure.
+  docker image prune -af >/dev/null 2>&1 || true
+else
+  echo "[deploy] no service image changed; skip recreate"
+fi
 
 docker compose -f "$COMPOSE_FILE" ps
 
-CMS_CODE="000"
-for _ in $(seq 1 24); do
-  CMS_CODE="$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:1337/admin || true)"
-  if [ "$CMS_CODE" = "200" ] || [ "$CMS_CODE" = "301" ] || [ "$CMS_CODE" = "302" ]; then
-    break
-  fi
-  sleep 5
-done
+# Health checks only for target services
+if [ "$DEPLOY_BACKEND_ONLY" != "1" ] && printf '%s\n' "${services[@]}" | grep -qx 'cms'; then
+  CMS_CODE="000"
+  for _ in $(seq 1 24); do
+    CMS_CODE="$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:1337/admin || true)"
+    if [ "$CMS_CODE" = "200" ] || [ "$CMS_CODE" = "301" ] || [ "$CMS_CODE" = "302" ]; then
+      break
+    fi
+    sleep 5
+  done
 
-echo "[deploy] cms_admin_status=$CMS_CODE"
-if [ "$CMS_CODE" != "200" ] && [ "$CMS_CODE" != "301" ] && [ "$CMS_CODE" != "302" ]; then
-  echo "[deploy] cms admin health check failed" >&2
-  docker logs --tail=120 3dbyte-cms || true
-  exit 1
+  echo "[deploy] cms_admin_status=$CMS_CODE"
+  if [ "$CMS_CODE" != "200" ] && [ "$CMS_CODE" != "301" ] && [ "$CMS_CODE" != "302" ]; then
+    echo "[deploy] cms admin health check failed" >&2
+    docker logs --tail=120 3dbyte-cms || true
+    exit 1
+  fi
 fi
 
 BACKEND_CODE="000"
-for _ in $(seq 1 24); do
+for _ in $(seq 1 48); do
   BACKEND_CODE="$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:9000/health || true)"
   if [ "$BACKEND_CODE" = "200" ] || [ "$BACKEND_CODE" = "204" ]; then
     break
@@ -142,6 +214,16 @@ if [ "$BACKEND_CODE" != "200" ] && [ "$BACKEND_CODE" != "204" ]; then
   echo "[deploy] backend health check failed" >&2
   docker logs --tail=160 3dbyte-backend || true
   exit 1
+fi
+
+if printf '%s\n' "${services[@]}" | grep -qx 'worker'; then
+  WORKER_STATE="$(docker inspect -f '{{.State.Status}}' 3dbyte-worker 2>/dev/null || true)"
+  echo "[deploy] worker_state=$WORKER_STATE"
+  if [ "$WORKER_STATE" != "running" ]; then
+    echo "[deploy] worker failed to stay running" >&2
+    docker logs --tail=160 3dbyte-worker || true
+    exit 1
+  fi
 fi
 
 echo "[deploy] success"

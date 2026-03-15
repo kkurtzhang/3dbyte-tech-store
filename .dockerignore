@@ -1,0 +1,34 @@
+# VCS
+.git
+.gitignore
+
+# Node / build caches
+**/node_modules
+**/.pnpm-store
+**/.turbo
+**/.next
+**/dist
+**/build
+
+# Local env / secrets
+**/.env
+**/.env.*
+!apps/backend/.env.template
+!apps/cms/.env.example
+
+# Logs / temp
+**/*.log
+**/.DS_Store
+coverage
+.tmp
+.cache
+
+# Unneeded app/runtime payloads for backend image
+# Keep apps/cms available because the CMS image build uses the repo-root context.
+storefront
+
+# Local agent / editor noise
+.openclaw
+.claude
+.vscode
+.idea

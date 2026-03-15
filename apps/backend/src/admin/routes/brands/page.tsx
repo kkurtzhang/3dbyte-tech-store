@@ -28,7 +28,7 @@ import { useNavigate } from "react-router-dom";
 import { ActionMenu } from "../../components/action-menu";
 import { useBrands, useCreateBrand, useDeleteBrand } from "../../hooks/brands";
 import { AdminBrand } from "../../types";
-import * as zod from "zod";
+import { z } from "@medusajs/framework/zod";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { HandleInput } from "../../components/handle-input";
 
@@ -100,9 +100,9 @@ const columns = [
 ];
 const limit = 10;
 
-const schema = zod.object({
-  name: zod.string(),
-  handle: zod.string().optional(), // Optional field
+const schema = z.object({
+  name: z.string(),
+  handle: z.string().optional(), // Optional field
 });
 const BrandsPage = () => {
   const [pagination, setPagination] = useState<DataTablePaginationState>({
@@ -115,7 +115,7 @@ const BrandsPage = () => {
 
   const navigate = useNavigate();
 
-  const form = useForm<zod.infer<typeof schema>>({
+  const form = useForm<z.infer<typeof schema>>({
     defaultValues: {
       name: "",
       handle: "",

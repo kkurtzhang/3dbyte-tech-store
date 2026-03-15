@@ -1,5 +1,5 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { z } from "zod"
+import { z } from "@medusajs/framework/zod"
 import { syncProductsWorkflow } from "../../../workflows/meilisearch"
 import { indexRichBrandWorkflow } from "../../../workflows/meilisearch/brands/index-rich-brand-workflow"
 import { indexBasicBrandWorkflow } from "../../../workflows/meilisearch/brands/index-basic-brand-workflow"
