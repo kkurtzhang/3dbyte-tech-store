@@ -136,6 +136,19 @@ const FACETS_TO_REQUEST = [
   // Note: options_* facets are dynamic and handled separately
 ]
 
+function isCollectionIdsNotFilterableError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error)
+  return /collection_ids/i.test(message) && /not filterable/i.test(message)
+}
+
+function buildFacetRequest(includeCollectionIds: boolean): string[] {
+  const staticFacets = includeCollectionIds
+    ? FACETS_TO_REQUEST
+    : FACETS_TO_REQUEST.filter((facet) => facet !== "collection_ids")
+
+  return [...staticFacets, ...getOptionFacets()]
+}
+
 // ============================================================================
 // Filter Building
 // ============================================================================
@@ -282,20 +295,36 @@ export async function searchProducts(
     // Build sort array
     const sortArray = sort ? SORT_MAP[sort] : undefined
 
-    // Combine static and dynamic facets
-    const allFacets = [...FACETS_TO_REQUEST, ...getOptionFacets()]
-
     // Calculate offset from page
     const offset = (page - 1) * limit
 
-    // Execute search
-    const result = await index.search<MeilisearchProductDocument>(query, {
-      limit,
-      offset,
-      filter: filters.length > 0 ? filters.join(" AND ") : undefined,
-      sort: sortArray,
-      facets: allFacets,
-    })
+    let result
+    try {
+      result = await index.search<MeilisearchProductDocument>(query, {
+        limit,
+        offset,
+        filter: filters.length > 0 ? filters.join(" AND ") : undefined,
+        sort: sortArray,
+        facets: buildFacetRequest(true),
+      })
+    } catch (error) {
+      if (!isCollectionIdsNotFilterableError(error)) {
+        throw error
+      }
+
+      console.warn(
+        "Meilisearch index does not expose filterable collection_ids; retrying search without collection_ids facet",
+        error
+      )
+
+      result = await index.search<MeilisearchProductDocument>(query, {
+        limit,
+        offset,
+        filter: filters.length > 0 ? filters.join(" AND ") : undefined,
+        sort: sortArray,
+        facets: buildFacetRequest(false),
+      })
+    }
 
     // Transform hits to ProductHit format
     const products: ProductHit[] = result.hits.map((hit) => {
@@ -451,14 +480,28 @@ export async function getFacets(): Promise<FacetsResult> {
   try {
     const index = searchClient.index(INDEX_PRODUCTS)
 
-    // Combine static and dynamic facets
-    const allFacets = [...FACETS_TO_REQUEST, ...getOptionFacets()]
+    let result
 
-    // Search with limit 0 to get only facets, no products
-    const result = await index.search("", {
-      limit: 0,
-      facets: allFacets,
-    })
+    try {
+      result = await index.search("", {
+        limit: 0,
+        facets: buildFacetRequest(true),
+      })
+    } catch (error) {
+      if (!isCollectionIdsNotFilterableError(error)) {
+        throw error
+      }
+
+      console.warn(
+        "Meilisearch index does not expose filterable collection_ids; retrying facets without collection_ids",
+        error
+      )
+
+      result = await index.search("", {
+        limit: 0,
+        facets: buildFacetRequest(false),
+      })
+    }
 
     return {
       facets: (result.facetDistribution as FacetDistribution) || {},
