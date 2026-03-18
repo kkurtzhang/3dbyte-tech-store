@@ -92,7 +92,7 @@ const helpCenterPayload = {
     {
       Title: "Email Support",
       Description: "Share your issue details with our support team.",
-      Value: "support@3dbyte.tech",
+      Value: "support@3dbytetech.com.au",
       Action: "Open Contact Form",
       Href: route("/contact"),
       Icon: "mail",

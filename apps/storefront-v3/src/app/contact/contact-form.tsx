@@ -47,7 +47,7 @@ export function ContactForm() {
       message,
     ].join("\n");
 
-    const mailtoHref = `mailto:support@3dbyte.tech?subject=${encodeURIComponent(subjectLine)}&body=${encodeURIComponent(body)}`;
+    const mailtoHref = `mailto:support@3dbytetech.com.au?subject=${encodeURIComponent(subjectLine)}&body=${encodeURIComponent(body)}`;
 
     window.location.href = mailtoHref;
     setIsSubmitting(false);
