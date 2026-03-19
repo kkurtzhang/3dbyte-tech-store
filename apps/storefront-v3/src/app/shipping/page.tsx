@@ -38,11 +38,11 @@ Some items (e.g., lithium batteries, certain chemicals) may have shipping restri
 
 ### Delivery Issues
 
-If your package is lost or damaged during shipping, please contact us immediately at **support@3dbyte.tech**.
+If your package is lost or damaged during shipping, please contact us immediately at **support@3dbytetech.com.au**.
 
 ### Questions?
 
-Contact us at **support@3dbyte.tech** for shipping inquiries.
+Contact us at **support@3dbytetech.com.au** for shipping inquiries.
 `;
 
 export default async function ShippingPage() {

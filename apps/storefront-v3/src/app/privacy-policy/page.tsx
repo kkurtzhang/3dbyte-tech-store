@@ -43,11 +43,11 @@ We may share data with trusted third parties for:
 
 ### Your Rights
 
-You can request access to, correction of, or deletion of your personal data by contacting us at **support@3dbyte.tech**.
+You can request access to, correction of, or deletion of your personal data by contacting us at **support@3dbytetech.com.au**.
 
 ### Contact
 
-Questions about this policy? Email us at **support@3dbyte.tech**.
+Questions about this policy? Email us at **support@3dbytetech.com.au**.
 `;
 
 export default async function PrivacyPolicyPage() {

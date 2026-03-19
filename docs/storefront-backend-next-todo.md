@@ -52,6 +52,8 @@ This document tracks the remaining work after the current storefront-v3 content 
 
 ### 4) Replace contact `mailto` with ticket endpoint (Backend + Storefront)
 
+- Status (Option A): Deferred for launch planning. Keep the current `mailto` support flow for launch; implement the endpoint post-launch.
+
 - Problem: current support form opens an email draft; no tracking/workflow.
 - Deliverable:
   - Backend endpoint for support requests (validation, persistence, response contract).

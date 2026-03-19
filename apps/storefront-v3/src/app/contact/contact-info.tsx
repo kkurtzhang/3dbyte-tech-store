@@ -17,7 +17,7 @@ const contactDetails = [
   {
     icon: Mail,
     label: "Email",
-    value: "hello@3dbytetech.com.au",
+    value: "support@3dbytetech.com.au",
     subValue: "We reply within 24 hours",
   },
   {
