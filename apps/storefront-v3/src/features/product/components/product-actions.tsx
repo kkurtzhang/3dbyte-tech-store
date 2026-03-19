@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { StoreProduct, StoreProductVariant } from "@medusajs/types"
 import { useCart } from "@/context/cart-context"
 import { useToast } from "@/lib/hooks/use-toast"
 import { NotifyMeButton } from "./notify-me-button"
@@ -12,11 +11,12 @@ import { usePathname } from "next/navigation"
 import { SocialShare } from "./social-share"
 import { StockStatusBadge, getStockStatus } from "@/components/ui/stock-status-badge"
 import { PriceDisplay } from "@/components/ui/price-display"
+import type { MedusaProduct, MedusaProductVariant } from "@/lib/medusa/types"
 
 interface ProductActionsProps {
-  product: StoreProduct
-  selectedVariant: StoreProductVariant | undefined
-  onVariantChange: (variant: StoreProductVariant | undefined) => void
+  product: MedusaProduct
+  selectedVariant: MedusaProductVariant | undefined
+  onVariantChange: (variant: MedusaProductVariant | undefined) => void
   options: Record<string, string>
   setOptions: (options: Record<string, string>) => void
   disabled?: boolean

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
-import { StoreProduct } from "@medusajs/types"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/context/cart-context"
@@ -14,6 +13,7 @@ import { PriceDisplay } from "@/components/ui/price-display"
 import { NotifyMeButton } from "./notify-me-button"
 import { ExternalLink, ShoppingCart, Loader2, Plus, Minus } from "lucide-react"
 import { cn } from "@/lib/utils"
+import type { MedusaProduct } from "@/lib/medusa/types"
 
 interface QuickViewDialogProps {
   handle: string
@@ -92,7 +92,7 @@ export function QuickViewDialog({
   const { toast } = useToast()
 
   // State management (like ProductTemplate)
-  const [product, setProduct] = useState<StoreProduct | null>(null)
+  const [product, setProduct] = useState<MedusaProduct | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
   const [options, setOptions] = useState<Record<string, string>>({})

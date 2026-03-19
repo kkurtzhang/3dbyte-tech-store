@@ -6,7 +6,9 @@ import { Input } from "@/components/ui/input"
 import { useEffect, useState, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { sdk } from "@/lib/medusa/client"
-import type { StoreProduct } from "@medusajs/types"
+
+type SearchSuggestionProduct =
+  Awaited<ReturnType<typeof sdk.store.product.list>>["products"][number]
 
 export function SearchInput() {
   const router = useRouter()
@@ -18,7 +20,7 @@ export function SearchInput() {
 
   const [value, setValue] = useState(query)
   const [showDropdown, setShowDropdown] = useState(false)
-  const [suggestions, setSuggestions] = useState<StoreProduct[]>([])
+  const [suggestions, setSuggestions] = useState<SearchSuggestionProduct[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -121,7 +123,7 @@ export function SearchInput() {
     setQuery(term)
   }
 
-  const handleSuggestionClick = (product: StoreProduct) => {
+  const handleSuggestionClick = (product: SearchSuggestionProduct) => {
     setShowDropdown(false)
     setValue(product.title!)
     setQuery("")

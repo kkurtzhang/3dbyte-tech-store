@@ -1,9 +1,9 @@
 import { sdk } from "./client"
-import type { StoreCollection, StoreProduct } from "@medusajs/types"
+import type { MedusaCollection, MedusaProduct } from "./types"
 
 export async function getCollectionByHandle(
   handle: string
-): Promise<StoreCollection | null> {
+): Promise<MedusaCollection | null> {
   try {
     const response = await sdk.store.collection.list({
       handle: [handle],
@@ -19,7 +19,7 @@ export async function getCollectionByHandle(
 
 export async function getCollectionsResult(
   limit: number = 100
-): Promise<{ collections: StoreCollection[]; error: boolean }> {
+): Promise<{ collections: MedusaCollection[]; error: boolean }> {
   try {
     const response = await sdk.store.collection.list({
       limit,
@@ -39,12 +39,12 @@ export async function getCollectionsResult(
   }
 }
 
-export async function getCollections(): Promise<StoreCollection[]> {
+export async function getCollections(): Promise<MedusaCollection[]> {
   return (await getCollectionsResult()).collections
 }
 
 // Get featured collections (first 4)
-export async function getFeaturedCollections(limit: number = 4): Promise<StoreCollection[]> {
+export async function getFeaturedCollections(limit: number = 4): Promise<MedusaCollection[]> {
   try {
     const response = await sdk.store.collection.list({
       limit: 20, // Fetch more to filter
@@ -66,7 +66,7 @@ export async function getProductsByCollection(
     page?: number
     limit?: number
   }
-): Promise<{ products: StoreProduct[]; count: number }> {
+): Promise<{ products: MedusaProduct[]; count: number }> {
   const { page = 1, limit = 20 } = params
 
   const { products, count } = await sdk.store.product.list({

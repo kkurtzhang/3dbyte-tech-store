@@ -1,14 +1,16 @@
 import { sdk } from "./client"
-import { StoreCart } from "@medusajs/types"
 
-export async function createCart(regionId?: string): Promise<StoreCart> {
+export type MedusaCart = Awaited<ReturnType<typeof sdk.store.cart.retrieve>>["cart"]
+export type MedusaCartLineItem = NonNullable<MedusaCart["items"]>[number]
+
+export async function createCart(regionId?: string): Promise<MedusaCart> {
   const { cart } = await sdk.store.cart.create({
     region_id: regionId,
   })
   return cart
 }
 
-export async function getCart(cartId: string): Promise<StoreCart> {
+export async function getCart(cartId: string): Promise<MedusaCart> {
   const { cart } = await sdk.store.cart.retrieve(cartId, {
     fields: "+items,+items.variant,+items.variant.product,+region,*promotions",
   })
@@ -23,7 +25,7 @@ export async function addToCart({
   cartId: string
   variantId: string
   quantity: number
-}): Promise<StoreCart> {
+}): Promise<MedusaCart> {
   const { cart } = await sdk.store.cart.createLineItem(cartId, {
     variant_id: variantId,
     quantity,
@@ -37,7 +39,7 @@ export async function addLineItems({
 }: {
   cartId: string
   items: { variant_id: string; quantity: number }[]
-}): Promise<StoreCart> {
+}): Promise<MedusaCart> {
   let cart = await getCart(cartId)
 
   for (const item of items) {
@@ -56,7 +58,7 @@ export async function updateLineItem({
   cartId: string
   lineItemId: string
   quantity: number
-}): Promise<StoreCart> {
+}): Promise<MedusaCart> {
   const { cart } = await sdk.store.cart.updateLineItem(cartId, lineItemId, {
     quantity,
   })
@@ -69,7 +71,7 @@ export async function deleteLineItem({
 }: {
   cartId: string
   lineItemId: string
-}): Promise<StoreCart> {
+}): Promise<MedusaCart> {
   await sdk.store.cart.deleteLineItem(cartId, lineItemId)
   // Re-fetch the cart to get the updated state
   return getCart(cartId)
@@ -85,7 +87,7 @@ export async function updateCart({
     shipping_address?: any
     billing_address?: any
   }
-}): Promise<StoreCart> {
+}): Promise<MedusaCart> {
   const { cart } = await sdk.store.cart.update(cartId, data)
   return cart
 }
@@ -96,7 +98,7 @@ export async function addShippingMethod({
 }: {
   cartId: string
   optionId: string
-}): Promise<StoreCart> {
+}): Promise<MedusaCart> {
   const { cart } = await sdk.store.cart.addShippingMethod(cartId, {
     option_id: optionId,
   })
@@ -111,7 +113,7 @@ export async function initiatePaymentSession({
   cart,
   providerId,
 }: {
-  cart: StoreCart
+  cart: MedusaCart
   providerId: string
 }): Promise<any> {
   return await sdk.store.payment.initiatePaymentSession(cart, {

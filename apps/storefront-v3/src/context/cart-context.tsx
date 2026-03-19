@@ -1,15 +1,15 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react"
-import { StoreCart } from "@medusajs/types"
 import { createCart, getCart, addToCart, updateLineItem, deleteLineItem } from "@/lib/medusa/cart"
+import type { MedusaCart } from "@/lib/medusa/cart"
 
 export const CART_STORAGE_KEY = "_medusa_cart_id"
 const CART_COOKIE = "_medusa_cart_id"
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30
 
 interface CartContextType {
-  cart: StoreCart | null
+  cart: MedusaCart | null
   isLoading: boolean
   addItem: (variantId: string, quantity: number) => Promise<void>
   updateItem: (lineItemId: string, quantity: number) => Promise<void>
@@ -20,7 +20,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cart, setCart] = useState<StoreCart | null>(null)
+  const [cart, setCart] = useState<MedusaCart | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   const getCartId = (): string | null => {

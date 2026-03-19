@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { StoreProduct } from "@medusajs/types"
+import type { MedusaProduct } from "@/lib/medusa/types"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, ShoppingCart, Loader2, Sparkles } from "lucide-react"
 import { useCart } from "@/context/cart-context"
@@ -16,7 +16,7 @@ interface YouMayAlsoLikeProps {
 
 export function YouMayAlsoLike({ productId }: YouMayAlsoLikeProps) {
   const { addItem } = useCart()
-  const [products, setProducts] = useState<StoreProduct[]>([])
+  const [products, setProducts] = useState<MedusaProduct[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [addingToCartId, setAddingToCartId] = useState<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -70,11 +70,11 @@ export function YouMayAlsoLike({ productId }: YouMayAlsoLikeProps) {
   }
 
   // Get the first variant for each product
-  const getVariantId = (product: StoreProduct) => {
+  const getVariantId = (product: MedusaProduct) => {
     return product.variants?.[0]?.id
   }
 
-  const getPrice = (product: StoreProduct) => {
+  const getPrice = (product: MedusaProduct) => {
     const variant = product.variants?.[0]
     // Note: Medusa v2 returns prices in dollars, not cents
     const price = variant?.calculated_price?.calculated_amount ||
@@ -83,7 +83,7 @@ export function YouMayAlsoLike({ productId }: YouMayAlsoLikeProps) {
     return price || 0
   }
 
-  const getOriginalPrice = (product: StoreProduct) => {
+  const getOriginalPrice = (product: MedusaProduct) => {
     const variant = product.variants?.[0]
     const origPrice = (variant as any)?.originalPrice
     if (origPrice) return origPrice
@@ -95,7 +95,7 @@ export function YouMayAlsoLike({ productId }: YouMayAlsoLikeProps) {
     return null
   }
 
-  const getDiscount = (product: StoreProduct) => {
+  const getDiscount = (product: MedusaProduct) => {
     const variant = product.variants?.[0]
     const discount = (variant as any)?.discountPercentage
     return discount || null
@@ -108,7 +108,7 @@ export function YouMayAlsoLike({ productId }: YouMayAlsoLikeProps) {
     }).format(price)
   }
 
-  const handleAddToCart = async (product: StoreProduct, e: React.MouseEvent) => {
+  const handleAddToCart = async (product: MedusaProduct, e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     

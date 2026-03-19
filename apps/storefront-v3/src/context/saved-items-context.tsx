@@ -1,16 +1,16 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react"
-import { StoreCartLineItem } from "@medusajs/types"
+import type { MedusaCartLineItem } from "@/lib/medusa/cart"
 
-interface SavedItem extends StoreCartLineItem {
+interface SavedItem extends MedusaCartLineItem {
   savedAt: number
 }
 
 interface SavedItemsContextType {
   savedItems: SavedItem[]
   isLoading: boolean
-  saveItem: (item: StoreCartLineItem) => void
+  saveItem: (item: MedusaCartLineItem) => void
   removeSavedItem: (lineItemId: string) => void
   moveToCart: (item: SavedItem) => void
   isSaved: (lineItemId: string) => boolean
@@ -49,7 +49,7 @@ export function SavedItemsProvider({ children }: { children: ReactNode }) {
     }
   }, [savedItems, isLoading])
 
-  const saveItem = (item: StoreCartLineItem) => {
+  const saveItem = (item: MedusaCartLineItem) => {
     const savedItem: SavedItem = {
       ...item,
       savedAt: Date.now(),

@@ -1,4 +1,4 @@
-import { StoreProduct } from "@medusajs/types";
+import type { MedusaProduct } from "@/lib/medusa/types";
 import { cn } from "@/lib/utils";
 import { ProductCard } from "@/features/product/components/product-card";
 
@@ -25,7 +25,7 @@ export interface ProductLike {
 }
 
 export interface ProductGridProps {
-  products: (StoreProduct | ProductLike | any)[];
+  products: (MedusaProduct | ProductLike | any)[];
   className?: string;
 }
 

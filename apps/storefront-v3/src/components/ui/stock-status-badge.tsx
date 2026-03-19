@@ -1,4 +1,4 @@
-import { StoreProductVariant } from "@medusajs/types"
+import type { MedusaProductVariant } from "@/lib/medusa/types"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react"
 
@@ -23,7 +23,7 @@ export interface StockStatusResult {
  * }
  * ```
  */
-export function getStockStatus(variant: StoreProductVariant | undefined): StockStatusResult {
+export function getStockStatus(variant: MedusaProductVariant | undefined): StockStatusResult {
   if (!variant) return { status: "unknown", quantity: null }
 
   const quantity = variant.inventory_quantity ?? 0
@@ -43,7 +43,7 @@ export function getStockStatus(variant: StoreProductVariant | undefined): StockS
 }
 
 interface StockStatusBadgeProps {
-  variant: StoreProductVariant | undefined
+  variant: MedusaProductVariant | undefined
 }
 
 /**
