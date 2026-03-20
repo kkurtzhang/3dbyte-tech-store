@@ -49,7 +49,7 @@ We may update these terms at any time. Continued use of our website constitutes 
 
 ### Contact
 
-Questions? Email us at **support@3dbyte.tech**.
+Questions? Email us at **support@3dbytetech.com.au**.
 `;
 
 export default async function TermsAndConditionsPage() {

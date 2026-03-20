@@ -80,9 +80,9 @@ export default function HelpPage() {
       icon: Mail,
       title: "Email Support",
       description: "Open your email app and send us your issue details.",
-      value: "support@3dbyte.tech",
+      value: "support@3dbytetech.com.au",
       action: "Email Support",
-      href: "mailto:support@3dbyte.tech",
+      href: "mailto:support@3dbytetech.com.au",
     },
     {
       icon: MessageCircle,

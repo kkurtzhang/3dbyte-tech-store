@@ -104,3 +104,5 @@ Useful checks:
 - EC2 previously hit disk pressure during image pulls; deploy script now prunes old Docker images.
 - Meilisearch must be up before backend/worker startup.
 - Worker staying `running` is part of deploy validation.
+- Strapi Meilisearch plugin persists credentials in `strapi_core_store_settings`. If `MEILISEARCH_API_KEY` is removed from env, the old stored key may survive and keep breaking sync/admin operations until cleared.
+- CMS bootstrap now clears `plugin_meilisearch_meilisearch_api_key` automatically when `MEILISEARCH_API_KEY` is empty, so stale restored/store values do not linger.
