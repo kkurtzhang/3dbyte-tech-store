@@ -24,7 +24,6 @@ coverage
 .cache
 
 # Unneeded app/runtime payloads for backend image
-apps/cms
 storefront
 
 # Local agent / editor noise
