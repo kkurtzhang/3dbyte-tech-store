@@ -52,8 +52,8 @@ export default async function FAQPage() {
               <h2 className="text-xl font-semibold mb-2">FAQ content is being updated</h2>
               <p className="text-muted-foreground">
                 Please check back shortly, or contact support at{" "}
-                <a href="mailto:support@3dbyte.tech" className="underline underline-offset-4">
-                  support@3dbyte.tech
+                <a href="mailto:support@3dbytetech.com.au" className="underline underline-offset-4">
+                  support@3dbytetech.com.au
                 </a>
                 .
               </p>

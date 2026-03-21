@@ -31,10 +31,10 @@ export default function ContactPage() {
             <div className="rounded-lg border bg-card p-6">
               <h3 className="font-semibold mb-2">Support Email</h3>
               <a
-                href="mailto:support@3dbyte.tech"
+                href="mailto:support@3dbytetech.com.au"
                 className="text-muted-foreground hover:text-primary transition-colors"
               >
-                support@3dbyte.tech
+                support@3dbytetech.com.au
               </a>
             </div>
             <div className="rounded-lg border bg-card p-6">

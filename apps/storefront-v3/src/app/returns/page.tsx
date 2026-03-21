@@ -24,7 +24,7 @@ You have 30 days from the date of delivery to return your item. To be eligible f
 
 ### How to Return
 
-1. Contact our support team at **support@3dbyte.tech**
+1. Contact our support team at **support@3dbytetech.com.au**
 2. Include your order number and reason for return
 3. We'll provide a return shipping label
 4. Ship the item back to us
@@ -41,7 +41,7 @@ Once we receive your return, we'll inspect it and notify you of the refund statu
 
 ### Questions?
 
-Contact us at **support@3dbyte.tech** for any questions about returns.
+Contact us at **support@3dbytetech.com.au** for any questions about returns.
 `;
 
 export default async function ReturnsPage() {
