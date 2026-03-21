@@ -3,8 +3,8 @@
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { useState, useEffect, useMemo } from "react"
-import { StoreProduct, StoreProductVariant } from "@medusajs/types"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import type { MedusaProduct, MedusaProductVariant } from "@/lib/medusa/types"
 
 interface ImageItem {
   id: string
@@ -14,8 +14,8 @@ interface ImageItem {
 }
 
 interface ProductGalleryProps {
-  product: StoreProduct
-  selectedVariant?: StoreProductVariant | null
+  product: MedusaProduct
+  selectedVariant?: MedusaProductVariant | null
   variantImageUrls?: string[]
 }
 

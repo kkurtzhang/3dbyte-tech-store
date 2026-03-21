@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { StoreCart } from "@medusajs/types"
 import { AddressStep } from "./address-step"
 import { DeliveryStep } from "./delivery-step"
 import { PaymentStep } from "./payment-step"
@@ -18,9 +17,10 @@ import {
 } from "@/app/actions/checkout"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/lib/hooks/use-toast"
+import type { MedusaCart } from "@/lib/medusa/cart"
 
 interface CheckoutFormProps {
-  cart: StoreCart
+  cart: MedusaCart
 }
 
 // Checkout flow: shipping → delivery → payment → review → confirmation

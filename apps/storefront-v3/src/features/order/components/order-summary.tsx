@@ -1,10 +1,10 @@
 import { CheckCircle2 } from "lucide-react"
-import { StoreOrder } from "@medusajs/types"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
+import type { MedusaOrder } from "@/lib/medusa/types"
 
 export interface OrderSummaryProps {
-  order: StoreOrder
+  order: MedusaOrder
   className?: string
 }
 
@@ -16,7 +16,7 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
     }).format(amount)
   }
 
-  const getOrderStatus = (order: StoreOrder) => {
+  const getOrderStatus = (order: MedusaOrder) => {
     if (!order.status) return { label: "Unknown", variant: "secondary" as const }
 
     switch (order.status) {
@@ -33,7 +33,7 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
     }
   }
 
-  const getPaymentStatus = (order: StoreOrder) => {
+  const getPaymentStatus = (order: MedusaOrder) => {
     if (!order.payment_status) return "Unknown"
 
     switch (order.payment_status) {
@@ -50,7 +50,7 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
     }
   }
 
-  const getFulfillmentStatus = (order: StoreOrder) => {
+  const getFulfillmentStatus = (order: MedusaOrder) => {
     if (!order.fulfillment_status) return "Unknown"
 
     switch (order.fulfillment_status) {

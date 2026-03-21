@@ -1,6 +1,6 @@
 import { sdk } from "./client"
-import { StoreProduct } from "@medusajs/types"
 import { searchClient, INDEX_PRODUCTS } from "@/lib/search/client"
+import type { MedusaProduct } from "./types"
 
 export async function getProducts(params: {
   page?: number
@@ -12,8 +12,8 @@ export async function getProducts(params: {
   sizes?: string[]
   minPrice?: number
   maxPrice?: number
-}): Promise<{ products: StoreProduct[]; count: number }> {
-  let products: StoreProduct[] = []
+}): Promise<{ products: MedusaProduct[]; count: number }> {
+  let products: MedusaProduct[] = []
   let count = 0
 
   try {
@@ -62,7 +62,7 @@ async function getProductsFromMeilisearch(params: {
   sizes?: string[]
   minPrice?: number
   maxPrice?: number
-}): Promise<{ products: StoreProduct[]; count: number }> {
+}): Promise<{ products: MedusaProduct[]; count: number }> {
   try {
     const { limit = 4, q, colors, sizes, minPrice, maxPrice } = params
 
@@ -96,7 +96,7 @@ async function getProductsFromMeilisearch(params: {
     const results = await searchClient.index(INDEX_PRODUCTS).search("", searchParams)
 
     // Convert Meilisearch hits to StoreProduct format
-    const products: StoreProduct[] = results.hits.map((hit: any) => ({
+    const products: MedusaProduct[] = results.hits.map((hit: any) => ({
       id: hit.id,
       title: hit.title,
       handle: hit.handle || hit.slug,
@@ -110,7 +110,7 @@ async function getProductsFromMeilisearch(params: {
       tags: hit.tags,
       created_at: hit.created_at,
       updated_at: hit.updated_at,
-    })) as unknown as StoreProduct[]
+    })) as unknown as MedusaProduct[]
 
     return { products, count: results.estimatedTotalHits || results.hits.length }
   } catch (error) {
@@ -119,7 +119,7 @@ async function getProductsFromMeilisearch(params: {
   }
 }
 
-export async function getProductByHandle(handle: string): Promise<StoreProduct | null> {
+export async function getProductByHandle(handle: string): Promise<MedusaProduct | null> {
   try {
     const { products } = await sdk.store.product.list({
       handle,
@@ -184,7 +184,7 @@ export async function getProductByHandle(handle: string): Promise<StoreProduct |
         tags: hit.tags,
         created_at: hit.created_at,
         updated_at: hit.updated_at,
-      } as unknown as StoreProduct
+      } as unknown as MedusaProduct
     }
   } catch (error) {
     console.warn(`Meilisearch fallback also failed for handle ${handle}`, error)
@@ -267,8 +267,8 @@ export async function getDiscountedProducts(params: {
   limit?: number
   minDiscount?: number
   maxDiscount?: number
-}): Promise<{ products: StoreProduct[]; count: number }> {
-  let products: StoreProduct[] = []
+}): Promise<{ products: MedusaProduct[]; count: number }> {
+  let products: MedusaProduct[] = []
   let count = 0
   const { page = 1, limit = 20, minDiscount, maxDiscount } = params
 
@@ -320,8 +320,8 @@ export async function getDiscountedProducts(params: {
 export async function getProductBundles(params: {
   page?: number
   limit?: number
-}): Promise<{ products: StoreProduct[]; count: number }> {
-  let products: StoreProduct[] = []
+}): Promise<{ products: MedusaProduct[]; count: number }> {
+  let products: MedusaProduct[] = []
   let count = 0
   const { page = 1, limit = 20 } = params
 
@@ -362,7 +362,7 @@ export async function getProductBundles(params: {
  * Get related products based on category and type
  * This simulates "frequently bought together" based on product relationships
  */
-export async function getRelatedProducts(productId: string, limit = 4): Promise<StoreProduct[]> {
+export async function getRelatedProducts(productId: string, limit = 4): Promise<MedusaProduct[]> {
   try {
     // First, get the current product to find its category and type
     const { products: [currentProduct] } = await sdk.store.product.list({

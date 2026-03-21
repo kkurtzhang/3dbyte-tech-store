@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useMemo, useRef } from "react"
-import { StoreProduct, StoreProductVariant } from "@medusajs/types"
 import { ProductGallery } from "../components/product-gallery"
 import { ProductActions } from "../components/product-actions"
 import { SpecSheet } from "../components/spec-sheet"
@@ -9,6 +8,7 @@ import { RecentlyViewedProducts } from "@/components/product/recently-viewed-pro
 import { Separator } from "@/components/ui/separator"
 import { useQueryState } from "nuqs"
 import { useRecentlyViewed } from "@/lib/hooks/use-recently-viewed"
+import type { MedusaProduct, MedusaProductVariant } from "@/lib/medusa/types"
 
 interface VariantImageData {
   id: string
@@ -17,7 +17,7 @@ interface VariantImageData {
 }
 
 interface ProductTemplateProps {
-  product: StoreProduct
+  product: MedusaProduct
   richDescription?: string
   variantImageUrls?: string[]
 }
@@ -75,7 +75,7 @@ export function ProductTemplate({ product, richDescription, variantImageUrls }: 
     }
   }, [product.variants, selectedVariant, variantId, setVariantId, options])
 
-  const handleVariantChange = (variant: StoreProductVariant | undefined) => {
+  const handleVariantChange = (variant: MedusaProductVariant | undefined) => {
     if (variant) {
       setVariantId(variant.id)
     } else {

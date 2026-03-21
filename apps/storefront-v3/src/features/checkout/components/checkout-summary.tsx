@@ -1,11 +1,11 @@
 "use client"
 
-import { StoreCart } from "@medusajs/types"
 import { Separator } from "@/components/ui/separator"
 import Image from "next/image"
+import type { MedusaCart } from "@/lib/medusa/cart"
 
 interface CheckoutSummaryProps {
-  cart: StoreCart
+  cart: MedusaCart
 }
 
 export function CheckoutSummary({ cart }: CheckoutSummaryProps) {

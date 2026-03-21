@@ -1,11 +1,19 @@
 import { Suspense } from "react"
-import { Button } from "@/components/ui/button"
-import { searchProducts } from "@/lib/search/products"
-import { getCollectionDescriptions, getHomepage } from "@/lib/strapi/content"
-import { getFeaturedCollections } from "@/lib/medusa/collections"
-import { ProductCard } from "@/features/product/components/product-card"
-import type { CollectionDescriptionData } from "@/lib/strapi/types"
 import Link from "next/link"
+
+import { Button } from "@/components/ui/button"
+import {
+  CollectionGrid,
+  CollectionsSkeleton,
+} from "@/features/collections/components/collection-grid"
+import { ProductCard } from "@/features/product/components/product-card"
+import { getFeaturedCollections } from "@/lib/medusa/collections"
+import { searchProducts } from "@/lib/search/products"
+import {
+  getCollectionDescriptions,
+  getHomepage,
+} from "@/lib/strapi/content"
+import { buildCollectionContentByHandle } from "@/features/collections/lib/collection-cards"
 
 // Force dynamic rendering to avoid build-time CMS dependency
 export const dynamic = 'force-dynamic'
@@ -20,102 +28,6 @@ function ProductsSkeleton() {
           className="h-80 animate-pulse rounded-lg bg-muted"
         />
       ))}
-    </div>
-  )
-}
-
-// Loading skeleton for collections
-function CollectionsSkeleton() {
-  return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {[...Array(4)].map((_, i) => (
-        <div
-          key={i}
-          className="aspect-[4/5] animate-pulse rounded-lg bg-muted"
-        />
-      ))}
-    </div>
-  )
-}
-
-// Collection card component
-function resolveStrapiMediaUrl(url?: string | null): string | undefined {
-  if (!url) return undefined
-  if (url.startsWith("http://") || url.startsWith("https://")) return url
-  const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337"
-  return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`
-}
-
-function CollectionCard({
-  collection,
-  cmsContent,
-}: {
-  collection: any
-  cmsContent?: CollectionDescriptionData
-}) {
-  const imageUrl =
-    resolveStrapiMediaUrl(cmsContent?.Image?.url) ||
-    (collection.metadata?.image as string | undefined)
-  const displayTitle = cmsContent?.Title || collection.title
-  const displayDescription =
-    cmsContent?.Description ||
-    (collection.metadata?.product_count as string | undefined) ||
-    "Shop now"
-  
-  return (
-    <Link 
-      href={`/collections/${collection.handle}`}
-      className="group relative block overflow-hidden rounded-lg bg-muted"
-    >
-      <div className="aspect-[4/5] w-full">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={displayTitle}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted to-muted/50">
-            <span className="font-mono text-4xl text-muted-foreground/30">
-              {displayTitle?.charAt(0) || "C"}
-            </span>
-          </div>
-        )}
-      </div>
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12">
-        <h3 className="text-lg font-bold text-white">{displayTitle}</h3>
-        <p className="line-clamp-2 text-sm text-white/70 font-mono">
-          {displayDescription}
-        </p>
-      </div>
-    </Link>
-  )
-}
-
-// Collection grid component
-function CollectionGrid({
-  collections,
-  collectionContentByHandle,
-}: {
-  collections: any[]
-  collectionContentByHandle: Map<string, CollectionDescriptionData>
-}) {
-  if (collections.length === 0) {
-    return null
-  }
-
-  return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {collections.map((collection) => {
-        const handleKey = (collection.handle || "").toLowerCase()
-        return (
-          <CollectionCard
-            key={collection.id}
-            collection={collection}
-            cmsContent={collectionContentByHandle.get(handleKey)}
-          />
-        )
-      })}
     </div>
   )
 }
@@ -136,7 +48,7 @@ interface Product {
   }>
 }
 
-function ProductGrid({ products, totalCount, error }: { products: Product[]; totalCount: number; error?: boolean }) {
+function ProductGrid({ products, error }: { products: Product[]; error?: boolean }) {
   // Handle error state
   if (error) {
     return (
@@ -241,9 +153,8 @@ export default async function Home() {
         .catch(() => []),
     ])
 
-  const collectionContentByHandle = new Map(
-    collectionDescriptions.map((entry) => [entry.Handle.toLowerCase(), entry])
-  )
+  const collectionContentByHandle =
+    buildCollectionContentByHandle(collectionDescriptions)
   const home = homepageData?.data
   const hero = home?.HeroBanner
   const midBanner = home?.MidBanner
@@ -388,7 +299,6 @@ export default async function Home() {
         <Suspense fallback={<ProductsSkeleton />}>
           <ProductGrid
             products={productsResult.products}
-            totalCount={productsResult.totalCount}
             error={productsResult.error}
           />
         </Suspense>

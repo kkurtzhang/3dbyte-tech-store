@@ -3,7 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { StoreProduct } from "@medusajs/types"
+import type { MedusaProduct } from "@/lib/medusa/types"
 import { Button } from "@/components/ui/button"
 import { Check, ShoppingCart, Loader2, Package } from "lucide-react"
 import { useCart } from "@/context/cart-context"
@@ -15,8 +15,8 @@ interface FrequentlyBoughtTogetherProps {
 
 export function FrequentlyBoughtTogether({ productId }: FrequentlyBoughtTogetherProps) {
   const { addItem } = useCart()
-  const [relatedProducts, setRelatedProducts] = useState<StoreProduct[]>([])
-  const [mainProduct, setMainProduct] = useState<StoreProduct | null>(null)
+  const [relatedProducts, setRelatedProducts] = useState<MedusaProduct[]>([])
+  const [mainProduct, setMainProduct] = useState<MedusaProduct | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set())
   const [isAddingToCart, setIsAddingToCart] = useState(false)
@@ -54,11 +54,11 @@ export function FrequentlyBoughtTogether({ productId }: FrequentlyBoughtTogether
   }
 
   // Get the first variant for each product (simplified)
-  const getVariantId = (product: StoreProduct) => {
+  const getVariantId = (product: MedusaProduct) => {
     return product.variants?.[0]?.id
   }
 
-  const getPrice = (product: StoreProduct) => {
+  const getPrice = (product: MedusaProduct) => {
     const variant = product.variants?.[0]
     // Note: Medusa v2 returns prices in dollars, not cents
     const price = variant?.calculated_price?.calculated_amount ||

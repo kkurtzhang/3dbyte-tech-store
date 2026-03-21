@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { StoreProduct } from "@medusajs/types"
+import type { MedusaProduct } from "@/lib/medusa/types"
 
 const STORAGE_KEY = "recently-viewed-products"
 const MAX_ITEMS = 20
@@ -45,7 +45,7 @@ export function useRecentlyViewed() {
     }
   }, [recentlyViewed])
 
-  const addToRecentlyViewed = useCallback((product: StoreProduct) => {
+  const addToRecentlyViewed = useCallback((product: MedusaProduct) => {
     setRecentlyViewed((prev) => {
       // Check if product already exists
       const existingIndex = prev.findIndex((item) => item.id === product.id)

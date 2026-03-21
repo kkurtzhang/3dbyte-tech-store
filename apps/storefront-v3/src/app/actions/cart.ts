@@ -3,16 +3,17 @@
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
 import { createCart, getCart, addToCart, updateLineItem, deleteLineItem, addLineItems } from "@/lib/medusa/cart"
-import { StoreCart } from "@medusajs/types"
 import { z } from "zod"
 
 const CART_COOKIE = "_medusa_cart_id"
+type MedusaCart = Awaited<ReturnType<typeof getCart>>
+
 const lineItemSchema = z.object({
   variantId: z.string().trim().min(1),
   quantity: z.number().int().min(1).max(100),
 })
 
-export async function getCartAction(): Promise<StoreCart | null> {
+export async function getCartAction(): Promise<MedusaCart | null> {
   const cookieStore = await cookies()
   const cartId = cookieStore.get(CART_COOKIE)?.value
 

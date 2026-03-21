@@ -1,9 +1,9 @@
 import { sdk } from "./client"
-import type { StoreProductCategory, StoreProduct } from "@medusajs/types"
+import type { MedusaProduct, MedusaProductCategory } from "./types"
 
 export async function getCategoryByHandle(
   handle: string[]
-): Promise<StoreProductCategory | null> {
+): Promise<MedusaProductCategory | null> {
   try {
     // Fetch all categories and find the one matching the full handle path
     const response = await sdk.store.category.list({
@@ -24,7 +24,7 @@ export async function getCategoryByHandle(
   }
 }
 
-export async function getCategories(): Promise<StoreProductCategory[]> {
+export async function getCategories(): Promise<MedusaProductCategory[]> {
   try {
     const response = await sdk.store.category.list({
       limit: 100,
@@ -43,7 +43,7 @@ export async function getProductsByCategory(
     page?: number
     limit?: number
   }
-): Promise<{ products: StoreProduct[]; count: number }> {
+): Promise<{ products: MedusaProduct[]; count: number }> {
   const { page = 1, limit = 20 } = params
 
   const { products, count } = await sdk.store.product.list({

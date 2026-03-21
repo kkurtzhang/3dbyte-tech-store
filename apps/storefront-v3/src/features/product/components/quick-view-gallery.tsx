@@ -1,15 +1,15 @@
 "use client"
 
-import { StoreProduct, StoreProductVariant } from "@medusajs/types"
 import { ChevronLeft, ChevronRight, Flame } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { useState, useEffect } from "react"
+import type { MedusaProduct, MedusaProductVariant } from "@/lib/medusa/types"
 
 interface QuickViewGalleryProps {
-  product: StoreProduct
-  selectedVariant?: StoreProductVariant | null
+  product: MedusaProduct
+  selectedVariant?: MedusaProductVariant | null
   saleInfo?: { percentage: number; isHot: boolean } | null
   images?: { id: string; url: string; alt?: string }[]
 }

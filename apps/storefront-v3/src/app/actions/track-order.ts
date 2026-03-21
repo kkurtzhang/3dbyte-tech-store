@@ -1,11 +1,11 @@
 "use server"
 
 import { sdk } from "@/lib/medusa/client"
-import { StoreOrder } from "@medusajs/types"
+import type { MedusaOrder } from "@/lib/medusa/types"
 
 interface OrderLookupResult {
   success: boolean
-  order?: StoreOrder
+  order?: MedusaOrder
   error?: string
 }
 
@@ -41,7 +41,7 @@ export async function lookupOrder(
 
     return {
       success: true,
-      order: order as StoreOrder,
+      order,
     }
   } catch (error: any) {
     console.error("Order lookup failed:", error)

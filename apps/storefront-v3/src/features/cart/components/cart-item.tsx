@@ -2,13 +2,13 @@
 
 import { useMemo, useState } from "react"
 import Image from "next/image"
-import { StoreCartLineItem } from "@medusajs/types"
 import { Minus, Plus, Trash2, Bookmark, ImageOff } from "lucide-react"
 import { useCart } from "@/context/cart-context"
 import { useSavedItems } from "@/context/saved-items-context"
+import type { MedusaCartLineItem } from "@/lib/medusa/cart"
 
 interface CartItemProps {
-  item: StoreCartLineItem
+  item: MedusaCartLineItem
   currencyCode: string
   showSaveForLater?: boolean
 }

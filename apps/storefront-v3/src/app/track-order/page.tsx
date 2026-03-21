@@ -8,7 +8,7 @@ import { lookupOrder } from "@/app/actions/track-order"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { StoreOrder } from "@medusajs/types"
+import type { MedusaOrder } from "@/lib/medusa/types"
 
 type OrderStatus = "pending" | "processing" | "shipped" | "completed" | "cancelled" | "refunded"
 
@@ -91,7 +91,7 @@ function OrderProgress({ status }: { status: string }) {
   )
 }
 
-function OrderDetails({ order }: { order: StoreOrder }) {
+function OrderDetails({ order }: { order: MedusaOrder }) {
   const orderId = order.id
   const orderNumber = orderId.slice(-8).toUpperCase()
   const orderStatus = (order.status || "pending") as OrderStatus
@@ -281,7 +281,7 @@ function LookupForm() {
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
-  const [result, setResult] = useState<StoreOrder | null>(null)
+  const [result, setResult] = useState<MedusaOrder | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
