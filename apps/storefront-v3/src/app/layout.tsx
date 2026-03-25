@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { CartProvider } from "@/context/cart-context";
 import { WishlistProvider } from "@/context/wishlist-context";
 import { CompareProvider } from "@/context/compare-context";
+import { InventoryAlertProvider } from "@/context/inventory-alert-context";
 import { Toaster } from "@/components/ui/toaster";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -54,12 +55,14 @@ export default function RootLayout({
             <CartProvider>
               <WishlistProvider>
                 <CompareProvider>
-                <div className="relative flex min-h-screen flex-col">
-                  <Navbar />
-                  <main className="flex-1">{children}</main>
-                  <Footer />
-                </div>
-                <Toaster />
+                  <InventoryAlertProvider>
+                    <div className="relative flex min-h-screen flex-col">
+                      <Navbar />
+                      <main className="flex-1">{children}</main>
+                      <Footer />
+                    </div>
+                    <Toaster />
+                  </InventoryAlertProvider>
                 </CompareProvider>
               </WishlistProvider>
             </CartProvider>
