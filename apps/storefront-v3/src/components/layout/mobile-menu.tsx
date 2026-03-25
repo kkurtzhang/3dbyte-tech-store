@@ -51,10 +51,22 @@ export function MobileMenu() {
               Brands
             </Link>
             <Link
+              href="/collections"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Collections
+            </Link>
+            <Link
               href="/blog"
               className="text-sm font-medium transition-colors hover:text-primary"
             >
               Blog
+            </Link>
+            <Link
+              href="/about"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              About
             </Link>
           </div>
 
