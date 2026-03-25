@@ -19,7 +19,7 @@
 
 ```
 apps/
-├── backend/       # Medusa v2.12.3 - Headless commerce
+├── backend/       # Medusa v2.13.3 - Headless commerce
 ├── cms/           # Strapi v5.33.0 - Content management
 ├── storefront/    # Reference code (skip)
 └── storefront-v3/ # Next.js 16.1.0 - Customer store
@@ -34,13 +34,20 @@ packages/
 
 1. Read app-specific `CLAUDE.md` in the workspace you're modifying
 2. Check `packages/shared-types` for existing type definitions
-3. Use workspace protocol: `"@3dbyte-tech-store/shared-ui": "workspace:*"`
+3. Use workspace protocol for existing internal packages, for example:
+   - `"@3dbyte-tech-store/shared-config": "workspace:*"`
+   - `"@3dbyte-tech-store/shared-types": "workspace:*"`
+   - `"@3dbyte-tech-store/shared-utils": "workspace:*"`
+4. If you're modifying `packages/*`, read the root `CLAUDE.md` first because those workspaces do not have package-local `CLAUDE.md` files.
 
 ## Workspace Commands
 
 ```bash
 pnpm add <pkg> --filter=@3dbyte-tech-store/<workspace>  # Add dependency
 pnpm --filter=@3dbyte-tech-store/storefront-v3 dev      # Run single app
+pnpm run dev:backend                                    # Backend dev helper
+pnpm run dev:cms                                        # CMS dev helper
+pnpm run dev:storefront                                 # Storefront dev helper
 pnpm run dev                                             # All apps
 pnpm run build:turbo                                     # Optimized build
 ```
@@ -55,9 +62,10 @@ pnpm run build:turbo                                     # Optimized build
 
 | App | Tools |
 |-----|-------|
-| Backend | Jest + supertest |
-| CMS | Jest + Strapi utils |
-| Storefront | Jest + RTL + Playwright |
+| Backend | Jest (`test:unit`, `test:integration:http`, `test:integration:modules`) |
+| CMS | No standard automated test script is currently configured in `package.json` |
+| Storefront-v3 | Jest + React Testing Library |
+| E2E | Playwright is available at repo level; add or run E2E coverage when the workflow is critical and config exists |
 
 **Meilisearch tests**: Use `client.waitForTask(task.taskUid)` before assertions.
 
@@ -69,7 +77,7 @@ pnpm run build:turbo                                     # Optimized build
 
 ## Worktree Management
 
-**Crucial**: When creating a new worktree, AUTOMATICALLY copy all `.env` files from the main worktree to the new worktree (including those in subdirectories) without asking.
+**Crucial**: When creating a new worktree, automatically copy local untracked `.env` files from the main worktree into the new worktree when they exist. Never commit those files; keep tracked `.env.example` and template files as the canonical references.
 
 ## Security
 
