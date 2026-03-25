@@ -233,4 +233,34 @@ describe("ProductGallery", () => {
     // Should show variant badge
     expect(screen.getByText("Test")).toBeInTheDocument()
   })
+
+  it("auto-selects the matching variant image when the selected option changes", () => {
+    const product = createMockProduct([
+      { id: "img_1", url: "/image1.jpg" },
+      { id: "img_2", url: "/image2.jpg" },
+    ])
+
+    const { rerender } = render(
+      <ProductGallery
+        product={product}
+        variantImageUrls={[
+          JSON.stringify({ id: "vimg_1", url: "/image2.jpg", variantId: "var_2" }),
+        ]}
+      />
+    )
+
+    expect(screen.getByText("1 / 2")).toBeInTheDocument()
+
+    rerender(
+      <ProductGallery
+        product={product}
+        variantImageUrls={[
+          JSON.stringify({ id: "vimg_1", url: "/image2.jpg", variantId: "var_2" }),
+        ]}
+        selectedVariant={createMockVariant("var_2")}
+      />
+    )
+
+    expect(screen.getByText("2 / 2")).toBeInTheDocument()
+  })
 })

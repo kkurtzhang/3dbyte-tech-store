@@ -4,12 +4,21 @@ import { useState, useEffect, useMemo, useRef } from "react"
 import { ProductGallery } from "../components/product-gallery"
 import { ProductActions } from "../components/product-actions"
 import { SpecSheet } from "../components/spec-sheet"
+import { ProductBreadcrumbs } from "../components/product-breadcrumbs"
+import { ProductSupportPanel } from "../components/product-support-panel"
+import { ProductDetailGrid } from "../components/product-detail-grid"
 import { RecentlyViewedProducts } from "@/components/product/recently-viewed-products"
 import { Separator } from "@/components/ui/separator"
 import { useQueryState } from "nuqs"
 import { useRecentlyViewed } from "@/lib/hooks/use-recently-viewed"
 import type { MedusaProduct, MedusaProductVariant } from "@/lib/medusa/types"
 import type { BundleProduct } from "@/lib/medusa/bundles"
+import { getVariantOptionsMap } from "../lib/product-variants"
+import {
+  buildProductBreadcrumbs,
+  buildProductDetailItems,
+  type ProductSourceContext,
+} from "../lib/product-detail-content"
 
 interface VariantImageData {
   id: string
@@ -23,6 +32,7 @@ interface ProductTemplateProps {
   variantImageUrls?: string[]
   bundleProduct?: BundleProduct | null
   availableInBundles?: BundleProduct[]
+  sourceContext?: ProductSourceContext | null
 }
 
 export function ProductTemplate({
@@ -31,10 +41,11 @@ export function ProductTemplate({
   variantImageUrls,
   bundleProduct,
   availableInBundles = [],
+  sourceContext,
 }: ProductTemplateProps) {
   const [variantId, setVariantId] = useQueryState("variant", {
     shallow: false,
-    history: "push",
+    history: "replace",
   })
 
   const [options, setOptions] = useState<Record<string, string>>({})
@@ -62,27 +73,23 @@ export function ProductTemplate({
   useEffect(() => {
     if (!product.variants || product.variants.length === 0) return
 
-    // If we have a selected variant (from URL), sync options to it
     if (selectedVariant) {
-      const variantOptions: Record<string, string> = {}
-      selectedVariant.options?.forEach((opt) => {
-        if (opt.option_id && opt.value) {
-          variantOptions[opt.option_id] = opt.value
+      const nextOptions = getVariantOptionsMap(selectedVariant)
+      setOptions((currentOptions) => {
+        if (JSON.stringify(currentOptions) === JSON.stringify(nextOptions)) {
+          return currentOptions
         }
-      })
 
-      // Only update if different to avoid infinite loops
-      if (JSON.stringify(variantOptions) !== JSON.stringify(options)) {
-        setOptions(variantOptions)
-      }
+        return nextOptions
+      })
+      return
     }
-    // If no variant selected (no URL param), default to first variant
-    else if (!variantId) {
+
+    if (!variantId) {
       const firstVariant = product.variants[0]
       setVariantId(firstVariant.id)
-      // Options will be synced in the next render cycle when selectedVariant updates
     }
-  }, [product.variants, selectedVariant, variantId, setVariantId, options])
+  }, [product.variants, selectedVariant, variantId, setVariantId])
 
   const handleVariantChange = (variant: MedusaProductVariant | undefined) => {
     if (variant) {
@@ -103,9 +110,19 @@ export function ProductTemplate({
 
   // Filter out empty specs
   const validSpecs = specs.filter(s => s.value !== "N/A")
+  const breadcrumbs = useMemo(
+    () => buildProductBreadcrumbs(product, sourceContext),
+    [product, sourceContext]
+  )
+  const detailItems = useMemo(
+    () => buildProductDetailItems(product, selectedVariant),
+    [product, selectedVariant]
+  )
 
   return (
     <div className="container py-8 md:py-12">
+      <ProductBreadcrumbs items={breadcrumbs} sourceContext={sourceContext} />
+
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-16">
         {/* Left Column: Gallery */}
         <div className="relative">
@@ -130,12 +147,13 @@ export function ProductTemplate({
               availableInBundles={availableInBundles}
            />
 
+           <ProductSupportPanel />
+
            <Separator />
 
-           {/* Technical Specs */}
-           {validSpecs.length > 0 && (
-             <SpecSheet specs={validSpecs} />
-           )}
+           <ProductDetailGrid items={detailItems} />
+
+           {validSpecs.length > 0 && <SpecSheet specs={validSpecs} />}
 
            {/* Rich Description from Strapi (if available) */}
            {richDescription && (

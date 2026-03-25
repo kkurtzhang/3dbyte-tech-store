@@ -4,6 +4,7 @@ import { ProductTemplate } from "@/features/product/templates/product-template"
 import { loadProductPageData } from "@/features/product/lib/load-product-page-data"
 import { Metadata } from "next"
 import { Suspense } from "react"
+import type { ProductSourceContext } from "@/features/product/lib/product-detail-content"
 
 // Revalidate every hour
 export const revalidate = 3600
@@ -42,15 +43,26 @@ export async function generateMetadata({
 
 export default async function ProductPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ handle: string }>
+  searchParams: Promise<{ from?: string; fromLabel?: string }>
 }) {
   const { handle } = await params
+  const { from, fromLabel } = await searchParams
   const pageData = await loadProductPageData(handle)
 
   if (!pageData) {
     notFound()
   }
+
+  const sourceContext: ProductSourceContext | null =
+    from && fromLabel
+      ? {
+          href: from,
+          label: fromLabel,
+        }
+      : null
 
   return (
     <Suspense fallback={<div className="container py-12 animate-pulse"><div className="h-96 bg-muted rounded-sm"></div></div>}>
@@ -60,6 +72,7 @@ export default async function ProductPage({
         variantImageUrls={pageData.variantImageUrls}
         bundleProduct={pageData.bundleProduct}
         availableInBundles={pageData.availableInBundles}
+        sourceContext={sourceContext}
       />
     </Suspense>
   )

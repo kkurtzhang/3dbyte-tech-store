@@ -25,37 +25,48 @@ export function ProductGallery({ product, selectedVariant, variantImageUrls }: P
   // Build images from product and variantImageUrls (JSON strings from SSR)
   const images = useMemo(() => {
     const allImages: ImageItem[] = []
-    const existingUrls = new Set<string>()
+    const imagesByUrl = new Map<string, ImageItem>()
 
-    // Add product images
     product.images?.forEach((img) => {
       const url = typeof img.url === "string" ? img.url : String(img.url)
-      if (!existingUrls.has(url)) {
-        existingUrls.add(url)
-        allImages.push({
-          id: img.id,
-          url,
-          alt: product.title,
-          variantId: undefined,
-        })
+
+      if (imagesByUrl.has(url)) {
+        return
       }
+
+      const image = {
+        id: img.id,
+        url,
+        alt: product.title,
+        variantId: undefined,
+      }
+
+      imagesByUrl.set(url, image)
+      allImages.push(image)
     })
 
-    // Add variant images from JSON strings
     variantImageUrls?.forEach((jsonStr) => {
       try {
         const img = JSON.parse(jsonStr)
-        if (!existingUrls.has(img.url)) {
-          existingUrls.add(img.url)
-          allImages.push({
-            id: img.id,
-            url: img.url,
-            alt: "Variant image",
-            variantId: img.variantId,
-          })
+        const existingImage = imagesByUrl.get(img.url)
+
+        if (existingImage) {
+          existingImage.variantId = existingImage.variantId || img.variantId
+          existingImage.alt = existingImage.alt || "Variant image"
+          return
         }
-      } catch (e) {
-        // Skip invalid JSON
+
+        const image = {
+          id: img.id,
+          url: img.url,
+          alt: "Variant image",
+          variantId: img.variantId,
+        }
+
+        imagesByUrl.set(img.url, image)
+        allImages.push(image)
+      } catch {
+        return
       }
     })
 
@@ -73,7 +84,7 @@ export function ProductGallery({ product, selectedVariant, variantImageUrls }: P
         }
       }
     }
-  }, [selectedVariant?.id, images])
+  }, [selectedVariant?.id, images, selectedIndex])
 
   const canScroll = images.length > 5
 
