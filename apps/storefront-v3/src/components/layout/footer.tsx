@@ -177,9 +177,27 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Newsletter Section */}
-        <div className="mt-12">
-          <NewsletterSignup compact={false} variant="default" />
+        <div className="mt-12 rounded-2xl border border-border/60 bg-muted/30 px-5 py-6 md:px-8 md:py-8">
+          <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] md:items-center">
+            <div className="space-y-2">
+              <p className="text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground">
+                Stay In The Loop
+              </p>
+              <h3 className="text-xl font-semibold tracking-tight text-foreground md:text-2xl">
+                New drops, restocks, and practical 3D printing notes.
+              </h3>
+              <p className="max-w-xl text-sm leading-6 text-muted-foreground">
+                Join the list for product releases, shop updates, and useful build
+                guidance without turning the footer into a giant form block.
+              </p>
+            </div>
+
+            <NewsletterSignup
+              compact
+              variant="default"
+              className="w-full rounded-xl border border-border/70 bg-background px-4 py-4 shadow-sm"
+            />
+          </div>
         </div>
 
         {/* Bottom Bar */}
