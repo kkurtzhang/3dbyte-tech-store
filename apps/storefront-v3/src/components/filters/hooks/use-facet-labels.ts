@@ -1,14 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { sdk } from "@/lib/medusa/client"
-import { searchClient } from "@/lib/search/client"
-
-export interface FacetLabels {
-  categories: Record<string, string> // id -> name
-  brands: Record<string, string> // id -> name
-  collections: Record<string, string> // id -> title
-}
+import type { FacetLabels } from "@/lib/filters/facet-labels"
 
 /**
  * Hook to fetch human-readable labels for facet IDs
@@ -38,39 +31,16 @@ export function useFacetLabels(): {
       setIsLoading(true)
 
       try {
-        // Fetch categories, collections from Medusa and brands from Meilisearch in parallel
-        const [categoriesRes, collectionsRes, brandsRes] = await Promise.all([
-          sdk.store.category.list({ limit: 100 }),
-          sdk.store.collection.list({ limit: 100 }),
-          // Fetch all brands from Meilisearch brands index
-          searchClient.index("brands").search("", {
-            limit: 1000,
-            attributesToRetrieve: ["id", "name"],
-          }),
-        ])
+        const response = await fetch("/api/filter-labels")
+        if (!response.ok) {
+          throw new Error("Failed to load facet labels")
+        }
+
+        const nextLabels = (await response.json()) as FacetLabels
 
         if (isCancelled) return
 
-        const categories: Record<string, string> = {}
-        categoriesRes.product_categories?.forEach((cat) => {
-          categories[cat.id] = cat.name || cat.handle || cat.id
-        })
-
-        const collections: Record<string, string> = {}
-        collectionsRes.collections?.forEach((col) => {
-          collections[col.id] = col.title || col.handle || col.id
-        })
-
-        // Build brand ID -> name mapping from Meilisearch results
-        const brands: Record<string, string> = {}
-        brandsRes.hits.forEach((brand: unknown) => {
-          const brandRecord = brand as { id: string; name: string }
-          if (brandRecord.id && brandRecord.name) {
-            brands[brandRecord.id] = brandRecord.name
-          }
-        })
-
-        setLabels({ categories, brands, collections })
+        setLabels(nextLabels)
       } catch (error) {
         console.warn("Failed to fetch facet labels", error)
       } finally {

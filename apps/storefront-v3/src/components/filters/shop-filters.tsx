@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter, useSearchParams } from "next/navigation"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { FilterSidebar } from "./filter-sidebar"
 import { useFilterFacets } from "./hooks/use-filter-facets"
 import { useFacetLabels } from "./hooks/use-facet-labels"
@@ -158,7 +158,7 @@ export function ShopFilters({ className }: ShopFiltersProps) {
   const [localMaxPrice, setLocalMaxPrice] = useState(maxPrice)
 
   // Sync local price state when URL changes
-  useMemo(() => {
+  useEffect(() => {
     setLocalMinPrice(minPrice)
     setLocalMaxPrice(maxPrice)
   }, [minPrice, maxPrice])
