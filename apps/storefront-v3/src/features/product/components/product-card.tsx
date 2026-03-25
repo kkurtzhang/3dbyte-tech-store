@@ -8,6 +8,7 @@ import { Flame } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { QuickViewButton } from "./quick-view-button"
 import { QuickViewDialog } from "./quick-view-dialog"
+import type { QuickViewProductPreview } from "../lib/quick-view-product"
 
 export interface ProductCardProps {
   id: string
@@ -24,18 +25,41 @@ export interface ProductCardProps {
     label: string
     value: string
   }[]
+  sourceHref?: string
+  sourceLabel?: string
+  inventoryQuantity?: number
+  inStock?: boolean
 }
 
 export function ProductCard({
+  id,
   handle,
   title,
   thumbnail,
   price,
   originalPrice,
   discountPercentage,
-  specs
+  specs,
+  sourceHref,
+  sourceLabel,
+  inventoryQuantity,
+  inStock,
 }: ProductCardProps) {
   const [quickViewOpen, setQuickViewOpen] = useState(false)
+  const productHref =
+    sourceHref && sourceLabel
+      ? `/products/${handle}?from=${encodeURIComponent(sourceHref)}&fromLabel=${encodeURIComponent(sourceLabel)}`
+      : `/products/${handle}`
+  const quickViewProductPreview: QuickViewProductPreview = {
+    id,
+    handle,
+    title,
+    thumbnail,
+    price,
+    originalPrice,
+    inventoryQuantity,
+    inStock,
+  }
 
   const formatPrice = (amount: number, currency: string) => {
     return new Intl.NumberFormat("en-US", {
@@ -50,7 +74,7 @@ export function ProductCard({
   // "Lab" Aesthetic: Clean borders, mono fonts for data
   return (
     <div className="group relative flex flex-col overflow-hidden border bg-card transition-colors hover:border-primary/50">
-      <Link href={`/products/${handle}`} className="relative aspect-square overflow-hidden bg-secondary/20">
+      <Link href={productHref} className="relative aspect-square overflow-hidden bg-secondary/20">
         {thumbnail ? (
           <Image
             src={thumbnail}
@@ -94,7 +118,7 @@ export function ProductCard({
 
       <div className="flex flex-1 flex-col p-4">
         <div className="mb-2">
-          <Link href={`/products/${handle}`} className="line-clamp-2 text-sm font-medium leading-tight group-hover:text-primary transition-colors">
+          <Link href={productHref} className="line-clamp-2 text-sm font-medium leading-tight group-hover:text-primary transition-colors">
             {title}
           </Link>
         </div>
@@ -126,6 +150,9 @@ export function ProductCard({
         handle={handle}
         open={quickViewOpen}
         onOpenChange={setQuickViewOpen}
+        productPreview={quickViewProductPreview}
+        sourceHref={sourceHref}
+        sourceLabel={sourceLabel}
       />
     </div>
   )

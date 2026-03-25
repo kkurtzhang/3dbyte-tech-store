@@ -4,6 +4,7 @@ import { getStrapiContent } from "@/lib/strapi/content"
 import { ProductTemplate } from "@/features/product/templates/product-template"
 import { Metadata } from "next"
 import { Suspense } from "react"
+import type { ProductSourceContext } from "@/features/product/lib/product-detail-content"
 
 // Revalidate every hour
 export const revalidate = 3600
@@ -43,8 +44,9 @@ export async function generateMetadata({
 // Strapi v4 content type
 interface StrapiProductDescription {
   id: number
-  medusa_id: string
-  rich_text: string
+  medusa_product_id: string
+  product_handle: string
+  rich_description: string
   documentId: string
 }
 
@@ -62,22 +64,34 @@ interface StrapiResponse<T> {
 
 export default async function ProductPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ handle: string }>
+  searchParams: Promise<{ from?: string; fromLabel?: string }>
 }) {
   const { handle } = await params
+  const { from, fromLabel } = await searchParams
 
-  // Storefront Composition Pattern: Parallel Fetching
-  const [product, strapiData] = await Promise.all([
-    getProductByHandle(handle),
-    getStrapiContent<StrapiResponse<StrapiProductDescription>>("product-descriptions", {
-      filters: { medusa_id: { $eq: null } }, // Optimized: We'll filter in JS if needed, or refine query
-    }).catch(() => ({ data: [] })), // Fail gracefully if Strapi is down
-  ])
+  const product = await getProductByHandle(handle)
 
   if (!product) {
     notFound()
   }
+
+  const strapiData = await getStrapiContent<StrapiResponse<StrapiProductDescription>>(
+    "product-descriptions",
+    {
+      filters: {
+        medusa_product_id: {
+          $eq: product.id,
+        },
+      },
+      pagination: {
+        page: 1,
+        pageSize: 1,
+      },
+    }
+  ).catch(() => ({ data: [] }))
   
   // Extract variant image URLs as simple string array (survives SSR serialization)
   const variantImageUrls = product.variants?.flatMap((variant) =>
@@ -86,17 +100,22 @@ export default async function ProductPage({
     )
   ) || []
 
-  // Find matching enriched content
-  const enrichedContent = strapiData?.data?.find(
-    (item) => item.medusa_id === product.id
-  )
+  const enrichedContent = strapiData?.data?.[0]
+  const sourceContext: ProductSourceContext | null =
+    from && fromLabel
+      ? {
+          href: from,
+          label: fromLabel,
+        }
+      : null
 
   return (
     <Suspense fallback={<div className="container py-12 animate-pulse"><div className="h-96 bg-muted rounded-sm"></div></div>}>
       <ProductTemplate
         product={product}
-        richDescription={enrichedContent?.rich_text}
+        richDescription={enrichedContent?.rich_description}
         variantImageUrls={variantImageUrls}
+        sourceContext={sourceContext}
       />
     </Suspense>
   )

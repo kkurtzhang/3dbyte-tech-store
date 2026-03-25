@@ -10,6 +10,8 @@ export interface ProductLike {
   thumbnail?: string | null;
   images?: { url: string }[] | null;
   variants?: any[] | null;
+  inventory_quantity?: number;
+  in_stock?: boolean;
   // Meilisearch specific fields
   price?: number;
   currency_code?: string;
@@ -27,9 +29,16 @@ export interface ProductLike {
 export interface ProductGridProps {
   products: (MedusaProduct | ProductLike | any)[];
   className?: string;
+  sourceHref?: string;
+  sourceLabel?: string;
 }
 
-export function ProductGrid({ products, className }: ProductGridProps) {
+export function ProductGrid({
+  products,
+  className,
+  sourceHref,
+  sourceLabel,
+}: ProductGridProps) {
   if (!products || products.length === 0) {
     return (
       <div className={className}>
@@ -61,6 +70,8 @@ export function ProductGrid({ products, className }: ProductGridProps) {
         let currencyCode = "usd";
         let originalPrice: number | undefined;
         let discountPercentage: number | undefined;
+        let inventoryQuantity = product.inventory_quantity;
+        let inStock = product.in_stock;
 
         if ("price" in product && typeof product.price === "number") {
           // Meilisearch document (flat price)
@@ -98,6 +109,15 @@ export function ProductGrid({ products, className }: ProductGridProps) {
           if (product.salePrice !== undefined) {
             price = product.salePrice;
           }
+
+          if (inventoryQuantity === undefined) {
+            inventoryQuantity = variant?.inventory_quantity;
+          }
+          if (inStock === undefined && variant) {
+            inStock =
+              (variant.inventory_quantity ?? 0) > 0 ||
+              variant.manage_inventory === false;
+          }
         }
 
         return (
@@ -113,6 +133,10 @@ export function ProductGrid({ products, className }: ProductGridProps) {
             }}
             originalPrice={originalPrice}
             discountPercentage={discountPercentage}
+            sourceHref={sourceHref}
+            sourceLabel={sourceLabel}
+            inventoryQuantity={inventoryQuantity}
+            inStock={inStock}
           />
         );
       })}

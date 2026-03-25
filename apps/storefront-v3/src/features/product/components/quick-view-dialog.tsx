@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/context/cart-context"
 import { useToast } from "@/lib/hooks/use-toast"
-import { getProductByHandle } from "@/lib/medusa/products"
 import { QuickViewGallery } from "./quick-view-gallery"
 import { StockStatusBadge, getStockStatus } from "@/components/ui/stock-status-badge"
 import { PriceDisplay } from "@/components/ui/price-display"
@@ -14,11 +13,26 @@ import { NotifyMeButton } from "./notify-me-button"
 import { ExternalLink, ShoppingCart, Loader2, Plus, Minus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { MedusaProduct } from "@/lib/medusa/types"
+import {
+  findVariantMatchingOptions,
+  getDisplayableProductOptions,
+  getVariantOptionsMap,
+} from "../lib/product-variants"
+import {
+  buildQuickViewDetailChips,
+  buildQuickViewPreviewProduct,
+  buildQuickViewSummary,
+  mergeQuickViewProductData,
+  type QuickViewProductPreview,
+} from "../lib/quick-view-product"
 
 interface QuickViewDialogProps {
   handle: string
   open: boolean
   onOpenChange: (open: boolean) => void
+  productPreview?: QuickViewProductPreview
+  sourceHref?: string
+  sourceLabel?: string
 }
 
 // Loading skeleton for the dialog content
@@ -87,50 +101,104 @@ export function QuickViewDialog({
   handle,
   open,
   onOpenChange,
+  productPreview,
+  sourceHref,
+  sourceLabel,
 }: QuickViewDialogProps) {
   const { addItem } = useCart()
   const { toast } = useToast()
+  const previewProduct = useMemo(
+    () => (productPreview ? buildQuickViewPreviewProduct(productPreview) : null),
+    [productPreview]
+  )
+  const detailHref =
+    sourceHref && sourceLabel
+      ? `/products/${handle}?from=${encodeURIComponent(sourceHref)}&fromLabel=${encodeURIComponent(sourceLabel)}`
+      : `/products/${handle}`
 
   // State management (like ProductTemplate)
-  const [product, setProduct] = useState<MedusaProduct | null>(null)
+  const [product, setProduct] = useState<MedusaProduct | null>(previewProduct)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
   const [options, setOptions] = useState<Record<string, string>>({})
   const [quantity, setQuantity] = useState(1)
   const [isAdding, setIsAdding] = useState(false)
+  const displayableOptions = useMemo(
+    () => getDisplayableProductOptions(product?.options),
+    [product?.options]
+  )
+
+  useEffect(() => {
+    setProduct(previewProduct)
+    setOptions(getVariantOptionsMap(previewProduct?.variants?.[0]))
+  }, [previewProduct])
+
+  const fetchProduct = async () => {
+    const response = await fetch(
+      `/api/products/by-handle/${encodeURIComponent(handle)}`,
+      {
+        cache: "no-store",
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error("Failed to load quick view product")
+    }
+
+    const data = (await response.json()) as { product?: MedusaProduct }
+    if (!data.product) {
+      throw new Error("Quick view product missing from response")
+    }
+
+    return data.product
+  }
 
   // Fetch product when dialog opens
   useEffect(() => {
-    if (open && handle) {
-      setLoading(true)
-      setError(false)
-
-      getProductByHandle(handle)
-        .then((fetchedProduct) => {
-          if (fetchedProduct) {
-            setProduct(fetchedProduct)
-            // Initialize options with first variant's values
-            if (fetchedProduct.variants?.[0]?.options) {
-              const initialOptions: Record<string, string> = {}
-              fetchedProduct.variants[0].options.forEach((opt) => {
-                if (opt.option_id && opt.value) {
-                  initialOptions[opt.option_id] = opt.value
-                }
-              })
-              setOptions(initialOptions)
-            }
-          } else {
-            setError(true)
-          }
-        })
-        .catch(() => {
-          setError(true)
-        })
-        .finally(() => {
-          setLoading(false)
-        })
+    if (!open || !handle) {
+      return
     }
-  }, [open, handle])
+
+    let isCancelled = false
+
+    setError(false)
+    setProduct(previewProduct)
+    setOptions(getVariantOptionsMap(previewProduct?.variants?.[0]))
+    setLoading(!previewProduct)
+
+    fetchProduct()
+      .then((fetchedProduct) => {
+        if (isCancelled) {
+          return
+        }
+
+        const mergedProduct = mergeQuickViewProductData(
+          previewProduct,
+          fetchedProduct
+        )
+
+        setProduct(mergedProduct)
+        setOptions(getVariantOptionsMap(mergedProduct.variants?.[0]))
+      })
+      .catch(() => {
+        if (isCancelled) {
+          return
+        }
+
+        if (!previewProduct) {
+          setError(true)
+        }
+      })
+      .finally(() => {
+        if (!isCancelled) {
+          setLoading(false)
+        }
+      })
+
+    return () => {
+      isCancelled = true
+    }
+  }, [open, handle, previewProduct])
 
   // Reset state when dialog closes
   useEffect(() => {
@@ -143,10 +211,16 @@ export function QuickViewDialog({
   const selectedVariant = useMemo(() => {
     if (!product?.variants) return undefined
 
-    return product.variants.find((variant) => {
-      return variant.options?.every((opt) => options[opt.option_id!] === opt.value)
-    })
+    return findVariantMatchingOptions(product.variants, options)
   }, [product?.variants, options])
+  const productSummary = useMemo(
+    () => (product ? buildQuickViewSummary(product) : undefined),
+    [product]
+  )
+  const detailChips = useMemo(
+    () => (product ? buildQuickViewDetailChips(product, selectedVariant) : []),
+    [product, selectedVariant]
+  )
 
   // Update option handler (reuse ProductActions logic)
   const updateOption = (optionId: string, value: string) => {
@@ -188,28 +262,22 @@ export function QuickViewDialog({
 
   // Retry fetch handler
   const handleRetry = () => {
-    setLoading(true)
     setError(false)
+    setLoading(!previewProduct)
 
-    getProductByHandle(handle)
+    fetchProduct()
       .then((fetchedProduct) => {
-        if (fetchedProduct) {
-          setProduct(fetchedProduct)
-          if (fetchedProduct.variants?.[0]?.options) {
-            const initialOptions: Record<string, string> = {}
-            fetchedProduct.variants[0].options.forEach((opt) => {
-              if (opt.option_id && opt.value) {
-                initialOptions[opt.option_id] = opt.value
-              }
-            })
-            setOptions(initialOptions)
-          }
-        } else {
-          setError(true)
-        }
+        const mergedProduct = mergeQuickViewProductData(
+          previewProduct,
+          fetchedProduct
+        )
+        setProduct(mergedProduct)
+        setOptions(getVariantOptionsMap(mergedProduct.variants?.[0]))
       })
       .catch(() => {
-        setError(true)
+        if (!previewProduct) {
+          setError(true)
+        }
       })
       .finally(() => {
         setLoading(false)
@@ -270,7 +338,7 @@ export function QuickViewDialog({
             <div className="flex flex-1 flex-col p-6 sm:p-8 max-h-[70vh] sm:max-h-[80vh] overflow-y-auto">
               {/* Title with link to product page */}
               <Link
-                href={`/products/${handle}`}
+                href={detailHref}
                 className="text-xl font-bold leading-tight hover:text-primary transition-colors mb-3"
                 onClick={() => onOpenChange(false)}
               >
@@ -302,15 +370,34 @@ export function QuickViewDialog({
                 })()}
               </div>
 
+              {productSummary && (
+                <p className="mb-4 text-sm leading-6 text-muted-foreground">
+                  {productSummary}
+                </p>
+              )}
+
+              {detailChips.length > 0 && (
+                <div className="mb-5 flex flex-wrap gap-2">
+                  {detailChips.map((detail) => (
+                    <span
+                      key={detail}
+                      className="border border-border bg-secondary/20 px-2.5 py-1 font-mono text-[11px] uppercase tracking-wide text-foreground/80"
+                    >
+                      {detail}
+                    </span>
+                  ))}
+                </div>
+              )}
+
               {/* Stock Status Badge */}
               <div className="mb-6">
                 <StockStatusBadge variant={selectedVariant} />
               </div>
 
               {/* Variant Selectors */}
-              {product.options && product.options.length > 0 && (
+              {displayableOptions.length > 0 && (
                 <div className="space-y-4 mb-6">
-                  {product.options.map((option) => (
+                  {displayableOptions.map((option) => (
                     <div key={option.id} className="space-y-2">
                       <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground">
                         {option.title}
@@ -321,6 +408,7 @@ export function QuickViewDialog({
                           return (
                             <button
                               key={value.value}
+                              type="button"
                               onClick={() => updateOption(option.id, value.value)}
                               className={cn(
                                 "px-4 py-2 text-sm border transition-all",
@@ -409,7 +497,7 @@ export function QuickViewDialog({
                   asChild
                   className="w-full font-mono text-xs uppercase tracking-wider"
                 >
-                  <Link href={`/products/${handle}`} onClick={() => onOpenChange(false)}>
+                  <Link href={detailHref} onClick={() => onOpenChange(false)}>
                     <ExternalLink className="mr-2 h-3 w-3" />
                     View Full Details
                   </Link>

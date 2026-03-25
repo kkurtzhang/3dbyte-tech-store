@@ -66,7 +66,9 @@ export function SearchResults({ initialHits, initialQuery = "" }: SearchResultsP
       case "Enter":
         e.preventDefault()
         if (focusedIndex >= 0 && hits[focusedIndex]) {
-          router.push(`/products/${hits[focusedIndex].handle}`)
+          router.push(
+            `/products/${hits[focusedIndex].handle}?from=${encodeURIComponent("/search")}&fromLabel=${encodeURIComponent("Search")}`
+          )
         }
         break
       case "Escape":
@@ -147,11 +149,17 @@ export function SearchResults({ initialHits, initialQuery = "" }: SearchResultsP
           role="option"
           aria-selected={focusedIndex === index}
           tabIndex={focusedIndex === index ? 0 : -1}
-          onClick={() => router.push(`/products/${hit.handle}`)}
+          onClick={() =>
+            router.push(
+              `/products/${hit.handle}?from=${encodeURIComponent("/search")}&fromLabel=${encodeURIComponent("Search")}`
+            )
+          }
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault()
-              router.push(`/products/${hit.handle}`)
+              router.push(
+                `/products/${hit.handle}?from=${encodeURIComponent("/search")}&fromLabel=${encodeURIComponent("Search")}`
+              )
             }
           }}
           className={`cursor-pointer transition-all duration-150 ${
@@ -170,6 +178,10 @@ export function SearchResults({ initialHits, initialQuery = "" }: SearchResultsP
             originalPrice={hit.originalPrice}
             discountPercentage={hit.discountPercentage}
             specs={hit.specs}
+            sourceHref="/search"
+            sourceLabel="Search"
+            inventoryQuantity={hit.inventory_quantity}
+            inStock={hit.in_stock}
           />
         </div>
       ))}

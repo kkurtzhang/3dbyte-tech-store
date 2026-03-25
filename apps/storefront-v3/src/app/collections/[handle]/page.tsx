@@ -227,7 +227,11 @@ export default async function CollectionPage({
       }
     >
       <div className="space-y-8">
-        <ProductGrid products={productsForGrid} />
+        <ProductGrid
+          products={productsForGrid}
+          sourceHref={`/collections/${handle}`}
+          sourceLabel={displayTitle}
+        />
 
         {totalPages > 1 && (
           <div className="flex justify-center">

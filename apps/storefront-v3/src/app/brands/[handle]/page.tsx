@@ -297,7 +297,11 @@ export default async function BrandPage({
       sidebar={<BrandFilters brandId={brand.id} />}
     >
       <div className="space-y-8">
-        <ProductGrid products={productsForGrid} />
+        <ProductGrid
+          products={productsForGrid}
+          sourceHref={`/brands/${handle}`}
+          sourceLabel={displayName}
+        />
 
         {totalPages > 1 && (
           <div className="flex justify-center">

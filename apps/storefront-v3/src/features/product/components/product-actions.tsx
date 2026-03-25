@@ -12,6 +12,10 @@ import { SocialShare } from "./social-share"
 import { StockStatusBadge, getStockStatus } from "@/components/ui/stock-status-badge"
 import { PriceDisplay } from "@/components/ui/price-display"
 import type { MedusaProduct, MedusaProductVariant } from "@/lib/medusa/types"
+import {
+  findVariantMatchingOptions,
+  getDisplayableProductOptions,
+} from "../lib/product-variants"
 
 interface ProductActionsProps {
   product: MedusaProduct
@@ -34,17 +38,15 @@ export function ProductActions({
   const { toast } = useToast()
   const [isAdding, setIsAdding] = useState(false)
   const pathname = usePathname()
+  const displayableOptions = useMemo(
+    () => getDisplayableProductOptions(product.options),
+    [product.options]
+  )
 
   const updateOption = (optionId: string, value: string) => {
     const newOptions = { ...options, [optionId]: value }
     setOptions(newOptions)
-
-    // Find matching variant
-    const variant = product.variants?.find((v) => {
-      // Ensure every option in the variant matches the selected options
-      return v.options?.every((opt) => newOptions[opt.option_id!] === opt.value)
-    })
-
+    const variant = findVariantMatchingOptions(product.variants, newOptions)
     onVariantChange(variant)
   }
 
@@ -134,7 +136,7 @@ export function ProductActions({
 
       {/* Options Selection */}
       <div className="space-y-6">
-        {product.options?.map((option) => (
+        {displayableOptions.map((option) => (
           <div key={option.id} className="space-y-3">
             <span className="text-sm font-mono font-bold uppercase tracking-wider text-muted-foreground">
               {option.title}
@@ -145,6 +147,7 @@ export function ProductActions({
                  return (
                     <button
                         key={value.value}
+                        type="button"
                         onClick={() => updateOption(option.id, value.value)}
                         className={cn(
                             "px-4 py-2 text-sm border transition-all",
