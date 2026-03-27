@@ -21,6 +21,12 @@ export interface SyncBrandData {
   handle: string;
 }
 
+export interface SyncCollectionData {
+  id: string; // medusaCollectionId
+  title: string;
+  handle: string;
+}
+
 class StrapiModuleService {
   protected logger_: Logger;
   private config_: StrapiConfig;
@@ -461,6 +467,204 @@ class StrapiModuleService {
   }
 
   //====End======Brand Description Section===============
+
+  //===============Collection Description Section===============
+
+  private async findCollectionDescriptionByStatus(
+    medusaCollectionId: string,
+    status: "draft" | "published"
+  ): Promise<any> {
+    const response = await this.makeRequest(
+      `collections?status=${status}&filters[medusa_collection_id][$eq]=${medusaCollectionId}`
+    );
+
+    return response.data.length > 0 ? response.data[0] : null;
+  }
+
+  async findCollectionDescription(medusaCollectionId: string): Promise<any> {
+    try {
+      return await this.findCollectionDescriptionByStatus(
+        medusaCollectionId,
+        "published"
+      );
+    } catch (error) {
+      this.logger_.error(
+        `Failed to find collection description for ${medusaCollectionId}`,
+        new Error(error.message)
+      );
+      return null;
+    }
+  }
+
+  async createCollectionDescription(collection: SyncCollectionData): Promise<any> {
+    try {
+      const existing = await this.findCollectionDescription(collection.id);
+      if (existing) {
+        this.logger_.info(
+          `Collection description already exists for collection: ${collection.id}`
+        );
+        return existing;
+      }
+
+      const collectionDescriptionData = {
+        data: {
+          medusa_collection_id: collection.id,
+          Title: collection.title,
+          Handle: collection.handle,
+          last_synced: new Date().toISOString(),
+          sync_status: "synced",
+        },
+      };
+
+      const result = await this.makeRequest("collections", {
+        method: "POST",
+        body: JSON.stringify(collectionDescriptionData),
+      });
+
+      this.logger_.info(
+        `Created collection description in Strapi for collection: ${collection.id}`
+      );
+      return result.data;
+    } catch (error) {
+      this.logger_.error(
+        `Failed to create collection description for ${collection.id}`,
+        new Error(error.message)
+      );
+      throw error;
+    }
+  }
+
+  async updateCollectionDescription(collection: SyncCollectionData): Promise<any> {
+    try {
+      const existing = await this.findCollectionDescription(collection.id);
+      if (!existing) {
+        return await this.createCollectionDescription(collection);
+      }
+
+      const updateData = {
+        data: {
+          medusa_collection_id: collection.id,
+          Title: collection.title,
+          Handle: collection.handle,
+          last_synced: new Date().toISOString(),
+          sync_status: "synced",
+        },
+      };
+
+      const result = await this.makeRequest(`collections/${existing.documentId}`, {
+        method: "PUT",
+        body: JSON.stringify(updateData),
+      });
+
+      this.logger_.info(
+        `Updated collection description in Strapi for collection: ${collection.id}`
+      );
+      return result.data;
+    } catch (error) {
+      this.logger_.error(
+        `Failed to update collection description for ${collection.id}`,
+        new Error(error.message)
+      );
+      throw error;
+    }
+  }
+
+  async deleteCollectionDescription(medusaCollectionId: string): Promise<void> {
+    try {
+      const existing = await this.findCollectionDescription(medusaCollectionId);
+      if (!existing) {
+        this.logger_.info(
+          `No collection description found to delete for collection: ${medusaCollectionId}`
+        );
+        return;
+      }
+
+      await this.makeRequest(`collections/${existing.documentId}`, {
+        method: "DELETE",
+      });
+
+      this.logger_.info(
+        `Deleted collection description from Strapi for collection: ${medusaCollectionId}`
+      );
+    } catch (error) {
+      this.logger_.error(
+        `Failed to delete collection description for ${medusaCollectionId}`,
+        new Error(error.message)
+      );
+      throw error;
+    }
+  }
+
+  async markCollectionDescriptionDeleted(medusaCollectionId: string): Promise<void> {
+    try {
+      const draft = await this.findCollectionDescriptionByStatus(
+        medusaCollectionId,
+        "draft"
+      );
+      const published = await this.findCollectionDescriptionByStatus(
+        medusaCollectionId,
+        "published"
+      );
+      const existing = draft ?? published;
+
+      if (!existing) {
+        this.logger_.info(
+          `No collection description found to soft delete for collection: ${medusaCollectionId}`
+        );
+        return;
+      }
+
+      await this.makeRequest(`collections/${existing.documentId}/unpublish`, {
+        method: "POST",
+      });
+
+      this.logger_.info(
+        `Soft deleted and unpublished collection description in Strapi for collection: ${medusaCollectionId}`
+      );
+    } catch (error) {
+      this.logger_.error(
+        `Failed to soft delete and unpublish collection description for ${medusaCollectionId}`,
+        new Error(error.message)
+      );
+      throw error;
+    }
+  }
+
+  async markCollectionDescriptionOutdated(medusaCollectionId: string): Promise<void> {
+    try {
+      const existing = await this.findCollectionDescription(medusaCollectionId);
+      if (!existing) {
+        this.logger_.info(
+          `No collection description found to mark as outdated for collection: ${medusaCollectionId}`
+        );
+        return;
+      }
+
+      const updateData = {
+        data: {
+          sync_status: "outdated",
+          last_synced: new Date().toISOString(),
+        },
+      };
+
+      await this.makeRequest(`collections/${existing.documentId}`, {
+        method: "PUT",
+        body: JSON.stringify(updateData),
+      });
+
+      this.logger_.info(
+        `Marked collection description as outdated for collection: ${medusaCollectionId}`
+      );
+    } catch (error) {
+      this.logger_.error(
+        `Failed to mark collection description as outdated for ${medusaCollectionId}`,
+        new Error(error.message)
+      );
+      throw error;
+    }
+  }
+
+  //====End======Collection Description Section===============
 
 }
 
