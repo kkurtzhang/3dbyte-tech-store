@@ -12,6 +12,11 @@
   },
   "pluginOptions": {},
   "attributes": {
+    "medusa_collection_id": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
     "Title": {
       "type": "string",
       "required": true
@@ -24,14 +29,26 @@
     "Image": {
       "type": "media",
       "multiple": false,
-      "required": true,
+      "required": false,
       "allowedTypes": [
         "images"
       ]
     },
     "Description": {
       "type": "text",
-      "required": true
+      "required": false
+    },
+    "last_synced": {
+      "type": "datetime"
+    },
+    "sync_status": {
+      "type": "enumeration",
+      "enum": [
+        "synced",
+        "outdated",
+        "manual",
+        "deleted"
+      ]
     }
   }
 }
