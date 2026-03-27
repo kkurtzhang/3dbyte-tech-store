@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useInventoryAlerts } from "@/context/inventory-alert-context"
 import { useToast } from "@/lib/hooks/use-toast"
 import { Bell, BellOff, Mail } from "lucide-react"
@@ -85,73 +85,76 @@ export function NotifyMeButton({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        {alreadySubscribed ? (
-          <Button
-            variant="outline"
-            size="lg"
-            className="w-full font-mono text-lg h-14 uppercase tracking-widest border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700 dark:hover:bg-green-950"
-          >
-            <BellOff className="mr-2 h-5 w-5" />
-            Already Notified
-          </Button>
-        ) : (
-          <Button
-            variant="outline"
-            size="lg"
-            className="w-full font-mono text-lg h-14 uppercase tracking-widest"
-          >
-            <Bell className="mr-2 h-5 w-5" />
-            Notify Me
-          </Button>
-        )}
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
-            Get Notified When Available
-          </DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Enter your email to be notified when{" "}
-              <span className="font-medium text-foreground">
-                {productTitle}
-                {variantTitle && ` (${variantTitle})`}
-              </span>{" "}
-              is back in stock.
-            </p>
-            <Input
-              type="email"
-              placeholder="your@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full"
-            />
-          </div>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex-1"
-            >
-              {isSubmitting ? "Subscribing..." : "Subscribe"}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+    <>
+      {alreadySubscribed ? (
+        <Button
+          variant="outline"
+          size="lg"
+          className="w-full font-mono text-lg h-14 uppercase tracking-widest border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700 dark:hover:bg-green-950"
+          onClick={handleUnsubscribe}
+        >
+          <BellOff className="mr-2 h-5 w-5" />
+          Already Notified
+        </Button>
+      ) : (
+        <Button
+          variant="outline"
+          size="lg"
+          className="w-full font-mono text-lg h-14 uppercase tracking-widest"
+          onClick={() => setIsOpen(true)}
+        >
+          <Bell className="mr-2 h-5 w-5" />
+          Notify Me
+        </Button>
+      )}
+
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="sm:max-w-md" onClose={() => setIsOpen(false)}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5" />
+              Get Notified When Available
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Enter your email to be notified when{" "}
+                <span className="font-medium text-foreground">
+                  {productTitle}
+                  {variantTitle && ` (${variantTitle})`}
+                </span>{" "}
+                is back in stock.
+              </p>
+              <Input
+                type="email"
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsOpen(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex-1"
+              >
+                {isSubmitting ? "Subscribing..." : "Subscribe"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
