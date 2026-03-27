@@ -6,7 +6,10 @@ import { cn } from "@/lib/utils"
 import { useCart } from "@/context/cart-context"
 import { useToast } from "@/lib/hooks/use-toast"
 import { NotifyMeButton } from "./notify-me-button"
+import { ProductWishlistButton } from "./product-wishlist-button"
+import { ProductShippingEstimate } from "./product-shipping-estimate"
 import { SizeGuideButton, shouldShowSizeGuide } from "@/components/ui/size-guide"
+import { PaymentMethodSupport } from "@/components/ui/payment-method-support"
 import { usePathname } from "next/navigation"
 import { SocialShare } from "./social-share"
 import { StockStatusBadge, getStockStatus } from "@/components/ui/stock-status-badge"
@@ -91,6 +94,17 @@ export function ProductActions({
 
   // Extract handle from pathname or use product.id
   const productHandle = pathname?.split("/").pop() || product.id || ""
+  const wishlistItem = {
+    id: product.id,
+    handle: product.handle || productHandle,
+    title: product.title,
+    thumbnail: product.thumbnail || "",
+    price: {
+      amount: priceInfo.price.amount,
+      currency_code: priceInfo.price.currency_code.toUpperCase(),
+    },
+    variantId: selectedVariant?.id,
+  }
 
   // Check if we should show size guide
   const sizeGuideInfo = shouldShowSizeGuide(product)
@@ -252,26 +266,19 @@ export function ProductActions({
       {/* Add to Cart / Notify Me */}
       <div className="pt-6 border-t">
         {isOutOfStock ? (
-          <>
-            <Button
-              size="lg"
-              className="w-full font-mono text-lg h-14 uppercase tracking-widest"
-              disabled
-            >
-              Out of Stock
-            </Button>
-            <div className="mt-4">
-              <NotifyMeButton
-                productId={product.id}
-                productHandle={productHandle}
-                productTitle={product.title}
-                variantId={selectedVariant?.id}
-                variantTitle={selectedVariant?.title || undefined}
-              />
-            </div>
-          </>
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3">
+            <NotifyMeButton
+              productId={product.id}
+              productHandle={productHandle}
+              productTitle={product.title}
+              variantId={selectedVariant?.id}
+              variantTitle={selectedVariant?.title || undefined}
+            />
+
+            <ProductWishlistButton item={wishlistItem} />
+          </div>
         ) : (
-          <>
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3">
             <div className="flex items-stretch gap-3">
               {quantitySelector}
               <Button
@@ -289,12 +296,19 @@ export function ProductActions({
                     : "Select Options"}
               </Button>
             </div>
-            <p className="mt-2 text-center text-xs font-mono text-muted-foreground">
-                Secure checkout
-            </p>
-          </>
+
+            <ProductWishlistButton item={wishlistItem} />
+          </div>
         )}
+
+        <PaymentMethodSupport
+          compact
+          label="Secure checkout with Stripe"
+          className="mt-4"
+        />
       </div>
+
+      <ProductShippingEstimate />
     </div>
   )
 }

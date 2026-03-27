@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SiGithub, SiX, SiDiscord } from "@icons-pack/react-simple-icons";
+import { PaymentMethodSupport } from "@/components/ui/payment-method-support";
 import { NewsletterSignup } from "./newsletter-signup";
 
 /**
@@ -200,8 +201,16 @@ export function Footer() {
           </div>
         </div>
 
+        <div className="mt-12 border-t pt-8">
+          <PaymentMethodSupport
+            compact
+            label="Payments supported"
+            className="border-none bg-transparent px-0 py-0"
+          />
+        </div>
+
         {/* Bottom Bar */}
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t pt-8 sm:flex-row">
+        <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t pt-8 sm:flex-row">
           <p className="text-sm text-muted-foreground">
             © 2024 3D Byte Tech. All rights reserved.
           </p>
