@@ -8,3 +8,8 @@ export default Module(STRAPI_MODULE, {
 });
 
 export { StrapiModuleService };
+export type {
+  SyncBrandData,
+  SyncCollectionData,
+  SyncProductData,
+} from "./service";
