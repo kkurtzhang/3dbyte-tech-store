@@ -125,10 +125,16 @@ startup_timeout_sec = 20
 command = "npx"
 args = ["-y", "next-devtools-mcp@latest"]
 
+[mcp_servers.next-devtools.tools.nextjs_docs]
+approval_mode = "approve"
+
 [mcp_servers.chrome-devtools]
 startup_timeout_sec = 20
 command = "npx"
 args = ["-y", "chrome-devtools-mcp@latest"]
+
+[mcp_servers.chrome-devtools.tools.new_page]
+approval_mode = "approve"
 
 [mcp_servers.serena]
 startup_timeout_sec = 20
@@ -140,4 +146,3 @@ url = "https://docs.medusajs.com/mcp"
 
 [sandbox_workspace_write]
 network_access = true
-

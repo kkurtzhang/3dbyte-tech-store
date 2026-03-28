@@ -676,6 +676,10 @@ export interface ApiHomepageHomepage extends Struct.SingleTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    AnnouncementBarItems: Schema.Attribute.Component<
+      'homepage.announcement-item',
+      true
+    >;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -688,6 +692,9 @@ export interface ApiHomepageHomepage extends Struct.SingleTypeSchema {
       Schema.Attribute.Private;
     MidBanner: Schema.Attribute.Component<'homepage.hero-banner', false>;
     publishedAt: Schema.Attribute.DateTime;
+    QuickLinks: Schema.Attribute.Component<'homepage.cta', true>;
+    QuickLinksHeading: Schema.Attribute.String;
+    TrustStats: Schema.Attribute.Component<'homepage.stat', true>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
