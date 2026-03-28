@@ -84,11 +84,15 @@ This guide provides detailed documentation for all content types available in th
 #### Homepage
 - **Purpose**: Landing page content management
 - **Collection Name**: `homepages`
-- **Fields**: Homepage layout and content
+- **Fields**:
+  - Hero banners and quick links
+  - Trust stats
+  - Repeatable announcement bar items with optional links and icons
 - **Use Cases**:
   - Hero section content
   - Featured products
   - Promotional banners
+  - Store-wide announcement marquee content
 
 #### About Us
 - **Purpose**: Company information page

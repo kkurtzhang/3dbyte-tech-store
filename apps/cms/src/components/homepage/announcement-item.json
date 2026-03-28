@@ -1,0 +1,29 @@
+{
+  "collectionName": "components_homepage_announcement_items",
+  "info": {
+    "displayName": "AnnouncementItem"
+  },
+  "options": {},
+  "attributes": {
+    "Text": {
+      "type": "string",
+      "required": true
+    },
+    "Link": {
+      "type": "string"
+    },
+    "Icon": {
+      "type": "enumeration",
+      "enum": [
+        "sparkles",
+        "truck",
+        "package",
+        "shield-check",
+        "badge-percent",
+        "gift",
+        "clock",
+        "bell"
+      ]
+    }
+  }
+}

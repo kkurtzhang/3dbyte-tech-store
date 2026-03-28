@@ -111,6 +111,23 @@ export interface HomepageStat {
   Label: string;
 }
 
+export type AnnouncementBarIcon =
+  | "sparkles"
+  | "truck"
+  | "package"
+  | "shield-check"
+  | "badge-percent"
+  | "gift"
+  | "clock"
+  | "bell";
+
+export interface AnnouncementBarItemData {
+  id: number;
+  Text: string;
+  Link?: string | null;
+  Icon?: AnnouncementBarIcon | null;
+}
+
 export interface HomepageHeroBanner {
   id: number;
   Eyebrow?: string;
@@ -129,6 +146,7 @@ export interface HomepageData {
   QuickLinksHeading?: string | null;
   QuickLinks?: HomepageCta[];
   TrustStats?: HomepageStat[];
+  AnnouncementBarItems?: AnnouncementBarItemData[];
 }
 
 export interface BrandDescriptionData {

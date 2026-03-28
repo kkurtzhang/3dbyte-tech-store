@@ -107,6 +107,39 @@ export interface HomepageCta extends Struct.ComponentSchema {
   };
 }
 
+export interface HomepageAnnouncementItem extends Struct.ComponentSchema {
+  collectionName: 'components_homepage_announcement_items';
+  info: {
+    displayName: 'AnnouncementItem';
+  };
+  attributes: {
+    Icon: Schema.Attribute.Enumeration<
+      [
+        'sparkles',
+        'truck',
+        'package',
+        'shield-check',
+        'badge-percent',
+        'gift',
+        'clock',
+        'bell',
+      ]
+    >;
+    Link: Schema.Attribute.String;
+    Text: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface HomepageFeatureTag extends Struct.ComponentSchema {
+  collectionName: 'components_homepage_feature_tags';
+  info: {
+    displayName: 'FeatureTag';
+  };
+  attributes: {
+    Text: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
 export interface HomepageHeroBanner extends Struct.ComponentSchema {
   collectionName: 'components_homepage_hero_banners';
   info: {
@@ -115,10 +148,24 @@ export interface HomepageHeroBanner extends Struct.ComponentSchema {
   };
   attributes: {
     CTA: Schema.Attribute.Component<'homepage.cta', false>;
+    Eyebrow: Schema.Attribute.String;
+    FeatureTags: Schema.Attribute.Component<'homepage.feature-tag', true>;
     Headline: Schema.Attribute.String & Schema.Attribute.Required;
     Image: Schema.Attribute.Media<'images' | 'files'> &
       Schema.Attribute.Required;
+    SecondaryCTA: Schema.Attribute.Component<'homepage.cta', false>;
     Text: Schema.Attribute.Text;
+  };
+}
+
+export interface HomepageStat extends Struct.ComponentSchema {
+  collectionName: 'components_homepage_stats';
+  info: {
+    displayName: 'Stat';
+  };
+  attributes: {
+    Label: Schema.Attribute.String & Schema.Attribute.Required;
+    Value: Schema.Attribute.String & Schema.Attribute.Required;
   };
 }
 
@@ -133,8 +180,11 @@ declare module '@strapi/strapi' {
       'color-image.color-image': ColorImageColorImage;
       'faq.faq': FaqFaq;
       'faq.faq-question': FaqFaqQuestion;
+      'homepage.announcement-item': HomepageAnnouncementItem;
       'homepage.cta': HomepageCta;
+      'homepage.feature-tag': HomepageFeatureTag;
       'homepage.hero-banner': HomepageHeroBanner;
+      'homepage.stat': HomepageStat;
     }
   }
 }
