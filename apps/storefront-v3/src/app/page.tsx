@@ -6,6 +6,13 @@ import {
   CollectionGrid,
   CollectionsSkeleton,
 } from "@/features/collections/components/collection-grid"
+import { buildCollectionContentByHandle } from "@/features/collections/lib/collection-cards"
+import { HomepageFeatureBanner } from "@/features/home/components/homepage-feature-banner"
+import { HomepageHero } from "@/features/home/components/homepage-hero"
+import { HomepageLinkCardGrid } from "@/features/home/components/homepage-link-card-grid"
+import { HomepageSectionHeader } from "@/features/home/components/homepage-section-header"
+import { HomepageSupportStrip } from "@/features/home/components/homepage-support-strip"
+import { buildHomepageViewModel } from "@/features/home/lib/homepage-content"
 import { ProductCard } from "@/features/product/components/product-card"
 import { getFeaturedCollections } from "@/lib/medusa/collections"
 import { searchProducts } from "@/lib/search/products"
@@ -13,10 +20,9 @@ import {
   getCollectionDescriptions,
   getHomepage,
 } from "@/lib/strapi/content"
-import { buildCollectionContentByHandle } from "@/features/collections/lib/collection-cards"
 
 // Force dynamic rendering to avoid build-time CMS dependency
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic"
 
 // Loading skeleton for products
 function ProductsSkeleton() {
@@ -155,154 +161,87 @@ export default async function Home() {
 
   const collectionContentByHandle =
     buildCollectionContentByHandle(collectionDescriptions)
-  const home = homepageData?.data
-  const hero = home?.HeroBanner
-  const midBanner = home?.MidBanner
-  const trustStats = home?.TrustStats || []
-  const quickLinks = home?.QuickLinks || []
-
-  const title = hero?.Headline || "Engineered for Precision."
-  const subtitle =
-    hero?.Text ||
-    "Premium Voron kits, high-performance materials, and precision components for serious builders."
-  const primaryCtaText = hero?.CTA?.BtnText || "BROWSE CATALOG"
-  const primaryCtaLink = hero?.CTA?.BtnLink || "/shop"
-  const secondaryCtaText = hero?.SecondaryCTA?.BtnText || "SHOP BRANDS"
-  const secondaryCtaLink = hero?.SecondaryCTA?.BtnLink || "/brands"
-  const heroEyebrow = hero?.Eyebrow || "3D BYTE THE LAB"
-  const featureTags =
-    hero?.FeatureTags?.map((tag) => tag.Text).filter(Boolean) || [
-      "VORON KITS",
-      "HIGH-PERF FILAMENTS",
-      "PRECISION HARDWARE",
-    ]
+  const homepage = buildHomepageViewModel(homepageData?.data || null)
+  const displayedProductCount = productsResult.error
+    ? null
+    : productsResult.totalCount > 0
+      ? `(${productsResult.totalCount})`
+      : null
 
   return (
-    <div className="container py-10">
-      {/* Hero Section */}
-      <section className="mx-auto flex max-w-[980px] flex-col items-start gap-4 py-8 md:py-12 md:pb-8 lg:py-24 lg:pb-20">
-        <p className="font-mono text-xs tracking-[0.2em] text-muted-foreground">
-          {heroEyebrow}
-        </p>
-        <h1 className="text-3xl font-bold leading-tight tracking-tighter md:text-6xl lg:leading-[1.1]">
-          {title === "Engineered for Precision." ? (
-            <>Engineered for <span className="text-primary">Precision</span>.</>
-          ) : (
-            title
-          )}
-        </h1>
-        <p className="max-w-[750px] text-lg text-muted-foreground sm:text-xl">
-          {subtitle}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {featureTags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded border border-border bg-muted/40 px-2 py-1 font-mono text-xs text-muted-foreground"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-        <div className="flex w-full items-center justify-start gap-2 py-2">
-          <Button asChild size="lg" className="rounded-sm font-mono text-sm">
-            <Link href={primaryCtaLink}>{primaryCtaText}</Link>
-          </Button>
-          <Button asChild size="lg" variant="outline" className="rounded-sm font-mono text-sm">
-            <Link href={secondaryCtaLink}>{secondaryCtaText}</Link>
-          </Button>
-        </div>
-        {trustStats.length > 0 && (
-          <div className="grid w-full grid-cols-2 gap-3 pt-2 sm:grid-cols-4">
-            {trustStats.map((stat) => (
-              <div key={stat.id} className="rounded border bg-card p-3">
-                <div className="font-mono text-lg font-bold">{stat.Value}</div>
-                <div className="text-xs text-muted-foreground">{stat.Label}</div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+    <div className="bg-[radial-gradient(circle_at_top,_rgba(251,191,36,0.1),_transparent_28%),linear-gradient(to_bottom,_rgba(248,250,252,0.96),_rgba(248,250,252,1))]">
+      <div className="container space-y-16 py-8 md:py-10 lg:space-y-20 lg:py-12">
+        <HomepageHero hero={homepage.hero} trustStats={homepage.trustStats} />
 
-      {quickLinks.length > 0 && (
-        <section className="mb-12">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-bold tracking-tight">
-              {home?.QuickLinksHeading || "Shop By Focus"}
-            </h2>
-          </div>
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-            {quickLinks.map((link, idx) => (
-              <Button
-                key={`${link.BtnText || "link"}-${idx}`}
-                asChild
-                variant="outline"
-                className="justify-start rounded-sm font-mono text-xs"
-              >
-                <Link href={link.BtnLink || "/shop"}>{link.BtnText || "Explore"}</Link>
-              </Button>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Featured Collections Section */}
-      {collections.length > 0 && (
-        <section className="mb-16">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-xl font-bold tracking-tight">Featured Collections</h2>
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/collections">View All →</Link>
-            </Button>
-          </div>
-
-          <Suspense fallback={<CollectionsSkeleton />}>
-            <CollectionGrid
-              collections={collections}
-              collectionContentByHandle={collectionContentByHandle}
+        {homepage.quickLinks.length > 0 ? (
+          <section className="space-y-6">
+            <HomepageSectionHeader
+              eyebrow="START HERE"
+              heading={homepage.quickLinksHeading}
+              text="Use faster entry points when you already know whether you want catalog breadth, curated collections, trusted brands, or practical buying guides."
             />
-          </Suspense>
-        </section>
-      )}
+            <HomepageLinkCardGrid items={homepage.quickLinks} />
+          </section>
+        ) : null}
 
-      {midBanner?.Headline && (
-        <section className="mb-16 mt-16 rounded border bg-card p-6 md:p-8">
-          <p className="font-mono text-xs tracking-[0.2em] text-muted-foreground">
-            SYSTEM UPDATE
-          </p>
-          <h2 className="mt-2 text-2xl font-bold tracking-tight">{midBanner.Headline}</h2>
-          {midBanner.Text && (
-            <p className="mt-2 max-w-2xl text-muted-foreground">{midBanner.Text}</p>
-          )}
-          {midBanner.CTA?.BtnText && (
-            <div className="mt-4">
-              <Button asChild variant="secondary" className="rounded-sm font-mono text-xs">
-                <Link href={midBanner.CTA.BtnLink || "/shop"}>{midBanner.CTA.BtnText}</Link>
-              </Button>
-            </div>
-          )}
-        </section>
-      )}
+        {homepage.collectionsSection.enabled && collections.length > 0 ? (
+          <section className="space-y-6">
+            <HomepageSectionHeader
+              eyebrow={homepage.collectionsSection.eyebrow}
+              heading={homepage.collectionsSection.heading}
+              text={homepage.collectionsSection.text}
+              ctaLink={homepage.collectionsSection.ctaLink}
+              ctaText={homepage.collectionsSection.ctaText}
+            />
+            <Suspense fallback={<CollectionsSkeleton />}>
+              <CollectionGrid
+                collections={collections}
+                collectionContentByHandle={collectionContentByHandle}
+              />
+            </Suspense>
+          </section>
+        ) : null}
 
-      {/* Featured Products Section */}
-      <section>
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold tracking-tight">
-            Featured Products
-            {!productsResult.error && productsResult.totalCount > 0 && ` (${productsResult.totalCount})`}
-          </h2>
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/shop">View All →</Link>
-          </Button>
-        </div>
+        {homepage.midBanner?.Headline ? (
+          <HomepageFeatureBanner banner={homepage.midBanner} />
+        ) : null}
 
-        <Suspense fallback={<ProductsSkeleton />}>
-          <ProductGrid
-            products={productsResult.products}
-            error={productsResult.error}
-          />
-        </Suspense>
-      </section>
+        {homepage.productsSection.enabled ? (
+          <section className="space-y-6">
+            <HomepageSectionHeader
+              eyebrow={homepage.productsSection.eyebrow}
+              heading={
+                displayedProductCount
+                  ? `${homepage.productsSection.heading} ${displayedProductCount}`
+                  : homepage.productsSection.heading
+              }
+              text={homepage.productsSection.text}
+              ctaLink={homepage.productsSection.ctaLink}
+              ctaText={homepage.productsSection.ctaText}
+            />
+
+            <Suspense fallback={<ProductsSkeleton />}>
+              <ProductGrid
+                products={productsResult.products}
+                error={productsResult.error}
+              />
+            </Suspense>
+          </section>
+        ) : null}
+
+        {homepage.guidesHelpSection.enabled ? (
+          <section className="space-y-6">
+            <HomepageSectionHeader
+              eyebrow={homepage.guidesHelpSection.eyebrow}
+              heading={homepage.guidesHelpSection.heading}
+              text={homepage.guidesHelpSection.text}
+            />
+            <HomepageLinkCardGrid items={homepage.guidesHelpSection.cards} />
+          </section>
+        ) : null}
+
+        <HomepageSupportStrip strip={homepage.supportStrip} />
+      </div>
     </div>
   )
 }

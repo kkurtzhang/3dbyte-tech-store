@@ -125,12 +125,34 @@ export async function getHomepage() {
         QuickLinks: true,
         TrustStats: true,
         AnnouncementBarItems: true,
+        CollectionsSection: {
+          populate: {
+            CTA: true,
+          },
+        },
+        ProductsSection: {
+          populate: {
+            CTA: true,
+          },
+        },
+        GuidesHelpSection: {
+          populate: {
+            Cards: true,
+          },
+        },
+        SupportStrip: {
+          populate: {
+            CTA: true,
+          },
+        },
       },
     },
     { encodeValuesOnly: true }
   );
 
-  return strapiClient.fetch<StrapiResponse<HomepageData>>(`/homepage?${query}`);
+  return strapiClient.fetch<StrapiResponse<HomepageData>>(`/homepage?${query}`, {
+    tags: ["homepage"],
+  });
 }
 
 export async function getHomepageAnnouncements() {

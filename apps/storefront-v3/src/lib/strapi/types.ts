@@ -111,6 +111,51 @@ export interface HomepageStat {
   Label: string;
 }
 
+export interface HomepageSectionConfig {
+  id: number;
+  Eyebrow?: string | null;
+  Heading?: string | null;
+  Text?: string | null;
+  CTA?: HomepageCta | null;
+  Enabled?: boolean | null;
+}
+
+export type HomepageLinkCardIcon =
+  | "book-open"
+  | "wrench"
+  | "truck"
+  | "shield-check"
+  | "package"
+  | "store"
+  | "sparkles";
+
+export interface HomepageLinkCard {
+  id: number;
+  Eyebrow?: string | null;
+  Title: string;
+  Text?: string | null;
+  LinkText?: string | null;
+  Link?: string | null;
+  Icon?: HomepageLinkCardIcon | null;
+}
+
+export interface HomepageGuidesHelpSection {
+  id: number;
+  Eyebrow?: string | null;
+  Heading?: string | null;
+  Text?: string | null;
+  Enabled?: boolean | null;
+  Cards?: HomepageLinkCard[];
+}
+
+export interface HomepageSupportStrip {
+  id: number;
+  Label?: string | null;
+  Text?: string | null;
+  CTA?: HomepageCta | null;
+  Enabled?: boolean | null;
+}
+
 export type AnnouncementBarIcon =
   | "sparkles"
   | "truck"
@@ -147,6 +192,10 @@ export interface HomepageData {
   QuickLinks?: HomepageCta[];
   TrustStats?: HomepageStat[];
   AnnouncementBarItems?: AnnouncementBarItemData[];
+  CollectionsSection?: HomepageSectionConfig | null;
+  ProductsSection?: HomepageSectionConfig | null;
+  GuidesHelpSection?: HomepageGuidesHelpSection | null;
+  SupportStrip?: HomepageSupportStrip | null;
 }
 
 export interface BrandDescriptionData {

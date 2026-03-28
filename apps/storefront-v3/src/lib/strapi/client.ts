@@ -5,6 +5,7 @@ export const strapiClient = {
   async fetch<T>(endpoint: string, options?: RequestInit & { tags?: string[] }): Promise<T> {
     const url = `${this.baseUrl}/api${endpoint}`
     const { tags, ...fetchOptions } = options || {}
+    const defaultRevalidate = process.env.NODE_ENV === "production" ? 3600 : 0
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
     }
@@ -21,8 +22,8 @@ export const strapiClient = {
       ...fetchOptions,
       headers,
       next: {
-        revalidate: 3600, // Default 1 hour
-        tags: tags, // For on-demand revalidation
+        revalidate: defaultRevalidate,
+        tags,
         ...fetchOptions?.next,
       },
     })
