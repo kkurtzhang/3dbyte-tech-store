@@ -1,0 +1,28 @@
+{
+  "collectionName": "components_homepage_guides_help_section_cards",
+  "info": {
+    "displayName": "GuidesHelpSectionCard"
+  },
+  "options": {},
+  "attributes": {
+    "Eyebrow": {
+      "type": "string"
+    },
+    "Icon": {
+      "type": "string"
+    },
+    "Link": {
+      "type": "string"
+    },
+    "LinkText": {
+      "type": "string"
+    },
+    "Text": {
+      "type": "text"
+    },
+    "Title": {
+      "type": "string",
+      "required": true
+    }
+  }
+}
