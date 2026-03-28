@@ -6,7 +6,6 @@ import { ProductActions } from "../components/product-actions"
 import { SpecSheet } from "../components/spec-sheet"
 import { ProductBreadcrumbs } from "../components/product-breadcrumbs"
 import { ProductSupportPanel } from "../components/product-support-panel"
-import { ProductDetailGrid } from "../components/product-detail-grid"
 import { RecentlyViewedProducts } from "@/components/product/recently-viewed-products"
 import { Separator } from "@/components/ui/separator"
 import { useQueryState } from "nuqs"
@@ -15,7 +14,6 @@ import type { MedusaProduct, MedusaProductVariant } from "@/lib/medusa/types"
 import { getVariantOptionsMap } from "../lib/product-variants"
 import {
   buildProductBreadcrumbs,
-  buildProductDetailItems,
   type ProductSourceContext,
 } from "../lib/product-detail-content"
 
@@ -103,10 +101,6 @@ export function ProductTemplate({
     () => buildProductBreadcrumbs(product, sourceContext),
     [product, sourceContext]
   )
-  const detailItems = useMemo(
-    () => buildProductDetailItems(product, selectedVariant),
-    [product, selectedVariant]
-  )
 
   return (
     <div className="container py-8 md:py-12">
@@ -137,8 +131,6 @@ export function ProductTemplate({
            <ProductSupportPanel />
 
            <Separator />
-
-           <ProductDetailGrid items={detailItems} />
 
            {validSpecs.length > 0 && <SpecSheet specs={validSpecs} />}
 

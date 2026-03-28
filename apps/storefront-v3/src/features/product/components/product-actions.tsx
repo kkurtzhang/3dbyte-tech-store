@@ -45,6 +45,7 @@ export function ProductActions({
     () => getDisplayableProductOptions(product.options),
     [product.options]
   )
+  const resolvedVariant = selectedVariant || product.variants?.[0]
 
   const updateOption = (optionId: string, value: string) => {
     const newOptions = { ...options, [optionId]: value }
@@ -54,11 +55,11 @@ export function ProductActions({
   }
 
   const handleAddToCart = async () => {
-    if (!selectedVariant?.id) return
+    if (!resolvedVariant?.id) return
 
     setIsAdding(true)
     try {
-      await addItem(selectedVariant.id, 1)
+      await addItem(resolvedVariant.id, 1)
       toast({
         title: "Item_Acquired",
         description: `${product.title} has been added to your system inventory.`,
@@ -76,7 +77,7 @@ export function ProductActions({
 
   // Calculate price and sale info for PriceDisplay
   const priceInfo = useMemo(() => {
-    const variant = selectedVariant || product.variants?.[0]
+    const variant = resolvedVariant
     const variantData = variant as Record<string, unknown> | undefined
     const calcPrice = variantData?.calculated_price as Record<string, unknown> | undefined
     const calculatedAmount = calcPrice?.calculated_amount as number | undefined
@@ -99,7 +100,7 @@ export function ProductActions({
       originalPrice: hasDiscount ? originalAmount : undefined,
       discountPercentage,
     }
-  }, [selectedVariant, product.variants])
+  }, [resolvedVariant, product.variants])
 
   // Extract handle from pathname or use product.id
   const productHandle = pathname?.split("/").pop() || product.id || ""
@@ -112,14 +113,14 @@ export function ProductActions({
       amount: priceInfo.price.amount,
       currency_code: priceInfo.price.currency_code.toUpperCase(),
     },
-    variantId: selectedVariant?.id,
+    variantId: resolvedVariant?.id,
   }
 
   // Check if we should show size guide
   const sizeGuideInfo = shouldShowSizeGuide(product)
 
   // Get stock status for out-of-stock check
-  const stockStatus = getStockStatus(selectedVariant)
+  const stockStatus = getStockStatus(resolvedVariant)
   const isOutOfStock = stockStatus.status === "out-of-stock"
 
   return (
@@ -127,6 +128,11 @@ export function ProductActions({
       {/* Price Display */}
       <div className="border-b pb-6">
         <h1 className="text-3xl font-bold tracking-tight mb-2">{product.title}</h1>
+        {resolvedVariant?.sku && (
+          <p className="mb-3 text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
+            SKU {resolvedVariant.sku}
+          </p>
+        )}
         <div className="flex items-start gap-3 flex-wrap">
           <PriceDisplay
             price={priceInfo.price}
@@ -134,7 +140,7 @@ export function ProductActions({
             discountPercentage={priceInfo.discountPercentage}
             size="lg"
           />
-          <StockStatusBadge variant={selectedVariant} />
+          <StockStatusBadge variant={resolvedVariant} />
         </div>
         {product.description && (
              <p className="mt-4 text-muted-foreground leading-relaxed">{product.description}</p>
@@ -197,8 +203,8 @@ export function ProductActions({
               productId={product.id}
               productHandle={productHandle}
               productTitle={product.title}
-              variantId={selectedVariant?.id}
-              variantTitle={selectedVariant?.title || undefined}
+              variantId={resolvedVariant?.id}
+              variantTitle={resolvedVariant?.title || undefined}
             />
 
             <ProductWishlistButton item={wishlistItem} />
@@ -208,10 +214,10 @@ export function ProductActions({
             <Button
                 size="lg"
                 className="w-full font-mono text-lg h-14 uppercase tracking-widest"
-                disabled={!selectedVariant || disabled || isAdding}
+                disabled={!resolvedVariant || disabled || isAdding}
                 onClick={handleAddToCart}
             >
-              {isAdding ? "Adding..." : selectedVariant ? "Add to Cart" : "Select Options"}
+              {isAdding ? "Adding..." : resolvedVariant ? "Add to Cart" : "Select Options"}
             </Button>
 
             <ProductWishlistButton item={wishlistItem} />
@@ -225,7 +231,7 @@ export function ProductActions({
         />
       </div>
 
-      <ProductShippingEstimate />
+      <ProductShippingEstimate variantId={resolvedVariant?.id} />
     </div>
   )
 }
