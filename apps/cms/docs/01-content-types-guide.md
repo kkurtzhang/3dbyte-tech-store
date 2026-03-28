@@ -99,6 +99,22 @@ This guide provides detailed documentation for all content types available in th
   - Promotional banners
   - Conversion-focused merchandising and support messaging
 
+##### Storefront Revalidation Webhook
+- **Purpose**: Refresh cached storefront CMS content after homepage edits are published
+- **Storefront Endpoint**: `POST /api/revalidate/strapi`
+- **Authentication**:
+  - Set `STRAPI_WEBHOOK_REVALIDATION_SECRET` in the storefront environment
+  - Send the same value in Strapi as the `x-strapi-webhook-secret` request header
+- **Recommended Trigger**:
+  - Fire the webhook on homepage create, update, publish, and unpublish events
+- **Current Revalidation Targets**:
+  - `homepage`
+  - `homepage-announcements`
+  - `/`
+- **Notes**:
+  - Local development uses uncached Strapi reads so homepage edits show up on reload
+  - Production should rely on this webhook for immediate cache invalidation after CMS changes
+
 #### About Us
 - **Purpose**: Company information page
 - **Collection Name**: `about_uses`
