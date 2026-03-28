@@ -22,6 +22,26 @@
       "repeatable": false,
       "component": "homepage.hero-banner"
     },
+    "CollectionsSection": {
+      "type": "component",
+      "repeatable": false,
+      "component": "homepage.collections-section"
+    },
+    "ProductsSection": {
+      "type": "component",
+      "repeatable": false,
+      "component": "homepage.products-section"
+    },
+    "GuidesHelpSection": {
+      "type": "component",
+      "repeatable": false,
+      "component": "homepage.guides-help-section"
+    },
+    "SupportStrip": {
+      "type": "component",
+      "repeatable": false,
+      "component": "homepage.support-strip"
+    },
     "QuickLinksHeading": {
       "type": "string"
     },
@@ -34,6 +54,11 @@
       "type": "component",
       "repeatable": true,
       "component": "homepage.stat"
+    },
+    "AnnouncementBarItems": {
+      "type": "component",
+      "repeatable": true,
+      "component": "homepage.announcement-item"
     }
   }
 }

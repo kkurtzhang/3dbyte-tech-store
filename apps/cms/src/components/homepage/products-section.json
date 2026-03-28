@@ -1,0 +1,27 @@
+{
+  "collectionName": "components_homepage_products_sections",
+  "info": {
+    "displayName": "ProductsSection"
+  },
+  "options": {},
+  "attributes": {
+    "Enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "Eyebrow": {
+      "type": "string"
+    },
+    "Heading": {
+      "type": "string"
+    },
+    "Text": {
+      "type": "text"
+    },
+    "CTA": {
+      "type": "component",
+      "repeatable": false,
+      "component": "homepage.cta"
+    }
+  }
+}

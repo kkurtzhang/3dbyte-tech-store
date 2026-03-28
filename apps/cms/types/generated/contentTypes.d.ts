@@ -679,7 +679,19 @@ export interface ApiHomepageHomepage extends Struct.SingleTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    AnnouncementBarItems: Schema.Attribute.Component<
+      'homepage.announcement-item',
+      true
+    >;
+    CollectionsSection: Schema.Attribute.Component<
+      'homepage.collections-section',
+      false
+    >;
     HeroBanner: Schema.Attribute.Component<'homepage.hero-banner', false>;
+    GuidesHelpSection: Schema.Attribute.Component<
+      'homepage.guides-help-section',
+      false
+    >;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -687,7 +699,15 @@ export interface ApiHomepageHomepage extends Struct.SingleTypeSchema {
     > &
       Schema.Attribute.Private;
     MidBanner: Schema.Attribute.Component<'homepage.hero-banner', false>;
+    ProductsSection: Schema.Attribute.Component<
+      'homepage.products-section',
+      false
+    >;
+    QuickLinks: Schema.Attribute.Component<'homepage.cta', true>;
+    QuickLinksHeading: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
+    SupportStrip: Schema.Attribute.Component<'homepage.support-strip', false>;
+    TrustStats: Schema.Attribute.Component<'homepage.stat', true>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

@@ -85,10 +85,19 @@ This guide provides detailed documentation for all content types available in th
 - **Purpose**: Landing page content management
 - **Collection Name**: `homepages`
 - **Fields**: Homepage layout and content
+- **Homepage Sections**:
+  - `HeroBanner` and `MidBanner` - hero-style sections with media and CTAs
+  - `CollectionsSection` - collection rail metadata with eyebrow, heading, text, CTA, and enabled toggle
+  - `ProductsSection` - product rail metadata with eyebrow, heading, text, CTA, and enabled toggle
+  - `GuidesHelpSection` - educational/support block with eyebrow, heading, text, enabled toggle, and repeatable cards
+  - `SupportStrip` - compact promo/support strip with label, text, CTA, and enabled toggle
+  - `AnnouncementBarItems` - repeatable announcement marquee items for the global storefront bar
+  - `QuickLinks`, `QuickLinksHeading`, and `TrustStats` - supporting homepage utility content
 - **Use Cases**:
   - Hero section content
   - Featured products
   - Promotional banners
+  - Conversion-focused merchandising and support messaging
 
 #### About Us
 - **Purpose**: Company information page

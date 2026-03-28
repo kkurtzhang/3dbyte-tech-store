@@ -107,6 +107,75 @@ export interface HomepageCta extends Struct.ComponentSchema {
   };
 }
 
+export interface HomepageAnnouncementItem extends Struct.ComponentSchema {
+  collectionName: 'components_homepage_announcement_items';
+  info: {
+    displayName: 'AnnouncementItem';
+  };
+  attributes: {
+    Icon: Schema.Attribute.Enumeration<
+      [
+        'sparkles',
+        'truck',
+        'package',
+        'shield-check',
+        'badge-percent',
+        'gift',
+        'clock',
+        'bell',
+      ]
+    >;
+    Link: Schema.Attribute.String;
+    Text: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface HomepageCollectionsSection extends Struct.ComponentSchema {
+  collectionName: 'components_homepage_collections_sections';
+  info: {
+    displayName: 'CollectionsSection';
+  };
+  attributes: {
+    CTA: Schema.Attribute.Component<'homepage.cta', false>;
+    Enabled: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    Eyebrow: Schema.Attribute.String;
+    Heading: Schema.Attribute.String;
+    Text: Schema.Attribute.Text;
+  };
+}
+
+export interface HomepageGuidesHelpSectionCard extends Struct.ComponentSchema {
+  collectionName: 'components_homepage_guides_help_section_cards';
+  info: {
+    displayName: 'GuidesHelpSectionCard';
+  };
+  attributes: {
+    Eyebrow: Schema.Attribute.String;
+    Icon: Schema.Attribute.String;
+    Link: Schema.Attribute.String;
+    LinkText: Schema.Attribute.String;
+    Text: Schema.Attribute.Text;
+    Title: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface HomepageGuidesHelpSection extends Struct.ComponentSchema {
+  collectionName: 'components_homepage_guides_help_sections';
+  info: {
+    displayName: 'GuidesHelpSection';
+  };
+  attributes: {
+    Cards: Schema.Attribute.Component<
+      'homepage.guides-help-section-card',
+      true
+    >;
+    Enabled: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    Eyebrow: Schema.Attribute.String;
+    Heading: Schema.Attribute.String;
+    Text: Schema.Attribute.Text;
+  };
+}
+
 export interface HomepageHeroBanner extends Struct.ComponentSchema {
   collectionName: 'components_homepage_hero_banners';
   info: {
@@ -118,6 +187,44 @@ export interface HomepageHeroBanner extends Struct.ComponentSchema {
     Headline: Schema.Attribute.String & Schema.Attribute.Required;
     Image: Schema.Attribute.Media<'images' | 'files'> &
       Schema.Attribute.Required;
+    Text: Schema.Attribute.Text;
+  };
+}
+
+export interface HomepageProductsSection extends Struct.ComponentSchema {
+  collectionName: 'components_homepage_products_sections';
+  info: {
+    displayName: 'ProductsSection';
+  };
+  attributes: {
+    CTA: Schema.Attribute.Component<'homepage.cta', false>;
+    Enabled: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    Eyebrow: Schema.Attribute.String;
+    Heading: Schema.Attribute.String;
+    Text: Schema.Attribute.Text;
+  };
+}
+
+export interface HomepageStat extends Struct.ComponentSchema {
+  collectionName: 'components_homepage_stats';
+  info: {
+    displayName: 'Stat';
+  };
+  attributes: {
+    Label: Schema.Attribute.String & Schema.Attribute.Required;
+    Value: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface HomepageSupportStrip extends Struct.ComponentSchema {
+  collectionName: 'components_homepage_support_strips';
+  info: {
+    displayName: 'SupportStrip';
+  };
+  attributes: {
+    CTA: Schema.Attribute.Component<'homepage.cta', false>;
+    Enabled: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    Label: Schema.Attribute.String;
     Text: Schema.Attribute.Text;
   };
 }
@@ -134,7 +241,14 @@ declare module '@strapi/strapi' {
       'faq.faq': FaqFaq;
       'faq.faq-question': FaqFaqQuestion;
       'homepage.cta': HomepageCta;
+      'homepage.announcement-item': HomepageAnnouncementItem;
+      'homepage.collections-section': HomepageCollectionsSection;
+      'homepage.guides-help-section-card': HomepageGuidesHelpSectionCard;
+      'homepage.guides-help-section': HomepageGuidesHelpSection;
       'homepage.hero-banner': HomepageHeroBanner;
+      'homepage.products-section': HomepageProductsSection;
+      'homepage.stat': HomepageStat;
+      'homepage.support-strip': HomepageSupportStrip;
     }
   }
 }

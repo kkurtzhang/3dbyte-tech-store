@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_homepage_support_strips",
+  "info": {
+    "displayName": "SupportStrip"
+  },
+  "options": {},
+  "attributes": {
+    "Enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "Label": {
+      "type": "string"
+    },
+    "Text": {
+      "type": "text"
+    },
+    "CTA": {
+      "type": "component",
+      "repeatable": false,
+      "component": "homepage.cta"
+    }
+  }
+}
