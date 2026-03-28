@@ -124,12 +124,33 @@ export async function getHomepage() {
         },
         QuickLinks: true,
         TrustStats: true,
+        AnnouncementBarItems: true,
       },
     },
     { encodeValuesOnly: true }
   );
 
   return strapiClient.fetch<StrapiResponse<HomepageData>>(`/homepage?${query}`);
+}
+
+export async function getHomepageAnnouncements() {
+  const query = qs.stringify(
+    {
+      populate: {
+        AnnouncementBarItems: true,
+      },
+    },
+    { encodeValuesOnly: true }
+  );
+
+  const response = await strapiClient.fetch<StrapiResponse<HomepageData>>(
+    `/homepage?${query}`,
+    {
+      tags: ["homepage-announcements"],
+    }
+  );
+
+  return response.data?.AnnouncementBarItems ?? [];
 }
 
 export async function getBrandDescriptions() {

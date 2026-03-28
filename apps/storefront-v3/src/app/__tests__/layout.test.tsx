@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import { render, screen } from "@testing-library/react"
 import RootLayout from "../layout"
 import { useInventoryAlerts } from "@/context/inventory-alert-context"
@@ -8,11 +9,11 @@ jest.mock("next/font/google", () => ({
 }))
 
 jest.mock("@/components/providers/theme-provider", () => ({
-  ThemeProvider: ({ children }: { children: React.ReactNode }) => children,
+  ThemeProvider: ({ children }: { children: ReactNode }) => children,
 }))
 
 jest.mock("nuqs/adapters/next/app", () => ({
-  NuqsAdapter: ({ children }: { children: React.ReactNode }) => children,
+  NuqsAdapter: ({ children }: { children: ReactNode }) => children,
 }))
 
 jest.mock("@/components/layout/navbar", () => ({
@@ -23,20 +24,24 @@ jest.mock("@/components/layout/footer", () => ({
   Footer: () => <div data-testid="footer" />,
 }))
 
+jest.mock("@/components/layout/announcement-bar-slot", () => ({
+  AnnouncementBarSlot: () => <div data-testid="announcement-bar-slot" />,
+}))
+
 jest.mock("@/components/ui/toaster", () => ({
   Toaster: () => <div data-testid="toaster" />,
 }))
 
 jest.mock("@/context/cart-context", () => ({
-  CartProvider: ({ children }: { children: React.ReactNode }) => children,
+  CartProvider: ({ children }: { children: ReactNode }) => children,
 }))
 
 jest.mock("@/context/wishlist-context", () => ({
-  WishlistProvider: ({ children }: { children: React.ReactNode }) => children,
+  WishlistProvider: ({ children }: { children: ReactNode }) => children,
 }))
 
 jest.mock("@/context/compare-context", () => ({
-  CompareProvider: ({ children }: { children: React.ReactNode }) => children,
+  CompareProvider: ({ children }: { children: ReactNode }) => children,
 }))
 
 function InventoryAlertsConsumer() {
