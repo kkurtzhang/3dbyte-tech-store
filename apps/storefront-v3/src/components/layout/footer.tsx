@@ -75,6 +75,14 @@ export function Footer() {
               </li>
               <li>
                 <Link
+                  href="/shipping"
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Shipping
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/returns"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >

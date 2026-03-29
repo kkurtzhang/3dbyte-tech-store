@@ -1,19 +1,19 @@
-import { Metadata } from "next";
-import { MdxContent } from "@/features/cms/components/mdx-content";
+import { Metadata } from "next"
+import { Contact, Package, ShieldCheck } from "lucide-react"
+
+import { ContentPageShell } from "@/features/cms/components/content-page-shell"
+import { MdxContent } from "@/features/cms/components/mdx-content"
+import { stripLeadingMarkdownHeading } from "@/features/cms/lib/content-page"
 
 export const metadata: Metadata = {
   title: "Terms and Conditions",
   description: "Read our terms and conditions for using our website and services.",
-};
-
-export const revalidate = 3600;
-
-function stripLeadingMarkdownH2(content: string): string {
-  return content.replace(/^\s*##\s+Terms(?:\s+and|\s*&)\s+Conditions\s*\n+/i, "");
 }
 
+export const revalidate = 3600
+
 const FALLBACK_CONTENT = `
-## Terms and Conditions
+*Last updated: March 2026*
 
 By using the 3DByte Tech website and purchasing our products, you agree to these terms.
 
@@ -50,24 +50,50 @@ We may update these terms at any time. Continued use of our website constitutes 
 ### Contact
 
 Questions? Email us at **support@3dbytetech.com.au**.
-`;
+`
 
 export default async function TermsAndConditionsPage() {
-  let pageContent = FALLBACK_CONTENT;
+  let pageContent = FALLBACK_CONTENT
 
   try {
-    const { getContentPage } = await import("@/lib/strapi/content");
-    const response = await getContentPage("terms-and-condition");
+    const { getContentPage } = await import("@/lib/strapi/content")
+    const response = await getContentPage("terms-and-condition")
     if (response?.data?.PageContent) {
-      pageContent = stripLeadingMarkdownH2(response.data.PageContent);
+      pageContent = stripLeadingMarkdownHeading(response.data.PageContent, [
+        "Terms and Conditions",
+        "Terms & Conditions",
+      ])
     }
   } catch {
   }
 
   return (
-    <div className="container py-12 md:py-16 max-w-4xl">
-      <h1 className="text-4xl font-bold tracking-tight mb-8">Terms and Conditions</h1>
+    <ContentPageShell
+      eyebrow="LEGAL"
+      title="Terms and Conditions"
+      description="The commercial and legal terms that govern purchases, pricing, checkout, and site usage."
+      links={[
+        {
+          title: "Privacy Policy",
+          description: "See how customer data is collected, stored, and handled.",
+          href: "/privacy-policy",
+          icon: ShieldCheck,
+        },
+        {
+          title: "Shipping Policy",
+          description: "Check delivery timing, carrier expectations, and dispatch notes.",
+          href: "/shipping",
+          icon: Package,
+        },
+        {
+          title: "Contact Support",
+          description: "Reach out if you need clarification before placing an order.",
+          href: "/contact",
+          icon: Contact,
+        },
+      ]}
+    >
       <MdxContent content={pageContent} />
-    </div>
-  );
+    </ContentPageShell>
+  )
 }

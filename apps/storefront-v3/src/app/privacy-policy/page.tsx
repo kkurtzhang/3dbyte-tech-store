@@ -1,19 +1,19 @@
-import { Metadata } from "next";
-import { MdxContent } from "@/features/cms/components/mdx-content";
+import { Metadata } from "next"
+import { Contact, FileText, ShieldCheck } from "lucide-react"
+
+import { ContentPageShell } from "@/features/cms/components/content-page-shell"
+import { MdxContent } from "@/features/cms/components/mdx-content"
+import { stripLeadingMarkdownHeading } from "@/features/cms/lib/content-page"
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description: "Read our privacy policy to understand how we handle your data.",
-};
-
-export const revalidate = 3600;
-
-function stripLeadingMarkdownH2(content: string): string {
-  return content.replace(/^\s*##\s+Privacy Policy\s*\n+/i, "");
 }
 
+export const revalidate = 3600
+
 const FALLBACK_CONTENT = `
-## Privacy Policy
+*Last updated: March 2026*
 
 Your privacy is important to us. This policy outlines how 3DByte Tech collects, uses, and protects your personal information.
 
@@ -48,24 +48,49 @@ You can request access to, correction of, or deletion of your personal data by c
 ### Contact
 
 Questions about this policy? Email us at **support@3dbytetech.com.au**.
-`;
+`
 
 export default async function PrivacyPolicyPage() {
-  let pageContent = FALLBACK_CONTENT;
+  let pageContent = FALLBACK_CONTENT
 
   try {
-    const { getContentPage } = await import("@/lib/strapi/content");
-    const response = await getContentPage("privacy-policy");
+    const { getContentPage } = await import("@/lib/strapi/content")
+    const response = await getContentPage("privacy-policy")
     if (response?.data?.PageContent) {
-      pageContent = stripLeadingMarkdownH2(response.data.PageContent);
+      pageContent = stripLeadingMarkdownHeading(response.data.PageContent, [
+        "Privacy Policy",
+      ])
     }
   } catch {
   }
 
   return (
-    <div className="container py-12 md:py-16 max-w-4xl">
-      <h1 className="text-4xl font-bold tracking-tight mb-8">Privacy Policy</h1>
+    <ContentPageShell
+      eyebrow="LEGAL"
+      title="Privacy Policy"
+      description="How we collect, use, store, and protect customer information across the storefront, checkout, and support flows."
+      links={[
+        {
+          title: "Terms & Conditions",
+          description: "Read the general legal terms that apply to purchases and site usage.",
+          href: "/terms-and-conditions",
+          icon: FileText,
+        },
+        {
+          title: "Shipping Policy",
+          description: "See dispatch, delivery, and carrier expectations before checkout.",
+          href: "/shipping",
+          icon: ShieldCheck,
+        },
+        {
+          title: "Contact Support",
+          description: "Reach out if you need a privacy-related correction or access request.",
+          href: "/contact",
+          icon: Contact,
+        },
+      ]}
+    >
       <MdxContent content={pageContent} />
-    </div>
-  );
+    </ContentPageShell>
+  )
 }
