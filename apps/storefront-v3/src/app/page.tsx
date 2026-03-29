@@ -162,14 +162,9 @@ export default async function Home() {
   const collectionContentByHandle =
     buildCollectionContentByHandle(collectionDescriptions)
   const homepage = buildHomepageViewModel(homepageData?.data || null)
-  const displayedProductCount = productsResult.error
-    ? null
-    : productsResult.totalCount > 0
-      ? `(${productsResult.totalCount})`
-      : null
 
   return (
-    <div className="bg-[radial-gradient(circle_at_top,_rgba(251,191,36,0.1),_transparent_28%),linear-gradient(to_bottom,_rgba(248,250,252,0.96),_rgba(248,250,252,1))]">
+    <div className="bg-[radial-gradient(circle_at_top,_rgba(251,191,36,0.1),_transparent_28%),linear-gradient(to_bottom,_rgba(248,250,252,0.96),_rgba(248,250,252,1))] dark:bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.12),_transparent_24%),linear-gradient(to_bottom,_rgba(2,6,23,0.98),_rgba(2,6,23,1))]">
       <div className="container space-y-16 py-8 md:py-10 lg:space-y-20 lg:py-12">
         <HomepageHero hero={homepage.hero} trustStats={homepage.trustStats} />
 
@@ -210,11 +205,7 @@ export default async function Home() {
           <section className="space-y-6">
             <HomepageSectionHeader
               eyebrow={homepage.productsSection.eyebrow}
-              heading={
-                displayedProductCount
-                  ? `${homepage.productsSection.heading} ${displayedProductCount}`
-                  : homepage.productsSection.heading
-              }
+              heading={homepage.productsSection.heading}
               text={homepage.productsSection.text}
               ctaLink={homepage.productsSection.ctaLink}
               ctaText={homepage.productsSection.ctaText}

@@ -37,7 +37,7 @@ export function HomepageLinkCardGrid({ items }: HomepageLinkCardGridProps) {
         return (
           <Link
             key={item.id}
-            className="group flex h-full flex-col justify-between rounded-[1.5rem] border border-border/70 bg-card px-5 py-5 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-card/95"
+            className="group flex h-full flex-col justify-between rounded-[1.5rem] border border-border/70 bg-card px-5 py-5 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-card/95 dark:border-slate-800 dark:bg-slate-950/75 dark:hover:border-cyan-400/40 dark:hover:bg-slate-950"
             href={item.link}
           >
             <div className="space-y-4">

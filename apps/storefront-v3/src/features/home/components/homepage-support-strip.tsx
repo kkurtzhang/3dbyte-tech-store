@@ -13,7 +13,7 @@ export function HomepageSupportStrip({ strip }: HomepageSupportStripProps) {
   }
 
   return (
-    <section className="rounded-[1.5rem] border border-border/70 bg-secondary/30 px-5 py-6 md:px-8 md:py-7">
+    <section className="rounded-[1.5rem] border border-border/70 bg-secondary/30 px-5 py-6 dark:border-slate-800 dark:bg-slate-900/80 md:px-8 md:py-7">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="max-w-2xl space-y-2">
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">

@@ -1,6 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowUpRight, ChevronRight } from "lucide-react"
+import { ArrowUpRight } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import type { HomepageHeroBanner, HomepageStat } from "@/lib/strapi/types"
@@ -25,8 +25,8 @@ export function HomepageHero({ hero, trustStats }: HomepageHeroProps) {
   }
 
   return (
-    <section className="relative overflow-hidden rounded-[2rem] border border-border/70 bg-gradient-to-br from-background via-muted/20 to-secondary/20 px-6 py-8 shadow-sm md:px-10 md:py-12 lg:px-14 lg:py-14">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(250,204,21,0.12),_transparent_35%),linear-gradient(to_right,_rgba(148,163,184,0.08)_1px,_transparent_1px),linear-gradient(to_bottom,_rgba(148,163,184,0.08)_1px,_transparent_1px)] bg-[size:auto,28px_28px,28px_28px]" />
+    <section className="relative overflow-hidden rounded-[2rem] border border-border/70 bg-gradient-to-br from-background via-muted/20 to-secondary/20 shadow-sm dark:border-slate-800/80 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900 md:px-10 md:py-12 lg:px-14 lg:py-14 px-6 py-8">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(250,204,21,0.12),_transparent_35%),linear-gradient(to_right,_rgba(148,163,184,0.08)_1px,_transparent_1px),linear-gradient(to_bottom,_rgba(148,163,184,0.08)_1px,_transparent_1px)] bg-[size:auto,28px_28px,28px_28px] dark:bg-[radial-gradient(circle_at_top_right,_rgba(34,211,238,0.14),_transparent_30%),linear-gradient(to_right,_rgba(148,163,184,0.06)_1px,_transparent_1px),linear-gradient(to_bottom,_rgba(148,163,184,0.06)_1px,_transparent_1px)]" />
 
       <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)] lg:items-center">
         <div className="space-y-6">
@@ -49,7 +49,7 @@ export function HomepageHero({ hero, trustStats }: HomepageHeroProps) {
               {featureTags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-full border border-border/70 bg-background/80 px-3 py-1.5 font-mono text-[11px] tracking-[0.18em] text-muted-foreground"
+                  className="rounded-full border border-border/70 bg-background/80 px-3 py-1.5 font-mono text-[11px] tracking-[0.18em] text-muted-foreground dark:border-slate-700 dark:bg-slate-950/70 dark:text-slate-300"
                 >
                   {tag}
                 </span>
@@ -58,10 +58,19 @@ export function HomepageHero({ hero, trustStats }: HomepageHeroProps) {
           )}
 
           <div className="flex flex-wrap gap-3">
-            <Button asChild size="lg" className="rounded-full px-6 font-mono text-xs tracking-[0.18em]">
+            <Button
+              asChild
+              size="lg"
+              className="rounded-full border border-cyan-400/80 bg-cyan-400 px-6 font-mono text-xs tracking-[0.18em] text-slate-950 shadow-[0_0_32px_rgba(34,211,238,0.18)] hover:bg-cyan-300 hover:text-slate-950 dark:border-cyan-400/80 dark:bg-cyan-400 dark:text-slate-950 dark:hover:bg-cyan-300 dark:hover:text-slate-950"
+            >
               <Link href={primaryCta.link}>{primaryCta.text}</Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="rounded-full px-6 font-mono text-xs tracking-[0.18em]">
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="rounded-full border-slate-700 bg-slate-950/70 px-6 font-mono text-xs tracking-[0.18em] text-slate-100 hover:bg-slate-900 hover:text-slate-100 dark:border-slate-700 dark:bg-slate-950/70 dark:text-slate-100 dark:hover:bg-slate-900 dark:hover:text-slate-100"
+            >
               <Link href={secondaryCta.link}>{secondaryCta.text}</Link>
             </Button>
           </div>
@@ -71,7 +80,7 @@ export function HomepageHero({ hero, trustStats }: HomepageHeroProps) {
               {trustStats.map((stat) => (
                 <div
                   key={stat.id}
-                  className="rounded-2xl border border-border/70 bg-background/85 px-4 py-3 backdrop-blur"
+                  className="rounded-2xl border border-border/70 bg-background/85 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-950/75"
                 >
                   <div className="font-mono text-xl font-bold text-foreground">
                     {stat.Value}
@@ -86,9 +95,9 @@ export function HomepageHero({ hero, trustStats }: HomepageHeroProps) {
         </div>
 
         <div className="relative">
-          <div className="rounded-[1.75rem] border border-border/70 bg-card/90 p-3 shadow-xl">
+          <div className="rounded-[1.75rem] border border-border/70 bg-card/90 p-3 shadow-xl dark:border-slate-800 dark:bg-slate-950/85">
             {imageProps ? (
-              <div className="relative aspect-[4/5] overflow-hidden rounded-[1.35rem] bg-muted">
+              <div className="relative aspect-[4/5] overflow-hidden rounded-[1.35rem] bg-muted dark:bg-slate-900">
                 <Image
                   alt={imageProps.alt}
                   className="object-cover"
@@ -100,12 +109,12 @@ export function HomepageHero({ hero, trustStats }: HomepageHeroProps) {
                 <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
               </div>
             ) : (
-              <div className="flex aspect-[4/5] items-end rounded-[1.35rem] bg-gradient-to-br from-primary/15 via-secondary/20 to-muted p-6">
-                <div className="space-y-3 rounded-2xl border border-border/70 bg-background/90 p-5 backdrop-blur">
-                  <p className="font-mono text-[11px] tracking-[0.18em] text-muted-foreground">
+              <div className="flex aspect-[4/5] items-end rounded-[1.35rem] bg-gradient-to-br from-primary/15 via-secondary/20 to-muted p-6 dark:from-cyan-500/15 dark:via-slate-900 dark:to-slate-800">
+                <div className="space-y-3 rounded-2xl border border-border/70 bg-background/90 p-5 backdrop-blur dark:border-slate-700 dark:bg-slate-950/85">
+                  <p className="font-mono text-[11px] tracking-[0.18em] text-muted-foreground dark:text-slate-400">
                     CURATED STOREFRONT
                   </p>
-                  <p className="text-lg font-semibold text-foreground">
+                  <p className="text-lg font-semibold text-foreground dark:text-slate-100">
                     Better rails, fewer dead ends, clearer buying paths.
                   </p>
                 </div>
@@ -122,18 +131,13 @@ export function HomepageHero({ hero, trustStats }: HomepageHeroProps) {
                 </p>
               </div>
               <Link
-                className="flex items-center justify-between rounded-2xl border border-border/70 bg-background/90 px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-background"
+                className="flex items-center justify-between rounded-2xl border border-border/70 bg-background/90 px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-background dark:border-slate-700 dark:bg-slate-950/90 dark:text-slate-100 dark:hover:bg-slate-900"
                 href="/collections"
               >
                 View collections
                 <ArrowUpRight className="h-4 w-4" />
               </Link>
             </div>
-          </div>
-
-          <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-            <ChevronRight className="h-4 w-4" />
-            <span>Conversion-first homepage with CMS-managed editorial framing.</span>
           </div>
         </div>
       </div>
