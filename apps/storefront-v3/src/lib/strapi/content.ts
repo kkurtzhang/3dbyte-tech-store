@@ -12,6 +12,15 @@ import {
   CollectionDescriptionData,
 } from "./types";
 
+const CONTENT_PAGE_PATHS = [
+  "privacy-policy",
+  "terms-and-condition",
+  "shipping",
+  "returns",
+] as const
+
+export type ContentPagePath = (typeof CONTENT_PAGE_PATHS)[number]
+
 export async function getStrapiContent<T = any>(
   collectionType: string,
   params: Record<string, any> = {},
@@ -93,13 +102,14 @@ export async function getFAQ() {
   return strapiClient.fetch<StrapiResponse<FAQData>>(`/faq?${query}`);
 }
 
-export async function getContentPage(slug: string) {
-  // Mapping slugs to content types if they differ
-  // Based on the provided file paths:
-  // privacy-policy -> privacy-policy
-  // terms-and-conditions -> terms-and-condition
+export async function getContentPage(path: ContentPagePath) {
+  if (!CONTENT_PAGE_PATHS.includes(path)) {
+    throw new Error(`Unsupported Strapi content page path: ${path}`)
+  }
 
-  return strapiClient.fetch<StrapiResponse<LegalPageData>>(`/${slug}`);
+  return strapiClient.fetch<StrapiResponse<LegalPageData>>(`/${path}`, {
+    tags: [`content-page-${path}`],
+  })
 }
 
 export async function getHomepage() {

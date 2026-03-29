@@ -82,6 +82,20 @@ export function resolveStrapiRevalidationTargets(
   const tags = [...(payload.tags || [])]
   const paths = [...(payload.paths || [])]
 
+  const contentPageTargets: Record<string, string> = {
+    shipping: "/shipping",
+    returns: "/returns",
+    "privacy-policy": "/privacy-policy",
+    "terms-and-condition": "/terms-and-conditions",
+  }
+
+  const contentPagePath = contentPageTargets[normalizedModel]
+
+  if (contentPagePath) {
+    tags.push(`content-page-${normalizedModel}`)
+    paths.push(contentPagePath)
+  }
+
   if (normalizedModel.includes("homepage")) {
     tags.push("homepage", "homepage-announcements")
     paths.push("/")

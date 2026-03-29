@@ -55,6 +55,44 @@ describe("strapi revalidation helpers", () => {
     })
   })
 
+  it("maps content pages to dedicated tags and paths", () => {
+    expect(
+      resolveStrapiRevalidationTargets({
+        model: "shipping",
+      })
+    ).toEqual({
+      tags: ["content-page-shipping"],
+      paths: ["/shipping"],
+    })
+
+    expect(
+      resolveStrapiRevalidationTargets({
+        model: "returns",
+      })
+    ).toEqual({
+      tags: ["content-page-returns"],
+      paths: ["/returns"],
+    })
+
+    expect(
+      resolveStrapiRevalidationTargets({
+        model: "privacy-policy",
+      })
+    ).toEqual({
+      tags: ["content-page-privacy-policy"],
+      paths: ["/privacy-policy"],
+    })
+
+    expect(
+      resolveStrapiRevalidationTargets({
+        model: "terms-and-condition",
+      })
+    ).toEqual({
+      tags: ["content-page-terms-and-condition"],
+      paths: ["/terms-and-conditions"],
+    })
+  })
+
   it("extracts the webhook secret from a dedicated header or bearer token", () => {
     expect(
       getWebhookSecretFromHeaders(
