@@ -1,10 +1,61 @@
 import { sdk } from "./client"
 
-export type MedusaProduct = NonNullable<
+export type MedusaCurrencyAmount = {
+  amount: number
+  currency_code: string
+}
+
+export type MedusaPreorderVariant = {
+  id?: string
+  variant_id?: string
+  available_date: string
+  prices?: MedusaCurrencyAmount[]
+  status: "enabled" | "disabled"
+}
+
+type MedusaProductBase = NonNullable<
   Awaited<ReturnType<typeof sdk.store.product.list>>["products"]
 >[number]
 
-export type MedusaProductVariant = NonNullable<MedusaProduct["variants"]>[number]
+export type MedusaProduct = MedusaProductBase
+
+export type MedusaProductVariant = NonNullable<MedusaProductBase["variants"]>[number]
+
+export type MedusaProductVariantWithPreorder = MedusaProductVariant & {
+  preorder_variant?: MedusaPreorderVariant
+}
+
+export type MedusaProductWithPreorder = Omit<MedusaProductBase, "variants"> & {
+  variants?: MedusaProductVariantWithPreorder[] | null
+}
+
+type MedusaCartBase = NonNullable<Awaited<ReturnType<typeof sdk.store.cart.retrieve>>["cart"]>
+
+export type MedusaCart = MedusaCartBase
+
+export type MedusaCartLineItem = NonNullable<MedusaCartBase["items"]>[number]
+
+export type MedusaCartLineItemWithPreorder = MedusaCartLineItem & {
+  variant?: MedusaProductVariantWithPreorder | null
+}
+
+export type MedusaCartWithPreorder = Omit<MedusaCartBase, "items"> & {
+  items?: MedusaCartLineItemWithPreorder[] | null
+}
+
+type MedusaOrderBase = NonNullable<Awaited<ReturnType<typeof sdk.store.order.retrieve>>["order"]>
+
+export type MedusaOrder = MedusaOrderBase
+
+export type MedusaOrderLineItem = NonNullable<MedusaOrderBase["items"]>[number]
+
+export type MedusaOrderLineItemWithPreorder = MedusaOrderLineItem & {
+  variant?: MedusaProductVariantWithPreorder | null
+}
+
+export type MedusaOrderWithPreorder = Omit<MedusaOrderBase, "items"> & {
+  items?: MedusaOrderLineItemWithPreorder[] | null
+}
 
 export type MedusaCollection = NonNullable<
   Awaited<ReturnType<typeof sdk.store.collection.list>>["collections"]
@@ -13,7 +64,3 @@ export type MedusaCollection = NonNullable<
 export type MedusaProductCategory = NonNullable<
   Awaited<ReturnType<typeof sdk.store.category.list>>["product_categories"]
 >[number]
-
-export type MedusaOrder = NonNullable<
-  Awaited<ReturnType<typeof sdk.store.order.retrieve>>["order"]
->

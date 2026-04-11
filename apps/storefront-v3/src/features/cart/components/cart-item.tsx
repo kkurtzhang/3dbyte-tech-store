@@ -6,6 +6,9 @@ import { Minus, Plus, Trash2, Bookmark, ImageOff } from "lucide-react"
 import { useCart } from "@/context/cart-context"
 import { useSavedItems } from "@/context/saved-items-context"
 import type { MedusaCartLineItem } from "@/lib/medusa/cart"
+import { isPreorder } from "@/lib/util/is-preorder"
+import type { MedusaCartLineItemWithPreorder } from "@/lib/medusa/types"
+import { resolvePreorderPrice, resolveRegularPrice } from "@/lib/util/preorder-pricing"
 
 interface CartItemProps {
   item: MedusaCartLineItem
@@ -18,6 +21,9 @@ export function CartItem({ item, currencyCode, showSaveForLater = true }: CartIt
   const { saveItem, isSaved } = useSavedItems()
   const [isUpdating, setIsUpdating] = useState(false)
   const itemIsSaved = isSaved(item.id)
+  const preorderItem = item as MedusaCartLineItemWithPreorder
+  const preorderPrice = resolvePreorderPrice(preorderItem.variant, currencyCode)
+  const regularPrice = resolveRegularPrice(preorderItem.variant, currencyCode)
 
   const handleUpdateQuantity = async (newQuantity: number) => {
     if (newQuantity < 1) return
@@ -49,19 +55,39 @@ export function CartItem({ item, currencyCode, showSaveForLater = true }: CartIt
     }).format(amount)
   }
 
-  const price = useMemo(() => {
-    return {
+  const linePrice = useMemo(
+    () => ({
       amount: item.unit_price,
       currency_code: currencyCode,
+    }),
+    [currencyCode, item.unit_price]
+  )
+
+  const lineTotal = useMemo(() => {
+    if (typeof item.total === "number") {
+      return item.total
     }
-  }, [item, currencyCode])
+
+    if (typeof item.subtotal === "number") {
+      return item.subtotal
+    }
+
+    return linePrice.amount * item.quantity
+  }, [item.quantity, item.subtotal, item.total, linePrice.amount])
+
+  const thumbnail =
+    item.thumbnail ||
+    item.product?.thumbnail ||
+    item.variant?.product?.thumbnail ||
+    item.variant?.product?.images?.[0]?.url ||
+    null
 
   return (
     <div className="flex gap-4 py-4">
       <div className="relative aspect-square h-20 w-20 min-w-[5rem] overflow-hidden rounded-sm border bg-secondary/20">
-        {item.variant?.product?.thumbnail ? (
+        {thumbnail ? (
           <Image
-            src={item.variant.product.thumbnail}
+            src={thumbnail}
             alt={item.title}
             fill
             className="object-cover"
@@ -82,6 +108,30 @@ export function CartItem({ item, currencyCode, showSaveForLater = true }: CartIt
           <p className="text-xs text-muted-foreground">
             {item.variant?.title !== "Default Variant" ? item.variant?.title : "Standard"}
           </p>
+          {isPreorder(preorderItem.variant?.preorder_variant) && (
+            <div className="space-y-0.5 text-xs text-primary">
+              <p>
+                Pre-order available on{" "}
+                {new Date(preorderItem.variant!.preorder_variant!.available_date).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </p>
+              {preorderPrice && (
+                <div className="text-muted-foreground">
+                  <p>
+                    Pre-order price: {formatPrice(linePrice.amount, linePrice.currency_code)}
+                  </p>
+                  {regularPrice && regularPrice.amount > linePrice.amount && (
+                    <p className="line-through">
+                      Regular price: {formatPrice(regularPrice.amount, regularPrice.currency_code)}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center justify-between">
@@ -127,7 +177,7 @@ export function CartItem({ item, currencyCode, showSaveForLater = true }: CartIt
           </div>
 
           <div className="font-mono text-sm font-medium">
-             {formatPrice(price.amount * item.quantity, price.currency_code)}
+             {formatPrice(lineTotal, linePrice.currency_code)}
           </div>
         </div>
       </div>

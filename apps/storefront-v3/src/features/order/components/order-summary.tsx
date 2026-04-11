@@ -2,6 +2,8 @@ import { CheckCircle2 } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import type { MedusaOrder } from "@/lib/medusa/types"
+import { isPreorder } from "@/lib/util/is-preorder"
+import { resolvePreorderPrice } from "@/lib/util/preorder-pricing"
 
 export interface OrderSummaryProps {
   order: MedusaOrder
@@ -131,7 +133,19 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
         <h3 className="font-medium">Items</h3>
         <div className="space-y-3">
           {order.items?.map((item) => {
-            const unitPrice = (item.unit_price || 0) / 100
+            const preorderItem = item as {
+              variant?: {
+                preorder_variant?: {
+                  status: "enabled" | "disabled"
+                  available_date: string
+                  prices?: Array<{ amount: number; currency_code: string }>
+                }
+              }
+            }
+
+            const preorderPrice = resolvePreorderPrice(preorderItem.variant, currencyCode)
+            const unitPrice =
+              ((preorderPrice?.amount ?? item.unit_price ?? 0) / 100)
             const totalPrice = unitPrice * (item.quantity || 0)
 
             return (
@@ -150,6 +164,28 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
                   <p className="text-xs text-muted-foreground">
                     Qty: {item.quantity}
                   </p>
+                  {isPreorder(preorderItem.variant?.preorder_variant) && (
+                    <div className="space-y-0.5 text-xs text-primary">
+                      <p>
+                        Pre-order available on{" "}
+                        {new Date(preorderItem.variant!.preorder_variant!.available_date).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </p>
+                      {preorderPrice && (
+                        <>
+                          <p className="text-muted-foreground">
+                            Pre-order price: {formatPrice(preorderPrice.amount, currencyCode)}
+                          </p>
+                          <p className="line-through text-muted-foreground">
+                            Regular price: {formatPrice((item.unit_price || 0) / 100, currencyCode)}
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div className="text-right">
                   <p className="font-mono text-sm">

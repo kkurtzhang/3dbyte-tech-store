@@ -3,6 +3,9 @@
 import { Separator } from "@/components/ui/separator"
 import Image from "next/image"
 import type { MedusaCart } from "@/lib/medusa/cart"
+import { isPreorder } from "@/lib/util/is-preorder"
+import type { MedusaCartLineItemWithPreorder } from "@/lib/medusa/types"
+import { resolvePreorderPrice } from "@/lib/util/preorder-pricing"
 
 interface CheckoutSummaryProps {
   cart: MedusaCart
@@ -26,37 +29,65 @@ export function CheckoutSummary({ cart }: CheckoutSummaryProps) {
       </h2>
 
       <div className="flex flex-col gap-4">
-        {cart.items?.map((item) => (
-          <div key={item.id} className="flex gap-4">
-            <div className="relative aspect-square h-16 w-16 overflow-hidden rounded-sm border bg-secondary/20">
-              {item.variant?.product?.thumbnail ? (
-                <Image
-                  src={item.variant.product.thumbnail}
-                  alt={item.title}
-                  fill
-                  className="object-cover"
-                  sizes="64px"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center font-mono text-[10px] text-muted-foreground">
-                  NO_IMG
+        {cart.items?.map((item) => {
+          const preorderItem = item as MedusaCartLineItemWithPreorder
+          const preorderPrice = resolvePreorderPrice(preorderItem.variant, currencyCode)
+          const displayUnitPrice = preorderPrice?.amount ?? item.unit_price ?? 0
+
+          return (
+            <div key={item.id} className="flex gap-4">
+              <div className="relative aspect-square h-16 w-16 overflow-hidden rounded-sm border bg-secondary/20">
+                {item.variant?.product?.thumbnail ? (
+                  <Image
+                    src={item.variant.product.thumbnail}
+                    alt={item.title}
+                    fill
+                    className="object-cover"
+                    sizes="64px"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center font-mono text-[10px] text-muted-foreground">
+                    NO_IMG
+                  </div>
+                )}
+                <div className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shadow-sm">
+                  {item.quantity}
                 </div>
-              )}
-              <div className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shadow-sm">
-                {item.quantity}
+              </div>
+              <div className="flex flex-1 flex-col justify-center">
+                <h3 className="line-clamp-1 text-sm font-medium">{item.title}</h3>
+                <p className="text-xs text-muted-foreground">
+                  {item.variant?.title !== "Default Variant" ? item.variant?.title : "Standard"}
+                </p>
+                {isPreorder(preorderItem.variant?.preorder_variant) && (
+                  <div className="space-y-0.5 text-xs text-primary">
+                    <p>
+                      Pre-order available on{" "}
+                      {new Date(preorderItem.variant!.preorder_variant!.available_date).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </p>
+                    {preorderPrice && (
+                      <p className="text-muted-foreground">
+                        Pre-order price: {formatPrice(preorderPrice.amount, currencyCode)}
+                      </p>
+                    )}
+                    {preorderPrice && (
+                      <p className="line-through text-muted-foreground">
+                        Regular price: {formatPrice(item.unit_price || 0, currencyCode)}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center font-mono text-sm font-medium">
+                {formatPrice(displayUnitPrice * item.quantity, currencyCode)}
               </div>
             </div>
-            <div className="flex flex-1 flex-col justify-center">
-              <h3 className="line-clamp-1 text-sm font-medium">{item.title}</h3>
-              <p className="text-xs text-muted-foreground">
-                {item.variant?.title !== "Default Variant" ? item.variant?.title : "Standard"}
-              </p>
-            </div>
-            <div className="flex items-center font-mono text-sm font-medium">
-              {formatPrice((item.unit_price || 0) * item.quantity, currencyCode)}
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       <Separator className="my-6" />

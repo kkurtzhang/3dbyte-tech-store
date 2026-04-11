@@ -6,6 +6,7 @@ interface PriceDisplayProps {
   price: { amount: number; currency_code: string }
   originalPrice?: number
   discountPercentage?: number
+  label?: string
   size?: "sm" | "md" | "lg"
 }
 
@@ -44,6 +45,7 @@ export function PriceDisplay({
   price,
   originalPrice,
   discountPercentage,
+  label,
   size = "md",
 }: PriceDisplayProps) {
   const hasDiscount = discountPercentage && discountPercentage > 0
@@ -54,6 +56,11 @@ export function PriceDisplay({
 
   return (
     <div className="flex flex-col gap-1">
+      {label && (
+        <span className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
+          {label}
+        </span>
+      )}
       <div className="flex items-center gap-2">
         {/* Sale Price (with discount) or Regular Price */}
         <span

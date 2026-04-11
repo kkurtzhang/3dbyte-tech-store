@@ -4,6 +4,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import "@/styles/globals.css";
 import { cn } from "@/lib/utils";
 import { CartProvider } from "@/context/cart-context";
+import { SavedItemsProvider } from "@/context/saved-items-context";
 import { WishlistProvider } from "@/context/wishlist-context";
 import { CompareProvider } from "@/context/compare-context";
 import { InventoryAlertProvider } from "@/context/inventory-alert-context";
@@ -55,21 +56,23 @@ export default function RootLayout({
         >
           <NuqsAdapter>
             <CartProvider>
-              <WishlistProvider>
-                <CompareProvider>
-                  <InventoryAlertProvider>
-                    <div className="relative flex min-h-screen flex-col">
-                      <Suspense fallback={null}>
-                        <AnnouncementBarSlot />
-                      </Suspense>
-                      <Navbar />
-                      <main className="flex-1">{children}</main>
-                      <Footer />
-                    </div>
-                    <Toaster />
-                  </InventoryAlertProvider>
-                </CompareProvider>
-              </WishlistProvider>
+              <SavedItemsProvider>
+                <WishlistProvider>
+                  <CompareProvider>
+                    <InventoryAlertProvider>
+                      <div className="relative flex min-h-screen flex-col">
+                        <Suspense fallback={null}>
+                          <AnnouncementBarSlot />
+                        </Suspense>
+                        <Navbar />
+                        <main className="flex-1">{children}</main>
+                        <Footer />
+                      </div>
+                      <Toaster />
+                    </InventoryAlertProvider>
+                  </CompareProvider>
+                </WishlistProvider>
+              </SavedItemsProvider>
             </CartProvider>
           </NuqsAdapter>
         </ThemeProvider>

@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
-import { updateCart, addShippingMethod, completeCart, initiatePaymentSession, getCart, getShippingOptions } from "@/lib/medusa/cart"
+import { updateCart, addShippingMethod, completePreorderCart, initiatePaymentSession, getCart, getShippingOptions } from "@/lib/medusa/cart"
 import { z } from "zod"
 
 const CART_COOKIE = "_medusa_cart_id"
@@ -129,7 +129,7 @@ export async function completeCartAction() {
   if (!cartId) return { success: false, error: "No cart found" }
 
   try {
-    const order = await completeCart(cartId)
+    const order = await completePreorderCart(cartId)
     cookieStore.delete(CART_COOKIE)
     return { success: true, order }
   } catch (error: any) {

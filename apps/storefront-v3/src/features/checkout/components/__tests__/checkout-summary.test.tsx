@@ -135,6 +135,39 @@ describe("CheckoutSummary", () => {
     expect(screen.getByText("Large / Blue")).toBeInTheDocument()
   })
 
+  it("shows preorder availability messaging", () => {
+    const cart = createMockCart({
+      items: [
+        {
+          id: "item_1",
+          title: "Test Product",
+          quantity: 1,
+          unit_price: 1000,
+          variant: {
+            id: "variant_1",
+            title: "Default Variant",
+            preorder_variant: {
+              status: "enabled",
+              available_date: "2999-01-01T00:00:00.000Z",
+              prices: [{ amount: 800, currency_code: "usd" }],
+            },
+            product: {
+              id: "prod_1",
+              title: "Test Product",
+              thumbnail: "/test.jpg",
+            },
+          },
+        },
+      ],
+    })
+
+    render(<CheckoutSummary cart={cart} />)
+
+    expect(screen.getByText(/Pre-order available on/i)).toBeInTheDocument()
+    expect(screen.getByText(/Pre-order price:/i)).toBeInTheDocument()
+    expect(screen.getByText(/Regular price:/i)).toBeInTheDocument()
+  })
+
   it("shows 'Standard' for default variant", () => {
     const cart = createMockCart()
     render(<CheckoutSummary cart={cart} />)
