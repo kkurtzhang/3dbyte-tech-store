@@ -4,7 +4,9 @@ import type { MedusaOrder } from "./types"
 export async function getOrder(id: string, fields?: string[]): Promise<MedusaOrder | null> {
   try {
     const { order } = await sdk.store.order.retrieve(id, {
-      fields: fields?.join(","),
+      fields:
+        fields?.join(",") ||
+        "*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product,*items.variant.preorder_variant,*items.variant.preorder_variant.prices",
     })
 
     return order

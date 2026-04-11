@@ -1,8 +1,9 @@
-import type { MedusaProductVariant } from "@/lib/medusa/types"
+import type { MedusaProductVariant, MedusaProductVariantWithPreorder } from "@/lib/medusa/types"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react"
+import { isPreorder } from "@/lib/util/is-preorder"
 
-export type StockStatus = "in-stock" | "low-stock" | "out-of-stock" | "unknown"
+export type StockStatus = "in-stock" | "low-stock" | "out-of-stock" | "preorder" | "unknown"
 
 export interface StockStatusResult {
   status: StockStatus
@@ -28,6 +29,12 @@ export function getStockStatus(variant: MedusaProductVariant | undefined): Stock
 
   const quantity = variant.inventory_quantity ?? 0
   const manageInventory = variant.manage_inventory ?? true
+  const preorderVariant = variant as MedusaProductVariantWithPreorder | undefined
+  const preorder = isPreorder(preorderVariant?.preorder_variant)
+
+  if (preorder) {
+    return { status: "preorder", quantity }
+  }
 
   if (!manageInventory) {
     return { status: "in-stock", quantity: null }
@@ -88,6 +95,18 @@ export function StockStatusBadge({ variant }: StockStatusBadgeProps) {
         {stockStatus.quantity !== null && (
           <span className="text-xs opacity-75">({stockStatus.quantity} left)</span>
         )}
+      </Badge>
+    )
+  }
+
+  if (stockStatus.status === "preorder") {
+    return (
+      <Badge
+        variant="secondary"
+        className="gap-1.5 px-3 py-1.5 text-sm font-medium border-primary/30 bg-primary/10 text-primary"
+      >
+        <AlertTriangle className="h-4 w-4" />
+        Pre-order
       </Badge>
     )
   }

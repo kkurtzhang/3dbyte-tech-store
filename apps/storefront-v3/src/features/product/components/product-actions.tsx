@@ -11,7 +11,9 @@ import { usePathname } from "next/navigation"
 import { SocialShare } from "./social-share"
 import { StockStatusBadge, getStockStatus } from "@/components/ui/stock-status-badge"
 import { PriceDisplay } from "@/components/ui/price-display"
-import type { MedusaProduct, MedusaProductVariant } from "@/lib/medusa/types"
+import type { MedusaProduct, MedusaProductVariant, MedusaProductVariantWithPreorder } from "@/lib/medusa/types"
+import { isPreorder } from "@/lib/util/is-preorder"
+import { getVariantPriceDisplay, resolvePreorderPrice } from "@/lib/util/preorder-pricing"
 
 interface ProductActionsProps {
   product: MedusaProduct
@@ -45,7 +47,7 @@ export function ProductActions({
       return v.options?.every((opt) => newOptions[opt.option_id!] === opt.value)
     })
 
-    onVariantChange(variant)
+    onVariantChange(variant as MedusaProductVariant | undefined)
   }
 
   const handleAddToCart = async () => {
@@ -72,28 +74,7 @@ export function ProductActions({
   // Calculate price and sale info for PriceDisplay
   const priceInfo = useMemo(() => {
     const variant = selectedVariant || product.variants?.[0]
-    const variantData = variant as Record<string, unknown> | undefined
-    const calcPrice = variantData?.calculated_price as Record<string, unknown> | undefined
-    const calculatedAmount = calcPrice?.calculated_amount as number | undefined
-    const originalAmount = calcPrice?.original_amount as number | undefined
-    const prices = variantData?.prices as Array<{ amount: number; currency_code: string }> | undefined
-
-    // Use calculated price or fall back to regular price
-    // Note: Medusa v2 returns prices in dollars, not cents
-    const priceAmount = calculatedAmount || originalAmount || prices?.[0]?.amount || 0
-    const currencyCode = prices?.[0]?.currency_code || "usd"
-
-    // Calculate discount
-    const hasDiscount = originalAmount && calculatedAmount && originalAmount > calculatedAmount
-    const discountPercentage = hasDiscount
-      ? Math.round((1 - calculatedAmount / originalAmount) * 100)
-      : undefined
-
-    return {
-      price: { amount: priceAmount, currency_code: currencyCode },
-      originalPrice: hasDiscount ? originalAmount : undefined,
-      discountPercentage,
-    }
+    return getVariantPriceDisplay(variant as Parameters<typeof getVariantPriceDisplay>[0])
   }, [selectedVariant, product.variants])
 
   // Extract handle from pathname or use product.id
@@ -105,6 +86,21 @@ export function ProductActions({
   // Get stock status for out-of-stock check
   const stockStatus = getStockStatus(selectedVariant)
   const isOutOfStock = stockStatus.status === "out-of-stock"
+  const preorderVariant = selectedVariant as MedusaProductVariantWithPreorder | undefined
+  const isPreorderVariant = isPreorder(preorderVariant?.preorder_variant)
+  const preorderPrice = resolvePreorderPrice(preorderVariant, priceInfo?.price.currency_code)
+  const preorderAvailableDate = preorderVariant?.preorder_variant?.available_date
+    ? new Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }).format(new Date(preorderVariant.preorder_variant.available_date))
+    : null
+  const formatPrice = (amount: number, currency: string) =>
+    new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+    }).format(amount)
 
   return (
     <div className="flex flex-col gap-8">
@@ -112,14 +108,45 @@ export function ProductActions({
       <div className="border-b pb-6">
         <h1 className="text-3xl font-bold tracking-tight mb-2">{product.title}</h1>
         <div className="flex items-start gap-3 flex-wrap">
-          <PriceDisplay
-            price={priceInfo.price}
-            originalPrice={priceInfo.originalPrice}
-            discountPercentage={priceInfo.discountPercentage}
-            size="lg"
-          />
+          {isPreorderVariant && preorderPrice ? (
+            <div className="space-y-3">
+              <PriceDisplay
+                price={preorderPrice}
+                label="Pre-order price"
+                size="lg"
+              />
+              {priceInfo && (priceInfo.originalPrice || priceInfo.price.amount !== preorderPrice.amount) && (
+                <div className="space-y-1">
+                  <span className="block font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
+                    Regular price
+                  </span>
+                  <span className="font-mono text-sm text-muted-foreground line-through">
+                    {formatPrice(
+                      priceInfo.originalPrice ?? priceInfo.price.amount,
+                      priceInfo.price.currency_code
+                    )}
+                  </span>
+                </div>
+              )}
+            </div>
+          ) : (
+            priceInfo && (
+              <PriceDisplay
+                price={priceInfo.price}
+                originalPrice={priceInfo.originalPrice}
+                discountPercentage={priceInfo.discountPercentage}
+                label={priceInfo.label}
+                size="lg"
+              />
+            )
+            )}
           <StockStatusBadge variant={selectedVariant} />
         </div>
+        {isPreorderVariant && preorderAvailableDate && (
+          <p className="mt-3 text-sm text-muted-foreground">
+            Available on <span className="font-medium text-primary">{preorderAvailableDate}</span>
+          </p>
+        )}
         {product.description && (
              <p className="mt-4 text-muted-foreground leading-relaxed">{product.description}</p>
         )}
@@ -190,7 +217,13 @@ export function ProductActions({
                 disabled={!selectedVariant || disabled || isAdding}
                 onClick={handleAddToCart}
             >
-              {isAdding ? "Adding..." : selectedVariant ? "Add to Cart" : "Select Options"}
+              {isAdding
+                ? "Adding..."
+                : selectedVariant
+                  ? isPreorderVariant
+                    ? "Pre-order now"
+                    : "Add to Cart"
+                  : "Select Options"}
             </Button>
             <p className="mt-2 text-center text-xs font-mono text-muted-foreground">
                 Secure checkout

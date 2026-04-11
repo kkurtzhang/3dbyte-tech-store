@@ -19,13 +19,14 @@ export async function getProducts(params: {
   try {
     const { page = 1, limit = 20, category_id, collection_id, q } = params
 
-    const { products: fetchedProducts, count: fetchedCount } = await sdk.store.product.list({
+      const { products: fetchedProducts, count: fetchedCount } = await sdk.store.product.list({
       limit,
       offset: (page - 1) * limit,
       category_id,
       collection_id,
       q,
-      fields: "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory",
+      fields:
+        "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*variants.preorder_variant,*variants.preorder_variant.prices",
     })
 
     products = fetchedProducts as any
@@ -124,7 +125,8 @@ export async function getProductByHandle(handle: string): Promise<MedusaProduct 
     const { products } = await sdk.store.product.list({
       handle,
       limit: 1,
-      fields: "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*variants.images,*variants.calculated_price,*options,*options.values,*images,*type,*collection,*tags",
+      fields:
+        "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*variants.preorder_variant,*variants.preorder_variant.prices,*variants.images,*variants.calculated_price,*options,*options.values,*images,*type,*collection,*tags",
     })
 
     if (products[0]) {
@@ -155,6 +157,12 @@ export async function getProductByHandle(handle: string): Promise<MedusaProduct 
         id: hit.variants?.[0]?.id || `variant_${hit.id}`,
         title: hit.variants?.[0]?.title || "Default",
         sku: hit.variants?.[0]?.sku,
+        preorder_variant: hit.variants?.[0]?.preorder_variant
+          ? {
+              ...hit.variants[0].preorder_variant,
+              prices: hit.variants[0].preorder_variant.prices,
+            }
+          : undefined,
         prices: [{
           amount: priceAud,
           currency_code: "aud",
@@ -195,7 +203,7 @@ export async function getProductByHandle(handle: string): Promise<MedusaProduct 
 
 export async function getProductHandles(): Promise<string[]> {
   try {
-    const { products } = await sdk.store.product.list({
+      const { products } = await sdk.store.product.list({
       limit: 100,
       fields: "handle",
     })

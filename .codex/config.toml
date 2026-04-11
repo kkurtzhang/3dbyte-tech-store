@@ -38,28 +38,33 @@ notify = [
 # MCP servers
 # Keep the default project set lean. API-backed servers inherit credentials from
 # the launching environment or can be supplied by a user-level ~/.codex/config.toml.
-[mcp_servers.github]
-command = "npx"
-args = ["-y", "@modelcontextprotocol/server-github"]
+# [mcp_servers.github]
+# command = "npx"
+# args = ["-y", "@modelcontextprotocol/server-github"]
 
 [mcp_servers.context7]
 command = "npx"
 args = ["-y", "@upstash/context7-mcp@latest"]
+startup_timeout_sec=60
 
 [mcp_servers.exa]
 url = "https://mcp.exa.ai/mcp"
+startup_timeout_sec=60
 
 [mcp_servers.memory]
 command = "npx"
 args = ["-y", "@modelcontextprotocol/server-memory"]
+startup_timeout_sec=60
 
 [mcp_servers.playwright]
 command = "npx"
 args = ["-y", "@playwright/mcp@latest", "--extension"]
+startup_timeout_sec=60
 
 [mcp_servers.sequential-thinking]
 command = "npx"
 args = ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+startup_timeout_sec=60
 
 # Additional MCP servers (uncomment as needed):
 # [mcp_servers.supabase]
@@ -116,12 +121,12 @@ config_file = "agents/docs-researcher.toml"
 # `scripts/sync-ecc-project.sh` appends this to the upstream ECC baseline.
 
 [mcp_servers.meilisearch]
-startup_timeout_sec = 20
+startup_timeout_sec = 60
 command = "uvx"
 args = ["-n", "meilisearch-mcp"]
 
 [mcp_servers.next-devtools]
-startup_timeout_sec = 20
+startup_timeout_sec = 60
 command = "npx"
 args = ["-y", "next-devtools-mcp@latest"]
 
@@ -129,7 +134,7 @@ args = ["-y", "next-devtools-mcp@latest"]
 approval_mode = "approve"
 
 [mcp_servers.chrome-devtools]
-startup_timeout_sec = 20
+startup_timeout_sec = 60
 command = "npx"
 args = ["-y", "chrome-devtools-mcp@latest"]
 
@@ -137,7 +142,7 @@ args = ["-y", "chrome-devtools-mcp@latest"]
 approval_mode = "approve"
 
 [mcp_servers.serena]
-startup_timeout_sec = 20
+startup_timeout_sec = 60
 command = "uvx"
 args = ["--from", "git+https://github.com/oraios/serena", "serena", "start-mcp-server", "--context", "codex"]
 

@@ -4,7 +4,8 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Loader2, Package, CreditCard, MapPin } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { isPreorder } from "@/lib/util/is-preorder"
+import { resolvePreorderPrice } from "@/lib/util/preorder-pricing"
 
 interface ReviewStepProps {
   onBack: () => void
@@ -20,8 +21,13 @@ interface ReviewStepProps {
         thumbnail?: string
       }
       variant?: {
-        title?: string
-      }
+          title?: string
+          preorder_variant?: {
+            status: "enabled" | "disabled"
+            available_date: string
+            prices?: Array<{ amount: number; currency_code: string }>
+          }
+        }
     }>
     shippingAddress?: {
       first_name?: string
@@ -38,6 +44,7 @@ interface ReviewStepProps {
       name?: string
       price?: number
     }
+    currencyCode?: string
   }
   isProcessing?: boolean
 }
@@ -61,18 +68,19 @@ export function ReviewStep({
     }
   }
 
-  const formatPrice = (price?: number) => {
-    if (typeof price !== "number") return "$0.00"
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(price / 100)
-  }
-
   const items = cartData?.items || []
   const shippingAddress = cartData?.shippingAddress
   const shippingMethod = cartData?.shippingMethod
   const email = cartData?.email
+  const currencyCode = cartData?.currencyCode || "usd"
+
+  const formatPrice = (price?: number) => {
+    if (typeof price !== "number") return "$0.00"
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currencyCode,
+    }).format(price / 100)
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -138,33 +146,60 @@ export function ReviewStep({
           <h3 className="font-semibold text-sm uppercase tracking-wider">Order Items</h3>
         </div>
         <div className="rounded-lg border bg-card divide-y">
-          {items.map((item, index) => (
-            <div key={item.id || index} className="p-4 flex gap-4">
-              {item.product?.thumbnail && (
-                <div className="h-16 w-16 rounded-md overflow-hidden bg-muted flex-shrink-0">
-                  <img
-                    src={item.product.thumbnail}
-                    alt={item.product.title || "Product"}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">
-                  {item.product?.title}
-                  {item.variant?.title && item.variant.title !== "Default Title" && (
-                    <span className="text-muted-foreground"> - {item.variant.title}</span>
+          {items.map((item, index) => {
+            const preorderPrice = resolvePreorderPrice(item.variant, currencyCode)
+            const displayUnitPrice = preorderPrice?.amount ?? item.unit_price ?? 0
+
+            return (
+              <div key={item.id || index} className="p-4 flex gap-4">
+                {item.product?.thumbnail && (
+                  <div className="h-16 w-16 rounded-md overflow-hidden bg-muted flex-shrink-0">
+                    <img
+                      src={item.product.thumbnail}
+                      alt={item.product.title || "Product"}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate">
+                    {item.product?.title}
+                    {item.variant?.title && item.variant.title !== "Default Title" && (
+                      <span className="text-muted-foreground"> - {item.variant.title}</span>
+                    )}
+                  </p>
+                  {isPreorder(item.variant?.preorder_variant) && (
+                    <div className="space-y-0.5 text-xs text-primary">
+                      <p>
+                        Pre-order available on{" "}
+                        {new Date(item.variant!.preorder_variant!.available_date).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </p>
+                      {preorderPrice && (
+                        <>
+                          <p className="text-muted-foreground">
+                            Pre-order price: {formatPrice(preorderPrice.amount)}
+                          </p>
+                          <p className="line-through text-muted-foreground">
+                            Regular price: {formatPrice(item.unit_price)}
+                          </p>
+                        </>
+                      )}
+                    </div>
                   )}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Qty: {item.quantity}
-                </p>
+                  <p className="text-sm text-muted-foreground">
+                    Qty: {item.quantity}
+                  </p>
+                </div>
+                <div className="text-sm font-medium">
+                  {formatPrice(displayUnitPrice * (item.quantity || 1))}
+                </div>
               </div>
-              <div className="text-sm font-medium">
-                {formatPrice((item.unit_price || 0) * (item.quantity || 1))}
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 

@@ -13,7 +13,9 @@ import { PriceDisplay } from "@/components/ui/price-display"
 import { NotifyMeButton } from "./notify-me-button"
 import { ExternalLink, ShoppingCart, Loader2, Plus, Minus } from "lucide-react"
 import { cn } from "@/lib/utils"
-import type { MedusaProduct } from "@/lib/medusa/types"
+import type { MedusaProduct, MedusaProductVariantWithPreorder } from "@/lib/medusa/types"
+import { isPreorder } from "@/lib/util/is-preorder"
+import { getVariantPriceDisplay, resolvePreorderPrice } from "@/lib/util/preorder-pricing"
 
 interface QuickViewDialogProps {
   handle: string
@@ -145,7 +147,7 @@ export function QuickViewDialog({
 
     return product.variants.find((variant) => {
       return variant.options?.every((opt) => options[opt.option_id!] === opt.value)
-    })
+    }) as MedusaProductVariantWithPreorder | undefined
   }, [product?.variants, options])
 
   // Update option handler (reuse ProductActions logic)
@@ -236,10 +238,30 @@ export function QuickViewDialog({
     return null
   }, [selectedVariant])
 
+  const priceDisplay = useMemo(
+    () => getVariantPriceDisplay(selectedVariant as Parameters<typeof getVariantPriceDisplay>[0]),
+    [selectedVariant]
+  )
+  const preorderPrice = resolvePreorderPrice(selectedVariant, priceDisplay?.price.currency_code)
+
   // Get stock status
   const stockStatus = getStockStatus(selectedVariant)
   const isOutOfStock = stockStatus.status === "out-of-stock"
-  const maxQuantity = selectedVariant?.inventory_quantity ?? 99
+  const preorderVariant = selectedVariant as MedusaProductVariantWithPreorder | undefined
+  const isPreorderVariant = isPreorder(preorderVariant?.preorder_variant)
+  const maxQuantity = stockStatus.status === "preorder" ? 99 : selectedVariant?.inventory_quantity ?? 99
+  const preorderAvailableDate = preorderVariant?.preorder_variant?.available_date
+    ? new Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }).format(new Date(preorderVariant.preorder_variant.available_date))
+    : null
+  const formatPrice = (amount: number, currency: string) =>
+    new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+    }).format(amount)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -262,7 +284,7 @@ export function QuickViewDialog({
               <QuickViewGallery
                 product={product}
                 selectedVariant={selectedVariant}
-                saleInfo={saleInfo}
+                saleInfo={isPreorderVariant ? null : saleInfo}
               />
             </div>
 
@@ -277,34 +299,43 @@ export function QuickViewDialog({
                 {product.title}
               </Link>
 
-              {/* Price Display with sale info */}
+              {/* Price Display */}
               <div className="mb-4">
-                {(() => {
-                  const variant = selectedVariant as Record<string, unknown> | undefined
-                  const calcPrice = variant?.calculated_price as Record<string, unknown> | undefined
-                  const calculatedAmount = calcPrice?.calculated_amount as number | undefined
-                  const originalAmount = calcPrice?.original_amount as number | undefined
-                  const prices = variant?.prices as Array<{ amount: number; currency_code: string }> | undefined
-
-                  // Use calculated price or fall back to regular price
-                  // Note: Medusa v2 returns prices in dollars, not cents
-                  const priceAmount = calculatedAmount || originalAmount || prices?.[0]?.amount || 0
-                  const currencyCode = prices?.[0]?.currency_code || "usd"
-
-                  return (
+                {isPreorderVariant && preorderPrice ? (
+                  <div className="space-y-3">
                     <PriceDisplay
-                      price={{ amount: priceAmount, currency_code: currencyCode }}
-                      originalPrice={originalAmount && calculatedAmount && originalAmount > calculatedAmount ? originalAmount : undefined}
-                      discountPercentage={saleInfo?.percentage}
+                      price={preorderPrice}
+                      label="Pre-order price"
                       size="md"
                     />
-                  )
-                })()}
+                    {priceDisplay && (priceDisplay.originalPrice || priceDisplay.price.amount !== preorderPrice.amount) && (
+                      <div className="space-y-1">
+                        <span className="block font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
+                          Regular price
+                        </span>
+                        <span className="font-mono text-sm text-muted-foreground line-through">
+                          {formatPrice(
+                            priceDisplay.originalPrice ?? priceDisplay.price.amount,
+                            priceDisplay.price.currency_code
+                          )}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  priceDisplay && <PriceDisplay {...priceDisplay} size="md" />
+                )}
               </div>
 
               {/* Stock Status Badge */}
               <div className="mb-6">
                 <StockStatusBadge variant={selectedVariant} />
+                {isPreorderVariant && preorderAvailableDate && (
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    Available on{" "}
+                    <span className="font-medium text-primary">{preorderAvailableDate}</span>
+                  </p>
+                )}
               </div>
 
               {/* Variant Selectors */}
@@ -396,7 +427,7 @@ export function QuickViewDialog({
                     ) : (
                       <>
                         <ShoppingCart className="mr-2 h-5 w-5" />
-                        Add to Cart
+                        {isPreorderVariant ? "Pre-order now" : "Add to Cart"}
                       </>
                     )}
                   </Button>

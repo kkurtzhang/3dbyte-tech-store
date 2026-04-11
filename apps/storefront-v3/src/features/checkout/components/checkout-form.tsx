@@ -18,6 +18,7 @@ import {
 import { useRouter } from "next/navigation"
 import { useToast } from "@/lib/hooks/use-toast"
 import type { MedusaCart } from "@/lib/medusa/cart"
+import type { MedusaProductVariantWithPreorder } from "@/lib/medusa/types"
 
 interface CheckoutFormProps {
   cart: MedusaCart
@@ -182,22 +183,34 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
 
   // Build cart data for review step
   const cartDataForReview = {
-    items: cart.items?.map((item) => ({
-      id: item.id,
-      title: item.product?.title || item.title,
-      quantity: item.quantity,
-      unit_price: item.unit_price,
-      product: {
-        title: item.product?.title,
-        thumbnail: item.product?.thumbnail || item.thumbnail,
-      },
-      variant: {
-        title: item.variant?.title || undefined,
-      },
-    })),
+    items: cart.items?.map((item) => {
+      const preorderVariant = item.variant as MedusaProductVariantWithPreorder | undefined
+
+      return {
+        id: item.id,
+        title: item.product?.title || item.title,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        product: {
+          title: item.product?.title,
+          thumbnail: item.product?.thumbnail || item.thumbnail,
+        },
+        variant: {
+          title: item.variant?.title || undefined,
+          preorder_variant: preorderVariant?.preorder_variant
+            ? {
+                status: preorderVariant.preorder_variant.status,
+                available_date: preorderVariant.preorder_variant.available_date,
+                prices: preorderVariant.preorder_variant.prices,
+              }
+            : undefined,
+        },
+      }
+    }),
     shippingAddress: addressData,
     email: addressData?.email || cart.email,
     shippingMethod: shippingMethodData,
+    currencyCode: cart.region?.currency_code || "usd",
   }
 
   // Get the current step ID for the stepper
