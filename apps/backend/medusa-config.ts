@@ -3,14 +3,42 @@ import { customSchema } from "./src/custom-index-schema";
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd());
 
+const mergeCors = (
+  value: string | undefined,
+  defaults: string[]
+): string => {
+  return Array.from(
+    new Set(
+      [value, ...defaults]
+        .filter(Boolean)
+        .flatMap((entry) => entry!.split(","))
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+    )
+  ).join(",");
+};
+
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
     workerMode: (process.env.MEDUSA_WORKER_MODE as "shared" | "worker" | "server") || "server",
     http: {
-      storeCors: process.env.STORE_CORS!,
-      adminCors: process.env.ADMIN_CORS!,
-      authCors: process.env.AUTH_CORS!,
+      storeCors: mergeCors(process.env.STORE_CORS, [
+        "http://localhost:3001",
+        "http://127.0.0.1:3001",
+        "http://localhost:8000",
+      ]),
+      adminCors: mergeCors(process.env.ADMIN_CORS, [
+        "http://localhost:9000",
+        "http://127.0.0.1:9000",
+      ]),
+      authCors: mergeCors(process.env.AUTH_CORS, [
+        "http://localhost:3001",
+        "http://127.0.0.1:3001",
+        "http://localhost:9000",
+        "http://127.0.0.1:9000",
+        "http://localhost:8000",
+      ]),
       jwtSecret: process.env.JWT_SECRET || "supersecret",
       cookieSecret: process.env.COOKIE_SECRET || "supersecret",
     },
@@ -54,6 +82,9 @@ module.exports = defineConfig({
     },
     {
       resolve: "./src/modules/brand",
+    },
+    {
+      resolve: "./src/modules/preorder",
     },
     {
       resolve: "./src/modules/wishlist",
