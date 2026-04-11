@@ -14,6 +14,8 @@ import {
 import { z } from "@medusajs/framework/zod";
 import { createFindParams } from "@medusajs/medusa/api/utils/validators";
 import { storeSearchRoutesMiddlewares } from "./store/search/middlewares";
+import { UpsertPreorderVariantSchema } from "./admin/variants/[id]/preorders/route";
+import { AddPricedLineItemSchema } from "./store/carts/[id]/line-items-priced/route";
 
 export const GetBrandsSchema = createFindParams();
 
@@ -90,11 +92,21 @@ export default defineMiddlewares({
       middlewares: [validateAndTransformBody(DeleteAdminLinkProductsBrand)],
     },
     {
+      matcher: "/admin/variants/:id/preorders",
+      methods: ["POST"],
+      middlewares: [validateAndTransformBody(UpsertPreorderVariantSchema)],
+    },
+    {
       matcher: "/admin/brands/products",
       methods: ["DELETE"],
       middlewares: [
         validateAndTransformBody(DeleteAdminBatchLinkProductsBrand),
       ],
+    },
+    {
+      matcher: "/store/carts/:id/line-items-priced",
+      methods: ["POST"],
+      middlewares: [validateAndTransformBody(AddPricedLineItemSchema)],
     },
     ...storeSearchRoutesMiddlewares,
     // Wishlist routes
