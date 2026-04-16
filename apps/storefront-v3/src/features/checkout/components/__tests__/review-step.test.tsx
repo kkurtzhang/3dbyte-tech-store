@@ -103,7 +103,7 @@ describe("ReviewStep", () => {
 
     expect(screen.getByText("Starter Bundle")).toBeInTheDocument()
     expect(screen.getByText(/Pre-order items ship when available/i)).toBeInTheDocument()
-    expect(screen.getByText(/Jan 1, 2999/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/Jan 1, 2999/i)).toHaveLength(2)
     expect(screen.getByText("Standalone Item")).toBeInTheDocument()
   })
 

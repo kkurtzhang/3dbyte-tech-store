@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/cart-context";
 import { useSavedItems } from "@/context/saved-items-context";
 import { CartItem } from "./cart-item";
+import { CartNotices } from "./cart-notices";
 import { BundleCartGroup } from "./bundle-cart-group";
 import { buildCartDisplayGroups, getCartDisplayItemCount } from "../lib/bundle-groups";
 import {
@@ -262,6 +263,8 @@ export function CartTemplate() {
             </div>
 
             <Separator className="my-2" />
+
+            <CartNotices items={cart.items} currencyCode={currencyCode} />
 
             <div className="flex items-center justify-between font-medium">
               <span>Total</span>

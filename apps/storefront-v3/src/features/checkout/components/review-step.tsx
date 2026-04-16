@@ -4,6 +4,8 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Loader2, Package, CreditCard, MapPin } from "lucide-react"
+import { buildCartDisplayGroups } from "@/features/cart/lib/bundle-groups"
+import { analyzeCartContents } from "@/lib/util/cart-analysis"
 import { isPreorder } from "@/lib/util/is-preorder"
 import { resolvePreorderPrice } from "@/lib/util/preorder-pricing"
 
@@ -16,6 +18,7 @@ interface ReviewStepProps {
       title?: string
       quantity?: number
       unit_price?: number
+      metadata?: Record<string, unknown> | null
       product?: {
         title?: string
         thumbnail?: string
@@ -73,6 +76,8 @@ export function ReviewStep({
   const shippingMethod = cartData?.shippingMethod
   const email = cartData?.email
   const currencyCode = cartData?.currencyCode || "usd"
+  const cartDisplayGroups = buildCartDisplayGroups(items)
+  const cartAnalysis = analyzeCartContents(items)
 
   const formatPrice = (price?: number) => {
     if (typeof price !== "number") return "$0.00"
@@ -80,6 +85,72 @@ export function ReviewStep({
       style: "currency",
       currency: currencyCode,
     }).format(price / 100)
+  }
+
+  const formatAvailabilityDate = (date: Date) => {
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }).format(date)
+  }
+
+  const renderItem = (
+    item: NonNullable<NonNullable<ReviewStepProps["cartData"]>["items"]>[number],
+    key: string
+  ) => {
+    const preorderPrice = resolvePreorderPrice(item.variant, currencyCode)
+    const displayUnitPrice = preorderPrice?.amount ?? item.unit_price ?? 0
+
+    return (
+      <div key={key} className="p-4 flex gap-4">
+        {item.product?.thumbnail && (
+          <div className="h-16 w-16 rounded-md overflow-hidden bg-muted flex-shrink-0">
+            <img
+              src={item.product.thumbnail}
+              alt={item.product.title || "Product"}
+              className="h-full w-full object-cover"
+            />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="font-medium truncate">
+            {item.product?.title || item.title}
+            {item.variant?.title && item.variant.title !== "Default Title" && (
+              <span className="text-muted-foreground"> - {item.variant.title}</span>
+            )}
+          </p>
+          {isPreorder(item.variant?.preorder_variant) && (
+            <div className="space-y-0.5 text-xs text-primary">
+              <p>
+                Pre-order available on{" "}
+                {new Date(item.variant!.preorder_variant!.available_date).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </p>
+              {preorderPrice && (
+                <>
+                  <p className="text-muted-foreground">
+                    Pre-order price: {formatPrice(preorderPrice.amount)}
+                  </p>
+                  <p className="line-through text-muted-foreground">
+                    Regular price: {formatPrice(item.unit_price)}
+                  </p>
+                </>
+              )}
+            </div>
+          )}
+          <p className="text-sm text-muted-foreground">
+            Qty: {item.quantity}
+          </p>
+        </div>
+        <div className="text-sm font-medium">
+          {formatPrice(displayUnitPrice * (item.quantity || 1))}
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -145,61 +216,39 @@ export function ReviewStep({
           <CreditCard className="h-4 w-4" />
           <h3 className="font-semibold text-sm uppercase tracking-wider">Order Items</h3>
         </div>
+        {cartAnalysis.hasPreorderItems && cartAnalysis.earliestPreorderDate ? (
+          <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm text-primary">
+            Pre-order items ship when available. Earliest estimated availability:{" "}
+            {formatAvailabilityDate(cartAnalysis.earliestPreorderDate)}.
+          </div>
+        ) : null}
+        {cartAnalysis.isMixedCart ? (
+          <div className="rounded-lg border border-amber-300/50 bg-amber-50 p-3 text-sm text-amber-900">
+            This cart contains both in-stock and pre-order items. In-stock items may
+            ship sooner than pre-order items.
+          </div>
+        ) : null}
         <div className="rounded-lg border bg-card divide-y">
-          {items.map((item, index) => {
-            const preorderPrice = resolvePreorderPrice(item.variant, currencyCode)
-            const displayUnitPrice = preorderPrice?.amount ?? item.unit_price ?? 0
-
-            return (
-              <div key={item.id || index} className="p-4 flex gap-4">
-                {item.product?.thumbnail && (
-                  <div className="h-16 w-16 rounded-md overflow-hidden bg-muted flex-shrink-0">
-                    <img
-                      src={item.product.thumbnail}
-                      alt={item.product.title || "Product"}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
+          {cartDisplayGroups.map((group, index) =>
+            group.type === "bundle" ? (
+              <div
+                key={group.bundleId}
+                className="border-l-4 border-primary/20 bg-primary/5/60"
+              >
+                <div className="border-b px-4 py-3">
+                  <p className="font-medium">{group.bundleTitle ?? "Product Bundle"}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {group.items.length} {group.items.length === 1 ? "item" : "items"}
+                  </p>
+                </div>
+                {group.items.map((item, groupIndex) =>
+                  renderItem(item, `${group.bundleId}-${item.id || groupIndex}`)
                 )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">
-                    {item.product?.title}
-                    {item.variant?.title && item.variant.title !== "Default Title" && (
-                      <span className="text-muted-foreground"> - {item.variant.title}</span>
-                    )}
-                  </p>
-                  {isPreorder(item.variant?.preorder_variant) && (
-                    <div className="space-y-0.5 text-xs text-primary">
-                      <p>
-                        Pre-order available on{" "}
-                        {new Date(item.variant!.preorder_variant!.available_date).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </p>
-                      {preorderPrice && (
-                        <>
-                          <p className="text-muted-foreground">
-                            Pre-order price: {formatPrice(preorderPrice.amount)}
-                          </p>
-                          <p className="line-through text-muted-foreground">
-                            Regular price: {formatPrice(item.unit_price)}
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  )}
-                  <p className="text-sm text-muted-foreground">
-                    Qty: {item.quantity}
-                  </p>
-                </div>
-                <div className="text-sm font-medium">
-                  {formatPrice(displayUnitPrice * (item.quantity || 1))}
-                </div>
               </div>
+            ) : (
+              renderItem(group.item, group.item.id || String(index))
             )
-          })}
+          )}
         </div>
       </div>
 

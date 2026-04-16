@@ -2,6 +2,12 @@ import { render, screen } from "@testing-library/react"
 import type { MedusaCartLineItem } from "@/lib/medusa/cart"
 import { CartNotices } from "../cart-notices"
 
+jest.mock("lucide-react", () => ({
+  AlertTriangle: () => <span />,
+  Clock3: () => <span />,
+  Package: () => <span />,
+}))
+
 function createLineItem(overrides: Partial<MedusaCartLineItem> = {}) {
   return {
     id: "line_default",
