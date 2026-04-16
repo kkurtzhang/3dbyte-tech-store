@@ -3,6 +3,7 @@ import {
   FindParams,
   PaginatedResponse,
 } from "@medusajs/framework/types";
+
 export type AdminBrand = {
   id: string;
   name: string;
@@ -56,3 +57,39 @@ export type UpdateLinkParams = {
 export type BatchDismissLinksBrandsProductsParams = {
   ids: { product_id: string; brand_id: string }[];
 };
+
+export type AdminBundledProductItem = {
+  id: string;
+  quantity: number;
+  product?: {
+    id: string;
+    title: string;
+  } | {
+    id: string;
+    title: string;
+  }[] | null;
+};
+
+export type AdminBundledProduct = {
+  id: string;
+  title: string;
+  product?: {
+    id: string;
+    title?: string | null;
+  } | {
+    id: string;
+    title?: string | null;
+  }[] | null;
+  items?: AdminBundledProductItem[] | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AdminBundledProductsResponse = {
+  bundled_products: AdminBundledProduct[];
+  count: number;
+  limit: number;
+  offset: number;
+};
+
+export interface BundledProductQueryParams extends FindParams {}

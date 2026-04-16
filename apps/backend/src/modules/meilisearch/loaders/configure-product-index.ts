@@ -4,6 +4,98 @@ import type { MeilisearchIndexSettings } from "@3dbyte-tech-store/shared-types";
 import { type MeilisearchOptions } from "../service";
 import MeilisearchModuleService from "../service";
 
+export function buildProductIndexSettings(
+  existingSettings: MeilisearchIndexSettings | null = null,
+): MeilisearchIndexSettings {
+  const staticFilterable: string[] = [
+    "id",
+    "handle",
+    "brand.id",
+    "category_ids",
+    "collection_ids",
+    "type_id",
+    "on_sale",
+    "in_stock",
+    "is_bundle",
+    "bundle_id",
+  ];
+
+  const staticSortable: string[] = ["created_at_timestamp"];
+
+  const staticSearchable: string[] = [
+    "title",
+    "rich_description",
+    "bundle_item_titles",
+    "variants.sku",
+    "variants.title",
+  ];
+
+  const staticDisplayed: string[] = [
+    "id",
+    "title",
+    "handle",
+    "thumbnail",
+    "brand",
+    "is_bundle",
+    "bundle_id",
+    "bundle_item_count",
+    "bundle_item_titles",
+    "on_sale",
+    "in_stock",
+    "inventory_quantity",
+    "categories",
+    "_tags",
+    "collection_ids",
+    "type_id",
+    "created_at_timestamp",
+    "variants",
+  ];
+
+  const mergedFilterable = existingSettings?.filterableAttributes
+    ? [...new Set([...staticFilterable, ...existingSettings.filterableAttributes])]
+    : staticFilterable;
+
+  const mergedSortable = existingSettings?.sortableAttributes
+    ? [...new Set([...staticSortable, ...existingSettings.sortableAttributes])]
+    : staticSortable;
+
+  const mergedSearchable = existingSettings?.searchableAttributes
+    ? [...new Set([...staticSearchable, ...existingSettings.searchableAttributes])]
+    : staticSearchable;
+
+  const mergedDisplayed = existingSettings?.displayedAttributes
+    ? [...new Set([...staticDisplayed, ...existingSettings.displayedAttributes])]
+    : staticDisplayed;
+
+  return {
+    filterableAttributes: mergedFilterable,
+    searchableAttributes: mergedSearchable,
+    sortableAttributes: mergedSortable,
+    displayedAttributes: mergedDisplayed,
+    rankingRules: [
+      "words",
+      "typo",
+      "proximity",
+      "attribute",
+      "sort",
+      "exactness",
+    ],
+    typoTolerance: {
+      enabled: true,
+      minWordSizeForTypos: {
+        oneTypo: 4,
+        twoTypos: 8,
+      },
+    },
+    faceting: {
+      maxValuesPerFacet: 100,
+    },
+    pagination: {
+      maxTotalHits: 10000,
+    },
+  };
+}
+
 /**
  * Meilisearch Product Index Configuration Loader (V3)
  *
@@ -47,47 +139,6 @@ export default async function configureProductIndexLoader({
 
     logger.info("Configuring Meilisearch product index with base settings...");
 
-    // Static attributes that are always filterable
-    const staticFilterable: string[] = [
-      "id",
-      "handle",
-      "brand.id",
-      "category_ids",
-      "collection_ids",
-      "type_id",
-      "on_sale",
-      "in_stock",
-    ];
-
-    // Static sortable attributes
-    const staticSortable: string[] = ["created_at_timestamp"];
-
-    // Static searchable attributes
-    const staticSearchable: string[] = [
-      "title",
-      "rich_description",
-      "variants.sku",
-      "variants.title",
-    ];
-
-    // Static displayed attributes
-    const staticDisplayed: string[] = [
-      "id",
-      "title",
-      "handle",
-      "thumbnail",
-      "brand",
-      "on_sale",
-      "in_stock",
-      "inventory_quantity",
-      "categories",
-      "_tags",
-      "collection_ids",
-      "type_id",
-      "created_at_timestamp",
-      "variants",
-    ];
-
     // Try to fetch existing settings to preserve dynamic attributes
     let existingSettings: MeilisearchIndexSettings | null = null;
     try {
@@ -97,55 +148,12 @@ export default async function configureProductIndexLoader({
       logger.info("No existing settings found, will apply base settings");
     }
 
-    // Merge static attributes with existing dynamic attributes
-    const mergedFilterable = existingSettings?.filterableAttributes
-      ? [...new Set([...staticFilterable, ...existingSettings.filterableAttributes])]
-      : staticFilterable;
-
-    const mergedSortable = existingSettings?.sortableAttributes
-      ? [...new Set([...staticSortable, ...existingSettings.sortableAttributes])]
-      : staticSortable;
-
-    const mergedSearchable = existingSettings?.searchableAttributes
-      ? [...new Set([...staticSearchable, ...existingSettings.searchableAttributes])]
-      : staticSearchable;
-
-    const mergedDisplayed = existingSettings?.displayedAttributes
-      ? [...new Set([...staticDisplayed, ...existingSettings.displayedAttributes])]
-      : staticDisplayed;
-
-    // Build the settings object with merged attributes
-    const settings: MeilisearchIndexSettings = {
-      filterableAttributes: mergedFilterable,
-      searchableAttributes: mergedSearchable,
-      sortableAttributes: mergedSortable,
-      displayedAttributes: mergedDisplayed,
-      rankingRules: [
-        "words",
-        "typo",
-        "proximity",
-        "attribute",
-        "sort",
-        "exactness",
-      ],
-      typoTolerance: {
-        enabled: true,
-        minWordSizeForTypos: {
-          oneTypo: 4,
-          twoTypos: 8,
-        },
-      },
-      faceting: {
-        maxValuesPerFacet: 100,
-      },
-      pagination: {
-        maxTotalHits: 10000,
-      },
-    };
+    const settings = buildProductIndexSettings(existingSettings);
+    const staticFilterableCount = 10;
 
     logger.info(
-      `Configuring product index with ${mergedFilterable.length} filterable attributes ` +
-      `(${staticFilterable.length} static + ${mergedFilterable.length - staticFilterable.length} dynamic)`,
+      `Configuring product index with ${settings.filterableAttributes?.length || 0} filterable attributes ` +
+      `(${staticFilterableCount} static + ${(settings.filterableAttributes?.length || 0) - staticFilterableCount} dynamic)`,
     );
 
     // Configure the index with merged settings

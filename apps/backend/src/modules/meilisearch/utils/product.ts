@@ -2,6 +2,7 @@ import type {
   MeilisearchCategoryDocument,
   MeilisearchProductDocument,
   StrapiProductDescription,
+  SyncProductsStepBundle,
   SyncProductsStepProduct,
 } from "@3dbyte-tech-store/shared-types";
 
@@ -27,6 +28,16 @@ export interface RegionForPricing {
  */
 function normalizeOptionKey(title: string): string {
   return `options_${title.toLowerCase().replace(/\s+/g, "_")}`;
+}
+
+function getProductBundle(
+  product: SyncProductsStepProduct,
+): SyncProductsStepBundle | null {
+  if (Array.isArray(product.bundle)) {
+    return product.bundle[0] ?? null;
+  }
+
+  return product.bundle ?? null;
 }
 
 /**
@@ -186,6 +197,12 @@ export function toMeilisearchDocument(
     sku: v.sku,
     title: v.title || v.options?.map((o) => o.value).join(" / ") || "",
   }));
+  const bundle = getProductBundle(product);
+  const bundle_item_titles =
+    bundle?.items
+      ?.map((item) => item.product?.title?.trim())
+      .filter((title): title is string => Boolean(title)) ?? [];
+  const bundle_item_count = bundle?.items?.length ?? 0;
 
   return {
     // 1. CORE IDENTITY
@@ -194,6 +211,10 @@ export function toMeilisearchDocument(
     handle: product.handle,
     thumbnail: product.thumbnail || undefined,
     created_at_timestamp,
+    is_bundle: Boolean(bundle),
+    bundle_id: bundle?.id,
+    bundle_item_count,
+    bundle_item_titles,
 
     // 2. PRODUCT TYPE
     type_id,

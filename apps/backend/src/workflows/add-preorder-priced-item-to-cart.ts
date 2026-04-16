@@ -1,11 +1,18 @@
-import { transform, createWorkflow, WorkflowResponse } from "@medusajs/framework/workflows-sdk";
+import {
+  transform,
+  createWorkflow,
+  when,
+  WorkflowResponse,
+} from "@medusajs/framework/workflows-sdk";
 import {
   acquireLockStep,
   addToCartWorkflow,
   releaseLockStep,
+  updateLineItemInCartWorkflow,
   useQueryGraphStep,
 } from "@medusajs/medusa/core-flows";
 import { resolvePreorderLineItemPriceStep } from "./steps/resolve-preorder-line-item-price";
+import { findMatchingCartLineItem } from "./utils/find-matching-cart-line-item";
 
 type WorkflowInput = {
   cart_id: string;
@@ -21,7 +28,7 @@ export const addPreorderPricedItemToCartWorkflow = createWorkflow(
   (input: WorkflowInput) => {
     const { data: carts } = useQueryGraphStep({
       entity: "cart",
-      fields: ["id", "currency_code"],
+      fields: ["id", "currency_code", "items.*"],
       filters: {
         id: input.cart_id,
       },
@@ -57,12 +64,50 @@ export const addPreorderPricedItemToCartWorkflow = createWorkflow(
         {
           variant_id: data.item.variant_id,
           quantity: data.item.quantity,
-          metadata: data.item.metadata,
+          metadata: data.item.metadata ?? {},
           ...(typeof data.preorderUnitPrice === "number"
             ? { unit_price: data.preorderUnitPrice }
             : {}),
         },
       ]
+    );
+
+    const matchingLineItem = transform(
+      {
+        cart: carts[0],
+        item: input.item,
+      },
+      (data) => {
+        return findMatchingCartLineItem(
+          data.cart.items,
+          data.item.variant_id,
+          data.item.metadata
+        );
+      }
+    );
+
+    const lineItemUpdate = transform(
+      {
+        matchingLineItem,
+        item: input.item,
+        preorderUnitPrice,
+      },
+      (data) => {
+        if (!data.matchingLineItem) {
+          return null;
+        }
+
+        return {
+          item_id: data.matchingLineItem.id,
+          update: {
+            quantity: data.matchingLineItem.quantity + data.item.quantity,
+            metadata: data.item.metadata ?? data.matchingLineItem.metadata ?? {},
+            ...(typeof data.preorderUnitPrice === "number"
+              ? { unit_price: data.preorderUnitPrice }
+              : {}),
+          },
+        };
+      }
     );
 
     acquireLockStep({
@@ -71,11 +116,23 @@ export const addPreorderPricedItemToCartWorkflow = createWorkflow(
       ttl: 10,
     });
 
-    addToCartWorkflow.runAsStep({
-      input: {
-        cart_id: input.cart_id,
-        items,
-      },
+    when({ lineItemUpdate }, ({ lineItemUpdate }) => Boolean(lineItemUpdate)).then(() => {
+      updateLineItemInCartWorkflow.runAsStep({
+        input: {
+          cart_id: input.cart_id,
+          item_id: lineItemUpdate.item_id,
+          update: lineItemUpdate.update,
+        },
+      });
+    });
+
+    when({ lineItemUpdate }, ({ lineItemUpdate }) => !lineItemUpdate).then(() => {
+      addToCartWorkflow.runAsStep({
+        input: {
+          cart_id: input.cart_id,
+          items,
+        },
+      });
     });
 
     const { data: updatedCart } = useQueryGraphStep({

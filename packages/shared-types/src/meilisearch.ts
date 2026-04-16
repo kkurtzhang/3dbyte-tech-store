@@ -100,6 +100,12 @@ export interface MeilisearchProductDocument {
     logo?: string;
   };
 
+  // --- 7B. BUNDLE DISCOVERY ---
+  is_bundle: boolean;
+  bundle_id?: string;
+  bundle_item_count: number;
+  bundle_item_titles: string[];
+
   // --- 8. SEARCHABLE CONTENT (Not in display payload ideally, but indexed) ---
   rich_description?: string;
 
@@ -233,6 +239,21 @@ export interface SyncProductsStepProduct {
     name: string;
     handle: string;
   } | null;
+  bundle?: SyncProductsStepBundle | SyncProductsStepBundle[] | null;
+}
+
+export interface SyncProductsStepBundle {
+  id: string;
+  title?: string | null;
+  items?: Array<{
+    id: string;
+    quantity: number;
+    product?: {
+      id: string;
+      title?: string | null;
+      handle?: string | null;
+    } | null;
+  }> | null;
 }
 
 /**

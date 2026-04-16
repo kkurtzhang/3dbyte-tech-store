@@ -87,6 +87,9 @@ module.exports = defineConfig({
       resolve: "./src/modules/preorder",
     },
     {
+      resolve: "./src/modules/bundled-product",
+    },
+    {
       resolve: "./src/modules/wishlist",
     },
     {

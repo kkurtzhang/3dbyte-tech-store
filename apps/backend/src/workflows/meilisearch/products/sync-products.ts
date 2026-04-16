@@ -64,6 +64,13 @@ export const syncProductsWorkflow = createWorkflow(
         "brand.id",
         "brand.name",
         "brand.handle",
+        "bundle.id",
+        "bundle.title",
+        "bundle.items.id",
+        "bundle.items.quantity",
+        "bundle.items.product.id",
+        "bundle.items.product.title",
+        "bundle.items.product.handle",
       ],
       pagination: {
         take: limit,
@@ -79,10 +86,6 @@ export const syncProductsWorkflow = createWorkflow(
         const publishedProducts: SyncProductsStepInput["products"] = [];
         const unpublishedProductIds: string[] = [];
 
-        // Debug: log what we received
-        console.log("[DEBUG transform sync-products] products type:", typeof data.products);
-        console.log("[DEBUG transform sync-products] Is array?:", Array.isArray(data.products));
-
         const productsArray = data.products as unknown as SyncProductsStepProduct[];
 
         productsArray.forEach((product) => {
@@ -92,9 +95,6 @@ export const syncProductsWorkflow = createWorkflow(
             unpublishedProductIds.push(product.id);
           }
         });
-
-        console.log("[DEBUG transform sync-products] publishedProducts:", publishedProducts.length);
-        console.log("[DEBUG transform sync-products] unpublishedProductIds:", unpublishedProductIds.length);
 
         return { publishedProducts, unpublishedProductIds };
       },

@@ -16,6 +16,11 @@ import { createFindParams } from "@medusajs/medusa/api/utils/validators";
 import { storeSearchRoutesMiddlewares } from "./store/search/middlewares";
 import { UpsertPreorderVariantSchema } from "./admin/variants/[id]/preorders/route";
 import { AddPricedLineItemSchema } from "./store/carts/[id]/line-items-priced/route";
+import { PostAdminCreateBundledProduct } from "./admin/bundled-products/validators";
+import {
+  PostStoreCartLineItemBundles,
+  PutStoreCartLineItemBundle,
+} from "./store/carts/[id]/line-item-bundles/validators";
 
 export const GetBrandsSchema = createFindParams();
 
@@ -32,6 +37,28 @@ export default defineMiddlewares({
       matcher: "/admin/brands",
       method: "POST",
       middlewares: [validateAndTransformBody(PostAdminCreateBrand)],
+    },
+    {
+      matcher: "/admin/bundled-products",
+      methods: ["POST"],
+      middlewares: [validateAndTransformBody(PostAdminCreateBundledProduct)],
+    },
+    {
+      matcher: "/admin/bundled-products",
+      methods: ["GET"],
+      middlewares: [
+        validateAndTransformQuery(createFindParams(), {
+          defaults: [
+            "id",
+            "title",
+            "product.*",
+            "items.*",
+            "items.product.*",
+          ],
+          isList: true,
+          defaultLimit: 15,
+        }),
+      ],
     },
     {
       matcher: "/admin/products",
@@ -113,6 +140,16 @@ export default defineMiddlewares({
     {
       matcher: "/store/wishlist",
       middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
+      matcher: "/store/carts/:id/line-item-bundles",
+      methods: ["POST"],
+      middlewares: [validateAndTransformBody(PostStoreCartLineItemBundles)],
+    },
+    {
+      matcher: "/store/carts/:id/line-item-bundles/:bundle_id",
+      methods: ["PUT"],
+      middlewares: [validateAndTransformBody(PutStoreCartLineItemBundle)],
     },
     {
       matcher: "/store/wishlist/:id",
