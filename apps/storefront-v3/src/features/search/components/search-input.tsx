@@ -2,10 +2,13 @@
 
 import { useQueryState } from "nuqs"
 import { Search, X, ArrowRight } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { useEffect, useState, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { sdk } from "@/lib/medusa/client"
+import { getBundleLink, getProductPath } from "@/lib/medusa/bundles"
+import type { MedusaProduct } from "@/lib/medusa/types"
 
 type SearchSuggestionProduct =
   Awaited<ReturnType<typeof sdk.store.product.list>>["products"][number]
@@ -93,7 +96,7 @@ export function SearchInput() {
       const { products } = await sdk.store.product.list({
         q: searchTerm,
         limit: 6,
-        fields: "id,handle,title,thumbnail,*variants,*variants.prices",
+        fields: "id,handle,title,thumbnail,*variants,*variants.prices,*bundle",
       })
       setSuggestions(products)
       setShowDropdown(true)
@@ -124,10 +127,11 @@ export function SearchInput() {
   }
 
   const handleSuggestionClick = (product: SearchSuggestionProduct) => {
+    const isBundle = getBundleLink(product as MedusaProduct) !== null
     setShowDropdown(false)
     setValue(product.title!)
     setQuery("")
-    router.push(`/products/${product.handle}`)
+    router.push(getProductPath(product.handle!, isBundle))
   }
 
   const handleClear = () => {
@@ -196,6 +200,7 @@ export function SearchInput() {
                 Products
               </div>
               {suggestions.map((product, index) => {
+                  const isBundle = getBundleLink(product as MedusaProduct) !== null
                   // Get price from first variant (already in dollars from Medusa v2)
                   const firstVariant = product.variants?.[0]
                   const price = firstVariant?.calculated_price?.calculated_amount
@@ -225,7 +230,17 @@ export function SearchInput() {
                     </div>
                   )}
                   <div className="flex min-w-0 flex-1 flex-col">
-                    <span className="text-sm font-medium truncate">{product.title}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="truncate text-sm font-medium">{product.title}</span>
+                      {isBundle ? (
+                        <Badge
+                          variant="secondary"
+                          className="font-mono text-[10px] uppercase tracking-wider"
+                        >
+                          Bundle
+                        </Badge>
+                      ) : null}
+                    </div>
                   </div>
                   {price !== null && (
                     <div className="flex-shrink-0 text-sm font-semibold">

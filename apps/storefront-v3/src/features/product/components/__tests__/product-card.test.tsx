@@ -175,6 +175,27 @@ describe("ProductCard", () => {
     expect(screen.queryByText("1kg")).not.toBeInTheDocument()
   })
 
+  it("renders a bundle badge for bundle products", () => {
+    render(<ProductCard {...defaultProps} isBundle />)
+
+    expect(screen.getByText("Bundle")).toBeInTheDocument()
+  })
+
+  it("links bundle products to the dedicated bundle page", () => {
+    render(<ProductCard {...defaultProps} isBundle />)
+
+    const links = screen.getAllByRole("link", { name: /test product/i })
+    expect(links).toHaveLength(2)
+    expect(links[0]).toHaveAttribute("href", "/bundles/test-product")
+    expect(links[1]).toHaveAttribute("href", "/bundles/test-product")
+  })
+
+  it("renders available-in-bundles count for standard products", () => {
+    render(<ProductCard {...defaultProps} availableInBundlesCount={3} />)
+
+    expect(screen.getByText("In 3 bundles")).toBeInTheDocument()
+  })
+
   it("opens quick view dialog on button click", async () => {
     const user = userEvent.setup()
 

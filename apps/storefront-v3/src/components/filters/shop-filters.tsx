@@ -22,6 +22,7 @@ function buildFilterOverrides(
   selectedCategories: string[],
   selectedBrands: string[],
   selectedCollections: string[],
+  selectedBundleOnly: boolean,
   selectedOnSale: boolean,
   selectedInStock: boolean,
   minPrice: number,
@@ -40,6 +41,10 @@ function buildFilterOverrides(
 
   if (selectedCollections.length > 0) {
     filters.push(`collection_ids IN [${selectedCollections.map((c) => `"${c}"`).join(", ")}]`)
+  }
+
+  if (selectedBundleOnly) {
+    filters.push("is_bundle = true")
   }
 
   if (selectedOnSale) {
@@ -86,6 +91,7 @@ export function ShopFilters({ className }: ShopFiltersProps) {
   const selectedCategories = searchParams.get("category")?.split(",").filter(Boolean) || []
   const selectedBrands = searchParams.get("brand")?.split(",").filter(Boolean) || []
   const selectedCollections = searchParams.get("collection")?.split(",").filter(Boolean) || []
+  const selectedBundleOnly = searchParams.get("bundle") === "true"
   const selectedOnSale = searchParams.get("onSale") === "true"
   const selectedInStock = searchParams.get("inStock") === "true"
 
@@ -109,6 +115,7 @@ export function ShopFilters({ className }: ShopFiltersProps) {
       selectedCategories,
       selectedBrands,
       selectedCollections,
+      selectedBundleOnly,
       selectedOnSale,
       selectedInStock,
       0, // Don't filter by price for facet calculation
@@ -119,6 +126,7 @@ export function ShopFilters({ className }: ShopFiltersProps) {
     selectedCategories,
     selectedBrands,
     selectedCollections,
+    selectedBundleOnly,
     selectedOnSale,
     selectedInStock,
     selectedOptions,
@@ -169,6 +177,7 @@ export function ShopFilters({ className }: ShopFiltersProps) {
       category: searchParams.get("category") || undefined,
       brand: searchParams.get("brand") || undefined,
       collection: searchParams.get("collection") || undefined,
+      bundle: searchParams.get("bundle") || undefined,
       onSale: searchParams.get("onSale") || undefined,
       inStock: searchParams.get("inStock") || undefined,
       minPrice: searchParams.get("minPrice") || undefined,
@@ -287,6 +296,14 @@ export function ShopFilters({ className }: ShopFiltersProps) {
     })
   }
 
+  const updateBundleOnly = (checked: boolean) => {
+    const params = getCurrentParams()
+    updateFilters({
+      ...params,
+      bundle: checked ? "true" : undefined,
+    })
+  }
+
   // Toggle handlers
   const updateOnSale = (checked: boolean) => {
     const params = getCurrentParams()
@@ -373,6 +390,12 @@ export function ShopFilters({ className }: ShopFiltersProps) {
           })
         }
         break
+      case "bundle":
+        updateFilters({
+          ...params,
+          bundle: undefined,
+        })
+        break
       case "onSale":
         updateFilters({
           ...params,
@@ -432,6 +455,7 @@ export function ShopFilters({ className }: ShopFiltersProps) {
       selectedCategories={selectedCategories}
       selectedBrands={selectedBrands}
       selectedCollections={selectedCollections}
+      selectedBundleOnly={selectedBundleOnly}
       selectedOnSale={selectedOnSale}
       selectedInStock={selectedInStock}
       priceRange={currentPriceRange}
@@ -439,6 +463,7 @@ export function ShopFilters({ className }: ShopFiltersProps) {
       onCategoryChange={updateCategory}
       onBrandChange={updateBrand}
       onCollectionChange={updateCollection}
+      onBundleOnlyChange={updateBundleOnly}
       onSaleChange={updateOnSale}
       onInStockChange={updateInStock}
       onPriceChange={updatePrice}

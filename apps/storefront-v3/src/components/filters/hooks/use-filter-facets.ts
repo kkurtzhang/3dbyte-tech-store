@@ -21,6 +21,7 @@ const FACETS_TO_REQUEST = [
   "brand.id",
   "category_ids",
   "collection_ids",
+  "is_bundle",
   "on_sale",
   "in_stock",
   "price_aud",
@@ -29,6 +30,12 @@ const FACETS_TO_REQUEST = [
   "options_nozzle_type",
   "options_nozzle_size",
 ]
+
+function getUnsupportedFacet(error: unknown): string | null {
+  const message = error instanceof Error ? error.message : String(error)
+  const unsupportedFacetMatch = message.match(/attribute [`"]?([a-z0-9_.]+)[`"]? is not filterable/i)
+  return unsupportedFacetMatch?.[1] ?? null
+}
 
 /**
  * Hook to fetch filter facets from Meilisearch
@@ -55,11 +62,27 @@ export function useFilterFacets(
       try {
         const index = searchClient.index(indexName)
 
-        const result = await index.search(query, {
-          limit: 0,
-          facets: FACETS_TO_REQUEST,
-          filter: filterOverrides,
-        })
+        let result
+
+        try {
+          result = await index.search(query, {
+            limit: 0,
+            facets: FACETS_TO_REQUEST,
+            filter: filterOverrides,
+          })
+        } catch (searchError) {
+          const unsupportedFacet = getUnsupportedFacet(searchError)
+
+          if (!unsupportedFacet || !FACETS_TO_REQUEST.includes(unsupportedFacet)) {
+            throw searchError
+          }
+
+          result = await index.search(query, {
+            limit: 0,
+            facets: FACETS_TO_REQUEST.filter((facet) => facet !== unsupportedFacet),
+            filter: filterOverrides,
+          })
+        }
 
         if (isCancelled) return
 
@@ -87,6 +110,13 @@ export function useFilterFacets(
         ).map(([id, count]) => ({
           value: id,
           label: id,
+          count,
+        }))
+
+        const bundles: FilterOption[] = Object.entries(
+          facetDistribution["is_bundle"] || {}
+        ).map(([value, count]) => ({
+          value,
           count,
         }))
 
@@ -133,6 +163,7 @@ export function useFilterFacets(
           categories,
           brands,
           collections,
+          bundles,
           onSale,
           inStock,
           priceRange,

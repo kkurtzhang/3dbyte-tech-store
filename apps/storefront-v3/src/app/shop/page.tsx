@@ -28,6 +28,7 @@ interface ShopPageProps {
     category?: string;
     collection?: string;
     q?: string;
+    bundle?: string;
     minPrice?: string;
     maxPrice?: string;
     brand?: string;
@@ -46,6 +47,7 @@ function hasActiveFilters(params: ShopPageProps["searchParams"] extends Promise<
     !!params.category ||
     !!params.brand ||
     !!params.collection ||
+    params.bundle === "true" ||
     params.onSale === "true" ||
     params.inStock === "true" ||
     !!params.minPrice ||
@@ -67,6 +69,7 @@ function buildPaginationUrl(
     q: params.q,
     category: params.category,
     brand: params.brand,
+    bundle: params.bundle,
     onSale: params.onSale,
     inStock: params.inStock,
     minPrice: params.minPrice,
@@ -123,6 +126,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
       categoryIds: categoryIds.length > 0 ? categoryIds : undefined,
       brandIds: brandIds.length > 0 ? brandIds : undefined,
       collectionIds: collectionIds.length > 0 ? collectionIds : undefined,
+      isBundle: params.bundle === "true" ? true : undefined,
       onSale: params.onSale === "true" ? true : undefined,
       inStock: params.inStock === "true" ? true : undefined,
       minPrice,
@@ -192,6 +196,8 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     currency_code: "AUD",
     originalPrice: product.original_price_aud ?? undefined,
     salePrice: product.on_sale ? product.price_aud : undefined,
+    isBundle: product.is_bundle,
+    availableInBundlesCount: product.available_in_bundles_count,
     discountPercentage:
       product.on_sale && product.original_price_aud
         ? ((product.original_price_aud - product.price_aud) /

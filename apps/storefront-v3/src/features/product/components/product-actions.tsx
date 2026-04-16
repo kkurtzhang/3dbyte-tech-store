@@ -11,9 +11,13 @@ import { usePathname } from "next/navigation"
 import { SocialShare } from "./social-share"
 import { StockStatusBadge, getStockStatus } from "@/components/ui/stock-status-badge"
 import { PriceDisplay } from "@/components/ui/price-display"
+import type { BundleProduct } from "@/lib/medusa/bundles"
 import type { MedusaProduct, MedusaProductVariant, MedusaProductVariantWithPreorder } from "@/lib/medusa/types"
 import { isPreorder } from "@/lib/util/is-preorder"
 import { getVariantPriceDisplay, resolvePreorderPrice } from "@/lib/util/preorder-pricing"
+import { getRenderableOptions } from "@/features/product/lib/bundle-pricing"
+import { BundleProductActions } from "./bundle-product-actions"
+import { AvailableInBundles } from "./available-in-bundles"
 
 interface ProductActionsProps {
   product: MedusaProduct
@@ -22,6 +26,8 @@ interface ProductActionsProps {
   options: Record<string, string>
   setOptions: (options: Record<string, string>) => void
   disabled?: boolean
+  bundleProduct?: BundleProduct | null
+  availableInBundles?: BundleProduct[]
 }
 
 export function ProductActions({
@@ -31,10 +37,13 @@ export function ProductActions({
   options,
   setOptions,
   disabled,
+  bundleProduct,
+  availableInBundles = [],
 }: ProductActionsProps) {
   const { addItem } = useCart()
   const { toast } = useToast()
   const [isAdding, setIsAdding] = useState(false)
+  const [quantity, setQuantity] = useState(1)
   const pathname = usePathname()
 
   const updateOption = (optionId: string, value: string) => {
@@ -55,16 +64,16 @@ export function ProductActions({
 
     setIsAdding(true)
     try {
-      await addItem(selectedVariant.id, 1)
+      await addItem(selectedVariant.id, quantity)
       toast({
-        title: "Item_Acquired",
-        description: `${product.title} has been added to your system inventory.`,
+        title: "Added to cart",
+        description: `${product.title} has been added to your cart.`,
       })
     } catch (err) {
       toast({
         variant: "destructive",
-        title: "Acquisition_Failed",
-        description: "Unable to add item. Please check system connection.",
+        title: "Unable to add to cart",
+        description: "Unable to add this item to your cart. Please try again.",
       })
     } finally {
       setIsAdding(false)
@@ -82,6 +91,7 @@ export function ProductActions({
 
   // Check if we should show size guide
   const sizeGuideInfo = shouldShowSizeGuide(product)
+  const renderableOptions = useMemo(() => getRenderableOptions(product), [product])
 
   // Get stock status for out-of-stock check
   const stockStatus = getStockStatus(selectedVariant)
@@ -101,6 +111,36 @@ export function ProductActions({
       style: "currency",
       currency,
     }).format(amount)
+
+  if (bundleProduct) {
+    return <BundleProductActions product={product} bundleProduct={bundleProduct} />
+  }
+
+  const quantitySelector = (
+    <div className="flex h-14 min-w-[132px] items-stretch overflow-hidden rounded-sm border bg-background">
+      <button
+        type="button"
+        className="flex h-full w-12 items-center justify-center text-sm transition-colors hover:bg-secondary disabled:opacity-50"
+        aria-label="Decrease quantity"
+        disabled={quantity <= 1 || isAdding}
+        onClick={() => setQuantity((current) => Math.max(1, current - 1))}
+      >
+        -
+      </button>
+      <span className="flex flex-1 items-center justify-center border-x font-mono text-sm">
+        {quantity}
+      </span>
+      <button
+        type="button"
+        className="flex h-full w-12 items-center justify-center text-sm transition-colors hover:bg-secondary disabled:opacity-50"
+        aria-label="Increase quantity"
+        disabled={isAdding}
+        onClick={() => setQuantity((current) => current + 1)}
+      >
+        +
+      </button>
+    </div>
+  )
 
   return (
     <div className="flex flex-col gap-8">
@@ -159,9 +199,15 @@ export function ProductActions({
         productImage={product.thumbnail || undefined}
       />
 
+      <AvailableInBundles
+        bundles={availableInBundles}
+        product={product}
+        selectedVariant={selectedVariant}
+      />
+
       {/* Options Selection */}
       <div className="space-y-6">
-        {product.options?.map((option) => (
+        {renderableOptions.map((option) => (
           <div key={option.id} className="space-y-3">
             <span className="text-sm font-mono font-bold uppercase tracking-wider text-muted-foreground">
               {option.title}
@@ -202,29 +248,43 @@ export function ProductActions({
       {/* Add to Cart / Notify Me */}
       <div className="pt-6 border-t">
         {isOutOfStock ? (
-          <NotifyMeButton
-            productId={product.id}
-            productHandle={productHandle}
-            productTitle={product.title}
-            variantId={selectedVariant?.id}
-            variantTitle={selectedVariant?.title || undefined}
-          />
-        ) : (
           <>
             <Button
-                size="lg"
-                className="w-full font-mono text-lg h-14 uppercase tracking-widest"
-                disabled={!selectedVariant || disabled || isAdding}
-                onClick={handleAddToCart}
+              size="lg"
+              className="w-full font-mono text-lg h-14 uppercase tracking-widest"
+              disabled
             >
-              {isAdding
-                ? "Adding..."
-                : selectedVariant
-                  ? isPreorderVariant
-                    ? "Pre-order now"
-                    : "Add to Cart"
-                  : "Select Options"}
+              Out of Stock
             </Button>
+            <div className="mt-4">
+              <NotifyMeButton
+                productId={product.id}
+                productHandle={productHandle}
+                productTitle={product.title}
+                variantId={selectedVariant?.id}
+                variantTitle={selectedVariant?.title || undefined}
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="flex items-stretch gap-3">
+              {quantitySelector}
+              <Button
+                  size="lg"
+                  className="flex-1 font-mono text-lg h-14 uppercase tracking-widest"
+                  disabled={!selectedVariant || disabled || isAdding}
+                  onClick={handleAddToCart}
+              >
+                {isAdding
+                  ? "Adding..."
+                  : selectedVariant
+                    ? isPreorderVariant
+                      ? "Pre-order now"
+                      : "Add to Cart"
+                    : "Select Options"}
+              </Button>
+            </div>
             <p className="mt-2 text-center text-xs font-mono text-muted-foreground">
                 Secure checkout
             </p>

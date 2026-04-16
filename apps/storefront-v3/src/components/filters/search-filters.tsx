@@ -70,6 +70,7 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
   const selectedCategories = searchParams.get("category")?.split(",").filter(Boolean) || []
   const selectedBrands = searchParams.get("brand")?.split(",").filter(Boolean) || []
   const selectedCollections = searchParams.get("collection")?.split(",").filter(Boolean) || []
+  const selectedBundleOnly = searchParams.get("bundle") === "true"
   const selectedOnSale = searchParams.get("onSale") === "true"
   // selectedInStock is already parsed above for facet filtering
   const minPrice = Number(searchParams.get("minPrice")) || facets?.priceRange.min || 0
@@ -122,6 +123,7 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
       category: searchParams.get("category") || undefined,
       brand: searchParams.get("brand") || undefined,
       collection: searchParams.get("collection") || undefined,
+      bundle: searchParams.get("bundle") || undefined,
       onSale: searchParams.get("onSale") || undefined,
       inStock: searchParams.get("inStock") || undefined,
       minPrice: searchParams.get("minPrice") || undefined,
@@ -240,6 +242,14 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
     })
   }
 
+  const updateBundleOnly = (checked: boolean) => {
+    const params = getCurrentParams()
+    updateFilters({
+      ...params,
+      bundle: checked ? "true" : undefined,
+    })
+  }
+
   // Toggle handlers
   const updateOnSale = (checked: boolean) => {
     const params = getCurrentParams()
@@ -326,6 +336,12 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
           })
         }
         break
+      case "bundle":
+        updateFilters({
+          ...params,
+          bundle: undefined,
+        })
+        break
       case "onSale":
         updateFilters({
           ...params,
@@ -385,6 +401,7 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
       selectedCategories={selectedCategories}
       selectedBrands={selectedBrands}
       selectedCollections={selectedCollections}
+      selectedBundleOnly={selectedBundleOnly}
       selectedOnSale={selectedOnSale}
       selectedInStock={selectedInStock}
       priceRange={currentPriceRange}
@@ -392,6 +409,7 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
       onCategoryChange={updateCategory}
       onBrandChange={updateBrand}
       onCollectionChange={updateCollection}
+      onBundleOnlyChange={updateBundleOnly}
       onSaleChange={updateOnSale}
       onInStockChange={updateInStock}
       onPriceChange={updatePrice}

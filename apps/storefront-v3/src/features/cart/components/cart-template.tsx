@@ -8,6 +8,8 @@ import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/cart-context";
 import { useSavedItems } from "@/context/saved-items-context";
 import { CartItem } from "./cart-item";
+import { BundleCartGroup } from "./bundle-cart-group";
+import { buildCartDisplayGroups, getCartDisplayItemCount } from "../lib/bundle-groups";
 import {
   Card,
   CardContent,
@@ -21,7 +23,7 @@ export function CartTemplate() {
   const { savedItems } = useSavedItems();
 
   const itemCount = useMemo(() => {
-    return cart?.items?.reduce((acc, item) => acc + item.quantity, 0) || 0;
+    return getCartDisplayItemCount(buildCartDisplayGroups(cart?.items));
   }, [cart]);
 
   const subtotal = useMemo(() => {
@@ -38,6 +40,7 @@ export function CartTemplate() {
 
   // Assuming USD for now or fallback to first item currency
   const currencyCode = cart?.region?.currency_code || "usd";
+  const cartDisplayGroups = useMemo(() => buildCartDisplayGroups(cart?.items), [cart?.items]);
 
   if (isLoading && !cart) {
     return (
@@ -183,14 +186,23 @@ export function CartTemplate() {
 
         <div className="rounded-lg border bg-card">
           <div className="divide-y p-1">
-            {cart.items?.map((item) => (
-              <div
-                key={item.id}
-                className="px-4 hover:bg-muted/30 transition-colors"
-              >
-                <CartItem item={item} currencyCode={currencyCode} />
-              </div>
-            ))}
+            {cartDisplayGroups.map((group) =>
+              group.type === "bundle" ? (
+                <div
+                  key={group.bundleId}
+                  className="px-4 py-3"
+                >
+                  <BundleCartGroup group={group} currencyCode={currencyCode} />
+                </div>
+              ) : (
+                <div
+                  key={group.item.id}
+                  className="px-4 hover:bg-muted/30 transition-colors"
+                >
+                  <CartItem item={group.item} currencyCode={currencyCode} />
+                </div>
+              )
+            )}
           </div>
         </div>
 

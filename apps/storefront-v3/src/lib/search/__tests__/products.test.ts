@@ -88,6 +88,8 @@ const createMockProductHit = (overrides: Partial<ProductHit> = {}): ProductHit =
     name: "Test Brand",
     handle: "test-brand",
   },
+  is_bundle: false,
+  available_in_bundles_count: 0,
   variants: [
     { id: "variant_1", sku: "SKU-001", title: "Default" },
   ],
@@ -213,6 +215,26 @@ describe("searchProducts", () => {
       const result = await searchProducts()
 
       expect(result.facets).toEqual(mockFacets)
+    })
+
+    it("keeps standard products ahead of bundle products in result ordering", async () => {
+      const mockHits = [
+        createMockProductHit({ id: "bundle_1", handle: "bundle-1", is_bundle: true }),
+        createMockProductHit({ id: "standard_1", handle: "standard-1", is_bundle: false }),
+        createMockProductHit({ id: "bundle_2", handle: "bundle-2", is_bundle: true }),
+        createMockProductHit({ id: "standard_2", handle: "standard-2", is_bundle: false }),
+      ]
+
+      mockClient.__mockSearch.mockResolvedValueOnce(createMockMeilisearchResponse(mockHits))
+
+      const result = await searchProducts({ query: "starter" })
+
+      expect(result.products.map((product) => product.id)).toEqual([
+        "standard_1",
+        "standard_2",
+        "bundle_1",
+        "bundle_2",
+      ])
     })
   })
 
@@ -451,6 +473,21 @@ describe("searchProducts", () => {
         "",
         expect.objectContaining({
           filter: "price_aud >= 100 AND price_aud <= 500",
+        })
+      )
+    })
+
+    it("applies bundle-only filter", async () => {
+      mockClient.__mockSearch.mockResolvedValueOnce(createMockMeilisearchResponse([]))
+
+      await searchProducts({
+        filters: { isBundle: true },
+      })
+
+      expect(mockClient.__mockSearch).toHaveBeenCalledWith(
+        "",
+        expect.objectContaining({
+          filter: "is_bundle = true",
         })
       )
     })
@@ -870,6 +907,36 @@ describe("searchProducts", () => {
 
       expect(result.products[0].price_aud).toBe(0)
     })
+
+    it("maps bundle discovery metadata from Meilisearch hits", async () => {
+      const hit = createMockProductHit({
+        is_bundle: true,
+        available_in_bundles_count: 2,
+        available_in_bundles: [
+          {
+            id: "bundle_a",
+            handle: "starter-bundle",
+            title: "Starter Bundle",
+          },
+        ],
+      })
+
+      mockClient.__mockSearch.mockResolvedValueOnce(createMockMeilisearchResponse([hit]))
+
+      const result = await searchProducts()
+
+      expect(result.products[0]).toMatchObject({
+        is_bundle: true,
+        available_in_bundles_count: 2,
+        available_in_bundles: [
+          {
+            id: "bundle_a",
+            handle: "starter-bundle",
+            title: "Starter Bundle",
+          },
+        ],
+      })
+    })
   })
 })
 
@@ -924,6 +991,7 @@ describe("getFacets", () => {
     expect(facetsArg).toContain("brand.id")
     expect(facetsArg).toContain("category_ids")
     expect(facetsArg).toContain("collection_ids")
+    expect(facetsArg).toContain("is_bundle")
     expect(facetsArg).toContain("on_sale")
     expect(facetsArg).toContain("in_stock")
     expect(facetsArg).toContain("price_aud")

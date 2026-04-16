@@ -56,6 +56,8 @@ describe("CartItem", () => {
   it("shows preorder availability messaging", () => {
     render(<CartItem item={createItem()} currencyCode="usd" />)
 
+    expect(screen.queryByText("Standard")).not.toBeInTheDocument()
+    expect(screen.queryByText("Default Variant")).not.toBeInTheDocument()
     expect(screen.getByText(/Pre-order available on/i)).toBeInTheDocument()
     expect(screen.getByText(/Pre-order price:/i)).toBeInTheDocument()
   })
@@ -116,5 +118,26 @@ describe("CartItem", () => {
     )
 
     expect(screen.getByAltText("Test Product")).toHaveAttribute("src", "/line-item-thumb.jpg")
+  })
+
+  it("shows the selected variant title when it is a real variant", () => {
+    render(
+      <CartItem
+        item={createItem({
+          variant: {
+            id: "variant_2",
+            title: "Matte Black",
+            product: {
+              id: "prod_1",
+              title: "Test Product",
+              thumbnail: "/test.jpg",
+            },
+          } as MedusaCartLineItem["variant"],
+        })}
+        currencyCode="usd"
+      />
+    )
+
+    expect(screen.getByText("Matte Black")).toBeInTheDocument()
   })
 })

@@ -6,6 +6,7 @@ import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { Flame } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { getProductPath } from "@/lib/medusa/bundles"
 import { QuickViewButton } from "./quick-view-button"
 import { QuickViewDialog } from "./quick-view-dialog"
 
@@ -20,6 +21,8 @@ export interface ProductCardProps {
   }
   originalPrice?: number
   discountPercentage?: number
+  isBundle?: boolean
+  availableInBundlesCount?: number
   specs?: {
     label: string
     value: string
@@ -33,6 +36,8 @@ export function ProductCard({
   price,
   originalPrice,
   discountPercentage,
+  isBundle = false,
+  availableInBundlesCount = 0,
   specs
 }: ProductCardProps) {
   const [quickViewOpen, setQuickViewOpen] = useState(false)
@@ -46,11 +51,17 @@ export function ProductCard({
 
   const hasDiscount = discountPercentage && discountPercentage > 0
   const isHotDeal = discountPercentage && discountPercentage >= 30
+  const productPath = getProductPath(handle, isBundle)
 
   // "Lab" Aesthetic: Clean borders, mono fonts for data
   return (
-    <div className="group relative flex flex-col overflow-hidden border bg-card transition-colors hover:border-primary/50">
-      <Link href={`/products/${handle}`} className="relative aspect-square overflow-hidden bg-secondary/20">
+    <div
+      className={cn(
+        "group relative flex flex-col overflow-hidden border bg-card transition-colors hover:border-primary/50",
+        isBundle && "border-dashed bg-secondary/10"
+      )}
+    >
+      <Link href={productPath} className="relative aspect-square overflow-hidden bg-secondary/20">
         {thumbnail ? (
           <Image
             src={thumbnail}
@@ -82,6 +93,24 @@ export function ProductCard({
           </div>
         )}
 
+        {(isBundle || availableInBundlesCount > 0) && (
+          <div className="absolute right-2 top-2 flex flex-col items-end gap-1">
+            {isBundle && (
+              <Badge
+                variant="secondary"
+                className="font-mono text-[10px] uppercase tracking-wider"
+              >
+                Bundle
+              </Badge>
+            )}
+            {!isBundle && availableInBundlesCount > 0 && (
+              <Badge variant="secondary" className="font-mono text-[10px]">
+                In {availableInBundlesCount} bundle{availableInBundlesCount === 1 ? "" : "s"}
+              </Badge>
+            )}
+          </div>
+        )}
+
         {/* Quick Spec Badge Overlay (Visible on Hover/Always on Mobile) */}
         {specs && specs.length > 0 && (
           <div className="absolute bottom-2 left-2 flex gap-1">
@@ -94,9 +123,14 @@ export function ProductCard({
 
       <div className="flex flex-1 flex-col p-4">
         <div className="mb-2">
-          <Link href={`/products/${handle}`} className="line-clamp-2 text-sm font-medium leading-tight group-hover:text-primary transition-colors">
+          <Link href={productPath} className="line-clamp-2 text-sm font-medium leading-tight group-hover:text-primary transition-colors">
             {title}
           </Link>
+          {!isBundle && availableInBundlesCount > 0 && (
+            <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+              Available in {availableInBundlesCount} bundle{availableInBundlesCount === 1 ? "" : "s"}
+            </p>
+          )}
         </div>
 
         <div className="mt-auto flex items-center justify-between">

@@ -1,19 +1,12 @@
+import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { getProductByHandle, getProductHandles } from "@/lib/medusa/products"
+import { Suspense } from "react"
 import { ProductTemplate } from "@/features/product/templates/product-template"
 import { loadProductPageData } from "@/features/product/lib/load-product-page-data"
-import { Metadata } from "next"
-import { Suspense } from "react"
+import { getBundleLink } from "@/lib/medusa/bundles"
+import { getProductByHandle } from "@/lib/medusa/products"
 
-// Revalidate every hour
 export const revalidate = 3600
-
-export async function generateStaticParams() {
-  const handles = await getProductHandles()
-  return handles.map((handle) => ({
-    handle,
-  }))
-}
 
 export async function generateMetadata({
   params,
@@ -23,24 +16,24 @@ export async function generateMetadata({
   const { handle } = await params
   const product = await getProductByHandle(handle)
 
-  if (!product) {
+  if (!product || !getBundleLink(product)) {
     return {
-      title: "Product Not Found",
+      title: "Bundle Not Found",
     }
   }
 
   return {
-    title: `${product.title} | 3D Byte Tech Store`,
+    title: `${product.title} Bundle | 3D Byte Tech Store`,
     description: product.description,
     openGraph: {
-      title: product.title,
+      title: `${product.title} Bundle`,
       description: product.description || undefined,
       images: product.thumbnail ? [product.thumbnail] : [],
     },
   }
 }
 
-export default async function ProductPage({
+export default async function BundleProductPage({
   params,
 }: {
   params: Promise<{ handle: string }>
@@ -48,12 +41,18 @@ export default async function ProductPage({
   const { handle } = await params
   const pageData = await loadProductPageData(handle)
 
-  if (!pageData) {
+  if (!pageData || !pageData.bundleLink || !pageData.bundleProduct) {
     notFound()
   }
 
   return (
-    <Suspense fallback={<div className="container py-12 animate-pulse"><div className="h-96 bg-muted rounded-sm"></div></div>}>
+    <Suspense
+      fallback={
+        <div className="container py-12 animate-pulse">
+          <div className="h-96 rounded-sm bg-muted"></div>
+        </div>
+      }
+    >
       <ProductTemplate
         product={pageData.product}
         richDescription={pageData.richDescription}

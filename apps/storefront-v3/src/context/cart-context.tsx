@@ -1,7 +1,17 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react"
-import { createCart, getCart, addToCart, updateLineItem, deleteLineItem } from "@/lib/medusa/cart"
+import {
+  createCart,
+  getCart,
+  addToCart,
+  updateLineItem,
+  deleteLineItem,
+  addBundleToCart,
+  removeBundleFromCart,
+  updateBundleInCart,
+  type BundleCartSelection,
+} from "@/lib/medusa/cart"
 import type { MedusaCart } from "@/lib/medusa/cart"
 
 export const CART_STORAGE_KEY = "_medusa_cart_id"
@@ -12,8 +22,15 @@ interface CartContextType {
   cart: MedusaCart | null
   isLoading: boolean
   addItem: (variantId: string, quantity: number) => Promise<void>
+  addBundle: (
+    bundleId: string,
+    quantity: number,
+    items: BundleCartSelection[]
+  ) => Promise<void>
   updateItem: (lineItemId: string, quantity: number) => Promise<void>
   removeItem: (lineItemId: string) => Promise<void>
+  removeBundle: (bundleId: string) => Promise<void>
+  updateBundle: (bundleId: string, quantity: number) => Promise<void>
   refreshCart: () => Promise<void>
 }
 
@@ -95,6 +112,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const addBundle = async (
+    bundleId: string,
+    quantity: number,
+    items: BundleCartSelection[]
+  ) => {
+    setIsLoading(true)
+    try {
+      const cartId = await ensureCart()
+      const updatedCart = await addBundleToCart({
+        cartId,
+        bundleId,
+        quantity,
+        items,
+      })
+      setCart(updatedCart)
+    } catch (error) {
+      console.error("Failed to add bundle", error)
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const updateItem = async (lineItemId: string, quantity: number) => {
     setIsLoading(true)
     try {
@@ -131,14 +171,60 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const removeBundle = async (bundleId: string) => {
+    setIsLoading(true)
+    try {
+      const cartId = getCartId()
+      if (!cartId) {
+        throw new Error("No cart found")
+      }
+
+      const updatedCart = await removeBundleFromCart({
+        cartId,
+        bundleId,
+      })
+      setCart(updatedCart)
+    } catch (error) {
+      console.error("Failed to remove bundle", error)
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const updateBundle = async (bundleId: string, quantity: number) => {
+    setIsLoading(true)
+    try {
+      const cartId = getCartId()
+      if (!cartId) {
+        throw new Error("No cart found")
+      }
+
+      const updatedCart = await updateBundleInCart({
+        cartId,
+        bundleId,
+        quantity,
+      })
+      setCart(updatedCart)
+    } catch (error) {
+      console.error("Failed to update bundle", error)
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <CartContext.Provider
       value={{
         cart,
         isLoading,
         addItem,
+        addBundle,
         updateItem,
         removeItem,
+        removeBundle,
+        updateBundle,
         refreshCart,
       }}
     >

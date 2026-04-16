@@ -119,6 +119,7 @@ function createMockFacets(overrides: Partial<FilterFacets> = {}): FilterFacets {
     collections: [
       { value: "col1", label: "Collection 1", count: 12 },
     ],
+    bundles: [{ value: "true", count: 4 }],
     onSale: [
       { value: "true", count: 7 },
       { value: "false", count: 13 },

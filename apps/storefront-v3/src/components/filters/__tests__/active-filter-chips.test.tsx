@@ -30,6 +30,7 @@ function createMockFacets(overrides: Partial<FilterFacets> = {}): FilterFacets {
       { value: "col1", label: "New Arrivals", count: 12 },
       { value: "col2", label: "Best Sellers", count: 8 },
     ],
+    bundles: [{ value: "true", count: 4 }],
     onSale: [
       { value: "true", count: 7 },
       { value: "false", count: 13 },
@@ -60,6 +61,7 @@ describe("ActiveFilterChips", () => {
     selectedCategories: [],
     selectedBrands: [],
     selectedCollections: [],
+    selectedBundleOnly: false,
     selectedOnSale: false,
     selectedInStock: false,
     priceRange: { min: 0, max: 1000 },

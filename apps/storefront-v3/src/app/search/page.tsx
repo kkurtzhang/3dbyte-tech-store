@@ -14,6 +14,7 @@ interface SearchPageProps {
     category?: string;
     brand?: string;
     collection?: string;
+    bundle?: string;
     onSale?: string;
     inStock?: string;
     minPrice?: string;
@@ -56,6 +57,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       categoryIds: categoryIds.length > 0 ? categoryIds : undefined,
       brandIds: brandIds.length > 0 ? brandIds : undefined,
       collectionIds: collectionIds.length > 0 ? collectionIds : undefined,
+      isBundle: params.bundle === "true" ? true : undefined,
       onSale: params.onSale === "true" ? true : undefined,
       inStock: params.inStock === "true" ? true : undefined,
       minPrice: params.minPrice ? Number(params.minPrice) : undefined,
@@ -82,6 +84,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     discountPercentage: p.on_sale && p.original_price_aud && p.price_aud
       ? Math.round((1 - p.price_aud / p.original_price_aud) * 100)
       : undefined,
+    isBundle: p.is_bundle,
+    availableInBundlesCount: p.available_in_bundles_count,
   }));
 
   return (

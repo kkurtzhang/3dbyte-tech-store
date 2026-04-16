@@ -91,6 +91,14 @@ export interface MeilisearchProductDocument {
   categories: string[];
   _tags: string[]; // Flattened tag values (not original tags object)
   collection_ids: string[];
+  is_bundle?: boolean;
+  available_in_bundles_count?: number;
+  available_in_bundles?: Array<{
+    id: string;
+    handle?: string;
+    title?: string;
+    thumbnail?: string;
+  }>;
 
   // --- 7. BRAND ---
   brand?: {

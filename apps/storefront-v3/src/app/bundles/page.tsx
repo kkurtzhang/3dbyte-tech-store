@@ -1,83 +1,62 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import Image from "next/image";
-import { getProductBundles } from "@/lib/medusa/products";
-import { ListingLayout } from "@/components/layout/listing-layout";
-import { Button } from "@/components/ui/button";
-import { Package, ArrowRight, ShoppingCart } from "lucide-react";
+import type { Metadata } from "next"
+import Image from "next/image"
+import Link from "next/link"
+import { ArrowRight, Package, ShoppingCart } from "lucide-react"
+import { ListingLayout } from "@/components/layout/listing-layout"
+import { Button } from "@/components/ui/button"
+import { getProductBundles } from "@/lib/medusa/products"
+import {
+  getBundleLink,
+  getBundleProductsById,
+  getProductPath,
+} from "@/lib/medusa/bundles"
+import type { MedusaProduct } from "@/lib/medusa/types"
+import { getBundlePricingSummary } from "@/features/product/lib/bundle-pricing"
 
 interface BundlesPageProps {
   searchParams: Promise<{
-    page?: string;
-  }>;
+    page?: string
+  }>
 }
 
-// Bundle item type for displaying items included in a bundle
-interface BundleItem {
-  id: string;
-  title: string;
-  thumbnail?: string;
-  price?: number;
+function getBundlePrice(product: MedusaProduct) {
+  const variant = product.variants?.[0] as
+    | (Record<string, unknown> & {
+        calculated_price?: {
+          calculated_amount?: number
+        }
+      })
+    | undefined
+  const prices = variant?.prices as Array<{ amount: number; currency_code: string }> | undefined
+
+  return variant?.calculated_price?.calculated_amount || prices?.[0]?.amount || 0
 }
 
-// Helper to extract bundle items from product metadata
-function getBundleItems(product: any): BundleItem[] {
-  const metadata = product.metadata as Record<string, unknown> | null;
-  const bundleItems = metadata?.bundle_items as string[] | undefined;
-  
-  if (bundleItems && Array.isArray(bundleItems)) {
-    // Map bundle item IDs to demo products (in real app, would fetch actual products)
-    const demoProducts: Record<string, BundleItem> = {
-      "demo-1": { id: "demo-1", title: "PLA Filament - Arctic White", price: 24.99 },
-      "demo-2": { id: "demo-2", title: "Voron 2.4 Kit - Complete", price: 1299.00 },
-      "demo-3": { id: "demo-3", title: "LDO Motor Set - NEMA17", price: 159.00 },
-      "demo-4": { id: "demo-4", title: "PETG Filament - Deep Blue", price: 27.99 },
-    };
-    
-    return bundleItems
-      .map((id) => demoProducts[id])
-      .filter(Boolean);
-  }
-  
-  // Return default items based on bundle for demo
-  return [];
+function getCurrencyCode(product: MedusaProduct) {
+  const variant = product.variants?.[0] as Record<string, unknown> | undefined
+  const prices = variant?.prices as Array<{ amount: number; currency_code: string }> | undefined
+
+  return prices?.[0]?.currency_code || "usd"
 }
 
-// Format price from cents to dollars
-function formatPrice(amount: number | undefined, currencyCode: string = "usd"): string {
-  if (amount === undefined) return "$0.00";
+function formatPrice(amount: number, currencyCode: string) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: currencyCode.toUpperCase(),
-  }).format(amount / 100);
-}
-
-// Extract price from product variants
-function getPrice(product: any): number | undefined {
-  const variant = product.variants?.[0];
-  if (!variant) return undefined;
-  
-  // Try calculated_price first (with discounts applied)
-  if (variant.calculated_price?.calculated_amount !== undefined) {
-    return variant.calculated_price.calculated_amount;
-  }
-  
-  // Fall back to regular price
-  const price = variant.prices?.find((p: any) => p.currency_code === "usd");
-  return price?.amount;
+  }).format(amount)
 }
 
 export default async function BundlesPage({ searchParams }: BundlesPageProps) {
-  const params = await searchParams;
-  const page = Number(params.page) || 1;
-  const limit = 12;
+  const params = await searchParams
+  const page = Number(params.page) || 1
+  const limit = 12
 
   const { products, count } = await getProductBundles({
     page,
     limit,
-  });
-
-  const totalPages = Math.ceil(count / limit);
+  })
+  const bundleProductsById = await getBundleProductsById(products)
+  const totalPages = Math.ceil(count / limit)
 
   return (
     <ListingLayout
@@ -94,144 +73,149 @@ export default async function BundlesPage({ searchParams }: BundlesPageProps) {
               </p>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" asChild>
-              <Link href="/shop">
-                Browse All Products
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
+          <Button variant="outline" asChild>
+            <Link href="/shop">
+              Browse All Products
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
         </div>
       }
     >
       <div className="space-y-8">
-        {/* Promotional Banner */}
-        <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-primary to-primary/80 px-6 py-8 text-white">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA2MCAwIEwgMCAwIDAgNjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-30"></div>
-          <div className="relative">
-            <h2 className="text-3xl font-bold tracking-tight">Save More with Bundles!</h2>
-            <p className="mt-2 max-w-md text-primary-foreground/90">
-              Get the best value by purchasing products together. 
-              Our curated bundles include everything you need at discounted prices.
+        <div className="relative overflow-hidden rounded-lg border bg-[radial-gradient(circle_at_top_left,_rgba(220,38,38,0.12),_transparent_42%),linear-gradient(135deg,_rgba(15,23,42,0.98),_rgba(30,41,59,0.94))] px-6 py-8 text-white">
+          <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:20px_20px]" />
+          <div className="relative max-w-2xl space-y-3">
+            <p className="text-xs font-mono uppercase tracking-[0.3em] text-primary-foreground/70">
+              Real Bundle Inventory
+            </p>
+            <h2 className="text-3xl font-bold tracking-tight">
+              Medusa-backed bundles with per-item variant selection.
+            </h2>
+            <p className="text-primary-foreground/80">
+              Each bundle is linked to a real Medusa product, priced as a bundle, and expanded into grouped cart items at checkout.
             </p>
           </div>
         </div>
 
-        {/* Bundle Grid */}
         {products.length > 0 ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {products.map((product: any) => {
-              const price = getPrice(product);
-              const bundleItems = getBundleItems(product);
-              const originalTotal = bundleItems.reduce((sum, item) => sum + (item.price || 0), 0);
-              const savings = originalTotal > 0 && price ? originalTotal - (price / 100) : 0;
+          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            {products.map((product) => {
+              const bundleLink = getBundleLink(product)
+              const bundleProduct = bundleLink ? bundleProductsById[bundleLink.id] : null
+              const bundleItems = bundleProduct?.items ?? []
+              const bundlePricing = bundleProduct
+                ? getBundlePricingSummary(bundleProduct)
+                : null
+              const bundlePrice = bundlePricing?.bundlePrice ?? getBundlePrice(product)
+              const currencyCode = bundlePricing?.currencyCode ?? getCurrencyCode(product)
+              const originalTotal = bundlePricing?.compareAtPrice ?? bundlePrice
+              const savings = bundlePricing?.savings ?? 0
 
               return (
-                <div
+                <article
                   key={product.id}
-                  className="group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-all hover:shadow-lg"
+                  className="group relative flex flex-col overflow-hidden rounded-2xl border bg-card shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
                 >
-                  {/* Product Image */}
-                  <div className="relative aspect-square overflow-hidden bg-muted">
+                  <div className="relative aspect-[4/3] overflow-hidden bg-muted">
                     {product.thumbnail ? (
                       <Image
                         src={product.thumbnail}
                         alt={product.title}
                         fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center">
-                        <Package className="h-16 w-16 text-muted-foreground/30" />
+                        <Package className="h-14 w-14 text-muted-foreground/30" />
                       </div>
                     )}
-                    {/* Bundle Badge */}
-                    <div className="absolute left-3 top-3 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
+                    <div className="absolute left-4 top-4 rounded-full bg-background/95 px-3 py-1 text-xs font-mono uppercase tracking-[0.2em] text-foreground shadow-sm">
                       Bundle
                     </div>
                   </div>
 
-                  {/* Product Info */}
-                  <div className="flex flex-1 flex-col p-4">
-                    <h3 className="line-clamp-1 text-lg font-semibold">
-                      <Link
-                        href={`/products/${product.handle}`}
-                        className="hover:text-primary"
-                      >
-                        {product.title}
-                      </Link>
-                    </h3>
-                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                      {product.description}
-                    </p>
+                  <div className="flex flex-1 flex-col p-5">
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-semibold">
+                        <Link href={getProductPath(product.handle, true)} className="hover:text-primary">
+                          {product.title}
+                        </Link>
+                      </h3>
+                      <p className="line-clamp-2 text-sm text-muted-foreground">
+                        {product.description || "Bundle together multiple products with a single grouped add-to-cart flow."}
+                      </p>
+                    </div>
 
-                    {/* Items Included */}
-                    {bundleItems.length > 0 && (
-                      <div className="mt-4">
-                        <h4 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                          Includes:
-                        </h4>
-                        <ul className="space-y-1">
-                          {bundleItems.slice(0, 3).map((item, idx) => (
-                            <li
-                              key={idx}
-                              className="flex items-center gap-2 text-sm"
-                            >
-                              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-xs text-primary">
-                                {idx + 1}
+                    <div className="mt-5 space-y-3 rounded-xl border bg-muted/30 p-4">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground">
+                          Included Items
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {bundleItems.length}
+                        </p>
+                      </div>
+                      {bundleItems.length > 0 ? (
+                        <ul className="space-y-2">
+                          {bundleItems.slice(0, 3).map((item) => (
+                            <li key={item.id} className="flex items-center justify-between gap-3 text-sm">
+                              <span className="line-clamp-1">{item.product.title}</span>
+                              <span className="font-mono text-xs text-muted-foreground">
+                                x{item.quantity}
                               </span>
-                              <span className="line-clamp-1">{item.title}</span>
                             </li>
                           ))}
-                          {bundleItems.length > 3 && (
-                            <li className="text-sm text-muted-foreground">
-                              +{bundleItems.length - 3} more items
+                          {bundleItems.length > 3 ? (
+                            <li className="text-xs text-muted-foreground">
+                              +{bundleItems.length - 3} more included products
                             </li>
-                          )}
+                          ) : null}
                         </ul>
-                      </div>
-                    )}
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          Bundle details will appear once the backend route returns the linked bundle items.
+                        </p>
+                      )}
+                    </div>
 
-                    {/* Price & Savings */}
-                    <div className="mt-auto pt-4">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-xl font-bold">
-                          {formatPrice(price)}
+                    <div className="mt-auto pt-5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-2xl font-bold">
+                          {formatPrice(bundlePrice, currencyCode)}
                         </span>
-                        {savings > 0 && (
+                        {savings > 0 ? (
                           <>
                             <span className="text-sm text-muted-foreground line-through">
-                              ${originalTotal.toFixed(2)}
+                              {formatPrice(originalTotal, currencyCode)}
                             </span>
-                            <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                              Save ${savings.toFixed(2)}
+                            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                              Save {formatPrice(savings, currencyCode)}
                             </span>
                           </>
-                        )}
+                        ) : null}
                       </div>
 
-                      {/* Add to Cart Button */}
-                      <Button className="mt-3 w-full" asChild>
-                        <Link href={`/products/${product.handle}`}>
+                      <Button className="mt-4 w-full" asChild>
+                        <Link href={getProductPath(product.handle, true)}>
                           <ShoppingCart className="mr-2 h-4 w-4" />
-                          View Bundle
+                          Configure Bundle
                         </Link>
                       </Button>
                     </div>
                   </div>
-                </div>
-              );
+                </article>
+              )
             })}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Package className="h-16 w-16 text-muted-foreground/30" />
-            <h3 className="mt-4 text-lg font-semibold">No bundles available</h3>
-            <p className="mt-2 text-muted-foreground">
-              Check back soon for our curated product bundles!
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed py-16 text-center">
+            <Package className="h-14 w-14 text-muted-foreground/30" />
+            <h3 className="mt-4 text-lg font-semibold">No bundles available yet</h3>
+            <p className="mt-2 max-w-md text-sm text-muted-foreground">
+              Create a bundled product in the backend and it will surface here automatically once its linked Medusa product is published.
             </p>
-            <Button className="mt-4" asChild>
+            <Button className="mt-6" asChild>
               <Link href="/shop">
                 Browse Products
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -240,47 +224,45 @@ export default async function BundlesPage({ searchParams }: BundlesPageProps) {
           </div>
         )}
 
-        {/* Pagination */}
-        {totalPages > 1 && (
+        {totalPages > 1 ? (
           <div className="flex justify-center">
-            <nav
-              className="flex gap-2"
-              role="navigation"
-              aria-label="Pagination"
-            >
-              {Array.from({ length: totalPages }).map((_, i) => {
-                const pageNum = i + 1;
-                const isCurrent = pageNum === page;
+            <nav className="flex gap-2" aria-label="Bundle pagination">
+              {Array.from({ length: totalPages }).map((_, index) => {
+                const pageNumber = index + 1
+                const isCurrent = pageNumber === page
+                const query = new URLSearchParams()
 
-                const searchParams = new URLSearchParams();
-                if (pageNum > 1) searchParams.set("page", pageNum.toString());
+                if (pageNumber > 1) {
+                  query.set("page", String(pageNumber))
+                }
 
                 return (
-                  <a
-                    key={pageNum}
-                    href={`/bundles?${searchParams.toString()}`}
+                  <Link
+                    key={pageNumber}
+                    href={`/bundles${query.size ? `?${query.toString()}` : ""}`}
                     className={`inline-flex h-10 w-10 items-center justify-center rounded-md border font-mono text-sm transition-colors ${
                       isCurrent
                         ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-card hover:border-primary/50 hover:bg-accent"
+                        : "hover:border-primary/50 hover:bg-accent"
                     }`}
                     aria-current={isCurrent ? "page" : undefined}
                   >
-                    {pageNum}
-                  </a>
-                );
+                    {pageNumber}
+                  </Link>
+                )
               })}
             </nav>
           </div>
-        )}
+        ) : null}
       </div>
     </ListingLayout>
-  );
+  )
 }
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "Product Bundles | Save on 3D Printing Supplies",
-    description: "Shop our curated product bundles for 3D printing. Get everything you need at discounted prices.",
-  };
+    title: "Product Bundles | 3D Byte Tech Store",
+    description:
+      "Browse Medusa-backed product bundles with grouped cart handling and per-item variant selection.",
+  }
 }

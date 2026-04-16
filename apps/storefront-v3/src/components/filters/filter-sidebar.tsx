@@ -18,13 +18,20 @@ export interface FilterSidebarProps {
   facets: FilterFacets | null
   className?: string
   hideFacets?: Array<
-    "categories" | "brands" | "collections" | "onSale" | "inStock" | "price"
+    | "categories"
+    | "brands"
+    | "collections"
+    | "bundles"
+    | "onSale"
+    | "inStock"
+    | "price"
   >
   clearAllUrl?: string
   // Filter change handlers
   onCategoryChange?: (categoryId: string, checked: boolean) => void
   onBrandChange?: (brandId: string, checked: boolean) => void
   onCollectionChange?: (collectionId: string, checked: boolean) => void
+  onBundleOnlyChange?: (checked: boolean) => void
   onSaleChange?: (checked: boolean) => void
   onInStockChange?: (checked: boolean) => void
   onPriceChange?: (min: number, max: number) => void
@@ -41,6 +48,7 @@ export interface FilterSidebarProps {
   selectedCategories?: string[]
   selectedBrands?: string[]
   selectedCollections?: string[]
+  selectedBundleOnly?: boolean
   selectedOnSale?: boolean
   selectedInStock?: boolean
   priceRange?: { min: number; max: number }
@@ -57,6 +65,7 @@ export function FilterSidebar({
   onCategoryChange,
   onBrandChange,
   onCollectionChange,
+  onBundleOnlyChange,
   onSaleChange,
   onInStockChange,
   onPriceChange,
@@ -71,6 +80,7 @@ export function FilterSidebar({
   selectedCategories = [],
   selectedBrands = [],
   selectedCollections = [],
+  selectedBundleOnly = false,
   selectedOnSale = false,
   selectedInStock = false,
   priceRange,
@@ -95,6 +105,7 @@ export function FilterSidebar({
     selectedCategories.length > 0 ||
     selectedBrands.length > 0 ||
     selectedCollections.length > 0 ||
+    selectedBundleOnly ||
     selectedOnSale ||
     selectedInStock ||
     (currentPriceRange.min !== facets.priceRange.min ||
@@ -104,6 +115,7 @@ export function FilterSidebar({
   // Get onSale and inStock facet counts
   const onSaleTrueOption = facets.onSale.find((opt) => opt.value === "true")
   const inStockTrueOption = facets.inStock.find((opt) => opt.value === "true")
+  const bundleTrueOption = facets.bundles.find((opt) => opt.value === "true")
 
   // Filter dynamic options to exclude any in EXCLUDED_OPTIONS
   const filteredOptions = Object.entries(facets.options).filter(
@@ -125,6 +137,12 @@ export function FilterSidebar({
     defaultAccordionItems.push("brands")
   if (!hideFacets.includes("collections") && facets.collections.length > 0)
     defaultAccordionItems.push("collections")
+  if (
+    !hideFacets.includes("bundles") &&
+    bundleTrueOption &&
+    bundleTrueOption.count > 0
+  )
+    defaultAccordionItems.push("bundles")
   if (
     !hideFacets.includes("onSale") &&
     onSaleTrueOption &&
@@ -156,6 +174,7 @@ export function FilterSidebar({
           selectedCategories={selectedCategories}
           selectedBrands={selectedBrands}
           selectedCollections={selectedCollections}
+          selectedBundleOnly={selectedBundleOnly}
           selectedOnSale={selectedOnSale}
           selectedInStock={selectedInStock}
           priceRange={currentPriceRange}
@@ -260,6 +279,24 @@ export function FilterSidebar({
               onSelectAll={onSelectAllCollections}
               selectedCount={selectedCollections.length || undefined}
             />
+          )}
+
+        {!hideFacets.includes("bundles") &&
+          bundleTrueOption &&
+          bundleTrueOption.count > 0 && (
+            <FilterSection
+              title="Product Type"
+              value="bundles"
+              defaultOpen={true}
+            >
+              <ToggleFilter
+                id="bundles-toggle"
+                label="Show bundle products"
+                count={bundleTrueOption.count}
+                checked={selectedBundleOnly}
+                onChange={(checked) => onBundleOnlyChange?.(checked)}
+              />
+            </FilterSection>
           )}
 
         {/* On Sale Toggle */}

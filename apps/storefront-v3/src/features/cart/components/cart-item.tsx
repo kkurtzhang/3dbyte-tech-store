@@ -14,9 +14,15 @@ interface CartItemProps {
   item: MedusaCartLineItem
   currencyCode: string
   showSaveForLater?: boolean
+  readOnly?: boolean
 }
 
-export function CartItem({ item, currencyCode, showSaveForLater = true }: CartItemProps) {
+export function CartItem({
+  item,
+  currencyCode,
+  showSaveForLater = true,
+  readOnly = false,
+}: CartItemProps) {
   const { updateItem, removeItem } = useCart()
   const { saveItem, isSaved } = useSavedItems()
   const [isUpdating, setIsUpdating] = useState(false)
@@ -82,6 +88,21 @@ export function CartItem({ item, currencyCode, showSaveForLater = true }: CartIt
     item.variant?.product?.images?.[0]?.url ||
     null
 
+  const variantTitle = useMemo(() => {
+    const rawTitle =
+      typeof item.variant?.title === "string" ? item.variant.title.trim() : ""
+
+    if (
+      !rawTitle ||
+      rawTitle === "Default Variant" ||
+      rawTitle === "Default Title"
+    ) {
+      return null
+    }
+
+    return rawTitle
+  }, [item.variant?.title])
+
   return (
     <div className="flex gap-4 py-4">
       <div className="relative aspect-square h-20 w-20 min-w-[5rem] overflow-hidden rounded-sm border bg-secondary/20">
@@ -105,9 +126,9 @@ export function CartItem({ item, currencyCode, showSaveForLater = true }: CartIt
           <h4 className="line-clamp-2 text-sm font-medium leading-tight">
             {item.title}
           </h4>
-          <p className="text-xs text-muted-foreground">
-            {item.variant?.title !== "Default Variant" ? item.variant?.title : "Standard"}
-          </p>
+          {variantTitle ? (
+            <p className="text-xs text-muted-foreground">{variantTitle}</p>
+          ) : null}
           {isPreorder(preorderItem.variant?.preorder_variant) && (
             <div className="space-y-0.5 text-xs text-primary">
               <p>
@@ -136,43 +157,51 @@ export function CartItem({ item, currencyCode, showSaveForLater = true }: CartIt
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-             <div className="flex items-center rounded-sm border">
-                <button
-                  onClick={() => handleUpdateQuantity(item.quantity - 1)}
-                  disabled={item.quantity <= 1 || isUpdating}
-                  className="p-1 hover:bg-secondary disabled:opacity-50"
-                >
-                  <Minus className="h-3 w-3" />
-                </button>
-                <span className="w-8 text-center font-mono text-xs">
-                  {isUpdating ? "..." : item.quantity}
-                </span>
-                <button
-                  onClick={() => handleUpdateQuantity(item.quantity + 1)}
-                  disabled={isUpdating}
-                  className="p-1 hover:bg-secondary disabled:opacity-50"
-                >
-                  <Plus className="h-3 w-3" />
-                </button>
-             </div>
+             {readOnly ? (
+               <span className="rounded-sm border px-2 py-1 font-mono text-xs text-muted-foreground">
+                 Qty {item.quantity}
+               </span>
+             ) : (
+               <>
+                 <div className="flex items-center rounded-sm border">
+                    <button
+                      onClick={() => handleUpdateQuantity(item.quantity - 1)}
+                      disabled={item.quantity <= 1 || isUpdating}
+                      className="p-1 hover:bg-secondary disabled:opacity-50"
+                    >
+                      <Minus className="h-3 w-3" />
+                    </button>
+                    <span className="w-8 text-center font-mono text-xs">
+                      {isUpdating ? "..." : item.quantity}
+                    </span>
+                    <button
+                      onClick={() => handleUpdateQuantity(item.quantity + 1)}
+                      disabled={isUpdating}
+                      className="p-1 hover:bg-secondary disabled:opacity-50"
+                    >
+                      <Plus className="h-3 w-3" />
+                    </button>
+                 </div>
 
-             <button
-                onClick={handleRemove}
-                disabled={isUpdating}
-                className="text-muted-foreground hover:text-destructive transition-colors"
-            >
-                <Trash2 className="h-4 w-4" />
-             </button>
+                 <button
+                    onClick={handleRemove}
+                    disabled={isUpdating}
+                    className="text-muted-foreground hover:text-destructive transition-colors"
+                >
+                    <Trash2 className="h-4 w-4" />
+                 </button>
 
-             {showSaveForLater && (
-               <button
-                 onClick={handleSaveForLater}
-                 disabled={itemIsSaved}
-                 title={itemIsSaved ? "Already saved" : "Save for later"}
-                 className="text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
-               >
-                 <Bookmark className={`h-4 w-4 ${itemIsSaved ? "fill-current" : ""}`} />
-               </button>
+                 {showSaveForLater && (
+                   <button
+                     onClick={handleSaveForLater}
+                     disabled={itemIsSaved}
+                     title={itemIsSaved ? "Already saved" : "Save for later"}
+                     className="text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
+                   >
+                     <Bookmark className={`h-4 w-4 ${itemIsSaved ? "fill-current" : ""}`} />
+                   </button>
+                 )}
+               </>
              )}
           </div>
 

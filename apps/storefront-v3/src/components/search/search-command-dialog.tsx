@@ -16,7 +16,9 @@ import {
   Loader2,
   ArrowRight,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { getProductPath } from "@/lib/medusa/bundles";
 
 // Helper component to highlight matching text
 function HighlightText({ text, query }: { text: string; query: string }) {
@@ -206,10 +208,11 @@ export function SearchCommandDialog({
         id: `product:${product.id}`,
         label: product.title,
         type: "product" as const,
+        isBundle: product.isBundle === true,
         subLabel: specs,
         trailing: price,
         onSelect: () => {
-          router.push(`/products/${product.handle}`);
+          router.push(getProductPath(product.handle, product.isBundle === true));
         },
       };
     });
@@ -396,9 +399,19 @@ export function SearchCommandDialog({
                                 <Package className="h-4 w-4 shrink-0" />
                               </div>
                               <div className="flex min-w-0 flex-1 flex-col">
-                                <span className="truncate text-sm font-semibold">
-                                  <HighlightText text={product.label} query={searchQuery} />
-                                </span>
+                                <div className="flex items-center gap-2">
+                                  <span className="truncate text-sm font-semibold">
+                                    <HighlightText text={product.label} query={searchQuery} />
+                                  </span>
+                                  {product.isBundle ? (
+                                    <Badge
+                                      variant="secondary"
+                                      className="font-mono text-[10px] uppercase tracking-wider"
+                                    >
+                                      Bundle
+                                    </Badge>
+                                  ) : null}
+                                </div>
                                 {product.subLabel && (
                                   <span className="text-xs text-muted-foreground truncate">
                                     {product.subLabel}

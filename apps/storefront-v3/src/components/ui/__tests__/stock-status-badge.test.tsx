@@ -30,6 +30,26 @@ describe("getStockStatus", () => {
 
     expect(result.status).toBe("out-of-stock")
   })
+
+  it("marks variants with fewer than five units as low stock", () => {
+    const result = getStockStatus({
+      inventory_quantity: 4,
+      manage_inventory: true,
+    } as never)
+
+    expect(result.status).toBe("low-stock")
+    expect(result.quantity).toBe(4)
+  })
+
+  it("keeps variants with five or more units in stock", () => {
+    const result = getStockStatus({
+      inventory_quantity: 5,
+      manage_inventory: true,
+    } as never)
+
+    expect(result.status).toBe("in-stock")
+    expect(result.quantity).toBe(5)
+  })
 })
 
 describe("StockStatusBadge", () => {
@@ -51,5 +71,35 @@ describe("StockStatusBadge", () => {
 
     expect(screen.getByText("Pre-order")).toBeInTheDocument()
     expect(screen.queryByText(/Available on/i)).not.toBeInTheDocument()
+  })
+
+  it("hides stock counts in the badge copy", () => {
+    const { rerender } = render(
+      <StockStatusBadge
+        variant={
+          {
+            inventory_quantity: 4,
+            manage_inventory: true,
+          } as never
+        }
+      />
+    )
+
+    expect(screen.getByText("Low Stock")).toBeInTheDocument()
+    expect(screen.queryByText(/\(4 left\)/i)).not.toBeInTheDocument()
+
+    rerender(
+      <StockStatusBadge
+        variant={
+          {
+            inventory_quantity: 12,
+            manage_inventory: true,
+          } as never
+        }
+      />
+    )
+
+    expect(screen.getByText("In Stock")).toBeInTheDocument()
+    expect(screen.queryByText(/\(12 available\)/i)).not.toBeInTheDocument()
   })
 })

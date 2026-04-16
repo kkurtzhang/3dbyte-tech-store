@@ -8,8 +8,11 @@ jest.mock("@/lib/medusa/cart", () => ({
   createCart: jest.fn(),
   getCart: jest.fn(),
   addToCart: jest.fn(),
+  addBundleToCart: jest.fn(),
+  updateBundleInCart: jest.fn(),
   updateLineItem: jest.fn(),
   deleteLineItem: jest.fn(),
+  removeBundleFromCart: jest.fn(),
 }))
 
 // Mock localStorage
@@ -116,8 +119,11 @@ describe("CartProvider", () => {
       expect(result.current).toHaveProperty("cart")
       expect(result.current).toHaveProperty("isLoading")
       expect(result.current).toHaveProperty("addItem")
+      expect(result.current).toHaveProperty("addBundle")
       expect(result.current).toHaveProperty("updateItem")
       expect(result.current).toHaveProperty("removeItem")
+      expect(result.current).toHaveProperty("removeBundle")
+      expect(result.current).toHaveProperty("updateBundle")
       expect(result.current).toHaveProperty("refreshCart")
     })
   })
@@ -148,6 +154,75 @@ describe("CartProvider", () => {
         cartId: "cart_123",
         variantId: "variant_1",
         quantity: 1,
+      })
+    })
+  })
+
+  describe("addBundle", () => {
+    it("creates cart and adds a bundle", async () => {
+      const mockCart = createMockCart()
+      const cartWithBundle = createMockCart({
+        items: [{ id: "bundle_line_1" } as any, { id: "bundle_line_2" } as any],
+      })
+      ;(cartApi.createCart as jest.Mock).mockResolvedValue(mockCart)
+      ;(cartApi.addBundleToCart as jest.Mock).mockResolvedValue(cartWithBundle)
+
+      const { result } = renderHook(() => useCart(), {
+        wrapper: CartProvider,
+      })
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
+      })
+
+      await act(async () => {
+        await result.current.addBundle("bundle_123", 2, [
+          {
+            item_id: "bundle_item_1",
+            variant_id: "variant_1",
+          },
+        ])
+      })
+
+      expect(cartApi.addBundleToCart).toHaveBeenCalledWith({
+        cartId: "cart_123",
+        bundleId: "bundle_123",
+        quantity: 2,
+        items: [
+          {
+            item_id: "bundle_item_1",
+            variant_id: "variant_1",
+          },
+        ],
+      })
+    })
+  })
+
+  describe("removeBundle", () => {
+    it("removes all line items for a bundle", async () => {
+      localStorageMock.setItem("_medusa_cart_id", "cart_123")
+      ;(cartApi.getCart as jest.Mock).mockResolvedValue(createMockCart())
+      ;(cartApi.removeBundleFromCart as jest.Mock).mockResolvedValue(
+        createMockCart({
+          items: [],
+        })
+      )
+
+      const { result } = renderHook(() => useCart(), {
+        wrapper: CartProvider,
+      })
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false)
+      })
+
+      await act(async () => {
+        await result.current.removeBundle("bundle_123")
+      })
+
+      expect(cartApi.removeBundleFromCart).toHaveBeenCalledWith({
+        cartId: "cart_123",
+        bundleId: "bundle_123",
       })
     })
   })

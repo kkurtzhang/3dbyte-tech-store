@@ -27,11 +27,20 @@ export interface SearchResult {
     discountPercentage?: number
     variants?: any[]
     on_sale?: boolean
+    isBundle?: boolean
+    availableInBundlesCount?: number
   }>
   totalCount: number
   estimatedTotalHits: number
   facetDistribution?: Record<string, Record<string, number>>
   degradedMode?: boolean
+}
+
+function deEmphasizeBundleRanking<T extends { isBundle?: boolean }>(hits: T[]): T[] {
+  const standardHits = hits.filter((hit) => !hit.isBundle)
+  const bundleHits = hits.filter((hit) => hit.isBundle)
+
+  return [...standardHits, ...bundleHits]
 }
 
 /**
@@ -124,12 +133,13 @@ export async function searchProducts(query: string, options: SearchOptions = {})
         "id", "handle", "title", "thumbnail",
         "price_aud", "original_price_aud", "on_sale",
         "in_stock", "inventory_quantity",
-        "categories", "category_ids", "brand", "collection_ids"
+        "categories", "category_ids", "brand", "collection_ids",
+        "is_bundle", "available_in_bundles_count"
       ],
     })
 
     // Transform hits to match ProductCard expected format
-    const hits = result.hits.map((hit: any) => ({
+    const hits = deEmphasizeBundleRanking(result.hits.map((hit: any) => ({
       id: hit.id,
       handle: hit.handle,
       title: hit.title,
@@ -145,8 +155,13 @@ export async function searchProducts(query: string, options: SearchOptions = {})
       discountPercentage: hit.original_price_aud && hit.price_aud && hit.original_price_aud > hit.price_aud
         ? Math.round((1 - hit.price_aud / hit.original_price_aud) * 100)
         : undefined,
+      isBundle: hit.is_bundle === true,
+      availableInBundlesCount:
+        typeof hit.available_in_bundles_count === "number"
+          ? hit.available_in_bundles_count
+          : 0,
       specs: [],
-    }))
+    })))
 
     return {
       hits,

@@ -40,6 +40,7 @@ const FACETS_FIXTURE: FilterFacets = {
   categories: [],
   brands: [],
   collections: [],
+  bundles: [],
   onSale: [],
   inStock: [{ value: "true", count: 10 }],
   priceRange: { min: 5, max: 100 },

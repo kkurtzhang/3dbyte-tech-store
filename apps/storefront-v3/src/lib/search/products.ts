@@ -7,6 +7,11 @@
 
 import { searchClient, INDEX_PRODUCTS } from "@/lib/search/client"
 import { getProducts } from "@/lib/medusa/products"
+import {
+  getAvailableInBundleLinks,
+  isBundledProduct,
+  type BundleLink,
+} from "@/lib/medusa/bundles"
 import type { MeilisearchProductDocument } from "@3dbyte-tech-store/shared-types"
 
 // ============================================================================
@@ -47,6 +52,8 @@ export interface ProductSearchParams {
     maxDiscount?: number
     /** Dynamic product options (e.g., { colour: ["Black", "White"], size: ["S", "M"] }) */
     options?: Record<string, string[]>
+    /** Only show bundle products */
+    isBundle?: boolean
   }
 }
 
@@ -72,6 +79,9 @@ export interface ProductHit {
     handle: string
     logo?: string
   }
+  is_bundle?: boolean
+  available_in_bundles_count?: number
+  available_in_bundles?: BundleLink[]
   variants: Array<{
     id: string
     sku?: string
@@ -130,21 +140,23 @@ const FACETS_TO_REQUEST = [
   "brand.id",
   "category_ids",
   "collection_ids",
+  "is_bundle",
   "on_sale",
   "in_stock",
   "price_aud",
   // Note: options_* facets are dynamic and handled separately
 ]
 
-function isCollectionIdsNotFilterableError(error: unknown): boolean {
+function getUnsupportedFacet(error: unknown): string | null {
   const message = error instanceof Error ? error.message : String(error)
-  return /collection_ids/i.test(message) && /not filterable/i.test(message)
+  const unsupportedFacetMatch = message.match(/attribute [`"]?([a-z0-9_.]+)[`"]? is not filterable/i)
+  return unsupportedFacetMatch?.[1] ?? null
 }
 
-function buildFacetRequest(includeCollectionIds: boolean): string[] {
-  const staticFacets = includeCollectionIds
-    ? FACETS_TO_REQUEST
-    : FACETS_TO_REQUEST.filter((facet) => facet !== "collection_ids")
+function buildFacetRequest(excludedFacets: string[] = []): string[] {
+  const staticFacets = FACETS_TO_REQUEST.filter(
+    (facet) => !excludedFacets.includes(facet)
+  )
 
   return [...staticFacets, ...getOptionFacets()]
 }
@@ -188,6 +200,10 @@ function buildFilters(params: ProductSearchParams): string[] {
       .map((id) => `collection_ids = "${id}"`)
       .join(" OR ")
     filters.push(`(${collectionFilter})`)
+  }
+
+  if (f.isBundle !== undefined) {
+    filters.push(`is_bundle = ${f.isBundle}`)
   }
 
   // On sale filter
@@ -263,6 +279,13 @@ function calculateDiscountPercentage(
   return ((originalPrice - salePrice) / originalPrice) * 100
 }
 
+function deEmphasizeBundleRanking(products: ProductHit[]): ProductHit[] {
+  const standardProducts = products.filter((product) => !product.is_bundle)
+  const bundleProducts = products.filter((product) => product.is_bundle)
+
+  return [...standardProducts, ...bundleProducts]
+}
+
 // ============================================================================
 // Main Search Function
 // ============================================================================
@@ -299,21 +322,26 @@ export async function searchProducts(
     const offset = (page - 1) * limit
 
     let result
+    let excludedFacets: string[] = []
+
     try {
       result = await index.search<MeilisearchProductDocument>(query, {
         limit,
         offset,
         filter: filters.length > 0 ? filters.join(" AND ") : undefined,
         sort: sortArray,
-        facets: buildFacetRequest(true),
+        facets: buildFacetRequest(),
       })
     } catch (error) {
-      if (!isCollectionIdsNotFilterableError(error)) {
+      const unsupportedFacet = getUnsupportedFacet(error)
+
+      if (!unsupportedFacet || !FACETS_TO_REQUEST.includes(unsupportedFacet)) {
         throw error
       }
 
+      excludedFacets = [unsupportedFacet]
       console.warn(
-        "Meilisearch index does not expose filterable collection_ids; retrying search without collection_ids facet",
+        `Meilisearch index does not expose filterable ${unsupportedFacet}; retrying search without that facet`,
         error
       )
 
@@ -322,14 +350,19 @@ export async function searchProducts(
         offset,
         filter: filters.length > 0 ? filters.join(" AND ") : undefined,
         sort: sortArray,
-        facets: buildFacetRequest(false),
+        facets: buildFacetRequest(excludedFacets),
       })
     }
 
     // Transform hits to ProductHit format
-    const products: ProductHit[] = result.hits.map((hit) => {
+    const products = deEmphasizeBundleRanking(result.hits.map((hit) => {
       // original_price_aud may not be indexed, access with proper typing
-      const hitWithOriginalPrice = hit as typeof hit & { original_price_aud?: number }
+      const hitWithOriginalPrice = hit as typeof hit &
+        Record<string, unknown> & {
+          original_price_aud?: number
+          is_bundle?: boolean
+          available_in_bundles_count?: number
+        }
       const originalPriceAud = hitWithOriginalPrice.original_price_aud
       const discountPercentage = calculateDiscountPercentage(
         originalPriceAud,
@@ -349,9 +382,15 @@ export async function searchProducts(
         category_ids: hit.category_ids,
         categories: hit.categories,
         brand: hit.brand,
+        is_bundle: hitWithOriginalPrice.is_bundle === true,
+        available_in_bundles_count:
+          typeof hitWithOriginalPrice.available_in_bundles_count === "number"
+            ? hitWithOriginalPrice.available_in_bundles_count
+            : getAvailableInBundleLinks(hitWithOriginalPrice).length,
+        available_in_bundles: getAvailableInBundleLinks(hitWithOriginalPrice),
         variants: hit.variants,
       }
-    })
+    }))
 
     return {
       products,
@@ -391,7 +430,7 @@ async function searchWithDiscountFilter(
     })
 
     // Transform and filter products
-    let products: ProductHit[] = medusaResult.products
+    let products = deEmphasizeBundleRanking(medusaResult.products
       .map((p: any) => {
         const variant = p.variants?.[0]
         const calcPrice = variant?.calculated_price?.calculated_amount ?? variant?.prices?.[0]?.amount ?? 0
@@ -419,6 +458,9 @@ async function searchWithDiscountFilter(
           category_ids: p.categories?.map((c: any) => c.id) ?? [],
           categories: p.categories?.map((c: any) => c.name) ?? [],
           brand: p.brand,
+          is_bundle: isBundledProduct(p),
+          available_in_bundles_count: getAvailableInBundleLinks(p).length,
+          available_in_bundles: getAvailableInBundleLinks(p),
           variants:
             p.variants?.map((v: any) => ({
               id: v.id,
@@ -437,7 +479,7 @@ async function searchWithDiscountFilter(
         if (maxDiscount !== undefined && discount > maxDiscount) return false
 
         return true
-      })
+      }))
 
     // Apply pagination after filtering
     const totalCount = products.length
@@ -481,25 +523,29 @@ export async function getFacets(): Promise<FacetsResult> {
     const index = searchClient.index(INDEX_PRODUCTS)
 
     let result
+    let excludedFacets: string[] = []
 
     try {
       result = await index.search("", {
         limit: 0,
-        facets: buildFacetRequest(true),
+        facets: buildFacetRequest(),
       })
     } catch (error) {
-      if (!isCollectionIdsNotFilterableError(error)) {
+      const unsupportedFacet = getUnsupportedFacet(error)
+
+      if (!unsupportedFacet || !FACETS_TO_REQUEST.includes(unsupportedFacet)) {
         throw error
       }
 
+      excludedFacets = [unsupportedFacet]
       console.warn(
-        "Meilisearch index does not expose filterable collection_ids; retrying facets without collection_ids",
+        `Meilisearch index does not expose filterable ${unsupportedFacet}; retrying facets without that facet`,
         error
       )
 
       result = await index.search("", {
         limit: 0,
-        facets: buildFacetRequest(false),
+        facets: buildFacetRequest(excludedFacets),
       })
     }
 

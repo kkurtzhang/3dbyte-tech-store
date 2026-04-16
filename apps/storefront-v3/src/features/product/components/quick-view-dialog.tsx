@@ -173,15 +173,15 @@ export function QuickViewDialog({
     try {
       await addItem(selectedVariant.id, quantity)
       toast({
-        title: "Item_Acquired",
-        description: `${quantity}x ${product?.title} has been added to your system inventory.`,
+        title: "Added to cart",
+        description: `${quantity} × ${product?.title} has been added to your cart.`,
       })
       onOpenChange(false)
     } catch (err) {
       toast({
         variant: "destructive",
-        title: "Acquisition_Failed",
-        description: "Unable to add item. Please check system connection.",
+        title: "Unable to add to cart",
+        description: "Unable to add this item to your cart. Please try again.",
       })
     } finally {
       setIsAdding(false)

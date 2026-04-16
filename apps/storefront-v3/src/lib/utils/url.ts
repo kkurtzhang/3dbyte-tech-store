@@ -8,6 +8,7 @@ export interface ShopQueryParams {
   category?: string
   collection?: string
   brand?: string
+  bundle?: string
   onSale?: string
   inStock?: string
   minPrice?: string
@@ -43,6 +44,10 @@ export function buildShopQueryString(params: ShopQueryParams): string {
   // Brand (single value)
   if (params.brand) {
     searchParams.set("brand", params.brand)
+  }
+
+  if (params.bundle) {
+    searchParams.set("bundle", params.bundle)
   }
 
   // On sale (boolean as string)
@@ -94,6 +99,7 @@ export function parseShopQueryString(searchParams: URLSearchParams): ShopQueryPa
     category: searchParams.get("category") || undefined,
     collection: searchParams.get("collection") || undefined,
     brand: searchParams.get("brand") || undefined,
+    bundle: searchParams.get("bundle") || undefined,
     onSale: searchParams.get("onSale") || undefined,
     inStock: searchParams.get("inStock") || undefined,
     minPrice: searchParams.get("minPrice") || undefined,

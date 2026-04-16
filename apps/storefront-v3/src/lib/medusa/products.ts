@@ -1,6 +1,7 @@
 import { sdk } from "./client"
 import { searchClient, INDEX_PRODUCTS } from "@/lib/search/client"
 import type { MedusaProduct } from "./types"
+import { getBundleLink } from "./bundles"
 
 export async function getProducts(params: {
   page?: number
@@ -19,14 +20,14 @@ export async function getProducts(params: {
   try {
     const { page = 1, limit = 20, category_id, collection_id, q } = params
 
-      const { products: fetchedProducts, count: fetchedCount } = await sdk.store.product.list({
+    const { products: fetchedProducts, count: fetchedCount } = await sdk.store.product.list({
       limit,
       offset: (page - 1) * limit,
       category_id,
       collection_id,
       q,
       fields:
-        "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*variants.preorder_variant,*variants.preorder_variant.prices",
+        "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*variants.preorder_variant,*variants.preorder_variant.prices,*bundle",
     })
 
     products = fetchedProducts as any
@@ -126,7 +127,7 @@ export async function getProductByHandle(handle: string): Promise<MedusaProduct 
       handle,
       limit: 1,
       fields:
-        "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*variants.preorder_variant,*variants.preorder_variant.prices,*variants.images,*variants.calculated_price,*options,*options.values,*images,*type,*collection,*tags",
+        "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*variants.preorder_variant,*variants.preorder_variant.prices,*variants.images,*variants.calculated_price,*options,*options.values,*images,*type,*collection,*tags,*bundle",
     })
 
     if (products[0]) {
@@ -338,20 +339,10 @@ export async function getProductBundles(params: {
     const { products: fetchedProducts, count: fetchedCount } = await sdk.store.product.list({
       limit: 100, // Fetch more to filter for bundles
       offset: 0,
-      fields: "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*tags,*metadata",
+      fields: "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*tags,*metadata,*bundle",
     })
 
-    // Filter products that are bundles (tag contains "bundle" or metadata indicates bundle)
-    const bundleProducts = fetchedProducts.filter((product) => {
-      const tags = product.tags || []
-      const hasBundleTag = tags.some(
-        (tag) => tag.value?.toLowerCase().includes("bundle")
-      )
-      const metadata = product.metadata as Record<string, unknown> | null
-      const isBundleFromMetadata = metadata?.is_bundle === true
-      
-      return hasBundleTag || isBundleFromMetadata
-    })
+    const bundleProducts = fetchedProducts.filter((product) => getBundleLink(product) !== null)
 
     const offset = (page - 1) * limit
     products = bundleProducts.slice(offset, offset + limit) as any

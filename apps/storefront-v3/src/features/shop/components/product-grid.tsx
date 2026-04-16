@@ -22,6 +22,8 @@ export interface ProductLike {
   discountPercentage?: number;
   originalPrice?: number;
   salePrice?: number;
+  isBundle?: boolean;
+  availableInBundlesCount?: number;
 }
 
 export interface ProductGridProps {
@@ -113,6 +115,8 @@ export function ProductGrid({ products, className }: ProductGridProps) {
             }}
             originalPrice={originalPrice}
             discountPercentage={discountPercentage}
+            isBundle={product.isBundle}
+            availableInBundlesCount={product.availableInBundlesCount}
           />
         );
       })}

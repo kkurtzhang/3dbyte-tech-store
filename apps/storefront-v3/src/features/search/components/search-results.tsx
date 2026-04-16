@@ -2,6 +2,7 @@
 
 import { ProductCard } from "@/features/product/components/product-card"
 import { useSearch } from "@/lib/hooks/use-search"
+import { getProductPath } from "@/lib/medusa/bundles"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 
@@ -66,7 +67,12 @@ export function SearchResults({ initialHits, initialQuery = "" }: SearchResultsP
       case "Enter":
         e.preventDefault()
         if (focusedIndex >= 0 && hits[focusedIndex]) {
-          router.push(`/products/${hits[focusedIndex].handle}`)
+          router.push(
+            getProductPath(
+              hits[focusedIndex].handle,
+              hits[focusedIndex].isBundle === true
+            )
+          )
         }
         break
       case "Escape":
@@ -147,11 +153,11 @@ export function SearchResults({ initialHits, initialQuery = "" }: SearchResultsP
           role="option"
           aria-selected={focusedIndex === index}
           tabIndex={focusedIndex === index ? 0 : -1}
-          onClick={() => router.push(`/products/${hit.handle}`)}
+          onClick={() => router.push(getProductPath(hit.handle, hit.isBundle === true))}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault()
-              router.push(`/products/${hit.handle}`)
+              router.push(getProductPath(hit.handle, hit.isBundle === true))
             }
           }}
           className={`cursor-pointer transition-all duration-150 ${
@@ -169,6 +175,8 @@ export function SearchResults({ initialHits, initialQuery = "" }: SearchResultsP
             price={hit.price || { amount: 0, currency_code: "USD" }}
             originalPrice={hit.originalPrice}
             discountPercentage={hit.discountPercentage}
+            isBundle={hit.isBundle}
+            availableInBundlesCount={hit.availableInBundlesCount}
             specs={hit.specs}
           />
         </div>

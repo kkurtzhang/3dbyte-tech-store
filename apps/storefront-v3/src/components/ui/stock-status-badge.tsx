@@ -3,6 +3,8 @@ import { Badge } from "@/components/ui/badge"
 import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react"
 import { isPreorder } from "@/lib/util/is-preorder"
 
+const LOW_STOCK_THRESHOLD = 5
+
 export type StockStatus = "in-stock" | "low-stock" | "out-of-stock" | "preorder" | "unknown"
 
 export interface StockStatusResult {
@@ -42,7 +44,7 @@ export function getStockStatus(variant: MedusaProductVariant | undefined): Stock
 
   if (quantity === 0) {
     return { status: "out-of-stock", quantity: 0 }
-  } else if (quantity <= 10) {
+  } else if (quantity < LOW_STOCK_THRESHOLD) {
     return { status: "low-stock", quantity }
   } else {
     return { status: "in-stock", quantity }
@@ -57,7 +59,7 @@ interface StockStatusBadgeProps {
  * Displays a badge indicating the stock status of a product variant.
  *
  * - In Stock: Green badge with CheckCircle2 icon
- * - Low Stock (<=10): Yellow badge with AlertTriangle icon, shows count
+ * - Low Stock (<5): Yellow badge with AlertTriangle icon
  * - Out of Stock: Red/destructive badge with XCircle icon
  *
  * @param props - Component props
@@ -88,13 +90,10 @@ export function StockStatusBadge({ variant }: StockStatusBadgeProps) {
     return (
       <Badge
         variant="secondary"
-        className="gap-1.5 px-3 py-1.5 text-sm font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border-yellow-300 dark:border-yellow-700"
+        className="gap-1.5 border-yellow-300 bg-yellow-100 px-3 py-1.5 text-sm font-medium text-yellow-800 hover:bg-yellow-100 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 dark:hover:bg-yellow-900/30"
       >
         <AlertTriangle className="h-4 w-4" />
         Low Stock
-        {stockStatus.quantity !== null && (
-          <span className="text-xs opacity-75">({stockStatus.quantity} left)</span>
-        )}
       </Badge>
     )
   }
@@ -103,7 +102,7 @@ export function StockStatusBadge({ variant }: StockStatusBadgeProps) {
     return (
       <Badge
         variant="secondary"
-        className="gap-1.5 px-3 py-1.5 text-sm font-medium border-primary/30 bg-primary/10 text-primary"
+        className="gap-1.5 border-primary/30 bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/10"
       >
         <AlertTriangle className="h-4 w-4" />
         Pre-order
@@ -115,13 +114,10 @@ export function StockStatusBadge({ variant }: StockStatusBadgeProps) {
   return (
     <Badge
       variant="secondary"
-      className="gap-1.5 px-3 py-1.5 text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border-green-300 dark:border-green-700"
+      className="gap-1.5 border-green-300 bg-green-100 px-3 py-1.5 text-sm font-medium text-green-800 hover:bg-green-100 dark:border-green-700 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/30"
     >
       <CheckCircle2 className="h-4 w-4" />
       In Stock
-      {stockStatus.quantity !== null && stockStatus.quantity > 10 && (
-        <span className="text-xs opacity-75">({stockStatus.quantity} available)</span>
-      )}
     </Badge>
   )
 }

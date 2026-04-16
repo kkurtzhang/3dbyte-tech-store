@@ -15,6 +15,7 @@ export interface ProductHit {
   title: string
   thumbnail?: string
   price?: number
+  isBundle?: boolean
   specs?: {
     material?: string
     diameter?: string
@@ -68,11 +69,14 @@ export async function searchProducts(query: string, options: SearchOptions = {})
     const result = await index.search(query, {
       limit,
       filter: filter.length > 0 ? filter.join(" AND ") : undefined,
-      attributesToRetrieve: ["id", "handle", "title", "thumbnail", "price", "specs"],
+      attributesToRetrieve: ["id", "handle", "title", "thumbnail", "price", "specs", "is_bundle"],
     })
 
     return {
-      hits: result.hits as ProductHit[],
+      hits: (result.hits as Array<ProductHit & { is_bundle?: boolean }>).map((hit) => ({
+        ...hit,
+        isBundle: hit.isBundle ?? hit.is_bundle === true,
+      })),
       estimatedTotalHits: result.estimatedTotalHits,
     }
   } catch (error) {

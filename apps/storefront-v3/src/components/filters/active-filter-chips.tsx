@@ -7,6 +7,7 @@ export interface ActiveFilterChipsProps {
   selectedCategories: string[]
   selectedBrands: string[]
   selectedCollections: string[]
+  selectedBundleOnly: boolean
   selectedOnSale: boolean
   selectedInStock: boolean
   priceRange: { min: number; max: number }
@@ -19,6 +20,7 @@ export function ActiveFilterChips({
   selectedCategories,
   selectedBrands,
   selectedCollections,
+  selectedBundleOnly,
   selectedOnSale,
   selectedInStock,
   priceRange,
@@ -81,6 +83,18 @@ export function ActiveFilterChips({
           </span>
         )
       })}
+      {selectedBundleOnly && (
+        <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs">
+          Bundle Products
+          <button
+            onClick={() => onRemoveFilter("bundle")}
+            className="hover:text-primary ml-1"
+            aria-label="Remove bundle products filter"
+          >
+            ×
+          </button>
+        </span>
+      )}
       {selectedOnSale && (
         <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs">
           On Sale

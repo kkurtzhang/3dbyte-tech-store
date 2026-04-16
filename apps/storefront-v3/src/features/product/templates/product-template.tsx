@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator"
 import { useQueryState } from "nuqs"
 import { useRecentlyViewed } from "@/lib/hooks/use-recently-viewed"
 import type { MedusaProduct, MedusaProductVariant } from "@/lib/medusa/types"
+import type { BundleProduct } from "@/lib/medusa/bundles"
 
 interface VariantImageData {
   id: string
@@ -20,9 +21,17 @@ interface ProductTemplateProps {
   product: MedusaProduct
   richDescription?: string
   variantImageUrls?: string[]
+  bundleProduct?: BundleProduct | null
+  availableInBundles?: BundleProduct[]
 }
 
-export function ProductTemplate({ product, richDescription, variantImageUrls }: ProductTemplateProps) {
+export function ProductTemplate({
+  product,
+  richDescription,
+  variantImageUrls,
+  bundleProduct,
+  availableInBundles = [],
+}: ProductTemplateProps) {
   const [variantId, setVariantId] = useQueryState("variant", {
     shallow: false,
     history: "push",
@@ -117,6 +126,8 @@ export function ProductTemplate({ product, richDescription, variantImageUrls }: 
               onVariantChange={handleVariantChange}
               options={options}
               setOptions={setOptions}
+              bundleProduct={bundleProduct}
+              availableInBundles={availableInBundles}
            />
 
            <Separator />

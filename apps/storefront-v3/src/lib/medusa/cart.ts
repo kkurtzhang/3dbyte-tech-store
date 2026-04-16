@@ -1,6 +1,10 @@
 import { sdk } from "./client"
 import type { MedusaCart, MedusaCartLineItem, MedusaOrder } from "./types"
 export type { MedusaCart, MedusaCartLineItem } from "./types"
+export type BundleCartSelection = {
+  item_id: string
+  variant_id: string
+}
 
 export async function createCart(regionId?: string): Promise<MedusaCart> {
   const { cart } = await sdk.store.cart.create({
@@ -12,7 +16,7 @@ export async function createCart(regionId?: string): Promise<MedusaCart> {
 export async function getCart(cartId: string): Promise<MedusaCart> {
   const { cart } = await sdk.store.cart.retrieve(cartId, {
     fields:
-      "+items.*,+items.product,+items.variant,+items.variant.product,+items.variant.product.images,+items.variant.preorder_variant,+items.variant.preorder_variant.prices,+region,*promotions",
+      "+items.*,+items.metadata,+items.product,+items.variant,+items.variant.product,+items.variant.product.images,+items.variant.preorder_variant,+items.variant.preorder_variant.prices,+region,*promotions",
   })
   return cart
 }
@@ -84,6 +88,71 @@ export async function deleteLineItem({
 }): Promise<MedusaCart> {
   await sdk.store.cart.deleteLineItem(cartId, lineItemId)
   // Re-fetch the cart to get the updated state
+  return getCart(cartId)
+}
+
+export async function addBundleToCart({
+  cartId,
+  bundleId,
+  quantity,
+  items,
+}: {
+  cartId: string
+  bundleId: string
+  quantity: number
+  items: BundleCartSelection[]
+}): Promise<MedusaCart> {
+  await sdk.client.fetch<{ cart: MedusaCart }>(
+    `/store/carts/${cartId}/line-item-bundles`,
+    {
+      method: "POST",
+      body: {
+        bundle_id: bundleId,
+        quantity,
+        items,
+      },
+    }
+  )
+
+  return getCart(cartId)
+}
+
+export async function removeBundleFromCart({
+  cartId,
+  bundleId,
+}: {
+  cartId: string
+  bundleId: string
+}): Promise<MedusaCart> {
+  await sdk.client.fetch<{ cart: MedusaCart }>(
+    `/store/carts/${cartId}/line-item-bundles/${bundleId}`,
+    {
+      method: "DELETE",
+    }
+  )
+
+  return getCart(cartId)
+}
+
+export async function updateBundleInCart({
+  cartId,
+  bundleId,
+  quantity,
+}: {
+  cartId: string
+  bundleId: string
+  quantity: number
+}): Promise<MedusaCart> {
+  await sdk.client.fetch<{ cart: MedusaCart }>(
+    `/store/carts/${cartId}/line-item-bundles/${bundleId}`,
+    {
+      method: "PUT",
+      body: {
+        quantity,
+      },
+    }
+  )
+
   return getCart(cartId)
 }
 

@@ -1,8 +1,9 @@
 "use client"
 
-import { useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { ShoppingCart } from "lucide-react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -15,13 +16,18 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { useCart } from "@/context/cart-context"
 import { CartItem } from "./cart-item"
+import { BundleCartGroup } from "./bundle-cart-group"
+import { buildCartDisplayGroups, getCartDisplayItemCount } from "../lib/bundle-groups"
 
 export function CartSheet() {
   const { cart, isLoading } = useCart()
+  const pathname = usePathname()
+  const [open, setOpen] = useState(false)
+  const cartDisplayGroups = useMemo(() => buildCartDisplayGroups(cart?.items), [cart?.items])
 
   const itemCount = useMemo(() => {
-    return cart?.items?.reduce((acc, item) => acc + item.quantity, 0) || 0
-  }, [cart])
+    return getCartDisplayItemCount(cartDisplayGroups)
+  }, [cartDisplayGroups])
 
   const subtotal = useMemo(() => {
     if (!cart?.total) return 0
@@ -38,8 +44,12 @@ export function CartSheet() {
   // Assuming USD for now or fallback to first item currency
   const currencyCode = cart?.region?.currency_code || "usd"
 
+  useEffect(() => {
+    setOpen(false)
+  }, [pathname])
+
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <ShoppingCart className="h-5 w-5" />
@@ -53,7 +63,7 @@ export function CartSheet() {
       <SheetContent className="flex w-full flex-col pr-0 sm:max-w-md">
         <SheetHeader className="px-1">
           <SheetTitle className="font-mono uppercase tracking-wider">
-            System_Inventory ({itemCount})
+            Cart ({itemCount})
           </SheetTitle>
         </SheetHeader>
 
@@ -62,21 +72,27 @@ export function CartSheet() {
         <div className="flex-1 overflow-y-auto pr-6">
           {isLoading && !cart ? (
              <div className="flex h-full items-center justify-center text-sm text-muted-foreground font-mono">
-                Initializing_Module...
+                Loading cart...
              </div>
           ) : !cart || cart.items?.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center space-y-2">
               <ShoppingCart className="h-12 w-12 text-muted-foreground/50" />
-              <p className="text-sm font-medium text-muted-foreground">Inventory Empty</p>
+              <p className="text-sm font-medium text-muted-foreground">Your cart is empty</p>
               <p className="text-xs text-muted-foreground text-center max-w-[200px]">
-                Add components to your system to proceed with acquisition.
+                Add products to your cart to get started.
               </p>
             </div>
           ) : (
             <div className="flex flex-col divide-y">
-              {cart.items?.map((item) => (
-                <CartItem key={item.id} item={item} currencyCode={currencyCode} />
-              ))}
+              {cartDisplayGroups.map((group) =>
+                group.type === "bundle" ? (
+                  <div key={group.bundleId} className="py-3">
+                    <BundleCartGroup group={group} currencyCode={currencyCode} />
+                  </div>
+                ) : (
+                  <CartItem key={group.item.id} item={group.item} currencyCode={currencyCode} />
+                )
+              )}
             </div>
           )}
         </div>
@@ -91,7 +107,7 @@ export function CartSheet() {
               </span>
             </div>
             <p className="text-xs text-muted-foreground">
-               Taxes and shipping calculated at next step.
+               Taxes and shipping calculated at checkout.
             </p>
           </div>
           <SheetFooter>
@@ -100,9 +116,10 @@ export function CartSheet() {
                 size="lg"
                 asChild
                 disabled={!cart || cart.items?.length === 0}
+                onClick={() => setOpen(false)}
               >
                <Link href="/checkout">
-                Proceed_To_Checkout
+                Proceed to Checkout
                </Link>
              </Button>
           </SheetFooter>
