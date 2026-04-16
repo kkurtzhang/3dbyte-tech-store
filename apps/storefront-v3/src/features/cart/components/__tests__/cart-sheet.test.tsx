@@ -178,6 +178,43 @@ describe("CartSheet", () => {
     expect(screen.getByText("Cart Item")).toBeInTheDocument()
   })
 
+  it("shows compact preorder and bundle notices in the footer", () => {
+    mockUseCart.mockReturnValue({
+      isLoading: false,
+      cart: {
+        total: 200,
+        region: {
+          currency_code: "usd",
+        },
+        items: [
+          {
+            id: "line_1",
+            quantity: 1,
+            unit_price: 75,
+            metadata: {
+              bundle_id: "bundle_1",
+              bundle_title: "Starter Bundle",
+              bundle_quantity: 1,
+            },
+            variant: {
+              preorder_variant: {
+                status: "enabled",
+                available_date: "2999-01-01T00:00:00.000Z",
+                prices: [{ amount: 75, currency_code: "usd" }],
+              },
+            },
+          },
+        ],
+      },
+    })
+
+    render(<CartSheet />)
+    openCartSheet()
+
+    expect(screen.getByText(/Includes pre-order items/i)).toBeInTheDocument()
+    expect(screen.getByText(/1 bundle/i)).toBeInTheDocument()
+  })
+
   it("closes the cart sheet after navigating to checkout", () => {
     mockUseCart.mockReturnValue({
       isLoading: false,
