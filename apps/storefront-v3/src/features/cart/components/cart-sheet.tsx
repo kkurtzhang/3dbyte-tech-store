@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sheet"
 import { Separator } from "@/components/ui/separator"
 import { useCart } from "@/context/cart-context"
-import { getCompactCartNoticeLines } from "./cart-notices"
+import { CompactCartNoticeSummary } from "./cart-notices"
 import { CartItem } from "./cart-item"
 import { BundleCartGroup } from "./bundle-cart-group"
 import { buildCartDisplayGroups, getCartDisplayItemCount } from "../lib/bundle-groups"
@@ -44,10 +44,6 @@ export function CartSheet() {
 
   // Assuming USD for now or fallback to first item currency
   const currencyCode = cart?.region?.currency_code || "usd"
-  const compactNoticeLines = useMemo(
-    () => getCompactCartNoticeLines(cart?.items),
-    [cart?.items]
-  )
 
   useEffect(() => {
     setOpen(false)
@@ -111,11 +107,7 @@ export function CartSheet() {
                  {formatPrice(subtotal, currencyCode)}
               </span>
             </div>
-            {compactNoticeLines.map((line) => (
-              <p key={line} className="text-xs text-muted-foreground">
-                {line}
-              </p>
-            ))}
+            <CompactCartNoticeSummary items={cart?.items} currencyCode={currencyCode} />
             <p className="text-xs text-muted-foreground">
                Taxes and shipping calculated at checkout.
             </p>
