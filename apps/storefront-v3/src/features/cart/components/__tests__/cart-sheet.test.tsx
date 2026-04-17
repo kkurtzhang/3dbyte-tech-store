@@ -25,9 +25,6 @@ jest.mock("next/navigation", () => ({
 
 jest.mock("lucide-react", () => ({
   ShoppingCart: () => <span data-testid="shopping-cart-icon" />,
-  AlertTriangle: () => <span />,
-  Clock3: () => <span />,
-  Package: () => <span />,
 }))
 
 jest.mock("@/components/ui/button", () => ({
@@ -214,9 +211,8 @@ describe("CartSheet", () => {
     render(<CartSheet />)
     openCartSheet()
 
-    expect(screen.getByText("Cart Notes")).toBeInTheDocument()
-    expect(screen.getByText(/Pre-order arrival est\./i)).toBeInTheDocument()
-    expect(screen.getByText(/1 curated bundle in this cart/i)).toBeInTheDocument()
+    expect(screen.getByText(/Includes pre-order items/i)).toBeInTheDocument()
+    expect(screen.getByText(/1 bundle/i)).toBeInTheDocument()
   })
 
   it("closes the cart sheet after navigating to checkout", () => {

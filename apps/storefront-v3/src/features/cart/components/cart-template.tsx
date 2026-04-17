@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/cart-context";
 import { useSavedItems } from "@/context/saved-items-context";
 import { CartItem } from "./cart-item";
-import { CartNotices, CartPagePurchaseBanner } from "./cart-notices";
+import { CartNotices } from "./cart-notices";
 import { BundleCartGroup } from "./bundle-cart-group";
 import { buildCartDisplayGroups, getCartDisplayItemCount } from "../lib/bundle-groups";
 import {
@@ -184,8 +184,6 @@ export function CartTemplate() {
             <span className="text-muted-foreground text-lg font-normal">({itemCount} {itemCount === 1 ? 'item' : 'items'})</span>
           </h1>
         </div>
-
-        <CartPagePurchaseBanner items={cart.items} currencyCode={currencyCode} />
 
         <div className="rounded-lg border bg-card">
           <div className="divide-y p-1">
