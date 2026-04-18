@@ -52,8 +52,8 @@ export const POST = async (
     }
 
     const shipper = buildShipperAddress();
-    const recipient = buildRecipientAddress(shippingAddress);
-    const parcels = buildParcelsFromItems(order.items || []);
+    const recipient = buildRecipientAddress(shippingAddress as unknown as Record<string, unknown>);
+    const parcels = buildParcelsFromItems((order.items || []) as unknown as { variant?: { weight?: number }; quantity?: number }[]);
 
     const rateResponse = await karrioService.fetchRates({
       shipper,

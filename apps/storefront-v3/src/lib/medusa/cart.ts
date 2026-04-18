@@ -217,8 +217,7 @@ export async function getShippingOptions(cartId: string): Promise<any[]> {
       cart_id: cartId,
     })
     return shipping_options || []
-  } catch (error) {
-    console.error("Failed to fetch shipping options:", error)
+  } catch {
     return []
   }
 }

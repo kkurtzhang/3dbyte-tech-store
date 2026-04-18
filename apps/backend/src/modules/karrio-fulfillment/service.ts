@@ -91,9 +91,9 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
     }
 
     try {
-      const shipper = this.buildShipperAddress(context.from_location);
-      const recipient = this.buildRecipientAddress(shippingAddress);
-      const parcels = this.buildParcels(context.items || []);
+      const shipper = this.buildShipperAddress(context.from_location as any);
+      const recipient = this.buildRecipientAddress(shippingAddress as unknown as Record<string, unknown>);
+      const parcels = this.buildParcels((context.items || []) as unknown as Array<Partial<Record<string, unknown>>>);
 
       const carrierIds = optionData.carrier_id
         ? [optionData.carrier_id as string]
@@ -208,8 +208,11 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
 
   async createReturnFulfillment(
     fulfillment: Record<string, unknown>
-  ): Promise<Record<string, unknown>> {
-    return fulfillment;
+  ): Promise<CreateFulfillmentResult> {
+    return {
+      data: fulfillment,
+      labels: [],
+    };
   }
 
   private buildShipperAddress(

@@ -70,24 +70,22 @@ export const POST = async (
   try {
     const query = req.scope.resolve("query");
 
-    const { data: fulfillments } = await query.graph({
-      entity: "fulfillment",
-      fields: ["id", "data", "metadata"],
-      filters: {
-        data: {
-          tracking_number,
-        },
-      },
-    });
+    const fulfillmentModule = req.scope.resolve(Modules.FULFILLMENT);
+    const allFulfillments = await (fulfillmentModule as any).listFulfillments(
+      { provider_id: "karrio_karrio" },
+      { select: ["id", "data"] }
+    );
 
-    if (!fulfillments || fulfillments.length === 0) {
+    const matchedFulfillments = (allFulfillments || []).filter(
+      (f: any) => (f.data as Record<string, unknown>)?.tracking_number === tracking_number
+    );
+
+    if (matchedFulfillments.length === 0) {
       res.json({ received: true, matched: false });
       return;
     }
 
-    const fulfillmentModule = req.scope.resolve(Modules.FULFILLMENT);
-
-    for (const fulfillment of fulfillments) {
+    for (const fulfillment of matchedFulfillments) {
       const existingData = (fulfillment.data || {}) as Record<string, unknown>;
 
       const lastEventId = (existingData.last_karrio_event_id as string) || "";
