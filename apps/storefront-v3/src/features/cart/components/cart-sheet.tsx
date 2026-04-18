@@ -45,8 +45,8 @@ export function CartSheet() {
   // Assuming USD for now or fallback to first item currency
   const currencyCode = cart?.region?.currency_code || "usd"
   const compactNoticeLines = useMemo(
-    () => getCompactCartNoticeLines(cart?.items),
-    [cart?.items]
+    () => getCompactCartNoticeLines(cart?.items, currencyCode),
+    [cart?.items, currencyCode]
   )
 
   useEffect(() => {

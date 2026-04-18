@@ -120,4 +120,38 @@ describe("ReviewStep", () => {
       screen.getByText(/contains both in-stock and pre-order items/i)
     ).toBeInTheDocument()
   })
+
+  it("shows line-item variant titles when nested variant titles are default", () => {
+    render(
+      <ReviewStep
+        cartData={createCartData({
+          items: [
+            {
+              id: "line_1",
+              title: "Polymaker HT-PLA-GF",
+              quantity: 1,
+              unit_price: 1900,
+              metadata: null,
+              product: {
+                title: "Polymaker HT-PLA-GF",
+                thumbnail: "/single.jpg",
+              },
+              variant_title: "Power Tool Green",
+              subtitle: "Power Tool Green",
+              variant: {
+                title: "Default Title",
+              },
+            },
+          ],
+        })}
+        onBack={onBack}
+        onComplete={onComplete}
+      />
+    )
+
+    expect(
+      screen.getByText((_, element) => element?.textContent === "Polymaker HT-PLA-GF - Power Tool Green")
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/Default Title/i)).not.toBeInTheDocument()
+  })
 })

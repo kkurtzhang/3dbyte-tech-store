@@ -1,6 +1,7 @@
 import { CheckCircle2 } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 import { buildCartDisplayGroups } from "@/features/cart/lib/bundle-groups"
+import { getCartItemVariantTitle } from "@/features/cart/lib/variant-display"
 import { analyzeCartContents } from "@/lib/util/cart-analysis"
 import type { MedusaOrderLineItemWithPreorder } from "@/lib/medusa/types"
 import { cn } from "@/lib/utils"
@@ -79,7 +80,7 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
   const status = getOrderStatus(order)
   const currencyCode = order.currency_code || "USD"
   const orderDisplayGroups = buildCartDisplayGroups(order.items)
-  const orderAnalysis = analyzeCartContents(order.items)
+  const orderAnalysis = analyzeCartContents(order.items, currencyCode)
 
   const formatAvailabilityDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
@@ -98,6 +99,7 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
     const displayCurrency = preorderPrice?.currency_code || currencyCode
     const unitPrice = (preorderPrice?.amount ?? item.unit_price ?? 0) / 100
     const totalPrice = unitPrice * (item.quantity || 0)
+    const variantTitle = getCartItemVariantTitle(item)
 
     return (
       <div
@@ -106,12 +108,9 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
       >
         <div className="flex-1">
           <p className="text-sm font-medium">{item.title}</p>
-          {item.variant?.title &&
-            item.variant.title !== "Default" && (
-              <p className="text-xs text-muted-foreground">
-                {item.variant.title}
-              </p>
-            )}
+          {variantTitle ? (
+            <p className="text-xs text-muted-foreground">{variantTitle}</p>
+          ) : null}
           <p className="text-xs text-muted-foreground">
             Qty: {item.quantity}
           </p>

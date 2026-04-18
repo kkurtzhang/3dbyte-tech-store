@@ -3,7 +3,7 @@ import type { BundleCartGroup } from "@/features/cart/lib/bundle-groups"
 import type { MedusaCartLineItem } from "@/lib/medusa/cart"
 import type { MedusaPreorderVariant } from "@/lib/medusa/types"
 import { isPreorder } from "@/lib/util/is-preorder"
-import { resolveRegularPrice } from "@/lib/util/preorder-pricing"
+import { resolvePreorderPrice, resolveRegularPrice } from "@/lib/util/preorder-pricing"
 
 type PriceLike = {
   amount: number | null
@@ -41,7 +41,10 @@ export type CartAnalysis<TItem extends AnalyzableLineItem = MedusaCartLineItem> 
   bundleSavingsTotal: number
 }
 
-function getBundleSavings<TItem extends AnalyzableLineItem>(item: TItem) {
+function getBundleSavings<TItem extends AnalyzableLineItem>(
+  item: TItem,
+  currencyCode?: string
+) {
   const metadata = item.metadata as Record<string, unknown> | null | undefined
   const hasBundleMetadata =
     typeof metadata?.bundle_key === "string" || typeof metadata?.bundle_id === "string"
@@ -50,13 +53,16 @@ function getBundleSavings<TItem extends AnalyzableLineItem>(item: TItem) {
     return 0
   }
 
-  const regularPrice = resolveRegularPrice(item.variant)
-  if (!regularPrice) {
+  const baselinePrice = isPreorder(item.variant?.preorder_variant)
+    ? resolvePreorderPrice(item.variant, currencyCode)
+    : resolveRegularPrice(item.variant, currencyCode)
+
+  if (!baselinePrice) {
     return 0
   }
 
   const quantity = item.quantity ?? 0
-  const savingsPerUnit = regularPrice.amount - item.unit_price
+  const savingsPerUnit = baselinePrice.amount - item.unit_price
 
   if (savingsPerUnit <= 0 || quantity <= 0) {
     return 0
@@ -78,7 +84,8 @@ function getValidPreorderDate(preorderVariant: MedusaPreorderVariant | undefined
 }
 
 export function analyzeCartContents<TItem extends AnalyzableLineItem>(
-  items: TItem[] | null | undefined
+  items: TItem[] | null | undefined,
+  currencyCode?: string
 ): CartAnalysis<TItem> {
   const safeItems = items ?? []
   const preorderItems = safeItems.filter((item) => isPreorder(item.variant?.preorder_variant))
@@ -100,7 +107,7 @@ export function analyzeCartContents<TItem extends AnalyzableLineItem>(
     bundleGroups,
     earliestPreorderDate: preorderDates[0] ?? null,
     bundleSavingsTotal: safeItems.reduce(
-      (total, item) => total + getBundleSavings(item),
+      (total, item) => total + getBundleSavings(item, currencyCode),
       0
     ),
   }

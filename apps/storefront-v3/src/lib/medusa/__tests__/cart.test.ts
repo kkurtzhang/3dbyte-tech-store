@@ -23,7 +23,7 @@ describe("medusa cart helpers", () => {
 
     expect(sdk.store.cart.retrieve).toHaveBeenCalledWith("cart_1", {
       fields:
-        "+items.*,+items.product,+items.variant,+items.variant.product,+items.variant.product.images,+items.variant.preorder_variant,+items.variant.preorder_variant.prices,+region,*promotions",
+        "+items.*,+items.metadata,+items.product,+items.variant,+items.variant.product,+items.variant.product.images,*items.variant.preorder_variant,*items.variant.preorder_variant.prices,+region,*promotions",
     })
   })
 
@@ -49,7 +49,7 @@ describe("medusa cart helpers", () => {
     })
     expect(sdk.store.cart.retrieve).toHaveBeenCalledWith("cart_1", {
       fields:
-        "+items.*,+items.product,+items.variant,+items.variant.product,+items.variant.product.images,+items.variant.preorder_variant,+items.variant.preorder_variant.prices,+region,*promotions",
+        "+items.*,+items.metadata,+items.product,+items.variant,+items.variant.product,+items.variant.product.images,*items.variant.preorder_variant,*items.variant.preorder_variant.prices,+region,*promotions",
     })
   })
 

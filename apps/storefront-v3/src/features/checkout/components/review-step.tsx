@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Loader2, Package, CreditCard, MapPin } from "lucide-react"
 import { buildCartDisplayGroups } from "@/features/cart/lib/bundle-groups"
+import { getCartItemVariantTitle } from "@/features/cart/lib/variant-display"
 import { analyzeCartContents } from "@/lib/util/cart-analysis"
 import { isPreorder } from "@/lib/util/is-preorder"
 import { resolvePreorderPrice } from "@/lib/util/preorder-pricing"
@@ -77,7 +78,7 @@ export function ReviewStep({
   const email = cartData?.email
   const currencyCode = cartData?.currencyCode || "usd"
   const cartDisplayGroups = buildCartDisplayGroups(items)
-  const cartAnalysis = analyzeCartContents(items)
+  const cartAnalysis = analyzeCartContents(items, currencyCode)
 
   const formatPrice = (price?: number) => {
     if (typeof price !== "number") return "$0.00"
@@ -101,6 +102,7 @@ export function ReviewStep({
   ) => {
     const preorderPrice = resolvePreorderPrice(item.variant, currencyCode)
     const displayUnitPrice = preorderPrice?.amount ?? item.unit_price ?? 0
+    const variantTitle = getCartItemVariantTitle(item)
 
     return (
       <div key={key} className="p-4 flex gap-4">
@@ -116,8 +118,8 @@ export function ReviewStep({
         <div className="flex-1 min-w-0">
           <p className="font-medium truncate">
             {item.product?.title || item.title}
-            {item.variant?.title && item.variant.title !== "Default Title" && (
-              <span className="text-muted-foreground"> - {item.variant.title}</span>
+            {variantTitle && (
+              <span className="text-muted-foreground"> - {variantTitle}</span>
             )}
           </p>
           {isPreorder(item.variant?.preorder_variant) && (

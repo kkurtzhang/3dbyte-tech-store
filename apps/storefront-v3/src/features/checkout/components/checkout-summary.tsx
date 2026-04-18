@@ -5,6 +5,7 @@ import Image from "next/image"
 import type { MedusaCart } from "@/lib/medusa/cart"
 import { buildCartDisplayGroups } from "@/features/cart/lib/bundle-groups"
 import { analyzeCartContents } from "@/lib/util/cart-analysis"
+import { getCartItemVariantTitle } from "@/features/cart/lib/variant-display"
 import { isPreorder } from "@/lib/util/is-preorder"
 import type { MedusaCartLineItemWithPreorder } from "@/lib/medusa/types"
 import { resolvePreorderPrice } from "@/lib/util/preorder-pricing"
@@ -24,7 +25,7 @@ export function CheckoutSummary({ cart }: CheckoutSummaryProps) {
 
   const currencyCode = cart.region?.currency_code || "usd"
   const cartDisplayGroups = buildCartDisplayGroups(cart.items)
-  const cartAnalysis = analyzeCartContents(cart.items)
+  const cartAnalysis = analyzeCartContents(cart.items, currencyCode)
 
   const formatAvailabilityDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
@@ -41,6 +42,7 @@ export function CheckoutSummary({ cart }: CheckoutSummaryProps) {
     const preorderItem = item as MedusaCartLineItemWithPreorder
     const preorderPrice = resolvePreorderPrice(preorderItem.variant, currencyCode)
     const displayUnitPrice = preorderPrice?.amount ?? item.unit_price ?? 0
+    const variantTitle = getCartItemVariantTitle(item)
 
     return (
       <div key={keyPrefix ?? item.id} className="flex gap-4">
@@ -64,9 +66,7 @@ export function CheckoutSummary({ cart }: CheckoutSummaryProps) {
         </div>
         <div className="flex flex-1 flex-col justify-center">
           <h3 className="line-clamp-1 text-sm font-medium">{item.title}</h3>
-          <p className="text-xs text-muted-foreground">
-            {item.variant?.title !== "Default Variant" ? item.variant?.title : "Standard"}
-          </p>
+          <p className="text-xs text-muted-foreground">{variantTitle ?? "Standard"}</p>
           {isPreorder(preorderItem.variant?.preorder_variant) && (
             <div className="space-y-0.5 text-xs text-primary">
               <p>

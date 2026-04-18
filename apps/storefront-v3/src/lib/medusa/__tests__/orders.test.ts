@@ -18,7 +18,7 @@ describe("medusa order helpers", () => {
     await getOrder("order_1")
 
     expect(sdk.store.order.retrieve).toHaveBeenCalledWith("order_1", {
-      fields: "*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product,*items.variant.preorder_variant",
+      fields: "*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product,*items.variant.preorder_variant,*items.variant.preorder_variant.prices",
     })
   })
 })

@@ -135,6 +135,35 @@ describe("CheckoutSummary", () => {
     expect(screen.getByText("Large / Blue")).toBeInTheDocument()
   })
 
+  it("displays the line-item variant title when the nested variant title is default", () => {
+    const cart = createMockCart({
+      items: [
+        {
+          id: "item_1",
+          title: "Test Product",
+          quantity: 1,
+          unit_price: 1000,
+          variant_title: "Power Tool Green",
+          subtitle: "Power Tool Green",
+          variant: {
+            id: "variant_1",
+            title: "Default Variant",
+            product: {
+              id: "prod_1",
+              title: "Test Product",
+              thumbnail: "/test.jpg",
+            },
+          },
+        },
+      ],
+    })
+
+    render(<CheckoutSummary cart={cart} />)
+
+    expect(screen.getByText("Power Tool Green")).toBeInTheDocument()
+    expect(screen.queryByText("Standard")).not.toBeInTheDocument()
+  })
+
   it("shows preorder availability messaging", () => {
     const cart = createMockCart({
       items: [

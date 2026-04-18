@@ -99,4 +99,30 @@ describe("OrderSummary", () => {
       screen.getByText(/Some items in this order are pre-ordered/i)
     ).toBeInTheDocument()
   })
+
+  it("shows line-item variant titles when nested variant titles are default", () => {
+    render(
+      <OrderSummary
+        order={createOrder({
+          items: [
+            {
+              id: "item_1",
+              title: "Polymaker HT-PLA-GF",
+              quantity: 1,
+              unit_price: 1900,
+              variant_title: "Power Tool Green",
+              subtitle: "Power Tool Green",
+              variant: {
+                id: "variant_1",
+                title: "Default Variant",
+              },
+            },
+          ],
+        })}
+      />
+    )
+
+    expect(screen.getByText("Power Tool Green")).toBeInTheDocument()
+    expect(screen.queryByText(/Default Variant/i)).not.toBeInTheDocument()
+  })
 })

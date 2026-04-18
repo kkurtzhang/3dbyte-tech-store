@@ -191,4 +191,58 @@ describe("analyzeCartContents", () => {
     expect(result.bundleGroups).toHaveLength(1)
     expect(result.earliestPreorderDate?.toISOString()).toBe("2999-02-01T00:00:00.000Z")
   })
+
+  it("does not count preorder bundle pricing as bundle savings", () => {
+    const result = analyzeCartContents([
+      createLineItem({
+        id: "line_bundle_preorder",
+        unit_price: 800,
+        metadata: {
+          bundle_id: "bundle_preorder",
+          bundle_title: "Launch Bundle",
+          bundle_quantity: 1,
+        },
+        variant: {
+          id: "variant_bundle_preorder",
+          title: "Default Variant",
+          prices: [{ amount: 1200, currency_code: "usd" }],
+          preorder_variant: {
+            status: "enabled",
+            available_date: "2999-02-01T00:00:00.000Z",
+            prices: [{ amount: 800, currency_code: "usd" }],
+          },
+        },
+      }),
+    ])
+
+    expect(result.bundleSavingsTotal).toBe(0)
+  })
+
+  it("uses the requested currency when calculating bundle savings", () => {
+    const result = analyzeCartContents(
+      [
+        createLineItem({
+          id: "line_bundle_au",
+          quantity: 2,
+          unit_price: 1000,
+          metadata: {
+            bundle_id: "bundle_au",
+            bundle_title: "Australia Bundle",
+            bundle_quantity: 1,
+          },
+          variant: {
+            id: "variant_bundle_au",
+            title: "Default Variant",
+            prices: [
+              { amount: 600, currency_code: "usd" },
+              { amount: 1300, currency_code: "aud" },
+            ],
+          },
+        }),
+      ],
+      "aud"
+    )
+
+    expect(result.bundleSavingsTotal).toBe(600)
+  })
 })
