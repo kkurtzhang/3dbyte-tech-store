@@ -111,6 +111,34 @@ module.exports = defineConfig({
       },
     },
     {
+      resolve: "./src/modules/karrio",
+      options: {
+        apiUrl: process.env.KARRIO_API_URL || "http://localhost:5002",
+        apiKey: process.env.KARRIO_API_KEY || "",
+        testMode: process.env.KARRIO_TEST_MODE === "true",
+      },
+    },
+    {
+      resolve: "@medusajs/medusa/fulfillment",
+      options: {
+        providers: [
+          {
+            resolve: "@medusajs/medusa/fulfillment-manual",
+            id: "manual",
+          },
+          {
+            resolve: "./src/modules/karrio-fulfillment",
+            id: "karrio",
+            options: {
+              apiUrl: process.env.KARRIO_API_URL || "http://localhost:5002",
+              apiKey: process.env.KARRIO_API_KEY || "",
+              testMode: process.env.KARRIO_TEST_MODE === "true",
+            },
+          },
+        ],
+      },
+    },
+    {
       resolve: "@medusajs/payment",
       options: {
         providers: [

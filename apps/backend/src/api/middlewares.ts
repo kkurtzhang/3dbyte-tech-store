@@ -156,5 +156,19 @@ export default defineMiddlewares({
       methods: ["DELETE"],
       middlewares: [authenticate("customer", ["session", "bearer"])],
     },
+    {
+      matcher: "/admin/shipping-rates",
+      methods: ["POST"],
+      middlewares: [
+        authenticate("user", ["session", "bearer", "api-key"]),
+      ],
+    },
+    {
+      matcher: "/admin/fulfillments/:id/label",
+      methods: ["POST"],
+      middlewares: [
+        authenticate("user", ["session", "bearer", "api-key"]),
+      ],
+    },
   ],
 });

@@ -3,6 +3,7 @@
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
 import { updateCart, addShippingMethod, completePreorderCart, initiatePaymentSession, getCart, getShippingOptions } from "@/lib/medusa/cart"
+import { getLiveShippingRates, type ShippingRate } from "@/lib/medusa/shipping"
 import { z } from "zod"
 
 const CART_COOKIE = "_medusa_cart_id"
@@ -135,5 +136,25 @@ export async function completeCartAction() {
   } catch (error: any) {
     console.error("Complete cart error:", error)
     return { success: false, error: error.message || "Failed to complete order" }
+  }
+}
+
+export async function getLiveShippingRatesAction(): Promise<{
+  success: boolean
+  rates: ShippingRate[]
+  error?: string
+}> {
+  const cookieStore = await cookies()
+  const cartId = cookieStore.get(CART_COOKIE)?.value
+
+  if (!cartId) return { success: false, rates: [], error: "No cart found" }
+
+  try {
+    const response = await getLiveShippingRates(cartId)
+    return { success: true, rates: response.rates }
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Failed to fetch live rates"
+    return { success: false, rates: [], error: message }
   }
 }

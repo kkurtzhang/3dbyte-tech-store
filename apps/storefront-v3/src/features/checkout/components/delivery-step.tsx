@@ -6,7 +6,11 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Truck, Zap, Package, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { getShippingOptionsAction } from "@/app/actions/checkout"
+import {
+  getShippingOptionsAction,
+  getLiveShippingRatesAction,
+} from "@/app/actions/checkout"
+import type { ShippingRate } from "@/lib/medusa/shipping"
 
 interface DeliveryOption {
   id: string
@@ -21,42 +25,94 @@ interface DeliveryStepProps {
   onComplete: (methodId: string) => Promise<void> | void
 }
 
+function formatCarrierName(raw: string): string {
+  return raw.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+function buildLiveRateDescription(rate: ShippingRate): string {
+  const parts: string[] = []
+  if (rate.transit_days) {
+    parts.push(
+      `${rate.transit_days} business day${rate.transit_days > 1 ? "s" : ""}`
+    )
+  }
+  if (rate.estimated_delivery) {
+    parts.push(`Est. ${rate.estimated_delivery}`)
+  }
+  return parts.length > 0 ? parts.join(" \u00b7 ") : "Carrier-calculated rate"
+}
+
+function groupRatesByCarrier(
+  rates: ShippingRate[]
+): Record<string, ShippingRate[]> {
+  const groups: Record<string, ShippingRate[]> = {}
+  for (const rate of rates) {
+    const key = rate.carrier_name
+    const existing = groups[key] ?? []
+    groups[key] = [...existing, rate]
+  }
+  return groups
+}
+
 export function DeliveryStep({ onBack, onComplete }: DeliveryStepProps) {
   const [selectedId, setSelectedId] = useState<string>("")
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [options, setOptions] = useState<DeliveryOption[]>([])
+  const [liveRates, setLiveRates] = useState<ShippingRate[]>([])
+  const [isLoadingLiveRates, setIsLoadingLiveRates] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadOptions() {
       try {
         setIsLoading(true)
-        const result = await getShippingOptionsAction()
-        if (result.success && result.options.length > 0) {
-          // Transform Medusa shipping options to our format
-          const transformedOptions: DeliveryOption[] = result.options.map((opt: any) => ({
-            id: opt.id,
-            title: opt.name || opt.id,
-            description: opt.description || "Standard shipping",
-            price: opt.amount || 0,
-            icon: opt.amount && opt.amount > 1000 ? Zap : Truck,
-          }))
+        setIsLoadingLiveRates(true)
+
+        const [medusaResult, liveResult] = await Promise.all([
+          getShippingOptionsAction(),
+          getLiveShippingRatesAction(),
+        ])
+
+        // Process live Karrio rates
+        if (liveResult.success && liveResult.rates.length > 0) {
+          setLiveRates(liveResult.rates)
+          setSelectedId(liveResult.rates[0].id)
+        }
+
+        // Process Medusa flat-rate options as fallback
+        if (medusaResult.success && medusaResult.options.length > 0) {
+          const transformedOptions: DeliveryOption[] =
+            medusaResult.options.map((opt: Record<string, unknown>) => ({
+              id: opt.id as string,
+              title: (opt.name as string) || (opt.id as string),
+              description:
+                (opt.description as string) || "Standard shipping",
+              price: (opt.amount as number) || 0,
+              icon:
+                typeof opt.amount === "number" && opt.amount > 1000
+                  ? Zap
+                  : Truck,
+            }))
           setOptions(transformedOptions)
-          if (transformedOptions.length > 0) {
-            setSelectedId(transformedOptions[0].id)
+
+          // Only auto-select Medusa option if no live rates
+          if (!liveResult.success || liveResult.rates.length === 0) {
+            if (transformedOptions.length > 0) {
+              setSelectedId(transformedOptions[0].id)
+            }
           }
-        } else {
-          // Fallback to default options if no shipping options available
+        } else if (!liveResult.success || liveResult.rates.length === 0) {
+          // No live rates and no Medusa options -- use defaults
           setOptions(DEFAULT_OPTIONS)
           setSelectedId("standard")
         }
-      } catch (err) {
-        console.error("Failed to load shipping options:", err)
+      } catch {
         setOptions(DEFAULT_OPTIONS)
         setSelectedId("standard")
       } finally {
         setIsLoading(false)
+        setIsLoadingLiveRates(false)
       }
     }
     loadOptions()
@@ -68,12 +124,13 @@ export function DeliveryStep({ onBack, onComplete }: DeliveryStepProps) {
     setIsSubmitting(true)
     try {
       await onComplete(selectedId)
-    } catch (err) {
-      console.error(err)
     } finally {
       setIsSubmitting(false)
     }
   }
+
+  const carrierGroups = groupRatesByCarrier(liveRates)
+  const hasLiveRates = liveRates.length > 0
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -85,8 +142,13 @@ export function DeliveryStep({ onBack, onComplete }: DeliveryStepProps) {
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
+        <div className="flex flex-col items-center justify-center gap-3 py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          {isLoadingLiveRates && (
+            <p className="text-xs text-muted-foreground animate-pulse">
+              Fetching live rates from carriers...
+            </p>
+          )}
         </div>
       ) : error ? (
         <div className="rounded-md bg-destructive/10 p-4 text-sm text-destructive">
@@ -98,39 +160,56 @@ export function DeliveryStep({ onBack, onComplete }: DeliveryStepProps) {
           onValueChange={setSelectedId}
           className="grid gap-4"
         >
-          {options.map((option) => (
-            <div key={option.id}>
-              <RadioGroupItem
-                value={option.id}
-                id={option.id}
-                className="peer sr-only"
-              />
-              <Label
-                htmlFor={option.id}
-                className={cn(
-                  "flex items-center gap-4 rounded-lg border p-4 cursor-pointer transition-all",
-                  "hover:bg-muted/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-primary"
-                )}
-              >
-                <option.icon className="h-6 w-6 text-primary" />
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-mono font-bold text-sm uppercase">
-                      {option.title}
-                    </h3>
-                    <span className="font-mono text-sm">
-                      {option.price === 0
-                        ? "INCLUDED"
-                        : `$${(option.price / 100).toFixed(2)}`}
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {option.description}
+          {/* Live Karrio rates grouped by carrier */}
+          {hasLiveRates &&
+            Object.entries(carrierGroups).map(
+              ([carrierName, rates]) => (
+                <div key={carrierName} className="space-y-2">
+                  <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
+                    {formatCarrierName(carrierName)}
                   </p>
+                  {rates.map((rate) => (
+                    <LiveRateCard key={rate.id} rate={rate} />
+                  ))}
                 </div>
-              </Label>
-            </div>
-          ))}
+              )
+            )}
+
+          {/* Medusa flat-rate options (shown when no live rates, or as fallback section) */}
+          {!hasLiveRates &&
+            options.map((option) => (
+              <div key={option.id}>
+                <RadioGroupItem
+                  value={option.id}
+                  id={option.id}
+                  className="peer sr-only"
+                />
+                <Label
+                  htmlFor={option.id}
+                  className={cn(
+                    "flex items-center gap-4 rounded-lg border p-4 cursor-pointer transition-all",
+                    "hover:bg-muted/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-primary"
+                  )}
+                >
+                  <option.icon className="h-6 w-6 text-primary" />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-mono font-bold text-sm uppercase">
+                        {option.title}
+                      </h3>
+                      <span className="font-mono text-sm">
+                        {option.price === 0
+                          ? "INCLUDED"
+                          : `$${(option.price / 100).toFixed(2)}`}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {option.description}
+                    </p>
+                  </div>
+                </Label>
+              </div>
+            ))}
         </RadioGroup>
       )}
 
@@ -156,6 +235,42 @@ export function DeliveryStep({ onBack, onComplete }: DeliveryStepProps) {
   )
 }
 
+function LiveRateCard({ rate }: { rate: ShippingRate }) {
+  return (
+    <div>
+      <RadioGroupItem
+        value={rate.id}
+        id={rate.id}
+        className="peer sr-only"
+      />
+      <Label
+        htmlFor={rate.id}
+        className={cn(
+          "flex items-center gap-4 rounded-lg border p-4 cursor-pointer transition-all",
+          "hover:bg-muted/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-primary"
+        )}
+      >
+        <Truck className="h-6 w-6 text-primary" />
+        <div className="flex-1">
+          <div className="flex items-center justify-between">
+            <h3 className="font-mono font-bold text-sm uppercase">
+              {rate.service}
+            </h3>
+            <span className="font-mono text-sm">
+              {rate.total_charge === 0
+                ? "FREE"
+                : `$${rate.total_charge.toFixed(2)}`}
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            {buildLiveRateDescription(rate)}
+          </p>
+        </div>
+      </Label>
+    </div>
+  )
+}
+
 // Fallback options when Medusa API is not available
 const DEFAULT_OPTIONS: DeliveryOption[] = [
   {
@@ -169,14 +284,14 @@ const DEFAULT_OPTIONS: DeliveryOption[] = [
     id: "express",
     title: "Express Air",
     description: "1-2 business days. Priority handling.",
-    price: 1500, // $15.00
+    price: 1500,
     icon: Zap,
   },
   {
     id: "freight",
     title: "Heavy Freight",
     description: "5-7 business days. For bulk equipment.",
-    price: 5000, // $50.00
+    price: 5000,
     icon: Package,
   },
 ]
