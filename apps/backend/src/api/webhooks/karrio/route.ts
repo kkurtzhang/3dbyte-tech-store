@@ -1,5 +1,6 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { MedusaError, Modules } from "@medusajs/framework/utils";
+import { timingSafeEqual } from "crypto";
 
 interface KarrioWebhookPayload {
   event: string;
@@ -25,14 +26,25 @@ export const POST = async (
   res: MedusaResponse
 ): Promise<void> => {
   const webhookSecret = process.env.KARRIO_WEBHOOK_SECRET;
-  if (webhookSecret) {
-    const receivedSecret = req.headers["x-karrio-signature"] as string;
-    if (receivedSecret !== webhookSecret) {
-      throw new MedusaError(
-        MedusaError.Types.NOT_ALLOWED,
-        "Invalid webhook signature"
-      );
-    }
+  if (!webhookSecret) {
+    throw new MedusaError(
+      MedusaError.Types.NOT_ALLOWED,
+      "KARRIO_WEBHOOK_SECRET is not configured"
+    );
+  }
+
+  const receivedSecret = req.headers["x-karrio-signature"] as string;
+  if (
+    !receivedSecret ||
+    !timingSafeEqual(
+      Buffer.from(webhookSecret),
+      Buffer.from(receivedSecret)
+    )
+  ) {
+    throw new MedusaError(
+      MedusaError.Types.NOT_ALLOWED,
+      "Invalid webhook signature"
+    );
   }
 
   const payload = req.body as KarrioWebhookPayload;

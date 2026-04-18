@@ -2,10 +2,11 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { MedusaError } from "@medusajs/framework/utils";
 import { KARRIO_MODULE } from "../../../modules/karrio";
 import type KarrioModuleService from "../../../modules/karrio/service";
-import type { KarrioAddress, KarrioParcel } from "../../../modules/karrio/types";
-
-const DEFAULT_WEIGHT_KG = 0.5;
-const DEFAULT_DIMENSION_CM = 10;
+import {
+  buildShipperAddress,
+  buildRecipientAddress,
+  buildParcelsFromItems,
+} from "../../../modules/karrio/utils";
 
 export const POST = async (
   req: MedusaRequest,
@@ -48,44 +49,9 @@ export const POST = async (
       return;
     }
 
-    const shipper: KarrioAddress = {
-      person_name: process.env.STORE_SHIPPER_NAME || "3D Byte Tech",
-      address_line1: process.env.STORE_SHIPPER_ADDRESS || "",
-      city: process.env.STORE_SHIPPER_CITY || "",
-      state_code: process.env.STORE_SHIPPER_STATE || "",
-      postal_code: process.env.STORE_SHIPPER_POSTAL || "",
-      country_code: process.env.STORE_SHIPPER_COUNTRY || "AU",
-    };
-
-    const recipient: KarrioAddress = {
-      person_name: `${shippingAddress.first_name || ""} ${shippingAddress.last_name || ""}`.trim(),
-      address_line1: shippingAddress.address_1 || "",
-      address_line2: shippingAddress.address_2 || undefined,
-      city: shippingAddress.city || "",
-      state_code: shippingAddress.province || undefined,
-      postal_code: shippingAddress.postal_code || "",
-      country_code: shippingAddress.country_code || "",
-      phone_number: shippingAddress.phone || undefined,
-    };
-
-    const totalWeight = (cart.items || []).reduce(
-      (sum: number, item: Record<string, any>) => {
-        const weight = item.variant?.weight || DEFAULT_WEIGHT_KG;
-        return sum + weight * (item.quantity || 1);
-      },
-      0
-    );
-
-    const parcels: KarrioParcel[] = [
-      {
-        weight: totalWeight || DEFAULT_WEIGHT_KG,
-        weight_unit: "KG",
-        width: DEFAULT_DIMENSION_CM,
-        height: DEFAULT_DIMENSION_CM,
-        length: DEFAULT_DIMENSION_CM,
-        dimension_unit: "CM",
-      },
-    ];
+    const shipper = buildShipperAddress();
+    const recipient = buildRecipientAddress(shippingAddress);
+    const parcels = buildParcelsFromItems(cart.items || []);
 
     const rateResponse = await karrioService.fetchRates({
       shipper,

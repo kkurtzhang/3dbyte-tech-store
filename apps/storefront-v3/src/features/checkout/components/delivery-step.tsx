@@ -31,13 +31,13 @@ function formatCarrierName(raw: string): string {
 
 function buildLiveRateDescription(rate: ShippingRate): string {
   const parts: string[] = []
-  if (rate.transit_days) {
+  if (rate.transitDays) {
     parts.push(
-      `${rate.transit_days} business day${rate.transit_days > 1 ? "s" : ""}`
+      `${rate.transitDays} business day${rate.transitDays > 1 ? "s" : ""}`
     )
   }
-  if (rate.estimated_delivery) {
-    parts.push(`Est. ${rate.estimated_delivery}`)
+  if (rate.estimatedDeliveryDate) {
+    parts.push(`Est. ${rate.estimatedDeliveryDate}`)
   }
   return parts.length > 0 ? parts.join(" \u00b7 ") : "Carrier-calculated rate"
 }
@@ -47,7 +47,7 @@ function groupRatesByCarrier(
 ): Record<string, ShippingRate[]> {
   const groups: Record<string, ShippingRate[]> = {}
   for (const rate of rates) {
-    const key = rate.carrier_name
+    const key = rate.carrier.name
     const existing = groups[key] ?? []
     groups[key] = [...existing, rate]
   }
@@ -142,7 +142,7 @@ export function DeliveryStep({ onBack, onComplete }: DeliveryStepProps) {
       </div>
 
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center gap-3 py-12">
+        <div role="status" aria-live="polite" className="flex flex-col items-center justify-center gap-3 py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           {isLoadingLiveRates && (
             <p className="text-xs text-muted-foreground animate-pulse">
@@ -254,12 +254,12 @@ function LiveRateCard({ rate }: { rate: ShippingRate }) {
         <div className="flex-1">
           <div className="flex items-center justify-between">
             <h3 className="font-mono font-bold text-sm uppercase">
-              {rate.service}
+              {rate.serviceName || rate.service}
             </h3>
             <span className="font-mono text-sm">
-              {rate.total_charge === 0
+              {rate.totalCharge === 0
                 ? "FREE"
-                : `$${rate.total_charge.toFixed(2)}`}
+                : `$${(rate.totalCharge / 100).toFixed(2)}`}
             </span>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
