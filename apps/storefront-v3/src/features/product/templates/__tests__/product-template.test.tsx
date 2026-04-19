@@ -21,6 +21,14 @@ jest.mock("../../components/spec-sheet", () => ({
   SpecSheet: () => <div data-testid="spec-sheet" />,
 }))
 
+jest.mock("../../components/product-breadcrumbs", () => ({
+  ProductBreadcrumbs: () => <div data-testid="product-breadcrumbs" />,
+}))
+
+jest.mock("../../components/product-support-panel", () => ({
+  ProductSupportPanel: () => <div data-testid="product-support-panel" />,
+}))
+
 jest.mock("@/components/product/recently-viewed-products", () => ({
   RecentlyViewedProducts: () => <div data-testid="recently-viewed" />,
 }))
@@ -29,6 +37,11 @@ jest.mock("@/lib/hooks/use-recently-viewed", () => ({
   useRecentlyViewed: () => ({
     addToRecentlyViewed: jest.fn(),
   }),
+}))
+
+jest.mock("lucide-react", () => ({
+  ChevronLeft: () => <span />,
+  ChevronRight: () => <span />,
 }))
 
 function createProduct(): MedusaProduct {

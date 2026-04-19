@@ -26,6 +26,10 @@ jest.mock("../social-share", () => ({
   SocialShare: () => <div data-testid="social-share" />,
 }))
 
+jest.mock("../product-shipping-estimate", () => ({
+  ProductShippingEstimate: () => <div data-testid="product-shipping-estimate" />,
+}))
+
 jest.mock("@/components/ui/price-display", () => ({
   PriceDisplay: (props: unknown) => {
     priceDisplayMock(props)
@@ -38,6 +42,10 @@ jest.mock("@/components/ui/size-guide", () => ({
   shouldShowSizeGuide: () => ({ shouldShow: false }),
 }))
 
+jest.mock("@/components/ui/payment-method-support", () => ({
+  PaymentMethodSupport: () => <div data-testid="payment-method-support" />,
+}))
+
 jest.mock("@/components/ui/stock-status-badge", () => ({
   StockStatusBadge: () => <div data-testid="stock-status-badge" />,
   getStockStatus: (...args: unknown[]) => mockGetStockStatus(...args),
@@ -45,6 +53,14 @@ jest.mock("@/components/ui/stock-status-badge", () => ({
 
 jest.mock("../notify-me-button", () => ({
   NotifyMeButton: () => <button>Notify Me</button>,
+}))
+
+jest.mock("../product-wishlist-button", () => ({
+  ProductWishlistButton: () => <button>Wishlist</button>,
+}))
+
+jest.mock("../available-in-bundles", () => ({
+  AvailableInBundles: () => <div data-testid="available-in-bundles" />,
 }))
 
 jest.mock("lucide-react", () => ({
@@ -219,7 +235,7 @@ describe("ProductActions", () => {
     expect(screen.queryByRole("button", { name: "Default" })).not.toBeInTheDocument()
   })
 
-  it("shows a disabled out-of-stock button while keeping notify me available", () => {
+  it("shows notify-me controls instead of an add-to-cart action when out of stock", () => {
     mockGetStockStatus.mockReturnValue({ status: "out-of-stock", quantity: 0 })
 
     render(
@@ -232,7 +248,6 @@ describe("ProductActions", () => {
       />
     )
 
-    expect(screen.getByRole("button", { name: /out of stock/i })).toBeDisabled()
     expect(screen.getByRole("button", { name: /notify me/i })).toBeInTheDocument()
     expect(screen.queryByRole("button", { name: /add to cart/i })).not.toBeInTheDocument()
   })

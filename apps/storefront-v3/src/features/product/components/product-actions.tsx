@@ -170,14 +170,9 @@ export function ProductActions({
           </p>
         )}
         <div className="flex items-start gap-3 flex-wrap">
-<<<<<<< HEAD
           {isPreorderVariant && preorderPrice ? (
             <div className="space-y-3">
-              <PriceDisplay
-                price={preorderPrice}
-                label="Pre-order price"
-                size="lg"
-              />
+              <PriceDisplay price={preorderPrice} label="Pre-order price" size="lg" />
               {priceInfo && (priceInfo.originalPrice || priceInfo.price.amount !== preorderPrice.amount) && (
                 <div className="space-y-1">
                   <span className="block font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
@@ -202,17 +197,8 @@ export function ProductActions({
                 size="lg"
               />
             )
-            )}
-          <StockStatusBadge variant={selectedVariant} />
-=======
-          <PriceDisplay
-            price={priceInfo.price}
-            originalPrice={priceInfo.originalPrice}
-            discountPercentage={priceInfo.discountPercentage}
-            size="lg"
-          />
+          )}
           <StockStatusBadge variant={resolvedVariant} />
->>>>>>> 0984929 (fix(storefront): polish pdp shipping estimate and layout)
         </div>
         {isPreorderVariant && preorderAvailableDate && (
           <p className="mt-3 text-sm text-muted-foreground">
@@ -294,34 +280,23 @@ export function ProductActions({
           </div>
         ) : (
           <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3">
-<<<<<<< HEAD
             <div className="flex items-stretch gap-3">
               {quantitySelector}
               <Button
                   size="lg"
                   className="flex-1 font-mono text-lg h-14 uppercase tracking-widest"
-                  disabled={!selectedVariant || disabled || isAdding}
+                  disabled={!resolvedVariant || disabled || isAdding}
                   onClick={handleAddToCart}
               >
                 {isAdding
                   ? "Adding..."
-                  : selectedVariant
+                  : resolvedVariant
                     ? isPreorderVariant
                       ? "Pre-order now"
                       : "Add to Cart"
                     : "Select Options"}
               </Button>
             </div>
-=======
-            <Button
-                size="lg"
-                className="w-full font-mono text-lg h-14 uppercase tracking-widest"
-                disabled={!resolvedVariant || disabled || isAdding}
-                onClick={handleAddToCart}
-            >
-              {isAdding ? "Adding..." : resolvedVariant ? "Add to Cart" : "Select Options"}
-            </Button>
->>>>>>> 0984929 (fix(storefront): polish pdp shipping estimate and layout)
 
             <ProductWishlistButton item={wishlistItem} />
           </div>
