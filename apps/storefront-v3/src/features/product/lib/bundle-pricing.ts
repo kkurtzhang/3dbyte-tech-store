@@ -1,8 +1,9 @@
 import type { BundleProduct, BundleProductItem } from "@/lib/medusa/bundles"
 import type {
+  MedusaCurrencyAmount,
   MedusaProduct,
+  MedusaProductVariant,
   MedusaProductVariantWithPreorder,
-  StoreProductVariant,
 } from "@/lib/medusa/types"
 import { isPreorder } from "@/lib/util/is-preorder"
 
@@ -37,7 +38,8 @@ export function getVariantPriceSnapshot(
   variantId?: string
 ) {
   const variant = getVariantFromProduct(product, variantId) as
-    | (StoreProductVariant & {
+    | (MedusaProductVariant & {
+        prices?: MedusaCurrencyAmount[]
         calculated_price?: {
           calculated_amount?: number
           original_amount?: number

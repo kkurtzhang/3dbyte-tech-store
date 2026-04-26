@@ -35,6 +35,12 @@ export type PriceDisplayData = {
   label?: string
 }
 
+function hasAmountAndCurrency(
+  price: LooseVariantPrice | null | undefined
+): price is { amount: number; currency_code: string } {
+  return typeof price?.amount === "number" && typeof price?.currency_code === "string"
+}
+
 function calculateDiscountPercentage(originalPrice: number, discountedPrice: number): number | undefined {
   if (originalPrice <= 0 || discountedPrice < 0 || originalPrice <= discountedPrice) {
     return undefined
@@ -95,15 +101,11 @@ export function resolveRegularPrice(
   const activeCurrency = (currencyCode || getCurrencyCode(source)).toLowerCase()
   const originalAmount = source.calculated_price?.original_amount
   const calculatedAmount = source.calculated_price?.calculated_amount
-  const matchedVariantPrice = source.prices?.find(
-    (price) =>
-      typeof price?.currency_code === "string" &&
-      price.currency_code.toLowerCase() === activeCurrency &&
-      typeof price?.amount === "number"
+  const variantPrices = source.prices?.filter(hasAmountAndCurrency) ?? []
+  const matchedVariantPrice = variantPrices.find(
+    (price) => price.currency_code.toLowerCase() === activeCurrency
   )
-  const fallbackVariantPrice = source.prices?.find(
-    (price) => typeof price?.amount === "number" && typeof price?.currency_code === "string"
-  )
+  const fallbackVariantPrice = variantPrices[0]
 
   if (typeof originalAmount === "number") {
     return {
