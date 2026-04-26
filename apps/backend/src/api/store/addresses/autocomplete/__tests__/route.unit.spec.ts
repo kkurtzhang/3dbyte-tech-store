@@ -126,7 +126,7 @@ describe("GET /store/addresses/autocomplete", () => {
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({
       message: "Failed to search addresses",
-      error: "Meilisearch down",
+      error: "Address search is temporarily unavailable",
     });
   });
 });
