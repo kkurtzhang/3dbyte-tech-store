@@ -1,8 +1,5 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
-import type {
-  MeilisearchAddressDocument,
-  MeilisearchSearchResponse,
-} from "@3dbyte-tech-store/shared-types";
+import type { MeilisearchAddressDocument } from "@3dbyte-tech-store/shared-types";
 
 import type MeilisearchModuleService from "../../../../modules/meilisearch/service";
 import type { StoreAddressAutocompleteParamsType } from "./validators";
@@ -21,10 +18,15 @@ export async function GET(
 
   try {
     const filter = country ? [`country = "${country}"`] : undefined;
-    const results = (await meilisearchService.search(q, "address", {
-      limit,
-      filter,
-    })) as MeilisearchSearchResponse<MeilisearchAddressDocument>;
+    const results =
+      await meilisearchService.search<MeilisearchAddressDocument>(
+        q,
+        "address",
+        {
+          limit,
+          filter,
+        }
+      );
 
     res.json({
       addresses: results.hits,

@@ -4,6 +4,7 @@ import type {
   MeilisearchIndexSettings,
   MeilisearchIndexType,
   MeilisearchModuleConfig,
+  MeilisearchCategoryDocument,
   MeilisearchProductDocument,
   MeilisearchSearchResponse,
   MeilisearchSearchOptions,
@@ -223,11 +224,13 @@ export default class MeilisearchModuleService {
     return task;
   }
 
-  async search(
+  async search<
+    T = MeilisearchProductDocument | MeilisearchCategoryDocument,
+  >(
     query: string,
     type: MeilisearchIndexType = "product",
     options?: MeilisearchSearchOptions,
-  ): Promise<MeilisearchSearchResponse> {
+  ): Promise<MeilisearchSearchResponse<T>> {
     const index = await this.getIndex(type);
     const searchParams: Record<string, unknown> = {
       limit: options?.limit ?? 20,
@@ -247,7 +250,7 @@ export default class MeilisearchModuleService {
     const results = await index.search(query, searchParams);
 
     return {
-      hits: results.hits as unknown as MeilisearchProductDocument[],
+      hits: results.hits as unknown as T[],
       estimatedTotalHits: results.estimatedTotalHits ?? 0,
       limit: results.limit,
       offset: results.offset,
