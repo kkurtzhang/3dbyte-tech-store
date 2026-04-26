@@ -3,6 +3,7 @@ import type { MeilisearchAddressDocument } from "@3dbyte-tech-store/shared-types
 const BACKEND_URL = (
   process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
 ).replace(/\/$/, "")
+const PUBLISHABLE_API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
 
 export interface AddressSearchResult {
   addresses: MeilisearchAddressDocument[]
@@ -37,9 +38,14 @@ export async function searchAddresses(
   }
 
   try {
-    const response = await fetch(
-      `${BACKEND_URL}/store/addresses/autocomplete?${params.toString()}`
-    )
+    const url = `${BACKEND_URL}/store/addresses/autocomplete?${params.toString()}`
+    const response = PUBLISHABLE_API_KEY
+      ? await fetch(url, {
+          headers: {
+            "x-publishable-api-key": PUBLISHABLE_API_KEY,
+          },
+        })
+      : await fetch(url)
 
     if (!response.ok) {
       console.warn("Address search failed:", response.status)

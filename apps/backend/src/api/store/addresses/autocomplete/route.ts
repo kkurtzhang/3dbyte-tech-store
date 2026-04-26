@@ -1,6 +1,7 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import type { MeilisearchAddressDocument } from "@3dbyte-tech-store/shared-types";
 
+import { MEILISEARCH_MODULE } from "../../../../modules/meilisearch";
 import type MeilisearchModuleService from "../../../../modules/meilisearch/service";
 import type { StoreAddressAutocompleteParamsType } from "./validators";
 
@@ -12,7 +13,7 @@ export async function GET(
   res: MedusaResponse
 ): Promise<void> {
   const meilisearchService =
-    req.scope.resolve<MeilisearchModuleService>("meilisearchModuleService");
+    req.scope.resolve<MeilisearchModuleService>(MEILISEARCH_MODULE);
   const { q, limit, country } =
     req.validatedQuery as StoreAddressAutocompleteParamsType;
 

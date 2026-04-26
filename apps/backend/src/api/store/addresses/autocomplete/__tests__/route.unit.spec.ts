@@ -1,4 +1,5 @@
 import { GET } from "../route";
+import { MEILISEARCH_MODULE } from "../../../../../modules/meilisearch";
 import { StoreAddressAutocompleteParams } from "../validators";
 
 const address = {
@@ -69,7 +70,7 @@ describe("GET /store/addresses/autocomplete", () => {
 
     await GET(req as never, res as never);
 
-    expect(req.scope.resolve).toHaveBeenCalledWith("meilisearchModuleService");
+    expect(req.scope.resolve).toHaveBeenCalledWith(MEILISEARCH_MODULE);
     expect(search).toHaveBeenCalledWith("12 Main", "address", {
       limit: 5,
       filter: undefined,
