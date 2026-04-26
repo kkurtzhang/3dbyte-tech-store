@@ -22,6 +22,8 @@ import { discoverLatestDownloadUrl } from "../lib/address-pipeline/discover";
 import { ingestAddresses } from "../lib/address-pipeline/ingest";
 import type { AddressPipelineConfig } from "../lib/address-pipeline/types";
 
+const DEFAULT_ADDRESS_SYNC_BATCH_SIZE = 50_000;
+
 export default async function syncAddressesJob(
   container: MedusaContainer
 ): Promise<void> {
@@ -45,7 +47,9 @@ export default async function syncAddressesJob(
 
     // Step 2: Build pipeline config from environment
     const config: AddressPipelineConfig = {
-      batchSize: 5000,
+      batchSize: Number(
+        process.env.ADDRESS_SYNC_BATCH_SIZE || DEFAULT_ADDRESS_SYNC_BATCH_SIZE
+      ),
       tempIndexPrefix: "addresses_tmp_",
       meilisearchHost:
         process.env.MEILISEARCH_HOST || "http://localhost:7700",
