@@ -108,6 +108,7 @@ module.exports = defineConfig({
         categoryIndexName:
           process.env.MEILISEARCH_CATEGORY_INDEX_NAME || "categories",
         brandIndexName: process.env.MEILISEARCH_BRAND_INDEX_NAME || "brands",
+        addressIndexName: process.env.MEILISEARCH_ADDRESS_INDEX_NAME || "addresses",
       },
     },
     {

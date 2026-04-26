@@ -6,13 +6,14 @@
  */
 import type { MeiliSearch } from "meilisearch" with { "resolution-mode": "import" };
 export type MeilisearchClient = MeiliSearch;
-export type MeilisearchIndexType = "product" | "category" | "brand";
+export type MeilisearchIndexType = "product" | "category" | "brand" | "address";
 export interface MeilisearchModuleConfig {
     host: string;
     apiKey: string;
     productIndexName: string;
     categoryIndexName: string;
     brandIndexName: string;
+    addressIndexName: string;
     settings?: MeilisearchIndexSettings;
 }
 /**
@@ -70,12 +71,23 @@ export interface MeilisearchProductDocument {
     categories: string[];
     _tags: string[];
     collection_ids: string[];
+    available_in_bundles_count?: number;
+    available_in_bundles?: Array<{
+        id: string;
+        handle?: string;
+        title?: string;
+        thumbnail?: string;
+    }>;
     brand?: {
         id: string;
         name: string;
         handle: string;
         logo?: string;
     };
+    is_bundle: boolean;
+    bundle_id?: string;
+    bundle_item_count: number;
+    bundle_item_titles: string[];
     rich_description?: string;
     variants: Array<{
         id: string;
@@ -113,6 +125,22 @@ export interface MeilisearchBrandDocument {
     meta_keywords?: string[];
     product_count: number;
     created_at: number;
+}
+/**
+ * Address document for Meilisearch indexing
+ * Sourced from OpenAddresses (G-NAF countrywide for AU, LINZ for NZ)
+ * Fields map directly to the OpenAddresses CSV flat format
+ */
+export interface MeilisearchAddressDocument {
+    id: string;
+    full_address: string;
+    unit: string;
+    number: string;
+    street: string;
+    suburb: string;
+    state: string;
+    postcode: string;
+    country: string;
 }
 export interface MeilisearchSearchOptions {
     limit?: number;
@@ -199,6 +227,20 @@ export interface SyncProductsStepProduct {
         name: string;
         handle: string;
     } | null;
+    bundle?: SyncProductsStepBundle | SyncProductsStepBundle[] | null;
+}
+export interface SyncProductsStepBundle {
+    id: string;
+    title?: string | null;
+    items?: Array<{
+        id: string;
+        quantity: number;
+        product?: {
+            id: string;
+            title?: string | null;
+            handle?: string | null;
+        } | null;
+    }> | null;
 }
 /**
  * Strapi product description response

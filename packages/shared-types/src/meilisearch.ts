@@ -9,7 +9,7 @@ import type { MeiliSearch } from "meilisearch" with { "resolution-mode": "import
 
 export type MeilisearchClient = MeiliSearch;
 
-export type MeilisearchIndexType = "product" | "category" | "brand";
+export type MeilisearchIndexType = "product" | "category" | "brand" | "address";
 
 export interface MeilisearchModuleConfig {
   host: string;
@@ -17,6 +17,7 @@ export interface MeilisearchModuleConfig {
   productIndexName: string;
   categoryIndexName: string;
   brandIndexName: string;
+  addressIndexName: string;
   settings?: MeilisearchIndexSettings;
 }
 
@@ -91,7 +92,6 @@ export interface MeilisearchProductDocument {
   categories: string[];
   _tags: string[]; // Flattened tag values (not original tags object)
   collection_ids: string[];
-  is_bundle?: boolean;
   available_in_bundles_count?: number;
   available_in_bundles?: Array<{
     id: string;
@@ -155,6 +155,23 @@ export interface MeilisearchBrandDocument {
   // Calculated
   product_count: number;
   created_at: number; // UNIX timestamp in milliseconds
+}
+
+/**
+ * Address document for Meilisearch indexing
+ * Sourced from OpenAddresses (G-NAF countrywide for AU, LINZ for NZ)
+ * Fields map directly to the OpenAddresses CSV flat format
+ */
+export interface MeilisearchAddressDocument {
+  id: string;
+  full_address: string;
+  unit: string;
+  number: string;
+  street: string;
+  suburb: string;   // OpenAddresses "CITY" field = AU suburb
+  state: string;    // OpenAddresses "REGION" field = AU state abbreviation
+  postcode: string;
+  country: string;  // "AU" or "NZ"
 }
 
 export interface MeilisearchSearchOptions {

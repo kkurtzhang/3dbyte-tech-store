@@ -121,11 +121,12 @@ export default class MeilisearchModuleService {
       !options.apiKey ||
       !options.productIndexName ||
       !options.categoryIndexName ||
-      !options.brandIndexName
+      !options.brandIndexName ||
+      !options.addressIndexName
     ) {
       throw new MedusaError(
         MedusaError.Types.INVALID_ARGUMENT,
-        "Meilisearch options are required (host, apiKey, productIndexName, categoryIndexName, brandIndexName)",
+        "Meilisearch options are required (host, apiKey, productIndexName, categoryIndexName, brandIndexName, addressIndexName)",
       );
     }
 
@@ -148,6 +149,8 @@ export default class MeilisearchModuleService {
         return this.options_.categoryIndexName;
       case "brand":
         return this.options_.brandIndexName;
+      case "address":
+        return this.options_.addressIndexName;
       default:
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
@@ -474,5 +477,77 @@ export const BRAND_INDEX_SETTINGS: MeilisearchIndexSettings = {
   },
   pagination: {
     maxTotalHits: 10000,
+  },
+};
+
+/**
+ * Address index settings for Meilisearch
+ * Optimized for type-ahead autocomplete during checkout
+ */
+export const ADDRESS_INDEX_SETTINGS: MeilisearchIndexSettings = {
+  // 1. SEARCHABLE
+  // Primary: full composed address for broad matching
+  // Secondary: individual fields for specific queries (e.g., postcode-first)
+  searchableAttributes: [
+    "full_address",
+    "street",
+    "suburb",
+    "postcode",
+    "number",
+  ],
+
+  // 2. FILTERABLE
+  // Allow filtering by state/country to scope results
+  filterableAttributes: [
+    "state",
+    "postcode",
+    "country",
+  ],
+
+  // 3. SORTABLE
+  // Addresses are not typically sorted by the user
+  sortableAttributes: [],
+
+  // 4. RANKING RULES
+  // Prioritize exact matches and word proximity for address autocomplete
+  rankingRules: [
+    "words",
+    "typo",
+    "proximity",
+    "attribute",
+    "sort",
+    "exactness",
+  ],
+
+  // 5. DISPLAYED
+  // Return all fields needed for auto-filling the checkout form
+  // Exclude lat/lon to reduce payload size
+  displayedAttributes: [
+    "id",
+    "full_address",
+    "unit",
+    "number",
+    "street",
+    "suburb",
+    "state",
+    "postcode",
+    "country",
+  ],
+
+  // 6. TYPO TOLERANCE
+  // Be generous with typos for address autocomplete
+  typoTolerance: {
+    minWordSizeForTypos: {
+      oneTypo: 3,
+      twoTypos: 6,
+    },
+  },
+
+  // 7. FACETING & PAGINATION
+  faceting: {
+    maxValuesPerFacet: 20,
+  },
+  pagination: {
+    maxTotalHits: 100, // Autocomplete never needs deep pagination
   },
 };
