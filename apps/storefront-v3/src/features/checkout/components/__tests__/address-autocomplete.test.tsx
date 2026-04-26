@@ -7,6 +7,10 @@ jest.mock("@/lib/search/addresses", () => ({
   searchAddresses: jest.fn(),
 }))
 
+const mockSearchAddresses = searchAddresses as jest.MockedFunction<
+  typeof searchAddresses
+>
+
 const address = {
   id: "addr_1",
   full_address: "12 Main Street, Sydney, NSW, 2000",
@@ -55,7 +59,7 @@ describe("AddressAutocomplete", () => {
   })
 
   it("shows results after a debounced search", async () => {
-    ;(searchAddresses as jest.Mock).mockResolvedValue({
+    mockSearchAddresses.mockResolvedValue({
       addresses: [address],
       count: 1,
       processingTimeMs: 4,
@@ -72,7 +76,7 @@ describe("AddressAutocomplete", () => {
 
   it("calls onSelect when an address is clicked", async () => {
     const onSelect = jest.fn()
-    ;(searchAddresses as jest.Mock).mockResolvedValue({
+    mockSearchAddresses.mockResolvedValue({
       addresses: [address],
       count: 1,
       processingTimeMs: 4,
@@ -92,7 +96,7 @@ describe("AddressAutocomplete", () => {
 
   it("selects the highlighted result with Enter", async () => {
     const onSelect = jest.fn()
-    ;(searchAddresses as jest.Mock).mockResolvedValue({
+    mockSearchAddresses.mockResolvedValue({
       addresses: [address],
       count: 1,
       processingTimeMs: 4,
@@ -110,7 +114,7 @@ describe("AddressAutocomplete", () => {
   })
 
   it("shows an empty state for no results", async () => {
-    ;(searchAddresses as jest.Mock).mockResolvedValue({
+    mockSearchAddresses.mockResolvedValue({
       addresses: [],
       count: 0,
       processingTimeMs: 1,
@@ -128,7 +132,7 @@ describe("AddressAutocomplete", () => {
   })
 
   it("closes the dropdown on Escape", async () => {
-    ;(searchAddresses as jest.Mock).mockResolvedValue({
+    mockSearchAddresses.mockResolvedValue({
       addresses: [address],
       count: 1,
       processingTimeMs: 4,

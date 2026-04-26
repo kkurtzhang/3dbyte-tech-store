@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -33,6 +33,7 @@ type AddressFormData = z.infer<typeof addressSchema>
 
 interface AddressStepProps {
   defaultValues?: Partial<AddressFormData>
+  // eslint-disable-next-line no-unused-vars
   onComplete: (data: AddressFormData) => Promise<void> | void
 }
 

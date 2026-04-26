@@ -10,7 +10,9 @@ import { searchAddresses } from "@/lib/search/addresses"
 import { cn } from "@/lib/utils"
 
 interface AddressAutocompleteProps {
+  // eslint-disable-next-line no-unused-vars
   onSelect: (address: MeilisearchAddressDocument) => void
+  // eslint-disable-next-line no-unused-vars
   onValueChange?: (value: string) => void
   defaultValue?: string
   error?: string

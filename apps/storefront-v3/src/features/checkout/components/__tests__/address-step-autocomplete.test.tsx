@@ -12,6 +12,13 @@ jest.mock("@/lib/search/addresses", () => ({
   searchAddresses: jest.fn(),
 }))
 
+const mockGetAddressesAction = getAddressesAction as jest.MockedFunction<
+  typeof getAddressesAction
+>
+const mockSearchAddresses = searchAddresses as jest.MockedFunction<
+  typeof searchAddresses
+>
+
 jest.mock("lucide-react", () => ({
   Home: () => <span data-testid="home-icon" />,
   MapPin: () => <span data-testid="map-pin-icon" />,
@@ -41,7 +48,7 @@ describe("AddressStep address autocomplete", () => {
   beforeEach(() => {
     jest.useFakeTimers()
     jest.clearAllMocks()
-    ;(getAddressesAction as jest.Mock).mockResolvedValue({
+    mockGetAddressesAction.mockResolvedValue({
       success: true,
       addresses: [],
     })
@@ -52,7 +59,7 @@ describe("AddressStep address autocomplete", () => {
   })
 
   it("auto-fills address fields when a suggestion is selected", async () => {
-    ;(searchAddresses as jest.Mock).mockResolvedValue({
+    mockSearchAddresses.mockResolvedValue({
       addresses: [address],
       count: 1,
       processingTimeMs: 4,

@@ -32,7 +32,8 @@ describe("searchAddresses", () => {
   })
 
   it("returns parsed address results for a valid query", async () => {
-    ;(global.fetch as jest.Mock).mockResolvedValue({
+    const fetchMock = global.fetch as jest.Mock
+    fetchMock.mockResolvedValue({
       ok: true,
       json: jest.fn().mockResolvedValue({
         addresses: [address],
@@ -50,7 +51,8 @@ describe("searchAddresses", () => {
   })
 
   it("passes the country filter when provided", async () => {
-    ;(global.fetch as jest.Mock).mockResolvedValue({
+    const fetchMock = global.fetch as jest.Mock
+    fetchMock.mockResolvedValue({
       ok: true,
       json: jest.fn().mockResolvedValue({
         addresses: [address],
@@ -68,7 +70,8 @@ describe("searchAddresses", () => {
 
   it("returns empty results when the API fails", async () => {
     jest.spyOn(console, "warn").mockImplementation(() => undefined)
-    ;(global.fetch as jest.Mock).mockResolvedValue({
+    const fetchMock = global.fetch as jest.Mock
+    fetchMock.mockResolvedValue({
       ok: false,
       status: 500,
     })
