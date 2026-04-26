@@ -7,7 +7,7 @@ describe("s3ToHttps", () => {
     const result = s3ToHttps(s3Url);
 
     expect(result).toBe(
-      "https://v2.openaddresses.io.s3.amazonaws.com/batch-prod/job/819507/source.geojson.gz"
+      "https://v2.openaddresses.io/batch-prod/job/819507/source.geojson.gz"
     );
   });
 
@@ -15,7 +15,7 @@ describe("s3ToHttps", () => {
     const result = s3ToHttps("s3://my-bucket/path/to/file.txt");
 
     expect(result).toBe(
-      "https://my-bucket.s3.amazonaws.com/path/to/file.txt"
+      "https://my-bucket/path/to/file.txt"
     );
   });
 
@@ -40,10 +40,10 @@ describe("validateDownloadUrl", () => {
   it("allows HTTPS download URLs", () => {
     expect(
       validateDownloadUrl(
-        "https://v2.openaddresses.io.s3.amazonaws.com/batch/source.geojson.gz"
+        "https://v2.openaddresses.io/batch/source.geojson.gz"
       )
     ).toBe(
-      "https://v2.openaddresses.io.s3.amazonaws.com/batch/source.geojson.gz"
+      "https://v2.openaddresses.io/batch/source.geojson.gz"
     );
   });
 

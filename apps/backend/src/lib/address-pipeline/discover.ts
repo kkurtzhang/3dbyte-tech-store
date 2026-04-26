@@ -21,7 +21,7 @@ const OA_DATA_API =
  *
  * @example
  *   s3://v2.openaddresses.io/batch-prod/job/819507/source.geojson.gz
- *   → https://v2.openaddresses.io.s3.amazonaws.com/batch-prod/job/819507/source.geojson.gz
+ *   → https://v2.openaddresses.io/batch-prod/job/819507/source.geojson.gz
  */
 export function s3ToHttps(s3Url: string): string {
   const match = s3Url.match(/^s3:\/\/([^/]+)\/(.+)$/);
@@ -29,7 +29,7 @@ export function s3ToHttps(s3Url: string): string {
     throw new Error(`Invalid S3 URL format: ${s3Url}`);
   }
   const [, bucket, key] = match;
-  return validateDownloadUrl(`https://${bucket}.s3.amazonaws.com/${key}`);
+  return validateDownloadUrl(`https://${bucket}/${key}`);
 }
 
 /**
