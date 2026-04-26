@@ -19,6 +19,13 @@ const address = {
   country: "AU",
 }
 
+async function flushDebounce() {
+  await act(async () => {
+    jest.advanceTimersByTime(300)
+    await Promise.resolve()
+  })
+}
+
 describe("AddressAutocomplete", () => {
   beforeEach(() => {
     jest.useFakeTimers()
@@ -26,7 +33,6 @@ describe("AddressAutocomplete", () => {
   })
 
   afterEach(() => {
-    jest.runOnlyPendingTimers()
     jest.useRealTimers()
   })
 
@@ -37,15 +43,13 @@ describe("AddressAutocomplete", () => {
     expect(screen.queryByRole("listbox")).not.toBeInTheDocument()
   })
 
-  it("does not search before 3 characters", () => {
+  it("does not search before 3 characters", async () => {
     render(<AddressAutocomplete onSelect={jest.fn()} />)
 
     fireEvent.change(screen.getByRole("combobox", { name: /address/i }), {
       target: { value: "12" },
     })
-    act(() => {
-      jest.advanceTimersByTime(300)
-    })
+    await flushDebounce()
 
     expect(searchAddresses).not.toHaveBeenCalled()
   })
@@ -61,9 +65,7 @@ describe("AddressAutocomplete", () => {
     fireEvent.change(screen.getByRole("combobox", { name: /address/i }), {
       target: { value: "12 Main" },
     })
-    act(() => {
-      jest.advanceTimersByTime(300)
-    })
+    await flushDebounce()
 
     expect(await screen.findByRole("option", { name: address.full_address })).toBeInTheDocument()
   })
@@ -80,9 +82,7 @@ describe("AddressAutocomplete", () => {
     fireEvent.change(screen.getByRole("combobox", { name: /address/i }), {
       target: { value: "12 Main" },
     })
-    act(() => {
-      jest.advanceTimersByTime(300)
-    })
+    await flushDebounce()
 
     fireEvent.click(await screen.findByRole("option", { name: address.full_address }))
 
@@ -101,9 +101,7 @@ describe("AddressAutocomplete", () => {
     const input = screen.getByRole("combobox", { name: /address/i })
 
     fireEvent.change(input, { target: { value: "12 Main" } })
-    act(() => {
-      jest.advanceTimersByTime(300)
-    })
+    await flushDebounce()
     await screen.findByRole("option", { name: address.full_address })
     fireEvent.keyDown(input, { key: "ArrowDown" })
     fireEvent.keyDown(input, { key: "Enter" })
@@ -122,9 +120,7 @@ describe("AddressAutocomplete", () => {
     fireEvent.change(screen.getByRole("combobox", { name: /address/i }), {
       target: { value: "zzzz" },
     })
-    act(() => {
-      jest.advanceTimersByTime(300)
-    })
+    await flushDebounce()
 
     await waitFor(() => {
       expect(screen.getByText("No addresses found")).toBeInTheDocument()
@@ -141,9 +137,7 @@ describe("AddressAutocomplete", () => {
     const input = screen.getByRole("combobox", { name: /address/i })
 
     fireEvent.change(input, { target: { value: "12 Main" } })
-    act(() => {
-      jest.advanceTimersByTime(300)
-    })
+    await flushDebounce()
     await screen.findByRole("listbox")
     fireEvent.keyDown(input, { key: "Escape" })
 

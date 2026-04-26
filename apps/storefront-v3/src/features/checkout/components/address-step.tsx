@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
+import type { MeilisearchAddressDocument } from "@3dbyte-tech-store/shared-types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,6 +15,7 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { MapPin, Plus, Home } from "lucide-react"
 import { getAddressesAction, CustomerAddress } from "@/app/actions/auth"
+import { AddressAutocomplete } from "./address-autocomplete"
 
 const addressSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -85,6 +87,30 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
   const handleAddressSelect = (addressId: string) => {
     setSelectedAddressId(addressId)
     setUseSavedAddress(true)
+  }
+
+  const handleAutocompleteValueChange = (value: string) => {
+    setValue("address_1", value, { shouldValidate: true, shouldDirty: true })
+  }
+
+  const handleAutocompleteSelect = (address: MeilisearchAddressDocument) => {
+    setValue("address_1", `${address.number} ${address.street}`.trim(), {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+    setValue("address_2", address.unit || "", {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+    setValue("city", address.suburb, { shouldValidate: true, shouldDirty: true })
+    setValue("postal_code", address.postcode, {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+    setValue("country_code", address.country.toLowerCase(), {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
   }
 
   const handleUseNewAddress = () => {
@@ -256,10 +282,13 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="address_1">Address</Label>
-              <Input
+              <input type="hidden" {...register("address_1")} />
+              <AddressAutocomplete
                 id="address_1"
-                placeholder="123 Lab St"
-                {...register("address_1")}
+                defaultValue={watch("address_1")}
+                onValueChange={handleAutocompleteValueChange}
+                onSelect={handleAutocompleteSelect}
+                error={errors.address_1?.message}
                 className={cn(errors.address_1 && "border-destructive")}
               />
               {errors.address_1 && (
