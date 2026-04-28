@@ -19,6 +19,7 @@ import {
   linkSalesChannelsToStockLocationWorkflow,
   updateStoresWorkflow,
 } from "@medusajs/medusa/core-flows";
+import { getConfiguredKarrioFulfillmentOptions } from "../modules/karrio-fulfillment/options";
 
 export default async function seedDemoData({ container }: ExecArgs) {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
@@ -28,7 +29,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   const salesChannelModuleService = container.resolve(Modules.SALES_CHANNEL);
   const storeModuleService = container.resolve(Modules.STORE);
 
-  const countries = ["gb", "de", "dk", "se", "fr", "es", "it"];
+  const countries = ["au", "nz"];
 
   logger.info("Seeding store data...");
   const [store] = await storeModuleService.listStores();
@@ -39,7 +40,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   if (!defaultSalesChannel.length) {
     // create the default sales channel
     const { result: salesChannelResult } = await createSalesChannelsWorkflow(
-      container
+      container,
     ).run({
       input: {
         salesChannelsData: [
@@ -58,11 +59,11 @@ export default async function seedDemoData({ container }: ExecArgs) {
       update: {
         supported_currencies: [
           {
-            currency_code: "eur",
+            currency_code: "aud",
             is_default: true,
           },
           {
-            currency_code: "usd",
+            currency_code: "nzd",
           },
         ],
         default_sales_channel_id: defaultSalesChannel[0].id,
@@ -74,38 +75,55 @@ export default async function seedDemoData({ container }: ExecArgs) {
     input: {
       regions: [
         {
-          name: "Europe",
-          currency_code: "eur",
-          countries,
+          name: "Australia",
+          currency_code: "aud",
+          countries: ["au"],
+          payment_providers: ["pp_system_default"],
+        },
+        {
+          name: "New Zealand",
+          currency_code: "nzd",
+          countries: ["nz"],
           payment_providers: ["pp_system_default"],
         },
       ],
     },
   });
-  const region = regionResult[0];
+  const australiaRegion = regionResult.find(
+    (region) => region.name === "Australia",
+  );
+  const newZealandRegion = regionResult.find(
+    (region) => region.name === "New Zealand",
+  );
+
+  if (!australiaRegion || !newZealandRegion) {
+    throw new Error("Failed to seed AU/NZ regions.");
+  }
   logger.info("Finished seeding regions.");
 
   logger.info("Seeding tax regions...");
   await createTaxRegionsWorkflow(container).run({
     input: countries.map((country_code) => ({
       country_code,
-      provider_id: "tp_system"
+      provider_id: "tp_system",
     })),
   });
   logger.info("Finished seeding tax regions.");
 
   logger.info("Seeding stock location data...");
   const { result: stockLocationResult } = await createStockLocationsWorkflow(
-    container
+    container,
   ).run({
     input: {
       locations: [
         {
-          name: "European Warehouse",
+          name: "Australian Warehouse",
           address: {
-            city: "Copenhagen",
-            country_code: "DK",
-            address_1: "",
+            city: process.env.STORE_SHIPPER_CITY || "Hobart",
+            country_code: "AU",
+            address_1: process.env.STORE_SHIPPER_ADDRESS || "",
+            province: process.env.STORE_SHIPPER_STATE || "TAS",
+            postal_code: process.env.STORE_SHIPPER_POSTAL || "",
           },
         },
       ],
@@ -136,58 +154,38 @@ export default async function seedDemoData({ container }: ExecArgs) {
 
   logger.info("Seeding fulfillment data...");
   const shippingProfiles = await fulfillmentModuleService.listShippingProfiles({
-    type: "default"
-  })
-  let shippingProfile = shippingProfiles.length ? shippingProfiles[0] : null
+    type: "default",
+  });
+  let shippingProfile = shippingProfiles.length ? shippingProfiles[0] : null;
 
   if (!shippingProfile) {
     const { result: shippingProfileResult } =
-    await createShippingProfilesWorkflow(container).run({
-      input: {
-        data: [
-          {
-            name: "Default Shipping Profile",
-            type: "default",
-          },
-        ],
-      },
-    });
+      await createShippingProfilesWorkflow(container).run({
+        input: {
+          data: [
+            {
+              name: "Default Shipping Profile",
+              type: "default",
+            },
+          ],
+        },
+      });
     shippingProfile = shippingProfileResult[0];
   }
 
   const fulfillmentSet = await fulfillmentModuleService.createFulfillmentSets({
-    name: "European Warehouse delivery",
+    name: "AU/NZ Warehouse delivery",
     type: "shipping",
     service_zones: [
       {
-        name: "Europe",
+        name: "Australia and New Zealand",
         geo_zones: [
           {
-            country_code: "gb",
+            country_code: "au",
             type: "country",
           },
           {
-            country_code: "de",
-            type: "country",
-          },
-          {
-            country_code: "dk",
-            type: "country",
-          },
-          {
-            country_code: "se",
-            type: "country",
-          },
-          {
-            country_code: "fr",
-            type: "country",
-          },
-          {
-            country_code: "es",
-            type: "country",
-          },
-          {
-            country_code: "it",
+            country_code: "nz",
             type: "country",
           },
         ],
@@ -219,16 +217,12 @@ export default async function seedDemoData({ container }: ExecArgs) {
         },
         prices: [
           {
-            currency_code: "usd",
-            amount: 10,
+            region_id: australiaRegion.id,
+            amount: 1000,
           },
           {
-            currency_code: "eur",
-            amount: 10,
-          },
-          {
-            region_id: region.id,
-            amount: 10,
+            region_id: newZealandRegion.id,
+            amount: 1500,
           },
         ],
         rules: [
@@ -257,16 +251,12 @@ export default async function seedDemoData({ container }: ExecArgs) {
         },
         prices: [
           {
-            currency_code: "usd",
-            amount: 10,
+            region_id: australiaRegion.id,
+            amount: 1800,
           },
           {
-            currency_code: "eur",
-            amount: 10,
-          },
-          {
-            region_id: region.id,
-            amount: 10,
+            region_id: newZealandRegion.id,
+            amount: 2800,
           },
         ],
         rules: [
@@ -288,25 +278,26 @@ export default async function seedDemoData({ container }: ExecArgs) {
 
   if (process.env.KARRIO_API_URL) {
     logger.info("Seeding Karrio shipping options...");
+    const karrioFulfillmentOptions = getConfiguredKarrioFulfillmentOptions();
+
     await createShippingOptionsWorkflow(container).run({
-      input: [
-        {
-          name: "Karrio Calculated Shipping",
-          price_type: "calculated",
-          provider_id: "karrio_karrio",
-          service_zone_id: fulfillmentSet.service_zones[0].id,
-          shipping_profile_id: shippingProfile.id,
-          type: {
-            label: "Karrio",
-            description: "Live carrier rates via Karrio.",
-            code: "karrio-live",
-          },
-          rules: [
-            { attribute: "enabled_in_store", value: "true", operator: "eq" },
-            { attribute: "is_return", value: "false", operator: "eq" },
-          ],
+      input: karrioFulfillmentOptions.map((option) => ({
+        name: option.name,
+        price_type: "calculated",
+        provider_id: "karrio_karrio",
+        service_zone_id: fulfillmentSet.service_zones[0].id,
+        shipping_profile_id: shippingProfile.id,
+        data: option,
+        type: {
+          label: option.name,
+          description: `Live ${option.carrier_name} ${option.service_name} rates via Karrio.`,
+          code: option.id,
         },
-      ],
+        rules: [
+          { attribute: "enabled_in_store", value: "true", operator: "eq" },
+          { attribute: "is_return", value: "false", operator: "eq" },
+        ],
+      })),
     });
     logger.info("Finished seeding Karrio shipping options.");
   }
@@ -321,7 +312,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
 
   logger.info("Seeding publishable API key data...");
   const { result: publishableApiKeyResult } = await createApiKeysWorkflow(
-    container
+    container,
   ).run({
     input: {
       api_keys: [
@@ -346,7 +337,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   logger.info("Seeding product data...");
 
   const { result: categoryResult } = await createProductCategoriesWorkflow(
-    container
+    container,
   ).run({
     input: {
       product_categories: [

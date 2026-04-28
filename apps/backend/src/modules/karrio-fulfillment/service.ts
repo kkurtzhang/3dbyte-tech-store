@@ -17,6 +17,7 @@ import type {
   KarrioModuleOptions,
   KarrioParcel,
 } from "../karrio/types";
+import { getConfiguredKarrioFulfillmentOptions } from "./options";
 
 const DEFAULT_WEIGHT_KG = 0.5;
 const DEFAULT_DIMENSION_CM = 10;
@@ -38,52 +39,55 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
   }
 
   async getFulfillmentOptions(): Promise<FulfillmentOption[]> {
+    const configuredOptions = getConfiguredKarrioFulfillmentOptions();
+
     try {
       const carriers = await this.client.getCarriers();
-      return carriers
-        .filter((c) => c.active)
-        .map((carrier) => ({
-          id: `karrio-${carrier.carrier_id}`,
-          name: carrier.display_name || carrier.carrier_name,
-          carrier_id: carrier.carrier_id,
-          carrier_name: carrier.carrier_name,
-          test_mode: carrier.test_mode,
-        }));
+      const activeCarrierIds = new Set(
+        carriers
+          .filter((carrier) => carrier.active)
+          .map((carrier) => carrier.carrier_id),
+      );
+      const activeOptions = configuredOptions.filter((option) =>
+        activeCarrierIds.has(option.carrier_id),
+      );
+
+      if (activeOptions.length > 0) {
+        return activeOptions;
+      }
+
+      this.logger.warn(
+        "Karrio: No configured fulfillment options matched active carriers; using configured options.",
+      );
+      return configuredOptions;
     } catch (error) {
-      this.logger.warn(`Karrio: Failed to fetch carriers, using default option: ${error}`);
-      return [
-        {
-          id: "karrio-default",
-          name: "Karrio Shipping",
-        },
-      ];
+      this.logger.warn(
+        `Karrio: Failed to fetch carriers, using configured options: ${error}`,
+      );
+      return configuredOptions;
     }
   }
 
   async validateFulfillmentData(
     optionData: Record<string, unknown>,
     data: Record<string, unknown>,
-    _context: Record<string, unknown>
+    _context: Record<string, unknown>,
   ): Promise<Record<string, unknown>> {
     return { ...optionData, ...data };
   }
 
-  async validateOption(
-    data: Record<string, unknown>
-  ): Promise<boolean> {
+  async validateOption(data: Record<string, unknown>): Promise<boolean> {
     return true;
   }
 
-  async canCalculate(
-    _data: CreateShippingOptionDTO
-  ): Promise<boolean> {
+  async canCalculate(_data: CreateShippingOptionDTO): Promise<boolean> {
     return true;
   }
 
   async calculatePrice(
     optionData: CalculateShippingOptionPriceDTO["optionData"],
     data: CalculateShippingOptionPriceDTO["data"],
-    context: CalculateShippingOptionPriceDTO["context"]
+    context: CalculateShippingOptionPriceDTO["context"],
   ): Promise<CalculatedShippingOptionPrice> {
     const shippingAddress = context.shipping_address;
     if (!shippingAddress) {
@@ -92,11 +96,20 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
 
     try {
       const shipper = this.buildShipperAddress(context.from_location as any);
-      const recipient = this.buildRecipientAddress(shippingAddress as unknown as Record<string, unknown>);
-      const parcels = this.buildParcels((context.items || []) as unknown as Array<Partial<Record<string, unknown>>>);
+      const recipient = this.buildRecipientAddress(
+        shippingAddress as unknown as Record<string, unknown>,
+      );
+      const parcels = this.buildParcels(
+        (context.items || []) as unknown as Array<
+          Partial<Record<string, unknown>>
+        >,
+      );
 
       const carrierIds = optionData.carrier_id
         ? [optionData.carrier_id as string]
+        : undefined;
+      const services = optionData.service
+        ? [optionData.service as string]
         : undefined;
 
       const rateResponse = await this.client.fetchRates({
@@ -104,11 +117,15 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
         recipient,
         parcels,
         carrier_ids: carrierIds,
+        services,
       });
 
       const rate = rateResponse.rates[0];
       if (!rate) {
-        return { calculated_amount: 0, is_calculated_price_tax_inclusive: false };
+        return {
+          calculated_amount: 0,
+          is_calculated_price_tax_inclusive: false,
+        };
       }
 
       const amountInCents = Math.round(rate.total_charge * 100);
@@ -118,7 +135,9 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
         is_calculated_price_tax_inclusive: false,
       };
     } catch (error) {
-      this.logger.warn(`Karrio: Price calculation failed, returning 0: ${error}`);
+      this.logger.warn(
+        `Karrio: Price calculation failed, returning 0: ${error}`,
+      );
       return { calculated_amount: 0, is_calculated_price_tax_inclusive: false };
     }
   }
@@ -127,19 +146,23 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
     data: Record<string, unknown>,
     items: Partial<Omit<FulfillmentItemDTO, "fulfillment">>[],
     order: Partial<FulfillmentOrderDTO> | undefined,
-    fulfillment: Partial<Omit<FulfillmentDTO, "provider_id" | "data" | "items">>
+    fulfillment: Partial<
+      Omit<FulfillmentDTO, "provider_id" | "data" | "items">
+    >,
   ): Promise<CreateFulfillmentResult> {
     try {
-      const shippingAddress = (order as Record<string, unknown>)?.shipping_address as Record<string, unknown> | undefined;
+      const shippingAddress = (order as Record<string, unknown>)
+        ?.shipping_address as Record<string, unknown> | undefined;
       if (!shippingAddress) {
         throw new MedusaError(
           MedusaError.Types.INVALID_DATA,
-          "Shipping address is required to create a Karrio fulfillment"
+          "Shipping address is required to create a Karrio fulfillment",
         );
       }
 
       const recipient: KarrioAddress = {
-        person_name: `${shippingAddress.first_name || ""} ${shippingAddress.last_name || ""}`.trim(),
+        person_name:
+          `${shippingAddress.first_name || ""} ${shippingAddress.last_name || ""}`.trim(),
         address_line1: (shippingAddress.address_1 as string) || "",
         address_line2: (shippingAddress.address_2 as string) || undefined,
         city: (shippingAddress.city as string) || "",
@@ -150,8 +173,11 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
       };
 
       const parcels = this.buildParcels(items);
-      const service = (data.service as string) || (data.carrier_name as string) || "";
-      const carrierIds = data.carrier_id ? [data.carrier_id as string] : undefined;
+      const service =
+        (data.service as string) || (data.carrier_name as string) || "";
+      const carrierIds = data.carrier_id
+        ? [data.carrier_id as string]
+        : undefined;
 
       const shipment = await this.client.createShipment({
         shipper: this.buildDefaultShipperAddress(),
@@ -188,26 +214,26 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
       }
       throw new MedusaError(
         MedusaError.Types.INVALID_DATA,
-        `Failed to create Karrio fulfillment: ${error}`
+        `Failed to create Karrio fulfillment: ${error}`,
       );
     }
   }
 
-  async cancelFulfillment(
-    fulfillment: Record<string, unknown>
-  ): Promise<void> {
+  async cancelFulfillment(fulfillment: Record<string, unknown>): Promise<void> {
     const shipmentId = fulfillment.karrio_shipment_id as string | undefined;
     if (shipmentId) {
       try {
         await this.client.cancelShipment(shipmentId);
       } catch (error) {
-        this.logger.warn(`Karrio: Failed to cancel shipment ${shipmentId}: ${error}`);
+        this.logger.warn(
+          `Karrio: Failed to cancel shipment ${shipmentId}: ${error}`,
+        );
       }
     }
   }
 
   async createReturnFulfillment(
-    fulfillment: Record<string, unknown>
+    fulfillment: Record<string, unknown>,
   ): Promise<CreateFulfillmentResult> {
     return {
       data: fulfillment,
@@ -216,7 +242,7 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
   }
 
   private buildShipperAddress(
-    fromLocation?: { name?: string; address?: Record<string, unknown> } | null
+    fromLocation?: { name?: string; address?: Record<string, unknown> } | null,
   ): KarrioAddress {
     if (fromLocation?.address) {
       const addr = fromLocation.address;
@@ -248,10 +274,11 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
   }
 
   private buildRecipientAddress(
-    address: Record<string, unknown>
+    address: Record<string, unknown>,
   ): KarrioAddress {
     return {
-      person_name: `${address.first_name || ""} ${address.last_name || ""}`.trim(),
+      person_name:
+        `${address.first_name || ""} ${address.last_name || ""}`.trim(),
       address_line1: (address.address_1 as string) || "",
       address_line2: (address.address_2 as string) || undefined,
       city: (address.city as string) || "",
@@ -263,7 +290,7 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
   }
 
   private buildParcels(
-    items: Array<Partial<Record<string, unknown>>>
+    items: Array<Partial<Record<string, unknown>>>,
   ): KarrioParcel[] {
     const totalWeight = items.reduce((sum, item) => {
       const variant = item.variant as Record<string, unknown> | undefined;
