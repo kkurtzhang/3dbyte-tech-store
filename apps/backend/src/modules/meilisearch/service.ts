@@ -4,6 +4,7 @@ import type {
   MeilisearchIndexSettings,
   MeilisearchIndexType,
   MeilisearchModuleConfig,
+  MeilisearchCategoryDocument,
   MeilisearchProductDocument,
   MeilisearchSearchResponse,
   MeilisearchSearchOptions,
@@ -121,11 +122,12 @@ export default class MeilisearchModuleService {
       !options.apiKey ||
       !options.productIndexName ||
       !options.categoryIndexName ||
-      !options.brandIndexName
+      !options.brandIndexName ||
+      !options.addressIndexName
     ) {
       throw new MedusaError(
         MedusaError.Types.INVALID_ARGUMENT,
-        "Meilisearch options are required (host, apiKey, productIndexName, categoryIndexName, brandIndexName)",
+        "Meilisearch options are required (host, apiKey, productIndexName, categoryIndexName, brandIndexName, addressIndexName)",
       );
     }
 
@@ -148,6 +150,8 @@ export default class MeilisearchModuleService {
         return this.options_.categoryIndexName;
       case "brand":
         return this.options_.brandIndexName;
+      case "address":
+        return this.options_.addressIndexName;
       default:
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
@@ -220,11 +224,13 @@ export default class MeilisearchModuleService {
     return task;
   }
 
-  async search(
+  async search<
+    T = MeilisearchProductDocument | MeilisearchCategoryDocument,
+  >(
     query: string,
     type: MeilisearchIndexType = "product",
     options?: MeilisearchSearchOptions,
-  ): Promise<MeilisearchSearchResponse> {
+  ): Promise<MeilisearchSearchResponse<T>> {
     const index = await this.getIndex(type);
     const searchParams: Record<string, unknown> = {
       limit: options?.limit ?? 20,
@@ -244,7 +250,7 @@ export default class MeilisearchModuleService {
     const results = await index.search(query, searchParams);
 
     return {
-      hits: results.hits as unknown as MeilisearchProductDocument[],
+      hits: results.hits as unknown as T[],
       estimatedTotalHits: results.estimatedTotalHits ?? 0,
       limit: results.limit,
       offset: results.offset,
@@ -262,12 +268,12 @@ export default class MeilisearchModuleService {
 
     const updateTasks: Promise<MeiliSearchEnqueuedTask>[] = [];
 
-    if (settings.filterableAttributes?.length) {
+    if (settings.filterableAttributes !== undefined) {
       updateTasks.push(
         index.updateFilterableAttributes(settings.filterableAttributes),
       );
     }
-    if (settings.sortableAttributes?.length) {
+    if (settings.sortableAttributes !== undefined) {
       updateTasks.push(
         index.updateSortableAttributes(settings.sortableAttributes),
       );
@@ -474,5 +480,74 @@ export const BRAND_INDEX_SETTINGS: MeilisearchIndexSettings = {
   },
   pagination: {
     maxTotalHits: 10000,
+  },
+};
+
+/**
+ * Address index settings for Meilisearch
+ * Optimized for type-ahead autocomplete during checkout
+ */
+export const ADDRESS_INDEX_SETTINGS: MeilisearchIndexSettings = {
+  // 1. SEARCHABLE
+  // Primary: full composed address for broad matching
+  // Secondary: individual fields for specific queries (e.g., postcode-first)
+  searchableAttributes: [
+    "full_address",
+    "postcode",
+  ],
+
+  // 2. FILTERABLE
+  // Keep only country filtering exposed by the store API
+  filterableAttributes: [
+    "country",
+  ],
+
+  // 3. SORTABLE
+  // Addresses are not typically sorted by the user
+  sortableAttributes: [],
+
+  // 4. RANKING RULES
+  // Prioritize exact matches and word proximity for address autocomplete
+  rankingRules: [
+    "words",
+    "typo",
+    "proximity",
+    "attribute",
+    "exactness",
+  ],
+
+  // 5. DISPLAYED
+  // Return all fields needed for auto-filling the checkout form
+  // Exclude lat/lon to reduce payload size
+  displayedAttributes: [
+    "id",
+    "full_address",
+    "unit",
+    "number",
+    "street",
+    "suburb",
+    "state",
+    "postcode",
+    "country",
+  ],
+
+  // 6. TYPO TOLERANCE
+  // Keep fuzzy matching for address words, but avoid expensive numeric typos
+  typoTolerance: {
+    enabled: true,
+    minWordSizeForTypos: {
+      oneTypo: 4,
+      twoTypos: 8,
+    },
+    disableOnNumbers: true,
+    disableOnAttributes: ["postcode"],
+  },
+
+  // 7. FACETING & PAGINATION
+  faceting: {
+    maxValuesPerFacet: 5,
+  },
+  pagination: {
+    maxTotalHits: 100, // Autocomplete never needs deep pagination
   },
 };

@@ -1,6 +1,8 @@
 import type { BundleProduct, BundleProductItem } from "@/lib/medusa/bundles"
 import type {
+  MedusaCurrencyAmount,
   MedusaProduct,
+  MedusaProductVariant,
   MedusaProductVariantWithPreorder,
   MedusaProductVariant,
 } from "@/lib/medusa/types"

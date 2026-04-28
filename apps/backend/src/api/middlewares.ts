@@ -14,6 +14,7 @@ import {
 import { z } from "@medusajs/framework/zod";
 import { createFindParams } from "@medusajs/medusa/api/utils/validators";
 import { storeSearchRoutesMiddlewares } from "./store/search/middlewares";
+import { storeAddressAutocompleteMiddlewares } from "./store/addresses/autocomplete/middlewares";
 import { UpsertPreorderVariantSchema } from "./admin/variants/[id]/preorders/route";
 import { AddPricedLineItemSchema } from "./store/carts/[id]/line-items-priced/route";
 import { PostAdminCreateBundledProduct } from "./admin/bundled-products/validators";
@@ -136,6 +137,7 @@ export default defineMiddlewares({
       middlewares: [validateAndTransformBody(AddPricedLineItemSchema)],
     },
     ...storeSearchRoutesMiddlewares,
+    ...storeAddressAutocompleteMiddlewares,
     // Wishlist routes
     {
       matcher: "/store/wishlist",
