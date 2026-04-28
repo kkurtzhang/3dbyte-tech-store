@@ -68,6 +68,12 @@ export function Navbar() {
               Shop
             </Link>
             <Link
+              href="/collections"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Collections
+            </Link>
+            <Link
               href="/brands"
               className="text-sm font-medium transition-colors hover:text-primary"
             >
@@ -78,12 +84,6 @@ export function Navbar() {
               className="text-sm font-medium transition-colors hover:text-primary"
             >
               Blog
-            </Link>
-            <Link
-              href="/gift-cards"
-              className="text-sm font-medium transition-colors hover:text-primary"
-            >
-              Gift Cards
             </Link>
             <Link
               href="/about"

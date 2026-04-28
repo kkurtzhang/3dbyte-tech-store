@@ -54,6 +54,65 @@ services:
     networks:
       - 3dbyte-network
 
+  # Karrio Shipping - API Server (uses same external PostgreSQL as Medusa/Strapi)
+  karrio-api:
+    image: karrio/server:2024.6
+    container_name: 3dbyte-karrio-api
+    restart: unless-stopped
+    environment:
+      DATABASE_ENGINE: postgresql
+      DATABASE_NAME: ${KARRIO_DATABASE_NAME:-karrio}
+      DATABASE_USERNAME: ${KARRIO_DATABASE_USERNAME:-postgres}
+      DATABASE_PASSWORD: ${KARRIO_DATABASE_PASSWORD:-password}
+      DATABASE_HOST: ${KARRIO_DATABASE_HOST:-host.docker.internal}
+      DATABASE_PORT: ${KARRIO_DATABASE_PORT:-5432}
+      REDIS_URL: redis://redis:6379/1
+      SECRET_KEY: ${KARRIO_SECRET_KEY:-changeme-generate-a-secret-key}
+      KARRIO_PUBLIC_URL: ${KARRIO_PUBLIC_URL:-http://localhost:5002}
+      ALLOW_SIGNUP: "False"
+    ports:
+      - "5002:5002"
+    networks:
+      - 3dbyte-network
+    depends_on:
+      - redis
+
+  # Karrio Shipping - Worker
+  karrio-worker:
+    image: karrio/server:2024.6
+    container_name: 3dbyte-karrio-worker
+    restart: unless-stopped
+    command: "/bin/bash -c '/usr/local/bin/karrio worker'"
+    environment:
+      DATABASE_ENGINE: postgresql
+      DATABASE_NAME: ${KARRIO_DATABASE_NAME:-karrio}
+      DATABASE_USERNAME: ${KARRIO_DATABASE_USERNAME:-postgres}
+      DATABASE_PASSWORD: ${KARRIO_DATABASE_PASSWORD:-password}
+      DATABASE_HOST: ${KARRIO_DATABASE_HOST:-host.docker.internal}
+      DATABASE_PORT: ${KARRIO_DATABASE_PORT:-5432}
+      REDIS_URL: redis://redis:6379/1
+      SECRET_KEY: ${KARRIO_SECRET_KEY:-changeme-generate-a-secret-key}
+      KARRIO_PUBLIC_URL: ${KARRIO_PUBLIC_URL:-http://localhost:5002}
+    networks:
+      - 3dbyte-network
+    depends_on:
+      - karrio-api
+
+  # Karrio Shipping - Dashboard
+  karrio-dashboard:
+    image: karrio/dashboard:2024.6
+    container_name: 3dbyte-karrio-dashboard
+    restart: unless-stopped
+    environment:
+      KARRIO_PUBLIC_URL: ${KARRIO_PUBLIC_URL:-http://localhost:5002}
+      DASHBOARD_URL: ${KARRIO_DASHBOARD_URL:-http://localhost:3002}
+    ports:
+      - "3002:3000"
+    networks:
+      - 3dbyte-network
+    depends_on:
+      - karrio-api
+
 networks:
   3dbyte-network:
     name: 3dbyte-network

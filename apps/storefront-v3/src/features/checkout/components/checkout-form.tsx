@@ -191,6 +191,7 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
         title: item.product?.title || item.title,
         quantity: item.quantity,
         unit_price: item.unit_price,
+        metadata: item.metadata ?? null,
         product: {
           title: item.product?.title,
           thumbnail: item.product?.thumbnail || item.thumbnail,

@@ -1,5 +1,9 @@
 import { CheckCircle2 } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
+import { buildCartDisplayGroups } from "@/features/cart/lib/bundle-groups"
+import { getCartItemVariantTitle } from "@/features/cart/lib/variant-display"
+import { analyzeCartContents } from "@/lib/util/cart-analysis"
+import type { MedusaOrderLineItemWithPreorder } from "@/lib/medusa/types"
 import { cn } from "@/lib/utils"
 import type { MedusaOrder } from "@/lib/medusa/types"
 import { isPreorder } from "@/lib/util/is-preorder"
@@ -75,6 +79,75 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
 
   const status = getOrderStatus(order)
   const currencyCode = order.currency_code || "USD"
+  const orderDisplayGroups = buildCartDisplayGroups(order.items)
+  const orderAnalysis = analyzeCartContents(order.items, currencyCode)
+
+  const formatAvailabilityDate = (date: Date) => {
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }).format(date)
+  }
+
+  const renderItem = (
+    item: NonNullable<MedusaOrder["items"]>[number],
+    key: string
+  ) => {
+    const preorderItem = item as MedusaOrderLineItemWithPreorder
+    const preorderPrice = resolvePreorderPrice(preorderItem.variant, currencyCode)
+    const displayCurrency = preorderPrice?.currency_code || currencyCode
+    const unitPrice = (preorderPrice?.amount ?? item.unit_price ?? 0) / 100
+    const totalPrice = unitPrice * (item.quantity || 0)
+    const variantTitle = getCartItemVariantTitle(item)
+
+    return (
+      <div
+        key={key}
+        className="flex items-start justify-between gap-4"
+      >
+        <div className="flex-1">
+          <p className="text-sm font-medium">{item.title}</p>
+          {variantTitle ? (
+            <p className="text-xs text-muted-foreground">{variantTitle}</p>
+          ) : null}
+          <p className="text-xs text-muted-foreground">
+            Qty: {item.quantity}
+          </p>
+          {isPreorder(preorderItem.variant?.preorder_variant) && (
+            <div className="space-y-0.5 text-xs text-primary">
+              <p>
+                Pre-order available on{" "}
+                {new Date(preorderItem.variant!.preorder_variant!.available_date).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </p>
+              {preorderPrice && (
+                <>
+                  <p className="text-muted-foreground">
+                    Pre-order price: {formatPrice(preorderPrice.amount / 100, preorderPrice.currency_code)}
+                  </p>
+                  <p className="line-through text-muted-foreground">
+                    Regular price: {formatPrice((item.unit_price || 0) / 100, currencyCode)}
+                  </p>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+        <div className="text-right">
+          <p className="font-mono text-sm">
+            {formatPrice(unitPrice, displayCurrency)}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {formatPrice(totalPrice, displayCurrency)}
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={cn("space-y-6", className)}>
@@ -131,73 +204,39 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
       {/* Order Items */}
       <div className="space-y-4">
         <h3 className="font-medium">Items</h3>
+        {orderAnalysis.hasPreorderItems ? (
+          <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm text-primary">
+            Some items in this order are pre-ordered and will ship when available.
+            {orderAnalysis.earliestPreorderDate ? (
+              <> Earliest estimated availability: {formatAvailabilityDate(orderAnalysis.earliestPreorderDate)}.</>
+            ) : null}
+          </div>
+        ) : null}
         <div className="space-y-3">
-          {order.items?.map((item) => {
-            const preorderItem = item as {
-              variant?: {
-                preorder_variant?: {
-                  status: "enabled" | "disabled"
-                  available_date: string
-                  prices?: Array<{ amount: number; currency_code: string }>
-                }
-              }
-            }
-
-            const preorderPrice = resolvePreorderPrice(preorderItem.variant, currencyCode)
-            const unitPrice =
-              ((preorderPrice?.amount ?? item.unit_price ?? 0) / 100)
-            const totalPrice = unitPrice * (item.quantity || 0)
-
-            return (
+          {orderDisplayGroups.map((group, index) =>
+            group.type === "bundle" ? (
               <div
-                key={item.id}
-                className="flex items-start justify-between gap-4"
+                key={group.bundleId}
+                className="rounded-lg border border-dashed border-primary/30 bg-primary/5 p-4"
               >
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{item.title}</p>
-                  {item.variant?.title &&
-                    item.variant.title !== "Default" && (
-                      <p className="text-xs text-muted-foreground">
-                        {item.variant.title}
-                      </p>
-                    )}
-                  <p className="text-xs text-muted-foreground">
-                    Qty: {item.quantity}
+                <div className="mb-3 border-b pb-3">
+                  <p className="text-sm font-medium">
+                    {group.bundleTitle ?? "Product Bundle"}
                   </p>
-                  {isPreorder(preorderItem.variant?.preorder_variant) && (
-                    <div className="space-y-0.5 text-xs text-primary">
-                      <p>
-                        Pre-order available on{" "}
-                        {new Date(preorderItem.variant!.preorder_variant!.available_date).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </p>
-                      {preorderPrice && (
-                        <>
-                          <p className="text-muted-foreground">
-                            Pre-order price: {formatPrice(preorderPrice.amount, currencyCode)}
-                          </p>
-                          <p className="line-through text-muted-foreground">
-                            Regular price: {formatPrice((item.unit_price || 0) / 100, currencyCode)}
-                          </p>
-                        </>
-                      )}
-                    </div>
+                  <p className="text-xs text-muted-foreground">
+                    {group.items.length} {group.items.length === 1 ? "item" : "items"}
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  {group.items.map((item, groupIndex) =>
+                    renderItem(item, `${group.bundleId}-${item.id || groupIndex}`)
                   )}
                 </div>
-                <div className="text-right">
-                  <p className="font-mono text-sm">
-                    {formatPrice(unitPrice, currencyCode)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatPrice(totalPrice, currencyCode)}
-                  </p>
-                </div>
               </div>
+            ) : (
+              renderItem(group.item, group.item.id || String(index))
             )
-          })}
+          )}
         </div>
       </div>
 

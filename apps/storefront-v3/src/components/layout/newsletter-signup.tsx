@@ -7,13 +7,19 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from "@/lib/hooks/use-toast"
 import { validateEmail } from "@3dbyte-tech-store/shared-utils"
+import { cn } from "@/lib/utils"
 
 interface NewsletterSignupProps {
   compact?: boolean
   variant?: "default" | "minimal"
+  className?: string
 }
 
-export function NewsletterSignup({ compact = false, variant = "default" }: NewsletterSignupProps) {
+export function NewsletterSignup({
+  compact = false,
+  variant = "default",
+  className,
+}: NewsletterSignupProps) {
   const [email, setEmail] = useState("")
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
@@ -106,7 +112,14 @@ export function NewsletterSignup({ compact = false, variant = "default" }: Newsl
   }
 
   return (
-    <div className={compact ? "" : "rounded-lg border bg-muted/50 p-6"}>
+    <div
+      className={cn(
+        compact
+          ? "space-y-4"
+          : "rounded-lg border bg-muted/50 p-5 md:p-6",
+        className
+      )}
+    >
       <div className="mb-4">
         <h3 className={compact ? "text-sm font-semibold" : "text-lg font-semibold"}>
           {compact ? "Stay Updated" : "Join 3D Byte Tech Newsletter"}
@@ -163,7 +176,11 @@ export function NewsletterSignup({ compact = false, variant = "default" }: Newsl
           />
         </div>
 
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <Button
+          type="submit"
+          className={compact ? "w-auto min-w-32" : "w-full"}
+          disabled={isLoading}
+        >
           {isLoading ? "Subscribing..." : "Subscribe"}
         </Button>
       </form>

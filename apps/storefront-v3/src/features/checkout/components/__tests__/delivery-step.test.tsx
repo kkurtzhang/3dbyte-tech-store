@@ -14,12 +14,19 @@ jest.mock("lucide-react", () => ({
 // Mock the checkout actions
 jest.mock("@/app/actions/checkout", () => ({
   getShippingOptionsAction: jest.fn(),
+  getLiveShippingRatesAction: jest.fn(),
 }))
 
-import { getShippingOptionsAction } from "@/app/actions/checkout"
+import {
+  getShippingOptionsAction,
+  getLiveShippingRatesAction,
+} from "@/app/actions/checkout"
 
 const mockGetShippingOptionsAction = getShippingOptionsAction as jest.MockedFunction<
   typeof getShippingOptionsAction
+>
+const mockGetLiveShippingRatesAction = getLiveShippingRatesAction as jest.MockedFunction<
+  typeof getLiveShippingRatesAction
 >
 
 describe("DeliveryStep", () => {
@@ -30,6 +37,11 @@ describe("DeliveryStep", () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockGetLiveShippingRatesAction.mockResolvedValue({
+      success: false,
+      rates: [],
+      error: "Karrio unavailable",
+    })
   })
 
   it("shows loading state initially", () => {

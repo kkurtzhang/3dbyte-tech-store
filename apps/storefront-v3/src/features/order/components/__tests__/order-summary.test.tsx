@@ -46,4 +46,83 @@ describe("OrderSummary", () => {
     expect(screen.getByText(/Pre-order price:/i)).toBeInTheDocument()
     expect(screen.getByText(/Regular price:/i)).toBeInTheDocument()
   })
+
+  it("groups bundled items and shows an order-level preorder notice", () => {
+    render(
+      <OrderSummary
+        order={createOrder({
+          items: [
+            {
+              id: "item_1",
+              title: "Bundle Part 1",
+              quantity: 1,
+              unit_price: 1000,
+              metadata: {
+                bundle_id: "bundle_1",
+                bundle_title: "Starter Bundle",
+                bundle_quantity: 1,
+              },
+              variant: {
+                id: "variant_1",
+                title: "Default Variant",
+                preorder_variant: {
+                  status: "enabled",
+                  available_date: "2999-01-01T00:00:00.000Z",
+                  prices: [{ amount: 800, currency_code: "usd" }],
+                },
+              },
+            },
+            {
+              id: "item_2",
+              title: "Bundle Part 2",
+              quantity: 1,
+              unit_price: 500,
+              metadata: {
+                bundle_id: "bundle_1",
+                bundle_title: "Starter Bundle",
+                bundle_quantity: 1,
+              },
+              variant: {
+                id: "variant_2",
+                title: "Default Variant",
+              },
+            },
+          ],
+        })}
+      />
+    )
+
+    expect(screen.getByText("Starter Bundle")).toBeInTheDocument()
+    expect(screen.getByText("Bundle Part 1")).toBeInTheDocument()
+    expect(screen.getByText("Bundle Part 2")).toBeInTheDocument()
+    expect(
+      screen.getByText(/Some items in this order are pre-ordered/i)
+    ).toBeInTheDocument()
+  })
+
+  it("shows line-item variant titles when nested variant titles are default", () => {
+    render(
+      <OrderSummary
+        order={createOrder({
+          items: [
+            {
+              id: "item_1",
+              title: "Polymaker HT-PLA-GF",
+              quantity: 1,
+              unit_price: 1900,
+              variant_title: "Power Tool Green",
+              subtitle: "Power Tool Green",
+              variant: {
+                id: "variant_1",
+                title: "Default Variant",
+              },
+            },
+          ],
+        })}
+      />
+    )
+
+    expect(screen.getByText("Power Tool Green")).toBeInTheDocument()
+    expect(screen.queryByText(/Default Variant/i)).not.toBeInTheDocument()
+  })
 })

@@ -84,15 +84,37 @@ This guide provides detailed documentation for all content types available in th
 #### Homepage
 - **Purpose**: Landing page content management
 - **Collection Name**: `homepages`
-- **Fields**:
-  - Hero banners and quick links
-  - Trust stats
-  - Repeatable announcement bar items with optional links and icons
+- **Fields**: Homepage layout and content
+- **Homepage Sections**:
+  - `HeroBanner` and `MidBanner` - hero-style sections with media and CTAs
+  - `CollectionsSection` - collection rail metadata with eyebrow, heading, text, CTA, and enabled toggle
+  - `ProductsSection` - product rail metadata with eyebrow, heading, text, CTA, and enabled toggle
+  - `GuidesHelpSection` - educational/support block with eyebrow, heading, text, enabled toggle, and repeatable cards
+  - `SupportStrip` - compact promo/support strip with label, text, CTA, and enabled toggle
+  - `AnnouncementBarItems` - repeatable announcement marquee items for the global storefront bar
+  - `QuickLinks`, `QuickLinksHeading`, and `TrustStats` - supporting homepage utility content
 - **Use Cases**:
   - Hero section content
   - Featured products
   - Promotional banners
   - Store-wide announcement marquee content
+  - Conversion-focused merchandising and support messaging
+
+##### Storefront Revalidation Webhook
+- **Purpose**: Refresh cached storefront CMS content after homepage edits are published
+- **Storefront Endpoint**: `POST /api/revalidate/strapi`
+- **Authentication**:
+  - Set `STRAPI_WEBHOOK_REVALIDATION_SECRET` in the storefront environment
+  - Send the same value in Strapi as the `x-strapi-webhook-secret` request header
+- **Recommended Trigger**:
+  - Fire the webhook on homepage create, update, publish, and unpublish events
+- **Current Revalidation Targets**:
+  - `homepage`
+  - `homepage-announcements`
+  - `/`
+- **Notes**:
+  - Local development uses uncached Strapi reads so homepage edits show up on reload
+  - Production should rely on this webhook for immediate cache invalidation after CMS changes
 
 #### About Us
 - **Purpose**: Company information page

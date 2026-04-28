@@ -135,6 +135,35 @@ describe("CheckoutSummary", () => {
     expect(screen.getByText("Large / Blue")).toBeInTheDocument()
   })
 
+  it("displays the line-item variant title when the nested variant title is default", () => {
+    const cart = createMockCart({
+      items: [
+        {
+          id: "item_1",
+          title: "Test Product",
+          quantity: 1,
+          unit_price: 1000,
+          variant_title: "Power Tool Green",
+          subtitle: "Power Tool Green",
+          variant: {
+            id: "variant_1",
+            title: "Default Variant",
+            product: {
+              id: "prod_1",
+              title: "Test Product",
+              thumbnail: "/test.jpg",
+            },
+          },
+        },
+      ],
+    })
+
+    render(<CheckoutSummary cart={cart} />)
+
+    expect(screen.getByText("Power Tool Green")).toBeInTheDocument()
+    expect(screen.queryByText("Standard")).not.toBeInTheDocument()
+  })
+
   it("shows preorder availability messaging", () => {
     const cart = createMockCart({
       items: [
@@ -166,6 +195,107 @@ describe("CheckoutSummary", () => {
     expect(screen.getByText(/Pre-order available on/i)).toBeInTheDocument()
     expect(screen.getByText(/Pre-order price:/i)).toBeInTheDocument()
     expect(screen.getByText(/Regular price:/i)).toBeInTheDocument()
+  })
+
+  it("groups bundle items in the summary", () => {
+    const cart = createMockCart({
+      items: [
+        {
+          id: "item_1",
+          title: "Bundle Part 1",
+          quantity: 1,
+          unit_price: 1000,
+          metadata: {
+            bundle_id: "bundle_1",
+            bundle_title: "Starter Bundle",
+            bundle_quantity: 1,
+          },
+          variant: {
+            id: "variant_1",
+            title: "Default Variant",
+            product: {
+              id: "prod_1",
+              title: "Bundle Part 1",
+              thumbnail: "/1.jpg",
+            },
+          },
+        },
+        {
+          id: "item_2",
+          title: "Bundle Part 2",
+          quantity: 1,
+          unit_price: 500,
+          metadata: {
+            bundle_id: "bundle_1",
+            bundle_title: "Starter Bundle",
+            bundle_quantity: 1,
+          },
+          variant: {
+            id: "variant_2",
+            title: "Default Variant",
+            product: {
+              id: "prod_2",
+              title: "Bundle Part 2",
+              thumbnail: "/2.jpg",
+            },
+          },
+        },
+        {
+          id: "item_3",
+          title: "Standalone Product",
+          quantity: 1,
+          unit_price: 250,
+          metadata: null,
+          variant: {
+            id: "variant_3",
+            title: "Default Variant",
+            product: {
+              id: "prod_3",
+              title: "Standalone Product",
+              thumbnail: "/3.jpg",
+            },
+          },
+        },
+      ],
+    })
+
+    render(<CheckoutSummary cart={cart} />)
+
+    expect(screen.getByText("Starter Bundle")).toBeInTheDocument()
+    expect(screen.getByText("Bundle Part 1")).toBeInTheDocument()
+    expect(screen.getByText("Bundle Part 2")).toBeInTheDocument()
+    expect(screen.getByText("Standalone Product")).toBeInTheDocument()
+  })
+
+  it("shows an order-level preorder notice", () => {
+    const cart = createMockCart({
+      items: [
+        {
+          id: "item_1",
+          title: "Preorder Product",
+          quantity: 1,
+          unit_price: 1000,
+          variant: {
+            id: "variant_1",
+            title: "Default Variant",
+            preorder_variant: {
+              status: "enabled",
+              available_date: "2999-01-01T00:00:00.000Z",
+              prices: [{ amount: 800, currency_code: "usd" }],
+            },
+            product: {
+              id: "prod_1",
+              title: "Preorder Product",
+              thumbnail: "/test.jpg",
+            },
+          },
+        },
+      ],
+    })
+
+    render(<CheckoutSummary cart={cart} />)
+
+    expect(screen.getByText(/Pre-order items ship when available/i)).toBeInTheDocument()
   })
 
   it("shows 'Standard' for default variant", () => {

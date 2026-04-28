@@ -5,9 +5,10 @@ import Image from "next/image"
 import { Minus, Plus, Trash2, Bookmark, ImageOff } from "lucide-react"
 import { useCart } from "@/context/cart-context"
 import { useSavedItems } from "@/context/saved-items-context"
+import { getCartItemVariantTitle } from "@/features/cart/lib/variant-display"
 import type { MedusaCartLineItem } from "@/lib/medusa/cart"
-import { isPreorder } from "@/lib/util/is-preorder"
 import type { MedusaCartLineItemWithPreorder } from "@/lib/medusa/types"
+import { isPreorder } from "@/lib/util/is-preorder"
 import { resolvePreorderPrice, resolveRegularPrice } from "@/lib/util/preorder-pricing"
 
 interface CartItemProps {
@@ -88,20 +89,7 @@ export function CartItem({
     item.variant?.product?.images?.[0]?.url ||
     null
 
-  const variantTitle = useMemo(() => {
-    const rawTitle =
-      typeof item.variant?.title === "string" ? item.variant.title.trim() : ""
-
-    if (
-      !rawTitle ||
-      rawTitle === "Default Variant" ||
-      rawTitle === "Default Title"
-    ) {
-      return null
-    }
-
-    return rawTitle
-  }, [item.variant?.title])
+  const variantTitle = useMemo(() => getCartItemVariantTitle(item), [item])
 
   return (
     <div className="flex gap-4 py-4">

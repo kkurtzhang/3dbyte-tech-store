@@ -1,0 +1,27 @@
+{
+  "collectionName": "components_homepage_guides_help_sections",
+  "info": {
+    "displayName": "GuidesHelpSection"
+  },
+  "options": {},
+  "attributes": {
+    "Enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "Eyebrow": {
+      "type": "string"
+    },
+    "Heading": {
+      "type": "string"
+    },
+    "Text": {
+      "type": "text"
+    },
+    "Cards": {
+      "type": "component",
+      "repeatable": true,
+      "component": "homepage.guides-help-section-card"
+    }
+  }
+}

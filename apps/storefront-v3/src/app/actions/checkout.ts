@@ -3,6 +3,7 @@
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
 import { updateCart, addShippingMethod, completePreorderCart, initiatePaymentSession, getCart, getShippingOptions } from "@/lib/medusa/cart"
+import { getLiveShippingRates, type ShippingRate } from "@/lib/medusa/shipping"
 import { z } from "zod"
 
 const CART_COOKIE = "_medusa_cart_id"
@@ -27,9 +28,9 @@ export async function getShippingOptionsAction() {
   try {
     const options = await getShippingOptions(cartId)
     return { success: true, options }
-  } catch (error: any) {
-    console.error("Get shipping options error:", error)
-    return { success: false, error: error.message, options: [] }
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to get shipping options"
+    return { success: false, error: message, options: [] }
   }
 }
 
@@ -52,9 +53,9 @@ export async function initPaymentSessionAction() {
 
     revalidatePath("/checkout")
     return { success: true, paymentCollection }
-  } catch (error: any) {
-    console.error("Init payment session error:", error)
-    return { success: false, error: error.message || "Failed to init payment session" }
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to init payment session"
+    return { success: false, error: message }
   }
 }
 
@@ -99,9 +100,9 @@ export async function setAddressesAction(data: unknown) {
     })
     revalidatePath("/checkout")
     return { success: true, cart }
-  } catch (error: any) {
-    console.error("Set address error:", error)
-    return { success: false, error: error.message || "Failed to set address" }
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to set address"
+    return { success: false, error: message }
   }
 }
 
@@ -116,9 +117,9 @@ export async function setShippingMethodAction(optionId: string) {
     const cart = await addShippingMethod({ cartId, optionId })
     revalidatePath("/checkout")
     return { success: true, cart }
-  } catch (error: any) {
-    console.error("Set shipping method error:", error)
-    return { success: false, error: error.message || "Failed to set shipping method" }
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to set shipping method"
+    return { success: false, error: message }
   }
 }
 
@@ -132,8 +133,28 @@ export async function completeCartAction() {
     const order = await completePreorderCart(cartId)
     cookieStore.delete(CART_COOKIE)
     return { success: true, order }
-  } catch (error: any) {
-    console.error("Complete cart error:", error)
-    return { success: false, error: error.message || "Failed to complete order" }
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Failed to complete order"
+    return { success: false, error: message }
+  }
+}
+
+export async function getLiveShippingRatesAction(): Promise<{
+  success: boolean
+  rates: ShippingRate[]
+  error?: string
+}> {
+  const cookieStore = await cookies()
+  const cartId = cookieStore.get(CART_COOKIE)?.value
+
+  if (!cartId) return { success: false, rates: [], error: "No cart found" }
+
+  try {
+    const response = await getLiveShippingRates(cartId)
+    return { success: true, rates: response.rates }
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Failed to fetch live rates"
+    return { success: false, rates: [], error: message }
   }
 }

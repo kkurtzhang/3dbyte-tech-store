@@ -6,7 +6,10 @@ import { cn } from "@/lib/utils"
 import { useCart } from "@/context/cart-context"
 import { useToast } from "@/lib/hooks/use-toast"
 import { NotifyMeButton } from "./notify-me-button"
+import { ProductWishlistButton } from "./product-wishlist-button"
+import { ProductShippingEstimate } from "./product-shipping-estimate"
 import { SizeGuideButton, shouldShowSizeGuide } from "@/components/ui/size-guide"
+import { PaymentMethodSupport } from "@/components/ui/payment-method-support"
 import { usePathname } from "next/navigation"
 import { SocialShare } from "./social-share"
 import { StockStatusBadge, getStockStatus } from "@/components/ui/stock-status-badge"
@@ -18,6 +21,10 @@ import { getVariantPriceDisplay, resolvePreorderPrice } from "@/lib/util/preorde
 import { getRenderableOptions } from "@/features/product/lib/bundle-pricing"
 import { BundleProductActions } from "./bundle-product-actions"
 import { AvailableInBundles } from "./available-in-bundles"
+import {
+  findVariantMatchingOptions,
+  getDisplayableProductOptions,
+} from "../lib/product-variants"
 
 interface ProductActionsProps {
   product: MedusaProduct
@@ -45,26 +52,26 @@ export function ProductActions({
   const [isAdding, setIsAdding] = useState(false)
   const [quantity, setQuantity] = useState(1)
   const pathname = usePathname()
+  const displayableOptions = useMemo(
+    () => getDisplayableProductOptions(product.options),
+    [product.options]
+  )
+  const resolvedVariant = selectedVariant || product.variants?.[0]
 
   const updateOption = (optionId: string, value: string) => {
     const newOptions = { ...options, [optionId]: value }
     setOptions(newOptions)
 
-    // Find matching variant
-    const variant = product.variants?.find((v) => {
-      // Ensure every option in the variant matches the selected options
-      return v.options?.every((opt) => newOptions[opt.option_id!] === opt.value)
-    })
-
-    onVariantChange(variant as MedusaProductVariant | undefined)
+    const variant = findVariantMatchingOptions(product.variants, newOptions)
+    onVariantChange(variant)
   }
 
   const handleAddToCart = async () => {
-    if (!selectedVariant?.id) return
+    if (!resolvedVariant?.id) return
 
     setIsAdding(true)
     try {
-      await addItem(selectedVariant.id, quantity)
+      await addItem(resolvedVariant.id, quantity)
       toast({
         title: "Added to cart",
         description: `${product.title} has been added to your cart.`,
@@ -82,19 +89,29 @@ export function ProductActions({
 
   // Calculate price and sale info for PriceDisplay
   const priceInfo = useMemo(() => {
-    const variant = selectedVariant || product.variants?.[0]
-    return getVariantPriceDisplay(variant as Parameters<typeof getVariantPriceDisplay>[0])
-  }, [selectedVariant, product.variants])
+    return getVariantPriceDisplay(resolvedVariant as Parameters<typeof getVariantPriceDisplay>[0])
+  }, [resolvedVariant, product.variants])
 
   // Extract handle from pathname or use product.id
   const productHandle = pathname?.split("/").pop() || product.id || ""
+  const wishlistItem = {
+    id: product.id,
+    handle: product.handle || productHandle,
+    title: product.title,
+    thumbnail: product.thumbnail || "",
+    price: {
+      amount: priceInfo.price.amount,
+      currency_code: priceInfo.price.currency_code.toUpperCase(),
+    },
+    variantId: resolvedVariant?.id,
+  }
 
   // Check if we should show size guide
   const sizeGuideInfo = shouldShowSizeGuide(product)
   const renderableOptions = useMemo(() => getRenderableOptions(product), [product])
 
   // Get stock status for out-of-stock check
-  const stockStatus = getStockStatus(selectedVariant)
+  const stockStatus = getStockStatus(resolvedVariant)
   const isOutOfStock = stockStatus.status === "out-of-stock"
   const preorderVariant = selectedVariant as MedusaProductVariantWithPreorder | undefined
   const isPreorderVariant = isPreorder(preorderVariant?.preorder_variant)
@@ -147,14 +164,15 @@ export function ProductActions({
       {/* Price Display */}
       <div className="border-b pb-6">
         <h1 className="text-3xl font-bold tracking-tight mb-2">{product.title}</h1>
+        {resolvedVariant?.sku && (
+          <p className="mb-3 text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
+            SKU {resolvedVariant.sku}
+          </p>
+        )}
         <div className="flex items-start gap-3 flex-wrap">
           {isPreorderVariant && preorderPrice ? (
             <div className="space-y-3">
-              <PriceDisplay
-                price={preorderPrice}
-                label="Pre-order price"
-                size="lg"
-              />
+              <PriceDisplay price={preorderPrice} label="Pre-order price" size="lg" />
               {priceInfo && (priceInfo.originalPrice || priceInfo.price.amount !== preorderPrice.amount) && (
                 <div className="space-y-1">
                   <span className="block font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
@@ -179,8 +197,8 @@ export function ProductActions({
                 size="lg"
               />
             )
-            )}
-          <StockStatusBadge variant={selectedVariant} />
+          )}
+          <StockStatusBadge variant={resolvedVariant} />
         </div>
         {isPreorderVariant && preorderAvailableDate && (
           <p className="mt-3 text-sm text-muted-foreground">
@@ -218,6 +236,7 @@ export function ProductActions({
                  return (
                     <button
                         key={value.value}
+                        type="button"
                         onClick={() => updateOption(option.id, value.value)}
                         className={cn(
                             "px-4 py-2 text-sm border transition-all",
@@ -248,49 +267,49 @@ export function ProductActions({
       {/* Add to Cart / Notify Me */}
       <div className="pt-6 border-t">
         {isOutOfStock ? (
-          <>
-            <Button
-              size="lg"
-              className="w-full font-mono text-lg h-14 uppercase tracking-widest"
-              disabled
-            >
-              Out of Stock
-            </Button>
-            <div className="mt-4">
-              <NotifyMeButton
-                productId={product.id}
-                productHandle={productHandle}
-                productTitle={product.title}
-                variantId={selectedVariant?.id}
-                variantTitle={selectedVariant?.title || undefined}
-              />
-            </div>
-          </>
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3">
+            <NotifyMeButton
+              productId={product.id}
+              productHandle={productHandle}
+              productTitle={product.title}
+              variantId={resolvedVariant?.id}
+              variantTitle={resolvedVariant?.title || undefined}
+            />
+
+            <ProductWishlistButton item={wishlistItem} />
+          </div>
         ) : (
-          <>
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3">
             <div className="flex items-stretch gap-3">
               {quantitySelector}
               <Button
                   size="lg"
                   className="flex-1 font-mono text-lg h-14 uppercase tracking-widest"
-                  disabled={!selectedVariant || disabled || isAdding}
+                  disabled={!resolvedVariant || disabled || isAdding}
                   onClick={handleAddToCart}
               >
                 {isAdding
                   ? "Adding..."
-                  : selectedVariant
+                  : resolvedVariant
                     ? isPreorderVariant
                       ? "Pre-order now"
                       : "Add to Cart"
                     : "Select Options"}
               </Button>
             </div>
-            <p className="mt-2 text-center text-xs font-mono text-muted-foreground">
-                Secure checkout
-            </p>
-          </>
+
+            <ProductWishlistButton item={wishlistItem} />
+          </div>
         )}
+
+        <PaymentMethodSupport
+          compact
+          label="Secure checkout with Stripe"
+          className="mt-4"
+        />
       </div>
+
+      <ProductShippingEstimate variantId={resolvedVariant?.id} />
     </div>
   )
 }
