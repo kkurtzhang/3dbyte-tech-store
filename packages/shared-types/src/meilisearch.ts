@@ -42,6 +42,9 @@ export interface MeilisearchIndexSettings {
       oneTypo?: number;
       twoTypos?: number;
     };
+    disableOnWords?: string[];
+    disableOnAttributes?: string[];
+    disableOnNumbers?: boolean;
   };
   faceting?: {
     maxValuesPerFacet?: number;

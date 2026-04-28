@@ -268,12 +268,12 @@ export default class MeilisearchModuleService {
 
     const updateTasks: Promise<MeiliSearchEnqueuedTask>[] = [];
 
-    if (settings.filterableAttributes?.length) {
+    if (settings.filterableAttributes !== undefined) {
       updateTasks.push(
         index.updateFilterableAttributes(settings.filterableAttributes),
       );
     }
-    if (settings.sortableAttributes?.length) {
+    if (settings.sortableAttributes !== undefined) {
       updateTasks.push(
         index.updateSortableAttributes(settings.sortableAttributes),
       );
@@ -493,17 +493,12 @@ export const ADDRESS_INDEX_SETTINGS: MeilisearchIndexSettings = {
   // Secondary: individual fields for specific queries (e.g., postcode-first)
   searchableAttributes: [
     "full_address",
-    "street",
-    "suburb",
     "postcode",
-    "number",
   ],
 
   // 2. FILTERABLE
-  // Allow filtering by state/country to scope results
+  // Keep only country filtering exposed by the store API
   filterableAttributes: [
-    "state",
-    "postcode",
     "country",
   ],
 
@@ -518,7 +513,6 @@ export const ADDRESS_INDEX_SETTINGS: MeilisearchIndexSettings = {
     "typo",
     "proximity",
     "attribute",
-    "sort",
     "exactness",
   ],
 
@@ -538,17 +532,20 @@ export const ADDRESS_INDEX_SETTINGS: MeilisearchIndexSettings = {
   ],
 
   // 6. TYPO TOLERANCE
-  // Be generous with typos for address autocomplete
+  // Keep fuzzy matching for address words, but avoid expensive numeric typos
   typoTolerance: {
+    enabled: true,
     minWordSizeForTypos: {
-      oneTypo: 3,
-      twoTypos: 6,
+      oneTypo: 4,
+      twoTypos: 8,
     },
+    disableOnNumbers: true,
+    disableOnAttributes: ["postcode"],
   },
 
   // 7. FACETING & PAGINATION
   faceting: {
-    maxValuesPerFacet: 20,
+    maxValuesPerFacet: 5,
   },
   pagination: {
     maxTotalHits: 100, // Autocomplete never needs deep pagination
