@@ -178,6 +178,84 @@ describe("CartSheet", () => {
     expect(screen.getByText("Cart Item")).toBeInTheDocument()
   })
 
+  it("shows compact preorder, mixed-cart, and bundle notices in the footer", () => {
+    mockUseCart.mockReturnValue({
+      isLoading: false,
+      cart: {
+        total: 200,
+        region: {
+          currency_code: "usd",
+        },
+        items: [
+          {
+            id: "line_1",
+            quantity: 1,
+            unit_price: 75,
+            metadata: {
+              bundle_id: "bundle_1",
+              bundle_title: "Starter Bundle",
+              bundle_quantity: 1,
+            },
+            variant: {
+              title: "Matte Black",
+              preorder_variant: {
+                status: "enabled",
+                available_date: "2999-01-01T00:00:00.000Z",
+                prices: [{ amount: 75, currency_code: "usd" }],
+              },
+            },
+          },
+          {
+            id: "line_2",
+            quantity: 1,
+            unit_price: 125,
+            metadata: null,
+          },
+        ],
+      },
+    })
+
+    render(<CartSheet />)
+    openCartSheet()
+
+    expect(screen.queryByText(/selected variant/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/Pre-order items/i)).toBeInTheDocument()
+    expect(screen.getByText(/Mixed in-stock \+ pre-order cart/i)).toBeInTheDocument()
+    expect(screen.getByText(/1 bundle included/i)).toBeInTheDocument()
+  })
+
+  it("does not show compact footer notices for variant-only carts", () => {
+    mockUseCart.mockReturnValue({
+      isLoading: false,
+      cart: {
+        total: 100,
+        region: {
+          currency_code: "usd",
+        },
+        items: [
+          {
+            id: "line_1",
+            quantity: 1,
+            unit_price: 100,
+            metadata: null,
+            variant_title: "Power Tool Green",
+            subtitle: "Power Tool Green",
+            variant: {
+              title: "Default Variant",
+            },
+          },
+        ],
+      },
+    })
+
+    render(<CartSheet />)
+    openCartSheet()
+
+    expect(screen.queryByText(/selected variant/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Pre-order items/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/bundle included/i)).not.toBeInTheDocument()
+  })
+
   it("closes the cart sheet after navigating to checkout", () => {
     mockUseCart.mockReturnValue({
       isLoading: false,

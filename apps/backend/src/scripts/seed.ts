@@ -122,6 +122,18 @@ export default async function seedDemoData({ container }: ExecArgs) {
     },
   });
 
+  if (process.env.KARRIO_API_URL) {
+    await link.create({
+      [Modules.STOCK_LOCATION]: {
+        stock_location_id: stockLocation.id,
+      },
+      [Modules.FULFILLMENT]: {
+        fulfillment_provider_id: "karrio_karrio",
+      },
+    });
+    logger.info("Linked stock location to Karrio fulfillment provider.");
+  }
+
   logger.info("Seeding fulfillment data...");
   const shippingProfiles = await fulfillmentModuleService.listShippingProfiles({
     type: "default"
@@ -273,6 +285,31 @@ export default async function seedDemoData({ container }: ExecArgs) {
     ],
   });
   logger.info("Finished seeding fulfillment data.");
+
+  if (process.env.KARRIO_API_URL) {
+    logger.info("Seeding Karrio shipping options...");
+    await createShippingOptionsWorkflow(container).run({
+      input: [
+        {
+          name: "Karrio Calculated Shipping",
+          price_type: "calculated",
+          provider_id: "karrio_karrio",
+          service_zone_id: fulfillmentSet.service_zones[0].id,
+          shipping_profile_id: shippingProfile.id,
+          type: {
+            label: "Karrio",
+            description: "Live carrier rates via Karrio.",
+            code: "karrio-live",
+          },
+          rules: [
+            { attribute: "enabled_in_store", value: "true", operator: "eq" },
+            { attribute: "is_return", value: "false", operator: "eq" },
+          ],
+        },
+      ],
+    });
+    logger.info("Finished seeding Karrio shipping options.");
+  }
 
   await linkSalesChannelsToStockLocationWorkflow(container).run({
     input: {

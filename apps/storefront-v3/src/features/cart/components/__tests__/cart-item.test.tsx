@@ -140,4 +140,27 @@ describe("CartItem", () => {
 
     expect(screen.getByText("Matte Black")).toBeInTheDocument()
   })
+
+  it("shows the line-item variant title when the nested variant title is default", () => {
+    render(
+      <CartItem
+        item={createItem({
+          variant_title: "Power Tool Green",
+          subtitle: "Power Tool Green",
+          variant: {
+            id: "variant_2",
+            title: "Default Variant",
+            product: {
+              id: "prod_1",
+              title: "Test Product",
+              thumbnail: "/test.jpg",
+            },
+          } as MedusaCartLineItem["variant"],
+        })}
+        currencyCode="usd"
+      />
+    )
+
+    expect(screen.getByText("Power Tool Green")).toBeInTheDocument()
+  })
 })

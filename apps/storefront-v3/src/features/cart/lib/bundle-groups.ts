@@ -1,22 +1,42 @@
 import type { MedusaCartLineItem } from "@/lib/medusa/cart"
 
-export type BundleCartGroup = {
+type BundleDisplayItem = {
+  metadata?: unknown
+  quantity?: number | null
+}
+
+export type BundleCartGroup<TItem extends BundleDisplayItem = MedusaCartLineItem> = {
   type: "bundle"
   bundleId: string
   bundleTitle: string | null
   bundleProductHandle: string | null
   quantity: number
-  items: MedusaCartLineItem[]
+  items: TItem[]
 }
 
-export type CartDisplayGroup =
+export type CartDisplayGroup<TItem extends BundleDisplayItem = MedusaCartLineItem> =
   | {
       type: "item"
-      item: MedusaCartLineItem
+      item: TItem
     }
-  | BundleCartGroup
+  | BundleCartGroup<TItem>
 
-function getBundleMetadata(item: MedusaCartLineItem) {
+function getPositiveNumber(value: unknown) {
+  if (typeof value === "number" && value > 0) {
+    return value
+  }
+
+  if (typeof value === "string") {
+    const parsedValue = Number.parseFloat(value)
+    if (Number.isFinite(parsedValue) && parsedValue > 0) {
+      return parsedValue
+    }
+  }
+
+  return null
+}
+
+function getBundleMetadata(item: BundleDisplayItem) {
   const metadata = item.metadata as Record<string, unknown> | null | undefined
   const bundleId =
     typeof metadata?.bundle_key === "string"
@@ -29,16 +49,12 @@ function getBundleMetadata(item: MedusaCartLineItem) {
     return null
   }
 
-  const bundleItemQuantity =
-    typeof metadata?.bundle_item_quantity === "number" && metadata.bundle_item_quantity > 0
-      ? metadata.bundle_item_quantity
-      : null
-  const bundleQuantityFromMetadata =
-    typeof metadata?.bundle_quantity === "number" && metadata.bundle_quantity > 0
-      ? metadata.bundle_quantity
-      : null
+  const bundleItemQuantity = getPositiveNumber(metadata?.bundle_item_quantity)
+  const bundleQuantityFromMetadata = getPositiveNumber(metadata?.bundle_quantity)
   const derivedBundleQuantity =
-    bundleItemQuantity && item.quantity % bundleItemQuantity === 0
+    bundleItemQuantity &&
+    typeof item.quantity === "number" &&
+    item.quantity % bundleItemQuantity === 0
       ? item.quantity / bundleItemQuantity
       : null
 
@@ -54,8 +70,10 @@ function getBundleMetadata(item: MedusaCartLineItem) {
   }
 }
 
-export function buildCartDisplayGroups(items: MedusaCartLineItem[] | null | undefined) {
-  const groups: CartDisplayGroup[] = []
+export function buildCartDisplayGroups<TItem extends BundleDisplayItem>(
+  items: TItem[] | null | undefined
+) {
+  const groups: CartDisplayGroup<TItem>[] = []
   const bundleIndexById = new Map<string, number>()
 
   for (const item of items ?? []) {
@@ -93,12 +111,14 @@ export function buildCartDisplayGroups(items: MedusaCartLineItem[] | null | unde
   return groups
 }
 
-export function getCartDisplayItemCount(groups: CartDisplayGroup[]) {
+export function getCartDisplayItemCount<TItem extends BundleDisplayItem>(
+  groups: CartDisplayGroup<TItem>[]
+) {
   return groups.reduce((count, group) => {
     if (group.type === "bundle") {
       return count + group.quantity
     }
 
-    return count + group.item.quantity
+    return count + (group.item.quantity ?? 0)
   }, 0)
 }

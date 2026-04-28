@@ -130,6 +130,20 @@ export interface HomepageAnnouncementItem extends Struct.ComponentSchema {
   };
 }
 
+export interface HomepageCollectionsSection extends Struct.ComponentSchema {
+  collectionName: 'components_homepage_collections_sections';
+  info: {
+    displayName: 'CollectionsSection';
+  };
+  attributes: {
+    CTA: Schema.Attribute.Component<'homepage.cta', false>;
+    Enabled: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    Eyebrow: Schema.Attribute.String;
+    Heading: Schema.Attribute.String;
+    Text: Schema.Attribute.Text;
+  };
+}
+
 export interface HomepageFeatureTag extends Struct.ComponentSchema {
   collectionName: 'components_homepage_feature_tags';
   info: {
@@ -137,6 +151,38 @@ export interface HomepageFeatureTag extends Struct.ComponentSchema {
   };
   attributes: {
     Text: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface HomepageGuidesHelpSectionCard extends Struct.ComponentSchema {
+  collectionName: 'components_homepage_guides_help_section_cards';
+  info: {
+    displayName: 'GuidesHelpSectionCard';
+  };
+  attributes: {
+    Eyebrow: Schema.Attribute.String;
+    Icon: Schema.Attribute.String;
+    Link: Schema.Attribute.String;
+    LinkText: Schema.Attribute.String;
+    Text: Schema.Attribute.Text;
+    Title: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface HomepageGuidesHelpSection extends Struct.ComponentSchema {
+  collectionName: 'components_homepage_guides_help_sections';
+  info: {
+    displayName: 'GuidesHelpSection';
+  };
+  attributes: {
+    Cards: Schema.Attribute.Component<
+      'homepage.guides-help-section-card',
+      true
+    >;
+    Enabled: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    Eyebrow: Schema.Attribute.String;
+    Heading: Schema.Attribute.String;
+    Text: Schema.Attribute.Text;
   };
 }
 
@@ -158,6 +204,20 @@ export interface HomepageHeroBanner extends Struct.ComponentSchema {
   };
 }
 
+export interface HomepageProductsSection extends Struct.ComponentSchema {
+  collectionName: 'components_homepage_products_sections';
+  info: {
+    displayName: 'ProductsSection';
+  };
+  attributes: {
+    CTA: Schema.Attribute.Component<'homepage.cta', false>;
+    Enabled: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    Eyebrow: Schema.Attribute.String;
+    Heading: Schema.Attribute.String;
+    Text: Schema.Attribute.Text;
+  };
+}
+
 export interface HomepageStat extends Struct.ComponentSchema {
   collectionName: 'components_homepage_stats';
   info: {
@@ -166,6 +226,19 @@ export interface HomepageStat extends Struct.ComponentSchema {
   attributes: {
     Label: Schema.Attribute.String & Schema.Attribute.Required;
     Value: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface HomepageSupportStrip extends Struct.ComponentSchema {
+  collectionName: 'components_homepage_support_strips';
+  info: {
+    displayName: 'SupportStrip';
+  };
+  attributes: {
+    CTA: Schema.Attribute.Component<'homepage.cta', false>;
+    Enabled: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    Label: Schema.Attribute.String;
+    Text: Schema.Attribute.Text;
   };
 }
 
@@ -182,9 +255,14 @@ declare module '@strapi/strapi' {
       'faq.faq-question': FaqFaqQuestion;
       'homepage.announcement-item': HomepageAnnouncementItem;
       'homepage.cta': HomepageCta;
+      'homepage.collections-section': HomepageCollectionsSection;
       'homepage.feature-tag': HomepageFeatureTag;
+      'homepage.guides-help-section-card': HomepageGuidesHelpSectionCard;
+      'homepage.guides-help-section': HomepageGuidesHelpSection;
       'homepage.hero-banner': HomepageHeroBanner;
+      'homepage.products-section': HomepageProductsSection;
       'homepage.stat': HomepageStat;
+      'homepage.support-strip': HomepageSupportStrip;
     }
   }
 }

@@ -16,7 +16,7 @@ export async function createCart(regionId?: string): Promise<MedusaCart> {
 export async function getCart(cartId: string): Promise<MedusaCart> {
   const { cart } = await sdk.store.cart.retrieve(cartId, {
     fields:
-      "+items.*,+items.metadata,+items.product,+items.variant,+items.variant.product,+items.variant.product.images,+items.variant.preorder_variant,+items.variant.preorder_variant.prices,+region,*promotions",
+      "+items.*,+items.metadata,+items.product,+items.variant,+items.variant.product,+items.variant.product.images,*items.variant.preorder_variant,*items.variant.preorder_variant.prices,+region,*promotions",
   })
   return cart
 }
@@ -217,8 +217,7 @@ export async function getShippingOptions(cartId: string): Promise<any[]> {
       cart_id: cartId,
     })
     return shipping_options || []
-  } catch (error) {
-    console.error("Failed to fetch shipping options:", error)
+  } catch {
     return []
   }
 }

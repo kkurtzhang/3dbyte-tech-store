@@ -192,6 +192,8 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     title: product.title,
     thumbnail: product.thumbnail,
     variants: product.variants,
+    inventory_quantity: product.inventory_quantity,
+    in_stock: product.in_stock,
     price: product.price_aud,
     currency_code: "AUD",
     originalPrice: product.original_price_aud ?? undefined,
@@ -226,7 +228,11 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
       sidebar={<ShopFilters />}
     >
       <div className="space-y-8">
-        <ProductGrid products={productsForGrid} />
+        <ProductGrid
+          products={productsForGrid}
+          sourceHref="/shop"
+          sourceLabel="Shop"
+        />
 
         {totalPages > 1 && (
           <div className="flex justify-center">

@@ -68,10 +68,10 @@ export function SearchResults({ initialHits, initialQuery = "" }: SearchResultsP
         e.preventDefault()
         if (focusedIndex >= 0 && hits[focusedIndex]) {
           router.push(
-            getProductPath(
+            `${getProductPath(
               hits[focusedIndex].handle,
               hits[focusedIndex].isBundle === true
-            )
+            )}?from=${encodeURIComponent("/search")}&fromLabel=${encodeURIComponent("Search")}`
           )
         }
         break
@@ -153,11 +153,17 @@ export function SearchResults({ initialHits, initialQuery = "" }: SearchResultsP
           role="option"
           aria-selected={focusedIndex === index}
           tabIndex={focusedIndex === index ? 0 : -1}
-          onClick={() => router.push(getProductPath(hit.handle, hit.isBundle === true))}
+          onClick={() =>
+            router.push(
+              `${getProductPath(hit.handle, hit.isBundle === true)}?from=${encodeURIComponent("/search")}&fromLabel=${encodeURIComponent("Search")}`
+            )
+          }
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault()
-              router.push(getProductPath(hit.handle, hit.isBundle === true))
+              router.push(
+                `${getProductPath(hit.handle, hit.isBundle === true)}?from=${encodeURIComponent("/search")}&fromLabel=${encodeURIComponent("Search")}`
+              )
             }
           }}
           className={`cursor-pointer transition-all duration-150 ${
@@ -178,6 +184,10 @@ export function SearchResults({ initialHits, initialQuery = "" }: SearchResultsP
             isBundle={hit.isBundle}
             availableInBundlesCount={hit.availableInBundlesCount}
             specs={hit.specs}
+            sourceHref="/search"
+            sourceLabel="Search"
+            inventoryQuantity={hit.inventory_quantity}
+            inStock={hit.in_stock}
           />
         </div>
       ))}

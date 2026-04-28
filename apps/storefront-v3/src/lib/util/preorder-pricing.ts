@@ -114,7 +114,11 @@ export function resolveRegularPrice(
     }
   }
 
-  if (matchedVariantPrice && typeof matchedVariantPrice.currency_code === "string") {
+  if (
+    matchedVariantPrice &&
+    typeof matchedVariantPrice.amount === "number" &&
+    typeof matchedVariantPrice.currency_code === "string"
+  ) {
     return {
       amount: matchedVariantPrice.amount,
       currency_code: matchedVariantPrice.currency_code,
@@ -128,7 +132,11 @@ export function resolveRegularPrice(
     }
   }
 
-  if (fallbackVariantPrice && typeof fallbackVariantPrice.currency_code === "string") {
+  if (
+    fallbackVariantPrice &&
+    typeof fallbackVariantPrice.amount === "number" &&
+    typeof fallbackVariantPrice.currency_code === "string"
+  ) {
     return {
       amount: fallbackVariantPrice.amount,
       currency_code: fallbackVariantPrice.currency_code,

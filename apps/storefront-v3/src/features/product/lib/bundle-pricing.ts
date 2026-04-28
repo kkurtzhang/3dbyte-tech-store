@@ -4,11 +4,24 @@ import type {
   MedusaProduct,
   MedusaProductVariant,
   MedusaProductVariantWithPreorder,
+  MedusaProductVariant,
 } from "@/lib/medusa/types"
 import { isPreorder } from "@/lib/util/is-preorder"
 
 const DEFAULT_VARIANT_TITLES = new Set(["default", "default title"])
 const LOW_STOCK_THRESHOLD = 5
+
+type VariantWithPricing = MedusaProductVariant & {
+  calculated_price?: {
+    calculated_amount?: number
+    original_amount?: number
+    currency_code?: string | null
+  }
+  prices?: Array<{
+    amount?: number | null
+    currency_code?: string | null
+  }> | null
+}
 
 function normalizeLabel(value: string | null | undefined) {
   return value?.trim().toLowerCase() ?? ""
@@ -37,16 +50,7 @@ export function getVariantPriceSnapshot(
   product: MedusaProduct | null | undefined,
   variantId?: string
 ) {
-  const variant = getVariantFromProduct(product, variantId) as
-    | (MedusaProductVariant & {
-        prices?: MedusaCurrencyAmount[]
-        calculated_price?: {
-          calculated_amount?: number
-          original_amount?: number
-          currency_code?: string | null
-        }
-      })
-    | null
+  const variant = getVariantFromProduct(product, variantId) as VariantWithPricing | null
 
   const calculatedAmount = variant?.calculated_price?.calculated_amount
   const originalAmount = variant?.calculated_price?.original_amount

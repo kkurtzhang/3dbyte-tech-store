@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils"
 import { getProductPath } from "@/lib/medusa/bundles"
 import { QuickViewButton } from "./quick-view-button"
 import { QuickViewDialog } from "./quick-view-dialog"
+import type { QuickViewProductPreview } from "../lib/quick-view-product"
 
 export interface ProductCardProps {
   id: string
@@ -27,9 +28,14 @@ export interface ProductCardProps {
     label: string
     value: string
   }[]
+  sourceHref?: string
+  sourceLabel?: string
+  inventoryQuantity?: number
+  inStock?: boolean
 }
 
 export function ProductCard({
+  id,
   handle,
   title,
   thumbnail,
@@ -38,9 +44,28 @@ export function ProductCard({
   discountPercentage,
   isBundle = false,
   availableInBundlesCount = 0,
-  specs
+  specs,
+  sourceHref,
+  sourceLabel,
+  inventoryQuantity,
+  inStock,
 }: ProductCardProps) {
   const [quickViewOpen, setQuickViewOpen] = useState(false)
+  const basePath = getProductPath(handle, isBundle)
+  const productHref =
+    sourceHref && sourceLabel
+      ? `${basePath}?from=${encodeURIComponent(sourceHref)}&fromLabel=${encodeURIComponent(sourceLabel)}`
+      : basePath
+  const quickViewProductPreview: QuickViewProductPreview = {
+    id,
+    handle,
+    title,
+    thumbnail,
+    price,
+    originalPrice,
+    inventoryQuantity,
+    inStock,
+  }
 
   const formatPrice = (amount: number, currency: string) => {
     return new Intl.NumberFormat("en-US", {
@@ -51,7 +76,6 @@ export function ProductCard({
 
   const hasDiscount = discountPercentage && discountPercentage > 0
   const isHotDeal = discountPercentage && discountPercentage >= 30
-  const productPath = getProductPath(handle, isBundle)
 
   // "Lab" Aesthetic: Clean borders, mono fonts for data
   return (
@@ -61,7 +85,7 @@ export function ProductCard({
         isBundle && "border-dashed bg-secondary/10"
       )}
     >
-      <Link href={productPath} className="relative aspect-square overflow-hidden bg-secondary/20">
+      <Link href={productHref} className="relative aspect-square overflow-hidden bg-secondary/20">
         {thumbnail ? (
           <Image
             src={thumbnail}
@@ -123,7 +147,7 @@ export function ProductCard({
 
       <div className="flex flex-1 flex-col p-4">
         <div className="mb-2">
-          <Link href={productPath} className="line-clamp-2 text-sm font-medium leading-tight group-hover:text-primary transition-colors">
+          <Link href={productHref} className="line-clamp-2 text-sm font-medium leading-tight group-hover:text-primary transition-colors">
             {title}
           </Link>
           {!isBundle && availableInBundlesCount > 0 && (
@@ -160,6 +184,9 @@ export function ProductCard({
         handle={handle}
         open={quickViewOpen}
         onOpenChange={setQuickViewOpen}
+        productPreview={quickViewProductPreview}
+        sourceHref={sourceHref}
+        sourceLabel={sourceLabel}
       />
     </div>
   )
