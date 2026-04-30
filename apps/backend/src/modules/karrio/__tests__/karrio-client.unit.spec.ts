@@ -96,6 +96,41 @@ describe("KarrioClient", () => {
       );
     });
 
+    it("sends normalized address codes in the JSON request body", async () => {
+      fetchSpy.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockRateResponse,
+      });
+
+      await client.fetchRates({
+        ...mockRateRequest,
+        shipper: {
+          ...mockRateRequest.shipper,
+          country_code: "au",
+          state_code: "tas",
+        },
+        recipient: {
+          ...mockRateRequest.recipient,
+          country_code: "au",
+          state_code: "nsw",
+        },
+      });
+
+      const [, requestInit] = fetchSpy.mock.calls[0];
+      expect(JSON.parse(requestInit?.body as string)).toEqual(
+        expect.objectContaining({
+          shipper: expect.objectContaining({
+            country_code: "AU",
+            state_code: "TAS",
+          }),
+          recipient: expect.objectContaining({
+            country_code: "AU",
+            state_code: "NSW",
+          }),
+        })
+      );
+    });
+
     it("throws on API error response", async () => {
       fetchSpy.mockResolvedValueOnce({
         ok: false,

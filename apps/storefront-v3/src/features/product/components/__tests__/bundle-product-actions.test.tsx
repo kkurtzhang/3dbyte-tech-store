@@ -27,6 +27,18 @@ jest.mock("../social-share", () => ({
   SocialShare: () => <div data-testid="social-share" />,
 }))
 
+jest.mock("../product-shipping-estimate", () => ({
+  ProductShippingEstimate: ({
+    items,
+  }: {
+    items?: { variantId: string; quantity: number }[]
+  }) => (
+    <div data-testid="product-shipping-estimate">
+      {items?.map((item) => `${item.variantId}:${item.quantity}`).join(",")}
+    </div>
+  ),
+}))
+
 jest.mock("lucide-react", () => ({
   AlertTriangle: () => <svg data-testid="icon-alert-triangle" />,
   CheckCircle2: () => <svg data-testid="icon-check-circle" />,

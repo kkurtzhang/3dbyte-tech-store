@@ -1,5 +1,6 @@
 import { MedusaError } from "@medusajs/framework/utils";
 import type {
+  KarrioAddress,
   KarrioCarrier,
   KarrioModuleOptions,
   KarrioRateRequest,
@@ -9,6 +10,7 @@ import type {
   KarrioTracker,
   KarrioVoidResponse,
 } from "./types";
+import { normalizeAddressCode } from "./utils";
 
 const REQUEST_TIMEOUT_MS = 15_000;
 
@@ -24,13 +26,21 @@ export class KarrioClient {
   }
 
   async fetchRates(request: KarrioRateRequest): Promise<KarrioRateResponse> {
-    return this.request<KarrioRateResponse>("POST", "/v1/proxy/rates", request);
+    return this.request<KarrioRateResponse>(
+      "POST",
+      "/v1/proxy/rates",
+      this.normalizeRateRequest(request)
+    );
   }
 
   async createShipment(
     request: KarrioShipmentRequest
   ): Promise<KarrioShipment> {
-    return this.request<KarrioShipment>("POST", "/v1/shipments", request);
+    return this.request<KarrioShipment>(
+      "POST",
+      "/v1/shipments",
+      this.normalizeShipmentRequest(request)
+    );
   }
 
   async getTracking(trackerId: string): Promise<KarrioTracker> {
@@ -113,5 +123,33 @@ export class KarrioClient {
     } finally {
       clearTimeout(timeoutId);
     }
+  }
+
+  private normalizeAddress(address: KarrioAddress): KarrioAddress {
+    return {
+      ...address,
+      country_code: normalizeAddressCode(address.country_code) || "",
+      state_code: normalizeAddressCode(address.state_code),
+    };
+  }
+
+  private normalizeRateRequest(request: KarrioRateRequest): KarrioRateRequest {
+    return {
+      ...request,
+      shipper: this.normalizeAddress(request.shipper),
+      recipient: this.normalizeAddress(request.recipient),
+      parcels: request.parcels.map((parcel) => ({ ...parcel })),
+    };
+  }
+
+  private normalizeShipmentRequest(
+    request: KarrioShipmentRequest
+  ): KarrioShipmentRequest {
+    return {
+      ...request,
+      shipper: this.normalizeAddress(request.shipper),
+      recipient: this.normalizeAddress(request.recipient),
+      parcels: request.parcels.map((parcel) => ({ ...parcel })),
+    };
   }
 }

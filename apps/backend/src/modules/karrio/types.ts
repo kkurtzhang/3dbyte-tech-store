@@ -15,6 +15,7 @@ export interface KarrioAddress {
   country_code: string;
   phone_number?: string;
   email?: string;
+  residential?: boolean;
 }
 
 export interface KarrioParcel {
@@ -25,6 +26,8 @@ export interface KarrioParcel {
   length?: number;
   dimension_unit?: "CM" | "IN";
   description?: string;
+  is_document?: boolean;
+  packaging_type?: "your_packaging" | string;
 }
 
 export interface KarrioRateRequest {
@@ -34,6 +37,7 @@ export interface KarrioRateRequest {
   services?: string[];
   carrier_ids?: string[];
   options?: Record<string, unknown>;
+  payment?: Record<string, unknown>;
 }
 
 export interface KarrioRate {
@@ -75,6 +79,7 @@ export interface KarrioShipmentRequest {
   service: string;
   carrier_ids?: string[];
   options?: Record<string, unknown>;
+  payment?: Record<string, unknown>;
   label_type?: "PDF" | "PNG" | "ZPL";
   metadata?: Record<string, unknown>;
   selected_rate_id?: string;

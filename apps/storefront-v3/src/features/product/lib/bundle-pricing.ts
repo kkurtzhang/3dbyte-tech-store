@@ -4,7 +4,6 @@ import type {
   MedusaProduct,
   MedusaProductVariant,
   MedusaProductVariantWithPreorder,
-  MedusaProductVariant,
 } from "@/lib/medusa/types"
 import { isPreorder } from "@/lib/util/is-preorder"
 

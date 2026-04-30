@@ -9,6 +9,7 @@ import { PriceDisplay } from "@/components/ui/price-display"
 import { Badge } from "@/components/ui/badge"
 import { AlertTriangle, CheckCircle2, XCircle } from "lucide-react"
 import { SocialShare } from "./social-share"
+import { ProductShippingEstimate } from "./product-shipping-estimate"
 import type { BundleProduct } from "@/lib/medusa/bundles"
 import type { MedusaProduct } from "@/lib/medusa/types"
 import { cn } from "@/lib/utils"
@@ -164,6 +165,26 @@ export function BundleProductActions({
   const allBundleItemsSelected = bundleProduct.items.every((item) => {
     return Boolean(selectedVariantsByItemId[item.id])
   })
+  const shippingEstimateItems = useMemo(
+    () =>
+      bundleProduct.items
+        .map((item) => {
+          const variantId = selectedVariantsByItemId[item.id]
+
+          if (!variantId) {
+            return null
+          }
+
+          return {
+            variantId,
+            quantity: item.quantity * bundleQuantity,
+          }
+        })
+        .filter((item): item is { variantId: string; quantity: number } =>
+          Boolean(item)
+        ),
+    [bundleProduct.items, bundleQuantity, selectedVariantsByItemId]
+  )
   const isOutOfStock = bundleInventory.status === "out-of-stock"
   const maxBundleQuantity = bundleInventory.availableQuantity
 
@@ -429,6 +450,10 @@ export function BundleProductActions({
           Each bundle item is added together and grouped in your cart.
         </p>
       </div>
+
+      <ProductShippingEstimate
+        items={allBundleItemsSelected ? shippingEstimateItems : undefined}
+      />
     </div>
   )
 }

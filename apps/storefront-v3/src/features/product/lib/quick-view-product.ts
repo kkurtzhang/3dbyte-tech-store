@@ -1,5 +1,17 @@
 import type { MedusaProduct, MedusaProductVariant } from "@/lib/medusa/types"
 
+type QuickViewVariant = MedusaProductVariant & {
+  prices?: {
+    amount?: number
+    currency_code?: string
+  }[]
+  calculated_price?: {
+    calculated_amount?: number
+    original_amount?: number
+    currency_code?: string
+  }
+}
+
 export interface QuickViewProductPreview {
   id: string
   handle: string
@@ -40,7 +52,7 @@ function buildPreviewVariant(
       original_amount: originalAmount,
       currency_code: currencyCode,
     },
-  } as MedusaProductVariant
+  } as unknown as MedusaProductVariant
 }
 
 export function buildQuickViewPreviewProduct(
@@ -64,7 +76,7 @@ export function buildQuickViewPreviewProduct(
       : [],
     options: [],
     variants: [variant],
-  } as MedusaProduct
+  } as unknown as MedusaProduct
 }
 
 function mergePrimaryVariant(
@@ -75,21 +87,24 @@ function mergePrimaryVariant(
     return previewVariant
   }
 
+  const preview = previewVariant as QuickViewVariant | undefined
+  const fetched = fetchedVariant as QuickViewVariant
+
   return {
     ...previewVariant,
     ...fetchedVariant,
-    thumbnail: fetchedVariant.thumbnail || previewVariant?.thumbnail,
+    thumbnail: fetchedVariant.thumbnail || preview?.thumbnail,
     prices:
-      fetchedVariant.prices && fetchedVariant.prices.length > 0
-        ? fetchedVariant.prices
-        : previewVariant?.prices,
+      fetched.prices && fetched.prices.length > 0
+        ? fetched.prices
+        : preview?.prices,
     calculated_price:
-      fetchedVariant.calculated_price || previewVariant?.calculated_price,
+      fetched.calculated_price || preview?.calculated_price,
     inventory_quantity:
-      fetchedVariant.inventory_quantity ?? previewVariant?.inventory_quantity,
+      fetchedVariant.inventory_quantity ?? preview?.inventory_quantity,
     manage_inventory:
-      fetchedVariant.manage_inventory ?? previewVariant?.manage_inventory,
-  } as MedusaProductVariant
+      fetchedVariant.manage_inventory ?? preview?.manage_inventory,
+  } as unknown as MedusaProductVariant
 }
 
 export function mergeQuickViewProductData(

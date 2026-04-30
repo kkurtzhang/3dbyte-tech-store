@@ -2,8 +2,9 @@
 
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
-import { updateCart, addShippingMethod, completePreorderCart, initiatePaymentSession, getCart, getShippingOptions } from "@/lib/medusa/cart"
+import { updateCart, addShippingMethod, completePreorderCart, initiatePaymentSession, getCart, getShippingOptions, calculateShippingOption } from "@/lib/medusa/cart"
 import { getLiveShippingRates, type ShippingRate } from "@/lib/medusa/shipping"
+import { getShippingServiceDisplayName } from "@/lib/shipping/display-name"
 import { z } from "zod"
 
 const CART_COOKIE = "_medusa_cart_id"
@@ -19,6 +20,69 @@ const checkoutAddressSchema = z.object({
   phone: z.string().trim().max(30).optional().or(z.literal("")),
 })
 
+type StoreShippingOption = {
+  id: string
+  name?: string | null
+  description?: string | null
+  amount?: number | null
+  price_type?: string | null
+}
+
+type ResolvedStoreShippingOption = StoreShippingOption & {
+  amount: number
+}
+
+function isResolvedShippingOption(
+  option: ResolvedStoreShippingOption | null
+): option is ResolvedStoreShippingOption {
+  return option !== null
+}
+
+function findLiveRateForOption(
+  option: StoreShippingOption,
+  rates: ShippingRate[]
+): ShippingRate | undefined {
+  const optionDisplayName = getShippingServiceDisplayName({
+    description: option.description,
+    name: option.name,
+  })
+
+  return rates.find((rate) => {
+    const rateDisplayName = getShippingServiceDisplayName({
+      carrierName: rate.carrier.name,
+      service: rate.service,
+      serviceName: rate.serviceName,
+    })
+
+    return rateDisplayName === optionDisplayName
+  })
+}
+
+async function resolveShippingOptionAmount(
+  cartId: string,
+  option: StoreShippingOption,
+  liveRates: ShippingRate[]
+): Promise<number | null> {
+  const liveRate = findLiveRateForOption(option, liveRates)
+  if (liveRate) {
+    return liveRate.totalCharge
+  }
+
+  if (option.price_type !== "calculated") {
+    return typeof option.amount === "number" ? option.amount : null
+  }
+
+  return calculateShippingOption({
+    cartId,
+    optionId: option.id,
+    data: {
+      code: option.id,
+      description: option.description,
+      name: option.name,
+    },
+  })
+}
+
 export async function getShippingOptionsAction() {
   const cookieStore = await cookies()
   const cartId = cookieStore.get(CART_COOKIE)?.value
@@ -26,8 +90,38 @@ export async function getShippingOptionsAction() {
   if (!cartId) return { success: false, error: "No cart found", options: [] }
 
   try {
-    const options = await getShippingOptions(cartId)
-    return { success: true, options }
+    const options = (await getShippingOptions(cartId)) as StoreShippingOption[]
+    const liveRates = await getLiveShippingRates(cartId)
+      .then((response) => response.rates)
+      .catch(() => [])
+    const resolvedOptions = await Promise.all(
+      options.map(async (option) => {
+        const amount = await resolveShippingOptionAmount(cartId, option, liveRates)
+
+        if (typeof amount !== "number") {
+          return null
+        }
+
+        const liveRate = findLiveRateForOption(option, liveRates)
+
+        return {
+          ...option,
+          amount,
+          name: liveRate
+            ? getShippingServiceDisplayName({
+                carrierName: liveRate.carrier.name,
+                service: liveRate.service,
+                serviceName: liveRate.serviceName,
+              })
+            : option.name,
+        }
+      })
+    )
+
+    return {
+      success: true,
+      options: resolvedOptions.filter(isResolvedShippingOption),
+    }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to get shipping options"
     return { success: false, error: message, options: [] }
@@ -114,7 +208,19 @@ export async function setShippingMethodAction(optionId: string) {
   if (!optionId?.trim()) return { success: false, error: "Invalid shipping option" }
 
   try {
-    const cart = await addShippingMethod({ cartId, optionId })
+    const options = (await getShippingOptions(cartId)) as StoreShippingOption[]
+    const option = options.find((shippingOption) => shippingOption.id === optionId)
+    const cart = await addShippingMethod({
+      cartId,
+      optionId,
+      data: option
+        ? {
+            code: option.id,
+            description: option.description,
+            name: option.name,
+          }
+        : undefined,
+    })
     revalidatePath("/checkout")
     return { success: true, cart }
   } catch (error: unknown) {

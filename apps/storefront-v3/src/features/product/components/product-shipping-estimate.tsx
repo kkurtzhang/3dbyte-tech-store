@@ -7,17 +7,28 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { formatPrice } from "@/components/ui/price-display"
+import { useDebounce } from "@/lib/hooks/use-debounce"
+import { searchAddresses } from "@/lib/search/addresses"
 import {
+  getLocalitySuggestionsFromAddresses,
   getPrimaryShippingEstimate,
+  inferAustralianStateFromPostcode,
   isValidAustralianPostcode,
+  normalizeLocalityInput,
   normalizePostcodeInput,
+  parseShippingDestinationInput,
+  type ProductShippingLocalitySuggestion,
   type ProductShippingEstimateOption,
 } from "../lib/product-shipping-estimate"
 
-const POSTCODE_STORAGE_KEY = "3dbyte-product-shipping-postcode"
+const DESTINATION_STORAGE_KEY = "3dbyte-product-shipping-destination"
 
 interface ProductShippingEstimateProps {
   variantId?: string | null
+  items?: {
+    variantId: string
+    quantity: number
+  }[]
 }
 
 type ShippingEstimateState =
@@ -36,22 +47,30 @@ function getShippingOptionIcon(name: string) {
 }
 
 export function ProductShippingEstimate({
+  items,
   variantId,
 }: ProductShippingEstimateProps) {
-  const [postcode, setPostcode] = useState("")
+  const [destination, setDestination] = useState("")
+  const [selectedLocality, setSelectedLocality] =
+    useState<ProductShippingLocalitySuggestion | null>(null)
+  const [localitySuggestions, setLocalitySuggestions] = useState<
+    ProductShippingLocalitySuggestion[]
+  >([])
+  const [showLocalitySuggestions, setShowLocalitySuggestions] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [estimate, setEstimate] = useState<ShippingEstimateState>(null)
   const [isPending, startTransition] = useTransition()
+  const debouncedDestination = useDebounce(destination, 300)
 
   useEffect(() => {
     if (typeof window === "undefined") {
       return
     }
 
-    const savedPostcode = window.localStorage.getItem(POSTCODE_STORAGE_KEY)
+    const savedDestination = window.localStorage.getItem(DESTINATION_STORAGE_KEY)
 
-    if (savedPostcode) {
-      setPostcode(savedPostcode)
+    if (savedDestination) {
+      setDestination(savedDestination)
     }
   }, [])
 
@@ -59,29 +78,94 @@ export function ProductShippingEstimate({
     () => getPrimaryShippingEstimate(estimate?.options || []),
     [estimate]
   )
+  const hasEstimateItems = Boolean(variantId || items?.length)
+
+  useEffect(() => {
+    let isCurrent = true
+    const normalizedDestination = normalizeLocalityInput(debouncedDestination)
+    const parsedDestination = parseShippingDestinationInput(normalizedDestination)
+    const normalizedPostcode = normalizePostcodeInput(parsedDestination.postalCode)
+
+    if (normalizedDestination.length < 3) {
+      setLocalitySuggestions([])
+      return () => {
+        isCurrent = false
+      }
+    }
+
+    searchAddresses(normalizedDestination, 8, "AU").then((result) => {
+      if (!isCurrent) {
+        return
+      }
+
+      const suggestions = getLocalitySuggestionsFromAddresses(
+        result.addresses,
+        isValidAustralianPostcode(normalizedPostcode)
+          ? normalizedPostcode
+          : undefined
+      )
+
+      setLocalitySuggestions(suggestions)
+      setShowLocalitySuggestions(suggestions.length > 0)
+    })
+
+    return () => {
+      isCurrent = false
+    }
+  }, [debouncedDestination])
+
+  const handleDestinationChange = (value: string) => {
+    setDestination(value)
+    setSelectedLocality(null)
+    setShowLocalitySuggestions(value.trim().length >= 3)
+  }
+
+  const selectLocality = (suggestion: ProductShippingLocalitySuggestion) => {
+    setDestination(suggestion.label)
+    setSelectedLocality(suggestion)
+    setShowLocalitySuggestions(false)
+    setError(null)
+  }
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
-    if (!variantId) {
+    if (!hasEstimateItems) {
       setError("Select your options to unlock a live postcode estimate.")
       return
     }
 
-    const normalizedPostcode = normalizePostcodeInput(postcode)
+    const parsedDestination = selectedLocality
+      ? {
+          postalCode: selectedLocality.postcode,
+          locality: selectedLocality.suburb,
+        }
+      : parseShippingDestinationInput(destination)
+    const normalizedPostcode = normalizePostcodeInput(parsedDestination.postalCode)
+    const normalizedLocality = normalizeLocalityInput(parsedDestination.locality)
 
     if (!isValidAustralianPostcode(normalizedPostcode)) {
       setError("Enter a valid 4-digit Australian postcode.")
       return
     }
 
+    if (!normalizedLocality) {
+      setError("Enter the delivery suburb or locality.")
+      return
+    }
+
     setError(null)
 
     startTransition(async () => {
+      const province =
+        selectedLocality?.state || inferAustralianStateFromPostcode(normalizedPostcode)
+
       const result = await estimateProductShippingAction({
-        variantId,
+        ...(items?.length ? { items } : { variantId }),
         postalCode: normalizedPostcode,
         countryCode: "au",
+        city: normalizedLocality,
+        province,
       })
 
       if (!result.success) {
@@ -96,7 +180,10 @@ export function ProductShippingEstimate({
       })
 
       if (typeof window !== "undefined") {
-        window.localStorage.setItem(POSTCODE_STORAGE_KEY, result.postcode)
+        window.localStorage.setItem(
+          DESTINATION_STORAGE_KEY,
+          selectedLocality?.label || `${normalizedLocality} ${normalizedPostcode}`
+        )
       }
     })
   }
@@ -108,30 +195,56 @@ export function ProductShippingEstimate({
           Shipping Estimate
         </p>
         <p className="text-sm leading-6 text-muted-foreground">
-          Enter your Australian postcode for a live postage estimate on this item.
+          Enter your suburb and postcode for a live postage estimate on this item.
         </p>
       </div>
 
-      <form className="mt-4 flex flex-col gap-3 sm:flex-row" onSubmit={handleSubmit}>
+      <form className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]" onSubmit={handleSubmit}>
         <label className="grid flex-1 gap-2 text-sm font-medium text-foreground">
-          <span>Postcode</span>
+          <span>Suburb or postcode</span>
           <div className="relative">
             <MapPin className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              aria-label="Postcode"
-              className="pl-9 font-mono"
-              inputMode="numeric"
-              maxLength={4}
-              onChange={(event) => setPostcode(event.target.value)}
-              placeholder="7000"
-              value={postcode}
+              aria-label="Suburb or postcode"
+              aria-autocomplete="list"
+              aria-expanded={showLocalitySuggestions}
+              className="pl-9"
+              maxLength={100}
+              onBlur={() => {
+                window.setTimeout(() => setShowLocalitySuggestions(false), 100)
+              }}
+              onChange={(event) => handleDestinationChange(event.target.value)}
+              onFocus={() => {
+                setShowLocalitySuggestions(localitySuggestions.length > 0)
+              }}
+              placeholder="Wollongong 2500"
+              role="combobox"
+              value={destination}
             />
+            {showLocalitySuggestions && (
+              <div
+                className="absolute left-0 right-0 top-full z-50 mt-1 max-h-56 overflow-auto rounded-md border bg-popover p-1 text-sm shadow-md"
+                role="listbox"
+              >
+                {localitySuggestions.map((suggestion) => (
+                  <button
+                    key={suggestion.id}
+                    className="flex w-full items-center rounded-sm px-3 py-2 text-left hover:bg-accent hover:text-accent-foreground"
+                    onClick={() => selectLocality(suggestion)}
+                    role="option"
+                    type="button"
+                  >
+                    {suggestion.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </label>
 
         <Button
           className="sm:self-end"
-          disabled={!variantId || isPending}
+          disabled={!hasEstimateItems || isPending}
           type="submit"
           variant="outline"
         >
@@ -146,7 +259,7 @@ export function ProductShippingEstimate({
         </Button>
       </form>
 
-      {!variantId && (
+      {!hasEstimateItems && (
         <p className="mt-3 text-sm text-muted-foreground">
           Select your options to unlock a live postcode estimate.
         </p>

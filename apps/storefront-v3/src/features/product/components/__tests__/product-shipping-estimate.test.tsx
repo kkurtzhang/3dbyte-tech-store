@@ -14,16 +14,29 @@ jest.mock("@/app/actions/product-shipping", () => ({
   estimateProductShippingAction: jest.fn(),
 }))
 
+jest.mock("@/lib/search/addresses", () => ({
+  searchAddresses: jest.fn(),
+}))
+
 import { estimateProductShippingAction } from "@/app/actions/product-shipping"
+import { searchAddresses } from "@/lib/search/addresses"
 
 const mockEstimateProductShippingAction =
   estimateProductShippingAction as jest.MockedFunction<
     typeof estimateProductShippingAction
   >
+const mockSearchAddresses = searchAddresses as jest.MockedFunction<
+  typeof searchAddresses
+>
 
 describe("ProductShippingEstimate", () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockSearchAddresses.mockResolvedValue({
+      addresses: [],
+      count: 0,
+      processingTimeMs: 0,
+    })
     window.localStorage.clear()
   })
 
@@ -43,11 +56,25 @@ describe("ProductShippingEstimate", () => {
 
     render(<ProductShippingEstimate variantId="variant_123" />)
 
-    await user.type(screen.getByLabelText(/postcode/i), "700")
+    await user.type(screen.getByLabelText(/suburb or postcode/i), "700")
     await user.click(screen.getByRole("button", { name: /check postage/i }))
 
     expect(
       screen.getByText(/enter a valid 4-digit australian postcode/i)
+    ).toBeInTheDocument()
+    expect(mockEstimateProductShippingAction).not.toHaveBeenCalled()
+  })
+
+  it("requires locality before requesting an estimate", async () => {
+    const user = userEvent.setup()
+
+    render(<ProductShippingEstimate variantId="variant_123" />)
+
+    await user.type(screen.getByLabelText(/suburb or postcode/i), "2500")
+    await user.click(screen.getByRole("button", { name: /check postage/i }))
+
+    expect(
+      screen.getByText(/enter the delivery suburb or locality/i)
     ).toBeInTheDocument()
     expect(mockEstimateProductShippingAction).not.toHaveBeenCalled()
   })
@@ -80,7 +107,7 @@ describe("ProductShippingEstimate", () => {
 
     render(<ProductShippingEstimate variantId="variant_123" />)
 
-    await user.type(screen.getByLabelText(/postcode/i), "7000")
+    await user.type(screen.getByLabelText(/suburb or postcode/i), "Hobart 7000")
     await user.click(screen.getByRole("button", { name: /check postage/i }))
 
     await waitFor(() => {
@@ -91,6 +118,70 @@ describe("ProductShippingEstimate", () => {
     expect(screen.getByText("Standard Shipping")).toBeInTheDocument()
     expect(screen.getByText("Express Shipping")).toBeInTheDocument()
     expect(screen.getByText(/calculated live/i)).toBeInTheDocument()
+    expect(mockEstimateProductShippingAction).toHaveBeenCalledWith({
+      variantId: "variant_123",
+      postalCode: "7000",
+      countryCode: "au",
+      city: "Hobart",
+      province: "TAS",
+    })
+  })
+
+  it("uses an address search locality selection for city and state", async () => {
+    const user = userEvent.setup()
+
+    mockSearchAddresses.mockResolvedValue({
+      addresses: [
+        {
+          id: "addr_wollongong",
+          full_address: "40 Crown Street, Wollongong, NSW, 2500",
+          unit: "",
+          number: "40",
+          street: "Crown Street",
+          suburb: "Wollongong",
+          state: "NSW",
+          postcode: "2500",
+          country: "AU",
+        },
+      ],
+      count: 1,
+      processingTimeMs: 4,
+    })
+    mockEstimateProductShippingAction.mockResolvedValue({
+      success: true,
+      postcode: "2500",
+      options: [
+        {
+          id: "standard",
+          name: "Standard Shipping",
+          description: "2-5 business days",
+          amount: 9.95,
+          currencyCode: "aud",
+          priceType: "calculated",
+        },
+      ],
+    })
+
+    render(<ProductShippingEstimate variantId="variant_123" />)
+
+    await user.type(screen.getByLabelText(/suburb or postcode/i), "Wol 2500")
+
+    await waitFor(() => {
+      expect(screen.getByRole("option", { name: "Wollongong NSW 2500" })).toBeInTheDocument()
+    })
+
+    await user.click(screen.getByRole("option", { name: "Wollongong NSW 2500" }))
+    await user.click(screen.getByRole("button", { name: /check postage/i }))
+
+    await waitFor(() => {
+      expect(mockEstimateProductShippingAction).toHaveBeenCalledWith({
+        variantId: "variant_123",
+        postalCode: "2500",
+        countryCode: "au",
+        city: "Wollongong",
+        province: "NSW",
+      })
+    })
   })
 
   it("shows an error message when the estimate request fails", async () => {
@@ -103,7 +194,7 @@ describe("ProductShippingEstimate", () => {
 
     render(<ProductShippingEstimate variantId="variant_123" />)
 
-    await user.type(screen.getByLabelText(/postcode/i), "7000")
+    await user.type(screen.getByLabelText(/suburb or postcode/i), "Hobart 7000")
     await user.click(screen.getByRole("button", { name: /check postage/i }))
 
     await waitFor(() => {

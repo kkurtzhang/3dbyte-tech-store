@@ -173,13 +173,16 @@ export async function updateCart({
 
 export async function addShippingMethod({
   cartId,
+  data,
   optionId,
 }: {
   cartId: string
+  data?: Record<string, unknown>
   optionId: string
 }): Promise<MedusaCart> {
   const { cart } = await sdk.store.cart.addShippingMethod(cartId, {
     option_id: optionId,
+    ...(data ? { data } : {}),
   })
   return cart
 }
@@ -220,4 +223,35 @@ export async function getShippingOptions(cartId: string): Promise<any[]> {
   } catch {
     return []
   }
+}
+
+export async function calculateShippingOption({
+  cartId,
+  data,
+  optionId,
+}: {
+  cartId: string
+  data?: Record<string, unknown>
+  optionId: string
+}): Promise<number | null> {
+  const result = (await sdk.store.fulfillment.calculate(optionId, {
+    cart_id: cartId,
+    ...(data ? { data } : {}),
+  })) as {
+    shipping_option?: {
+      amount?: number | null
+      calculated_price?: {
+        calculated_amount?: number | null
+      }
+    }
+  }
+
+  const calculatedAmount =
+    result.shipping_option?.calculated_price?.calculated_amount
+  if (typeof calculatedAmount === "number") {
+    return calculatedAmount
+  }
+
+  const amount = result.shipping_option?.amount
+  return typeof amount === "number" ? amount : null
 }

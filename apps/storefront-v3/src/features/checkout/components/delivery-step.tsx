@@ -1,81 +1,98 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { Truck, Zap, Package, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { getShippingOptionsAction } from "@/app/actions/checkout";
+import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
+import { Truck, Zap, Loader2 } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { getShippingServiceDisplayName } from "@/lib/shipping/display-name"
+import { getShippingOptionsAction } from "@/app/actions/checkout"
 
 interface DeliveryOption {
-  id: string;
-  title: string;
-  description: string;
-  price: number;
-  icon: React.ElementType;
+  id: string
+  title: string
+  description: string
+  price: number
+  icon: React.ElementType
 }
 
 interface DeliveryStepProps {
-  onBack: () => void;
-  onComplete: (methodId: string) => Promise<void> | void;
+  onBack: () => void
+  onComplete: (methodId: string) => Promise<void> | void
 }
 
 export function DeliveryStep({ onBack, onComplete }: DeliveryStepProps) {
-  const [selectedId, setSelectedId] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [options, setOptions] = useState<DeliveryOption[]>([]);
+  const [selectedId, setSelectedId] = useState<string>("")
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [options, setOptions] = useState<DeliveryOption[]>([])
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadOptions() {
       try {
-        setIsLoading(true);
+        setIsLoading(true)
+        setError(null)
 
-        const medusaResult = await getShippingOptionsAction();
+        const medusaResult = await getShippingOptionsAction()
 
         if (medusaResult.success && medusaResult.options.length > 0) {
-          const transformedOptions: DeliveryOption[] = medusaResult.options.map(
-            (opt: Record<string, unknown>) => ({
-              id: opt.id as string,
-              title: (opt.name as string) || (opt.id as string),
-              description: (opt.description as string) || "Standard shipping",
-              price: (opt.amount as number) || 0,
-              icon:
-                typeof opt.amount === "number" && opt.amount > 1000
-                  ? Zap
-                  : Truck,
-            }),
-          );
-          setOptions(transformedOptions);
+          const transformedOptions: DeliveryOption[] = medusaResult.options.flatMap(
+            (opt) => {
+              if (!opt) {
+                return []
+              }
+
+              return [
+                {
+                  id: opt.id,
+                  title: getShippingServiceDisplayName({
+                    description: opt.description,
+                    name: opt.name || opt.id,
+                  }),
+                  description: opt.description || "Standard shipping",
+                  price: opt.amount,
+                  icon: opt.amount > 1000 ? Zap : Truck,
+                },
+              ]
+            }
+          )
+          setOptions(transformedOptions)
 
           if (transformedOptions.length > 0) {
-            setSelectedId(transformedOptions[0].id);
+            setSelectedId(transformedOptions[0].id)
           }
         } else {
-          setOptions(DEFAULT_OPTIONS);
-          setSelectedId("standard");
+          setOptions([])
+          setSelectedId("")
+          setError(
+            medusaResult.success
+              ? "No shipping methods are available for this address."
+              : medusaResult.error || "Unable to calculate postage"
+          )
         }
       } catch {
-        setOptions(DEFAULT_OPTIONS);
-        setSelectedId("standard");
+        setOptions([])
+        setSelectedId("")
+        setError("Unable to load shipping methods. Please try again.")
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
     }
-    loadOptions();
-  }, []);
+    loadOptions()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedId) return;
-    setIsSubmitting(true);
+    e.preventDefault()
+    if (!selectedId) return
+    setIsSubmitting(true)
     try {
-      await onComplete(selectedId);
+      await onComplete(selectedId)
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -94,6 +111,10 @@ export function DeliveryStep({ onBack, onComplete }: DeliveryStepProps) {
         >
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
+      ) : error ? (
+        <div className="rounded-md bg-destructive/10 p-4 text-sm text-destructive">
+          {error}
+        </div>
       ) : (
         <RadioGroup
           value={selectedId}
@@ -111,7 +132,7 @@ export function DeliveryStep({ onBack, onComplete }: DeliveryStepProps) {
                 htmlFor={option.id}
                 className={cn(
                   "flex items-center gap-4 rounded-lg border p-4 cursor-pointer transition-all",
-                  "hover:bg-muted/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-primary",
+                  "hover:bg-muted/50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:ring-1 peer-data-[state=checked]:ring-primary"
                 )}
               >
                 <option.icon className="h-6 w-6 text-primary" />
@@ -155,30 +176,5 @@ export function DeliveryStep({ onBack, onComplete }: DeliveryStepProps) {
         </Button>
       </div>
     </form>
-  );
+  )
 }
-
-// Fallback options when Medusa API is not available
-const DEFAULT_OPTIONS: DeliveryOption[] = [
-  {
-    id: "standard",
-    title: "Standard Ground",
-    description: "3-5 business days. Reliable transport.",
-    price: 0,
-    icon: Truck,
-  },
-  {
-    id: "express",
-    title: "Express Air",
-    description: "1-2 business days. Priority handling.",
-    price: 1500,
-    icon: Zap,
-  },
-  {
-    id: "freight",
-    title: "Heavy Freight",
-    description: "5-7 business days. For bulk equipment.",
-    price: 5000,
-    icon: Package,
-  },
-];
