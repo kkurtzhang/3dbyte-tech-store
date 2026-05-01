@@ -184,6 +184,187 @@ describe("ProductShippingEstimate", () => {
     })
   })
 
+  it("closes the locality suggestions after selecting one", async () => {
+    const user = userEvent.setup()
+
+    mockSearchAddresses.mockResolvedValue({
+      addresses: [
+        {
+          id: "addr_wollongong",
+          full_address: "40 Crown Street, Wollongong, NSW, 2500",
+          unit: "",
+          number: "40",
+          street: "Crown Street",
+          suburb: "Wollongong",
+          state: "NSW",
+          postcode: "2500",
+          country: "AU",
+        },
+      ],
+      count: 1,
+      processingTimeMs: 4,
+    })
+
+    render(<ProductShippingEstimate variantId="variant_123" />)
+
+    await user.type(screen.getByLabelText(/suburb or postcode/i), "Wol 2500")
+
+    const option = await screen.findByRole("option", {
+      name: "Wollongong NSW 2500",
+    })
+
+    await user.click(option)
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("option", { name: "Wollongong NSW 2500" })
+      ).not.toBeInTheDocument()
+    })
+    expect(screen.getByLabelText(/suburb or postcode/i)).toHaveValue(
+      "Wollongong NSW 2500"
+    )
+
+    await waitFor(
+      () => {
+        expect(mockSearchAddresses).toHaveBeenCalledWith(
+          "Wollongong NSW 2500",
+          8,
+          "AU"
+        )
+      },
+      { timeout: 1000 }
+    )
+    expect(
+      screen.queryByRole("option", { name: "Wollongong NSW 2500" })
+    ).not.toBeInTheDocument()
+  })
+
+  it("keeps the destination but closes suggestions when reused for another product", async () => {
+    const user = userEvent.setup()
+
+    mockSearchAddresses.mockResolvedValue({
+      addresses: [
+        {
+          id: "addr_wollongong",
+          full_address: "40 Crown Street, Wollongong, NSW, 2500",
+          unit: "",
+          number: "40",
+          street: "Crown Street",
+          suburb: "Wollongong",
+          state: "NSW",
+          postcode: "2500",
+          country: "AU",
+        },
+      ],
+      count: 1,
+      processingTimeMs: 4,
+    })
+
+    const { rerender } = render(<ProductShippingEstimate variantId="variant_123" />)
+
+    await user.type(screen.getByLabelText(/suburb or postcode/i), "Wol 2500")
+
+    await screen.findByRole("option", {
+      name: "Wollongong NSW 2500",
+    })
+
+    rerender(<ProductShippingEstimate variantId="variant_456" />)
+
+    expect(screen.getByLabelText(/suburb or postcode/i)).toHaveValue("Wol 2500")
+    expect(
+      screen.queryByRole("option", { name: "Wollongong NSW 2500" })
+    ).not.toBeInTheDocument()
+  })
+
+  it("restores a previous destination without auto-opening suggestions", async () => {
+    ;(window.localStorage.getItem as jest.Mock).mockReturnValue(
+      "Wollongong NSW 2500"
+    )
+    mockSearchAddresses.mockResolvedValue({
+      addresses: [
+        {
+          id: "addr_wollongong",
+          full_address: "40 Crown Street, Wollongong, NSW, 2500",
+          unit: "",
+          number: "40",
+          street: "Crown Street",
+          suburb: "Wollongong",
+          state: "NSW",
+          postcode: "2500",
+          country: "AU",
+        },
+      ],
+      count: 1,
+      processingTimeMs: 4,
+    })
+
+    render(<ProductShippingEstimate variantId="variant_123" />)
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/suburb or postcode/i)).toHaveValue(
+        "Wollongong NSW 2500"
+      )
+    })
+    await waitFor(() => {
+      expect(mockSearchAddresses).toHaveBeenCalledWith(
+        "Wollongong NSW 2500",
+        8,
+        "AU"
+      )
+    })
+    expect(screen.getByLabelText(/suburb or postcode/i)).toHaveAttribute(
+      "aria-expanded",
+      "false"
+    )
+    expect(
+      screen.queryByRole("option", { name: "Wollongong NSW 2500" })
+    ).not.toBeInTheDocument()
+  })
+
+  it("does not reopen locality suggestions after the input has blurred", async () => {
+    const user = userEvent.setup()
+    let resolveSearch:
+      | ((value: Awaited<ReturnType<typeof searchAddresses>>) => void)
+      | undefined
+    const searchPromise = new Promise<Awaited<ReturnType<typeof searchAddresses>>>(
+      (resolve) => {
+        resolveSearch = resolve
+      }
+    )
+
+    mockSearchAddresses.mockReturnValue(searchPromise)
+
+    render(<ProductShippingEstimate variantId="variant_123" />)
+
+    await user.type(screen.getByLabelText(/suburb or postcode/i), "Wol 2500")
+    await user.tab()
+
+    resolveSearch!({
+      addresses: [
+        {
+          id: "addr_wollongong",
+          full_address: "40 Crown Street, Wollongong, NSW, 2500",
+          unit: "",
+          number: "40",
+          street: "Crown Street",
+          suburb: "Wollongong",
+          state: "NSW",
+          postcode: "2500",
+          country: "AU",
+        },
+      ],
+      count: 1,
+      processingTimeMs: 4,
+    })
+
+    await waitFor(() => {
+      expect(mockSearchAddresses).toHaveBeenCalled()
+    })
+    expect(
+      screen.queryByRole("option", { name: "Wollongong NSW 2500" })
+    ).not.toBeInTheDocument()
+  })
+
   it("shows an error message when the estimate request fails", async () => {
     const user = userEvent.setup()
 

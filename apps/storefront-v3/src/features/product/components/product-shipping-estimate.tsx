@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState, useTransition } from "react"
+import { useEffect, useMemo, useRef, useState, useTransition } from "react"
 import { Clock3, Loader2, MapPin, Truck, Zap } from "lucide-react"
 import { estimateProductShippingAction } from "@/app/actions/product-shipping"
 import { Button } from "@/components/ui/button"
@@ -50,6 +50,8 @@ export function ProductShippingEstimate({
   items,
   variantId,
 }: ProductShippingEstimateProps) {
+  const isDestinationFocusedRef = useRef(false)
+  const estimateIdentityRef = useRef<string | null>(null)
   const [destination, setDestination] = useState("")
   const [selectedLocality, setSelectedLocality] =
     useState<ProductShippingLocalitySuggestion | null>(null)
@@ -61,6 +63,16 @@ export function ProductShippingEstimate({
   const [estimate, setEstimate] = useState<ShippingEstimateState>(null)
   const [isPending, startTransition] = useTransition()
   const debouncedDestination = useDebounce(destination, 300)
+  const estimateIdentity = useMemo(() => {
+    if (items?.length) {
+      return items
+        .map((item) => `${item.variantId}:${item.quantity}`)
+        .sort()
+        .join("|")
+    }
+
+    return variantId || ""
+  }, [items, variantId])
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -73,6 +85,25 @@ export function ProductShippingEstimate({
       setDestination(savedDestination)
     }
   }, [])
+
+  useEffect(() => {
+    if (estimateIdentityRef.current === null) {
+      estimateIdentityRef.current = estimateIdentity
+      return
+    }
+
+    if (estimateIdentityRef.current === estimateIdentity) {
+      return
+    }
+
+    estimateIdentityRef.current = estimateIdentity
+    isDestinationFocusedRef.current = false
+    setSelectedLocality(null)
+    setLocalitySuggestions([])
+    setShowLocalitySuggestions(false)
+    setError(null)
+    setEstimate(null)
+  }, [estimateIdentity])
 
   const primaryOption = useMemo(
     () => getPrimaryShippingEstimate(estimate?.options || []),
@@ -106,7 +137,9 @@ export function ProductShippingEstimate({
       )
 
       setLocalitySuggestions(suggestions)
-      setShowLocalitySuggestions(suggestions.length > 0)
+      setShowLocalitySuggestions(
+        isDestinationFocusedRef.current && suggestions.length > 0
+      )
     })
 
     return () => {
@@ -115,12 +148,16 @@ export function ProductShippingEstimate({
   }, [debouncedDestination])
 
   const handleDestinationChange = (value: string) => {
+    isDestinationFocusedRef.current = true
     setDestination(value)
     setSelectedLocality(null)
-    setShowLocalitySuggestions(value.trim().length >= 3)
+    setShowLocalitySuggestions(
+      isDestinationFocusedRef.current && value.trim().length >= 3
+    )
   }
 
   const selectLocality = (suggestion: ProductShippingLocalitySuggestion) => {
+    isDestinationFocusedRef.current = false
     setDestination(suggestion.label)
     setSelectedLocality(suggestion)
     setShowLocalitySuggestions(false)
@@ -211,11 +248,15 @@ export function ProductShippingEstimate({
               className="pl-9"
               maxLength={100}
               onBlur={() => {
-                window.setTimeout(() => setShowLocalitySuggestions(false), 100)
+                isDestinationFocusedRef.current = false
+                setShowLocalitySuggestions(false)
               }}
               onChange={(event) => handleDestinationChange(event.target.value)}
               onFocus={() => {
-                setShowLocalitySuggestions(localitySuggestions.length > 0)
+                isDestinationFocusedRef.current = true
+                setShowLocalitySuggestions(
+                  destination.trim().length >= 3 && localitySuggestions.length > 0
+                )
               }}
               placeholder="Wollongong 2500"
               role="combobox"
@@ -230,6 +271,9 @@ export function ProductShippingEstimate({
                   <button
                     key={suggestion.id}
                     className="flex w-full items-center rounded-sm px-3 py-2 text-left hover:bg-accent hover:text-accent-foreground"
+                    onMouseDown={(event) => {
+                      event.preventDefault()
+                    }}
                     onClick={() => selectLocality(suggestion)}
                     role="option"
                     type="button"
