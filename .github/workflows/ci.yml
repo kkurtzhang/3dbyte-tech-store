@@ -3,8 +3,14 @@ name: ci
 on:
   pull_request:
     branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
   push:
     branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
 
 permissions:
   contents: read
@@ -16,39 +22,84 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: pnpm
+      - name: Cache Turborepo
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.cache/turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
+      - name: Lint changed packages
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            pnpm turbo run lint --filter="...[origin/main]"
+          else
+            pnpm turbo run lint --filter="...[HEAD^1]"
+          fi
 
   type-check:
     name: type-check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: pnpm
+      - name: Cache Turborepo
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.cache/turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
       - run: pnpm install --frozen-lockfile
-      - run: pnpm type-check
+      - name: Type-check changed packages
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            pnpm turbo run type-check --filter="...[origin/main]"
+          else
+            pnpm turbo run type-check --filter="...[HEAD^1]"
+          fi
 
   test:
     name: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: pnpm
+      - name: Cache Turborepo
+        uses: actions/cache@v4
+        with:
+          path: node_modules/.cache/turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
       - run: pnpm install --frozen-lockfile
-      - run: pnpm turbo run test --only
+      - name: Test changed packages
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            pnpm turbo run test --filter="...[origin/main]"
+          else
+            pnpm turbo run test --filter="...[HEAD^1]"
+          fi
 
   e2e-smoke:
     name: e2e-smoke
