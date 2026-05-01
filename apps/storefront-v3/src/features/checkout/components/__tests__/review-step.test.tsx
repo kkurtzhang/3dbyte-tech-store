@@ -29,6 +29,11 @@ const createCartData = (overrides: Record<string, unknown> = {}) => ({
       },
       variant: {
         title: "Default Title",
+        calculated_price: {
+          calculated_amount: 900,
+          original_amount: 1200,
+          currency_code: "usd",
+        },
         preorder_variant: {
           status: "enabled" as const,
           available_date: "2999-01-01T00:00:00.000Z",
@@ -81,7 +86,7 @@ const createCartData = (overrides: Record<string, unknown> = {}) => ({
   email: "ada@example.com",
   shippingMethod: {
     name: "Standard Shipping",
-    price: 1000,
+    price: 10,
   },
   currencyCode: "usd",
   ...overrides,
@@ -105,6 +110,9 @@ describe("ReviewStep", () => {
     expect(screen.getByText(/Pre-order items ship when available/i)).toBeInTheDocument()
     expect(screen.getAllByText(/Jan 1, 2999/i)).toHaveLength(2)
     expect(screen.getByText("Standalone Item")).toBeInTheDocument()
+    expect(screen.getByText("$1,200.00")).toHaveClass("line-through")
+    expect(screen.queryByText(/Pre-order price:/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Regular price:/i)).not.toBeInTheDocument()
   })
 
   it("shows a mixed-cart notice when preorder and regular items coexist", () => {
@@ -153,5 +161,36 @@ describe("ReviewStep", () => {
       screen.getByText((_, element) => element?.textContent === "Polymaker HT-PLA-GF - Power Tool Green")
     ).toBeInTheDocument()
     expect(screen.queryByText(/Default Title/i)).not.toBeInTheDocument()
+  })
+
+  it("formats checkout review prices as display amounts", () => {
+    render(
+      <ReviewStep
+        cartData={createCartData({
+          items: [
+            {
+              id: "line_1",
+              title: "Display Price Product",
+              quantity: 3,
+              unit_price: 19,
+              metadata: null,
+              product: {
+                title: "Display Price Product",
+                thumbnail: "/single.jpg",
+              },
+              variant: {
+                title: "Matte Black",
+              },
+            },
+          ],
+        })}
+        onBack={onBack}
+        onComplete={onComplete}
+      />
+    )
+
+    expect(screen.getByText("$57.00")).toBeInTheDocument()
+    expect(screen.getByText("$10.00")).toBeInTheDocument()
+    expect(screen.queryByText("$0.57")).not.toBeInTheDocument()
   })
 })

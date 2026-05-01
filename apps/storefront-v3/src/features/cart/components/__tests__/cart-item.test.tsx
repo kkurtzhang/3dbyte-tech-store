@@ -59,7 +59,7 @@ describe("CartItem", () => {
     expect(screen.queryByText("Standard")).not.toBeInTheDocument()
     expect(screen.queryByText("Default Variant")).not.toBeInTheDocument()
     expect(screen.getByText(/Pre-order available on/i)).toBeInTheDocument()
-    expect(screen.getByText(/Pre-order price:/i)).toBeInTheDocument()
+    expect(screen.queryByText(/Pre-order price:/i)).not.toBeInTheDocument()
   })
 
   it("shows the actual preorder line price and the regular variant price separately", () => {
@@ -88,9 +88,90 @@ describe("CartItem", () => {
       />
     )
 
-    expect(screen.getByText("Pre-order price: $19.00")).toBeInTheDocument()
-    expect(screen.getByText("Regular price: $49.00")).toBeInTheDocument()
+    expect(screen.getByText("$19.00")).toBeInTheDocument()
+    expect(screen.getByText("$49.00")).toHaveClass("line-through")
+    expect(screen.queryByText(/Pre-order price:/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Regular price:/i)).not.toBeInTheDocument()
     expect(screen.getByText("$57.00")).toBeInTheDocument()
+  })
+
+  it("shows sale pricing with the regular price struck through for non-preorder items", () => {
+    render(
+      <CartItem
+        item={createItem({
+          unit_price: 25,
+          variant: {
+            id: "variant_sale",
+            title: "Default Variant",
+            calculated_price: {
+              calculated_amount: 25,
+              original_amount: 40,
+              currency_code: "usd",
+            },
+            product: {
+              id: "prod_1",
+              title: "Test Product",
+              thumbnail: "/test.jpg",
+            },
+          } as MedusaCartLineItem["variant"],
+        })}
+        currencyCode="usd"
+      />
+    )
+
+    expect(screen.getAllByText("$25.00").length).toBeGreaterThan(0)
+    expect(screen.getByText("$40.00")).toHaveClass("line-through")
+  })
+
+  it("shows bundle metadata regular pricing when variant pricing is not available", () => {
+    render(
+      <CartItem
+        item={createItem({
+          unit_price: 41.32,
+          metadata: {
+            bundle_regular_unit_price: 48.03,
+          },
+          variant: {
+            id: "variant_bundle",
+            title: "Default Variant",
+            product: {
+              id: "prod_1",
+              title: "Test Product",
+              thumbnail: "/test.jpg",
+            },
+          } as MedusaCartLineItem["variant"],
+        })}
+        currencyCode="aud"
+      />
+    )
+
+    expect(screen.getAllByText("A$41.32").length).toBeGreaterThan(0)
+    expect(screen.getByText("A$48.03")).toHaveClass("line-through")
+  })
+
+  it("uses the pre-tax line subtotal when tax-inclusive item totals are present", () => {
+    render(
+      <CartItem
+        item={createItem({
+          unit_price: 46.08,
+          subtotal: 46.08,
+          total: 50.69,
+          variant: {
+            id: "variant_1",
+            title: "Default Variant",
+            product: {
+              id: "prod_1",
+              title: "Test Product",
+              thumbnail: "/test.jpg",
+            },
+          } as MedusaCartLineItem["variant"],
+        })}
+        currencyCode="usd"
+      />
+    )
+
+    expect(screen.getByText("$46.08")).toBeInTheDocument()
+    expect(screen.queryByText("$50.69")).not.toBeInTheDocument()
   })
 
   it("falls back to the line-item thumbnail when the variant product thumbnail is missing", () => {

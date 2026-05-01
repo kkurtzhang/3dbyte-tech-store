@@ -8,17 +8,19 @@ import { ReviewStep } from "./review-step"
 import { CheckoutStepper, type CheckoutStepId } from "./checkout-stepper"
 import { StripeWrapper } from "./stripe-wrapper"
 
-import { 
-  setAddressesAction, 
-  setShippingMethodAction, 
-  completeCartAction, 
+import {
+  setAddressesAction,
+  setShippingMethodAction,
+  completeCartAction,
   initPaymentSessionAction,
-  getShippingOptionsAction 
+  getShippingOptionsAction
 } from "@/app/actions/checkout"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/lib/hooks/use-toast"
+import { useCart } from "@/context/cart-context"
 import type { MedusaCart } from "@/lib/medusa/cart"
 import type { MedusaProductVariantWithPreorder } from "@/lib/medusa/types"
+import { useCheckoutSummaryEstimate } from "./checkout-summary-estimate-context"
 
 interface CheckoutFormProps {
   cart: MedusaCart
@@ -30,6 +32,8 @@ type CheckoutFlowStep = "shipping" | "delivery" | "payment" | "review"
 export function CheckoutForm({ cart }: CheckoutFormProps) {
   const router = useRouter()
   const { toast } = useToast()
+  const { refreshCart } = useCart()
+  const checkoutSummaryEstimate = useCheckoutSummaryEstimate()
   const [currentStep, setCurrentStep] = useState<CheckoutFlowStep>("shipping")
 
   // Track completed steps for navigation
@@ -65,9 +69,11 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
     try {
       const result = await setAddressesAction(data)
       if (result.success) {
+        checkoutSummaryEstimate?.setEstimatedShippingTotal(null)
         setAddressData(data)
         setCompletedSteps((prev) => [...prev, "shipping"])
         setCurrentStep("delivery")
+        await refreshCart()
         window.scrollTo({ top: 0, behavior: 'smooth' })
       } else {
         toast({
@@ -92,13 +98,17 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
     try {
       const result = await setShippingMethodAction(methodId)
       if (result.success) {
+        checkoutSummaryEstimate?.setEstimatedShippingTotal(null)
         // Get shipping method details
         const optionsResult = await getShippingOptionsAction()
         if (optionsResult.success) {
           const shippingOption = optionsResult.options?.find((opt: any) => opt.id === methodId)
           setShippingMethodData({
             name: shippingOption?.name || "Shipping",
-            price: shippingOption?.amount || 0,
+            price:
+              typeof shippingOption?.amount === "number"
+                ? shippingOption.amount / 100
+                : 0,
           })
         }
 
@@ -117,6 +127,7 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
           // Mark delivery step as completed, move to payment
           setCompletedSteps((prev) => [...prev, "delivery"])
           setCurrentStep("payment")
+          await refreshCart()
           window.scrollTo({ top: 0, behavior: 'smooth' })
         } else {
           toast({
@@ -191,6 +202,8 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
         title: item.product?.title || item.title,
         quantity: item.quantity,
         unit_price: item.unit_price,
+        subtotal: item.subtotal,
+        total: item.total,
         metadata: item.metadata ?? null,
         product: {
           title: item.product?.title,
@@ -198,6 +211,8 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
         },
         variant: {
           title: item.variant?.title || undefined,
+          calculated_price: item.variant?.calculated_price,
+          prices: item.variant?.prices,
           preorder_variant: preorderVariant?.preorder_variant
             ? {
                 status: preorderVariant.preorder_variant.status,
@@ -252,6 +267,9 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
           <DeliveryStep
             onBack={goBack}
             onComplete={handleDeliveryComplete}
+            onSelectedEstimateChange={
+              checkoutSummaryEstimate?.setEstimatedShippingTotal
+            }
           />
         )}
 

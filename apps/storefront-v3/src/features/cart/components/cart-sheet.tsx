@@ -31,8 +31,8 @@ export function CartSheet() {
   }, [cartDisplayGroups])
 
   const subtotal = useMemo(() => {
-    if (!cart?.total) return 0
-    return cart.total
+    if (typeof cart?.subtotal === "number") return cart.subtotal
+    return cart?.total ?? 0
   }, [cart])
 
   const formatPrice = (amount: number, currency: string) => {

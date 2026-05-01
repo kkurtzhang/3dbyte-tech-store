@@ -2,7 +2,15 @@
 
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
-import { updateCart, addShippingMethod, completePreorderCart, initiatePaymentSession, getCart, getShippingOptions, calculateShippingOption } from "@/lib/medusa/cart"
+import {
+  updateCart,
+  addShippingMethod,
+  completePreorderCart,
+  initiatePaymentSession,
+  getCart,
+  getShippingOptions,
+  calculateShippingOption,
+} from "@/lib/medusa/cart"
 import { getLiveShippingRates, type ShippingRate } from "@/lib/medusa/shipping"
 import { getShippingServiceDisplayName } from "@/lib/shipping/display-name"
 import { z } from "zod"
@@ -15,6 +23,7 @@ const checkoutAddressSchema = z.object({
   address_1: z.string().trim().min(1).max(200),
   address_2: z.string().trim().max(200).optional().or(z.literal("")),
   city: z.string().trim().min(1).max(100),
+  province: z.string().trim().min(1).max(100),
   country_code: z.string().trim().length(2),
   postal_code: z.string().trim().min(1).max(20),
   phone: z.string().trim().max(30).optional().or(z.literal("")),
@@ -142,7 +151,7 @@ export async function initPaymentSessionAction() {
     // In Medusa v2, we initiate a session for a specific provider
     const paymentCollection = await initiatePaymentSession({
       cart,
-      providerId: "stripe"
+      providerId: "pp_stripe_stripe",
     })
 
     revalidatePath("/checkout")
@@ -176,6 +185,7 @@ export async function setAddressesAction(data: unknown) {
           address_1: address.address_1,
           address_2: address.address_2,
           city: address.city,
+          province: address.province,
           country_code: address.country_code.toLowerCase(),
           postal_code: address.postal_code,
           phone: address.phone,
@@ -186,11 +196,12 @@ export async function setAddressesAction(data: unknown) {
           address_1: address.address_1,
           address_2: address.address_2,
           city: address.city,
+          province: address.province,
           country_code: address.country_code.toLowerCase(),
           postal_code: address.postal_code,
           phone: address.phone,
-        }
-      }
+        },
+      },
     })
     revalidatePath("/checkout")
     return { success: true, cart }
@@ -259,8 +270,7 @@ export async function getLiveShippingRatesAction(): Promise<{
     const response = await getLiveShippingRates(cartId)
     return { success: true, rates: response.rates }
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "Failed to fetch live rates"
+    const message = error instanceof Error ? error.message : "Failed to fetch live rates"
     return { success: false, rates: [], error: message }
   }
 }

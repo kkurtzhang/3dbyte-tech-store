@@ -20,9 +20,18 @@ interface DeliveryOption {
 interface DeliveryStepProps {
   onBack: () => void
   onComplete: (methodId: string) => Promise<void> | void
+  onSelectedEstimateChange?: (amount: number | null) => void
 }
 
-export function DeliveryStep({ onBack, onComplete }: DeliveryStepProps) {
+function formatShippingOptionAmount(amount: number) {
+  return amount / 100
+}
+
+export function DeliveryStep({
+  onBack,
+  onComplete,
+  onSelectedEstimateChange,
+}: DeliveryStepProps) {
   const [selectedId, setSelectedId] = useState<string>("")
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -62,10 +71,14 @@ export function DeliveryStep({ onBack, onComplete }: DeliveryStepProps) {
 
           if (transformedOptions.length > 0) {
             setSelectedId(transformedOptions[0].id)
+            onSelectedEstimateChange?.(
+              formatShippingOptionAmount(transformedOptions[0].price)
+            )
           }
         } else {
           setOptions([])
           setSelectedId("")
+          onSelectedEstimateChange?.(null)
           setError(
             medusaResult.success
               ? "No shipping methods are available for this address."
@@ -75,13 +88,14 @@ export function DeliveryStep({ onBack, onComplete }: DeliveryStepProps) {
       } catch {
         setOptions([])
         setSelectedId("")
+        onSelectedEstimateChange?.(null)
         setError("Unable to load shipping methods. Please try again.")
       } finally {
         setIsLoading(false)
       }
     }
     loadOptions()
-  }, [])
+  }, [onSelectedEstimateChange])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -92,6 +106,14 @@ export function DeliveryStep({ onBack, onComplete }: DeliveryStepProps) {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleSelectedIdChange = (nextSelectedId: string) => {
+    setSelectedId(nextSelectedId)
+    const selectedOption = options.find((option) => option.id === nextSelectedId)
+    onSelectedEstimateChange?.(
+      selectedOption ? formatShippingOptionAmount(selectedOption.price) : null
+    )
   }
 
   return (
@@ -118,7 +140,7 @@ export function DeliveryStep({ onBack, onComplete }: DeliveryStepProps) {
       ) : (
         <RadioGroup
           value={selectedId}
-          onValueChange={setSelectedId}
+          onValueChange={handleSelectedIdChange}
           className="grid gap-4"
         >
           {options.map((option) => (

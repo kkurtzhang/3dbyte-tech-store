@@ -12,12 +12,8 @@ jest.mock("@/lib/search/addresses", () => ({
   searchAddresses: jest.fn(),
 }))
 
-const mockGetAddressesAction = getAddressesAction as jest.MockedFunction<
-  typeof getAddressesAction
->
-const mockSearchAddresses = searchAddresses as jest.MockedFunction<
-  typeof searchAddresses
->
+const mockGetAddressesAction = getAddressesAction as jest.MockedFunction<typeof getAddressesAction>
+const mockSearchAddresses = searchAddresses as jest.MockedFunction<typeof searchAddresses>
 
 jest.mock("lucide-react", () => ({
   Home: () => <span data-testid="home-icon" />,
@@ -80,8 +76,9 @@ describe("AddressStep address autocomplete", () => {
     expect(screen.getByLabelText("Address")).toHaveValue("12 Main Street")
     expect(screen.getByLabelText(/apartment/i)).toHaveValue("Unit 3")
     expect(screen.getByLabelText("City")).toHaveValue("Sydney")
+    expect(screen.getByLabelText("State")).toHaveValue("NSW")
     expect(screen.getByLabelText("Postal Code")).toHaveValue("2000")
-    expect(screen.getByLabelText("Country")).toHaveValue("au")
+    expect(screen.getByLabelText("Country")).toHaveValue("AU")
   })
 
   it("still allows manual address submission without autocomplete", async () => {
@@ -104,15 +101,16 @@ describe("AddressStep address autocomplete", () => {
       fireEvent.change(screen.getByLabelText("City"), {
         target: { value: "Hobart" },
       })
+      fireEvent.change(screen.getByLabelText("State"), {
+        target: { value: "TAS" },
+      })
       fireEvent.change(screen.getByLabelText("Postal Code"), {
         target: { value: "7000" },
       })
       fireEvent.change(screen.getByLabelText("Country"), {
         target: { value: "au" },
       })
-      fireEvent.click(
-        screen.getByRole("button", { name: /continue to delivery/i })
-      )
+      fireEvent.click(screen.getByRole("button", { name: /continue to delivery/i }))
       await Promise.resolve()
     })
 
@@ -121,6 +119,7 @@ describe("AddressStep address autocomplete", () => {
         expect.objectContaining({
           address_1: "99 Manual Road",
           city: "Hobart",
+          province: "TAS",
           postal_code: "7000",
           country_code: "au",
         })

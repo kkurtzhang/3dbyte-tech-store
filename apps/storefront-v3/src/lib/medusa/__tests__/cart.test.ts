@@ -16,14 +16,22 @@ jest.mock("../client", () => ({
 }))
 
 describe("medusa cart helpers", () => {
-  it("requests preorder variant data when retrieving carts", async () => {
+  it("requests checkout, preorder, and sale pricing data when retrieving carts", async () => {
     ;(sdk.store.cart.retrieve as jest.Mock).mockResolvedValue({ cart: { id: "cart_1" } })
 
     await getCart("cart_1")
 
     expect(sdk.store.cart.retrieve).toHaveBeenCalledWith("cart_1", {
-      fields:
-        "+items.*,+items.metadata,+items.product,+items.variant,+items.variant.product,+items.variant.product.images,*items.variant.preorder_variant,*items.variant.preorder_variant.prices,+region,*promotions",
+      fields: expect.stringContaining("*items.variant.preorder_variant.prices"),
+    })
+    expect(sdk.store.cart.retrieve).toHaveBeenCalledWith("cart_1", {
+      fields: expect.stringContaining("+items.variant.calculated_price"),
+    })
+    expect(sdk.store.cart.retrieve).toHaveBeenCalledWith("cart_1", {
+      fields: expect.stringContaining("+items.variant.prices"),
+    })
+    expect(sdk.store.cart.retrieve).toHaveBeenCalledWith("cart_1", {
+      fields: expect.stringContaining("+shipping_address"),
     })
   })
 
@@ -48,8 +56,7 @@ describe("medusa cart helpers", () => {
       },
     })
     expect(sdk.store.cart.retrieve).toHaveBeenCalledWith("cart_1", {
-      fields:
-        "+items.*,+items.metadata,+items.product,+items.variant,+items.variant.product,+items.variant.product.images,*items.variant.preorder_variant,*items.variant.preorder_variant.prices,+region,*promotions",
+      fields: expect.stringContaining("+items.variant.calculated_price"),
     })
   })
 

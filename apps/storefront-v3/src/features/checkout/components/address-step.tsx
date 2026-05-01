@@ -24,6 +24,7 @@ const addressSchema = z.object({
   address_1: z.string().min(1, "Required"),
   address_2: z.string().optional(),
   city: z.string().min(1, "Required"),
+  province: z.string().min(1, "Required"),
   postal_code: z.string().min(1, "Required"),
   country_code: z.string().min(2, "Required"), // Simplified for now
   phone: z.string().optional(),
@@ -55,7 +56,7 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
     resolver: zodResolver(addressSchema),
     defaultValues: {
       email: "",
-      country_code: "us",
+      country_code: "au",
       ...defaultValues,
     },
   })
@@ -103,12 +104,19 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
       shouldValidate: true,
       shouldDirty: true,
     })
-    setValue("city", address.suburb, { shouldValidate: true, shouldDirty: true })
+    setValue("city", address.suburb, {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+    setValue("province", address.state, {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
     setValue("postal_code", address.postcode, {
       shouldValidate: true,
       shouldDirty: true,
     })
-    setValue("country_code", address.country.toLowerCase(), {
+    setValue("country_code", address.country.toUpperCase(), {
       shouldValidate: true,
       shouldDirty: true,
     })
@@ -119,7 +127,7 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
     setUseSavedAddress(false)
     reset({
       email: "",
-      country_code: "us",
+      country_code: "au",
       ...defaultValues,
     })
   }
@@ -129,13 +137,14 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
     try {
       // If using a saved address, populate form data from it
       if (useSavedAddress && selectedAddressId) {
-        const selectedAddress = savedAddresses.find(addr => addr.id === selectedAddressId)
+        const selectedAddress = savedAddresses.find((addr) => addr.id === selectedAddressId)
         if (selectedAddress) {
           data.first_name = selectedAddress.first_name
           data.last_name = selectedAddress.last_name
           data.address_1 = selectedAddress.address_1
           data.address_2 = selectedAddress.address_2 || ""
           data.city = selectedAddress.city
+          data.province = selectedAddress.province || ""
           data.country_code = selectedAddress.country_code
           data.postal_code = selectedAddress.postal_code
           data.phone = selectedAddress.phone || ""
@@ -168,9 +177,7 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
             {...register("email")}
             className={cn(errors.email && "border-destructive")}
           />
-          {errors.email && (
-            <span className="text-xs text-destructive">{errors.email.message}</span>
-          )}
+          {errors.email && <span className="text-xs text-destructive">{errors.email.message}</span>}
         </div>
 
         <Separator className="my-2" />
@@ -183,10 +190,7 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
                 <MapPin className="h-4 w-4" />
                 Saved Addresses
               </h3>
-              <RadioGroup
-                value={selectedAddressId || ""}
-                onValueChange={handleAddressSelect}
-              >
+              <RadioGroup value={selectedAddressId || ""} onValueChange={handleAddressSelect}>
                 <div className="grid gap-3">
                   {savedAddresses.map((address) => (
                     <Card
@@ -222,7 +226,9 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
                                   </>
                                 )}
                                 <br />
-                                {address.city}, {address.postal_code}
+                                {address.city}
+                                {address.province ? `, ${address.province}` : ""}{" "}
+                                {address.postal_code}
                                 <br />
                                 {address.country_code.toUpperCase()}
                               </address>
@@ -262,9 +268,7 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
                   className={cn(errors.first_name && "border-destructive")}
                 />
                 {errors.first_name && (
-                  <span className="text-xs text-destructive">
-                    {errors.first_name.message}
-                  </span>
+                  <span className="text-xs text-destructive">{errors.first_name.message}</span>
                 )}
               </div>
               <div className="grid gap-2">
@@ -275,9 +279,7 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
                   className={cn(errors.last_name && "border-destructive")}
                 />
                 {errors.last_name && (
-                  <span className="text-xs text-destructive">
-                    {errors.last_name.message}
-                  </span>
+                  <span className="text-xs text-destructive">{errors.last_name.message}</span>
                 )}
               </div>
             </div>
@@ -293,16 +295,14 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
                 className={cn(errors.address_1 && "border-destructive")}
               />
               {errors.address_1 && (
-                <span className="text-xs text-destructive">
-                  {errors.address_1.message}
-                </span>
+                <span className="text-xs text-destructive">{errors.address_1.message}</span>
               )}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="address_2">Apartment, suite, etc. (optional)</Label>
               <Input id="address_2" {...register("address_2")} />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div className="grid gap-2">
                 <Label htmlFor="city">City</Label>
                 <Input
@@ -311,9 +311,19 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
                   className={cn(errors.city && "border-destructive")}
                 />
                 {errors.city && (
-                  <span className="text-xs text-destructive">
-                    {errors.city.message}
-                  </span>
+                  <span className="text-xs text-destructive">{errors.city.message}</span>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="province">State</Label>
+                <Input
+                  id="province"
+                  {...register("province")}
+                  placeholder="NSW"
+                  className={cn(errors.province && "border-destructive")}
+                />
+                {errors.province && (
+                  <span className="text-xs text-destructive">{errors.province.message}</span>
                 )}
               </div>
               <div className="grid gap-2">
@@ -324,9 +334,7 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
                   className={cn(errors.postal_code && "border-destructive")}
                 />
                 {errors.postal_code && (
-                  <span className="text-xs text-destructive">
-                    {errors.postal_code.message}
-                  </span>
+                  <span className="text-xs text-destructive">{errors.postal_code.message}</span>
                 )}
               </div>
             </div>
@@ -335,13 +343,11 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
               <Input
                 id="country_code"
                 {...register("country_code")}
-                placeholder="US"
+                placeholder="AU"
                 className={cn(errors.country_code && "border-destructive")}
               />
               {errors.country_code && (
-                <span className="text-xs text-destructive">
-                  {errors.country_code.message}
-                </span>
+                <span className="text-xs text-destructive">{errors.country_code.message}</span>
               )}
             </div>
             <div className="grid gap-2">

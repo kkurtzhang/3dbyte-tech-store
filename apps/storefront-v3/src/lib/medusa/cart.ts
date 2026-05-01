@@ -16,7 +16,7 @@ export async function createCart(regionId?: string): Promise<MedusaCart> {
 export async function getCart(cartId: string): Promise<MedusaCart> {
   const { cart } = await sdk.store.cart.retrieve(cartId, {
     fields:
-      "+items.*,+items.metadata,+items.product,+items.variant,+items.variant.product,+items.variant.product.images,*items.variant.preorder_variant,*items.variant.preorder_variant.prices,+region,*promotions",
+      "+items.*,+items.metadata,+items.product,+items.variant,+items.variant.calculated_price,+items.variant.prices,+items.variant.product,+items.variant.product.images,*items.variant.preorder_variant,*items.variant.preorder_variant.prices,+region,*promotions,*shipping_methods,+shipping_total,+tax_total,+shipping_address",
   })
   return cart
 }
@@ -167,8 +167,8 @@ export async function updateCart({
     billing_address?: any
   }
 }): Promise<MedusaCart> {
-  const { cart } = await sdk.store.cart.update(cartId, data)
-  return cart
+  await sdk.store.cart.update(cartId, data)
+  return getCart(cartId)
 }
 
 export async function addShippingMethod({
@@ -180,11 +180,11 @@ export async function addShippingMethod({
   data?: Record<string, unknown>
   optionId: string
 }): Promise<MedusaCart> {
-  const { cart } = await sdk.store.cart.addShippingMethod(cartId, {
+  await sdk.store.cart.addShippingMethod(cartId, {
     option_id: optionId,
     ...(data ? { data } : {}),
   })
-  return cart
+  return getCart(cartId)
 }
 
 export async function completePreorderCart(cartId: string): Promise<MedusaOrder> {

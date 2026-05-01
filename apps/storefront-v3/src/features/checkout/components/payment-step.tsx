@@ -109,7 +109,7 @@ export function PaymentStep({ onBack, onComplete }: PaymentStepProps) {
                 />
              ) : (
                 <div className="flex items-center justify-center py-8 text-muted-foreground font-mono text-sm">
-                   INITIALIZING_SECURE_LINK...
+                   Initializing secure payment...
                 </div>
              )}
           </div>

@@ -71,6 +71,8 @@ describe("DeliveryStep", () => {
   })
 
   it("selects first option by default", async () => {
+    const onSelectedEstimateChange = jest.fn()
+
     mockGetShippingOptionsAction.mockResolvedValue({
       success: true,
       options: [
@@ -79,15 +81,22 @@ describe("DeliveryStep", () => {
       ],
     })
 
-    render(<DeliveryStep {...defaultProps} />)
+    render(
+      <DeliveryStep
+        {...defaultProps}
+        onSelectedEstimateChange={onSelectedEstimateChange}
+      />
+    )
 
     await waitFor(() => {
       expect(document.getElementById("so_1")).toBeChecked()
     })
+    expect(onSelectedEstimateChange).toHaveBeenCalledWith(15)
   })
 
   it("allows selecting different shipping options", async () => {
     const user = userEvent.setup()
+    const onSelectedEstimateChange = jest.fn()
 
     mockGetShippingOptionsAction.mockResolvedValue({
       success: true,
@@ -97,7 +106,12 @@ describe("DeliveryStep", () => {
       ],
     })
 
-    render(<DeliveryStep {...defaultProps} />)
+    render(
+      <DeliveryStep
+        {...defaultProps}
+        onSelectedEstimateChange={onSelectedEstimateChange}
+      />
+    )
 
     await waitFor(() => {
       expect(screen.getByText("Express")).toBeInTheDocument()
@@ -106,7 +120,9 @@ describe("DeliveryStep", () => {
     const standardLabel = screen.getByText("Standard").closest("label")
     await user.click(standardLabel!)
 
-    expect(document.getElementById("so_2")).toBeChecked()
+    const standardRadio = document.getElementById("so_2")
+    expect(standardRadio).toBeChecked()
+    expect(onSelectedEstimateChange).toHaveBeenCalledWith(0)
   })
 
   it("formats prices correctly", async () => {
