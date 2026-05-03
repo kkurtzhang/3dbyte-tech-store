@@ -1,7 +1,6 @@
 "use server"
 
 import { cookies } from "next/headers"
-import { revalidatePath } from "next/cache"
 import {
   updateCart,
   addShippingMethod,
@@ -29,6 +28,21 @@ const checkoutAddressSchema = z.object({
   phone: z.string().trim().max(30).optional().or(z.literal("")),
 })
 
+function getPaymentSetupErrorMessage(error: unknown): string {
+  const message =
+    error instanceof Error ? error.message : "Failed to init payment session"
+
+  if (
+    /restricted API key/i.test(message) ||
+    /required permissions/i.test(message) ||
+    /stripe payment intent/i.test(message)
+  ) {
+    return "Payment setup is temporarily unavailable. Please contact support so we can complete your order."
+  }
+
+  return message
+}
+
 type StoreShippingOption = {
   id: string
   name?: string | null
@@ -39,6 +53,14 @@ type StoreShippingOption = {
 
 type ResolvedStoreShippingOption = StoreShippingOption & {
   amount: number
+}
+
+type ShippingMethodSelectionData = {
+  selected_rate_id?: string
+  service?: string
+  service_name?: string
+  carrier_id?: string
+  carrier_name?: string
 }
 
 function isResolvedShippingOption(
@@ -67,6 +89,30 @@ function findLiveRateForOption(
   })
 }
 
+function minorUnitAmountToMajorUnitAmount(amount: number, currencyCode = "aud") {
+  const zeroDecimalCurrencies = new Set([
+    "bif",
+    "clp",
+    "djf",
+    "gnf",
+    "jpy",
+    "kmf",
+    "krw",
+    "mga",
+    "pyg",
+    "rwf",
+    "ugx",
+    "vnd",
+    "vuv",
+    "xaf",
+    "xof",
+    "xpf",
+  ])
+  const normalizedCurrency = currencyCode.trim().toLowerCase()
+
+  return zeroDecimalCurrencies.has(normalizedCurrency) ? amount : amount / 100
+}
+
 async function resolveShippingOptionAmount(
   cartId: string,
   option: StoreShippingOption,
@@ -74,7 +120,7 @@ async function resolveShippingOptionAmount(
 ): Promise<number | null> {
   const liveRate = findLiveRateForOption(option, liveRates)
   if (liveRate) {
-    return liveRate.totalCharge
+    return minorUnitAmountToMajorUnitAmount(liveRate.totalCharge, liveRate.currency)
   }
 
   if (option.price_type !== "calculated") {
@@ -149,16 +195,19 @@ export async function initPaymentSessionAction() {
 
     // Initialize payment session for Stripe
     // In Medusa v2, we initiate a session for a specific provider
-    const paymentCollection = await initiatePaymentSession({
+    const paymentCollectionResponse = await initiatePaymentSession({
       cart,
+      data: {
+        payment_method_types: ["card"],
+      },
       providerId: "pp_stripe_stripe",
     })
+    const paymentCollection =
+      paymentCollectionResponse?.payment_collection ?? paymentCollectionResponse
 
-    revalidatePath("/checkout")
     return { success: true, paymentCollection }
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to init payment session"
-    return { success: false, error: message }
+    return { success: false, error: getPaymentSetupErrorMessage(error) }
   }
 }
 
@@ -203,7 +252,6 @@ export async function setAddressesAction(data: unknown) {
         },
       },
     })
-    revalidatePath("/checkout")
     return { success: true, cart }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to set address"
@@ -211,7 +259,34 @@ export async function setAddressesAction(data: unknown) {
   }
 }
 
-export async function setShippingMethodAction(optionId: string) {
+function sanitizeShippingMethodSelectionData(
+  data: unknown
+): ShippingMethodSelectionData | undefined {
+  if (!data || typeof data !== "object") {
+    return undefined
+  }
+
+  const input = data as Record<string, unknown>
+  const sanitized: ShippingMethodSelectionData = {}
+  for (const key of [
+    "selected_rate_id",
+    "service",
+    "service_name",
+    "carrier_id",
+    "carrier_name",
+  ] as const) {
+    if (typeof input[key] === "string" && input[key].trim()) {
+      sanitized[key] = input[key].trim()
+    }
+  }
+
+  return Object.keys(sanitized).length > 0 ? sanitized : undefined
+}
+
+export async function setShippingMethodAction(
+  optionId: string,
+  data?: unknown
+) {
   const cookieStore = await cookies()
   const cartId = cookieStore.get(CART_COOKIE)?.value
 
@@ -221,6 +296,7 @@ export async function setShippingMethodAction(optionId: string) {
   try {
     const options = (await getShippingOptions(cartId)) as StoreShippingOption[]
     const option = options.find((shippingOption) => shippingOption.id === optionId)
+    const selectedRateData = sanitizeShippingMethodSelectionData(data)
     const cart = await addShippingMethod({
       cartId,
       optionId,
@@ -229,10 +305,10 @@ export async function setShippingMethodAction(optionId: string) {
             code: option.id,
             description: option.description,
             name: option.name,
+            ...selectedRateData,
           }
-        : undefined,
+        : selectedRateData,
     })
-    revalidatePath("/checkout")
     return { success: true, cart }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to set shipping method"

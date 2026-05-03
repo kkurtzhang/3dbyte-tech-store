@@ -197,4 +197,52 @@ describe("KarrioFulfillmentService", () => {
       ),
     ).resolves.toMatchObject({ calculated_amount: 1779 });
   });
+
+  it("prioritizes the selected live rate id saved on the cart shipping method", async () => {
+    const service = new KarrioFulfillmentService({ logger }, defaultOptions);
+
+    getClient(service).client.fetchRates = jest.fn().mockResolvedValue({
+      rates: [
+        {
+          id: "rat_economy",
+          carrier_id: "aramex-au",
+          carrier_name: "aramex_aunz",
+          service: "aramex_aunz_economy",
+          total_charge: 11.19,
+          currency: "AUD",
+          transit_days: 6,
+          meta: { service_code: "E", service_name: "ECONOMY" },
+          test_mode: false,
+        },
+        {
+          id: "rat_priority",
+          carrier_id: "aramex-au",
+          carrier_name: "aramex_aunz",
+          service: "aramex_aunz_priority",
+          total_charge: 17.79,
+          currency: "AUD",
+          transit_days: 5,
+          meta: { service_code: "P", service_name: "PRIORITY" },
+          test_mode: false,
+        },
+      ],
+    });
+
+    await expect(
+      service.calculatePrice(
+        { carrier_id: "aramex-au", service_code: "E", name: "Karrio-Standard" },
+        { selected_rate_id: "rat_priority" },
+        {
+          shipping_address: {
+            address_1: "40 crown st",
+            city: "Wollongong",
+            country_code: "au",
+            postal_code: "2500",
+            province: "nsw",
+          },
+          items: [{ variant: { weight: 0.5 }, quantity: 1 }],
+        } as never,
+      ),
+    ).resolves.toMatchObject({ calculated_amount: 1779 });
+  });
 });

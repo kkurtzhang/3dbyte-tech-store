@@ -7,24 +7,75 @@ import { Label } from "@/components/ui/label"
 import { Truck, Zap, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { getShippingServiceDisplayName } from "@/lib/shipping/display-name"
-import { getShippingOptionsAction } from "@/app/actions/checkout"
+import {
+  getShippingOptionsAction,
+  getLiveShippingRatesAction,
+} from "@/app/actions/checkout"
+import type { ShippingRate } from "@/lib/medusa/shipping"
 
 interface DeliveryOption {
   id: string
+  optionId: string
   title: string
   description: string
   price: number
+  data?: Record<string, unknown>
   icon: React.ElementType
 }
 
 interface DeliveryStepProps {
   onBack: () => void
-  onComplete: (methodId: string) => Promise<void> | void
+  onComplete: (
+    methodId: string,
+    data?: Record<string, unknown>,
+    summary?: { name: string; price: number }
+  ) => Promise<void> | void
   onSelectedEstimateChange?: (amount: number | null) => void
 }
 
+function buildLiveRateDescription(rate: ShippingRate): string {
+  const parts: string[] = []
+  if (rate.transitDays) {
+    parts.push(
+      `${rate.transitDays} business day${rate.transitDays > 1 ? "s" : ""}`
+    )
+  }
+  if (rate.estimatedDeliveryDate) {
+    parts.push(`Est. ${rate.estimatedDeliveryDate}`)
+  }
+  return parts.length > 0 ? parts.join(" \u00b7 ") : "Carrier-calculated rate"
+}
+
 function formatShippingOptionAmount(amount: number) {
-  return amount / 100
+  return amount
+}
+
+function liveRateToDeliveryOption(
+  optionId: string,
+  rate: ShippingRate
+): DeliveryOption {
+  const title = getShippingServiceDisplayName({
+    carrierName: rate.carrier.name,
+    service: rate.service,
+    serviceName: rate.serviceName,
+  })
+  const price = rate.totalCharge / 100
+
+  return {
+    id: `${optionId}:${rate.id}`,
+    optionId,
+    title,
+    description: buildLiveRateDescription(rate),
+    price,
+    data: {
+      selected_rate_id: rate.id,
+      service: rate.service,
+      service_name: rate.serviceName,
+      carrier_id: rate.carrier.id,
+      carrier_name: rate.carrier.name,
+    },
+    icon: price > 10 ? Zap : Truck,
+  }
 }
 
 export function DeliveryStep({
@@ -44,29 +95,44 @@ export function DeliveryStep({
         setIsLoading(true)
         setError(null)
 
-        const medusaResult = await getShippingOptionsAction()
+        const [medusaResult, liveRateResult] = await Promise.all([
+          getShippingOptionsAction(),
+          getLiveShippingRatesAction(),
+        ])
+        const fetchedLiveRates = liveRateResult.success ? liveRateResult.rates : []
 
         if (medusaResult.success && medusaResult.options.length > 0) {
-          const transformedOptions: DeliveryOption[] = medusaResult.options.flatMap(
+          const calculatedOption = medusaResult.options.find(
+            (opt) => opt?.price_type === "calculated"
+          )
+          const liveRateOptions =
+            calculatedOption && fetchedLiveRates.length > 0
+              ? fetchedLiveRates.map((rate) =>
+                  liveRateToDeliveryOption(calculatedOption.id, rate)
+                )
+              : []
+          const medusaOptions: DeliveryOption[] = medusaResult.options.flatMap(
             (opt) => {
-              if (!opt) {
+              if (!opt || (liveRateOptions.length > 0 && opt.price_type === "calculated")) {
                 return []
               }
 
               return [
                 {
                   id: opt.id,
+                  optionId: opt.id,
                   title: getShippingServiceDisplayName({
                     description: opt.description,
                     name: opt.name || opt.id,
                   }),
                   description: opt.description || "Standard shipping",
                   price: opt.amount,
-                  icon: opt.amount > 1000 ? Zap : Truck,
+                  icon: opt.amount > 10 ? Zap : Truck,
                 },
               ]
             }
           )
+          const transformedOptions = [...liveRateOptions, ...medusaOptions]
           setOptions(transformedOptions)
 
           if (transformedOptions.length > 0) {
@@ -100,9 +166,15 @@ export function DeliveryStep({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedId) return
+    const selectedOption = options.find((option) => option.id === selectedId)
+    if (!selectedOption) return
+
     setIsSubmitting(true)
     try {
-      await onComplete(selectedId)
+      await onComplete(selectedOption.optionId, selectedOption.data, {
+        name: selectedOption.title,
+        price: selectedOption.price,
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -166,7 +238,7 @@ export function DeliveryStep({
                     <span className="font-mono text-sm">
                       {option.price === 0
                         ? "INCLUDED"
-                        : `$${(option.price / 100).toFixed(2)}`}
+                        : `$${option.price.toFixed(2)}`}
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">

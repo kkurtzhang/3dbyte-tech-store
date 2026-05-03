@@ -501,6 +501,27 @@ describe("CheckoutSummary", () => {
     expect(screen.queryByText("Calculated next")).not.toBeInTheDocument()
   })
 
+  it("displays the shipping subtotal when Medusa also returns a tax-inclusive shipping total", () => {
+    const cart = createMockCart({
+      item_subtotal: 19,
+      subtotal: 31.05,
+      shipping_methods: [{ id: "ship_1" }],
+      shipping_subtotal: 12.05,
+      shipping_total: 13.255,
+      tax_total: 3.105,
+      total: 34.155,
+    })
+
+    render(<CheckoutSummary cart={cart} />)
+
+    expect(screen.getByText("$19.00")).toBeInTheDocument()
+    expect(screen.getByText("$12.05")).toBeInTheDocument()
+    expect(screen.getByText("$3.11")).toBeInTheDocument()
+    expect(screen.getByText("$34.16")).toBeInTheDocument()
+    expect(screen.queryByText("$31.05")).not.toBeInTheDocument()
+    expect(screen.queryByText("$13.26")).not.toBeInTheDocument()
+  })
+
   it("keeps shipping and taxes pending when no shipping method is selected", () => {
     const cart = createMockCart({
       shipping_methods: [],

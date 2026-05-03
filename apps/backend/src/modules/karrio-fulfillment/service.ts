@@ -139,10 +139,8 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
         );
       }
 
-      const amountInCents = Math.round(rate.total_charge * 100);
-
       return {
-        calculated_amount: amountInCents,
+        calculated_amount: Number(rate.total_charge.toFixed(2)),
         is_calculated_price_tax_inclusive: false,
       };
     } catch (error) {
@@ -316,6 +314,7 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
     optionData: CalculateShippingOptionPriceDTO["optionData"],
     data: CalculateShippingOptionPriceDTO["data"],
   ): KarrioRate | undefined {
+    const selectedRateId = this.normalizeRateToken(data.selected_rate_id);
     const requestedService = this.normalizeRateToken(
       optionData.service || data.service,
     );
@@ -328,6 +327,7 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
     );
 
     return (
+      rates.find((rate) => this.normalizeRateToken(rate.id) === selectedRateId) ||
       rates.find((rate) => this.normalizeRateToken(rate.service) === requestedService) ||
       rates.find(
         (rate) =>

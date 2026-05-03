@@ -14,13 +14,21 @@ jest.mock("lucide-react", () => ({
 
 jest.mock("@/app/actions/checkout", () => ({
   getShippingOptionsAction: jest.fn(),
+  getLiveShippingRatesAction: jest.fn(),
 }))
 
-import { getShippingOptionsAction } from "@/app/actions/checkout"
+import {
+  getLiveShippingRatesAction,
+  getShippingOptionsAction,
+} from "@/app/actions/checkout"
 
 const mockGetShippingOptionsAction =
   getShippingOptionsAction as jest.MockedFunction<
     typeof getShippingOptionsAction
+  >
+const mockGetLiveShippingRatesAction =
+  getLiveShippingRatesAction as jest.MockedFunction<
+    typeof getLiveShippingRatesAction
   >
 
 describe("DeliveryStep", () => {
@@ -31,6 +39,11 @@ describe("DeliveryStep", () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockGetLiveShippingRatesAction.mockResolvedValue({
+      success: false,
+      rates: [],
+      error: "Karrio unavailable",
+    })
   })
 
   it("shows loading state initially", () => {
@@ -47,18 +60,8 @@ describe("DeliveryStep", () => {
     mockGetShippingOptionsAction.mockResolvedValue({
       success: true,
       options: [
-        {
-          id: "so_1",
-          name: "Express",
-          amount: 1500,
-          description: "Fast delivery",
-        },
-        {
-          id: "so_2",
-          name: "Standard",
-          amount: 0,
-          description: "Regular delivery",
-        },
+        { id: "so_1", name: "Express", amount: 15, description: "Fast delivery" },
+        { id: "so_2", name: "Standard", amount: 0, description: "Regular delivery" },
       ],
     })
 
@@ -76,7 +79,7 @@ describe("DeliveryStep", () => {
     mockGetShippingOptionsAction.mockResolvedValue({
       success: true,
       options: [
-        { id: "so_1", name: "Express", amount: 1500 },
+        { id: "so_1", name: "Express", amount: 15 },
         { id: "so_2", name: "Standard", amount: 0 },
       ],
     })
@@ -101,7 +104,7 @@ describe("DeliveryStep", () => {
     mockGetShippingOptionsAction.mockResolvedValue({
       success: true,
       options: [
-        { id: "so_1", name: "Express", amount: 1500 },
+        { id: "so_1", name: "Express", amount: 15 },
         { id: "so_2", name: "Standard", amount: 0 },
       ],
     })
@@ -129,7 +132,7 @@ describe("DeliveryStep", () => {
     mockGetShippingOptionsAction.mockResolvedValue({
       success: true,
       options: [
-        { id: "so_1", name: "Express", amount: 1500 },
+        { id: "so_1", name: "Express", amount: 15 },
         { id: "so_2", name: "Standard", amount: 0 },
       ],
     })
@@ -149,13 +152,13 @@ describe("DeliveryStep", () => {
         {
           id: "so_standard",
           name: "Karrio-Standard",
-          amount: 1119,
+          amount: 11.19,
           description: "Economy",
         },
         {
           id: "so_express",
           name: "Karrio-Express",
-          amount: 1779,
+          amount: 17.79,
           description: "Priority",
         },
       ],
@@ -225,7 +228,7 @@ describe("DeliveryStep", () => {
     mockGetShippingOptionsAction.mockResolvedValue({
       success: true,
       options: [
-        { id: "so_1", name: "Express", amount: 1500 },
+        { id: "so_1", name: "Express", amount: 15 },
         { id: "so_2", name: "Standard", amount: 0 },
       ],
     })
@@ -238,10 +241,14 @@ describe("DeliveryStep", () => {
 
     await user.click(screen.getByText("Continue to Payment"))
 
-    expect(onComplete).toHaveBeenCalledWith("so_1")
+    expect(onComplete).toHaveBeenCalledWith(
+      "so_1",
+      undefined,
+      { name: "Express", price: 15 }
+    )
   })
 
-  it("submits a Medusa shipping option ID instead of a raw live Karrio rate ID", async () => {
+  it("submits a Medusa shipping option ID with the selected live Karrio rate data", async () => {
     const user = userEvent.setup()
     const onComplete = jest.fn().mockResolvedValue(undefined)
 
@@ -251,7 +258,7 @@ describe("DeliveryStep", () => {
         {
           id: "so_calculated_1",
           name: "Karrio Calculated Shipping",
-          amount: 1295,
+          amount: 12.95,
           description: "Live carrier rate",
           price_type: "calculated",
         },
@@ -261,12 +268,22 @@ describe("DeliveryStep", () => {
     render(<DeliveryStep {...defaultProps} onComplete={onComplete} />)
 
     await waitFor(() => {
-      expect(screen.getByText("Karrio Calculated Shipping")).toBeInTheDocument()
+      expect(screen.getByText("Parcel Post")).toBeInTheDocument()
     })
 
     await user.click(screen.getByText("Continue to Payment"))
 
-    expect(onComplete).toHaveBeenCalledWith("so_calculated_1")
+    expect(onComplete).toHaveBeenCalledWith(
+      "so_calculated_1",
+      {
+        selected_rate_id: "rate_live_1",
+        service: "parcel_post",
+        service_name: "Parcel Post",
+        carrier_id: "auspost",
+        carrier_name: "Australia Post",
+      },
+      { name: "Parcel Post", price: 12.95 }
+    )
     expect(onComplete).not.toHaveBeenCalledWith("rate_live_1")
   })
 
@@ -341,7 +358,7 @@ describe("DeliveryStep", () => {
         {
           id: "so_1",
           name: "Express",
-          amount: 1500,
+          amount: 15,
           description: "1-2 business days",
         },
       ],

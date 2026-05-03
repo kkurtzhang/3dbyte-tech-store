@@ -1,4 +1,4 @@
-import { completePreorderCart, getCart } from "../cart"
+import { completePreorderCart, getCart, initiatePaymentSession } from "../cart"
 import { sdk } from "../client"
 
 jest.mock("../client", () => ({
@@ -7,6 +7,9 @@ jest.mock("../client", () => ({
       cart: {
         retrieve: jest.fn(),
         createLineItem: jest.fn(),
+      },
+      payment: {
+        initiatePaymentSession: jest.fn(),
       },
     },
     client: {
@@ -32,6 +35,9 @@ describe("medusa cart helpers", () => {
     })
     expect(sdk.store.cart.retrieve).toHaveBeenCalledWith("cart_1", {
       fields: expect.stringContaining("+shipping_address"),
+    })
+    expect(sdk.store.cart.retrieve).toHaveBeenCalledWith("cart_1", {
+      fields: expect.stringContaining("+shipping_subtotal"),
     })
   })
 
@@ -68,5 +74,27 @@ describe("medusa cart helpers", () => {
     expect(sdk.client.fetch).toHaveBeenCalledWith("/store/carts/cart_1/complete-preorder", {
       method: "POST",
     })
+  })
+
+  it("passes provider data when initiating a payment session", async () => {
+    ;(sdk.store.payment.initiatePaymentSession as jest.Mock).mockResolvedValue({
+      payment_collection: { id: "pay_col_1" },
+    })
+
+    await expect(
+      initiatePaymentSession({
+        cart: { id: "cart_1" } as never,
+        data: { payment_method_types: ["card"] },
+        providerId: "pp_stripe_stripe",
+      })
+    ).resolves.toEqual({ payment_collection: { id: "pay_col_1" } })
+
+    expect(sdk.store.payment.initiatePaymentSession).toHaveBeenCalledWith(
+      { id: "cart_1" },
+      {
+        data: { payment_method_types: ["card"] },
+        provider_id: "pp_stripe_stripe",
+      }
+    )
   })
 })

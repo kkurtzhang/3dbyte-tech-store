@@ -92,7 +92,7 @@ describe("estimateProductShippingAction", () => {
     })
   })
 
-  it("returns display-dollar amounts for Medusa minor-unit shipping prices", async () => {
+  it("returns display-dollar amounts for Medusa major-unit shipping prices", async () => {
     mockGetShippingOptions.mockResolvedValue([
       {
         id: "ship_standard",
@@ -112,12 +112,12 @@ describe("estimateProductShippingAction", () => {
     mockCalculate
       .mockResolvedValueOnce({
         shipping_option: {
-          calculated_price: { calculated_amount: 1119 },
+          calculated_price: { calculated_amount: 11.19 },
         },
       })
       .mockResolvedValueOnce({
         shipping_option: {
-          calculated_price: { calculated_amount: 1779 },
+          calculated_price: { calculated_amount: 17.79 },
         },
       })
 

@@ -16,7 +16,7 @@ export async function createCart(regionId?: string): Promise<MedusaCart> {
 export async function getCart(cartId: string): Promise<MedusaCart> {
   const { cart } = await sdk.store.cart.retrieve(cartId, {
     fields:
-      "+items.*,+items.metadata,+items.product,+items.variant,+items.variant.calculated_price,+items.variant.prices,+items.variant.product,+items.variant.product.images,*items.variant.preorder_variant,*items.variant.preorder_variant.prices,+region,*promotions,*shipping_methods,+shipping_total,+tax_total,+shipping_address",
+      "+items.*,+items.metadata,+items.product,+items.variant,+items.variant.calculated_price,+items.variant.prices,+items.variant.product,+items.variant.product.images,*items.variant.preorder_variant,*items.variant.preorder_variant.prices,+region,*promotions,*shipping_methods,+shipping_subtotal,+shipping_total,+tax_total,+shipping_address",
   })
   return cart
 }
@@ -204,12 +204,15 @@ export async function completeCart(cartId: string): Promise<MedusaOrder> {
 
 export async function initiatePaymentSession({
   cart,
+  data,
   providerId,
 }: {
   cart: MedusaCart
+  data?: Record<string, unknown>
   providerId: string
 }): Promise<any> {
   return await sdk.store.payment.initiatePaymentSession(cart, {
+    ...(data ? { data } : {}),
     provider_id: providerId,
   })
 }

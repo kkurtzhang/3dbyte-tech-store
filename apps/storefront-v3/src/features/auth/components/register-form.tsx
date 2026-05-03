@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -28,6 +29,13 @@ interface RegisterFormProps {
   onSuccess?: () => void
 }
 
+function getSafeRedirectPath() {
+  const redirectTo = new URLSearchParams(window.location.search).get("redirect")
+  return redirectTo?.startsWith("/") && !redirectTo.startsWith("//")
+    ? redirectTo
+    : null
+}
+
 /**
  * Registration form component for creating new user accounts.
  * Features:
@@ -38,6 +46,7 @@ interface RegisterFormProps {
  * - Error display for validation
  */
 export function RegisterForm({ onSuccess }: RegisterFormProps) {
+  const router = useRouter()
   const [isLoading, setIsLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
 
@@ -62,6 +71,10 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
       if (result.success) {
         onSuccess?.()
+        const redirectTo = getSafeRedirectPath()
+        if (redirectTo) {
+          router.push(redirectTo)
+        }
       } else {
         setError(result.error || "Registration failed")
       }

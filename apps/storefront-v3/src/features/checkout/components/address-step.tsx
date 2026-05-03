@@ -13,8 +13,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import { MapPin, Plus, Home } from "lucide-react"
-import { getAddressesAction, CustomerAddress } from "@/app/actions/auth"
+import { Home, MapPin, Plus, User, UserPlus } from "lucide-react"
+import { getAddressesAction, getSessionAction, CustomerAddress, AuthUser } from "@/app/actions/auth"
+import { AuthSheet } from "@/features/auth/components/auth-sheet"
 import { AddressAutocomplete } from "./address-autocomplete"
 
 const addressSchema = z.object({
@@ -31,6 +32,8 @@ const addressSchema = z.object({
 })
 
 type AddressFormData = z.infer<typeof addressSchema>
+type CheckoutIdentityMode = "guest" | "account"
+type AuthSheetMode = "login" | "register"
 
 interface AddressStepProps {
   defaultValues?: Partial<AddressFormData>
@@ -44,6 +47,10 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
   const [savedAddresses, setSavedAddresses] = useState<CustomerAddress[]>([])
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null)
   const [useSavedAddress, setUseSavedAddress] = useState(false)
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null)
+  const [checkoutMode, setCheckoutMode] = useState<CheckoutIdentityMode | null>(null)
+  const [authSheetMode, setAuthSheetMode] = useState<AuthSheetMode>("login")
+  const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false)
 
   const {
     register,
@@ -69,6 +76,24 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
   const loadSavedAddresses = async () => {
     setIsLoadingAddresses(true)
     try {
+      const session = await getSessionAction()
+      if (!session.success || !session.user) {
+        setAuthUser(null)
+        setCheckoutMode(null)
+        setSavedAddresses([])
+        return
+      }
+
+      setAuthUser(session.user)
+      setCheckoutMode("account")
+      reset({
+        email: session.user.email || defaultValues?.email || "",
+        first_name: session.user.first_name || defaultValues?.first_name || "",
+        last_name: session.user.last_name || defaultValues?.last_name || "",
+        country_code: defaultValues?.country_code || "au",
+        ...defaultValues,
+      })
+
       const result = await getAddressesAction()
       if (result.success) {
         setSavedAddresses(result.addresses)
@@ -126,10 +151,43 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
     setSelectedAddressId(null)
     setUseSavedAddress(false)
     reset({
-      email: "",
+      email: authUser?.email || "",
+      first_name: authUser?.first_name || "",
+      last_name: authUser?.last_name || "",
       country_code: "au",
       ...defaultValues,
     })
+  }
+
+  const handleGuestCheckout = () => {
+    setCheckoutMode("guest")
+    setSelectedAddressId(null)
+    setUseSavedAddress(false)
+    reset({
+      email: defaultValues?.email || "",
+      country_code: "au",
+      ...defaultValues,
+    })
+  }
+
+  const handleChangeCheckoutMode = () => {
+    setCheckoutMode(null)
+    setSelectedAddressId(null)
+    setUseSavedAddress(false)
+    reset({
+      email: defaultValues?.email || "",
+      country_code: "au",
+      ...defaultValues,
+    })
+  }
+
+  const handleOpenAuthSheet = (mode: AuthSheetMode) => {
+    setAuthSheetMode(mode)
+    setIsAuthSheetOpen(true)
+  }
+
+  const handleAuthSuccess = () => {
+    void loadSavedAddresses()
   }
 
   const onSubmit = async (data: AddressFormData) => {
@@ -158,6 +216,8 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
     }
   }
 
+  const canShowAddressForm = Boolean(authUser) || checkoutMode === "guest"
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid gap-2">
@@ -167,7 +227,66 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
         </p>
       </div>
 
-      <div className="grid gap-4">
+      {!isLoadingAddresses && !authUser && checkoutMode === null && (
+        <div className="grid gap-3">
+          <div className="rounded-lg border bg-card p-4">
+            <div className="flex items-start gap-3">
+              <User className="mt-0.5 h-5 w-5 text-primary" />
+              <div className="grid gap-2">
+                <h3 className="font-medium">Continue as guest</h3>
+                <p className="text-sm text-muted-foreground">
+                  Use your email and delivery address without creating an account.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-fit"
+                  onClick={handleGuestCheckout}
+                >
+                  Continue as guest
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => handleOpenAuthSheet("login")}
+            >
+              <User className="mr-2 h-4 w-4" />
+              Sign in
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleOpenAuthSheet("register")}
+            >
+              <UserPlus className="mr-2 h-4 w-4" />
+              Create account
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {canShowAddressForm && (
+        <div className="grid gap-4">
+        {checkoutMode === "guest" && !authUser && (
+          <div className="flex items-center justify-between gap-3 rounded-md border bg-muted/30 p-3 text-sm">
+            <span className="text-muted-foreground">
+              Checking out as guest
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleChangeCheckoutMode}
+            >
+              Change method
+            </Button>
+          </div>
+        )}
         <div className="grid gap-2">
           <Label htmlFor="email">Email Address</Label>
           <Input
@@ -357,15 +476,25 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
           </div>
         )}
       </div>
+      )}
 
-      <Button
-        type="submit"
-        className="w-full font-mono uppercase tracking-widest"
-        size="lg"
-        disabled={isSubmitting}
-      >
-        {isSubmitting ? "Saving..." : "Continue to Delivery"}
-      </Button>
+      {canShowAddressForm && (
+        <Button
+          type="submit"
+          className="w-full font-mono uppercase tracking-widest"
+          size="lg"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Saving..." : "Continue to Delivery"}
+        </Button>
+      )}
+
+      <AuthSheet
+        initialMode={authSheetMode}
+        onOpenChange={setIsAuthSheetOpen}
+        onSuccess={handleAuthSuccess}
+        open={isAuthSheetOpen}
+      />
     </form>
   )
 }

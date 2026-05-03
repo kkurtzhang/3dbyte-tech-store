@@ -171,10 +171,7 @@ export async function estimateProductShippingAction(input: unknown):
 
     const options = await Promise.all(
       shippingOptions.map(async (option) => {
-        let amount = minorUnitAmountToMajorUnitAmount(
-          option.amount ?? 0,
-          currencyCode
-        )
+        let amount = option.amount ?? 0
         const priceType = option.price_type || "flat"
 
         if (priceType === "calculated") {
@@ -196,10 +193,7 @@ export async function estimateProductShippingAction(input: unknown):
             result.shipping_option?.amount
 
           if (typeof calculatedAmount === "number") {
-            amount = minorUnitAmountToMajorUnitAmount(
-              calculatedAmount,
-              currencyCode
-            )
+            amount = calculatedAmount
           }
         }
 

@@ -30,14 +30,18 @@ export function CheckoutSummary({ cart: ssrCart }: CheckoutSummaryProps) {
   }
 
   const currencyCode = cart.region?.currency_code || "usd"
+  const itemSubtotal =
+    typeof cart.item_subtotal === "number" ? cart.item_subtotal : cart.subtotal || 0
   const cartDisplayGroups = buildCartDisplayGroups(cart.items)
   const cartAnalysis = analyzeCartContents(cart.items, currencyCode)
   const hasShippingMethod =
     Array.isArray(cart.shipping_methods) && cart.shipping_methods.length > 0
   const hasShippingAddress = Boolean(cart.shipping_address)
   const shippingTotal =
-    hasShippingMethod && typeof cart.shipping_total === "number"
-      ? cart.shipping_total
+    hasShippingMethod && typeof cart.shipping_subtotal === "number"
+      ? cart.shipping_subtotal
+      : hasShippingMethod && typeof cart.shipping_total === "number"
+        ? cart.shipping_total
       : !hasShippingMethod && typeof checkoutSummaryEstimate?.estimatedShippingTotal === "number"
         ? checkoutSummaryEstimate.estimatedShippingTotal
         : null
@@ -171,7 +175,7 @@ export function CheckoutSummary({ cart: ssrCart }: CheckoutSummaryProps) {
       <div className="space-y-1.5 text-sm">
         <div className="flex justify-between">
           <span className="text-muted-foreground">Subtotal</span>
-          <span className="font-mono">{formatPrice(cart.subtotal || 0, currencyCode)}</span>
+          <span className="font-mono">{formatPrice(itemSubtotal, currencyCode)}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">Shipping</span>
