@@ -85,6 +85,9 @@ const OrderCheckoutDetailsWidget = ({
                 >
                   Releases on {item.availableDate}
                 </Text>
+                <Text size="small" className="text-ui-fg-subtle">
+                  Do not fulfill before this release date.
+                </Text>
               </div>
             </div>
           ))}

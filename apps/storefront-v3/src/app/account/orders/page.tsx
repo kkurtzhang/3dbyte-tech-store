@@ -4,50 +4,36 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, Package, ChevronRight } from "lucide-react"
-import { sdk } from "@/lib/medusa/client"
+import { Package, ChevronRight } from "lucide-react"
+import { listOrders, ORDER_TRACKING_FIELDS } from "@/lib/medusa/orders"
+import type { MedusaOrder } from "@/lib/medusa/types"
+import { getOrderLifecycle, getOrderLifecycleToneClass } from "@/features/order/lib/order-lifecycle"
+import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
   title: "Orders",
   description: "View your order history and track shipments",
 }
 
-interface Order {
-  id: string
-  status: string
-  created_at: string
-  total: number
-  currency_code: string
-  items: Array<{
-    id: string
-    title: string
-    quantity: number
-    thumbnail?: string
-  }>
-}
-
-async function getOrders(): Promise<Order[]> {
+async function getOrders(): Promise<MedusaOrder[]> {
   try {
-    const { orders } = await sdk.store.order.list({
+    const { orders } = await listOrders({
       limit: 20,
+      fields: ORDER_TRACKING_FIELDS,
     })
-    return (orders || []).map(order => ({
-      id: order.id,
-      status: order.status,
-      created_at: typeof order.created_at === 'string' ? order.created_at : order.created_at?.toISOString() || new Date().toISOString(),
-      total: order.total,
-      currency_code: order.currency_code,
-      items: (order.items || []).map(item => ({
-        id: item.id,
-        title: item.title || item.product_title || 'Product',
-        quantity: item.quantity,
-        thumbnail: item.thumbnail || undefined
-      }))
-    }))
+
+    return orders
   } catch (error) {
     console.error("Failed to fetch orders:", error)
     return []
   }
+}
+
+function formatPrice(amount: number | null | undefined, currencyCode: string | null | undefined) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: currencyCode || "usd",
+  }).format(amount || 0)
 }
 
 export default async function OrdersPage() {
@@ -122,52 +108,55 @@ export default async function OrdersPage() {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {orders.map((order) => (
-                <tr key={order.id} className="hover:bg-muted/50 transition-colors">
-                  <td className="p-4">
-                    <Link
-                      href={`/account/orders/${order.id}`}
-                      className="font-mono text-sm hover:text-primary transition-colors"
-                    >
-                      #{order.id.slice(-8).toUpperCase()}
-                    </Link>
-                  </td>
-                  <td className="p-4 hidden md:table-cell">
-                    <span className="text-sm text-muted-foreground">
-                      {new Date(order.created_at).toLocaleDateString()}
-                    </span>
-                  </td>
-                  <td className="p-4 hidden sm:table-cell">
-                    <Badge
-                      variant={
-                        order.status === "completed"
-                          ? "default"
-                          : order.status === "shipped"
-                          ? "secondary"
-                          : "outline"
-                      }
-                      className="font-mono text-xs uppercase tracking-wider"
-                    >
-                      {order.status}
-                    </Badge>
-                  </td>
-                  <td className="p-4 text-right">
-                    <span className="font-mono text-sm">
-                      {new Intl.NumberFormat("en-US", {
-                        style: "currency",
-                        currency: order.currency_code || "usd",
-                      }).format((order.total || 0) / 100)}
-                    </span>
-                  </td>
-                  <td className="p-4 text-right">
-                    <Link href={`/account/orders/${order.id}`}>
-                      <Button variant="ghost" size="sm">
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+              {orders.map((order) => {
+                const lifecycle = getOrderLifecycle(order)
+
+                return (
+                  <tr key={order.id} className="hover:bg-muted/50 transition-colors">
+                    <td className="p-4">
+                      <Link
+                        href={`/account/orders/${order.id}`}
+                        className="font-mono text-sm hover:text-primary transition-colors"
+                      >
+                        #{order.id.slice(-8).toUpperCase()}
+                      </Link>
+                    </td>
+                    <td className="p-4 hidden md:table-cell">
+                      <span className="text-sm text-muted-foreground">
+                        {new Date(order.created_at).toLocaleDateString()}
+                      </span>
+                    </td>
+                    <td className="p-4 hidden sm:table-cell">
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "font-mono text-xs uppercase tracking-wider",
+                          getOrderLifecycleToneClass(lifecycle.tone)
+                        )}
+                      >
+                        {lifecycle.label}
+                      </Badge>
+                      {lifecycle.groups.length > 0 ? (
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {lifecycle.description}
+                        </p>
+                      ) : null}
+                    </td>
+                    <td className="p-4 text-right">
+                      <span className="font-mono text-sm">
+                        {formatPrice(order.total, order.currency_code)}
+                      </span>
+                    </td>
+                    <td className="p-4 text-right">
+                      <Link href={`/account/orders/${order.id}`}>
+                        <Button variant="ghost" size="sm">
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>

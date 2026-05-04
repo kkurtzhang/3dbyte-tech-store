@@ -3,12 +3,17 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Package, CreditCard, ArrowRight, AlertCircle, CheckCircle } from "lucide-react"
+import { Package, CreditCard, ArrowRight, AlertCircle, Truck } from "lucide-react"
 import { lookupOrder } from "@/app/actions/track-order"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { OrderSummary } from "@/features/order/components/order-summary"
-import { analyzeCartContents } from "@/lib/util/cart-analysis"
+import {
+  getOrderLifecycle,
+  getOrderLifecycleToneClass,
+  type OrderLifecycleGroup,
+} from "@/features/order/lib/order-lifecycle"
+import { cn } from "@/lib/utils"
 import type { MedusaOrder } from "@/lib/medusa/types"
 
 type OrderStatus = "pending" | "processing" | "shipped" | "completed" | "cancelled" | "refunded" | "canceled"
@@ -21,12 +26,6 @@ const statusLabels: Record<OrderStatus, string> = {
   cancelled: "Cancelled",
   canceled: "Cancelled",
   refunded: "Refunded",
-}
-
-type ProgressStep = {
-  label: string
-  complete: boolean
-  current: boolean
 }
 
 function OrderStatusBadge({ status }: { status: string }) {
@@ -44,91 +43,67 @@ function OrderStatusBadge({ status }: { status: string }) {
   )
 }
 
-function getFulfillmentStatus(order: MedusaOrder) {
-  return String(
-    (order as MedusaOrder & { fulfillment_status?: string | null }).fulfillment_status ||
-      ""
+function formatReleaseDate(date: Date) {
+  return new Intl.DateTimeFormat("en-AU", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(date)
+}
+
+function OrderLifecycleGroupCard({ group }: { group: OrderLifecycleGroup }) {
+  return (
+    <div className="rounded-lg border bg-background p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="font-mono text-xs font-semibold uppercase tracking-wider">
+            {group.title}
+          </p>
+          <p className="mt-1 text-sm font-medium">{group.status}</p>
+        </div>
+        <span className="rounded-full border px-2 py-0.5 font-mono text-xs text-muted-foreground">
+          {group.itemCount} {group.itemCount === 1 ? "item" : "items"}
+        </span>
+      </div>
+      <p className="mt-2 text-sm text-muted-foreground">{group.description}</p>
+      {group.releaseDate ? (
+        <p className="mt-3 w-fit rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-700 dark:text-amber-300">
+          Releases on {formatReleaseDate(group.releaseDate)}
+        </p>
+      ) : null}
+    </div>
   )
 }
 
-function getCompletedProgressIndex(order: MedusaOrder, isPreorderOrder: boolean) {
-  const status = order.status
-  const fulfillmentStatus = getFulfillmentStatus(order)
-
-  if (status === "cancelled" || status === "canceled" || status === "refunded") {
-    return 0
-  }
-
-  if (fulfillmentStatus === "delivered" || status === "completed") {
-    return isPreorderOrder ? 4 : 4
-  }
-
-  if (fulfillmentStatus === "shipped" || fulfillmentStatus === "partially_shipped") {
-    return isPreorderOrder ? 3 : 2
-  }
-
-  if (fulfillmentStatus === "fulfilled" || fulfillmentStatus === "partially_fulfilled") {
-    return isPreorderOrder ? 2 : 1
-  }
-
-  return isPreorderOrder ? 1 : 0
-}
-
-function getOrderProgressSteps(order: MedusaOrder): ProgressStep[] {
-  const orderAnalysis = analyzeCartContents(order.items, order.currency_code)
-  const isPreorderOrder = orderAnalysis.hasPreorderItems
-  const labels = isPreorderOrder
-    ? [
-        "Pre-order confirmed",
-        "Awaiting release date",
-        "Preparing order",
-        "Shipped",
-        "Delivered",
-      ]
-    : [
-        "Order confirmed",
-        "Preparing order",
-        "Shipped",
-        "Out for delivery",
-        "Delivered",
-      ]
-  const completedIndex = getCompletedProgressIndex(order, isPreorderOrder)
-
-  return labels.map((label, index) => ({
-    label,
-    complete: index < completedIndex,
-    current: index === completedIndex,
-  }))
-}
-
-function OrderProgress({ order }: { order: MedusaOrder }) {
-  const steps = getOrderProgressSteps(order)
+function OrderLifecyclePanel({ order }: { order: MedusaOrder }) {
+  const lifecycle = getOrderLifecycle(order)
 
   return (
-    <div className="flex items-center justify-between w-full">
-      {steps.map((step, index) => (
-        <div key={step.label} className="flex flex-col items-center flex-1 relative">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center z-10 ${
-            step.complete || step.current
-              ? "bg-primary text-primary-foreground" 
-              : "bg-muted text-muted-foreground"
-          }`}>
-            {step.complete ? (
-              <CheckCircle className="w-5 h-5" />
-            ) : (
-              <span className="text-xs font-medium">{index + 1}</span>
-            )}
+    <div className="space-y-4">
+      <div
+        className={cn(
+          "rounded-lg border p-4",
+          getOrderLifecycleToneClass(lifecycle.tone)
+        )}
+      >
+        <div className="flex items-start gap-3">
+          <Truck className="mt-0.5 h-4 w-4 shrink-0" />
+          <div>
+            <p className="font-mono text-sm font-semibold uppercase tracking-wider">
+              {lifecycle.label}
+            </p>
+            <p className="mt-1 text-sm">{lifecycle.description}</p>
           </div>
-          <span className={`text-xs mt-2 text-center ${step.complete || step.current ? "text-foreground" : "text-muted-foreground"}`}>
-            {step.label}
-          </span>
-          {index < steps.length - 1 && (
-            <div className={`absolute top-4 left-1/2 w-full h-0.5 -translate-y-1/2 ${
-              step.complete ? "bg-primary" : "bg-muted"
-            }`} />
-          )}
         </div>
-      ))}
+      </div>
+
+      {lifecycle.groups.length > 0 ? (
+        <div className="grid gap-3 md:grid-cols-2">
+          {lifecycle.groups.map((group) => (
+            <OrderLifecycleGroupCard key={group.id} group={group} />
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -247,6 +222,7 @@ export function OrderDetails({ order }: { order: MedusaOrder }) {
   const orderId = order.id
   const orderNumber = orderId.slice(-8).toUpperCase()
   const orderStatus = (order.status || "pending") as OrderStatus
+  const lifecycle = getOrderLifecycle(order)
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -264,7 +240,17 @@ export function OrderDetails({ order }: { order: MedusaOrder }) {
             })}
           </p>
         </div>
-        <OrderStatusBadge status={orderStatus} />
+        <div className="flex flex-wrap gap-2 sm:justify-end">
+          <OrderStatusBadge status={orderStatus} />
+          <span
+            className={cn(
+              "inline-flex items-center rounded-full border px-3 py-1 font-mono text-sm font-medium uppercase tracking-wider",
+              getOrderLifecycleToneClass(lifecycle.tone)
+            )}
+          >
+            {lifecycle.label}
+          </span>
+        </div>
       </div>
 
       {/* Progress */}
@@ -272,7 +258,7 @@ export function OrderDetails({ order }: { order: MedusaOrder }) {
         <h2 className="font-mono font-semibold uppercase tracking-wider text-sm mb-6">
           Order Progress
         </h2>
-        <OrderProgress order={order} />
+        <OrderLifecyclePanel order={order} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

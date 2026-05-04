@@ -26,6 +26,7 @@ jest.mock("lucide-react", () => ({
   CreditCard: () => <span />,
   MapPin: () => <span />,
   Package: () => <span />,
+  Truck: () => <span />,
 }))
 
 const order = {
@@ -197,17 +198,33 @@ describe("Track order page order details", () => {
     expect(screen.getAllByText("Shipping Address")).toHaveLength(1)
   })
 
-  it("shows a richer preorder progress path", () => {
+  it("shows split fulfillment progress for mixed regular and preorder orders", () => {
     render(<OrderDetails order={order} />)
 
-    expect(screen.getByText("Pre-order confirmed")).toBeInTheDocument()
-    expect(screen.getByText("Awaiting release date")).toBeInTheDocument()
-    expect(screen.getByText("Preparing order")).toBeInTheDocument()
-    expect(screen.getByText("Shipped")).toBeInTheDocument()
-    expect(screen.getByText("Delivered")).toBeInTheDocument()
+    expect(screen.getAllByText("Awaiting split fulfillment").length).toBeGreaterThan(0)
+    expect(screen.getByText("Ready-to-ship items")).toBeInTheDocument()
+    expect(screen.getByText("Ready for fulfillment")).toBeInTheDocument()
+    expect(screen.getByText("Pre-order items")).toBeInTheDocument()
+    expect(screen.getByText("Waiting for release")).toBeInTheDocument()
+    expect(screen.getByText(/They may ship separately/i)).toBeInTheDocument()
   })
 
-  it("shows a regular order progress path when the order has no preorder items", () => {
+  it("shows partially shipped while preorder items still wait for release", () => {
+    render(
+      <OrderDetails
+        order={{
+          ...order,
+          fulfillment_status: "partially_shipped",
+        } as MedusaOrder}
+      />
+    )
+
+    expect(screen.getAllByText("Partially shipped").length).toBeGreaterThan(0)
+    expect(screen.getByText("Shipped")).toBeInTheDocument()
+    expect(screen.getByText("Waiting for release")).toBeInTheDocument()
+  })
+
+  it("shows regular processing when the order has no preorder items", () => {
     render(
       <OrderDetails
         order={{
@@ -230,9 +247,8 @@ describe("Track order page order details", () => {
       />
     )
 
-    expect(screen.getByText("Order confirmed")).toBeInTheDocument()
-    expect(screen.queryByText("Awaiting release date")).not.toBeInTheDocument()
-    expect(screen.getByText("Preparing order")).toBeInTheDocument()
-    expect(screen.getByText("Out for delivery")).toBeInTheDocument()
+    expect(screen.getAllByText("Processing").length).toBeGreaterThan(0)
+    expect(screen.queryByText("Waiting for release")).not.toBeInTheDocument()
+    expect(screen.queryByText("Ready-to-ship items")).not.toBeInTheDocument()
   })
 })

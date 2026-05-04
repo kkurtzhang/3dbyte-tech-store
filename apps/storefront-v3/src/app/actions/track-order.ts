@@ -1,6 +1,7 @@
 "use server"
 
 import { sdk } from "@/lib/medusa/client"
+import { ORDER_TRACKING_FIELDS } from "@/lib/medusa/orders"
 import type { MedusaOrder } from "@/lib/medusa/types"
 
 interface OrderLookupResult {
@@ -14,32 +15,6 @@ type TrackingPaymentMethod = {
   brand: string
   last4: string
 }
-
-const TRACK_ORDER_FIELDS = [
-  "id",
-  "email",
-  "status",
-  "payment_status",
-  "fulfillment_status",
-  "currency_code",
-  "created_at",
-  "subtotal",
-  "item_subtotal",
-  "shipping_total",
-  "shipping_subtotal",
-  "tax_total",
-  "discount_total",
-  "total",
-  "*payment_collections.payments",
-  "*items",
-  "*items.metadata",
-  "*items.variant",
-  "*items.product",
-  "*items.variant.preorder_variant",
-  "*items.variant.preorder_variant.prices",
-  "*shipping_methods",
-  "*shipping_address",
-].join(",")
 
 function getMedusaBackendUrl() {
   return process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
@@ -102,7 +77,7 @@ export async function lookupOrder(
 
     // Retrieve the order
     const { order } = await sdk.store.order.retrieve(cleanOrderId, {
-      fields: TRACK_ORDER_FIELDS,
+      fields: ORDER_TRACKING_FIELDS.join(","),
     })
 
     if (!order) {

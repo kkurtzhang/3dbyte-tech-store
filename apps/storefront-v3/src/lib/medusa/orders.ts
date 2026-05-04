@@ -1,12 +1,37 @@
 import { sdk } from "./client"
 import type { MedusaOrder } from "./types"
 
+export const ORDER_TRACKING_FIELDS = [
+  "id",
+  "email",
+  "status",
+  "payment_status",
+  "fulfillment_status",
+  "currency_code",
+  "created_at",
+  "subtotal",
+  "item_subtotal",
+  "shipping_total",
+  "shipping_subtotal",
+  "tax_total",
+  "discount_total",
+  "total",
+  "*payment_collections.payments",
+  "*items",
+  "*items.metadata",
+  "*items.variant",
+  "*items.product",
+  "*items.variant.preorder_variant",
+  "*items.variant.preorder_variant.prices",
+  "*shipping_methods",
+  "*shipping_address",
+]
+
 export async function getOrder(id: string, fields?: string[]): Promise<MedusaOrder | null> {
   try {
     const { order } = await sdk.store.order.retrieve(id, {
       fields:
-        fields?.join(",") ||
-        "*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product,*items.variant.preorder_variant,*items.variant.preorder_variant.prices",
+        fields?.join(",") || ORDER_TRACKING_FIELDS.join(","),
     })
 
     return order

@@ -9,6 +9,7 @@ import type { MedusaOrder } from "@/lib/medusa/types"
 import { isPreorder } from "@/lib/util/is-preorder"
 import { resolvePreorderPrice } from "@/lib/util/preorder-pricing"
 import { resolveCartLineRegularUnitPrice } from "@/features/cart/lib/cart-line-pricing"
+import { getOrderLifecycle } from "@/features/order/lib/order-lifecycle"
 
 export interface OrderSummaryProps {
   order: MedusaOrder
@@ -57,28 +58,8 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
     }
   }
 
-  const getFulfillmentStatus = (order: MedusaOrder) => {
-    if (!order.fulfillment_status) return "Unknown"
-
-    switch (order.fulfillment_status) {
-      case "not_fulfilled":
-        return "Not Fulfilled"
-      case "fulfilled":
-        return "Fulfilled"
-      case "partially_fulfilled":
-        return "Partially Fulfilled"
-      case "shipped":
-        return "Shipped"
-      case "partially_shipped":
-        return "Partially Shipped"
-      case "delivered":
-        return "Delivered"
-      default:
-        return order.fulfillment_status
-    }
-  }
-
   const status = getOrderStatus(order)
+  const lifecycle = getOrderLifecycle(order)
   const currencyCode = order.currency_code || "USD"
   const orderDisplayGroups = buildCartDisplayGroups(order.items)
   const orderAnalysis = analyzeCartContents(order.items, currencyCode)
@@ -200,7 +181,7 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
         </div>
 
         <div className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-xs font-medium bg-card">
-          Fulfillment: {getFulfillmentStatus(order)}
+          Fulfillment: {lifecycle.label}
         </div>
       </div>
 
