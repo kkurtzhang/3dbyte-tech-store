@@ -272,7 +272,7 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
                 : ""}
               {` ${order.shipping_address.postal_code}`}
             </p>
-            <p>{order.shipping_address.country_code}</p>
+            <p>{order.shipping_address.country_code?.toUpperCase()}</p>
           </div>
         </div>
       )}
@@ -291,7 +291,7 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
           </span>
         </div>
 
-        {((orderTotals.shipping_subtotal ?? order.shipping_total) || 0) > 0 && (
+        {((orderTotals.shipping_subtotal ?? order.shipping_total) || 0) > 0 ? (
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Shipping</span>
             <span className="font-mono">
@@ -301,25 +301,25 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
               )}
             </span>
           </div>
-        )}
+        ) : null}
 
-        {order.tax_total && order.tax_total > 0 && (
+        {order.tax_total && order.tax_total > 0 ? (
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Tax</span>
             <span className="font-mono">
               {formatPrice(order.tax_total, currencyCode)}
             </span>
           </div>
-        )}
+        ) : null}
 
-        {order.discount_total && order.discount_total > 0 && (
+        {order.discount_total && order.discount_total > 0 ? (
           <div className="flex justify-between text-sm text-primary">
             <span>Discount</span>
             <span className="font-mono">
               -{formatPrice(order.discount_total, currencyCode)}
             </span>
           </div>
-        )}
+        ) : null}
 
         <Separator />
 

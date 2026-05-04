@@ -15,8 +15,7 @@ import { getShippingServiceDisplayName } from "@/lib/shipping/display-name"
 import { z } from "zod"
 
 const CART_COOKIE = "_medusa_cart_id"
-const checkoutAddressSchema = z.object({
-  email: z.string().email(),
+const checkoutAddressFieldsSchema = z.object({
   first_name: z.string().trim().min(1).max(100),
   last_name: z.string().trim().min(1).max(100),
   address_1: z.string().trim().min(1).max(200),
@@ -27,6 +26,26 @@ const checkoutAddressSchema = z.object({
   postal_code: z.string().trim().min(1).max(20),
   phone: z.string().trim().max(30).optional().or(z.literal("")),
 })
+const checkoutAddressSchema = checkoutAddressFieldsSchema.extend({
+  email: z.string().email(),
+  billing_address: checkoutAddressFieldsSchema.optional(),
+})
+
+type CheckoutAddressFields = z.infer<typeof checkoutAddressFieldsSchema>
+
+function toMedusaAddress(address: CheckoutAddressFields) {
+  return {
+    first_name: address.first_name,
+    last_name: address.last_name,
+    address_1: address.address_1,
+    address_2: address.address_2,
+    city: address.city,
+    province: address.province,
+    country_code: address.country_code.toLowerCase(),
+    postal_code: address.postal_code,
+    phone: address.phone,
+  }
+}
 
 function getPaymentSetupErrorMessage(error: unknown): string {
   const message =
@@ -223,33 +242,14 @@ export async function setAddressesAction(data: unknown) {
       return { success: false, error: "Invalid address information" }
     }
     const address = parsed.data
+    const billingAddress = address.billing_address ?? address
 
     const cart = await updateCart({
       cartId,
       data: {
         email: address.email,
-        shipping_address: {
-          first_name: address.first_name,
-          last_name: address.last_name,
-          address_1: address.address_1,
-          address_2: address.address_2,
-          city: address.city,
-          province: address.province,
-          country_code: address.country_code.toLowerCase(),
-          postal_code: address.postal_code,
-          phone: address.phone,
-        },
-        billing_address: {
-          first_name: address.first_name,
-          last_name: address.last_name,
-          address_1: address.address_1,
-          address_2: address.address_2,
-          city: address.city,
-          province: address.province,
-          country_code: address.country_code.toLowerCase(),
-          postal_code: address.postal_code,
-          phone: address.phone,
-        },
+        shipping_address: toMedusaAddress(address),
+        billing_address: toMedusaAddress(billingAddress),
       },
     })
     return { success: true, cart }
@@ -283,6 +283,22 @@ function sanitizeShippingMethodSelectionData(
   return Object.keys(sanitized).length > 0 ? sanitized : undefined
 }
 
+function buildSelectedShippingMethodName(
+  selectedRateData: ShippingMethodSelectionData | undefined,
+  fallbackName: string | null | undefined
+) {
+  const carrierName = selectedRateData?.carrier_name
+  const serviceName = selectedRateData?.service_name
+
+  if (carrierName && serviceName) {
+    return serviceName.toLowerCase().includes(carrierName.toLowerCase())
+      ? serviceName
+      : `${carrierName} ${serviceName}`
+  }
+
+  return serviceName || fallbackName
+}
+
 export async function setShippingMethodAction(
   optionId: string,
   data?: unknown
@@ -304,8 +320,8 @@ export async function setShippingMethodAction(
         ? {
             code: option.id,
             description: option.description,
-            name: option.name,
             ...selectedRateData,
+            name: buildSelectedShippingMethodName(selectedRateData, option.name),
           }
         : selectedRateData,
     })

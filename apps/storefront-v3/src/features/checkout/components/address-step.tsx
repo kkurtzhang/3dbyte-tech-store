@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Card, CardContent } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -29,6 +30,19 @@ const addressSchema = z.object({
   postal_code: z.string().min(1, "Required"),
   country_code: z.string().min(2, "Required"), // Simplified for now
   phone: z.string().optional(),
+  billing_address: z
+    .object({
+      first_name: z.string().min(1, "Required"),
+      last_name: z.string().min(1, "Required"),
+      address_1: z.string().min(1, "Required"),
+      address_2: z.string().optional(),
+      city: z.string().min(1, "Required"),
+      province: z.string().min(1, "Required"),
+      postal_code: z.string().min(1, "Required"),
+      country_code: z.string().min(2, "Required"),
+      phone: z.string().optional(),
+    })
+    .optional(),
 })
 
 type AddressFormData = z.infer<typeof addressSchema>
@@ -51,6 +65,7 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
   const [checkoutMode, setCheckoutMode] = useState<CheckoutIdentityMode | null>(null)
   const [authSheetMode, setAuthSheetMode] = useState<AuthSheetMode>("login")
   const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false)
+  const [billingSameAsShipping, setBillingSameAsShipping] = useState(true)
 
   const {
     register,
@@ -147,6 +162,40 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
     })
   }
 
+  const handleBillingAutocompleteValueChange = (value: string) => {
+    setValue("billing_address.address_1", value, {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+  }
+
+  const handleBillingAutocompleteSelect = (address: MeilisearchAddressDocument) => {
+    setValue("billing_address.address_1", `${address.number} ${address.street}`.trim(), {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+    setValue("billing_address.address_2", address.unit || "", {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+    setValue("billing_address.city", address.suburb, {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+    setValue("billing_address.province", address.state, {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+    setValue("billing_address.postal_code", address.postcode, {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+    setValue("billing_address.country_code", address.country.toUpperCase(), {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+  }
+
   const handleUseNewAddress = () => {
     setSelectedAddressId(null)
     setUseSavedAddress(false)
@@ -186,6 +235,16 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
     setIsAuthSheetOpen(true)
   }
 
+  const handleBillingSameAsShippingChange = (checked: boolean) => {
+    setBillingSameAsShipping(checked)
+    if (!checked && !watch("billing_address.country_code")) {
+      setValue("billing_address.country_code", "au", {
+        shouldDirty: true,
+        shouldValidate: false,
+      })
+    }
+  }
+
   const handleAuthSuccess = () => {
     void loadSavedAddresses()
   }
@@ -208,7 +267,10 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
           data.phone = selectedAddress.phone || ""
         }
       }
-      await onComplete(data)
+      await onComplete({
+        ...data,
+        billing_address: billingSameAsShipping ? undefined : data.billing_address,
+      })
     } catch (error) {
       console.error(error)
     } finally {
@@ -475,6 +537,143 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
             </div>
           </div>
         )}
+
+        <div className="grid gap-4 rounded-lg border bg-muted/20 p-4">
+          <div className="flex items-center gap-3">
+            <Checkbox
+              id="billing_same_as_shipping"
+              checked={billingSameAsShipping}
+              onCheckedChange={(checked) =>
+                handleBillingSameAsShippingChange(checked === true)
+              }
+            />
+            <Label htmlFor="billing_same_as_shipping">
+              Billing address is same as shipping
+            </Label>
+          </div>
+
+          {!billingSameAsShipping && (
+            <fieldset className="grid gap-4">
+              <legend className="font-medium">Billing Address</legend>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="billing_first_name">First Name</Label>
+                  <Input
+                    id="billing_first_name"
+                    {...register("billing_address.first_name")}
+                    className={cn(errors.billing_address?.first_name && "border-destructive")}
+                  />
+                  {errors.billing_address?.first_name && (
+                    <span className="text-xs text-destructive">
+                      {errors.billing_address.first_name.message}
+                    </span>
+                  )}
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="billing_last_name">Last Name</Label>
+                  <Input
+                    id="billing_last_name"
+                    {...register("billing_address.last_name")}
+                    className={cn(errors.billing_address?.last_name && "border-destructive")}
+                  />
+                  {errors.billing_address?.last_name && (
+                    <span className="text-xs text-destructive">
+                      {errors.billing_address.last_name.message}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="billing_address_1">Address</Label>
+                <input type="hidden" {...register("billing_address.address_1")} />
+                <AddressAutocomplete
+                  id="billing_address_1"
+                  defaultValue={watch("billing_address.address_1")}
+                  onValueChange={handleBillingAutocompleteValueChange}
+                  onSelect={handleBillingAutocompleteSelect}
+                  error={errors.billing_address?.address_1?.message}
+                  className={cn(errors.billing_address?.address_1 && "border-destructive")}
+                />
+                {errors.billing_address?.address_1 && (
+                  <span className="text-xs text-destructive">
+                    {errors.billing_address.address_1.message}
+                  </span>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="billing_address_2">Apartment, suite, etc. (optional)</Label>
+                <Input
+                  id="billing_address_2"
+                  {...register("billing_address.address_2")}
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="grid gap-2">
+                  <Label htmlFor="billing_city">City</Label>
+                  <Input
+                    id="billing_city"
+                    {...register("billing_address.city")}
+                    className={cn(errors.billing_address?.city && "border-destructive")}
+                  />
+                  {errors.billing_address?.city && (
+                    <span className="text-xs text-destructive">
+                      {errors.billing_address.city.message}
+                    </span>
+                  )}
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="billing_province">State</Label>
+                  <Input
+                    id="billing_province"
+                    placeholder="NSW"
+                    {...register("billing_address.province")}
+                    className={cn(errors.billing_address?.province && "border-destructive")}
+                  />
+                  {errors.billing_address?.province && (
+                    <span className="text-xs text-destructive">
+                      {errors.billing_address.province.message}
+                    </span>
+                  )}
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="billing_postal_code">Postal Code</Label>
+                  <Input
+                    id="billing_postal_code"
+                    {...register("billing_address.postal_code")}
+                    className={cn(errors.billing_address?.postal_code && "border-destructive")}
+                  />
+                  {errors.billing_address?.postal_code && (
+                    <span className="text-xs text-destructive">
+                      {errors.billing_address.postal_code.message}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="billing_country_code">Country</Label>
+                <Input
+                  id="billing_country_code"
+                  placeholder="AU"
+                  {...register("billing_address.country_code")}
+                  className={cn(errors.billing_address?.country_code && "border-destructive")}
+                />
+                {errors.billing_address?.country_code && (
+                  <span className="text-xs text-destructive">
+                    {errors.billing_address.country_code.message}
+                  </span>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="billing_phone">Phone (Optional)</Label>
+                <Input
+                  id="billing_phone"
+                  type="tel"
+                  {...register("billing_address.phone")}
+                />
+              </div>
+            </fieldset>
+          )}
+        </div>
       </div>
       )}
 

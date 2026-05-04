@@ -9,6 +9,88 @@ interface OrderLookupResult {
   error?: string
 }
 
+type TrackingPaymentMethod = {
+  type: "card"
+  brand: string
+  last4: string
+}
+
+const TRACK_ORDER_FIELDS = [
+  "id",
+  "email",
+  "status",
+  "payment_status",
+  "fulfillment_status",
+  "currency_code",
+  "created_at",
+  "subtotal",
+  "item_subtotal",
+  "shipping_total",
+  "shipping_subtotal",
+  "tax_total",
+  "discount_total",
+  "total",
+  "*payment_collections.payments",
+  "*items",
+  "*items.metadata",
+  "*items.variant",
+  "*items.product",
+  "*items.variant.preorder_variant",
+  "*items.variant.preorder_variant.prices",
+  "*shipping_methods",
+  "*shipping_address",
+].join(",")
+
+function getMedusaBackendUrl() {
+  return process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
+}
+
+function isTrackingPaymentMethod(value: unknown): value is TrackingPaymentMethod {
+  if (typeof value !== "object" || value === null) {
+    return false
+  }
+
+  const paymentMethod = value as Record<string, unknown>
+
+  return (
+    paymentMethod.type === "card" &&
+    typeof paymentMethod.brand === "string" &&
+    typeof paymentMethod.last4 === "string"
+  )
+}
+
+async function getTrackingPaymentMethod(orderId: string, email: string) {
+  try {
+    const paymentMethodUrl = new URL(
+      `/store/orders/${orderId}/payment-method`,
+      getMedusaBackendUrl()
+    )
+    paymentMethodUrl.searchParams.set("email", email)
+
+    const response = await fetch(paymentMethodUrl, {
+      headers: process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+        ? {
+            "x-publishable-api-key":
+              process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
+          }
+        : undefined,
+      cache: "no-store",
+    })
+
+    if (!response.ok) {
+      return null
+    }
+
+    const data = (await response.json()) as { payment_method?: unknown }
+
+    return isTrackingPaymentMethod(data.payment_method)
+      ? data.payment_method
+      : null
+  } catch {
+    return null
+  }
+}
+
 export async function lookupOrder(
   orderId: string,
   email: string
@@ -19,7 +101,9 @@ export async function lookupOrder(
     const cleanEmail = email.trim().toLowerCase()
 
     // Retrieve the order
-    const { order } = await sdk.store.order.retrieve(cleanOrderId)
+    const { order } = await sdk.store.order.retrieve(cleanOrderId, {
+      fields: TRACK_ORDER_FIELDS,
+    })
 
     if (!order) {
       return {
@@ -41,7 +125,13 @@ export async function lookupOrder(
 
     return {
       success: true,
-      order,
+      order: {
+        ...order,
+        tracking_payment_method: await getTrackingPaymentMethod(
+          cleanOrderId,
+          cleanEmail
+        ),
+      } as MedusaOrder,
     }
   } catch (error: any) {
     console.error("Order lookup failed:", error)

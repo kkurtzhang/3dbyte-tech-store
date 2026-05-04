@@ -75,6 +75,29 @@ describe("OrderSummary", () => {
     expect(screen.queryByText("$0.34")).not.toBeInTheDocument()
   })
 
+  it("uppercases country codes and does not render a stray zero when tax is zero", () => {
+    render(
+      <OrderSummary
+        order={createOrder({
+          shipping_address: {
+            first_name: "Ada",
+            last_name: "Lovelace",
+            address_1: "99 Manual Road",
+            city: "Hobart",
+            province: "TAS",
+            postal_code: "7000",
+            country_code: "au",
+          },
+          tax_total: 0,
+        } as Partial<MedusaOrder>)}
+      />
+    )
+
+    expect(screen.getByText("AU")).toBeInTheDocument()
+    expect(screen.queryByText("au")).not.toBeInTheDocument()
+    expect(screen.queryByText("0")).not.toBeInTheDocument()
+  })
+
   it("groups bundled items and shows an order-level preorder notice", () => {
     render(
       <OrderSummary

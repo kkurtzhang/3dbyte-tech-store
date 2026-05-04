@@ -10,6 +10,7 @@ jest.mock("lucide-react", () => ({
       loading
     </span>
   ),
+  Circle: () => <span data-testid="circle-icon">circle</span>,
 }))
 
 jest.mock("@/app/actions/checkout", () => ({
@@ -252,6 +253,23 @@ describe("DeliveryStep", () => {
     const user = userEvent.setup()
     const onComplete = jest.fn().mockResolvedValue(undefined)
 
+    mockGetLiveShippingRatesAction.mockResolvedValue({
+      success: true,
+      rates: [
+        {
+          id: "rate_live_1",
+          carrier: {
+            id: "auspost",
+            name: "Australia Post",
+            slug: "australia-post",
+          },
+          service: "parcel_post",
+          serviceName: "Parcel Post",
+          totalCharge: 1295,
+          currency: "AUD",
+        },
+      ],
+    })
     mockGetShippingOptionsAction.mockResolvedValue({
       success: true,
       options: [

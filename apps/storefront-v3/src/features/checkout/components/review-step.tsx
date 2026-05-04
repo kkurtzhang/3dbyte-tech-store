@@ -35,8 +35,8 @@ interface ReviewStepProps {
             currency_code?: string | null
           } | null
           prices?: Array<{
-            amount?: number | null
-            currency_code?: string | null
+            amount: number | null
+            currency_code: string | null
           }> | null
           preorder_variant?: {
             status: "enabled" | "disabled"

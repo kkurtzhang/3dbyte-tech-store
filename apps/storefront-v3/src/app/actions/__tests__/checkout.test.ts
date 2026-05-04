@@ -122,6 +122,49 @@ describe("checkout actions", () => {
     })
   })
 
+  it("sends a distinct billing address when checkout provides one", async () => {
+    await expect(
+      setAddressesAction({
+        email: "engineer@example.com",
+        first_name: "Ada",
+        last_name: "Lovelace",
+        address_1: "99 Shipping Road",
+        address_2: "",
+        city: "Hobart",
+        province: "TAS",
+        country_code: "au",
+        postal_code: "7000",
+        phone: "",
+        billing_address: {
+          first_name: "Grace",
+          last_name: "Hopper",
+          address_1: "12 Billing Street",
+          address_2: "",
+          city: "Melbourne",
+          province: "VIC",
+          country_code: "AU",
+          postal_code: "3000",
+          phone: "",
+        },
+      })
+    ).resolves.toMatchObject({ success: true })
+
+    expect(mockUpdateCart).toHaveBeenCalledWith({
+      cartId: "cart_123",
+      data: expect.objectContaining({
+        shipping_address: expect.objectContaining({
+          address_1: "99 Shipping Road",
+          province: "TAS",
+        }),
+        billing_address: expect.objectContaining({
+          address_1: "12 Billing Street",
+          province: "VIC",
+          country_code: "au",
+        }),
+      }),
+    })
+  })
+
   it("returns live Karrio shipping estimates as major-unit checkout amounts", async () => {
     mockGetShippingOptions.mockResolvedValue([
       {
@@ -184,7 +227,7 @@ describe("checkout actions", () => {
       data: {
         code: "ship_karrio",
         description: "Live carrier rate",
-        name: "Karrio Calculated Shipping",
+        name: "Aramex Priority",
         selected_rate_id: "rat_priority",
         service: "aramex_aunz_priority",
         service_name: "Aramex Priority",

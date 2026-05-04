@@ -122,7 +122,7 @@ describe("KarrioFulfillmentService", () => {
         payment: { paid_by: "sender" },
       }),
     );
-    expect(result.calculated_amount).toBe(1850);
+    expect(result.calculated_amount).toBe(18.5);
   });
 
   it("does not silently convert Karrio calculation failures into free shipping", async () => {
@@ -195,7 +195,7 @@ describe("KarrioFulfillmentService", () => {
           items: [{ variant: { weight: 0.5 }, quantity: 1 }],
         } as never,
       ),
-    ).resolves.toMatchObject({ calculated_amount: 1779 });
+    ).resolves.toMatchObject({ calculated_amount: 17.79 });
   });
 
   it("prioritizes the selected live rate id saved on the cart shipping method", async () => {
@@ -243,6 +243,6 @@ describe("KarrioFulfillmentService", () => {
           items: [{ variant: { weight: 0.5 }, quantity: 1 }],
         } as never,
       ),
-    ).resolves.toMatchObject({ calculated_amount: 1779 });
+    ).resolves.toMatchObject({ calculated_amount: 17.79 });
   });
 });

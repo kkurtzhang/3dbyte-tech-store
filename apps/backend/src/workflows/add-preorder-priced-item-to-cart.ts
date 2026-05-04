@@ -100,11 +100,39 @@ export const addPreorderPricedItemToCartWorkflow = createWorkflow(
       }
     );
 
+    const preorderMetadata = transform(
+      {
+        variant: variants[0] as {
+          preorder_variant?: {
+            status?: string | null;
+            available_date?: string | Date | null;
+          } | null;
+        },
+      },
+      (data) => {
+        const preorderVariant = data.variant.preorder_variant;
+        if (
+          preorderVariant?.status !== "enabled" ||
+          !preorderVariant.available_date
+        ) {
+          return {};
+        }
+
+        return {
+          preorder_status: preorderVariant.status,
+          preorder_available_date: new Date(
+            preorderVariant.available_date
+          ).toISOString(),
+        };
+      }
+    );
+
     const items = transform(
       {
         item: input.item,
         preorderUnitPrice,
         regularUnitPrice,
+        preorderMetadata,
       },
       (data) => [
         {
@@ -112,6 +140,7 @@ export const addPreorderPricedItemToCartWorkflow = createWorkflow(
           quantity: data.item.quantity,
           metadata: {
             ...(data.item.metadata ?? {}),
+            ...data.preorderMetadata,
             ...(typeof data.regularUnitPrice === "number"
               ? { regular_unit_price: data.regularUnitPrice }
               : {}),
@@ -143,6 +172,7 @@ export const addPreorderPricedItemToCartWorkflow = createWorkflow(
         item: input.item,
         preorderUnitPrice,
         regularUnitPrice,
+        preorderMetadata,
       },
       (data) => {
         if (!data.matchingLineItem) {
@@ -155,6 +185,7 @@ export const addPreorderPricedItemToCartWorkflow = createWorkflow(
             quantity: data.matchingLineItem.quantity + data.item.quantity,
             metadata: {
               ...(data.item.metadata ?? data.matchingLineItem.metadata ?? {}),
+              ...data.preorderMetadata,
               ...(typeof data.regularUnitPrice === "number"
                 ? { regular_unit_price: data.regularUnitPrice }
                 : {}),
