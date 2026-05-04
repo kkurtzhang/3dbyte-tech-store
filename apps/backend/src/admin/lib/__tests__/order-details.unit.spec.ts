@@ -12,6 +12,8 @@ describe("admin order details helpers", () => {
           {
             id: "item_1",
             title: "Polymaker HT-PLA-GF",
+            quantity: 2,
+            variant_sku: "3DB-POL-PA18008",
             variant: {
               preorder_variant: {
                 status: "enabled",
@@ -25,7 +27,9 @@ describe("admin order details helpers", () => {
       {
         id: "item_1",
         title: "Polymaker HT-PLA-GF",
-        availableDate: "June 1, 2026",
+        sku: "3DB-POL-PA18008",
+        quantity: 2,
+        availableDate: "1 June 2026",
       },
     ]);
   });
@@ -37,6 +41,7 @@ describe("admin order details helpers", () => {
           {
             id: "item_1",
             title: "Nozzle",
+            variant_sku: "NOZ-1",
             quantity: 1,
             metadata: {
               bundle_id: "bundle_1",
@@ -47,6 +52,7 @@ describe("admin order details helpers", () => {
           {
             id: "item_2",
             title: "Filament",
+            variant_sku: "FIL-1",
             quantity: 2,
             metadata: {
               bundle_id: "bundle_1",
@@ -62,8 +68,8 @@ describe("admin order details helpers", () => {
         title: "Starter Bundle",
         quantity: 1,
         items: [
-          { id: "item_1", title: "Nozzle", quantity: 1 },
-          { id: "item_2", title: "Filament", quantity: 2 },
+          { id: "item_1", title: "Nozzle", sku: "NOZ-1", quantity: 1 },
+          { id: "item_2", title: "Filament", sku: "FIL-1", quantity: 2 },
         ],
       },
     ]);

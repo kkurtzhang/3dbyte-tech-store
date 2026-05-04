@@ -3,8 +3,10 @@ type OrderLineItem = {
   title?: string | null;
   product_title?: string | null;
   quantity?: number | null;
+  variant_sku?: string | null;
   metadata?: Record<string, unknown> | null;
   variant?: {
+    sku?: string | null;
     preorder_variant?: {
       status?: string | null;
       available_date?: string | Date | null;
@@ -25,6 +27,8 @@ type AdminOrderDetailsLike = {
 export type AdminOrderPreorderItem = {
   id: string;
   title: string;
+  sku: string | null;
+  quantity: number;
   availableDate: string;
 };
 
@@ -35,14 +39,16 @@ export type AdminOrderBundleGroup = {
   items: Array<{
     id: string;
     title: string;
+    sku: string | null;
     quantity: number;
   }>;
 };
 
-const displayDateFormatter = new Intl.DateTimeFormat("en-US", {
+const displayDateFormatter = new Intl.DateTimeFormat("en-AU", {
   year: "numeric",
   month: "long",
   day: "numeric",
+  timeZone: "Australia/Hobart",
 });
 
 function getString(value: unknown) {
@@ -66,6 +72,10 @@ function getPositiveNumber(value: unknown) {
 
 function getItemTitle(item: OrderLineItem) {
   return item.title || item.product_title || "Order item";
+}
+
+function getItemSku(item: OrderLineItem) {
+  return getString(item.variant_sku) ?? getString(item.variant?.sku);
 }
 
 export function getAdminOrderPreorderItems(
@@ -92,6 +102,8 @@ export function getAdminOrderPreorderItems(
       {
         id: item.id || `${getItemTitle(item)}-${availableDate.toISOString()}`,
         title: getItemTitle(item),
+        sku: getItemSku(item),
+        quantity: item.quantity ?? 0,
         availableDate: displayDateFormatter.format(availableDate),
       },
     ];
@@ -116,6 +128,7 @@ export function buildAdminOrderBundleGroups(
     const displayItem = {
       id: item.id || `${bundleId}-${groups.length}`,
       title: getItemTitle(item),
+      sku: getItemSku(item),
       quantity: item.quantity ?? 0,
     };
 
