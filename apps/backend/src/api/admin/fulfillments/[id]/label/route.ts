@@ -2,6 +2,10 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { MedusaError, Modules } from "@medusajs/framework/utils";
 import { KARRIO_MODULE } from "../../../../../modules/karrio";
 import type KarrioModuleService from "../../../../../modules/karrio/service";
+import {
+  buildShipperAddress,
+  normalizeAddressCode,
+} from "../../../../../modules/karrio/utils";
 
 export const POST = async (
   req: MedusaRequest,
@@ -38,20 +42,15 @@ export const POST = async (
     }
 
     const shipment = await karrioService.createShipment({
-      shipper: {
-        person_name: process.env.STORE_SHIPPER_NAME || "3D Byte Tech",
-        address_line1: process.env.STORE_SHIPPER_ADDRESS || "",
-        city: process.env.STORE_SHIPPER_CITY || "",
-        state_code: process.env.STORE_SHIPPER_STATE || "",
-        postal_code: process.env.STORE_SHIPPER_POSTAL || "",
-        country_code: process.env.STORE_SHIPPER_COUNTRY || "AU",
-      },
+      shipper: buildShipperAddress(),
       recipient: {
         person_name: (fulfillmentData.recipient_name as string) || "",
         address_line1: (fulfillmentData.recipient_address_1 as string) || "",
         city: (fulfillmentData.recipient_city as string) || "",
         postal_code: (fulfillmentData.recipient_postal_code as string) || "",
-        country_code: (fulfillmentData.recipient_country_code as string) || "",
+        country_code:
+          normalizeAddressCode(fulfillmentData.recipient_country_code) || "",
+        residential: true,
       },
       parcels: [
         {
@@ -61,12 +60,15 @@ export const POST = async (
           height: 10,
           length: 10,
           dimension_unit: "CM",
+          is_document: false,
+          packaging_type: "your_packaging",
         },
       ],
       service: (fulfillmentData.service as string) || "",
       carrier_ids: fulfillmentData.carrier_id
         ? [fulfillmentData.carrier_id as string]
         : undefined,
+      payment: { paid_by: "sender" },
       selected_rate_id: fulfillmentData.selected_rate_id as string | undefined,
       label_type: "PDF",
     });

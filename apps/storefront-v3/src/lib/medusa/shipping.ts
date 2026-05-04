@@ -20,11 +20,22 @@ export interface LiveRateResponse {
   rates: ShippingRate[];
 }
 
+export interface LiveRateShippingAddress {
+  city: string;
+  country_code: string;
+  postal_code: string;
+  province?: string;
+}
+
 export async function getLiveShippingRates(
-  cartId: string
+  cartId: string,
+  shippingAddress?: LiveRateShippingAddress
 ): Promise<LiveRateResponse> {
   return sdk.client.fetch<LiveRateResponse>(`/store/shipping-rates`, {
     method: "POST",
-    body: { cart_id: cartId },
+    body: {
+      cart_id: cartId,
+      ...(shippingAddress ? { shipping_address: shippingAddress } : {}),
+    },
   });
 }

@@ -126,7 +126,7 @@ export function QuickViewDialog({
   const [quantity, setQuantity] = useState(1)
   const [isAdding, setIsAdding] = useState(false)
   const displayableOptions = useMemo(
-    () => getDisplayableProductOptions(product?.options),
+    () => getDisplayableProductOptions(product?.options ?? null),
     [product?.options]
   )
 

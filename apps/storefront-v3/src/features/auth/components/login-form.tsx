@@ -23,6 +23,13 @@ interface LoginFormProps {
   onSuccess?: () => void
 }
 
+function getSafeRedirectPath() {
+  const redirectTo = new URLSearchParams(window.location.search).get("redirect")
+  return redirectTo?.startsWith("/") && !redirectTo.startsWith("//")
+    ? redirectTo
+    : null
+}
+
 /**
  * Login form component for authenticating existing users.
  * Features:
@@ -53,6 +60,10 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       if (result.success) {
         router.refresh()
         onSuccess?.()
+        const redirectTo = getSafeRedirectPath()
+        if (redirectTo) {
+          router.push(redirectTo)
+        }
       } else {
         setError(result.error || "Login failed")
       }

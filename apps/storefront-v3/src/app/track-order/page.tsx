@@ -3,14 +3,20 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Package, MapPin, CreditCard, ArrowRight, AlertCircle, CheckCircle } from "lucide-react"
+import { Package, CreditCard, ArrowRight, AlertCircle, Truck } from "lucide-react"
 import { lookupOrder } from "@/app/actions/track-order"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
+import { OrderSummary } from "@/features/order/components/order-summary"
+import {
+  getOrderLifecycle,
+  getOrderLifecycleToneClass,
+  type OrderLifecycleGroup,
+} from "@/features/order/lib/order-lifecycle"
+import { cn } from "@/lib/utils"
 import type { MedusaOrder } from "@/lib/medusa/types"
 
-type OrderStatus = "pending" | "processing" | "shipped" | "completed" | "cancelled" | "refunded"
+type OrderStatus = "pending" | "processing" | "shipped" | "completed" | "cancelled" | "refunded" | "canceled"
 
 const statusLabels: Record<OrderStatus, string> = {
   pending: "Pending",
@@ -18,35 +24,18 @@ const statusLabels: Record<OrderStatus, string> = {
   shipped: "Shipped",
   completed: "Delivered",
   cancelled: "Cancelled",
+  canceled: "Cancelled",
   refunded: "Refunded",
 }
 
-const statusSteps: Record<OrderStatus, string[]> = {
-  pending: ["Order placed"],
-  processing: ["Order placed", "Processing"],
-  shipped: ["Order placed", "Processing", "Shipped", "In Transit"],
-  completed: ["Order placed", "Processing", "Shipped", "Delivered"],
-  cancelled: ["Order placed", "Cancelled"],
-  refunded: ["Order placed", "Refunded"],
-}
-
 function OrderStatusBadge({ status }: { status: string }) {
-  const variantMap: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
-    completed: "default",
-    shipped: "secondary",
-    processing: "outline",
-    pending: "outline",
-    cancelled: "destructive",
-    refunded: "secondary",
-  }
-  
   return (
     <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium font-mono uppercase tracking-wider
       ${status === "completed" ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" : ""}
       ${status === "shipped" ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" : ""}
       ${status === "processing" ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" : ""}
       ${status === "pending" ? "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200" : ""}
-      ${status === "cancelled" ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" : ""}
+      ${status === "cancelled" || status === "canceled" ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" : ""}
       ${status === "refunded" ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200" : ""}
     `}>
       {statusLabels[status as OrderStatus] || status}
@@ -54,47 +43,186 @@ function OrderStatusBadge({ status }: { status: string }) {
   )
 }
 
-function OrderProgress({ status }: { status: string }) {
-  const steps = statusSteps[status as OrderStatus] || ["Order placed"]
-  const currentStep = Math.min(steps.length - 1, 
-    status === "completed" ? 3 :
-    status === "shipped" ? 2 :
-    status === "processing" ? 1 : 0
-  )
+function formatReleaseDate(date: Date) {
+  return new Intl.DateTimeFormat("en-AU", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(date)
+}
 
+function OrderLifecycleGroupCard({ group }: { group: OrderLifecycleGroup }) {
   return (
-    <div className="flex items-center justify-between w-full">
-      {steps.map((step, index) => (
-        <div key={step} className="flex flex-col items-center flex-1 relative">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center z-10 ${
-            index <= currentStep 
-              ? "bg-primary text-primary-foreground" 
-              : "bg-muted text-muted-foreground"
-          }`}>
-            {index < currentStep ? (
-              <CheckCircle className="w-5 h-5" />
-            ) : (
-              <span className="text-xs font-medium">{index + 1}</span>
-            )}
-          </div>
-          <span className={`text-xs mt-2 text-center ${index <= currentStep ? "text-foreground" : "text-muted-foreground"}`}>
-            {step}
-          </span>
-          {index < steps.length - 1 && (
-            <div className={`absolute top-4 left-1/2 w-full h-0.5 -translate-y-1/2 ${
-              index < currentStep ? "bg-primary" : "bg-muted"
-            }`} />
-          )}
+    <div className="rounded-lg border bg-background p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="font-mono text-xs font-semibold uppercase tracking-wider">
+            {group.title}
+          </p>
+          <p className="mt-1 text-sm font-medium">{group.status}</p>
         </div>
-      ))}
+        <span className="rounded-full border px-2 py-0.5 font-mono text-xs text-muted-foreground">
+          {group.itemCount} {group.itemCount === 1 ? "item" : "items"}
+        </span>
+      </div>
+      <p className="mt-2 text-sm text-muted-foreground">{group.description}</p>
+      {group.releaseDate ? (
+        <p className="mt-3 w-fit rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-700 dark:text-amber-300">
+          Releases on {formatReleaseDate(group.releaseDate)}
+        </p>
+      ) : null}
     </div>
   )
 }
 
-function OrderDetails({ order }: { order: MedusaOrder }) {
+function OrderLifecyclePanel({ order }: { order: MedusaOrder }) {
+  const lifecycle = getOrderLifecycle(order)
+
+  return (
+    <div className="space-y-4">
+      <div
+        className={cn(
+          "rounded-lg border p-4",
+          getOrderLifecycleToneClass(lifecycle.tone)
+        )}
+      >
+        <div className="flex items-start gap-3">
+          <Truck className="mt-0.5 h-4 w-4 shrink-0" />
+          <div>
+            <p className="font-mono text-sm font-semibold uppercase tracking-wider">
+              {lifecycle.label}
+            </p>
+            <p className="mt-1 text-sm">{lifecycle.description}</p>
+          </div>
+        </div>
+      </div>
+
+      {lifecycle.groups.length > 0 ? (
+        <div className="grid gap-3 md:grid-cols-2">
+          {lifecycle.groups.map((group) => (
+            <OrderLifecycleGroupCard key={group.id} group={group} />
+          ))}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+type CardDetails = {
+  brand?: unknown
+  last4?: unknown
+}
+
+type TrackingPaymentMethod = {
+  type?: unknown
+  brand?: unknown
+  last4?: unknown
+}
+
+function humanizeStatus(status: string | null | undefined) {
+  if (!status) return "Payment status pending"
+
+  return status
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ")
+}
+
+function formatCardBrand(brand: string) {
+  const normalizedBrand = brand.trim().toLowerCase()
+
+  if (normalizedBrand === "visa") return "Visa"
+  if (normalizedBrand === "mastercard") return "Mastercard"
+  if (normalizedBrand === "amex") return "American Express"
+
+  return normalizedBrand
+    .split(/[\s_-]+/)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ")
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null
+}
+
+function getNestedRecord(
+  value: Record<string, unknown>,
+  key: string
+): Record<string, unknown> | null {
+  const nestedValue = value[key]
+
+  return isRecord(nestedValue) ? nestedValue : null
+}
+
+function getPaymentCard(payment: unknown): CardDetails | null {
+  if (!isRecord(payment)) {
+    return null
+  }
+
+  const data = getNestedRecord(payment, "data")
+  if (!data) {
+    return null
+  }
+
+  const paymentMethodDetails = getNestedRecord(data, "payment_method_details")
+  const paymentMethod = getNestedRecord(data, "payment_method")
+  const card =
+    (paymentMethodDetails && getNestedRecord(paymentMethodDetails, "card")) ||
+    (paymentMethod && getNestedRecord(paymentMethod, "card"))
+
+  return card
+}
+
+function isStripePayment(payment: unknown) {
+  return isRecord(payment) && payment.provider_id === "stripe"
+}
+
+function getPaymentMethodDisplay(order: MedusaOrder) {
+  const orderWithPayments = order as MedusaOrder & {
+    payment_collections?: unknown
+    tracking_payment_method?: TrackingPaymentMethod | null
+  }
+  const trackingPaymentMethod = orderWithPayments.tracking_payment_method
+
+  if (
+    trackingPaymentMethod?.type === "card" &&
+    typeof trackingPaymentMethod.brand === "string" &&
+    typeof trackingPaymentMethod.last4 === "string"
+  ) {
+    return `${formatCardBrand(trackingPaymentMethod.brand)} ending in ${trackingPaymentMethod.last4}`
+  }
+
+  const paymentCollections = Array.isArray(orderWithPayments.payment_collections)
+    ? orderWithPayments.payment_collections
+    : []
+  const payments = paymentCollections.flatMap((collection) => {
+    if (!isRecord(collection) || !Array.isArray(collection.payments)) {
+      return []
+    }
+
+    return collection.payments
+  })
+
+  for (const payment of payments) {
+    const card = getPaymentCard(payment)
+
+    if (typeof card?.brand === "string" && typeof card?.last4 === "string") {
+      return `${formatCardBrand(card.brand)} ending in ${card.last4}`
+    }
+  }
+
+  if (payments.some(isStripePayment)) {
+    return "Card payment"
+  }
+
+  return humanizeStatus(order.payment_status)
+}
+
+export function OrderDetails({ order }: { order: MedusaOrder }) {
   const orderId = order.id
   const orderNumber = orderId.slice(-8).toUpperCase()
   const orderStatus = (order.status || "pending") as OrderStatus
+  const lifecycle = getOrderLifecycle(order)
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -112,7 +240,17 @@ function OrderDetails({ order }: { order: MedusaOrder }) {
             })}
           </p>
         </div>
-        <OrderStatusBadge status={orderStatus} />
+        <div className="flex flex-wrap gap-2 sm:justify-end">
+          <OrderStatusBadge status={orderStatus} />
+          <span
+            className={cn(
+              "inline-flex items-center rounded-full border px-3 py-1 font-mono text-sm font-medium uppercase tracking-wider",
+              getOrderLifecycleToneClass(lifecycle.tone)
+            )}
+          >
+            {lifecycle.label}
+          </span>
+        </div>
       </div>
 
       {/* Progress */}
@@ -120,154 +258,30 @@ function OrderDetails({ order }: { order: MedusaOrder }) {
         <h2 className="font-mono font-semibold uppercase tracking-wider text-sm mb-6">
           Order Progress
         </h2>
-        <OrderProgress status={orderStatus} />
+        <OrderLifecyclePanel order={order} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left Column - Items & Shipping */}
+        {/* Left Column - Shared Order Details */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Order Items */}
-          <div className="rounded-lg border bg-card overflow-hidden">
-            <div className="bg-muted/50 px-6 py-3 border-b">
-              <h2 className="font-mono font-semibold uppercase tracking-wider text-sm flex items-center gap-2">
-                <Package className="w-4 h-4" />
-                Items Ordered
-              </h2>
-            </div>
-            <div className="divide-y">
-              {order.items?.map((item: any) => (
-                <div key={item.id} className="p-6 flex gap-4">
-                  <div className="h-20 w-20 rounded-lg bg-muted overflow-hidden shrink-0">
-                    {item.thumbnail ? (
-                      <img
-                        src={item.thumbnail}
-                        alt={item.title || item.product_title || "Product"}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="h-full w-full flex items-center justify-center text-muted-foreground">
-                        <Package className="w-8 h-8" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold">
-                      {item.title || item.product_title || "Product"}
-                    </h3>
-                    {item.variant_title && item.variant_title !== "Default Title" && (
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {item.variant_title}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                      <span>Qty: {item.quantity}</span>
-                      <span className="font-mono">
-                        {new Intl.NumberFormat("en-US", {
-                          style: "currency",
-                          currency: order.currency_code || "usd",
-                        }).format((item.total || item.unit_price * item.quantity || 0) / 100)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="rounded-lg border bg-card p-6">
+            <h2 className="font-mono font-semibold uppercase tracking-wider text-sm mb-6 flex items-center gap-2">
+              <Package className="w-4 h-4" />
+              Order Details
+            </h2>
+            <OrderSummary order={order} />
           </div>
-
-          {/* Shipping Info */}
-          {order.shipping_address && (
-            <div className="rounded-lg border bg-card p-6">
-              <h2 className="font-mono font-semibold uppercase tracking-wider text-sm mb-4 flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                Shipping Address
-              </h2>
-              <address className="text-sm text-muted-foreground not-italic">
-                {order.shipping_address.first_name} {order.shipping_address.last_name}
-                <br />
-                {order.shipping_address.address_1}
-                {order.shipping_address.address_2 && (
-                  <>
-                    <br />
-                    {order.shipping_address.address_2}
-                  </>
-                )}
-                <br />
-                {order.shipping_address.city}, {order.shipping_address.province || order.shipping_address.postal_code}
-                <br />
-                {order.shipping_address.country_code?.toUpperCase()}
-              </address>
-            </div>
-          )}
         </div>
 
         {/* Right Column - Order Summary */}
         <div className="space-y-6">
-          {/* Summary */}
-          <div className="rounded-lg border bg-card p-6">
-            <h2 className="font-mono font-semibold uppercase tracking-wider text-sm mb-4">
-              Order Summary
-            </h2>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-mono">
-                  {new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: order.currency_code || "usd",
-                  }).format((order.subtotal || 0) / 100)}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Shipping</span>
-                <span className="font-mono">
-                  {new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: order.currency_code || "usd",
-                  }).format((order.shipping_total || 0) / 100)}
-                </span>
-              </div>
-              {(order.tax_total || 0) > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Tax</span>
-                  <span className="font-mono">
-                    {new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: order.currency_code || "usd",
-                    }).format((order.tax_total || 0) / 100)}
-                  </span>
-                </div>
-              )}
-              {(order.discount_total || 0) > 0 && (
-                <div className="flex justify-between text-green-500">
-                  <span>Discount</span>
-                  <span className="font-mono">
-                    -{new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: order.currency_code || "usd",
-                    }).format((order.discount_total || 0) / 100)}
-                  </span>
-                </div>
-              )}
-              <Separator />
-              <div className="flex justify-between font-semibold">
-                <span>Total</span>
-                <span className="font-mono">
-                  {new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: order.currency_code || "usd",
-                  }).format((order.total || 0) / 100)}
-                </span>
-              </div>
-            </div>
-          </div>
-
           {/* Payment */}
           <div className="rounded-lg border bg-card p-6">
             <h2 className="font-mono font-semibold uppercase tracking-wider text-sm mb-4 flex items-center gap-2">
               <CreditCard className="w-4 h-4" />
               Payment
             </h2>
-            <p className="text-sm capitalize">{order.payment_status?.replace("_", " ") || "Paid"}</p>
+            <p className="text-sm">{getPaymentMethodDisplay(order)}</p>
           </div>
         </div>
       </div>

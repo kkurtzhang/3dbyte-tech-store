@@ -100,8 +100,8 @@ export function ProductActions({
     title: product.title,
     thumbnail: product.thumbnail || "",
     price: {
-      amount: priceInfo.price.amount,
-      currency_code: priceInfo.price.currency_code.toUpperCase(),
+      amount: priceInfo?.price.amount ?? 0,
+      currency_code: (priceInfo?.price.currency_code ?? "aud").toUpperCase(),
     },
     variantId: resolvedVariant?.id,
   }

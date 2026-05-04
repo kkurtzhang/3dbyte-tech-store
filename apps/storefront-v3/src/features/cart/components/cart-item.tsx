@@ -9,7 +9,8 @@ import { getCartItemVariantTitle } from "@/features/cart/lib/variant-display"
 import type { MedusaCartLineItem } from "@/lib/medusa/cart"
 import type { MedusaCartLineItemWithPreorder } from "@/lib/medusa/types"
 import { isPreorder } from "@/lib/util/is-preorder"
-import { resolvePreorderPrice, resolveRegularPrice } from "@/lib/util/preorder-pricing"
+import { CartLinePrice } from "./cart-line-price"
+import { resolveCartLineRegularUnitPrice } from "../lib/cart-line-pricing"
 
 interface CartItemProps {
   item: MedusaCartLineItem
@@ -29,8 +30,7 @@ export function CartItem({
   const [isUpdating, setIsUpdating] = useState(false)
   const itemIsSaved = isSaved(item.id)
   const preorderItem = item as MedusaCartLineItemWithPreorder
-  const preorderPrice = resolvePreorderPrice(preorderItem.variant, currencyCode)
-  const regularPrice = resolveRegularPrice(preorderItem.variant, currencyCode)
+  const regularUnitPrice = resolveCartLineRegularUnitPrice(item, currencyCode)
 
   const handleUpdateQuantity = async (newQuantity: number) => {
     if (newQuantity < 1) return
@@ -71,12 +71,12 @@ export function CartItem({
   )
 
   const lineTotal = useMemo(() => {
-    if (typeof item.total === "number") {
-      return item.total
-    }
-
     if (typeof item.subtotal === "number") {
       return item.subtotal
+    }
+
+    if (typeof item.total === "number") {
+      return item.total
     }
 
     return linePrice.amount * item.quantity
@@ -127,20 +127,14 @@ export function CartItem({
                   day: "numeric",
                 })}
               </p>
-              {preorderPrice && (
-                <div className="text-muted-foreground">
-                  <p>
-                    Pre-order price: {formatPrice(linePrice.amount, linePrice.currency_code)}
-                  </p>
-                  {regularPrice && regularPrice.amount > linePrice.amount && (
-                    <p className="line-through">
-                      Regular price: {formatPrice(regularPrice.amount, regularPrice.currency_code)}
-                    </p>
-                  )}
-                </div>
-              )}
             </div>
           )}
+          <CartLinePrice
+            currencyCode={linePrice.currency_code}
+            price={linePrice.amount}
+            regularPrice={regularUnitPrice}
+            className="text-muted-foreground"
+          />
         </div>
 
         <div className="flex items-center justify-between">

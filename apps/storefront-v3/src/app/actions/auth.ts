@@ -25,7 +25,10 @@ export async function loginAction(email: string, password: string) {
 
     // Check if additional steps required (e.g., OAuth redirect)
     if (typeof result !== "string") {
-      return { success: false, error: "Authentication requires additional steps" }
+      return {
+        success: false,
+        error: "Authentication requires additional steps",
+      }
     }
 
     // Auth successful - SDK automatically stores the token
@@ -53,7 +56,12 @@ export async function loginAction(email: string, password: string) {
   }
 }
 
-export async function registerAction(email: string, password: string, firstName?: string, lastName?: string) {
+export async function registerAction(
+  email: string,
+  password: string,
+  firstName?: string,
+  lastName?: string
+) {
   try {
     // Register with Medusa auth
     await sdk.auth.register("customer", "emailpass", {
@@ -62,13 +70,11 @@ export async function registerAction(email: string, password: string, firstName?
     })
 
     // Create customer profile with explicit type
-    const { customer } = await sdk.store.customer.create(
-      {
-        email,
-        first_name: firstName || "",
-        last_name: lastName || "",
-      } as any
-    )
+    const { customer } = await sdk.store.customer.create({
+      email,
+      first_name: firstName || "",
+      last_name: lastName || "",
+    } as any)
 
     if (customer) {
       // Auto-login after registration
@@ -85,7 +91,7 @@ export async function registerAction(email: string, password: string, firstName?
 export async function getSessionAction() {
   try {
     const { customer } = await sdk.store.customer.retrieve()
-    
+
     if (customer) {
       return { success: true, user: customer as unknown as AuthUser }
     }
@@ -126,9 +132,14 @@ export async function updateProfileAction(data: {
 
 export async function changePasswordAction(token: string, newPassword: string) {
   try {
-    await sdk.auth.updateProvider("customer", "emailpass", {
-      password: newPassword,
-    }, token)
+    await sdk.auth.updateProvider(
+      "customer",
+      "emailpass",
+      {
+        password: newPassword,
+      },
+      token
+    )
     return { success: true }
   } catch (error: any) {
     console.error("Password change error:", error)
@@ -143,22 +154,34 @@ export interface CustomerAddress {
   address_1: string
   address_2?: string
   city: string
+  province?: string
   country_code: string
   postal_code: string
   phone?: string
   is_default?: boolean
 }
 
-export async function getAddressesAction(): Promise<{ success: boolean; addresses: CustomerAddress[]; error?: string }> {
+export async function getAddressesAction(): Promise<{
+  success: boolean
+  addresses: CustomerAddress[]
+  error?: string
+}> {
   try {
     const { customer } = await sdk.store.customer.retrieve()
     if (customer?.addresses) {
-      return { success: true, addresses: customer.addresses as unknown as CustomerAddress[] }
+      return {
+        success: true,
+        addresses: customer.addresses as unknown as CustomerAddress[],
+      }
     }
     return { success: true, addresses: [] }
   } catch (error: any) {
     console.error("Get addresses error:", error)
-    return { success: false, error: error.message || "Failed to fetch addresses", addresses: [] }
+    return {
+      success: false,
+      error: error.message || "Failed to fetch addresses",
+      addresses: [],
+    }
   }
 }
 
@@ -168,14 +191,13 @@ export async function addAddressAction(data: {
   address_1: string
   address_2?: string
   city: string
+  province?: string
   country_code: string
   postal_code: string
   phone?: string
 }) {
   try {
-    const { customer } = await sdk.store.customer.createAddress(
-      data as any
-    )
+    const { customer } = await sdk.store.customer.createAddress(data as any)
     revalidatePath("/account/addresses")
     return { success: true, customer }
   } catch (error: any) {
@@ -184,26 +206,29 @@ export async function addAddressAction(data: {
   }
 }
 
-export async function updateAddressAction(addressId: string, data: Partial<{
-  first_name: string
-  last_name: string
-  address_1: string
-  address_2: string
-  city: string
-  country_code: string
-  postal_code: string
-  phone: string
-}>) {
+export async function updateAddressAction(
+  addressId: string,
+  data: Partial<{
+    first_name: string
+    last_name: string
+    address_1: string
+    address_2: string
+    city: string
+    country_code: string
+    postal_code: string
+    phone: string
+  }>
+) {
   try {
-    const { customer } = await sdk.store.customer.updateAddress(
-      addressId,
-      data as any
-    )
+    const { customer } = await sdk.store.customer.updateAddress(addressId, data as any)
     revalidatePath("/account/addresses")
     return { success: true, customer }
   } catch (error: any) {
     console.error("Update address error:", error)
-    return { success: false, error: error.message || "Failed to update address" }
+    return {
+      success: false,
+      error: error.message || "Failed to update address",
+    }
   }
 }
 
@@ -214,21 +239,26 @@ export async function deleteAddressAction(addressId: string) {
     return { success: true }
   } catch (error: any) {
     console.error("Delete address error:", error)
-    return { success: false, error: error.message || "Failed to delete address" }
+    return {
+      success: false,
+      error: error.message || "Failed to delete address",
+    }
   }
 }
 
 export async function setDefaultAddressAction(addressId: string) {
   try {
-    const { customer } = await sdk.store.customer.updateAddress(
-      addressId,
-      { is_default: true } as any
-    )
+    const { customer } = await sdk.store.customer.updateAddress(addressId, {
+      is_default: true,
+    } as any)
     revalidatePath("/account/addresses")
     return { success: true, customer }
   } catch (error: any) {
     console.error("Set default address error:", error)
-    return { success: false, error: error.message || "Failed to set default address" }
+    return {
+      success: false,
+      error: error.message || "Failed to set default address",
+    }
   }
 }
 
@@ -244,6 +274,9 @@ export async function deleteAccountAction() {
     */
   } catch (error: any) {
     console.error("Delete account error:", error)
-    return { success: false, error: error.message || "Failed to delete account" }
+    return {
+      success: false,
+      error: error.message || "Failed to delete account",
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { completePreorderCart, getCart } from "../cart"
+import { completePreorderCart, getCart, initiatePaymentSession } from "../cart"
 import { sdk } from "../client"
 
 jest.mock("../client", () => ({
@@ -8,6 +8,9 @@ jest.mock("../client", () => ({
         retrieve: jest.fn(),
         createLineItem: jest.fn(),
       },
+      payment: {
+        initiatePaymentSession: jest.fn(),
+      },
     },
     client: {
       fetch: jest.fn(),
@@ -16,14 +19,25 @@ jest.mock("../client", () => ({
 }))
 
 describe("medusa cart helpers", () => {
-  it("requests preorder variant data when retrieving carts", async () => {
+  it("requests checkout, preorder, and sale pricing data when retrieving carts", async () => {
     ;(sdk.store.cart.retrieve as jest.Mock).mockResolvedValue({ cart: { id: "cart_1" } })
 
     await getCart("cart_1")
 
     expect(sdk.store.cart.retrieve).toHaveBeenCalledWith("cart_1", {
-      fields:
-        "+items.*,+items.metadata,+items.product,+items.variant,+items.variant.product,+items.variant.product.images,*items.variant.preorder_variant,*items.variant.preorder_variant.prices,+region,*promotions",
+      fields: expect.stringContaining("*items.variant.preorder_variant.prices"),
+    })
+    expect(sdk.store.cart.retrieve).toHaveBeenCalledWith("cart_1", {
+      fields: expect.stringContaining("+items.variant.calculated_price"),
+    })
+    expect(sdk.store.cart.retrieve).toHaveBeenCalledWith("cart_1", {
+      fields: expect.stringContaining("+items.variant.prices"),
+    })
+    expect(sdk.store.cart.retrieve).toHaveBeenCalledWith("cart_1", {
+      fields: expect.stringContaining("+shipping_address"),
+    })
+    expect(sdk.store.cart.retrieve).toHaveBeenCalledWith("cart_1", {
+      fields: expect.stringContaining("+shipping_subtotal"),
     })
   })
 
@@ -48,8 +62,7 @@ describe("medusa cart helpers", () => {
       },
     })
     expect(sdk.store.cart.retrieve).toHaveBeenCalledWith("cart_1", {
-      fields:
-        "+items.*,+items.metadata,+items.product,+items.variant,+items.variant.product,+items.variant.product.images,*items.variant.preorder_variant,*items.variant.preorder_variant.prices,+region,*promotions",
+      fields: expect.stringContaining("+items.variant.calculated_price"),
     })
   })
 
@@ -61,5 +74,27 @@ describe("medusa cart helpers", () => {
     expect(sdk.client.fetch).toHaveBeenCalledWith("/store/carts/cart_1/complete-preorder", {
       method: "POST",
     })
+  })
+
+  it("passes provider data when initiating a payment session", async () => {
+    ;(sdk.store.payment.initiatePaymentSession as jest.Mock).mockResolvedValue({
+      payment_collection: { id: "pay_col_1" },
+    })
+
+    await expect(
+      initiatePaymentSession({
+        cart: { id: "cart_1" } as never,
+        data: { payment_method_types: ["card"] },
+        providerId: "pp_stripe_stripe",
+      })
+    ).resolves.toEqual({ payment_collection: { id: "pay_col_1" } })
+
+    expect(sdk.store.payment.initiatePaymentSession).toHaveBeenCalledWith(
+      { id: "cart_1" },
+      {
+        data: { payment_method_types: ["card"] },
+        provider_id: "pp_stripe_stripe",
+      }
+    )
   })
 })

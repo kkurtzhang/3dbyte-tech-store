@@ -2,16 +2,67 @@ import type { KarrioAddress, KarrioParcel } from "./types";
 
 export const DEFAULT_WEIGHT_KG = 0.5;
 export const DEFAULT_DIMENSION_CM = 10;
+export const DEFAULT_SHIPPER_ADDRESS = {
+  person_name: "Kurt",
+  company_name: "3D BYTE TECH",
+  address_line1: "1 Bellevue Parade",
+  city: "New Town",
+  state_code: "TAS",
+  postal_code: "7008",
+  country_code: "AU",
+  residential: false,
+} as const;
+
+export function normalizeAddressCode(value: unknown): string | undefined {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const normalized = value.trim().toUpperCase();
+  return normalized || undefined;
+}
+
+function numberFromVariant(
+  variant: Record<string, unknown> | undefined,
+  key: string,
+  fallback: number
+): number {
+  const value = variant?.[key];
+  return typeof value === "number" && value > 0 ? value : fallback;
+}
+
+function stringFromEnv(value: string | undefined, fallback: string): string {
+  const normalized = value?.trim();
+  return normalized || fallback;
+}
 
 export function buildShipperAddress(): KarrioAddress {
   return {
-    person_name: process.env.STORE_SHIPPER_NAME || "3D Byte Tech",
-    address_line1: process.env.STORE_SHIPPER_ADDRESS || "",
-    city: process.env.STORE_SHIPPER_CITY || "",
-    state_code: process.env.STORE_SHIPPER_STATE || "",
-    postal_code: process.env.STORE_SHIPPER_POSTAL || "",
-    country_code: process.env.STORE_SHIPPER_COUNTRY || "AU",
-    phone_number: process.env.STORE_SHIPPER_PHONE || "",
+    person_name: stringFromEnv(
+      process.env.STORE_SHIPPER_NAME,
+      DEFAULT_SHIPPER_ADDRESS.person_name
+    ),
+    company_name: stringFromEnv(
+      process.env.STORE_SHIPPER_COMPANY,
+      DEFAULT_SHIPPER_ADDRESS.company_name
+    ),
+    address_line1: stringFromEnv(
+      process.env.STORE_SHIPPER_ADDRESS,
+      DEFAULT_SHIPPER_ADDRESS.address_line1
+    ),
+    city: stringFromEnv(process.env.STORE_SHIPPER_CITY, DEFAULT_SHIPPER_ADDRESS.city),
+    state_code:
+      normalizeAddressCode(process.env.STORE_SHIPPER_STATE) ||
+      DEFAULT_SHIPPER_ADDRESS.state_code,
+    postal_code: stringFromEnv(
+      process.env.STORE_SHIPPER_POSTAL,
+      DEFAULT_SHIPPER_ADDRESS.postal_code
+    ),
+    country_code:
+      normalizeAddressCode(process.env.STORE_SHIPPER_COUNTRY) ||
+      DEFAULT_SHIPPER_ADDRESS.country_code,
+    phone_number: process.env.STORE_SHIPPER_PHONE?.trim() || undefined,
+    residential: false,
   };
 }
 
@@ -24,15 +75,22 @@ export function buildRecipientAddress(
     address_line1: (address.address_1 as string) || "",
     address_line2: (address.address_2 as string) || undefined,
     city: (address.city as string) || "",
-    state_code: (address.province as string) || undefined,
+    state_code: normalizeAddressCode(address.province),
     postal_code: (address.postal_code as string) || "",
-    country_code: (address.country_code as string) || "",
+    country_code: normalizeAddressCode(address.country_code) || "",
     phone_number: (address.phone as string) || undefined,
+    residential:
+      typeof address.residential === "boolean" ? address.residential : true,
   };
 }
 
 interface WeightedItem {
-  variant?: { weight?: number } | Record<string, unknown>;
+  variant?: {
+    weight?: number;
+    width?: number;
+    height?: number;
+    length?: number;
+  } | Record<string, unknown>;
   quantity?: number;
 }
 
@@ -43,15 +101,18 @@ export function buildParcelsFromItems(items: WeightedItem[]): KarrioParcel[] {
     const quantity = item.quantity || 1;
     return sum + weight * quantity;
   }, 0);
+  const firstVariant = items[0]?.variant as Record<string, unknown> | undefined;
 
   return [
     {
       weight: totalWeight || DEFAULT_WEIGHT_KG,
       weight_unit: "KG",
-      width: DEFAULT_DIMENSION_CM,
-      height: DEFAULT_DIMENSION_CM,
-      length: DEFAULT_DIMENSION_CM,
+      width: numberFromVariant(firstVariant, "width", DEFAULT_DIMENSION_CM),
+      height: numberFromVariant(firstVariant, "height", DEFAULT_DIMENSION_CM),
+      length: numberFromVariant(firstVariant, "length", DEFAULT_DIMENSION_CM),
       dimension_unit: "CM",
+      is_document: false,
+      packaging_type: "your_packaging",
     },
   ];
 }

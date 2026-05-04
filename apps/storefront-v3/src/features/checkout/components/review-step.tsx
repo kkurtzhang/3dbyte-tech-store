@@ -8,7 +8,8 @@ import { buildCartDisplayGroups } from "@/features/cart/lib/bundle-groups"
 import { getCartItemVariantTitle } from "@/features/cart/lib/variant-display"
 import { analyzeCartContents } from "@/lib/util/cart-analysis"
 import { isPreorder } from "@/lib/util/is-preorder"
-import { resolvePreorderPrice } from "@/lib/util/preorder-pricing"
+import { CartLinePrice } from "@/features/cart/components/cart-line-price"
+import { resolveCartLineRegularUnitPrice } from "@/features/cart/lib/cart-line-pricing"
 
 interface ReviewStepProps {
   onBack: () => void
@@ -19,6 +20,8 @@ interface ReviewStepProps {
       title?: string
       quantity?: number
       unit_price?: number
+      subtotal?: number
+      total?: number
       metadata?: Record<string, unknown> | null
       product?: {
         title?: string
@@ -26,6 +29,15 @@ interface ReviewStepProps {
       }
       variant?: {
           title?: string
+          calculated_price?: {
+            calculated_amount?: number | null
+            original_amount?: number | null
+            currency_code?: string | null
+          } | null
+          prices?: Array<{
+            amount: number | null
+            currency_code: string | null
+          }> | null
           preorder_variant?: {
             status: "enabled" | "disabled"
             available_date: string
@@ -85,7 +97,7 @@ export function ReviewStep({
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: currencyCode,
-    }).format(price / 100)
+    }).format(price)
   }
 
   const formatAvailabilityDate = (date: Date) => {
@@ -100,8 +112,14 @@ export function ReviewStep({
     item: NonNullable<NonNullable<ReviewStepProps["cartData"]>["items"]>[number],
     key: string
   ) => {
-    const preorderPrice = resolvePreorderPrice(item.variant, currencyCode)
-    const displayUnitPrice = preorderPrice?.amount ?? item.unit_price ?? 0
+    const regularUnitPrice = resolveCartLineRegularUnitPrice(item, currencyCode)
+    const displayUnitPrice = item.unit_price ?? 0
+    const displayLineTotal =
+      typeof item.subtotal === "number"
+        ? item.subtotal
+        : typeof item.total === "number"
+          ? item.total
+          : displayUnitPrice * (item.quantity || 1)
     const variantTitle = getCartItemVariantTitle(item)
 
     return (
@@ -132,24 +150,28 @@ export function ReviewStep({
                   day: "numeric",
                 })}
               </p>
-              {preorderPrice && (
-                <>
-                  <p className="text-muted-foreground">
-                    Pre-order price: {formatPrice(preorderPrice.amount)}
-                  </p>
-                  <p className="line-through text-muted-foreground">
-                    Regular price: {formatPrice(item.unit_price)}
-                  </p>
-                </>
-              )}
+              <CartLinePrice
+                currencyCode={currencyCode}
+                price={displayUnitPrice}
+                regularPrice={regularUnitPrice}
+                className="text-muted-foreground"
+              />
             </div>
+          )}
+          {!isPreorder(item.variant?.preorder_variant) && (
+            <CartLinePrice
+              currencyCode={currencyCode}
+              price={displayUnitPrice}
+              regularPrice={regularUnitPrice}
+              className="text-muted-foreground"
+            />
           )}
           <p className="text-sm text-muted-foreground">
             Qty: {item.quantity}
           </p>
         </div>
         <div className="text-sm font-medium">
-          {formatPrice(displayUnitPrice * (item.quantity || 1))}
+          {formatPrice(displayLineTotal)}
         </div>
       </div>
     )

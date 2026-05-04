@@ -62,6 +62,7 @@ describe("bundle cart helpers", () => {
           bundle_item_id: "bundle_item_1",
           bundle_item_quantity: 2,
           bundle_quantity: 3,
+          bundle_regular_unit_price: 40,
           bundle_title: "Calibration Bundle",
           bundle_product_handle: "calibration-bundle",
         },

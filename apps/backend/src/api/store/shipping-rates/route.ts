@@ -7,12 +7,55 @@ import {
   buildRecipientAddress,
   buildParcelsFromItems,
 } from "../../../modules/karrio/utils";
+import type { KarrioRate } from "../../../modules/karrio/types";
+
+interface ShippingRatesRequestBody {
+  cart_id?: string;
+  shipping_address?: Record<string, unknown>;
+}
+
+function getAramexServiceName(rate: KarrioRate): string {
+  const serviceName =
+    typeof rate.meta?.service_name === "string"
+      ? rate.meta.service_name
+      : rate.service;
+  const normalizedService = serviceName.toLowerCase();
+
+  if (
+    rate.carrier_name.includes("aramex") ||
+    rate.carrier_id.includes("aramex")
+  ) {
+    if (normalizedService.includes("priority")) {
+      return "Aramex Priority";
+    }
+
+    if (normalizedService.includes("economy")) {
+      return "Aramex Economy";
+    }
+  }
+
+  return serviceName;
+}
+
+export function hasRequiredRateAddress(
+  address: Record<string, unknown> | undefined
+): address is Record<string, unknown> {
+  return Boolean(
+    address &&
+      typeof address.city === "string" &&
+      address.city.trim() &&
+      typeof address.postal_code === "string" &&
+      address.postal_code.trim() &&
+      typeof address.country_code === "string" &&
+      address.country_code.trim()
+  );
+}
 
 export const POST = async (
   req: MedusaRequest,
   res: MedusaResponse
 ): Promise<void> => {
-  const { cart_id } = req.body as { cart_id?: string };
+  const { cart_id, shipping_address } = req.body as ShippingRatesRequestBody;
 
   if (!cart_id) {
     throw new MedusaError(
@@ -42,10 +85,18 @@ export const POST = async (
     }
 
     const cart = carts[0];
-    const shippingAddress = cart.shipping_address;
+    const shippingAddress = shipping_address || cart.shipping_address;
 
     if (!shippingAddress) {
       res.json({ rates: [], message: "Shipping address required for live rates" });
+      return;
+    }
+
+    if (!hasRequiredRateAddress(shippingAddress as Record<string, unknown>)) {
+      res.status(400).json({
+        rates: [],
+        message: "Shipping city, postal code, and country are required for live rates",
+      });
       return;
     }
 
@@ -63,11 +114,11 @@ export const POST = async (
       id: rate.id,
       carrier: {
         id: rate.carrier_id,
-        name: rate.carrier_name,
+        name: rate.carrier_name.includes("aramex") ? "Aramex" : rate.carrier_name,
         slug: rate.carrier_name.toLowerCase().replace(/\s+/g, "-"),
       },
       service: rate.service,
-      serviceName: rate.service,
+      serviceName: getAramexServiceName(rate),
       totalCharge: Math.round(rate.total_charge * 100),
       currency: rate.currency,
       estimatedDeliveryDays: rate.transit_days,

@@ -12,15 +12,18 @@ import type {
   Logger,
 } from "@medusajs/framework/types";
 import { KarrioClient } from "../karrio/client";
+import {
+  buildParcelsFromItems,
+  buildShipperAddress,
+  normalizeAddressCode,
+} from "../karrio/utils";
 import type {
   KarrioAddress,
   KarrioModuleOptions,
   KarrioParcel,
+  KarrioRate,
 } from "../karrio/types";
 import { getConfiguredKarrioFulfillmentOptions } from "./options";
-
-const DEFAULT_WEIGHT_KG = 0.5;
-const DEFAULT_DIMENSION_CM = 10;
 
 type InjectedDependencies = {
   logger: Logger;
@@ -91,7 +94,10 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
   ): Promise<CalculatedShippingOptionPrice> {
     const shippingAddress = context.shipping_address;
     if (!shippingAddress) {
-      return { calculated_amount: 0, is_calculated_price_tax_inclusive: false };
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        "Shipping address is required to calculate Karrio rates",
+      );
     }
 
     try {
@@ -118,27 +124,28 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
         parcels,
         carrier_ids: carrierIds,
         services,
+        payment: { paid_by: "sender" },
       });
 
-      const rate = rateResponse.rates[0];
+      const rate = this.selectRateForOption(
+        rateResponse.rates,
+        optionData,
+        data,
+      );
       if (!rate) {
-        return {
-          calculated_amount: 0,
-          is_calculated_price_tax_inclusive: false,
-        };
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          "No Karrio rates are available for this address",
+        );
       }
 
-      const amountInCents = Math.round(rate.total_charge * 100);
-
       return {
-        calculated_amount: amountInCents,
+        calculated_amount: Number(rate.total_charge.toFixed(2)),
         is_calculated_price_tax_inclusive: false,
       };
     } catch (error) {
-      this.logger.warn(
-        `Karrio: Price calculation failed, returning 0: ${error}`,
-      );
-      return { calculated_amount: 0, is_calculated_price_tax_inclusive: false };
+      this.logger.warn(`Karrio: Price calculation failed: ${error}`);
+      throw error;
     }
   }
 
@@ -166,10 +173,14 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
         address_line1: (shippingAddress.address_1 as string) || "",
         address_line2: (shippingAddress.address_2 as string) || undefined,
         city: (shippingAddress.city as string) || "",
-        state_code: (shippingAddress.province as string) || undefined,
+        state_code: normalizeAddressCode(shippingAddress.province),
         postal_code: (shippingAddress.postal_code as string) || "",
-        country_code: (shippingAddress.country_code as string) || "",
+        country_code: normalizeAddressCode(shippingAddress.country_code) || "",
         phone_number: (shippingAddress.phone as string) || undefined,
+        residential:
+          typeof shippingAddress.residential === "boolean"
+            ? shippingAddress.residential
+            : true,
       };
 
       const parcels = this.buildParcels(items);
@@ -185,6 +196,8 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
         parcels,
         service,
         carrier_ids: carrierIds,
+        payment: { paid_by: "sender" },
+        label_type: "PDF",
         selected_rate_id: data.selected_rate_id as string | undefined,
       });
 
@@ -246,31 +259,28 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
   ): KarrioAddress {
     if (fromLocation?.address) {
       const addr = fromLocation.address;
-      return {
+      const shipper = {
         person_name: fromLocation.name || "",
         address_line1: (addr.address_1 as string) || "",
         address_line2: (addr.address_2 as string) || undefined,
         city: (addr.city as string) || "",
-        state_code: (addr.province as string) || undefined,
+        state_code: normalizeAddressCode(addr.province),
         postal_code: (addr.postal_code as string) || "",
-        country_code: (addr.country_code as string) || "",
+        country_code: normalizeAddressCode(addr.country_code) || "",
         phone_number: (addr.phone as string) || undefined,
+        residential: false,
       };
+
+      if (shipper.city.trim() && shipper.postal_code.trim() && shipper.country_code) {
+        return shipper;
+      }
     }
 
     return this.buildDefaultShipperAddress();
   }
 
   private buildDefaultShipperAddress(): KarrioAddress {
-    return {
-      person_name: process.env.STORE_SHIPPER_NAME || "3D Byte Tech",
-      address_line1: process.env.STORE_SHIPPER_ADDRESS || "",
-      city: process.env.STORE_SHIPPER_CITY || "",
-      state_code: process.env.STORE_SHIPPER_STATE || "",
-      postal_code: process.env.STORE_SHIPPER_POSTAL || "",
-      country_code: process.env.STORE_SHIPPER_COUNTRY || "AU",
-      phone_number: process.env.STORE_SHIPPER_PHONE || "",
-    };
+    return buildShipperAddress();
   }
 
   private buildRecipientAddress(
@@ -282,33 +292,84 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
       address_line1: (address.address_1 as string) || "",
       address_line2: (address.address_2 as string) || undefined,
       city: (address.city as string) || "",
-      state_code: (address.province as string) || undefined,
+      state_code: normalizeAddressCode(address.province),
       postal_code: (address.postal_code as string) || "",
-      country_code: (address.country_code as string) || "",
+      country_code: normalizeAddressCode(address.country_code) || "",
       phone_number: (address.phone as string) || undefined,
+      residential:
+        typeof address.residential === "boolean" ? address.residential : true,
     };
   }
 
   private buildParcels(
     items: Array<Partial<Record<string, unknown>>>,
   ): KarrioParcel[] {
-    const totalWeight = items.reduce((sum, item) => {
-      const variant = item.variant as Record<string, unknown> | undefined;
-      const weight = (variant?.weight as number) || DEFAULT_WEIGHT_KG;
-      const quantity = (item.quantity as number) || 1;
-      return sum + weight * quantity;
-    }, 0);
+    return buildParcelsFromItems(
+      items as Array<{ variant?: Record<string, unknown>; quantity?: number }>,
+    );
+  }
 
-    return [
-      {
-        weight: totalWeight || DEFAULT_WEIGHT_KG,
-        weight_unit: "KG",
-        width: DEFAULT_DIMENSION_CM,
-        height: DEFAULT_DIMENSION_CM,
-        length: DEFAULT_DIMENSION_CM,
-        dimension_unit: "CM",
-      },
-    ];
+  private selectRateForOption(
+    rates: KarrioRate[],
+    optionData: CalculateShippingOptionPriceDTO["optionData"],
+    data: CalculateShippingOptionPriceDTO["data"],
+  ): KarrioRate | undefined {
+    const selectedRateId = this.normalizeRateToken(data.selected_rate_id);
+    const requestedService = this.normalizeRateToken(
+      optionData.service || data.service,
+    );
+    const requestedServiceCode = this.normalizeRateToken(
+      optionData.service_code || data.service_code,
+    );
+    const requestedServiceName = this.resolveRequestedServiceName(
+      optionData,
+      data,
+    );
+
+    return (
+      rates.find((rate) => this.normalizeRateToken(rate.id) === selectedRateId) ||
+      rates.find((rate) => this.normalizeRateToken(rate.service) === requestedService) ||
+      rates.find(
+        (rate) =>
+          this.normalizeRateToken(rate.meta?.service_code) === requestedServiceCode,
+      ) ||
+      rates.find(
+        (rate) =>
+          this.normalizeRateToken(rate.meta?.service_name) === requestedServiceName ||
+          this.normalizeRateToken(rate.service).includes(requestedServiceName),
+      ) ||
+      [...rates].sort((left, right) => left.total_charge - right.total_charge)[0]
+    );
+  }
+
+  private resolveRequestedServiceName(
+    optionData: CalculateShippingOptionPriceDTO["optionData"],
+    data: CalculateShippingOptionPriceDTO["data"],
+  ): string {
+    const rawName = this.normalizeRateToken(
+      optionData.service_name ||
+        data.service_name ||
+        optionData.name ||
+        data.name ||
+        optionData.code ||
+        data.code,
+    );
+
+    if (rawName.includes("priority") || rawName.includes("express")) {
+      return "priority";
+    }
+
+    if (rawName.includes("economy") || rawName.includes("standard")) {
+      return "economy";
+    }
+
+    return rawName;
+  }
+
+  private normalizeRateToken(value: unknown): string {
+    return typeof value === "string"
+      ? value.trim().toLowerCase().replace(/[^a-z0-9]+/g, "_")
+      : "";
   }
 }
 

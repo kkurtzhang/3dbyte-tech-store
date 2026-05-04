@@ -42,6 +42,7 @@ type BundleLineItemPricing = {
   selectedVariantId: string;
   quantity: number;
   unitPrice: number;
+  regularUnitPrice: number;
 };
 
 function buildBundleSelectionKey(
@@ -132,6 +133,7 @@ function calculateBundleLineItemPricing(
       selectedVariantId: item.selectedVariantId,
       quantity: item.item.quantity,
       unitPrice: roundAmount(item.selectedUnitPrice),
+      regularUnitPrice: roundAmount(item.selectedUnitPrice),
     }));
   }
 
@@ -153,6 +155,7 @@ function calculateBundleLineItemPricing(
       selectedVariantId: item.selectedVariantId,
       quantity: item.item.quantity,
       unitPrice: roundAmount(lineTotal / item.item.quantity),
+      regularUnitPrice: roundAmount(item.selectedUnitPrice),
     };
   });
 }
@@ -198,6 +201,7 @@ export function buildBundleCartLineItems({
         bundle_item_id: item.id,
         bundle_item_quantity: itemPricing.quantity,
         bundle_quantity: quantity,
+        bundle_regular_unit_price: itemPricing.regularUnitPrice,
         bundle_title: bundle.title,
         bundle_product_handle: bundle.product?.handle ?? null,
       },

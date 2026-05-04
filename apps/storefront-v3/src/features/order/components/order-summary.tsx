@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils"
 import type { MedusaOrder } from "@/lib/medusa/types"
 import { isPreorder } from "@/lib/util/is-preorder"
 import { resolvePreorderPrice } from "@/lib/util/preorder-pricing"
+import { resolveCartLineRegularUnitPrice } from "@/features/cart/lib/cart-line-pricing"
+import { getOrderLifecycle } from "@/features/order/lib/order-lifecycle"
 
 export interface OrderSummaryProps {
   order: MedusaOrder
@@ -56,31 +58,15 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
     }
   }
 
-  const getFulfillmentStatus = (order: MedusaOrder) => {
-    if (!order.fulfillment_status) return "Unknown"
-
-    switch (order.fulfillment_status) {
-      case "not_fulfilled":
-        return "Not Fulfilled"
-      case "fulfilled":
-        return "Fulfilled"
-      case "partially_fulfilled":
-        return "Partially Fulfilled"
-      case "shipped":
-        return "Shipped"
-      case "partially_shipped":
-        return "Partially Shipped"
-      case "delivered":
-        return "Delivered"
-      default:
-        return order.fulfillment_status
-    }
-  }
-
   const status = getOrderStatus(order)
+  const lifecycle = getOrderLifecycle(order)
   const currencyCode = order.currency_code || "USD"
   const orderDisplayGroups = buildCartDisplayGroups(order.items)
   const orderAnalysis = analyzeCartContents(order.items, currencyCode)
+  const orderTotals = order as MedusaOrder & {
+    item_subtotal?: number | null
+    shipping_subtotal?: number | null
+  }
 
   const formatAvailabilityDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
@@ -97,8 +83,10 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
     const preorderItem = item as MedusaOrderLineItemWithPreorder
     const preorderPrice = resolvePreorderPrice(preorderItem.variant, currencyCode)
     const displayCurrency = preorderPrice?.currency_code || currencyCode
-    const unitPrice = (preorderPrice?.amount ?? item.unit_price ?? 0) / 100
-    const totalPrice = unitPrice * (item.quantity || 0)
+    const unitPrice = preorderPrice?.amount ?? item.unit_price ?? 0
+    const totalPrice =
+      typeof item.subtotal === "number" ? item.subtotal : unitPrice * (item.quantity || 0)
+    const regularUnitPrice = resolveCartLineRegularUnitPrice(item, currencyCode)
     const variantTitle = getCartItemVariantTitle(item)
 
     return (
@@ -124,15 +112,13 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
                   day: "numeric",
                 })}
               </p>
-              {preorderPrice && (
-                <>
-                  <p className="text-muted-foreground">
-                    Pre-order price: {formatPrice(preorderPrice.amount / 100, preorderPrice.currency_code)}
-                  </p>
-                  <p className="line-through text-muted-foreground">
-                    Regular price: {formatPrice((item.unit_price || 0) / 100, currencyCode)}
-                  </p>
-                </>
+              {typeof regularUnitPrice === "number" && regularUnitPrice > unitPrice && (
+                <div className="flex items-baseline gap-2 font-mono text-xs text-muted-foreground">
+                  <span>{formatPrice(unitPrice, displayCurrency)}</span>
+                  <span className="line-through">
+                    {formatPrice(regularUnitPrice, currencyCode)}
+                  </span>
+                </div>
               )}
             </div>
           )}
@@ -195,7 +181,7 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
         </div>
 
         <div className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-xs font-medium bg-card">
-          Fulfillment: {getFulfillmentStatus(order)}
+          Fulfillment: {lifecycle.label}
         </div>
       </div>
 
@@ -267,7 +253,7 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
                 : ""}
               {` ${order.shipping_address.postal_code}`}
             </p>
-            <p>{order.shipping_address.country_code}</p>
+            <p>{order.shipping_address.country_code?.toUpperCase()}</p>
           </div>
         </div>
       )}
@@ -279,43 +265,49 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Subtotal</span>
           <span className="font-mono">
-            {formatPrice((order.subtotal || 0) / 100, currencyCode)}
+            {formatPrice(
+              orderTotals.item_subtotal ?? order.subtotal ?? 0,
+              currencyCode
+            )}
           </span>
         </div>
 
-        {order.shipping_total && order.shipping_total > 0 && (
+        {((orderTotals.shipping_subtotal ?? order.shipping_total) || 0) > 0 ? (
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Shipping</span>
             <span className="font-mono">
-              {formatPrice(order.shipping_total / 100, currencyCode)}
+              {formatPrice(
+                orderTotals.shipping_subtotal ?? order.shipping_total ?? 0,
+                currencyCode
+              )}
             </span>
           </div>
-        )}
+        ) : null}
 
-        {order.tax_total && order.tax_total > 0 && (
+        {order.tax_total && order.tax_total > 0 ? (
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Tax</span>
             <span className="font-mono">
-              {formatPrice(order.tax_total / 100, currencyCode)}
+              {formatPrice(order.tax_total, currencyCode)}
             </span>
           </div>
-        )}
+        ) : null}
 
-        {order.discount_total && order.discount_total > 0 && (
+        {order.discount_total && order.discount_total > 0 ? (
           <div className="flex justify-between text-sm text-primary">
             <span>Discount</span>
             <span className="font-mono">
-              -{formatPrice(order.discount_total / 100, currencyCode)}
+              -{formatPrice(order.discount_total, currencyCode)}
             </span>
           </div>
-        )}
+        ) : null}
 
         <Separator />
 
         <div className="flex justify-between text-base font-bold">
           <span>Total</span>
           <span className="font-mono">
-            {formatPrice((order.total || 0) / 100, currencyCode)}
+            {formatPrice(order.total || 0, currencyCode)}
           </span>
         </div>
       </div>

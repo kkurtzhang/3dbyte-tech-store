@@ -32,6 +32,7 @@ export function AddressAutocomplete({
   const inputId = id || `address-autocomplete-${generatedId}`
   const listboxId = `${inputId}-listbox`
   const rootRef = useRef<HTMLDivElement>(null)
+  const justSelectedRef = useRef(false)
   const [query, setQuery] = useState(defaultValue)
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -57,6 +58,13 @@ export function AddressAutocomplete({
   useEffect(() => {
     let isCurrent = true
     const trimmedQuery = debouncedQuery.trim()
+
+    if (justSelectedRef.current) {
+      justSelectedRef.current = false
+      return () => {
+        isCurrent = false
+      }
+    }
 
     if (trimmedQuery.length < 3) {
       setResults([])
@@ -98,12 +106,17 @@ export function AddressAutocomplete({
 
   const handleQueryChange = (value: string) => {
     setQuery(value)
+    if (justSelectedRef.current) {
+      justSelectedRef.current = false
+      return
+    }
     setIsOpen(value.trim().length >= 3)
     setSelectedIndex(-1)
     onValueChange?.(value)
   }
 
   const selectAddress = (address: MeilisearchAddressDocument) => {
+    justSelectedRef.current = true
     setQuery(address.full_address)
     setIsOpen(false)
     setSelectedIndex(-1)

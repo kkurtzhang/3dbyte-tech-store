@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { Button } from "@/components/ui/button"
 import { AddressStep } from "./address-step"
 import { DeliveryStep } from "./delivery-step"
 import { PaymentStep } from "./payment-step"
@@ -8,28 +9,35 @@ import { ReviewStep } from "./review-step"
 import { CheckoutStepper, type CheckoutStepId } from "./checkout-stepper"
 import { StripeWrapper } from "./stripe-wrapper"
 
-import { 
-  setAddressesAction, 
-  setShippingMethodAction, 
-  completeCartAction, 
+import {
+  setAddressesAction,
+  setShippingMethodAction,
+  completeCartAction,
   initPaymentSessionAction,
-  getShippingOptionsAction 
+  getShippingOptionsAction
 } from "@/app/actions/checkout"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/lib/hooks/use-toast"
+import { useCart } from "@/context/cart-context"
 import type { MedusaCart } from "@/lib/medusa/cart"
-import type { MedusaProductVariantWithPreorder } from "@/lib/medusa/types"
+import type {
+  MedusaCurrencyAmount,
+  MedusaProductVariantWithPreorder,
+} from "@/lib/medusa/types"
+import { useCheckoutSummaryEstimate } from "./checkout-summary-estimate-context"
 
 interface CheckoutFormProps {
   cart: MedusaCart
 }
 
-// Checkout flow: shipping → delivery → payment → review → confirmation
+// Checkout flow: shipping → delivery → payment → confirmation
 type CheckoutFlowStep = "shipping" | "delivery" | "payment" | "review"
 
 export function CheckoutForm({ cart }: CheckoutFormProps) {
   const router = useRouter()
   const { toast } = useToast()
+  const { refreshCart } = useCart()
+  const checkoutSummaryEstimate = useCheckoutSummaryEstimate()
   const [currentStep, setCurrentStep] = useState<CheckoutFlowStep>("shipping")
 
   // Track completed steps for navigation
@@ -44,6 +52,18 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
   const [isLoadingAddress, setIsLoadingAddress] = useState(false)
   const [isLoadingDelivery, setIsLoadingDelivery] = useState(false)
   const [isLoadingOrder, setIsLoadingOrder] = useState(false)
+
+  const findStripeClientSecret = (paymentCollection: any) => {
+    const paymentSession = paymentCollection?.payment_sessions?.find(
+      (session: any) =>
+        session.provider_id === "stripe" ||
+        session.provider_id?.includes("stripe")
+    )
+
+    return typeof paymentSession?.data?.client_secret === "string"
+      ? paymentSession.data.client_secret
+      : undefined
+  }
 
   // Handle step navigation from stepper - allow going back to completed steps
   const handleStepClick = (stepId: CheckoutStepId) => {
@@ -65,9 +85,11 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
     try {
       const result = await setAddressesAction(data)
       if (result.success) {
+        checkoutSummaryEstimate?.setEstimatedShippingTotal(null)
         setAddressData(data)
         setCompletedSteps((prev) => [...prev, "shipping"])
         setCurrentStep("delivery")
+        await refreshCart()
         window.scrollTo({ top: 0, behavior: 'smooth' })
       } else {
         toast({
@@ -87,36 +109,54 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
     }
   }
 
-  const handleDeliveryComplete = async (methodId: string) => {
+  const handleDeliveryComplete = async (
+    methodId: string,
+    data?: Record<string, unknown>,
+    summary?: { name: string; price: number }
+  ) => {
     setIsLoadingDelivery(true)
     try {
-      const result = await setShippingMethodAction(methodId)
+      const result = await setShippingMethodAction(methodId, data)
       if (result.success) {
-        // Get shipping method details
-        const optionsResult = await getShippingOptionsAction()
-        if (optionsResult.success) {
+        if (summary) {
+          setShippingMethodData(summary)
+        } else {
+          // Get shipping method details
+          const optionsResult = await getShippingOptionsAction()
           const shippingOption = optionsResult.options?.find((opt: any) => opt.id === methodId)
-          setShippingMethodData({
-            name: shippingOption?.name || "Shipping",
-            price: shippingOption?.amount || 0,
-          })
+          if (optionsResult.success) {
+            setShippingMethodData({
+              name: shippingOption?.name || "Shipping",
+              price:
+                typeof shippingOption?.amount === "number"
+                  ? shippingOption.amount
+                  : 0,
+            })
+          }
         }
+        await refreshCart()
 
         // Initialize payment session
         const sessionResult = await initPaymentSessionAction()
         if (sessionResult.success) {
-          // Find Stripe session data
-          const paymentSession = sessionResult.paymentCollection?.payment_sessions?.find(
-            (s: any) => s.provider_id === "stripe" || s.provider_id?.includes("stripe")
+          const nextClientSecret = findStripeClientSecret(
+            sessionResult.paymentCollection
           )
-
-          if (paymentSession?.data?.client_secret) {
-            setClientSecret(paymentSession.data.client_secret)
+          if (!nextClientSecret) {
+            toast({
+              variant: "destructive",
+              title: "Payment Setup Error",
+              description:
+                "Payment setup did not return a Stripe client secret. Please try the delivery method again.",
+            })
+            return
           }
+          setClientSecret(nextClientSecret)
 
           // Mark delivery step as completed, move to payment
           setCompletedSteps((prev) => [...prev, "delivery"])
           setCurrentStep("payment")
+          await refreshCart()
           window.scrollTo({ top: 0, behavior: 'smooth' })
         } else {
           toast({
@@ -144,11 +184,8 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
   }
 
   const handlePaymentComplete = async () => {
-    // Called after payment is successfully processed in PaymentStep
-    // Now move to review step
     setCompletedSteps((prev) => [...prev, "payment"])
-    setCurrentStep("review")
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    await handlePlaceOrder()
   }
 
   const handlePlaceOrder = async () => {
@@ -184,13 +221,19 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
   // Build cart data for review step
   const cartDataForReview = {
     items: cart.items?.map((item) => {
-      const preorderVariant = item.variant as MedusaProductVariantWithPreorder | undefined
+      const preorderVariant = item.variant as
+        | (MedusaProductVariantWithPreorder & {
+            prices?: MedusaCurrencyAmount[] | null
+          })
+        | undefined
 
       return {
         id: item.id,
         title: item.product?.title || item.title,
         quantity: item.quantity,
         unit_price: item.unit_price,
+        subtotal: item.subtotal,
+        total: item.total,
         metadata: item.metadata ?? null,
         product: {
           title: item.product?.title,
@@ -198,6 +241,8 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
         },
         variant: {
           title: item.variant?.title || undefined,
+          calculated_price: item.variant?.calculated_price,
+          prices: preorderVariant?.prices,
           preorder_variant: preorderVariant?.preorder_variant
             ? {
                 status: preorderVariant.preorder_variant.status,
@@ -252,16 +297,33 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
           <DeliveryStep
             onBack={goBack}
             onComplete={handleDeliveryComplete}
+            onSelectedEstimateChange={
+              checkoutSummaryEstimate?.setEstimatedShippingTotal
+            }
           />
         )}
 
         {currentStep === "payment" && (
-          <StripeWrapper clientSecret={clientSecret}>
-            <PaymentStep
-              onBack={goBack}
-              onComplete={handlePaymentComplete}
-            />
-          </StripeWrapper>
+          clientSecret ? (
+            <StripeWrapper clientSecret={clientSecret}>
+              <PaymentStep
+                onBack={goBack}
+                onComplete={handlePaymentComplete}
+              />
+            </StripeWrapper>
+          ) : (
+            <div className="space-y-6">
+              <div className="grid gap-2">
+                <h2 className="text-xl font-bold">Payment</h2>
+                <p className="text-sm text-destructive">
+                  Payment setup is not ready. Please go back and choose a delivery method again.
+                </p>
+              </div>
+              <Button type="button" variant="outline" onClick={goBack}>
+                Back
+              </Button>
+            </div>
+          )
         )}
 
         {currentStep === "review" && (

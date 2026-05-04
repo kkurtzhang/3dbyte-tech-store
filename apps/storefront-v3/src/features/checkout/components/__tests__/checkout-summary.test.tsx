@@ -1,6 +1,8 @@
+import { useEffect } from "react"
 import { render, screen } from "@testing-library/react"
 import { CheckoutSummary } from "../checkout-summary"
 import type { StoreCart } from "@medusajs/types"
+import { CheckoutSummaryEstimateProvider, useCheckoutSummaryEstimate } from "../checkout-summary-estimate-context"
 
 // Mock Next.js Image
 jest.mock("next/image", () => ({
@@ -19,14 +21,13 @@ jest.mock("next/image", () => ({
     sizes?: string
   }) => (
     // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={src}
-      alt={alt}
-      data-fill={fill}
-      data-sizes={sizes}
-      className={className}
-    />
+    <img src={src} alt={alt} data-fill={fill} data-sizes={sizes} className={className} />
   ),
+}))
+
+// Mock cart context — returns null so component falls back to SSR prop
+jest.mock("@/context/cart-context", () => ({
+  useCart: () => ({ cart: null, isLoading: false, refreshCart: jest.fn() }),
 }))
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -43,7 +44,7 @@ const createMockCart = (overrides: any = {}): StoreCart =>
         id: "item_1",
         title: "Test Product",
         quantity: 2,
-        unit_price: 1000, // 1000 cents = $10.00
+        unit_price: 10,
         variant: {
           id: "variant_1",
           title: "Default Variant",
@@ -55,16 +56,16 @@ const createMockCart = (overrides: any = {}): StoreCart =>
         },
       },
     ],
-    subtotal: 2000, // 2000 cents = $20.00
-    total: 2200,
+    subtotal: 20,
+    total: 22,
     ...overrides,
   }) as unknown as StoreCart
 
 describe("CheckoutSummary", () => {
-  it("renders order manifest header", () => {
+  it("renders order summary header", () => {
     render(<CheckoutSummary cart={createMockCart()} />)
 
-    expect(screen.getByText("Order_Manifest")).toBeInTheDocument()
+    expect(screen.getByText("Order summary")).toBeInTheDocument()
   })
 
   it("displays cart items", () => {
@@ -106,7 +107,71 @@ describe("CheckoutSummary", () => {
 
     render(<CheckoutSummary cart={cart} />)
 
-    expect(screen.getByText("NO_IMG")).toBeInTheDocument()
+    expect(screen.getByText("No image")).toBeInTheDocument()
+  })
+
+  it("uses the Medusa line total when it differs from unit price times quantity", () => {
+    const cart = createMockCart({
+      items: [
+        {
+          id: "item_1",
+          title: "Discounted Product",
+          quantity: 3,
+          unit_price: 19,
+          total: 49,
+          variant: {
+            id: "variant_1",
+            title: "Default Variant",
+            product: {
+              id: "prod_1",
+              title: "Discounted Product",
+              thumbnail: "/test.jpg",
+            },
+          },
+        },
+      ],
+      subtotal: 49,
+      total: 49,
+    })
+
+    render(<CheckoutSummary cart={cart} />)
+
+    expect(screen.getAllByText("$49.00").length).toBeGreaterThan(0)
+    expect(screen.queryByText("$0.49")).not.toBeInTheDocument()
+    expect(screen.queryByText("$57.00")).not.toBeInTheDocument()
+  })
+
+  it("uses the pre-tax line subtotal when tax-inclusive item totals are present", () => {
+    const cart = createMockCart({
+      items: [
+        {
+          id: "item_1",
+          title: "Taxed Product",
+          quantity: 1,
+          unit_price: 46.08,
+          subtotal: 46.08,
+          total: 50.69,
+          variant: {
+            id: "variant_1",
+            title: "Default Variant",
+            product: {
+              id: "prod_1",
+              title: "Taxed Product",
+              thumbnail: "/test.jpg",
+            },
+          },
+        },
+      ],
+      subtotal: 46.08,
+      tax_total: 4.61,
+      total: 50.69,
+      shipping_address: { id: "addr_1" },
+    })
+
+    render(<CheckoutSummary cart={cart} />)
+
+    expect(screen.getAllByText("$46.08").length).toBeGreaterThan(0)
+    expect(screen.getAllByText("$50.69")).toHaveLength(1)
   })
 
   it("displays variant title when not default", () => {
@@ -116,7 +181,7 @@ describe("CheckoutSummary", () => {
           id: "item_1",
           title: "Test Product",
           quantity: 1,
-          unit_price: 1000,
+          unit_price: 800,
           variant: {
             id: "variant_1",
             title: "Large / Blue",
@@ -142,7 +207,7 @@ describe("CheckoutSummary", () => {
           id: "item_1",
           title: "Test Product",
           quantity: 1,
-          unit_price: 1000,
+          unit_price: 800,
           variant_title: "Power Tool Green",
           subtitle: "Power Tool Green",
           variant: {
@@ -171,10 +236,15 @@ describe("CheckoutSummary", () => {
           id: "item_1",
           title: "Test Product",
           quantity: 1,
-          unit_price: 1000,
+          unit_price: 800,
           variant: {
             id: "variant_1",
             title: "Default Variant",
+            calculated_price: {
+              calculated_amount: 800,
+              original_amount: 1000,
+              currency_code: "usd",
+            },
             preorder_variant: {
               status: "enabled",
               available_date: "2999-01-01T00:00:00.000Z",
@@ -193,8 +263,81 @@ describe("CheckoutSummary", () => {
     render(<CheckoutSummary cart={cart} />)
 
     expect(screen.getByText(/Pre-order available on/i)).toBeInTheDocument()
-    expect(screen.getByText(/Pre-order price:/i)).toBeInTheDocument()
-    expect(screen.getByText(/Regular price:/i)).toBeInTheDocument()
+    expect(screen.getAllByText("$800.00").length).toBeGreaterThan(0)
+    expect(screen.getByText("$1,000.00")).toHaveClass("line-through")
+    expect(screen.queryByText(/Pre-order price:/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Regular price:/i)).not.toBeInTheDocument()
+  })
+
+  it("shows sale pricing with the regular price struck through for non-preorder items", () => {
+    const cart = createMockCart({
+      items: [
+        {
+          id: "item_1",
+          title: "Sale Product",
+          quantity: 1,
+          unit_price: 25,
+          variant: {
+            id: "variant_sale",
+            title: "Default Variant",
+            calculated_price: {
+              calculated_amount: 25,
+              original_amount: 40,
+              currency_code: "usd",
+            },
+            product: {
+              id: "prod_1",
+              title: "Sale Product",
+              thumbnail: "/test.jpg",
+            },
+          },
+        },
+      ],
+      subtotal: 25,
+      total: 25,
+    })
+
+    render(<CheckoutSummary cart={cart} />)
+
+    expect(screen.getAllByText("$25.00").length).toBeGreaterThan(0)
+    expect(screen.getByText("$40.00")).toHaveClass("line-through")
+  })
+
+  it("shows bundle metadata regular pricing when variant pricing is not available", () => {
+    const cart = createMockCart({
+      region: {
+        id: "reg_2",
+        currency_code: "aud",
+        name: "Australia",
+      },
+      items: [
+        {
+          id: "item_1",
+          title: "Bundle Item",
+          quantity: 1,
+          unit_price: 41.32,
+          metadata: {
+            bundle_regular_unit_price: 48.03,
+          },
+          variant: {
+            id: "variant_bundle",
+            title: "Default Variant",
+            product: {
+              id: "prod_1",
+              title: "Bundle Item",
+              thumbnail: "/test.jpg",
+            },
+          },
+        },
+      ],
+      subtotal: 41.32,
+      total: 41.32,
+    })
+
+    render(<CheckoutSummary cart={cart} />)
+
+    expect(screen.getAllByText("A$41.32").length).toBeGreaterThan(0)
+    expect(screen.getByText("A$48.03")).toHaveClass("line-through")
   })
 
   it("groups bundle items in the summary", () => {
@@ -342,6 +485,97 @@ describe("CheckoutSummary", () => {
     expect(screen.getAllByText("Calculated next")).toHaveLength(2)
   })
 
+  it("displays actual shipping and tax totals once calculated", () => {
+    const cart = createMockCart({
+      shipping_methods: [{ id: "ship_1" }],
+      shipping_total: 12.95,
+      tax_total: 3.3,
+      total: 36.25,
+    })
+
+    render(<CheckoutSummary cart={cart} />)
+
+    expect(screen.getByText("$12.95")).toBeInTheDocument()
+    expect(screen.getByText("$3.30")).toBeInTheDocument()
+    expect(screen.getByText("$36.25")).toBeInTheDocument()
+    expect(screen.queryByText("Calculated next")).not.toBeInTheDocument()
+  })
+
+  it("displays the shipping subtotal when Medusa also returns a tax-inclusive shipping total", () => {
+    const cart = createMockCart({
+      item_subtotal: 19,
+      subtotal: 31.05,
+      shipping_methods: [{ id: "ship_1" }],
+      shipping_subtotal: 12.05,
+      shipping_total: 13.255,
+      tax_total: 3.105,
+      total: 34.155,
+    })
+
+    render(<CheckoutSummary cart={cart} />)
+
+    expect(screen.getByText("$19.00")).toBeInTheDocument()
+    expect(screen.getByText("$12.05")).toBeInTheDocument()
+    expect(screen.getByText("$3.11")).toBeInTheDocument()
+    expect(screen.getByText("$34.16")).toBeInTheDocument()
+    expect(screen.queryByText("$31.05")).not.toBeInTheDocument()
+    expect(screen.queryByText("$13.26")).not.toBeInTheDocument()
+  })
+
+  it("keeps shipping and taxes pending when no shipping method is selected", () => {
+    const cart = createMockCart({
+      shipping_methods: [],
+      shipping_total: 0,
+      tax_total: 0,
+    })
+
+    render(<CheckoutSummary cart={cart} />)
+
+    expect(screen.getAllByText("Calculated next")).toHaveLength(2)
+  })
+
+  it("keeps shipping pending but displays tax after address totals are calculated", () => {
+    const cart = createMockCart({
+      shipping_address: { id: "addr_1" },
+      shipping_total: 0,
+      tax_total: 2.2,
+      total: 24.2,
+    })
+
+    render(<CheckoutSummary cart={cart} />)
+
+    expect(screen.getByText("Calculated next")).toBeInTheDocument()
+    expect(screen.getByText("$2.20")).toBeInTheDocument()
+  })
+
+  it("displays the selected delivery estimate before the shipping method is saved", () => {
+    function SetEstimate() {
+      const estimate = useCheckoutSummaryEstimate()
+      useEffect(() => {
+        estimate?.setEstimatedShippingTotal(15.75)
+      }, [estimate])
+      return null
+    }
+
+    render(
+      <CheckoutSummaryEstimateProvider>
+        <SetEstimate />
+        <CheckoutSummary
+          cart={createMockCart({
+            shipping_address: { id: "addr_1" },
+            shipping_methods: [],
+            shipping_total: 0,
+            tax_total: 0,
+          })}
+        />
+      </CheckoutSummaryEstimateProvider>
+    )
+
+    expect(screen.getByText("$15.75")).toBeInTheDocument()
+    expect(screen.getByText("$37.75")).toBeInTheDocument()
+    expect(screen.queryByText("Calculated next")).not.toBeInTheDocument()
+  })
+
   it("displays taxes placeholder", () => {
     render(<CheckoutSummary cart={createMockCart()} />)
 
@@ -349,7 +583,7 @@ describe("CheckoutSummary", () => {
   })
 
   it("displays total", () => {
-    const cart = createMockCart({ total: 2500 }) // 2500 cents = $25.00
+    const cart = createMockCart({ total: 25 })
     render(<CheckoutSummary cart={cart} />)
 
     expect(screen.getByText("Total")).toBeInTheDocument()
@@ -364,7 +598,7 @@ describe("CheckoutSummary", () => {
 
     render(<CheckoutSummary cart={cart} />)
 
-    expect(screen.getByText("Order_Manifest")).toBeInTheDocument()
+    expect(screen.getByText("Order summary")).toBeInTheDocument()
     expect(screen.getAllByText(/\$0\.00/).length).toBeGreaterThan(0)
   })
 

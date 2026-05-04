@@ -2,20 +2,28 @@
 
 import { Elements } from "@stripe/react-stripe-js"
 import { loadStripe, StripeElementsOptions } from "@stripe/stripe-js"
-import { ReactNode } from "react"
+import type * as React from "react"
 
-// Ensure we have a key, even if mock for dev
-const stripeKey = process.env.NEXT_PUBLIC_STRIPE_KEY || "pk_test_mock_key"
-const stripePromise = loadStripe(stripeKey)
+const stripeKey = process.env.NEXT_PUBLIC_STRIPE_KEY
+const stripePromise = stripeKey ? loadStripe(stripeKey) : null
+const StripeElements = Elements as React.ComponentType<{
+  stripe: typeof stripePromise
+  options: StripeElementsOptions
+  children: React.ReactNode
+}>
 
 interface StripeWrapperProps {
   clientSecret?: string
-  children: ReactNode
+  children: React.ReactNode
 }
 
 export function StripeWrapper({ clientSecret, children }: StripeWrapperProps) {
-  if (!clientSecret) {
-    return <>{children}</>
+  if (!clientSecret || !stripePromise) {
+    return (
+      <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
+        Secure payment setup is not available.
+      </div>
+    )
   }
 
   const options: StripeElementsOptions = {
@@ -45,8 +53,8 @@ export function StripeWrapper({ clientSecret, children }: StripeWrapperProps) {
   }
 
   return (
-    <Elements stripe={stripePromise} options={options}>
-      {children as any}
-    </Elements>
+    <StripeElements stripe={stripePromise} options={options}>
+      {children}
+    </StripeElements>
   )
 }

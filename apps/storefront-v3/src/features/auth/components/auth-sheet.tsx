@@ -14,6 +14,8 @@ import { RegisterForm } from "./register-form"
 type AuthMode = "login" | "register"
 
 interface AuthSheetProps {
+  initialMode?: AuthMode
+  onSuccess?: () => void
   open: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -27,13 +29,17 @@ interface AuthSheetProps {
  * - Switch link to toggle between modes
  * - Closes on successful authentication
  */
-export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
-  const [mode, setMode] = React.useState<AuthMode>("login")
+export function AuthSheet({
+  initialMode = "login",
+  onOpenChange,
+  onSuccess,
+  open,
+}: AuthSheetProps) {
+  const [mode, setMode] = React.useState<AuthMode>(initialMode)
 
   const handleSuccess = () => {
-    // Close sheet on successful auth
     onOpenChange(false)
-    // TODO: Refresh user state, redirect, etc.
+    onSuccess?.()
   }
 
   const handleModeToggle = () => {
@@ -43,9 +49,15 @@ export function AuthSheet({ open, onOpenChange }: AuthSheetProps) {
   // Reset to login mode when sheet closes
   React.useEffect(() => {
     if (!open) {
-      setMode("login")
+      setMode(initialMode)
     }
-  }, [open])
+  }, [initialMode, open])
+
+  React.useEffect(() => {
+    if (open) {
+      setMode(initialMode)
+    }
+  }, [initialMode, open])
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

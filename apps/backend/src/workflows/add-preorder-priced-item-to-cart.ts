@@ -14,6 +14,17 @@ import {
 import { resolvePreorderLineItemPriceStep } from "./steps/resolve-preorder-line-item-price";
 import { findMatchingCartLineItem } from "./utils/find-matching-cart-line-item";
 
+type VariantPricingData = {
+  calculated_price?: {
+    original_amount?: number | null;
+    calculated_amount?: number | null;
+  } | null;
+  prices?: Array<{
+    amount?: number | null;
+    currency_code?: string | null;
+  }> | null;
+};
+
 type WorkflowInput = {
   cart_id: string;
   item: {
@@ -39,7 +50,12 @@ export const addPreorderPricedItemToCartWorkflow = createWorkflow(
 
     const { data: variants } = useQueryGraphStep({
       entity: "product_variant",
-      fields: ["id", "preorder_variant.*", "preorder_variant.prices.*"],
+      fields: [
+        "id",
+        "prices.*",
+        "preorder_variant.*",
+        "preorder_variant.prices.*",
+      ],
       filters: {
         id: input.item.variant_id,
       },
@@ -55,16 +71,80 @@ export const addPreorderPricedItemToCartWorkflow = createWorkflow(
       >[0]["variant"],
     });
 
+    const regularUnitPrice = transform(
+      {
+        cart: carts[0],
+        variant: variants[0] as VariantPricingData,
+      },
+      (data) => {
+        const originalAmount = data.variant.calculated_price?.original_amount;
+        if (typeof originalAmount === "number") {
+          return originalAmount;
+        }
+
+        const activeCurrency = data.cart.currency_code?.toLowerCase();
+        const matchedPrice = data.variant.prices?.find(
+          (price) =>
+            typeof price.amount === "number" &&
+            typeof price.currency_code === "string" &&
+            price.currency_code.toLowerCase() === activeCurrency
+        );
+        if (typeof matchedPrice?.amount === "number") {
+          return matchedPrice.amount;
+        }
+
+        const fallbackPrice = data.variant.prices?.find(
+          (price) => typeof price.amount === "number"
+        );
+        return typeof fallbackPrice?.amount === "number" ? fallbackPrice.amount : null;
+      }
+    );
+
+    const preorderMetadata = transform(
+      {
+        variant: variants[0] as {
+          preorder_variant?: {
+            status?: string | null;
+            available_date?: string | Date | null;
+          } | null;
+        },
+      },
+      (data) => {
+        const preorderVariant = data.variant.preorder_variant;
+        if (
+          preorderVariant?.status !== "enabled" ||
+          !preorderVariant.available_date
+        ) {
+          return {};
+        }
+
+        return {
+          preorder_status: preorderVariant.status,
+          preorder_available_date: new Date(
+            preorderVariant.available_date
+          ).toISOString(),
+        };
+      }
+    );
+
     const items = transform(
       {
         item: input.item,
         preorderUnitPrice,
+        regularUnitPrice,
+        preorderMetadata,
       },
       (data) => [
         {
           variant_id: data.item.variant_id,
           quantity: data.item.quantity,
-          metadata: data.item.metadata ?? {},
+          metadata: {
+            ...(data.item.metadata ?? {}),
+            ...data.preorderMetadata,
+            ...(typeof data.regularUnitPrice === "number"
+              ? { regular_unit_price: data.regularUnitPrice }
+              : {}),
+          },
           ...(typeof data.preorderUnitPrice === "number"
             ? { unit_price: data.preorderUnitPrice }
             : {}),
@@ -91,6 +171,8 @@ export const addPreorderPricedItemToCartWorkflow = createWorkflow(
         matchingLineItem,
         item: input.item,
         preorderUnitPrice,
+        regularUnitPrice,
+        preorderMetadata,
       },
       (data) => {
         if (!data.matchingLineItem) {
@@ -101,7 +183,13 @@ export const addPreorderPricedItemToCartWorkflow = createWorkflow(
           item_id: data.matchingLineItem.id,
           update: {
             quantity: data.matchingLineItem.quantity + data.item.quantity,
-            metadata: data.item.metadata ?? data.matchingLineItem.metadata ?? {},
+            metadata: {
+              ...(data.item.metadata ?? data.matchingLineItem.metadata ?? {}),
+              ...data.preorderMetadata,
+              ...(typeof data.regularUnitPrice === "number"
+                ? { regular_unit_price: data.regularUnitPrice }
+                : {}),
+            },
             ...(typeof data.preorderUnitPrice === "number"
               ? { unit_price: data.preorderUnitPrice }
               : {}),
