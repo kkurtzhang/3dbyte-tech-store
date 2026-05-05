@@ -1,18 +1,26 @@
 import type { EmailAddress } from "./types";
 
-const centsPerUnit = 100;
+const getCurrencyMinorUnitFactor = (currencyCode: string): number => {
+  const { maximumFractionDigits } = new Intl.NumberFormat("en-AU", {
+    currency: currencyCode,
+    style: "currency",
+  }).resolvedOptions();
+
+  return 10 ** (maximumFractionDigits ?? 2);
+};
 
 export const formatEmailMoney = (
   amount: number | null | undefined,
   currencyCode: string,
 ): string => {
   const normalizedCurrencyCode = currencyCode.toUpperCase();
+  const minorUnitFactor = getCurrencyMinorUnitFactor(normalizedCurrencyCode);
   const formatter = new Intl.NumberFormat("en-AU", {
     currency: normalizedCurrencyCode,
     currencyDisplay: "narrowSymbol",
     style: "currency",
   });
-  const formatted = formatter.format((amount ?? 0) / centsPerUnit);
+  const formatted = formatter.format((amount ?? 0) / minorUnitFactor);
 
   return normalizedCurrencyCode === "AUD" && formatted.startsWith("$")
     ? `A${formatted}`

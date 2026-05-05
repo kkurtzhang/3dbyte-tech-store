@@ -39,19 +39,38 @@ const orderFields = [
 const isTruthyEnvValue = (value: string | undefined): boolean =>
   value?.toLowerCase() === "true";
 
-const isFalseEnvValue = (value: string | undefined): boolean =>
-  value?.toLowerCase() === "false";
+const isDevelopmentEnv = (
+  env: Partial<Record<string, string | undefined>>,
+): boolean => (env.NODE_ENV || "development") === "development";
 
-export const areOrderEmailsEnabled = (
-  env: Partial<Record<string, string | undefined>> = process.env,
+const isMaildevEmailProviderConfigured = (
+  env: Partial<Record<string, string | undefined>>,
+): boolean => {
+  if (env.MAILDEV_ENABLED !== undefined) {
+    return isTruthyEnvValue(env.MAILDEV_ENABLED);
+  }
+
+  return isDevelopmentEnv(env);
+};
+
+const isCompatibleEmailProviderConfigured = (
+  env: Partial<Record<string, string | undefined>>,
+): boolean => isMaildevEmailProviderConfigured(env);
+
+const isOrderEmailFlagEnabled = (
+  env: Partial<Record<string, string | undefined>>,
 ): boolean => {
   if (env.ORDER_EMAILS_ENABLED !== undefined) {
     return isTruthyEnvValue(env.ORDER_EMAILS_ENABLED);
   }
 
-  const isDevelopment = (env.NODE_ENV || "development") === "development";
+  return isDevelopmentEnv(env);
+};
 
-  return isDevelopment && !isFalseEnvValue(env.MAILDEV_ENABLED);
+export const areOrderEmailsEnabled = (
+  env: Partial<Record<string, string | undefined>> = process.env,
+): boolean => {
+  return isOrderEmailFlagEnabled(env) && isCompatibleEmailProviderConfigured(env);
 };
 
 export default async function orderPlacedHandler({
