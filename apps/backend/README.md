@@ -69,6 +69,21 @@ Set `MAILDEV_ENABLED=false` to disable the provider locally. Outside
 development, the provider remains disabled unless `MAILDEV_ENABLED=true` is set
 explicitly.
 
+### Order confirmation email flow
+
+The backend sends order confirmation email through Medusa's Notification Module.
+The flow is provider-neutral:
+
+1. `order.placed` event fires after checkout completion.
+2. `src/subscribers/orders/order-placed.ts` queries order and store data.
+3. `src/emails/renderers/order-placed.tsx` renders React Email HTML plus plain text.
+4. `notification.createNotifications` sends the email through the active provider.
+
+Development uses the MailDev provider. Production can switch to a Resend
+provider without changing the subscriber or React Email templates because the
+provider receives the same `content.subject`, `content.html`, and `content.text`
+payload.
+
 ## What is Medusa
 
 Medusa is a set of commerce modules and tools that allow you to build rich, reliable, and performant commerce applications without reinventing core commerce logic. The modules can be customized and used to build advanced ecommerce stores, marketplaces, or any product that needs foundational commerce primitives. All modules are open-source and freely available on npm.
