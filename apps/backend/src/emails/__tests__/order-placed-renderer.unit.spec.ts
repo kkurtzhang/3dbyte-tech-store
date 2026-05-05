@@ -27,6 +27,7 @@ const order = {
     country_code: "au",
   },
   shipping_total: 1200,
+  subtotal: 25049,
   tax_total: 0,
   total: 26249,
 };
@@ -44,5 +45,28 @@ describe("renderOrderPlacedEmail", () => {
     expect(rendered.html).toContain("Hobart TAS 7000");
     expect(rendered.text).toContain("Order #1001");
     expect(rendered.text).toContain("Total: A$262.49");
+  });
+
+  it("renders discounted order totals from pre-discount subtotal through final total", async () => {
+    const rendered = await renderOrderPlacedEmail({
+      order: {
+        ...order,
+        discount_total: 2000,
+        item_total: 23049,
+        subtotal: 25049,
+        total: 24249,
+      },
+      store: { name: "3D Byte Tech" },
+    });
+
+    expect(rendered.html).toContain("Subtotal");
+    expect(rendered.html).toContain("A$250.49");
+    expect(rendered.html).toContain("Discount");
+    expect(rendered.html).toContain("-A$20.00");
+    expect(rendered.text).toContain("Subtotal: A$250.49");
+    expect(rendered.text).toContain("Discount: -A$20.00");
+    expect(rendered.text).toContain("Shipping: A$12.00");
+    expect(rendered.text).toContain("Tax: A$0.00");
+    expect(rendered.text).toContain("Total: A$242.49");
   });
 });

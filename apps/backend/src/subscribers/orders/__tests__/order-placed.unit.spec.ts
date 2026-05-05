@@ -3,10 +3,12 @@ import orderPlacedHandler from "../order-placed";
 const baseOrder = {
   created_at: "2026-05-05T08:00:00.000Z",
   currency_code: "aud",
+  discount_total: 0,
   display_id: 1001,
   email: "test@demo.com",
   id: "order_123",
   item_total: 25049,
+  subtotal: 25049,
   items: [
     {
       id: "item_123",
@@ -23,6 +25,15 @@ const baseOrder = {
 
 const createArgs = (order = baseOrder) => {
   const createNotifications = jest.fn().mockResolvedValue([{ id: "noti_123" }]);
+  const resolve = jest.fn((key: string) => {
+    if (key === "query") {
+      return { graph };
+    }
+    if (key === "notification") {
+      return { createNotifications };
+    }
+    throw new Error(`Unexpected dependency ${key}`);
+  });
   const graph = jest
     .fn()
     .mockResolvedValueOnce({ data: [{ name: "3D Byte Tech" }] })
@@ -32,23 +43,26 @@ const createArgs = (order = baseOrder) => {
     args: {
       event: { data: { id: "order_123" } },
       container: {
-        resolve: jest.fn((key: string) => {
-          if (key === "query") {
-            return { graph };
-          }
-          if (key === "notification") {
-            return { createNotifications };
-          }
-          throw new Error(`Unexpected dependency ${key}`);
-        }),
+        resolve,
       },
     },
     createNotifications,
     graph,
+    resolve,
   };
 };
 
 describe("orderPlacedHandler", () => {
+  const originalEnv = process.env;
+
+  beforeEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  afterAll(() => {
+    process.env = originalEnv;
+  });
+
   it("renders and sends an order confirmation notification", async () => {
     const { args, createNotifications, graph } = createArgs();
 
@@ -63,6 +77,7 @@ describe("orderPlacedHandler", () => {
           subject: "Order Confirmation - 3D Byte Tech #1001",
           text: expect.stringContaining("Total: A$262.49"),
         }),
+        idempotency_key: "order-placed/order_123",
         data: expect.objectContaining({
           email_metadata: {
             entity_id: "order_123",
@@ -84,6 +99,19 @@ describe("orderPlacedHandler", () => {
 
     await orderPlacedHandler(args as never);
 
+    expect(createNotifications).not.toHaveBeenCalled();
+  });
+
+  it("skips without resolving notifications when order emails are disabled", async () => {
+    process.env.NODE_ENV = "production";
+    delete process.env.ORDER_EMAILS_ENABLED;
+
+    const { args, createNotifications, graph, resolve } = createArgs();
+
+    await orderPlacedHandler(args as never);
+
+    expect(resolve).not.toHaveBeenCalledWith("notification");
+    expect(graph).not.toHaveBeenCalled();
     expect(createNotifications).not.toHaveBeenCalled();
   });
 });
