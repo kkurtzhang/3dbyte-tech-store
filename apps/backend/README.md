@@ -84,6 +84,12 @@ provider without changing the subscriber or React Email templates because the
 provider receives the same `content.subject`, `content.html`, and `content.text`
 payload.
 
+Verification note, 2026-05-05: a local Store API checkout completed against
+`http://localhost:9000` with MailDev at `http://192.168.0.45:1080`; the MailDev
+inbox showed order `order_01KQVBWP7P9SM2GEJG69PKS4V5` sent to
+`maildev-checkout+20260505@3dbyte.tech` with subject
+`Order Confirmation - Medusa Store #4`.
+
 ## What is Medusa
 
 Medusa is a set of commerce modules and tools that allow you to build rich, reliable, and performant commerce applications without reinventing core commerce logic. The modules can be customized and used to build advanced ecommerce stores, marketplaces, or any product that needs foundational commerce primitives. All modules are open-source and freely available on npm.
