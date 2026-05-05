@@ -1,7 +1,10 @@
 import { loadEnv, defineConfig } from "@medusajs/framework/utils";
 import { customSchema } from "./src/custom-index-schema";
+import { getMaildevNotificationProvider } from "./src/modules/maildev-notification/config";
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd());
+
+const maildevNotificationProvider = getMaildevNotificationProvider();
 
 const mergeCors = (
   value: string | undefined,
@@ -98,6 +101,16 @@ module.exports = defineConfig({
     {
       resolve: "./src/modules/newsletter",
     },
+    ...(maildevNotificationProvider
+      ? [
+          {
+            resolve: "@medusajs/medusa/notification",
+            options: {
+              providers: [maildevNotificationProvider],
+            },
+          },
+        ]
+      : []),
     {
       resolve: "./src/modules/meilisearch",
       options: {

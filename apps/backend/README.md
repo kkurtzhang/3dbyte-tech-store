@@ -42,6 +42,33 @@ Visit the [Quickstart Guide](https://docs.medusajs.com/learn/installation) to se
 
 Visit the [Docs](https://docs.medusajs.com/learn/installation#get-started) to learn more about our system requirements.
 
+## Development email testing
+
+The backend registers a development-only Medusa notification provider for
+MailDev. It is enabled by default when `NODE_ENV=development` and sends
+email-channel notifications to the shared development MailDev instance:
+
+- SMTP: `192.168.0.45:1025`
+- Inbox UI: `http://192.168.0.45:1080`
+
+Use these environment variables to override the defaults:
+
+```bash
+MAILDEV_ENABLED=true
+MAILDEV_SMTP_HOST=192.168.0.45
+MAILDEV_SMTP_PORT=1025
+MAILDEV_SMTP_SECURE=false
+MAILDEV_SMTP_REJECT_UNAUTHORIZED=false
+MAILDEV_FROM=no-reply@3dbyte-tech.local
+MAILDEV_WEB_URL=http://192.168.0.45:1080
+# MAILDEV_SMTP_USER=
+# MAILDEV_SMTP_PASS=
+```
+
+Set `MAILDEV_ENABLED=false` to disable the provider locally. Outside
+development, the provider remains disabled unless `MAILDEV_ENABLED=true` is set
+explicitly.
+
 ## What is Medusa
 
 Medusa is a set of commerce modules and tools that allow you to build rich, reliable, and performant commerce applications without reinventing core commerce logic. The modules can be customized and used to build advanced ecommerce stores, marketplaces, or any product that needs foundational commerce primitives. All modules are open-source and freely available on npm.

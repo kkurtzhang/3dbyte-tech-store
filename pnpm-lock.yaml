@@ -110,6 +110,9 @@ importers:
       node-cron:
         specifier: ^4.2.1
         version: 4.2.1
+      nodemailer:
+        specifier: ^6.10.1
+        version: 6.10.1
       react-hook-form:
         specifier: ^7.61.1
         version: 7.69.0(react@18.3.1)
@@ -141,6 +144,9 @@ importers:
       '@types/node':
         specifier: ^20.0.0
         version: 20.19.27
+      '@types/nodemailer':
+        specifier: ^6.4.20
+        version: 6.4.23
       '@types/react':
         specifier: ^18.3.2
         version: 18.3.27
@@ -7270,6 +7276,9 @@ packages:
   '@types/node@22.19.3':
     resolution: {integrity: sha512-1N9SBnWYOJTrNZCdh/yJE+t910Y128BoyY+zBLWhL3r0TYzlTmFdXrPwHL9DyFZmlEXNQQolTZh3KHV31QDhyA==}
 
+  '@types/nodemailer@6.4.23':
+    resolution: {integrity: sha512-aFV3/NsYFLSx9mbb5gtirBSXJnAlrusoKNuPbxsASWc7vrKLmIrTQRpdcxNcSFL3VW2A2XpeLEavwb2qMi6nlQ==}
+
   '@types/nodemon@1.19.6':
     resolution: {integrity: sha512-vjKuaQOLUA5EY2zkUmWG1ipXbKt9Wd+H/0SiIuHVeH4cHtt6509iRUGH9ZR0iqgUrtj3BrP9KqoTuV3ZCbQcYA==}
 
@@ -11971,6 +11980,10 @@ packages:
 
   nodemailer-shared@1.1.0:
     resolution: {integrity: sha512-68xW5LSyPWv8R0GLm6veAvm7E+XFXkVgvE3FW0FGxNMMZqMkPFeGDVALfR1DPdSfcoO36PnW7q5AAOgFImEZGg==}
+
+  nodemailer@6.10.1:
+    resolution: {integrity: sha512-Z+iLaBGVaSjbIzQ4pX6XV41HrooLsQ10ZWPUehGmuantvzWoDVBnmsdUcOIDM1t+yPor5pDhVlDESgOMEGxhHA==}
+    engines: {node: '>=6.0.0'}
 
   nodemon@3.0.2:
     resolution: {integrity: sha512-9qIN2LNTrEzpOPBaWHTm4Asy1LxXLSickZStAQ4IZe7zsoIpD/A7LWxhZV3t4Zu352uBcqVnRsDXSMR2Sc3lTA==}
@@ -26912,6 +26925,10 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
+  '@types/nodemailer@6.4.23':
+    dependencies:
+      '@types/node': 20.19.27
+
   '@types/nodemon@1.19.6':
     dependencies:
       '@types/node': 20.19.27
@@ -32904,6 +32921,8 @@ snapshots:
   nodemailer-shared@1.1.0:
     dependencies:
       nodemailer-fetch: 1.6.0
+
+  nodemailer@6.10.1: {}
 
   nodemon@3.0.2:
     dependencies:
