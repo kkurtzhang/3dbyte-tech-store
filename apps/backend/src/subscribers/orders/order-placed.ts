@@ -63,7 +63,7 @@ export default async function orderPlacedHandler({
   }
 
   const content = await renderOrderPlacedEmail({
-    order: order as OrderPlacedEmailOrder,
+    order: order as unknown as OrderPlacedEmailOrder,
     store: {
       name: store?.name,
     },
