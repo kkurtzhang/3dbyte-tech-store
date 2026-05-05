@@ -9,6 +9,10 @@ describe("email formatters", () => {
     expect(formatEmailMoney(25049, "aud")).toBe("A$250.49");
   });
 
+  it("formats zero-decimal currencies without cents", () => {
+    expect(formatEmailMoney(1234, "JPY")).toBe("¥1,234");
+  });
+
   it("formats zero amounts explicitly", () => {
     expect(formatEmailMoney(0, "AUD")).toBe("A$0.00");
   });

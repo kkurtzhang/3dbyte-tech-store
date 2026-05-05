@@ -115,4 +115,19 @@ describe("orderPlacedHandler", () => {
     expect(graph).not.toHaveBeenCalled();
     expect(createNotifications).not.toHaveBeenCalled();
   });
+
+  it("skips without resolving dependencies when order emails are allowed but no provider is configured", async () => {
+    process.env.NODE_ENV = "development";
+    process.env.ORDER_EMAILS_ENABLED = "true";
+    process.env.MAILDEV_ENABLED = "false";
+
+    const { args, createNotifications, graph, resolve } = createArgs();
+
+    await orderPlacedHandler(args as never);
+
+    expect(resolve).not.toHaveBeenCalledWith("query");
+    expect(resolve).not.toHaveBeenCalledWith("notification");
+    expect(graph).not.toHaveBeenCalled();
+    expect(createNotifications).not.toHaveBeenCalled();
+  });
 });
