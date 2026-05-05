@@ -57,6 +57,7 @@ describe("orderPlacedHandler", () => {
 
   beforeEach(() => {
     process.env = { ...originalEnv };
+    process.env.ORDER_EMAILS_ENABLED = "true";
   });
 
   afterAll(() => {

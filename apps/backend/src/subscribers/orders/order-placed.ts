@@ -13,6 +13,8 @@ const orderFields = [
   "display_id",
   "created_at",
   "currency_code",
+  "subtotal",
+  "item_subtotal",
   "item_total",
   "shipping_total",
   "discount_total",
@@ -34,12 +36,33 @@ const orderFields = [
   "shipping_address.country_code",
 ];
 
+const isTruthyEnvValue = (value: string | undefined): boolean =>
+  value?.toLowerCase() === "true";
+
+const isFalseEnvValue = (value: string | undefined): boolean =>
+  value?.toLowerCase() === "false";
+
+export const areOrderEmailsEnabled = (
+  env: Partial<Record<string, string | undefined>> = process.env,
+): boolean => {
+  if (env.ORDER_EMAILS_ENABLED !== undefined) {
+    return isTruthyEnvValue(env.ORDER_EMAILS_ENABLED);
+  }
+
+  const isDevelopment = (env.NODE_ENV || "development") === "development";
+
+  return isDevelopment && !isFalseEnvValue(env.MAILDEV_ENABLED);
+};
+
 export default async function orderPlacedHandler({
   event: { data },
   container,
 }: SubscriberArgs<OrderPlacedEvent>) {
+  if (!areOrderEmailsEnabled()) {
+    return;
+  }
+
   const query = container.resolve("query");
-  const notificationModule = container.resolve("notification");
 
   const {
     data: [store],
@@ -62,6 +85,7 @@ export default async function orderPlacedHandler({
     return;
   }
 
+  const notificationModule = container.resolve("notification");
   const content = await renderOrderPlacedEmail({
     order: order as unknown as OrderPlacedEmailOrder,
     store: {
@@ -73,6 +97,7 @@ export default async function orderPlacedHandler({
     to: order.email,
     channel: "email",
     template: "order-placed",
+    idempotency_key: `order-placed/${order.id}`,
     content,
     data: {
       order,

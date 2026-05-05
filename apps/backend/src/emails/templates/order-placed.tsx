@@ -21,10 +21,19 @@ type Props = {
   store: OrderPlacedEmailStore;
 };
 
+const getSummarySubtotal = (order: OrderPlacedEmailOrder): number | null | undefined =>
+  order.subtotal ?? order.item_subtotal ?? order.item_total;
+
+const formatDiscount = (
+  amount: number | null | undefined,
+  currencyCode: string,
+): string => `-${formatEmailMoney(Math.abs(amount ?? 0), currencyCode)}`;
+
 export default function OrderPlacedEmail({ order, store }: Props) {
   const storeName = store.name || "3D Byte Tech";
   const items = order.items || [];
   const addressLines = formatEmailAddress(order.shipping_address);
+  const discountTotal = order.discount_total ?? 0;
 
   return (
     <Html>
@@ -60,7 +69,10 @@ export default function OrderPlacedEmail({ order, store }: Props) {
 
           <Section>
             <Heading as="h2" style={{ fontSize: "16px" }}>Order summary</Heading>
-            <Text>Subtotal: {formatEmailMoney(order.item_total, order.currency_code)}</Text>
+            <Text>Subtotal: {formatEmailMoney(getSummarySubtotal(order), order.currency_code)}</Text>
+            {discountTotal !== 0 ? (
+              <Text>Discount: {formatDiscount(discountTotal, order.currency_code)}</Text>
+            ) : null}
             <Text>Shipping: {formatEmailMoney(order.shipping_total, order.currency_code)}</Text>
             <Text>Tax: {formatEmailMoney(order.tax_total, order.currency_code)}</Text>
             <Text>Total: {formatEmailMoney(order.total, order.currency_code)}</Text>

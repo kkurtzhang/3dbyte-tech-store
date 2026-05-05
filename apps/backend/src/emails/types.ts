@@ -25,10 +25,12 @@ export type OrderPlacedEmailOrder = {
   display_id: number;
   email?: string | null;
   id: string;
+  item_subtotal?: number | null;
   item_total?: number | null;
   items?: OrderPlacedEmailItem[] | null;
   shipping_address?: EmailAddress | null;
   shipping_total?: number | null;
+  subtotal?: number | null;
   tax_total?: number | null;
   total?: number | null;
 };

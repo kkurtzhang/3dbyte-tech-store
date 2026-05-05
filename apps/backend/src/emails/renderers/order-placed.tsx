@@ -17,6 +17,14 @@ type RenderOrderPlacedEmailInput = {
   store: OrderPlacedEmailStore;
 };
 
+const getSummarySubtotal = (order: OrderPlacedEmailOrder): number | null | undefined =>
+  order.subtotal ?? order.item_subtotal ?? order.item_total;
+
+const formatDiscount = (
+  amount: number | null | undefined,
+  currencyCode: string,
+): string => `-${formatEmailMoney(Math.abs(amount ?? 0), currencyCode)}`;
+
 export const renderOrderPlacedEmail = async ({
   order,
   store,
@@ -33,6 +41,16 @@ export const renderOrderPlacedEmail = async ({
       )}`,
   );
   const addressLines = formatEmailAddress(order.shipping_address);
+  const discountTotal = order.discount_total ?? 0;
+  const summaryLines = [
+    `Subtotal: ${formatEmailMoney(getSummarySubtotal(order), order.currency_code)}`,
+    ...(discountTotal !== 0
+      ? [`Discount: ${formatDiscount(discountTotal, order.currency_code)}`]
+      : []),
+    `Shipping: ${formatEmailMoney(order.shipping_total, order.currency_code)}`,
+    `Tax: ${formatEmailMoney(order.tax_total, order.currency_code)}`,
+    `Total: ${formatEmailMoney(order.total, order.currency_code)}`,
+  ];
 
   return {
     html,
@@ -47,10 +65,7 @@ export const renderOrderPlacedEmail = async ({
       "Shipping address:",
       ...addressLines,
       "",
-      `Subtotal: ${formatEmailMoney(order.item_total, order.currency_code)}`,
-      `Shipping: ${formatEmailMoney(order.shipping_total, order.currency_code)}`,
-      `Tax: ${formatEmailMoney(order.tax_total, order.currency_code)}`,
-      `Total: ${formatEmailMoney(order.total, order.currency_code)}`,
+      ...summaryLines,
     ].join("\n"),
   };
 };
