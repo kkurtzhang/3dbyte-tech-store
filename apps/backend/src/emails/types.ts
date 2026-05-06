@@ -13,32 +13,56 @@ export type EmailAddress = {
 
 export type EmailRawAmount = {
   value?: number | string | null;
+  [key: string]: unknown;
+};
+
+export type EmailAmount =
+  | number
+  | string
+  | {
+      numeric?: number | string | null;
+      raw?: EmailRawAmount | null;
+      toJSON?: () => unknown;
+      valueOf?: () => unknown;
+      value?: number | string | null;
+      [key: string]: unknown;
+    };
+
+export type EmailPreorderVariant = {
+  available_date?: string | Date | null;
+  status?: string | null;
 };
 
 export type OrderPlacedEmailItem = {
   detail?: {
-    quantity?: number | null;
+    quantity?: EmailAmount | null;
+    raw_quantity?: EmailRawAmount | null;
   } | null;
   id: string;
-  item_subtotal?: number | null;
-  item_total?: number | null;
+  item_subtotal?: EmailAmount | null;
+  item_total?: EmailAmount | null;
+  metadata?: Record<string, unknown> | null;
   product_title?: string | null;
-  quantity?: number | null;
+  quantity?: EmailAmount | null;
   raw_item_subtotal?: EmailRawAmount | null;
   raw_item_total?: EmailRawAmount | null;
+  raw_quantity?: EmailRawAmount | null;
   raw_subtotal?: EmailRawAmount | null;
   raw_total?: EmailRawAmount | null;
-  subtotal?: number | null;
+  subtotal?: EmailAmount | null;
   thumbnail?: string | null;
   title?: string | null;
-  total?: number | null;
-  unit_price?: number | null;
+  total?: EmailAmount | null;
+  unit_price?: EmailAmount | null;
+  variant?: {
+    preorder_variant?: EmailPreorderVariant | null;
+  } | null;
   variant_sku?: string | null;
   variant_title?: string | null;
 };
 
 export type OrderPlacedEmailShippingMethod = {
-  amount?: number | null;
+  amount?: EmailAmount | null;
   name?: string | null;
 };
 
@@ -47,12 +71,12 @@ export type OrderPlacedEmailOrder = {
   created_at: string | Date;
   currency_code: string;
   custom_display_id?: string | null;
-  discount_total?: number | null;
+  discount_total?: EmailAmount | null;
   display_id: number;
   email?: string | null;
   id: string;
-  item_subtotal?: number | null;
-  item_total?: number | null;
+  item_subtotal?: EmailAmount | null;
+  item_total?: EmailAmount | null;
   items?: OrderPlacedEmailItem[] | null;
   raw_item_subtotal?: EmailRawAmount | null;
   raw_item_total?: EmailRawAmount | null;
@@ -63,11 +87,11 @@ export type OrderPlacedEmailOrder = {
   raw_total?: EmailRawAmount | null;
   shipping_address?: EmailAddress | null;
   shipping_methods?: OrderPlacedEmailShippingMethod[] | null;
-  shipping_subtotal?: number | null;
-  shipping_total?: number | null;
-  subtotal?: number | null;
-  tax_total?: number | null;
-  total?: number | null;
+  shipping_subtotal?: EmailAmount | null;
+  shipping_total?: EmailAmount | null;
+  subtotal?: EmailAmount | null;
+  tax_total?: EmailAmount | null;
+  total?: EmailAmount | null;
 };
 
 export type OrderPlacedEmailStore = {

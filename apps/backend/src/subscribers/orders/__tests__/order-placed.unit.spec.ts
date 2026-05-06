@@ -90,6 +90,16 @@ describe("orderPlacedHandler", () => {
     await orderPlacedHandler(args as never);
 
     expect(graph).toHaveBeenCalledTimes(2);
+    expect(graph).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        fields: expect.arrayContaining([
+          "items.metadata",
+          "items.variant.preorder_variant.status",
+          "items.variant.preorder_variant.available_date",
+        ]),
+      }),
+    );
     expect(createNotifications).toHaveBeenCalledWith(
       expect.objectContaining({
         channel: "email",

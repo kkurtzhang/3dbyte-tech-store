@@ -1,9 +1,21 @@
 import { generateOrderCustomDisplayId } from "../order-display-id";
 
 describe("generateOrderCustomDisplayId", () => {
-  it("generates a 3D Byte Tech order reference from a millisecond timestamp", () => {
-    expect(generateOrderCustomDisplayId(1777978800123)).toBe(
-      "3DB-1777978800123",
+  it("generates a readable customer order reference", () => {
+    expect(generateOrderCustomDisplayId()).toMatch(
+      /^3DBO-[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{4}-[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/,
     );
+  });
+
+  it("excludes ambiguous characters from the random segments", () => {
+    const references = Array.from({ length: 100 }, () =>
+      generateOrderCustomDisplayId(),
+    );
+
+    for (const reference of references) {
+      const randomSegments = reference.replace(/^3DBO-/, "");
+
+      expect(randomSegments).not.toMatch(/[OI01]/);
+    }
   });
 });

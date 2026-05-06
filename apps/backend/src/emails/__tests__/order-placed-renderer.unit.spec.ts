@@ -164,4 +164,98 @@ describe("renderOrderPlacedEmail", () => {
     );
     expect(rendered.text).toContain("Total: A$33.96");
   });
+
+  it("renders Medusa BigNumber-like totals, unit prices, and quantities", async () => {
+    const rendered = await renderOrderPlacedEmail({
+      order: {
+        ...order,
+        custom_display_id: "3DB-1777976810295",
+        item_subtotal: { numeric: 19, valueOf: () => 19 },
+        shipping_subtotal: { numeric: 11.87, valueOf: () => 11.87 },
+        tax_total: { numeric: 3.09, valueOf: () => 3.09 },
+        total: { numeric: 33.96, valueOf: () => 33.96 },
+        items: [
+          {
+            id: "item_bignumber_payload",
+            product_title: "Polymaker HT-PLA-GF",
+            quantity: { numeric: 1, valueOf: () => 1 },
+            subtotal: { numeric: 19, valueOf: () => 19 },
+            unit_price: { numeric: 19, valueOf: () => 19 },
+            variant_title: "Power Tool Green",
+          },
+        ],
+      },
+      store: { name: "3D Byte Tech" },
+    });
+
+    expect(rendered.text).toContain(
+      "1 x Polymaker HT-PLA-GF (Power Tool Green) - A$19.00",
+    );
+    expect(rendered.text).toContain("Unit: A$19.00");
+    expect(rendered.text).toContain("Subtotal: A$19.00");
+    expect(rendered.text).toContain("Shipping: A$11.87");
+    expect(rendered.text).toContain("Tax: A$3.09");
+    expect(rendered.text).toContain("Total: A$33.96");
+  });
+
+  it("labels preorder release dates, groups bundled items, and links to order tracking", async () => {
+    const rendered = await renderOrderPlacedEmail({
+      order: {
+        ...order,
+        custom_display_id: "3DB-1777976810999",
+        items: [
+          {
+            id: "bundle_child_1",
+            metadata: {
+              bundle_id: "bundle_1",
+              bundle_title: "Printer Starter Bundle",
+              bundle_quantity: 1,
+            },
+            product_title: "Nozzle Kit",
+            quantity: 1,
+            subtotal: 35,
+            unit_price: 35,
+            variant_title: "0.4mm",
+          },
+          {
+            id: "preorder_item",
+            product_title: "Polymaker HT-PLA-GF",
+            quantity: 1,
+            subtotal: 19,
+            unit_price: 19,
+            variant: {
+              preorder_variant: {
+                available_date: "2026-05-09T00:00:00.000Z",
+                status: "enabled",
+              },
+            },
+            variant_title: "Power Tool Green",
+          },
+          {
+            id: "bundle_child_2",
+            metadata: {
+              bundle_id: "bundle_1",
+              bundle_title: "Printer Starter Bundle",
+              bundle_quantity: 1,
+            },
+            product_title: "Build Plate",
+            quantity: 1,
+            subtotal: 45,
+            unit_price: 45,
+          },
+        ],
+      },
+      store: { name: "3D Byte Tech" },
+    });
+
+    expect(rendered.html).toContain("Printer Starter Bundle");
+    expect(rendered.text).toContain("Bundle: Printer Starter Bundle");
+    expect(rendered.text).toContain("Releases on 9 May 2026");
+    expect(rendered.html).toContain(
+      "https://store.3dbytetech.com.au/track-order?reference=3DB-1777976810999",
+    );
+    expect(rendered.text).toContain(
+      "Track your order: https://store.3dbytetech.com.au/track-order?reference=3DB-1777976810999",
+    );
+  });
 });
