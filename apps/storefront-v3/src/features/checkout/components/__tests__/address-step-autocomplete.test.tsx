@@ -345,4 +345,15 @@ describe("AddressStep address autocomplete", () => {
     expect(screen.getByRole("button", { name: /create account/i })).toBeInTheDocument()
     expect(screen.queryByLabelText("Email Address")).not.toBeInTheDocument()
   })
+
+  it("shows a join-us opt-in next to the guest checkout email field", async () => {
+    render(<AddressStep onComplete={jest.fn()} />)
+
+    fireEvent.click(await screen.findByRole("button", { name: /continue as guest/i }))
+
+    expect(await screen.findByLabelText("Email Address")).toBeInTheDocument()
+    expect(
+      screen.getByRole("checkbox", { name: /join us for product updates/i })
+    ).toBeInTheDocument()
+  })
 })

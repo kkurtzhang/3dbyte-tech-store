@@ -33,6 +33,18 @@ interface DeliveryStepProps {
   onSelectedEstimateChange?: (amount: number | null) => void
 }
 
+function isCalculatedDeliveryOption(option: {
+  id?: string
+  price_type?: string | null
+} | null): option is {
+  id: string
+  description?: string | null
+  name?: string | null
+  price_type?: string | null
+} {
+  return Boolean(option?.id && option.price_type === "calculated")
+}
+
 function buildLiveRateDescription(rate: ShippingRate): string {
   const parts: string[] = []
   if (rate.transitDays) {
@@ -78,6 +90,53 @@ function liveRateToDeliveryOption(
   }
 }
 
+function getOptionDisplayName(option: {
+  description?: string | null
+  name?: string | null
+}) {
+  return getShippingServiceDisplayName({
+    description: option.description,
+    name: option.name || undefined,
+  })
+}
+
+function getRateDisplayName(rate: ShippingRate) {
+  return getShippingServiceDisplayName({
+    carrierName: rate.carrier.name,
+    service: rate.service,
+    serviceName: rate.serviceName,
+  })
+}
+
+function mapLiveRatesToCalculatedOptions(
+  calculatedOptions: Array<{
+    id?: string
+    description?: string | null
+    name?: string | null
+    price_type?: string | null
+  } | null>,
+  rates: ShippingRate[]
+): DeliveryOption[] {
+  const validCalculatedOptions = calculatedOptions.filter(
+    isCalculatedDeliveryOption
+  )
+
+  if (validCalculatedOptions.length === 0 || rates.length === 0) {
+    return []
+  }
+
+  return rates.flatMap((rate) => {
+    const rateDisplayName = getRateDisplayName(rate)
+    const matchedOption =
+      validCalculatedOptions.find(
+        (option) => getOptionDisplayName(option) === rateDisplayName
+      ) ||
+      (validCalculatedOptions.length === 1 ? validCalculatedOptions[0] : undefined)
+
+    return matchedOption ? [liveRateToDeliveryOption(matchedOption.id, rate)] : []
+  })
+}
+
 export function DeliveryStep({
   onBack,
   onComplete,
@@ -102,18 +161,22 @@ export function DeliveryStep({
         const fetchedLiveRates = liveRateResult.success ? liveRateResult.rates : []
 
         if (medusaResult.success && medusaResult.options.length > 0) {
-          const calculatedOption = medusaResult.options.find(
+          const calculatedOptions = medusaResult.options.filter(
             (opt) => opt?.price_type === "calculated"
           )
-          const liveRateOptions =
-            calculatedOption && fetchedLiveRates.length > 0
-              ? fetchedLiveRates.map((rate) =>
-                  liveRateToDeliveryOption(calculatedOption.id, rate)
-                )
-              : []
+          const liveRateOptions = mapLiveRatesToCalculatedOptions(
+            calculatedOptions,
+            fetchedLiveRates
+          )
+          const liveRateOptionIds = new Set(
+            liveRateOptions.map((option) => option.optionId)
+          )
           const medusaOptions: DeliveryOption[] = medusaResult.options.flatMap(
             (opt) => {
-              if (!opt || (liveRateOptions.length > 0 && opt.price_type === "calculated")) {
+              if (
+                !opt ||
+                (opt.price_type === "calculated" && liveRateOptionIds.has(opt.id))
+              ) {
                 return []
               }
 

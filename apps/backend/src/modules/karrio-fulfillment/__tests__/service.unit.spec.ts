@@ -245,4 +245,57 @@ describe("KarrioFulfillmentService", () => {
       ),
     ).resolves.toMatchObject({ calculated_amount: 17.79 });
   });
+
+  it("uses selected live carrier data when the admin shipping option was recreated with stale data", async () => {
+    const service = new KarrioFulfillmentService({ logger }, defaultOptions);
+    const fetchRates = jest.fn().mockResolvedValue({
+      rates: [
+        {
+          id: "rat_priority",
+          carrier_id: "aramex-au",
+          carrier_name: "aramex_aunz",
+          service: "aramex_aunz_priority",
+          total_charge: 17.79,
+          currency: "AUD",
+          transit_days: 5,
+          meta: { service_name: "PRIORITY" },
+          test_mode: false,
+        },
+      ],
+    });
+    getClient(service).client.fetchRates = fetchRates;
+
+    await expect(
+      service.calculatePrice(
+        {
+          carrier_id: "old-aramex-connection",
+          service: "old_aramex_standard",
+          name: "Aramex Priority",
+        },
+        {
+          carrier_id: "aramex-au",
+          service: "aramex_aunz_priority",
+          selected_rate_id: "rat_priority",
+          service_name: "Aramex Priority",
+        },
+        {
+          shipping_address: {
+            address_1: "40 crown st",
+            city: "Wollongong",
+            country_code: "au",
+            postal_code: "2500",
+            province: "nsw",
+          },
+          items: [{ variant: { weight: 0.5 }, quantity: 1 }],
+        } as never,
+      ),
+    ).resolves.toMatchObject({ calculated_amount: 17.79 });
+
+    expect(fetchRates).toHaveBeenCalledWith(
+      expect.objectContaining({
+        carrier_ids: ["aramex-au"],
+        services: ["aramex_aunz_priority"],
+      }),
+    );
+  });
 });

@@ -3,7 +3,6 @@ import { redirect } from "next/navigation"
 import { CheckoutForm } from "@/features/checkout/components/checkout-form"
 import { CheckoutSummary } from "@/features/checkout/components/checkout-summary"
 import { CheckoutSummaryEstimateProvider } from "@/features/checkout/components/checkout-summary-estimate-context"
-import { NewsletterSignup } from "@/components/layout/newsletter-signup"
 
 export default async function CheckoutPage() {
   const cart = await getCartAction()
@@ -21,7 +20,6 @@ export default async function CheckoutPage() {
         </div>
         <div className="lg:col-span-5 space-y-6">
           <CheckoutSummary cart={cart} />
-          <NewsletterSignup compact={true} variant="minimal" />
         </div>
       </div>
     </CheckoutSummaryEstimateProvider>
