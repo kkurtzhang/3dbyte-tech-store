@@ -305,6 +305,88 @@ describe("DeliveryStep", () => {
     expect(onComplete).not.toHaveBeenCalledWith("rate_live_1")
   })
 
+  it("keeps the selected Aramex service matched to its Medusa shipping option", async () => {
+    const user = userEvent.setup()
+    const onComplete = jest.fn().mockResolvedValue(undefined)
+
+    mockGetLiveShippingRatesAction.mockResolvedValue({
+      success: true,
+      rates: [
+        {
+          id: "rate_economy",
+          carrier: {
+            id: "aramex-au",
+            name: "Aramex",
+            slug: "aramex-aunz",
+          },
+          service: "aramex_aunz_economy",
+          serviceName: "Aramex Economy",
+          totalCharge: 1187,
+          currency: "AUD",
+        },
+        {
+          id: "rate_priority",
+          carrier: {
+            id: "aramex-au",
+            name: "Aramex",
+            slug: "aramex-aunz",
+          },
+          service: "aramex_aunz_priority",
+          serviceName: "Aramex Priority",
+          totalCharge: 1795,
+          currency: "AUD",
+        },
+      ],
+    })
+    mockGetShippingOptionsAction.mockResolvedValue({
+      success: true,
+      options: [
+        {
+          id: "ship_aramex_standard",
+          name: "Aramex-standard",
+          amount: 11.87,
+          description: "Economy",
+          price_type: "calculated",
+        },
+        {
+          id: "ship_aramex_priority",
+          name: "Aramex-priority",
+          amount: 17.95,
+          description: "Priority",
+          price_type: "calculated",
+        },
+      ],
+    })
+
+    render(<DeliveryStep {...defaultProps} onComplete={onComplete} />)
+
+    await waitFor(() => {
+      expect(screen.getByText("Aramex Priority")).toBeInTheDocument()
+    })
+
+    await user.click(screen.getByText("Aramex Priority").closest("label")!)
+    await user.click(screen.getByText("Continue to Payment"))
+
+    expect(onComplete).toHaveBeenCalledWith(
+      "ship_aramex_priority",
+      expect.objectContaining({
+        selected_rate_id: "rate_priority",
+        service: "aramex_aunz_priority",
+        service_name: "Aramex Priority",
+        carrier_id: "aramex-au",
+        carrier_name: "Aramex",
+      }),
+      { name: "Aramex Priority", price: 17.95 }
+    )
+    expect(onComplete).not.toHaveBeenCalledWith(
+      "ship_aramex_standard",
+      expect.objectContaining({
+        selected_rate_id: "rate_priority",
+      }),
+      expect.anything()
+    )
+  })
+
   it("shows loading state during submission", async () => {
     const user = userEvent.setup()
     let resolveComplete: () => void
