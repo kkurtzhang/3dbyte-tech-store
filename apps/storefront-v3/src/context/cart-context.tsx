@@ -32,6 +32,7 @@ interface CartContextType {
   removeBundle: (bundleId: string) => Promise<void>
   updateBundle: (bundleId: string, quantity: number) => Promise<void>
   refreshCart: () => Promise<void>
+  clearCart: () => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -75,6 +76,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const clearCart = (): void => {
+    clearCartId()
+    setCart(null)
+    setIsLoading(false)
   }
 
   useEffect(() => {
@@ -226,6 +233,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         removeBundle,
         updateBundle,
         refreshCart,
+        clearCart,
       }}
     >
       {children}

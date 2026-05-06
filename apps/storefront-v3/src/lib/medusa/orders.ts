@@ -4,6 +4,8 @@ import type { MedusaOrder } from "./types"
 export const ORDER_TRACKING_FIELDS = [
   "id",
   "email",
+  "display_id",
+  "custom_display_id",
   "status",
   "payment_status",
   "fulfillment_status",
@@ -25,6 +27,7 @@ export const ORDER_TRACKING_FIELDS = [
   "*items.variant.preorder_variant.prices",
   "*shipping_methods",
   "*shipping_address",
+  "*billing_address",
 ]
 
 export async function getOrder(id: string, fields?: string[]): Promise<MedusaOrder | null> {

@@ -36,7 +36,7 @@ type CheckoutFlowStep = "shipping" | "delivery" | "payment" | "review"
 export function CheckoutForm({ cart }: CheckoutFormProps) {
   const router = useRouter()
   const { toast } = useToast()
-  const { refreshCart } = useCart()
+  const { clearCart, refreshCart } = useCart()
   const checkoutSummaryEstimate = useCheckoutSummaryEstimate()
   const [currentStep, setCurrentStep] = useState<CheckoutFlowStep>("shipping")
 
@@ -194,6 +194,7 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
       const result = await completeCartAction()
       if (result.success && result.order) {
         setCompletedSteps((prev) => [...prev, "review", "confirmation"])
+        clearCart()
         // Redirect to confirmation page
         if (result.order.id) {
           router.push(`/order/confirmed/${result.order.id}`)

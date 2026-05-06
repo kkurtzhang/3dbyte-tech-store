@@ -5,12 +5,17 @@ import {
 } from "../formatters";
 
 describe("email formatters", () => {
-  it("formats Medusa minor-unit AUD amounts for customer emails", () => {
-    expect(formatEmailMoney(25049, "aud")).toBe("A$250.49");
+  it("formats Medusa major-unit AUD amounts for customer emails", () => {
+    expect(formatEmailMoney(250.49, "aud")).toBe("A$250.49");
   });
 
   it("formats zero-decimal currencies without cents", () => {
     expect(formatEmailMoney(1234, "JPY")).toBe("¥1,234");
+  });
+
+  it("formats missing or invalid amounts as zero instead of NaN", () => {
+    expect(formatEmailMoney(undefined, "AUD")).toBe("A$0.00");
+    expect(formatEmailMoney(Number.NaN, "AUD")).toBe("A$0.00");
   });
 
   it("formats zero amounts explicitly", () => {
@@ -38,7 +43,7 @@ describe("email formatters", () => {
       "1 Test Street",
       "Unit 2",
       "Hobart TAS 7000",
-      "AU",
+      "Australia",
     ]);
   });
 });

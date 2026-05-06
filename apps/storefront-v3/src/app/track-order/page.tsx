@@ -334,11 +334,11 @@ function LookupForm() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="orderId" className="text-sm font-medium leading-none">
-              Order ID
+              Order number or reference
             </label>
             <Input
               id="orderId"
-              placeholder="e.g., order_abc123xyz"
+              placeholder="3DB-1777978800123 or order_..."
               value={orderId}
               onChange={(e) => setOrderId(e.target.value)}
               required

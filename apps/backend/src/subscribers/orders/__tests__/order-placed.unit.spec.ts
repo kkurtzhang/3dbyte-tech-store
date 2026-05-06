@@ -7,20 +7,39 @@ const baseOrder = {
   display_id: 1001,
   email: "test@demo.com",
   id: "order_123",
-  item_total: 25049,
-  subtotal: 25049,
+  item_total: 250.49,
+  subtotal: 250.49,
   items: [
     {
       id: "item_123",
       product_title: "Polymaker HT-PLA-GF",
       quantity: 1,
-      unit_price: 25049,
+      total: 250.49,
       variant_title: "Black",
     },
   ],
-  shipping_total: 1200,
+  billing_address: {
+    first_name: "Ada",
+    last_name: "Lovelace",
+    address_1: "1 Test Street",
+    city: "Hobart",
+    province: "TAS",
+    postal_code: "7000",
+    country_code: "au",
+  },
+  shipping_address: {
+    first_name: "Ada",
+    last_name: "Lovelace",
+    address_1: "1 Test Street",
+    city: "Hobart",
+    province: "TAS",
+    postal_code: "7000",
+    country_code: "au",
+  },
+  shipping_methods: [{ name: "Australia Post Standard" }],
+  shipping_total: 12,
   tax_total: 0,
-  total: 26249,
+  total: 262.49,
 };
 
 const createArgs = (order = baseOrder) => {
@@ -76,7 +95,7 @@ describe("orderPlacedHandler", () => {
         channel: "email",
         content: expect.objectContaining({
           html: expect.stringContaining("Polymaker HT-PLA-GF"),
-          subject: "Order Confirmation - 3D Byte Tech #1001",
+          subject: "Your 3D Byte Tech order #1001 is confirmed",
           text: expect.stringContaining("Total: A$262.49"),
         }),
         idempotency_key: "order-placed/order_123",

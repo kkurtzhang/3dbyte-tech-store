@@ -1,5 +1,7 @@
-import { loadEnv, defineConfig } from "@medusajs/framework/utils";
+import type { Context, OrderTypes } from "@medusajs/framework/types";
+import { loadEnv, defineConfig, Modules } from "@medusajs/framework/utils";
 import { customSchema } from "./src/custom-index-schema";
+import { generateOrderCustomDisplayId } from "./src/lib/order-display-id";
 import { getMaildevNotificationProvider } from "./src/modules/maildev-notification/config";
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd());
@@ -52,6 +54,15 @@ module.exports = defineConfig({
     backendUrl: process.env.MEDUSA_BACKEND_URL,
   },
   modules: [
+    {
+      key: Modules.ORDER,
+      options: {
+        generateCustomDisplayId: async (
+          _order: OrderTypes.CreateOrderDTO,
+          _sharedContext: Context
+        ): Promise<string> => generateOrderCustomDisplayId(),
+      },
+    },
     {
       resolve: "./src/modules/strapi",
       options: {

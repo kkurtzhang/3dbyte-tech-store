@@ -1,12 +1,19 @@
 import type { EmailAddress } from "./types";
 
-const getCurrencyMinorUnitFactor = (currencyCode: string): number => {
-  const { maximumFractionDigits } = new Intl.NumberFormat("en-AU", {
-    currency: currencyCode,
-    style: "currency",
-  }).resolvedOptions();
+const countryNames = new Map([
+  ["au", "Australia"],
+  ["ca", "Canada"],
+  ["gb", "United Kingdom"],
+  ["nz", "New Zealand"],
+  ["us", "United States"],
+]);
 
-  return 10 ** (maximumFractionDigits ?? 2);
+const normalizeAmount = (amount: number | null | undefined): number => {
+  if (typeof amount !== "number" || !Number.isFinite(amount)) {
+    return 0;
+  }
+
+  return amount;
 };
 
 export const formatEmailMoney = (
@@ -14,13 +21,12 @@ export const formatEmailMoney = (
   currencyCode: string,
 ): string => {
   const normalizedCurrencyCode = currencyCode.toUpperCase();
-  const minorUnitFactor = getCurrencyMinorUnitFactor(normalizedCurrencyCode);
   const formatter = new Intl.NumberFormat("en-AU", {
     currency: normalizedCurrencyCode,
     currencyDisplay: "narrowSymbol",
     style: "currency",
   });
-  const formatted = formatter.format((amount ?? 0) / minorUnitFactor);
+  const formatted = formatter.format(normalizeAmount(amount));
 
   return normalizedCurrencyCode === "AUD" && formatted.startsWith("$")
     ? `A${formatted}`
@@ -47,12 +53,27 @@ export const formatEmailAddress = (address?: EmailAddress | null): string[] => {
     .filter(Boolean)
     .join(" ")
     .trim();
+  const countryCode = address.country_code?.trim().toLowerCase();
+  const countryLine = countryCode
+    ? countryNames.get(countryCode) ?? countryCode.toUpperCase()
+    : null;
 
   return [
     fullName,
+    address.company,
     address.address_1,
     address.address_2,
     cityLine,
-    address.country_code?.toUpperCase(),
+    countryLine,
   ].filter((line): line is string => Boolean(line));
+};
+
+export const areEmailAddressesEqual = (
+  left?: EmailAddress | null,
+  right?: EmailAddress | null,
+): boolean => {
+  const normalizeLines = (address?: EmailAddress | null) =>
+    formatEmailAddress(address).map((line) => line.toLowerCase());
+
+  return JSON.stringify(normalizeLines(left)) === JSON.stringify(normalizeLines(right));
 };

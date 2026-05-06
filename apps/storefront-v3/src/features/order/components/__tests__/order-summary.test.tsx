@@ -13,6 +13,8 @@ jest.mock("@/components/ui/separator", () => ({
 const createOrder = (overrides: Partial<MedusaOrder> = {}): MedusaOrder =>
   ({
     id: "order_1",
+    custom_display_id: "3DB-1777976810295",
+    display_id: 9,
     status: "completed",
     currency_code: "usd",
     created_at: "2025-01-01T00:00:00.000Z",
@@ -44,6 +46,54 @@ const createOrder = (overrides: Partial<MedusaOrder> = {}): MedusaOrder =>
   }) as MedusaOrder
 
 describe("OrderSummary", () => {
+  it("shows the customer-facing order number and billing address", () => {
+    render(
+      <OrderSummary
+        order={createOrder({
+          billing_address: {
+            first_name: "Grace",
+            last_name: "Hopper",
+            address_1: "40 Crown Street",
+            city: "Riverstone",
+            province: "NSW",
+            postal_code: "2765",
+            country_code: "au",
+          },
+          shipping_address: {
+            first_name: "Ada",
+            last_name: "Lovelace",
+            address_1: "12 Houtman Avenue",
+            city: "Shell Cove",
+            province: "NSW",
+            postal_code: "2529",
+            country_code: "au",
+          },
+        } as Partial<MedusaOrder>)}
+      />
+    )
+
+    expect(screen.getByText("Order Number")).toBeInTheDocument()
+    expect(screen.getByText("3DB-1777976810295")).toBeInTheDocument()
+    expect(screen.queryByText("order_1")).not.toBeInTheDocument()
+    expect(screen.getByText("Billing Address")).toBeInTheDocument()
+    expect(screen.getByText("Grace Hopper")).toBeInTheDocument()
+    expect(screen.getByText("40 Crown Street")).toBeInTheDocument()
+    expect(screen.getAllByText("Australia")).toHaveLength(2)
+  })
+
+  it("falls back to Medusa display id when custom display id is absent", () => {
+    render(
+      <OrderSummary
+        order={createOrder({
+          custom_display_id: null,
+          display_id: 9,
+        } as Partial<MedusaOrder>)}
+      />
+    )
+
+    expect(screen.getByText("#9")).toBeInTheDocument()
+  })
+
   it("shows preorder availability messaging", () => {
     render(<OrderSummary order={createOrder()} />)
 
@@ -75,7 +125,7 @@ describe("OrderSummary", () => {
     expect(screen.queryByText("$0.34")).not.toBeInTheDocument()
   })
 
-  it("uppercases country codes and does not render a stray zero when tax is zero", () => {
+  it("formats country names and does not render a stray zero when tax is zero", () => {
     render(
       <OrderSummary
         order={createOrder({
@@ -93,7 +143,7 @@ describe("OrderSummary", () => {
       />
     )
 
-    expect(screen.getByText("AU")).toBeInTheDocument()
+    expect(screen.getByText("Australia")).toBeInTheDocument()
     expect(screen.queryByText("au")).not.toBeInTheDocument()
     expect(screen.queryByText("0")).not.toBeInTheDocument()
   })

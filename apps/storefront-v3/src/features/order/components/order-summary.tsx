@@ -16,6 +16,88 @@ export interface OrderSummaryProps {
   className?: string
 }
 
+type OrderAddress = {
+  first_name?: string | null
+  last_name?: string | null
+  company?: string | null
+  address_1?: string | null
+  address_2?: string | null
+  city?: string | null
+  province?: string | null
+  postal_code?: string | null
+  country_code?: string | null
+}
+
+const countryNames = new Map([
+  ["au", "Australia"],
+  ["ca", "Canada"],
+  ["gb", "United Kingdom"],
+  ["nz", "New Zealand"],
+  ["us", "United States"],
+])
+
+const getCustomerOrderNumber = (order: MedusaOrder): string => {
+  const orderWithDisplayIds = order as MedusaOrder & {
+    custom_display_id?: string | null
+    display_id?: number | string | null
+  }
+  const customDisplayId = orderWithDisplayIds.custom_display_id?.trim()
+
+  if (customDisplayId) return customDisplayId
+  if (orderWithDisplayIds.display_id) return `#${orderWithDisplayIds.display_id}`
+
+  return order.id
+}
+
+const getAddressLines = (address?: OrderAddress | null): string[] => {
+  if (!address) return []
+
+  const name = [address.first_name, address.last_name]
+    .filter(Boolean)
+    .join(" ")
+    .trim()
+  const cityLine = [address.city, address.province, address.postal_code]
+    .filter(Boolean)
+    .join(" ")
+    .trim()
+  const countryCode = address.country_code?.trim().toLowerCase()
+  const countryLine = countryCode
+    ? countryNames.get(countryCode) ?? countryCode.toUpperCase()
+    : null
+
+  return [
+    name,
+    address.company,
+    address.address_1,
+    address.address_2,
+    cityLine,
+    countryLine,
+  ].filter((line): line is string => Boolean(line))
+}
+
+function AddressBlock({
+  address,
+  title,
+}: {
+  address?: OrderAddress | null
+  title: string
+}) {
+  const lines = getAddressLines(address)
+
+  if (!lines.length) return null
+
+  return (
+    <div className="space-y-2">
+      <h3 className="font-medium">{title}</h3>
+      <div className="space-y-0.5 text-sm">
+        {lines.map((line) => (
+          <p key={line}>{line}</p>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export function OrderSummary({ order, className }: OrderSummaryProps) {
   const formatPrice = (amount: number, currency: string) => {
     return new Intl.NumberFormat("en-US", {
@@ -64,9 +146,11 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
   const orderDisplayGroups = buildCartDisplayGroups(order.items)
   const orderAnalysis = analyzeCartContents(order.items, currencyCode)
   const orderTotals = order as MedusaOrder & {
+    billing_address?: OrderAddress | null
     item_subtotal?: number | null
     shipping_subtotal?: number | null
   }
+  const orderNumber = getCustomerOrderNumber(order)
 
   const formatAvailabilityDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
@@ -140,8 +224,8 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
       {/* Order Header */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-muted-foreground">Order ID</p>
-          <p className="font-mono text-sm font-medium">{order.id}</p>
+          <p className="text-sm text-muted-foreground">Order Number</p>
+          <p className="font-mono text-sm font-medium">{orderNumber}</p>
         </div>
         <div className="text-right">
           <p className="text-sm text-muted-foreground">Date</p>
@@ -228,33 +312,17 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
 
       <Separator />
 
-      {/* Shipping Address */}
-      {order.shipping_address && (
-        <div className="space-y-2">
-          <h3 className="font-medium">Shipping Address</h3>
-          <div className="text-sm space-y-0.5">
-            <p>
-              {order.shipping_address.first_name}{" "}
-              {order.shipping_address.last_name}
-            </p>
-            {order.shipping_address.company && (
-              <p className="text-muted-foreground">
-                {order.shipping_address.company}
-              </p>
-            )}
-            <p>{order.shipping_address.address_1}</p>
-            {order.shipping_address.address_2 && (
-              <p>{order.shipping_address.address_2}</p>
-            )}
-            <p>
-              {order.shipping_address.city}
-              {order.shipping_address.province
-                ? `, ${order.shipping_address.province}`
-                : ""}
-              {` ${order.shipping_address.postal_code}`}
-            </p>
-            <p>{order.shipping_address.country_code?.toUpperCase()}</p>
-          </div>
+      {/* Addresses */}
+      {(order.shipping_address || orderTotals.billing_address) && (
+        <div className="grid gap-6 md:grid-cols-2">
+          <AddressBlock
+            title="Shipping Address"
+            address={order.shipping_address as OrderAddress | null | undefined}
+          />
+          <AddressBlock
+            title="Billing Address"
+            address={orderTotals.billing_address}
+          />
         </div>
       )}
 

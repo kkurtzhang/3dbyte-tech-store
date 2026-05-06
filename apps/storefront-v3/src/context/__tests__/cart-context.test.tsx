@@ -53,11 +53,14 @@ const createMockCart = (overrides?: Partial<StoreCart>): StoreCart =>
 
 // Test wrapper component
 const TestComponent = () => {
-  const { cart, isLoading } = useCart()
+  const { cart, isLoading, clearCart } = useCart()
   return (
     <div>
       <span data-testid="loading">{isLoading ? "Loading" : "Not Loading"}</span>
       <span data-testid="cart-id">{cart?.id || "No Cart"}</span>
+      <button type="button" onClick={clearCart}>
+        Clear Cart
+      </button>
     </div>
   )
 }
@@ -125,6 +128,33 @@ describe("CartProvider", () => {
       expect(result.current).toHaveProperty("removeBundle")
       expect(result.current).toHaveProperty("updateBundle")
       expect(result.current).toHaveProperty("refreshCart")
+      expect(result.current).toHaveProperty("clearCart")
+    })
+
+    it("clears cart state, local storage, and cookie after checkout completes", async () => {
+      localStorageMock.setItem("_medusa_cart_id", "cart_123")
+      document.cookie = "_medusa_cart_id=cart_123; Path=/"
+      ;(cartApi.getCart as jest.Mock).mockResolvedValue(createMockCart())
+
+      render(
+        <CartProvider>
+          <TestComponent />
+        </CartProvider>
+      )
+
+      await waitFor(() => {
+        expect(screen.getByTestId("cart-id")).toHaveTextContent("cart_123")
+      })
+
+      await act(async () => {
+        screen.getByRole("button", { name: "Clear Cart" }).click()
+      })
+
+      await waitFor(() => {
+        expect(screen.getByTestId("cart-id")).toHaveTextContent("No Cart")
+      })
+      expect(localStorageMock.removeItem).toHaveBeenCalledWith("_medusa_cart_id")
+      expect(document.cookie).not.toContain("_medusa_cart_id=cart_123")
     })
   })
 
