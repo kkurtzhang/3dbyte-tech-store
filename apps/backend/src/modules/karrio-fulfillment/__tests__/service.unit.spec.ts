@@ -112,7 +112,7 @@ describe("KarrioFulfillmentService", () => {
           country_code: "AU",
         },
         items: [{ quantity: 2, variant: { weight: 1 } }],
-      },
+      } as never,
     );
 
     expect(fetchRates).toHaveBeenCalledWith(
@@ -122,7 +122,10 @@ describe("KarrioFulfillmentService", () => {
         payment: { paid_by: "sender" },
       }),
     );
-    expect(result.calculated_amount).toBe(18.5);
+    expect(result).toMatchObject({
+      calculated_amount: 18.5,
+      is_calculated_price_tax_inclusive: true,
+    });
   });
 
   it("does not silently convert Karrio calculation failures into free shipping", async () => {
