@@ -143,7 +143,7 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
 
       return {
         calculated_amount: Number(rate.total_charge.toFixed(2)),
-        is_calculated_price_tax_inclusive: false,
+        is_calculated_price_tax_inclusive: true,
       };
     } catch (error) {
       this.logger.warn(`Karrio: Price calculation failed: ${error}`);
