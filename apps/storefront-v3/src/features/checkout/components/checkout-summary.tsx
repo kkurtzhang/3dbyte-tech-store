@@ -2,16 +2,24 @@
 
 import { Separator } from "@/components/ui/separator"
 import Image from "next/image"
+import {
+  isCustomerTaxInclusiveCurrency,
+  toCustomerPriceAmount,
+} from "@/lib/pricing/customer-pricing"
 import type { MedusaCart } from "@/lib/medusa/cart"
 import { buildCartDisplayGroups } from "@/features/cart/lib/bundle-groups"
 import { analyzeCartContents } from "@/lib/util/cart-analysis"
 import { getCartItemVariantTitle } from "@/features/cart/lib/variant-display"
 import { isPreorder } from "@/lib/util/is-preorder"
 import type { MedusaCartLineItemWithPreorder } from "@/lib/medusa/types"
-import { cn } from "@/lib/utils"
 import { useCart } from "@/context/cart-context"
 import { CartLinePrice } from "@/features/cart/components/cart-line-price"
 import { resolveCartLineRegularUnitPrice } from "@/features/cart/lib/cart-line-pricing"
+import {
+  resolveCartItemsSubtotalInclTax,
+  resolveCartShippingInclTax,
+} from "@/features/cart/lib/cart-totals"
+import { OrderTotalsSummary } from "@/features/order/components/order-totals-summary"
 import { useCheckoutSummaryEstimate } from "./checkout-summary-estimate-context"
 
 interface CheckoutSummaryProps {
@@ -30,26 +38,34 @@ export function CheckoutSummary({ cart: ssrCart }: CheckoutSummaryProps) {
   }
 
   const currencyCode = cart.region?.currency_code || "usd"
-  const itemSubtotal =
-    typeof cart.item_subtotal === "number" ? cart.item_subtotal : cart.subtotal || 0
   const cartDisplayGroups = buildCartDisplayGroups(cart.items)
   const cartAnalysis = analyzeCartContents(cart.items, currencyCode)
   const hasShippingMethod =
     Array.isArray(cart.shipping_methods) && cart.shipping_methods.length > 0
   const hasShippingAddress = Boolean(cart.shipping_address)
   const shippingTotal =
-    hasShippingMethod && typeof cart.shipping_subtotal === "number"
-      ? cart.shipping_subtotal
-      : hasShippingMethod && typeof cart.shipping_total === "number"
-        ? cart.shipping_total
-      : !hasShippingMethod && typeof checkoutSummaryEstimate?.estimatedShippingTotal === "number"
-        ? checkoutSummaryEstimate.estimatedShippingTotal
-        : null
+    hasShippingMethod && typeof cart.shipping_total === "number"
+      ? resolveCartShippingInclTax(cart)
+      : hasShippingMethod &&
+          (typeof cart.shipping_subtotal === "number" ||
+            typeof cart.shipping_tax_total === "number")
+        ? resolveCartShippingInclTax(cart)
+        : !hasShippingMethod && typeof checkoutSummaryEstimate?.estimatedShippingTotal === "number"
+          ? checkoutSummaryEstimate.estimatedShippingTotal
+          : null
+  const taxAlreadyCalculated =
+    (hasShippingMethod || hasShippingAddress) && typeof cart.tax_total === "number"
+  const baseDisplayedTotal =
+    taxAlreadyCalculated || !isCustomerTaxInclusiveCurrency(currencyCode)
+      ? cart.total || 0
+      : toCustomerPriceAmount(cart.total || 0, currencyCode)
   const displayedTotal =
     !hasShippingMethod &&
     typeof checkoutSummaryEstimate?.estimatedShippingTotal === "number"
-      ? (cart.total || 0) + checkoutSummaryEstimate.estimatedShippingTotal
-      : cart.total || 0
+      ? baseDisplayedTotal + checkoutSummaryEstimate.estimatedShippingTotal
+      : baseDisplayedTotal
+  const displayedSubtotal =
+    resolveCartItemsSubtotalInclTax(cart, currencyCode)
   const taxTotal =
     (hasShippingMethod || hasShippingAddress) &&
     typeof cart.tax_total === "number"
@@ -69,11 +85,11 @@ export function CheckoutSummary({ cart: ssrCart }: CheckoutSummaryProps) {
     const regularUnitPrice = resolveCartLineRegularUnitPrice(item, currencyCode)
     const displayUnitPrice = item.unit_price ?? 0
     const displayLineTotal =
-      typeof item.subtotal === "number"
-          ? item.subtotal
-          : typeof item.total === "number"
-            ? item.total
-            : displayUnitPrice * item.quantity
+      typeof item.total === "number"
+        ? item.total
+        : typeof item.subtotal === "number"
+          ? toCustomerPriceAmount(item.subtotal, currencyCode)
+          : toCustomerPriceAmount(displayUnitPrice * item.quantity, currencyCode)
     const variantTitle = getCartItemVariantTitle(item)
 
     return (
@@ -138,7 +154,7 @@ export function CheckoutSummary({ cart: ssrCart }: CheckoutSummaryProps) {
   return (
     <div data-testid="order-summary" className="rounded-lg border bg-card p-6 shadow-sm">
       <h2 className="mb-4 font-mono text-lg font-medium uppercase tracking-wider text-muted-foreground">
-        Order summary
+        Order Summary
       </h2>
 
       <div className="flex flex-col gap-4">
@@ -172,33 +188,13 @@ export function CheckoutSummary({ cart: ssrCart }: CheckoutSummaryProps) {
 
       <Separator className="my-6" />
 
-      <div className="space-y-1.5 text-sm">
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Subtotal</span>
-          <span className="font-mono">{formatPrice(itemSubtotal, currencyCode)}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Shipping</span>
-          <span className={cn("font-mono", shippingTotal === null && "text-muted-foreground")}>
-            {shippingTotal === null ? "Calculated next" : formatPrice(shippingTotal, currencyCode)}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">Taxes</span>
-          <span className={cn("font-mono", taxTotal === null && "text-muted-foreground")}>
-            {taxTotal === null ? "Calculated next" : formatPrice(taxTotal, currencyCode)}
-          </span>
-        </div>
-      </div>
-
-      <Separator className="my-6" />
-
-      <div className="flex justify-between text-base font-medium">
-        <span>Total</span>
-        <span className="font-mono text-lg text-primary">
-          {formatPrice(displayedTotal, currencyCode)}
-        </span>
-      </div>
+      <OrderTotalsSummary
+        currencyCode={currencyCode}
+        shippingTotal={shippingTotal}
+        subtotal={displayedSubtotal}
+        taxTotal={taxTotal ?? 0}
+        total={displayedTotal}
+      />
     </div>
   )
 }

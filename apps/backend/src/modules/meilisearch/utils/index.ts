@@ -1,7 +1,12 @@
 import type { MeilisearchIndexSettings } from "@3dbyte-tech-store/shared-types";
 
 // Product utilities
-export { toMeilisearchDocument, type RegionForPricing } from "./product";
+export {
+  buildRegionsForPricing,
+  toMeilisearchDocument,
+  type PricePreferenceForPricing,
+  type RegionForPricing,
+} from "./product";
 
 // Category utilities
 export {

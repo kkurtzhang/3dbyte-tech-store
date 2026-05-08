@@ -1,10 +1,15 @@
-import { toMeilisearchDocument, type RegionForPricing } from "../product";
+import {
+  buildRegionsForPricing,
+  toMeilisearchDocument,
+  type RegionForPricing,
+} from "../product";
 import type { SyncProductsStepProduct } from "@3dbyte-tech-store/shared-types";
 
 const regions: RegionForPricing[] = [
   {
     id: "reg_aud",
     currency_code: "aud",
+    is_tax_inclusive: true,
   },
 ];
 
@@ -97,5 +102,102 @@ describe("toMeilisearchDocument", () => {
     expect(document.bundle_id).toBeUndefined();
     expect(document.bundle_item_count).toBe(0);
     expect(document.bundle_item_titles).toEqual([]);
+  });
+
+  it("indexes the region-scoped GST-inclusive price for customer-facing AUD search", () => {
+    const document = toMeilisearchDocument(
+      createProduct({
+        variants: [
+          {
+            id: "variant_1",
+            title: "Default",
+            sku: "GST-001",
+            prices: [
+              {
+                amount: 100,
+                currency_code: "aud",
+              },
+              {
+                amount: 110,
+                currency_code: "aud",
+                rules: {
+                  region_id: "reg_aud",
+                },
+              },
+            ],
+            options: [],
+          },
+        ],
+      }),
+      regions,
+    );
+
+    expect(document.price_aud).toBe(110);
+    expect(document.tax_inclusive_price_aud).toBe(true);
+  });
+
+  it("falls back to the currency price when no region-scoped price exists", () => {
+    const document = toMeilisearchDocument(createProduct(), regions);
+
+    expect(document.price_aud).toBe(149);
+    expect(document.tax_inclusive_price_aud).toBe(true);
+  });
+});
+
+describe("buildRegionsForPricing", () => {
+  it("uses region-scoped price preferences for tax-inclusive indexing", () => {
+    const result = buildRegionsForPricing(
+      [{ id: "reg_au", currency_code: "aud" }],
+      [
+        {
+          attribute: "region_id",
+          value: "reg_au",
+          is_tax_inclusive: true,
+        },
+      ],
+    );
+
+    expect(result).toEqual([
+      {
+        id: "reg_au",
+        currency_code: "aud",
+        is_tax_inclusive: true,
+      },
+    ]);
+  });
+
+  it("falls back to currency-scoped price preferences when a region preference is absent", () => {
+    const result = buildRegionsForPricing(
+      [{ id: "reg_au", currency_code: "aud" }],
+      [
+        {
+          attribute: "currency_code",
+          value: "AUD",
+          is_tax_inclusive: true,
+        },
+      ],
+    );
+
+    expect(result[0]?.is_tax_inclusive).toBe(true);
+  });
+
+  it("prefers region-scoped preferences over currency-scoped preferences", () => {
+    const result = buildRegionsForPricing(
+      [{ id: "reg_au", currency_code: "aud" }],
+      [
+        {
+          attribute: "currency_code",
+          value: "aud",
+          is_tax_inclusive: true,
+        },
+        {
+          attribute: "region_id",
+          value: "reg_au",
+          is_tax_inclusive: false,
+        },
+      ],
+    );
+
+    expect(result[0]?.is_tax_inclusive).toBe(false);
   });
 });

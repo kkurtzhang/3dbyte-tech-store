@@ -3,11 +3,15 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { getSafePaymentMethodDisplay } from "@3dbyte-tech-store/shared-utils"
 import { Package, CreditCard, ArrowRight, AlertCircle, Truck } from "lucide-react"
 import { lookupOrder } from "@/app/actions/track-order"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { OrderSummary } from "@/features/order/components/order-summary"
+import {
+  getCustomerOrderNumber,
+  OrderSummary,
+} from "@/features/order/components/order-summary"
 import {
   getOrderLifecycle,
   getOrderLifecycleToneClass,
@@ -108,119 +112,8 @@ function OrderLifecyclePanel({ order }: { order: MedusaOrder }) {
   )
 }
 
-type CardDetails = {
-  brand?: unknown
-  last4?: unknown
-}
-
-type TrackingPaymentMethod = {
-  type?: unknown
-  brand?: unknown
-  last4?: unknown
-}
-
-function humanizeStatus(status: string | null | undefined) {
-  if (!status) return "Payment status pending"
-
-  return status
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ")
-}
-
-function formatCardBrand(brand: string) {
-  const normalizedBrand = brand.trim().toLowerCase()
-
-  if (normalizedBrand === "visa") return "Visa"
-  if (normalizedBrand === "mastercard") return "Mastercard"
-  if (normalizedBrand === "amex") return "American Express"
-
-  return normalizedBrand
-    .split(/[\s_-]+/)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ")
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null
-}
-
-function getNestedRecord(
-  value: Record<string, unknown>,
-  key: string
-): Record<string, unknown> | null {
-  const nestedValue = value[key]
-
-  return isRecord(nestedValue) ? nestedValue : null
-}
-
-function getPaymentCard(payment: unknown): CardDetails | null {
-  if (!isRecord(payment)) {
-    return null
-  }
-
-  const data = getNestedRecord(payment, "data")
-  if (!data) {
-    return null
-  }
-
-  const paymentMethodDetails = getNestedRecord(data, "payment_method_details")
-  const paymentMethod = getNestedRecord(data, "payment_method")
-  const card =
-    (paymentMethodDetails && getNestedRecord(paymentMethodDetails, "card")) ||
-    (paymentMethod && getNestedRecord(paymentMethod, "card"))
-
-  return card
-}
-
-function isStripePayment(payment: unknown) {
-  return isRecord(payment) && payment.provider_id === "stripe"
-}
-
-function getPaymentMethodDisplay(order: MedusaOrder) {
-  const orderWithPayments = order as MedusaOrder & {
-    payment_collections?: unknown
-    tracking_payment_method?: TrackingPaymentMethod | null
-  }
-  const trackingPaymentMethod = orderWithPayments.tracking_payment_method
-
-  if (
-    trackingPaymentMethod?.type === "card" &&
-    typeof trackingPaymentMethod.brand === "string" &&
-    typeof trackingPaymentMethod.last4 === "string"
-  ) {
-    return `${formatCardBrand(trackingPaymentMethod.brand)} ending in ${trackingPaymentMethod.last4}`
-  }
-
-  const paymentCollections = Array.isArray(orderWithPayments.payment_collections)
-    ? orderWithPayments.payment_collections
-    : []
-  const payments = paymentCollections.flatMap((collection) => {
-    if (!isRecord(collection) || !Array.isArray(collection.payments)) {
-      return []
-    }
-
-    return collection.payments
-  })
-
-  for (const payment of payments) {
-    const card = getPaymentCard(payment)
-
-    if (typeof card?.brand === "string" && typeof card?.last4 === "string") {
-      return `${formatCardBrand(card.brand)} ending in ${card.last4}`
-    }
-  }
-
-  if (payments.some(isStripePayment)) {
-    return "Card payment"
-  }
-
-  return humanizeStatus(order.payment_status)
-}
-
 export function OrderDetails({ order }: { order: MedusaOrder }) {
-  const orderId = order.id
-  const orderNumber = orderId.slice(-8).toUpperCase()
+  const orderNumber = getCustomerOrderNumber(order)
   const orderStatus = (order.status || "pending") as OrderStatus
   const lifecycle = getOrderLifecycle(order)
 
@@ -230,7 +123,7 @@ export function OrderDetails({ order }: { order: MedusaOrder }) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight font-mono uppercase">
-            Order #{orderNumber}
+            Order {orderNumber}
           </h1>
           <p className="text-muted-foreground mt-1">
             Placed on {new Date(order.created_at).toLocaleDateString("en-US", {
@@ -281,7 +174,7 @@ export function OrderDetails({ order }: { order: MedusaOrder }) {
               <CreditCard className="w-4 h-4" />
               Payment
             </h2>
-            <p className="text-sm">{getPaymentMethodDisplay(order)}</p>
+            <p className="text-sm">{getSafePaymentMethodDisplay(order)}</p>
           </div>
         </div>
       </div>
@@ -338,7 +231,7 @@ function LookupForm() {
             </label>
             <Input
               id="orderId"
-              placeholder="3DB-1777978800123 or order_..."
+              placeholder="3DBO-H7KM-2P9QXR or order_..."
               value={orderId}
               onChange={(e) => setOrderId(e.target.value)}
               required

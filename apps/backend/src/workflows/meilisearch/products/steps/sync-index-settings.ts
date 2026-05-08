@@ -12,6 +12,7 @@ export type SyncIndexSettingsStepInput = {
 export type SyncIndexSettingsStepOutput = {
   filterableAttributes: string[];
   priceAttributes: string[];
+  taxInclusivePriceAttributes: string[];
   optionAttributes: string[];
 };
 
@@ -71,6 +72,9 @@ export async function syncIndexSettingsFn(
   const priceAttributes = uniqueCurrencies.map(
     (currency) => `price_${currency.toLowerCase()}`,
   );
+  const taxInclusivePriceAttributes = uniqueCurrencies.map(
+    (currency) => `tax_inclusive_price_${currency.toLowerCase()}`,
+  );
 
   // Static attributes that are always filterable
   const staticAttributes: string[] = [
@@ -108,6 +112,8 @@ export async function syncIndexSettingsFn(
       "thumbnail",
       // Price attributes (dynamic)
       ...priceAttributes,
+      // Tax-inclusive flags for customer-facing price diagnostics
+      ...taxInclusivePriceAttributes,
       // Option attributes (dynamic)
       ...optionAttributes,
       "brand",
@@ -159,6 +165,7 @@ export async function syncIndexSettingsFn(
   return {
     filterableAttributes,
     priceAttributes,
+    taxInclusivePriceAttributes,
     optionAttributes,
   };
 }

@@ -8,6 +8,27 @@ const order = {
   email: "test@demo.com",
   id: "order_123",
   item_total: 250.49,
+  payment_status: "authorized",
+  payment_collections: [
+    {
+      id: "pay_col_1",
+      payments: [
+        {
+          id: "pay_1",
+          provider_id: "stripe",
+          data: {
+            payment_intent: "pi_should_not_render",
+            payment_method_details: {
+              card: {
+                brand: "visa",
+                last4: "4242",
+              },
+            },
+          },
+        },
+      ],
+    },
+  ],
   items: [
     {
       id: "item_123",
@@ -60,8 +81,13 @@ describe("renderOrderPlacedEmail", () => {
     expect(rendered.html).toContain("Hobart TAS 7000");
     expect(rendered.html).toContain("Sydney NSW 2000");
     expect(rendered.html).toContain("Australia Post Standard");
+    expect(rendered.html).toContain("Payment method:");
+    expect(rendered.html).toContain("Visa ending in 4242");
+    expect(rendered.html).not.toContain("pi_should_not_render");
     expect(rendered.text).toContain("Order #1001");
-    expect(rendered.text).toContain("Total: A$262.49");
+    expect(rendered.text).toContain("Payment method: Visa ending in 4242");
+    expect(rendered.text).not.toContain("pi_should_not_render");
+    expect(rendered.text).toContain("Total (AUD): A$262.49");
   });
 
   it("renders discounted order totals from pre-discount subtotal through final total", async () => {
@@ -83,8 +109,10 @@ describe("renderOrderPlacedEmail", () => {
     expect(rendered.text).toContain("Subtotal: A$250.49");
     expect(rendered.text).toContain("Discount: -A$20.00");
     expect(rendered.text).toContain("Shipping: A$12.00");
-    expect(rendered.text).toContain("Tax: A$0.00");
-    expect(rendered.text).toContain("Total: A$242.49");
+    expect(rendered.text).toContain("Total (AUD): A$242.49");
+    expect(rendered.text).toContain("(Includes GST: A$0.00)");
+    expect(rendered.text).not.toContain("Subtotal incl. GST");
+    expect(rendered.text).not.toContain("Shipping incl. GST");
   });
 
   it("uses customer-facing display id and falls back to line totals when unit price is absent", async () => {
@@ -153,7 +181,7 @@ describe("renderOrderPlacedEmail", () => {
       "1 x Polymaker™ High Temp HT-PLA-GF 1kg 1.75mm Filament",
     );
     expect(rendered.html).toContain("A$19.00");
-    expect(rendered.text).toContain("Subtotal: A$19.00");
+    expect(rendered.text).toContain("Subtotal: A$22.09");
     expect(rendered.html).toContain("Shipping");
     expect(rendered.html).toContain("A$11.87");
     expect(rendered.html).toContain("A$3.09");
@@ -162,16 +190,17 @@ describe("renderOrderPlacedEmail", () => {
     expect(rendered.text).toContain(
       "1 x Polymaker™ High Temp HT-PLA-GF 1kg 1.75mm Filament (Power Tool Green) - A$19.00",
     );
-    expect(rendered.text).toContain("Total: A$33.96");
+    expect(rendered.text).toContain("Total (AUD): A$33.96");
   });
 
-  it("renders Medusa BigNumber-like totals, unit prices, and quantities", async () => {
+  it("renders Medusa BigNumber-like totals with compact quantity and price text", async () => {
     const rendered = await renderOrderPlacedEmail({
       order: {
         ...order,
         custom_display_id: "3DB-1777976810295",
         item_subtotal: { numeric: 19, valueOf: () => 19 },
-        shipping_subtotal: { numeric: 11.87, valueOf: () => 11.87 },
+        shipping_subtotal: { numeric: 10.79, valueOf: () => 10.79 },
+        shipping_total: { numeric: 11.87, valueOf: () => 11.87 },
         tax_total: { numeric: 3.09, valueOf: () => 3.09 },
         total: { numeric: 33.96, valueOf: () => 33.96 },
         items: [
@@ -191,11 +220,52 @@ describe("renderOrderPlacedEmail", () => {
     expect(rendered.text).toContain(
       "1 x Polymaker HT-PLA-GF (Power Tool Green) - A$19.00",
     );
-    expect(rendered.text).toContain("Unit: A$19.00");
-    expect(rendered.text).toContain("Subtotal: A$19.00");
+    expect(rendered.text).not.toContain("Unit:");
+    expect(rendered.html).toContain("Qty");
+    expect(rendered.html).not.toContain("Unit");
+    expect(rendered.text).toContain("Subtotal: A$22.09");
     expect(rendered.text).toContain("Shipping: A$11.87");
-    expect(rendered.text).toContain("Tax: A$3.09");
-    expect(rendered.text).toContain("Total: A$33.96");
+    expect(rendered.text).not.toContain("Shipping: A$10.79");
+    expect(rendered.text).toContain("Total (AUD): A$33.96");
+    expect(rendered.text).toContain("(Includes GST: A$3.09)");
+  });
+
+  it("renders graph tax-inclusive order totals without adding GST again", async () => {
+    const rendered = await renderOrderPlacedEmail({
+      order: {
+        ...order,
+        subtotal: 383.39,
+        item_subtotal: 356.89,
+        item_total: 392.579,
+        shipping_subtotal: 26.5,
+        shipping_total: 29.15,
+        tax_total: 38.339,
+        total: 421.729,
+        items: [
+          {
+            id: "item_graph_1",
+            product_title: "LDO Colony Clacker Door Kit",
+            quantity: 3,
+            subtotal: 144.09,
+            total: 158.499,
+            unit_price: 48.03,
+            variant_title: "Hardware Kit + Panel / Black - 180",
+          },
+        ],
+      },
+      store: { name: "3D Byte Tech" },
+    });
+
+    expect(rendered.text).toContain(
+      "3 x LDO Colony Clacker Door Kit (Hardware Kit + Panel / Black - 180) - A$144.09",
+    );
+    expect(rendered.text).toContain("Subtotal: A$356.89");
+    expect(rendered.text).toContain("Shipping: A$26.50");
+    expect(rendered.text).toContain("Total (AUD): A$383.39");
+    expect(rendered.text).toContain("(Includes GST: A$34.85)");
+    expect(rendered.text).not.toContain("Subtotal: A$392.58");
+    expect(rendered.text).not.toContain("Shipping: A$29.15");
+    expect(rendered.text).not.toContain("Total (AUD): A$421.73");
   });
 
   it("labels preorder release dates, groups bundled items, and links to order tracking", async () => {
@@ -215,6 +285,7 @@ describe("renderOrderPlacedEmail", () => {
             quantity: 1,
             subtotal: 35,
             unit_price: 35,
+            variant_sku: "NOZZLE-04",
             variant_title: "0.4mm",
           },
           {
@@ -249,8 +320,18 @@ describe("renderOrderPlacedEmail", () => {
     });
 
     expect(rendered.html).toContain("Printer Starter Bundle");
-    expect(rendered.text).toContain("Bundle: Printer Starter Bundle");
-    expect(rendered.text).toContain("Releases on 9 May 2026");
+    expect(rendered.text).toContain("Bundle: Printer Starter Bundle - A$80.00");
+    expect(rendered.text).toContain("Qty: 1");
+    expect(rendered.text).toContain("Includes:");
+    expect(rendered.text).toContain("  - 1 x Nozzle Kit - 0.4mm");
+    expect(rendered.text).toContain("  - 1 x Build Plate");
+    expect(rendered.text).toContain("Pre-order: releases 9 May 2026");
+    expect(rendered.text).not.toContain("Bundle quantity");
+    expect(rendered.text).not.toContain("Unit:");
+    expect(rendered.text).not.toContain("SKU:");
+    expect(rendered.html).toContain("Includes");
+    expect(rendered.html).toContain("Nozzle Kit - 0.4mm");
+    expect(rendered.html).not.toContain("NOZZLE-04");
     expect(rendered.html).toContain(
       "https://store.3dbytetech.com.au/track-order?reference=3DB-1777976810999",
     );

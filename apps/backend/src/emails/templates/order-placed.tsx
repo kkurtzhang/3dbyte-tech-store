@@ -13,6 +13,7 @@ import {
   Section,
   Text,
 } from "@react-email/components";
+import { getSafePaymentMethodDisplay } from "@3dbyte-tech-store/shared-utils";
 
 import {
   areEmailAddressesEqual,
@@ -23,6 +24,7 @@ import {
 import {
   buildOrderPlacedEmailItemGroups,
   getCustomerOrderNumber,
+  getCustomerSummarySubtotal,
   getCustomerStoreName,
   getItemLineTotal,
   getItemQuantity,
@@ -36,7 +38,7 @@ import {
   getOrderTotal,
   getOrderTrackingUrl,
   getShippingMethodName,
-  getSummarySubtotal,
+  type OrderPlacedEmailItemGroup,
 } from "../order-placed-data";
 import type {
   OrderPlacedEmailItem,
@@ -48,6 +50,11 @@ type Props = {
   order: OrderPlacedEmailOrder;
   store: OrderPlacedEmailStore;
 };
+
+type BundleEmailItemGroup = Extract<
+  OrderPlacedEmailItemGroup,
+  { type: "bundle" }
+>;
 
 const formatDiscount = (
   amount: number | null | undefined,
@@ -67,6 +74,7 @@ export default function OrderPlacedEmail({ order, store }: Props) {
     ? ["Same as shipping address"]
     : formatEmailAddress(order.billing_address);
   const shippingMethodName = getShippingMethodName(order);
+  const paymentMethodDisplay = getSafePaymentMethodDisplay(order);
   const discountTotal = getOrderDiscountTotal(order);
 
   return (
@@ -94,21 +102,11 @@ export default function OrderPlacedEmail({ order, store }: Props) {
             <Heading as="h2" style={sectionHeadingStyle}>Items</Heading>
             {itemGroups.map((group) =>
               group.type === "bundle" ? (
-                <Section key={group.bundleId} style={bundleGroupStyle}>
-                  <Text style={bundleTitleStyle}>
-                    Bundle: {group.bundleTitle ?? "Product Bundle"}
-                  </Text>
-                  <Text style={mutedTextStyle}>
-                    Bundle quantity: {group.quantity}
-                  </Text>
-                  {group.items.map((item) => (
-                    <EmailItemRow
-                      key={item.id}
-                      currencyCode={order.currency_code}
-                      item={item}
-                    />
-                  ))}
-                </Section>
+                <EmailBundleGroup
+                  key={group.bundleId}
+                  currencyCode={order.currency_code}
+                  group={group}
+                />
               ) : (
                 <EmailItemRow
                   key={group.item.id}
@@ -124,6 +122,7 @@ export default function OrderPlacedEmail({ order, store }: Props) {
             {shippingMethodName ? (
               <Text style={summaryTextStyle}>Shipping method: {shippingMethodName}</Text>
             ) : null}
+            <Text style={summaryTextStyle}>Payment method: {paymentMethodDisplay}</Text>
             <Row>
               <Column style={addressColumnStyle}>
                 <Text style={addressHeadingStyle}>Shipping address</Text>
@@ -141,19 +140,21 @@ export default function OrderPlacedEmail({ order, store }: Props) {
           </Section>
 
           <Section style={sectionStyle}>
-            <Heading as="h2" style={sectionHeadingStyle}>Order summary</Heading>
-            <SummaryLine label="Subtotal" value={formatEmailMoney(getSummarySubtotal(order), order.currency_code)} />
+            <Heading as="h2" style={sectionHeadingStyle}>Order Summary</Heading>
+            <SummaryLine label="Subtotal" value={formatEmailMoney(getCustomerSummarySubtotal(order), order.currency_code)} />
             {discountTotal !== 0 ? (
               <SummaryLine label="Discount" value={formatDiscount(discountTotal, order.currency_code)} />
             ) : null}
             <SummaryLine label="Shipping" value={formatEmailMoney(getOrderShippingTotal(order), order.currency_code)} />
-            <SummaryLine label="Tax" value={formatEmailMoney(getOrderTaxTotal(order), order.currency_code)} />
             <Hr style={dividerStyle} />
             <SummaryLine
-              label="Total"
+              label={`Total (${order.currency_code.toUpperCase()})`}
               value={formatEmailMoney(getOrderTotal(order), order.currency_code)}
               strong
             />
+            <Text style={includedGstStyle}>
+              (Includes GST: {formatEmailMoney(getOrderTaxTotal(order), order.currency_code)})
+            </Text>
           </Section>
 
           <Text style={footerStyle}>
@@ -163,6 +164,56 @@ export default function OrderPlacedEmail({ order, store }: Props) {
         </Container>
       </Body>
     </Html>
+  );
+}
+
+const getBundleItemTitle = (item: OrderPlacedEmailItem): string => {
+  const variantText = getItemVariantText(item);
+
+  return variantText
+    ? `${getItemTitle(item)} - ${variantText}`
+    : getItemTitle(item);
+};
+
+const getBundleLineTotal = (items: OrderPlacedEmailItem[]): number =>
+  items.reduce((sum, item) => sum + getItemLineTotal(item), 0);
+
+function EmailBundleGroup({
+  currencyCode,
+  group,
+}: {
+  currencyCode: string;
+  group: BundleEmailItemGroup;
+}) {
+  return (
+    <Section style={bundleGroupStyle}>
+      <Row>
+        <Column style={bundleDetailsColumnStyle}>
+          <Text style={bundleTitleStyle}>
+            {group.bundleTitle ?? "Product Bundle"}
+          </Text>
+          <Text style={mutedTextStyle}>Qty {group.quantity}</Text>
+        </Column>
+        <Column style={moneyColumnStyle}>
+          <Text style={itemPriceStyle}>
+            {formatEmailMoney(getBundleLineTotal(group.items), currencyCode)}
+          </Text>
+        </Column>
+      </Row>
+      <Text style={includesHeadingStyle}>Includes</Text>
+      {group.items.map((item) => {
+        const releaseDate = getItemReleaseDate(item);
+
+        return (
+          <Text key={item.id} style={includesLineStyle}>
+            {getItemQuantity(item)} x {getBundleItemTitle(item)}
+            {releaseDate
+              ? ` (releases ${formatEmailDate(releaseDate)})`
+              : ""}
+          </Text>
+        );
+      })}
+    </Section>
   );
 }
 
@@ -195,21 +246,17 @@ function EmailItemRow({
         {getItemVariantText(item) ? (
           <Text style={mutedTextStyle}>{getItemVariantText(item)}</Text>
         ) : null}
-        {item.variant_sku ? (
-          <Text style={mutedTextStyle}>SKU: {item.variant_sku}</Text>
-        ) : null}
-        <Text style={mutedTextStyle}>Qty {getItemQuantity(item)}</Text>
+        <Text style={mutedTextStyle}>
+          Qty {getItemQuantity(item)} x {formatEmailMoney(unitPrice, currencyCode)}
+        </Text>
         {releaseDate ? (
           <Text style={releaseDateStyle}>
-            Releases on {formatEmailDate(releaseDate)}
+            Pre-order: releases {formatEmailDate(releaseDate)}
           </Text>
         ) : null}
       </Column>
       <Column style={moneyColumnStyle}>
         <Text style={itemPriceStyle}>{formatEmailMoney(lineTotal, currencyCode)}</Text>
-        <Text style={mutedTextStyle}>
-          Unit {formatEmailMoney(unitPrice, currencyCode)}
-        </Text>
       </Column>
     </Row>
   );
@@ -313,6 +360,25 @@ const bundleTitleStyle = {
   margin: "0 0 2px",
 };
 
+const bundleDetailsColumnStyle = {
+  padding: "0 10px 0 0",
+};
+
+const includesHeadingStyle = {
+  color: "#374151",
+  fontSize: "13px",
+  fontWeight: "700",
+  lineHeight: "18px",
+  margin: "10px 0 4px",
+};
+
+const includesLineStyle = {
+  color: "#6b7280",
+  fontSize: "13px",
+  lineHeight: "18px",
+  margin: "0 0 3px",
+};
+
 const thumbnailColumnStyle = {
   width: "48px",
 };
@@ -409,6 +475,14 @@ const summaryStrongTextStyle = {
   fontWeight: "700",
   lineHeight: "22px",
   margin: "0",
+};
+
+const includedGstStyle = {
+  color: "#6b7280",
+  fontSize: "12px",
+  lineHeight: "18px",
+  margin: "4px 0 0",
+  textAlign: "right" as const,
 };
 
 const dividerStyle = {

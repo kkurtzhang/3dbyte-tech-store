@@ -19,6 +19,7 @@ import { getCompactCartNoticeLines } from "./cart-notices"
 import { CartItem } from "./cart-item"
 import { BundleCartGroup } from "./bundle-cart-group"
 import { buildCartDisplayGroups, getCartDisplayItemCount } from "../lib/bundle-groups"
+import { resolveCartItemsSubtotalInclTax } from "../lib/cart-totals"
 
 export function CartSheet() {
   const { cart, isLoading } = useCart()
@@ -30,10 +31,12 @@ export function CartSheet() {
     return getCartDisplayItemCount(cartDisplayGroups)
   }, [cartDisplayGroups])
 
+  // Assuming USD for now or fallback to first item currency
+  const currencyCode = cart?.region?.currency_code || "usd"
+
   const subtotal = useMemo(() => {
-    if (typeof cart?.subtotal === "number") return cart.subtotal
-    return cart?.total ?? 0
-  }, [cart])
+    return resolveCartItemsSubtotalInclTax(cart, currencyCode)
+  }, [cart, currencyCode])
 
   const formatPrice = (amount: number, currency: string) => {
     return new Intl.NumberFormat("en-US", {
@@ -42,8 +45,6 @@ export function CartSheet() {
     }).format(amount)
   }
 
-  // Assuming USD for now or fallback to first item currency
-  const currencyCode = cart?.region?.currency_code || "usd"
   const compactNoticeLines = useMemo(
     () => getCompactCartNoticeLines(cart?.items, currencyCode),
     [cart?.items, currencyCode]

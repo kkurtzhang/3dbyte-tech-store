@@ -178,6 +178,37 @@ describe("CartSheet", () => {
     expect(screen.getByText("Cart Item")).toBeInTheDocument()
   })
 
+  it("shows the GST-inclusive item total instead of the pre-tax subtotal", () => {
+    mockUseCart.mockReturnValue({
+      isLoading: false,
+      cart: {
+        item_subtotal: 17.2727272727,
+        item_tax_total: 1.7272727273,
+        item_total: 19,
+        subtotal: 17.2727272727,
+        tax_total: 1.7272727273,
+        total: 19,
+        region: {
+          currency_code: "aud",
+        },
+        items: [
+          {
+            id: "line_1",
+            quantity: 1,
+            unit_price: 19,
+            metadata: null,
+          },
+        ],
+      },
+    })
+
+    render(<CartSheet />)
+    openCartSheet()
+
+    expect(screen.getByText("A$19.00")).toBeInTheDocument()
+    expect(screen.queryByText("A$17.27")).not.toBeInTheDocument()
+  })
+
   it("shows compact preorder, mixed-cart, and bundle notices in the footer", () => {
     mockUseCart.mockReturnValue({
       isLoading: false,

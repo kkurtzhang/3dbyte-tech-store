@@ -117,8 +117,7 @@ describe("ProductCard", () => {
   it("formats price correctly", () => {
     render(<ProductCard {...defaultProps} />)
 
-    // Intl.NumberFormat formats AUD as "A$29.99"
-    expect(screen.getByText(/29\.99/)).toBeInTheDocument()
+    expect(screen.getByText("A$29.99")).toBeInTheDocument()
   })
 
   it("shows discount badge when discount is present", () => {

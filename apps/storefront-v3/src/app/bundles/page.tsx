@@ -12,6 +12,7 @@ import {
 } from "@/lib/medusa/bundles"
 import type { MedusaProduct } from "@/lib/medusa/types"
 import { getBundlePricingSummary } from "@/features/product/lib/bundle-pricing"
+import { formatCustomerPrice } from "@/lib/pricing/customer-pricing"
 
 interface BundlesPageProps {
   searchParams: Promise<{
@@ -40,10 +41,7 @@ function getCurrencyCode(product: MedusaProduct) {
 }
 
 function formatPrice(amount: number, currencyCode: string) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currencyCode.toUpperCase(),
-  }).format(amount)
+  return formatCustomerPrice(amount, currencyCode.toUpperCase())
 }
 
 export default async function BundlesPage({ searchParams }: BundlesPageProps) {

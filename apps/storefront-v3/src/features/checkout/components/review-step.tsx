@@ -10,6 +10,7 @@ import { analyzeCartContents } from "@/lib/util/cart-analysis"
 import { isPreorder } from "@/lib/util/is-preorder"
 import { CartLinePrice } from "@/features/cart/components/cart-line-price"
 import { resolveCartLineRegularUnitPrice } from "@/features/cart/lib/cart-line-pricing"
+import { toCustomerPriceAmount } from "@/lib/pricing/customer-pricing"
 
 interface ReviewStepProps {
   onBack: () => void
@@ -115,11 +116,11 @@ export function ReviewStep({
     const regularUnitPrice = resolveCartLineRegularUnitPrice(item, currencyCode)
     const displayUnitPrice = item.unit_price ?? 0
     const displayLineTotal =
-      typeof item.subtotal === "number"
-        ? item.subtotal
-        : typeof item.total === "number"
-          ? item.total
-          : displayUnitPrice * (item.quantity || 1)
+      typeof item.total === "number"
+        ? item.total
+        : typeof item.subtotal === "number"
+          ? toCustomerPriceAmount(item.subtotal, currencyCode)
+          : toCustomerPriceAmount(displayUnitPrice * (item.quantity || 1), currencyCode)
     const variantTitle = getCartItemVariantTitle(item)
 
     return (

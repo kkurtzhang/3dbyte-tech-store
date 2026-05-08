@@ -170,8 +170,8 @@ describe("CartItem", () => {
       />
     )
 
-    expect(screen.getByText("$46.08")).toBeInTheDocument()
-    expect(screen.queryByText("$50.69")).not.toBeInTheDocument()
+    expect(screen.queryByText("$46.08")).not.toBeInTheDocument()
+    expect(screen.getByText("$50.69")).toBeInTheDocument()
   })
 
   it("falls back to the line-item thumbnail when the variant product thumbnail is missing", () => {

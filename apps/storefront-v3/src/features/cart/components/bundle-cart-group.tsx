@@ -6,6 +6,7 @@ import { Trash2 } from "lucide-react"
 import { useCart } from "@/context/cart-context"
 import { Button } from "@/components/ui/button"
 import { getProductPath } from "@/lib/medusa/bundles"
+import { toCustomerPriceAmount } from "@/lib/pricing/customer-pricing"
 import { CartItem } from "./cart-item"
 import type { BundleCartGroup } from "../lib/bundle-groups"
 
@@ -21,7 +22,13 @@ export function BundleCartGroup({ group, currencyCode }: BundleCartGroupProps) {
   const bundleTitle = group.bundleTitle ?? "Product Bundle"
   const itemCountLabel = `${group.items.length} ${group.items.length === 1 ? "item" : "items"}`
   const bundleTotal = group.items.reduce(
-    (total, item) => total + item.unit_price * item.quantity,
+    (total, item) =>
+      total +
+      (typeof item.total === "number"
+        ? item.total
+        : typeof item.subtotal === "number"
+          ? toCustomerPriceAmount(item.subtotal, currencyCode)
+          : toCustomerPriceAmount(item.unit_price * item.quantity, currencyCode)),
     0
   )
 

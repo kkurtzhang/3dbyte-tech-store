@@ -78,6 +78,8 @@ export type OrderPlacedEmailOrder = {
   item_subtotal?: EmailAmount | null;
   item_total?: EmailAmount | null;
   items?: OrderPlacedEmailItem[] | null;
+  payment_collections?: unknown;
+  payment_status?: string | null;
   raw_item_subtotal?: EmailRawAmount | null;
   raw_item_total?: EmailRawAmount | null;
   raw_shipping_subtotal?: EmailRawAmount | null;
@@ -92,6 +94,7 @@ export type OrderPlacedEmailOrder = {
   subtotal?: EmailAmount | null;
   tax_total?: EmailAmount | null;
   total?: EmailAmount | null;
+  tracking_payment_method?: unknown;
 };
 
 export type OrderPlacedEmailStore = {

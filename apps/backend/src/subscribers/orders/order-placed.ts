@@ -2,6 +2,11 @@ import type { SubscriberArgs, SubscriberConfig } from "@medusajs/framework";
 
 import { renderOrderPlacedEmail } from "../../emails/renderers/order-placed";
 import type { OrderPlacedEmailOrder } from "../../emails/types";
+import {
+  extractPaymentMethodId,
+  retrieveStripePaymentMethod,
+  type OrderWithPayments,
+} from "../../utils/stripe-payment-method";
 
 type OrderPlacedEvent = {
   id: string;
@@ -14,6 +19,7 @@ const orderFields = [
   "custom_display_id",
   "created_at",
   "currency_code",
+  "payment_status",
   "subtotal",
   "item_subtotal",
   "item_total",
@@ -29,6 +35,8 @@ const orderFields = [
   "raw_tax_total",
   "total",
   "raw_total",
+  "payment_collections.payments.provider_id",
+  "payment_collections.payments.data",
   "items.id",
   "items.title",
   "items.subtitle",
@@ -113,6 +121,20 @@ export const areOrderEmailsEnabled = (
   return isOrderEmailFlagEnabled(env) && isCompatibleEmailProviderConfigured(env);
 };
 
+const getTrackingPaymentMethod = async (order: OrderWithPayments) => {
+  const paymentMethodId = extractPaymentMethodId(order);
+
+  if (!paymentMethodId) {
+    return null;
+  }
+
+  try {
+    return await retrieveStripePaymentMethod(paymentMethodId);
+  } catch {
+    return null;
+  }
+};
+
 export default async function orderPlacedHandler({
   event: { data },
   container,
@@ -145,8 +167,16 @@ export default async function orderPlacedHandler({
   }
 
   const notificationModule = container.resolve("notification");
+  const trackingPaymentMethod = await getTrackingPaymentMethod(
+    order as OrderWithPayments,
+  );
   const content = await renderOrderPlacedEmail({
-    order: order as unknown as OrderPlacedEmailOrder,
+    order: {
+      ...(order as unknown as OrderPlacedEmailOrder),
+      ...(trackingPaymentMethod
+        ? { tracking_payment_method: trackingPaymentMethod }
+        : {}),
+    },
     store: {
       name: store?.name,
     },

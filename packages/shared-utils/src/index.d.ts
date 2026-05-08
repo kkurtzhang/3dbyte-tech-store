@@ -36,6 +36,13 @@ export declare class ApiClient {
 }
 export declare const formatPrice: (amount: number, currency?: string, locale?: string) => string;
 export declare const formatDate: (date: string | Date, locale?: string) => string;
+export type SafePaymentMethodOrder = {
+    payment_collections?: unknown;
+    payment_status?: unknown;
+    tracking_payment_method?: unknown;
+};
+export declare function formatCardBrand(brand: string): string;
+export declare function getSafePaymentMethodDisplay(order: SafePaymentMethodOrder): string;
 export declare const slugify: (text: string) => string;
 export declare const validateEmail: (email: string) => boolean;
 export declare const validatePostalCode: (postalCode: string, country?: string) => boolean;

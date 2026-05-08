@@ -9,6 +9,7 @@ import { useToast } from "@/lib/hooks/use-toast"
 import { QuickViewGallery } from "./quick-view-gallery"
 import { StockStatusBadge, getStockStatus } from "@/components/ui/stock-status-badge"
 import { PriceDisplay } from "@/components/ui/price-display"
+import { formatCustomerPrice } from "@/lib/pricing/customer-pricing"
 import { NotifyMeButton } from "./notify-me-button"
 import { ExternalLink, ShoppingCart, Loader2, Plus, Minus } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -326,10 +327,7 @@ export function QuickViewDialog({
       }).format(new Date(preorderVariant.preorder_variant.available_date))
     : null
   const formatPrice = (amount: number, currency: string) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-    }).format(amount)
+    formatCustomerPrice(amount, currency)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -11,6 +11,7 @@ import { ProductShippingEstimate } from "./product-shipping-estimate"
 import { SizeGuideButton, shouldShowSizeGuide } from "@/components/ui/size-guide"
 import { PaymentMethodSupport } from "@/components/ui/payment-method-support"
 import { usePathname } from "next/navigation"
+import { formatCustomerPrice } from "@/lib/pricing/customer-pricing"
 import { SocialShare } from "./social-share"
 import { StockStatusBadge, getStockStatus } from "@/components/ui/stock-status-badge"
 import { PriceDisplay } from "@/components/ui/price-display"
@@ -124,10 +125,7 @@ export function ProductActions({
       }).format(new Date(preorderVariant.preorder_variant.available_date))
     : null
   const formatPrice = (amount: number, currency: string) =>
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-    }).format(amount)
+    formatCustomerPrice(amount, currency)
 
   if (bundleProduct) {
     return <BundleProductActions product={product} bundleProduct={bundleProduct} />

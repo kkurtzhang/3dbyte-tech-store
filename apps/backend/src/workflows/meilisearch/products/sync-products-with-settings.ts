@@ -68,8 +68,7 @@ export const syncProductsWithSettingsWorkflow = createWorkflow(
         "variants.options.option_id",
         "variants.options.title",
         "variants.options.value",
-        "variants.prices.amount",
-        "variants.prices.currency_code",
+        "variants.prices.*",
         "variants.original_price",
         "variants.original_price_calculated",
         // Inventory items for quantity calculation

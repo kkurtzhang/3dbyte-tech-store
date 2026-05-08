@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { getProductPath, type BundleProduct } from "@/lib/medusa/bundles"
 import type { MedusaProduct, MedusaProductVariant } from "@/lib/medusa/types"
 import { getBundlePricingSummary } from "@/features/product/lib/bundle-pricing"
+import { formatCustomerPrice } from "@/lib/pricing/customer-pricing"
 
 interface AvailableInBundlesProps {
   bundles: BundleProduct[]
@@ -13,10 +14,7 @@ interface AvailableInBundlesProps {
 }
 
 function formatMoney(amount: number, currencyCode = "AUD") {
-  return new Intl.NumberFormat("en-AU", {
-    style: "currency",
-    currency: currencyCode,
-  }).format(amount)
+  return formatCustomerPrice(amount, currencyCode)
 }
 
 function buildSelectedVariantsByItemId(

@@ -5,7 +5,11 @@ import { CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { PrintButton } from "@/components/print-button"
 import { getOrder } from "@/lib/medusa/orders"
-import { OrderSummary } from "@/features/order/components/order-summary"
+import {
+  getCustomerOrderNumber,
+  getOrderTrackingReference,
+  OrderSummary,
+} from "@/features/order/components/order-summary"
 
 interface OrderConfirmedPageProps {
   params: Promise<{ id: string }>
@@ -20,6 +24,8 @@ export default async function OrderConfirmedPage({
   if (!order) {
     notFound()
   }
+
+  const trackingReference = getOrderTrackingReference(order)
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -48,7 +54,9 @@ export default async function OrderConfirmedPage({
         {/* Action Buttons */}
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Button asChild size="lg" className="flex-1 sm:flex-none">
-            <Link href="/track-order">Track Order</Link>
+            <Link href={`/track-order?reference=${encodeURIComponent(trackingReference)}`}>
+              Track Order
+            </Link>
           </Button>
           <Button asChild size="lg" variant="outline" className="flex-1 sm:flex-none">
             <Link href="/">Continue Shopping</Link>
@@ -66,9 +74,11 @@ export async function generateMetadata({
   params,
 }: OrderConfirmedPageProps): Promise<Metadata> {
   const { id } = await params
+  const order = await getOrder(id)
+  const orderNumber = order ? getCustomerOrderNumber(order) : id
 
   return {
-    title: `Order ${id} - Confirmed`,
+    title: `Order ${orderNumber} - Confirmed`,
     description: "Your order has been confirmed. View your order details here.",
   }
 }

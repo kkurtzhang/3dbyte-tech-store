@@ -1,4 +1,5 @@
 import { pretty, render } from "@react-email/render";
+import { getSafePaymentMethodDisplay } from "@3dbyte-tech-store/shared-utils";
 
 import {
   areEmailAddressesEqual,
@@ -9,12 +10,12 @@ import {
 import {
   buildOrderPlacedEmailItemGroups,
   getCustomerOrderNumber,
+  getCustomerSummarySubtotal,
   getCustomerStoreName,
   getItemLineTotal,
   getItemQuantity,
   getItemReleaseDate,
   getItemTitle,
-  getItemUnitPrice,
   getItemVariantText,
   getOrderDiscountTotal,
   getOrderShippingTotal,
@@ -22,7 +23,6 @@ import {
   getOrderTotal,
   getOrderTrackingUrl,
   getShippingMethodName,
-  getSummarySubtotal,
 } from "../order-placed-data";
 import OrderPlacedEmail from "../templates/order-placed";
 import type {
@@ -44,21 +44,37 @@ const formatDiscount = (
 const getItemTextLines = (
   item: NonNullable<OrderPlacedEmailOrder["items"]>[number],
   currencyCode: string,
-  prefix = "",
 ): string[] => {
   const releaseDate = getItemReleaseDate(item);
-  const itemLine = `${prefix}${getItemQuantity(item)} x ${getItemTitle(item)}${
+  const itemLine = `${getItemQuantity(item)} x ${getItemTitle(item)}${
     getItemVariantText(item) ? ` (${getItemVariantText(item)})` : ""
   } - ${formatEmailMoney(getItemLineTotal(item), currencyCode)}`;
 
   return [
     itemLine,
-    `${prefix}Unit: ${formatEmailMoney(getItemUnitPrice(item), currencyCode)}`,
     ...(releaseDate
-      ? [`${prefix}Releases on ${formatEmailDate(releaseDate)}`]
+      ? [`Pre-order: releases ${formatEmailDate(releaseDate)}`]
       : []),
   ];
 };
+
+const getBundleItemText = (
+  item: NonNullable<OrderPlacedEmailOrder["items"]>[number],
+): string => {
+  const variantText = getItemVariantText(item);
+  const itemText = `${getItemQuantity(item)} x ${getItemTitle(item)}${
+    variantText ? ` - ${variantText}` : ""
+  }`;
+  const releaseDate = getItemReleaseDate(item);
+
+  return releaseDate
+    ? `${itemText} (releases ${formatEmailDate(releaseDate)})`
+    : itemText;
+};
+
+const getBundleLineTotal = (
+  items: NonNullable<OrderPlacedEmailOrder["items"]>,
+): number => items.reduce((sum, item) => sum + getItemLineTotal(item), 0);
 
 export const renderOrderPlacedEmail = async ({
   order,
@@ -76,11 +92,13 @@ export const renderOrderPlacedEmail = async ({
     }
 
     return [
-      `Bundle: ${group.bundleTitle ?? "Product Bundle"}`,
-      `Bundle quantity: ${group.quantity}`,
-      ...group.items.flatMap((item) =>
-        getItemTextLines(item, order.currency_code, "  "),
-      ),
+      `Bundle: ${group.bundleTitle ?? "Product Bundle"} - ${formatEmailMoney(
+        getBundleLineTotal(group.items),
+        order.currency_code,
+      )}`,
+      `Qty: ${group.quantity}`,
+      "Includes:",
+      ...group.items.map((item) => `  - ${getBundleItemText(item)}`),
     ];
   });
   const shippingAddressLines = formatEmailAddress(order.shipping_address);
@@ -91,15 +109,16 @@ export const renderOrderPlacedEmail = async ({
     ? ["Same as shipping address"]
     : formatEmailAddress(order.billing_address);
   const shippingMethodName = getShippingMethodName(order);
+  const paymentMethodDisplay = getSafePaymentMethodDisplay(order);
   const discountTotal = getOrderDiscountTotal(order);
   const summaryLines = [
-    `Subtotal: ${formatEmailMoney(getSummarySubtotal(order), order.currency_code)}`,
+    `Subtotal: ${formatEmailMoney(getCustomerSummarySubtotal(order), order.currency_code)}`,
     ...(discountTotal !== 0
       ? [`Discount: ${formatDiscount(discountTotal, order.currency_code)}`]
       : []),
     `Shipping: ${formatEmailMoney(getOrderShippingTotal(order), order.currency_code)}`,
-    `Tax: ${formatEmailMoney(getOrderTaxTotal(order), order.currency_code)}`,
-    `Total: ${formatEmailMoney(getOrderTotal(order), order.currency_code)}`,
+    `Total (${order.currency_code.toUpperCase()}): ${formatEmailMoney(getOrderTotal(order), order.currency_code)}`,
+    `(Includes GST: ${formatEmailMoney(getOrderTaxTotal(order), order.currency_code)})`,
   ];
 
   return {
@@ -115,6 +134,8 @@ export const renderOrderPlacedEmail = async ({
       `Track your order: ${trackingUrl}`,
       "",
       ...(shippingMethodName ? [`Shipping method: ${shippingMethodName}`, ""] : []),
+      `Payment method: ${paymentMethodDisplay}`,
+      "",
       "Shipping address:",
       ...shippingAddressLines,
       "",

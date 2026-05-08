@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { useCart } from "@/context/cart-context"
 import { useToast } from "@/lib/hooks/use-toast"
 import { PriceDisplay } from "@/components/ui/price-display"
+import { formatCustomerPrice } from "@/lib/pricing/customer-pricing"
 import { Badge } from "@/components/ui/badge"
 import { AlertTriangle, CheckCircle2, XCircle } from "lucide-react"
 import { SocialShare } from "./social-share"
@@ -55,10 +56,7 @@ function getInitialSelections(bundleProduct: BundleProduct) {
 }
 
 function formatMoney(amount: number, currencyCode = "AUD") {
-  return new Intl.NumberFormat("en-AU", {
-    style: "currency",
-    currency: currencyCode.toUpperCase(),
-  }).format(amount)
+  return formatCustomerPrice(amount, currencyCode.toUpperCase())
 }
 
 function BundleInventoryBadge({

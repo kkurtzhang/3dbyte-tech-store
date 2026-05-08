@@ -62,6 +62,91 @@ export const formatDate = (date, locale = 'en-US') => {
     const dateObj = typeof date === 'string' ? new Date(date) : date;
     return dateObj.toLocaleDateString(locale);
 };
+function humanizePaymentStatus(status) {
+    if (typeof status !== 'string' || !status.trim())
+        return 'Payment status pending';
+    return status
+        .split('_')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ');
+}
+export function formatCardBrand(brand) {
+    const normalizedBrand = brand.trim().toLowerCase();
+    if (normalizedBrand === 'visa')
+        return 'Visa';
+    if (normalizedBrand === 'mastercard')
+        return 'Mastercard';
+    if (normalizedBrand === 'amex')
+        return 'American Express';
+    return normalizedBrand
+        .split(/[\s_-]+/)
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ');
+}
+function isRecord(value) {
+    return typeof value === 'object' && value !== null;
+}
+function getNestedRecord(value, key) {
+    const nestedValue = value[key];
+    return isRecord(nestedValue) ? nestedValue : null;
+}
+function getPaymentCard(payment) {
+    if (!isRecord(payment)) {
+        return null;
+    }
+    const data = getNestedRecord(payment, 'data');
+    if (!data) {
+        return null;
+    }
+    const paymentMethodDetails = getNestedRecord(data, 'payment_method_details');
+    const paymentMethod = getNestedRecord(data, 'payment_method');
+    const card = (paymentMethodDetails && getNestedRecord(paymentMethodDetails, 'card')) ||
+        (paymentMethod && getNestedRecord(paymentMethod, 'card'));
+    return card;
+}
+function isStripePayment(payment) {
+    if (!isRecord(payment)) {
+        return false;
+    }
+    const providerId = payment.provider_id;
+    return typeof providerId === 'string' && providerId.includes('stripe');
+}
+function formatSafeCardDetails(card) {
+    if (typeof card?.brand === 'string' && typeof card?.last4 === 'string') {
+        return `${formatCardBrand(card.brand)} ending in ${card.last4}`;
+    }
+    return null;
+}
+export function getSafePaymentMethodDisplay(order) {
+    const trackingPaymentMethod = isRecord(order.tracking_payment_method)
+        ? order.tracking_payment_method
+        : null;
+    if (trackingPaymentMethod?.type === 'card') {
+        const trackingCardDisplay = formatSafeCardDetails(trackingPaymentMethod);
+        if (trackingCardDisplay) {
+            return trackingCardDisplay;
+        }
+    }
+    const paymentCollections = Array.isArray(order.payment_collections)
+        ? order.payment_collections
+        : [];
+    const payments = paymentCollections.flatMap((collection) => {
+        if (!isRecord(collection) || !Array.isArray(collection.payments)) {
+            return [];
+        }
+        return collection.payments;
+    });
+    for (const payment of payments) {
+        const cardDisplay = formatSafeCardDetails(getPaymentCard(payment));
+        if (cardDisplay) {
+            return cardDisplay;
+        }
+    }
+    if (payments.some(isStripePayment)) {
+        return 'Card payment';
+    }
+    return humanizePaymentStatus(order.payment_status);
+}
 export const slugify = (text) => {
     return text
         .toLowerCase()

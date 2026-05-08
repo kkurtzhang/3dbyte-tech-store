@@ -1,5 +1,6 @@
 import { Flame } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { formatCustomerPrice } from "@/lib/pricing/customer-pricing"
 import { cn } from "@/lib/utils"
 
 interface PriceDisplayProps {
@@ -35,10 +36,7 @@ const sizeClasses = {
  * @returns Formatted price string (e.g., "$99.99")
  */
 export function formatPrice(amount: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency,
-  }).format(amount)
+  return formatCustomerPrice(amount, currency)
 }
 
 export function PriceDisplay({

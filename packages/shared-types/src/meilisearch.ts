@@ -79,6 +79,8 @@ export interface MeilisearchProductDocument {
   // --- 3. MULTI-CURRENCY PRICING ---
   // Dynamic keys: price_aud, price_usd, etc.
   [key: `price_${string}`]: number | undefined;
+  // Dynamic keys: tax_inclusive_price_aud, tax_inclusive_price_usd, etc.
+  [key: `tax_inclusive_price_${string}`]: boolean | undefined;
   on_sale: boolean;
 
   // --- 4. INVENTORY & AVAILABILITY ---

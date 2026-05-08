@@ -12,6 +12,38 @@ import type {
 export interface RegionForPricing {
   id: string;
   currency_code: string;
+  is_tax_inclusive?: boolean;
+}
+
+export interface PricePreferenceForPricing {
+  attribute: string;
+  value: string | null;
+  is_tax_inclusive?: boolean;
+}
+
+export function buildRegionsForPricing(
+  regions: Array<{ id: string; currency_code: string }>,
+  pricePreferences: PricePreferenceForPricing[] = [],
+): RegionForPricing[] {
+  return regions.map((region) => {
+    const regionPreference = pricePreferences.find(
+      (preference) =>
+        preference.attribute === "region_id" &&
+        preference.value === region.id,
+    );
+    const currencyPreference = pricePreferences.find(
+      (preference) =>
+        preference.attribute === "currency_code" &&
+        preference.value?.toLowerCase() === region.currency_code.toLowerCase(),
+    );
+    const preference = regionPreference ?? currencyPreference;
+
+    return {
+      id: region.id,
+      currency_code: region.currency_code,
+      is_tax_inclusive: preference?.is_tax_inclusive === true,
+    };
+  });
 }
 
 /**
@@ -67,7 +99,7 @@ export function toMeilisearchDocument(
 
   // --- 3. MULTI-CURRENCY PRICING ---
   // Calculate lowest price for each region/currency
-  const prices: Record<string, number> = {};
+  const prices: Record<string, number | boolean> = {};
   let on_sale = false;
 
   regions.forEach((region) => {
@@ -75,14 +107,19 @@ export function toMeilisearchDocument(
     let found = false;
 
     product.variants?.forEach((variant) => {
-      // Find price for this region's currency and region
-      const priceObj = variant.prices?.find(
+      // Prefer region-scoped price records over generic currency prices.
+      // This lets Meilisearch mirror the same customer-facing price scope that
+      // Medusa uses for the Australia region and its GST-inclusive setting.
+      const regionPrice = variant.prices?.find(
+        (p) => p.rules?.region_id === region.id && p.amount !== undefined,
+      );
+      const currencyPrice = variant.prices?.find(
         (p) =>
-          (p.rules?.region_id === region.id ||
-            (!p.rules?.region_id &&
-              p.currency_code === region.currency_code)) &&
+          !p.rules?.region_id &&
+          p.currency_code === region.currency_code &&
           p.amount !== undefined,
       );
+      const priceObj = regionPrice ?? currencyPrice;
 
       if (priceObj && priceObj.amount < minPrice) {
         minPrice = priceObj.amount;
@@ -100,6 +137,8 @@ export function toMeilisearchDocument(
 
     if (found) {
       prices[`price_${region.currency_code}`] = minPrice;
+      prices[`tax_inclusive_price_${region.currency_code}`] =
+        region.is_tax_inclusive === true;
     }
   });
 

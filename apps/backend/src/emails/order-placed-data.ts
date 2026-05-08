@@ -111,23 +111,123 @@ export const getSummarySubtotal = (
   getValidAmount(order.item_total) ??
   getRawAmount(order.raw_item_total);
 
+const isCloseMoney = (left: number, right: number): boolean =>
+  Math.abs(left - right) < 0.01;
+
+const getTaxInclusiveGraphTotals = (
+  order: OrderPlacedEmailOrder,
+):
+  | {
+      itemSubtotal: number;
+      itemTotal: number;
+      shippingSubtotal: number;
+      shippingTotal: number;
+      subtotal: number;
+      taxTotal: number;
+      total: number;
+    }
+  | null => {
+  const graphSubtotal = getValidAmount(order.subtotal);
+  const graphTotal = getValidAmount(order.total);
+  const graphTaxTotal = getValidAmount(order.tax_total);
+
+  if (
+    graphSubtotal === null ||
+    graphTotal === null ||
+    graphTaxTotal === null ||
+    graphTotal <= graphSubtotal ||
+    !isCloseMoney(graphTotal - graphSubtotal, graphTaxTotal)
+  ) {
+    return null;
+  }
+
+  const discountTotal = getOrderDiscountTotal(order);
+  const shippingTotal =
+    getValidAmount(order.shipping_subtotal) ??
+    getRawAmount(order.raw_shipping_subtotal) ??
+    getValidAmount(order.shipping_total) ??
+    getRawAmount(order.raw_shipping_total) ??
+    0;
+  const taxRate = graphSubtotal > 0 ? graphTaxTotal / graphSubtotal : 0;
+  const taxTotal =
+    taxRate > 0 ? graphSubtotal * (taxRate / (1 + taxRate)) : graphTaxTotal;
+  const itemTotal = Math.max(0, graphSubtotal - shippingTotal + discountTotal);
+  const itemSubtotal =
+    taxRate > 0 ? itemTotal / (1 + taxRate) : itemTotal;
+  const shippingSubtotal =
+    taxRate > 0 ? shippingTotal / (1 + taxRate) : shippingTotal;
+
+  return {
+    itemSubtotal,
+    itemTotal,
+    shippingSubtotal,
+    shippingTotal,
+    subtotal: Math.max(0, graphSubtotal - taxTotal),
+    taxTotal,
+    total: graphSubtotal,
+  };
+};
+
+export const getCustomerSummarySubtotal = (
+  order: OrderPlacedEmailOrder,
+): number | null | undefined => {
+  const graphTotals = getTaxInclusiveGraphTotals(order);
+  if (graphTotals) {
+    return graphTotals.itemTotal;
+  }
+
+  const total = getOrderTotal(order);
+  const shippingTotal = getOrderShippingTotal(order);
+
+  if (
+    total !== null &&
+    total !== undefined &&
+    shippingTotal !== null &&
+    shippingTotal !== undefined
+  ) {
+    return Math.max(0, total - shippingTotal + getOrderDiscountTotal(order));
+  }
+
+  return getSummarySubtotal(order);
+};
+
 export const getOrderShippingTotal = (
   order: OrderPlacedEmailOrder,
-): number | null | undefined =>
-  getValidAmount(order.shipping_subtotal) ??
-  getRawAmount(order.raw_shipping_subtotal) ??
-  getValidAmount(order.shipping_total) ??
-  getRawAmount(order.raw_shipping_total);
+): number | null | undefined => {
+  const graphTotals = getTaxInclusiveGraphTotals(order);
+  if (graphTotals) {
+    return graphTotals.shippingTotal;
+  }
+
+  return (
+    getValidAmount(order.shipping_total) ??
+    getRawAmount(order.raw_shipping_total) ??
+    getValidAmount(order.shipping_subtotal) ??
+    getRawAmount(order.raw_shipping_subtotal)
+  );
+};
 
 export const getOrderTaxTotal = (
   order: OrderPlacedEmailOrder,
-): number | null | undefined =>
-  getValidAmount(order.tax_total) ?? getRawAmount(order.raw_tax_total);
+): number | null | undefined => {
+  const graphTotals = getTaxInclusiveGraphTotals(order);
+  if (graphTotals) {
+    return graphTotals.taxTotal;
+  }
+
+  return getValidAmount(order.tax_total) ?? getRawAmount(order.raw_tax_total);
+};
 
 export const getOrderTotal = (
   order: OrderPlacedEmailOrder,
-): number | null | undefined =>
-  getValidAmount(order.total) ?? getRawAmount(order.raw_total);
+): number | null | undefined => {
+  const graphTotals = getTaxInclusiveGraphTotals(order);
+  if (graphTotals) {
+    return graphTotals.total;
+  }
+
+  return getValidAmount(order.total) ?? getRawAmount(order.raw_total);
+};
 
 export const getOrderDiscountTotal = (
   order: OrderPlacedEmailOrder,

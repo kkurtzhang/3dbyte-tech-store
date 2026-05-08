@@ -7,7 +7,7 @@ import { Package, MapPin, CreditCard, ArrowRight, AlertCircle, CheckCircle } fro
 import { lookupOrder } from "@/app/actions/track-order"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
+import { OrderTotalsSummary } from "@/features/order/components/order-totals-summary"
 import type { MedusaOrder } from "@/lib/medusa/types"
 
 type OrderStatus = "pending" | "processing" | "shipped" | "completed" | "cancelled" | "refunded"
@@ -198,58 +198,20 @@ function OrderDetails({ order }: { order: MedusaOrder }) {
             <h2 className="font-mono font-semibold uppercase tracking-wider text-sm mb-4">
               Order Summary
             </h2>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-mono">
-                  {new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: order.currency_code || "usd",
-                  }).format((order.subtotal || 0) / 100)}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Shipping</span>
-                <span className="font-mono">
-                  {new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: order.currency_code || "usd",
-                  }).format((order.shipping_total || 0) / 100)}
-                </span>
-              </div>
-              {(order.tax_total || 0) > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Tax</span>
-                  <span className="font-mono">
-                    {new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: order.currency_code || "usd",
-                    }).format((order.tax_total || 0) / 100)}
-                  </span>
-                </div>
+            <OrderTotalsSummary
+              currencyCode={order.currency_code || "usd"}
+              discountTotal={order.discount_total || 0}
+              shippingLabel="Not charged"
+              shippingTotal={(order.shipping_total || 0) > 0 ? order.shipping_total : null}
+              subtotal={Math.max(
+                0,
+                (order.total || 0) -
+                  (order.shipping_total || 0) +
+                  (order.discount_total || 0)
               )}
-              {(order.discount_total || 0) > 0 && (
-                <div className="flex justify-between text-green-500">
-                  <span>Discount</span>
-                  <span className="font-mono">
-                    -{new Intl.NumberFormat("en-US", {
-                      style: "currency",
-                      currency: order.currency_code || "usd",
-                    }).format((order.discount_total || 0) / 100)}
-                  </span>
-                </div>
-              )}
-              <Separator />
-              <div className="flex justify-between font-semibold">
-                <span>Total</span>
-                <span className="font-mono">
-                  {new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: order.currency_code || "usd",
-                  }).format((order.total || 0) / 100)}
-                </span>
-              </div>
-            </div>
+              taxTotal={order.tax_total || 0}
+              total={order.total || 0}
+            />
           </div>
 
           {/* Payment */}
@@ -315,7 +277,7 @@ function LookupForm() {
             </label>
             <Input
               id="orderId"
-              placeholder="3DB-1777978800123 or order_..."
+              placeholder="3DBO-H7KM-2P9QXR or order_..."
               value={orderId}
               onChange={(e) => setOrderId(e.target.value)}
               required

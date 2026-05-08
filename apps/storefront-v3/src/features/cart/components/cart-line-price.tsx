@@ -1,6 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
+import { formatCustomerPrice } from "@/lib/pricing/customer-pricing"
 
 type CartLinePriceProps = {
   currencyCode: string
@@ -10,10 +11,7 @@ type CartLinePriceProps = {
 }
 
 function formatPrice(amount: number, currency: string) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-  }).format(amount)
+  return formatCustomerPrice(amount, currency)
 }
 
 export function CartLinePrice({

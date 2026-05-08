@@ -1,5 +1,9 @@
 import orderPlacedHandler from "../order-placed";
 
+const mockFetch = jest.fn();
+
+global.fetch = mockFetch as unknown as typeof fetch;
+
 const baseOrder = {
   created_at: "2026-05-05T08:00:00.000Z",
   currency_code: "aud",
@@ -8,6 +12,20 @@ const baseOrder = {
   email: "test@demo.com",
   id: "order_123",
   item_total: 250.49,
+  payment_status: "authorized",
+  payment_collections: [
+    {
+      payments: [
+        {
+          provider_id: "pp_stripe_stripe",
+          data: {
+            payment_method: "pm_123",
+            client_secret: "pi_secret_should_not_render",
+          },
+        },
+      ],
+    },
+  ],
   subtotal: 250.49,
   items: [
     {
@@ -75,9 +93,24 @@ describe("orderPlacedHandler", () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
+    jest.clearAllMocks();
     process.env = { ...originalEnv };
     process.env.NODE_ENV = "development";
     process.env.ORDER_EMAILS_ENABLED = "true";
+    process.env.STRIPE_SECRET_KEY = "sk_test_safe";
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: "pm_123",
+        type: "card",
+        card: {
+          brand: "visa",
+          last4: "4242",
+          exp_month: 5,
+          exp_year: 2029,
+        },
+      }),
+    });
   });
 
   afterAll(() => {
@@ -94,6 +127,9 @@ describe("orderPlacedHandler", () => {
       2,
       expect.objectContaining({
         fields: expect.arrayContaining([
+          "payment_status",
+          "payment_collections.payments.provider_id",
+          "payment_collections.payments.data",
           "items.metadata",
           "items.variant.preorder_variant.status",
           "items.variant.preorder_variant.available_date",
@@ -106,7 +142,7 @@ describe("orderPlacedHandler", () => {
         content: expect.objectContaining({
           html: expect.stringContaining("Polymaker HT-PLA-GF"),
           subject: "Your 3D Byte Tech order #1001 is confirmed",
-          text: expect.stringContaining("Total: A$262.49"),
+          text: expect.stringContaining("Payment method: Visa ending in 4242"),
         }),
         idempotency_key: "order-placed/order_123",
         data: expect.objectContaining({
@@ -118,6 +154,13 @@ describe("orderPlacedHandler", () => {
         }),
         template: "order-placed",
         to: "test@demo.com",
+      }),
+    );
+    expect(createNotifications).toHaveBeenCalledWith(
+      expect.objectContaining({
+        content: expect.objectContaining({
+          text: expect.not.stringContaining("pi_secret_should_not_render"),
+        }),
       }),
     );
   });
