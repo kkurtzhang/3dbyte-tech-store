@@ -1,5 +1,9 @@
 import type { NextConfig } from "next";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import createMDX from "@next/mdx";
+
+const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const imageHostnames = [
   process.env.NEXT_PUBLIC_SPACE_DOMAIN,
@@ -8,8 +12,13 @@ const imageHostnames = [
 ].filter((hostname): hostname is string => Boolean(hostname));
 
 const nextConfig: NextConfig = {
+  output: "standalone",
+  outputFileTracingRoot: path.resolve(dirname, "../.."),
   pageExtensions: ["js", "jsx", "mdx", "ts", "tsx"],
-  transpilePackages: ["@3dbyte-tech-store/shared-ui"],
+  transpilePackages: [
+    "@3dbyte-tech-store/shared-types",
+    "@3dbyte-tech-store/shared-utils",
+  ],
   async redirects() {
     return [
       {

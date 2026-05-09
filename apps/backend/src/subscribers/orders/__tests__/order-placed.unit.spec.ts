@@ -98,6 +98,8 @@ describe("orderPlacedHandler", () => {
     process.env.NODE_ENV = "development";
     process.env.ORDER_EMAILS_ENABLED = "true";
     process.env.STRIPE_SECRET_KEY = "sk_test_safe";
+    delete process.env.RESEND_API_KEY;
+    delete process.env.RESEND_FROM_EMAIL;
     mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({
@@ -168,7 +170,7 @@ describe("orderPlacedHandler", () => {
   it("skips notifications when the order has no email", async () => {
     const { args, createNotifications } = createArgs({
       ...baseOrder,
-      email: null,
+      email: null as never,
     });
 
     await orderPlacedHandler(args as never);
@@ -202,5 +204,27 @@ describe("orderPlacedHandler", () => {
     expect(resolve).not.toHaveBeenCalledWith("notification");
     expect(graph).not.toHaveBeenCalled();
     expect(createNotifications).not.toHaveBeenCalled();
+  });
+
+  it("allows production order emails when Resend is configured", async () => {
+    process.env.NODE_ENV = "production";
+    process.env.ORDER_EMAILS_ENABLED = "true";
+    process.env.MAILDEV_ENABLED = "false";
+    process.env.RESEND_API_KEY = "re_test";
+    process.env.RESEND_FROM_EMAIL = "orders@example.com";
+
+    const { args, createNotifications, graph, resolve } = createArgs();
+
+    await orderPlacedHandler(args as never);
+
+    expect(resolve).toHaveBeenCalledWith("query");
+    expect(resolve).toHaveBeenCalledWith("notification");
+    expect(graph).toHaveBeenCalledTimes(2);
+    expect(createNotifications).toHaveBeenCalledWith(
+      expect.objectContaining({
+        channel: "email",
+        template: "order-placed",
+      }),
+    );
   });
 });

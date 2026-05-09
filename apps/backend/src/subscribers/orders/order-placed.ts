@@ -101,9 +101,15 @@ const isMaildevEmailProviderConfigured = (
   return isDevelopmentEnv(env);
 };
 
+const isResendEmailProviderConfigured = (
+  env: Partial<Record<string, string | undefined>>,
+): boolean =>
+  Boolean(env.RESEND_API_KEY?.trim() && env.RESEND_FROM_EMAIL?.trim());
+
 const isCompatibleEmailProviderConfigured = (
   env: Partial<Record<string, string | undefined>>,
-): boolean => isMaildevEmailProviderConfigured(env);
+): boolean =>
+  isMaildevEmailProviderConfigured(env) || isResendEmailProviderConfigured(env);
 
 const isOrderEmailFlagEnabled = (
   env: Partial<Record<string, string | undefined>>,
@@ -118,7 +124,9 @@ const isOrderEmailFlagEnabled = (
 export const areOrderEmailsEnabled = (
   env: Partial<Record<string, string | undefined>> = process.env,
 ): boolean => {
-  return isOrderEmailFlagEnabled(env) && isCompatibleEmailProviderConfigured(env);
+  return (
+    isOrderEmailFlagEnabled(env) && isCompatibleEmailProviderConfigured(env)
+  );
 };
 
 const getTrackingPaymentMethod = async (order: OrderWithPayments) => {
