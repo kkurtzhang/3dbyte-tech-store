@@ -1,6 +1,5 @@
-import { INDEX_PRODUCTS, searchClient } from "./client"
+import { INDEX_BLOG, INDEX_PRODUCTS, searchClient } from "./client"
 
-const BLOG_INDEX = "blog"
 
 export type ContentSearchScope = "help" | "guides"
 export type ContentSearchKind = "guide" | "article" | "product"
@@ -91,7 +90,7 @@ function dedupeByUrl(hits: ContentSearchHit[]): ContentSearchHit[] {
 
 async function searchBlog(query: string, limit: number, scope: ContentSearchScope): Promise<ContentSearchHit[]> {
   try {
-    const response = await searchClient.index(BLOG_INDEX).search<BlogDocument>(query, {
+    const response = await searchClient.index(INDEX_BLOG).search<BlogDocument>(query, {
       limit,
       attributesToRetrieve: ["id", "Title", "Slug", "Excerpt", "Content", "Categories"],
     })

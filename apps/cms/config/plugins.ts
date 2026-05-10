@@ -6,6 +6,25 @@ export default ({ env }) => ({
       // Your master key or private key
       // apiKey: "M8QDSdT0UT74H3leQaq4c72ctnDIo1jAkxuK-AuE7cM",
       apiKey: env("MEILISEARCH_API_KEY"),
+      blog: {
+        indexName: env("MEILISEARCH_BLOG_INDEX_NAME", "blog"),
+        settings: {
+          searchableAttributes: ["Title", "Content", "Excerpt"],
+          filterableAttributes: ["Categories"],
+          sortableAttributes: ["Title"],
+          displayedAttributes: ["Title", "Slug", "Content", "Excerpt", "publishedAt"],
+        },
+      },
+      "blog-post-category": {
+        indexName: env(
+          "MEILISEARCH_BLOG_CATEGORY_INDEX_NAME",
+          "blog_post_categories"
+        ),
+        settings: {
+          searchableAttributes: ["Title"],
+          displayedAttributes: ["Title", "Slug", "publishedAt"],
+        },
+      },
     },
   },
   upload: {

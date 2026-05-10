@@ -1,0 +1,61 @@
+name: environment-policy
+
+on:
+  pull_request:
+    branches: [main, staging]
+  push:
+    branches: [main, staging, build/containerize-monorepo]
+
+permissions:
+  contents: read
+
+jobs:
+  address-reindex-policy:
+    name: address-reindex-policy
+    runs-on: ubuntu-latest
+    env:
+      TARGET_BRANCH: ${{ github.base_ref || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify staging policy
+        run: |
+          set -euo pipefail
+
+          staging_file="deploy/environments/staging.env.example"
+          test -f "$staging_file"
+
+          grep -qx "COMPOSE_PROJECT_NAME=3dbyte-staging" "$staging_file"
+          grep -qx "COMPOSE_PROFILES=" "$staging_file"
+          grep -qx "ADDRESS_REINDEX_ENABLED=false" "$staging_file"
+          grep -qx "MEILISEARCH_ADDRESS_INDEX_NAME=addresses_v1" "$staging_file"
+
+          if grep -R "^ADDRESS_REINDEX_ENABLED=true$" "$staging_file" .env.example apps/backend/.env.template; then
+            echo "Staging/default env files must not enable the shared address reindex job."
+            exit 1
+          fi
+
+      - name: Verify production policy
+        run: |
+          set -euo pipefail
+
+          prod_file="deploy/environments/production.env.example"
+          test -f "$prod_file"
+
+          grep -qx "COMPOSE_PROJECT_NAME=3dbyte-prod" "$prod_file"
+          grep -qx "COMPOSE_PROFILES=local-search" "$prod_file"
+          grep -qx "ADDRESS_REINDEX_ENABLED=true" "$prod_file"
+          grep -qx "MEILISEARCH_ADDRESS_INDEX_NAME=addresses_v1" "$prod_file"
+          grep -qx "MEILISEARCH_PRODUCT_INDEX_NAME=prod_products" "$prod_file"
+
+      - name: Verify compose defaults are staging-safe
+        run: |
+          set -euo pipefail
+
+          grep -Fqx 'name: ${COMPOSE_PROJECT_NAME:-3dbyte-tech-store}' docker-compose.yml
+          grep -Fq 'ADDRESS_REINDEX_ENABLED: "${ADDRESS_REINDEX_ENABLED:-false}"' docker-compose.yml
+          grep -q 'profiles:' docker-compose.yml
+          grep -q -- '- local-search' docker-compose.yml
+
+      - name: Report target branch
+        run: echo "environment policy checked for ${TARGET_BRANCH}"

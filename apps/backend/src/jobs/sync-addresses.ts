@@ -9,6 +9,7 @@
  * (avoids conflict with 2 AM category sync and 3 AM settings sync)
  *
  * Environment variables:
+ *   - ADDRESS_REINDEX_ENABLED: Must be "true" to run the shared address reindex
  *   - MEILISEARCH_HOST: Meilisearch server URL
  *   - MEILISEARCH_API_KEY: Meilisearch API key
  *   - MEILISEARCH_ADDRESS_INDEX_NAME: Production index name (default: "addresses")
@@ -30,6 +31,11 @@ export default async function syncAddressesJob(
   const logger: Logger = container.resolve("logger");
 
   try {
+    if (process.env.ADDRESS_REINDEX_ENABLED !== "true") {
+      logger.info("Address reindex disabled for this environment; skipping");
+      return;
+    }
+
     logger.info("Starting scheduled address data sync...");
 
     // Step 1: Discover latest download URL
