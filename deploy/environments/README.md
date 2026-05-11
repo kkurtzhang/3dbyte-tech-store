@@ -9,6 +9,7 @@ Use `main` as the production branch and `staging` as the staging branch.
 - Use `staging.env.example` as the environment checklist.
 - Keep `COMPOSE_PROFILES` empty so staging does not start its own Meilisearch.
 - Keep `ADDRESS_REINDEX_ENABLED=false`.
+- Keep `MAILDEV_ENABLED=false`; staging should not run the MailDev provider or container.
 - Use `stg_*` Meilisearch indexes for products, categories, brands, collections, and blog content.
 - Read the shared `addresses_v1` index from the production search endpoint.
 
@@ -19,11 +20,12 @@ Use `main` as the production branch and `staging` as the staging branch.
 - Use `production.env.example` as the environment checklist.
 - Set `COMPOSE_PROFILES=local-search` so production owns the shared Meilisearch service.
 - Set `ADDRESS_REINDEX_ENABLED=true` only in production.
+- Keep `MAILDEV_ENABLED=false`; production uses Resend for transactional email.
 - Use `prod_*` Meilisearch indexes for products, categories, brands, collections, and blog content.
 - Own and update the shared `addresses_v1` index.
 
 ## GitHub Guard
 
 The `environment-policy` workflow blocks staging if address reindexing is enabled
-and blocks production if the production policy no longer owns the shared address
-reindex job.
+or if MailDev is enabled. It blocks production if the production policy no
+longer owns the shared address reindex job, or if MailDev is enabled.
