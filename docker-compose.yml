@@ -15,7 +15,8 @@ x-stateful-runtime: &stateful-runtime
 x-backend-env: &backend-env
   NODE_ENV: production
   PORT: "9000"
-  DATABASE_URL: "${MEDUSA_DATABASE_URL:?Set MEDUSA_DATABASE_URL}"
+  DATABASE_URL: "postgresql://${POSTGRES_USER:?Set POSTGRES_USER}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-medusa}?sslmode=disable"
+  PGSSLMODE: disable
   REDIS_URL: "redis://redis:6379/0"
   JWT_SECRET: "${MEDUSA_JWT_SECRET:?Set MEDUSA_JWT_SECRET}"
   COOKIE_SECRET: "${MEDUSA_COOKIE_SECRET:?Set MEDUSA_COOKIE_SECRET}"
@@ -148,8 +149,8 @@ services:
       MEDUSA_WORKER_MODE: server
       DISABLE_MEDUSA_ADMIN: "${DISABLE_MEDUSA_ADMIN:-false}"
     depends_on:
-      postgres:
-        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
     expose:
@@ -177,8 +178,8 @@ services:
     depends_on:
       medusa:
         condition: service_started
-      postgres:
-        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
 
@@ -201,13 +202,14 @@ services:
       HOST: 0.0.0.0
       PORT: "1337"
       DATABASE_CLIENT: postgres
-      DATABASE_URL: "${STRAPI_DATABASE_URL:?Set STRAPI_DATABASE_URL}"
+      DATABASE_URL: "postgresql://${POSTGRES_USER:?Set POSTGRES_USER}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/${STRAPI_DATABASE_NAME:-strapi}?sslmode=disable"
       DATABASE_HOST: postgres
       DATABASE_PORT: "5432"
       DATABASE_NAME: "${STRAPI_DATABASE_NAME:-strapi}"
       DATABASE_USERNAME: "${POSTGRES_USER:?Set POSTGRES_USER}"
       DATABASE_PASSWORD: "${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}"
       DATABASE_SSL: "false"
+      PGSSLMODE: disable
       APP_KEYS: "${STRAPI_APP_KEYS:?Set STRAPI_APP_KEYS}"
       API_TOKEN_SALT: "${STRAPI_API_TOKEN_SALT:?Set STRAPI_API_TOKEN_SALT}"
       ADMIN_JWT_SECRET: "${STRAPI_ADMIN_JWT_SECRET:?Set STRAPI_ADMIN_JWT_SECRET}"
@@ -227,8 +229,8 @@ services:
       AWS_ROOT_PATH: "${STRAPI_R2_ROOT_PATH:-strapiUpload}"
       AWS_SIGNED_URL_EXPIRES: "${AWS_SIGNED_URL_EXPIRES:-900}"
     depends_on:
-      postgres:
-        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
     expose:
@@ -256,6 +258,27 @@ services:
       timeout: 5s
       retries: 10
       start_period: 20s
+
+  postgres-init:
+    <<: *stateful-runtime
+    platform: *arm64
+    image: pgvector/pgvector:0.8.2-pg16
+    restart: "no"
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB:-medusa}"
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: "${POSTGRES_USER:?Set POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}"
+      STRAPI_DATABASE_NAME: "${STRAPI_DATABASE_NAME:-strapi}"
+      KARRIO_DATABASE_NAME: "${KARRIO_DATABASE_NAME:-karrio}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    command:
+      - sh
+      - /docker-entrypoint-initdb.d/00-bootstrap-databases.sh
 
   redis:
     <<: *stateful-runtime
