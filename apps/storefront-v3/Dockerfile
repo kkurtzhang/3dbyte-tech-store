@@ -62,7 +62,8 @@ COPY packages/shared-types packages/shared-types
 COPY packages/shared-utils packages/shared-utils
 COPY apps/storefront-v3 apps/storefront-v3
 
-RUN pnpm --filter @3dbyte-tech-store/shared-types build && \
+RUN mkdir -p apps/storefront-v3/public && \
+    pnpm --filter @3dbyte-tech-store/shared-types build && \
     pnpm --filter @3dbyte-tech-store/shared-utils build && \
     pnpm --filter @3dbyte-tech-store/storefront-v3 build
 
