@@ -110,6 +110,10 @@ jobs:
           grep -Fq 'ADDRESS_REINDEX_ENABLED: "${ADDRESS_REINDEX_ENABLED:-false}"' docker-compose.yml
           grep -Fq 'MAILDEV_ENABLED: "${MAILDEV_ENABLED:-false}"' docker-compose.yml
           grep -Fq 'MEILISEARCH_HOST: "${MEILISEARCH_HOST:?Set MEILISEARCH_HOST}"' docker-compose.yml
+          grep -Fq 'http://127.0.0.1:3000/api/health' docker-compose.yml
+          grep -Fq 'http://127.0.0.1:9000/health' docker-compose.yml
+          grep -Fq 'http://127.0.0.1:1337/admin/init' docker-compose.yml
+          grep -Fq 'kill -0 1' docker-compose.yml
           grep -q 'profiles:' docker-compose.yml
           grep -Fxq '      - local' docker-compose.yml
           ! grep -q -- '- local-search' docker-compose.yml

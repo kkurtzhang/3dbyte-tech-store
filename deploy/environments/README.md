@@ -33,6 +33,27 @@ Use `main` as the production branch and `staging` as the staging branch.
 - Keep the master key only in the shared search resource.
 - Use scoped API keys in staging and production app stacks.
 
+## Database Bootstrap Notes
+
+- The Coolify app stack uses the internal `postgres` service and builds
+  Medusa/Strapi connection URLs with `sslmode=disable`. Do not use a
+  Coolify-generated Postgres URL with `sslmode=require` for these internal
+  containers.
+- The `postgres-init` service is a one-shot bootstrap task. It creates the
+  `strapi` and `karrio` databases when missing and enables `pgvector` for the
+  Medusa and Strapi databases, including on volumes that already existed before
+  the init SQL was mounted.
+- If a first staging deploy started before this bootstrap existed and Strapi
+  logs `database "strapi" does not exist`, either redeploy with this compose
+  change or create the database manually from the Postgres container:
+
+```sh
+export PGPASSWORD="$POSTGRES_PASSWORD"
+psql -h 127.0.0.1 -U "$POSTGRES_USER" -d postgres -c "CREATE DATABASE strapi"
+psql -h 127.0.0.1 -U "$POSTGRES_USER" -d medusa -c "CREATE EXTENSION IF NOT EXISTS vector"
+psql -h 127.0.0.1 -U "$POSTGRES_USER" -d strapi -c "CREATE EXTENSION IF NOT EXISTS vector"
+```
+
 ## GitHub Guard
 
 The `environment-policy` workflow blocks staging if address reindexing is enabled
