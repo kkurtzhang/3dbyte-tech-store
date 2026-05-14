@@ -43,6 +43,10 @@ Use `main` as the production branch and `staging` as the staging branch.
   `strapi` and `karrio` databases when missing and enables `pgvector` for the
   Medusa and Strapi databases, including on volumes that already existed before
   the init SQL was mounted.
+- `postgres-init` is built from `docker/postgres/Dockerfile.init`, which bakes
+  the bootstrap script into the image. Do not bind-mount the source checkout for
+  this script in Coolify; deployment helpers may not expose that path to runtime
+  containers reliably.
 - `postgres-init` shares the Postgres Unix socket through the `postgres_socket`
   volume so it can repair an existing volume safely when Coolify's
   `POSTGRES_PASSWORD` has drifted from the password used at first database
