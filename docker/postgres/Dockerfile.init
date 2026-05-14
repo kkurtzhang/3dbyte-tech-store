@@ -1,0 +1,12 @@
+# syntax=docker/dockerfile:1.7
+# check=skip=RedundantTargetPlatform
+
+ARG TARGETPLATFORM=linux/arm64
+
+FROM --platform=${TARGETPLATFORM} pgvector/pgvector:0.8.2-pg16
+
+COPY docker/postgres/init/00-bootstrap-databases.sh /usr/local/bin/bootstrap-databases.sh
+
+RUN chmod 0555 /usr/local/bin/bootstrap-databases.sh
+
+ENTRYPOINT ["sh", "/usr/local/bin/bootstrap-databases.sh"]

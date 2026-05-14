@@ -114,8 +114,10 @@ jobs:
           grep -Fq 'http://127.0.0.1:9000/health' docker-compose.yml
           grep -Fq 'http://127.0.0.1:1337/admin/init' docker-compose.yml
           grep -Fq 'kill -0 1' docker-compose.yml
+          grep -Fq 'dockerfile: docker/postgres/Dockerfile.init' docker-compose.yml
           grep -Fq 'POSTGRES_SOCKET_DIR: /var/run/postgresql' docker-compose.yml
           grep -Fq 'postgres_socket:/var/run/postgresql' docker-compose.yml
+          ! grep -Fq './docker/postgres/init:/docker-entrypoint-initdb.d:ro' docker-compose.yml
           grep -q 'profiles:' docker-compose.yml
           grep -Fxq '      - local' docker-compose.yml
           ! grep -q -- '- local-search' docker-compose.yml
