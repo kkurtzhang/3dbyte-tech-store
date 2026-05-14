@@ -26,7 +26,7 @@ x-backend-env: &backend-env
   STRAPI_API_URL: "http://cms:1337"
   STRAPI_API_TOKEN: "${STRAPI_API_TOKEN:?Set STRAPI_API_TOKEN}"
   STRAPI_WEBHOOK_SECRET: "${STRAPI_WEBHOOK_SECRET:?Set STRAPI_WEBHOOK_SECRET}"
-  MEILISEARCH_HOST: "${MEILISEARCH_HOST:-http://meilisearch:7700}"
+  MEILISEARCH_HOST: "${MEILISEARCH_HOST:?Set MEILISEARCH_HOST}"
   MEILISEARCH_API_KEY: "${MEILISEARCH_API_KEY:?Set MEILISEARCH_API_KEY}"
   MEILISEARCH_PRODUCT_INDEX_NAME: "${MEILISEARCH_PRODUCT_INDEX_NAME:-products}"
   MEILISEARCH_CATEGORY_INDEX_NAME: "${MEILISEARCH_CATEGORY_INDEX_NAME:-categories}"
@@ -117,7 +117,7 @@ services:
       NEXT_PUBLIC_SPACE_ENDPOINT: "${NEXT_PUBLIC_SPACE_ENDPOINT:-}"
       STRAPI_WEBHOOK_REVALIDATION_SECRET: "${STRAPI_WEBHOOK_REVALIDATION_SECRET:?Set STRAPI_WEBHOOK_REVALIDATION_SECRET}"
       STRAPI_READ_TOKEN: "${STRAPI_READ_TOKEN:-}"
-      MEILISEARCH_SERVER_HOST: "${MEILISEARCH_SERVER_HOST:-http://meilisearch:7700}"
+      MEILISEARCH_SERVER_HOST: "${MEILISEARCH_SERVER_HOST:?Set MEILISEARCH_SERVER_HOST}"
       AI_PROVIDER: "${AI_PROVIDER:-openai}"
       OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
       ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
@@ -128,9 +128,6 @@ services:
         condition: service_started
     expose:
       - "3000"
-    networks:
-      - edge
-      - app
 
   medusa:
     <<: *hardened-runtime
@@ -157,10 +154,6 @@ services:
         condition: service_healthy
     expose:
       - "9000"
-    networks:
-      - edge
-      - app
-      - data
 
   medusa-worker:
     <<: *hardened-runtime
@@ -188,9 +181,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    networks:
-      - app
-      - data
 
   cms:
     <<: *hardened-runtime
@@ -224,7 +214,7 @@ services:
       TRANSFER_TOKEN_SALT: "${STRAPI_TRANSFER_TOKEN_SALT:?Set STRAPI_TRANSFER_TOKEN_SALT}"
       JWT_SECRET: "${STRAPI_JWT_SECRET:?Set STRAPI_JWT_SECRET}"
       ENCRYPTION_KEY: "${STRAPI_ENCRYPTION_KEY:?Set STRAPI_ENCRYPTION_KEY}"
-      MEILISEARCH_HOST: "${MEILISEARCH_HOST:-http://meilisearch:7700}"
+      MEILISEARCH_HOST: "${MEILISEARCH_HOST:?Set MEILISEARCH_HOST}"
       MEILISEARCH_API_KEY: "${MEILISEARCH_API_KEY:?Set MEILISEARCH_API_KEY}"
       MEILISEARCH_BLOG_INDEX_NAME: "${MEILISEARCH_BLOG_INDEX_NAME:-blog}"
       MEILISEARCH_BLOG_CATEGORY_INDEX_NAME: "${MEILISEARCH_BLOG_CATEGORY_INDEX_NAME:-blog_post_categories}"
@@ -243,10 +233,6 @@ services:
         condition: service_healthy
     expose:
       - "1337"
-    networks:
-      - edge
-      - app
-      - data
 
   postgres:
     <<: *stateful-runtime
@@ -270,8 +256,6 @@ services:
       timeout: 5s
       retries: 10
       start_period: 20s
-    networks:
-      - data
 
   redis:
     <<: *stateful-runtime
@@ -296,35 +280,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-    networks:
-      - data
-
-  meilisearch:
-    <<: *stateful-runtime
-    platform: *arm64
-    image: getmeili/meilisearch:v1.31.0
-    restart: *restart
-    profiles:
-      - local-search
-    pids_limit: ${MEILISEARCH_PIDS_LIMIT:-1024}
-    mem_limit: ${MEILISEARCH_MEMORY_LIMIT:-8192m}
-    cpus: "${MEILISEARCH_CPUS:-1.5}"
-    environment:
-      MEILI_ENV: production
-      MEILI_MASTER_KEY: "${MEILISEARCH_API_KEY:?Set MEILISEARCH_API_KEY}"
-      MEILI_NO_ANALYTICS: "true"
-      MEILI_DB_PATH: /meili_data
-      MEILI_LOG_LEVEL: "${MEILI_LOG_LEVEL:-INFO}"
-      MEILI_HTTP_PAYLOAD_SIZE_LIMIT: "${MEILI_HTTP_PAYLOAD_SIZE_LIMIT:-200Mb}"
-      MEILI_MAX_INDEXING_MEMORY: "${MEILI_MAX_INDEXING_MEMORY:-6Gb}"
-      MEILI_MAX_INDEXING_THREADS: "${MEILI_MAX_INDEXING_THREADS:-2}"
-    volumes:
-      - meilisearch_data:/meili_data
-    expose:
-      - "7700"
-    networks:
-      - edge
-      - app
 
   maildev:
     <<: *hardened-runtime
@@ -342,19 +297,7 @@ services:
     ports:
       - "127.0.0.1:${MAILDEV_SMTP_PORT:-1025}:1025"
       - "127.0.0.1:${MAILDEV_WEB_PORT:-1080}:1080"
-    networks:
-      - app
-
-networks:
-  edge:
-    driver: bridge
-  app:
-    driver: bridge
-  data:
-    driver: bridge
-    internal: true
 
 volumes:
   postgres_data:
   redis_data:
-  meilisearch_data:

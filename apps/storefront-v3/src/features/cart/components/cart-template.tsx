@@ -209,9 +209,6 @@ export function CartTemplate() {
                 <Bookmark className="h-5 w-5" />
                 Saved for Later
               </h2>
-              <Button variant="link" asChild>
-                <Link href="/account/saved">View All</Link>
-              </Button>
             </div>
             <div className="rounded-lg border bg-card">
               <div className="divide-y p-1">

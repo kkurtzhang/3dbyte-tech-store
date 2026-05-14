@@ -1,12 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
 import { useInventoryAlerts } from "@/context/inventory-alert-context"
 import { useToast } from "@/lib/hooks/use-toast"
-import { Bell, BellOff, Mail } from "lucide-react"
+import { Bell, BellOff } from "lucide-react"
 
 interface NotifyMeButtonProps {
   productId: string
@@ -23,22 +23,36 @@ export function NotifyMeButton({
   variantId,
   variantTitle,
 }: NotifyMeButtonProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [email, setEmail] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const { addAlert, hasAlert, removeAlertByProduct } = useInventoryAlerts()
+  const [email, setEmail] = useState("")
+  const {
+    addAlert,
+    customerEmail,
+    hasAlert,
+    isAuthenticated,
+    removeAlertByProduct,
+  } = useInventoryAlerts()
   const { toast } = useToast()
 
   const alreadySubscribed = hasAlert(productId, variantId)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!email || !email.includes("@")) {
+  useEffect(() => {
+    if (customerEmail) {
+      setEmail(customerEmail)
+    }
+  }, [customerEmail])
+
+  const normalizedEmail = email.trim()
+
+  const isValidEmail = (value: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
+
+  const handleSubscribe = async () => {
+    if (!isValidEmail(normalizedEmail)) {
       toast({
         variant: "destructive",
-        title: "Invalid Email",
-        description: "Please enter a valid email address.",
+        title: "Email Required",
+        description: "Enter a valid email address for the stock alert.",
       })
       return
     }
@@ -46,25 +60,28 @@ export function NotifyMeButton({
     setIsSubmitting(true)
     
     try {
-      // Simulate a brief network delay
-      await new Promise((resolve) => setTimeout(resolve, 500))
-      
-      addAlert({
+      const result = await addAlert({
+        email: normalizedEmail,
         productId,
         productHandle,
         productTitle,
         variantId: variantId || "",
         variantTitle: variantTitle || "",
-        email,
       })
+
+      if (!result.success) {
+        toast({
+          variant: "destructive",
+          title: "Subscription Failed",
+          description: result.error,
+        })
+        return
+      }
       
       toast({
         title: "Alert Subscribed",
         description: `We'll notify you when ${productTitle}${variantTitle ? ` (${variantTitle})` : ""} is back in stock.`,
       })
-      
-      setEmail("")
-      setIsOpen(false)
     } catch (error) {
       toast({
         variant: "destructive",
@@ -76,85 +93,68 @@ export function NotifyMeButton({
     }
   }
 
-  const handleUnsubscribe = () => {
-    removeAlertByProduct(productId, variantId)
-    toast({
-      title: "Alert Removed",
-      description: "You will no longer receive notifications for this item.",
-    })
+  const handleUnsubscribe = async () => {
+    setIsSubmitting(true)
+
+    try {
+      const result = await removeAlertByProduct(productId, variantId)
+
+      if (!result.success) {
+        toast({
+          variant: "destructive",
+          title: "Removal Failed",
+          description: result.error,
+        })
+        return
+      }
+
+      toast({
+        title: "Alert Removed",
+        description: "You will no longer receive notifications for this item.",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
-    <>
+    <div className="space-y-3">
       {alreadySubscribed ? (
         <Button
           variant="outline"
           size="lg"
           className="w-full font-mono text-lg h-14 uppercase tracking-widest border-green-600 text-green-600 hover:bg-green-50 hover:text-green-700 dark:hover:bg-green-950"
           onClick={handleUnsubscribe}
+          disabled={isSubmitting}
         >
           <BellOff className="mr-2 h-5 w-5" />
           Already Notified
         </Button>
       ) : (
-        <Button
-          variant="outline"
-          size="lg"
-          className="w-full font-mono text-lg h-14 uppercase tracking-widest"
-          onClick={() => setIsOpen(true)}
-        >
-          <Bell className="mr-2 h-5 w-5" />
-          Notify Me
-        </Button>
+        <>
+          <div className="space-y-2">
+            <Label htmlFor={`waitlist-email-${productId}`}>Email address</Label>
+            <Input
+              id={`waitlist-email-${productId}`}
+              type="email"
+              autoComplete="email"
+              placeholder={isAuthenticated ? undefined : "you@example.com"}
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+            />
+          </div>
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full font-mono text-lg h-14 uppercase tracking-widest"
+            onClick={handleSubscribe}
+            disabled={isSubmitting}
+          >
+            <Bell className="mr-2 h-5 w-5" />
+            {isSubmitting ? "Subscribing..." : "Notify Me"}
+          </Button>
+        </>
       )}
-
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-md" onClose={() => setIsOpen(false)}>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5" />
-              Get Notified When Available
-            </DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">
-                Enter your email to be notified when{" "}
-                <span className="font-medium text-foreground">
-                  {productTitle}
-                  {variantTitle && ` (${variantTitle})`}
-                </span>{" "}
-                is back in stock.
-              </p>
-              <Input
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsOpen(false)}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-1"
-              >
-                {isSubmitting ? "Subscribing..." : "Subscribe"}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </>
+    </div>
   )
 }

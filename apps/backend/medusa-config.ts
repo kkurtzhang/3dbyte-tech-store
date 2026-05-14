@@ -9,7 +9,7 @@ loadEnv(process.env.NODE_ENV || "development", process.cwd());
 
 const maildevNotificationProvider = getMaildevNotificationProvider();
 const notificationProvider =
-  maildevNotificationProvider || getResendNotificationProvider();
+  getResendNotificationProvider() || maildevNotificationProvider;
 
 const mergeCors = (value: string | undefined, defaults: string[]): string => {
   return Array.from(
@@ -109,6 +109,9 @@ module.exports = defineConfig({
       resolve: "./src/modules/wishlist",
     },
     {
+      resolve: "./src/modules/waitlist",
+    },
+    {
       resolve: "./src/modules/reviews",
     },
     {
@@ -136,6 +139,8 @@ module.exports = defineConfig({
         brandIndexName: process.env.MEILISEARCH_BRAND_INDEX_NAME || "brands",
         addressIndexName:
           process.env.MEILISEARCH_ADDRESS_INDEX_NAME || "addresses",
+        localityIndexName:
+          process.env.MEILISEARCH_LOCALITY_INDEX_NAME || "localities",
       },
     },
     {

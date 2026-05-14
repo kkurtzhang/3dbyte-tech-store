@@ -4,6 +4,7 @@ import type {
   ProviderSendNotificationResultsDTO,
 } from "@medusajs/framework/types";
 import { AbstractNotificationProviderService } from "@medusajs/framework/utils";
+import { Resend } from "resend";
 
 import type { ResendNotificationOptions } from "./types";
 
@@ -52,13 +53,25 @@ const readRecordValue = (value: unknown, key: string): unknown | undefined => {
   return (value as Record<string, unknown>)[key];
 };
 
-const getIdempotencyKey = (data: unknown): string | undefined => {
-  const metadata = readRecordValue(data, "email_metadata");
-  const key = readRecordValue(metadata, "idempotency_key");
-
-  return typeof key === "string" && key.trim()
-    ? key.trim().slice(0, 256)
+const readString = (value: unknown): string | undefined =>
+  typeof value === "string" && value.trim()
+    ? value.trim().slice(0, 256)
     : undefined;
+
+const getIdempotencyKey = (
+  notification: ProviderSendNotificationDTO,
+): string | undefined => {
+  const directKey = readString(
+    (notification as ProviderSendNotificationDTO & { idempotency_key?: string })
+      .idempotency_key,
+  );
+
+  if (directKey) {
+    return directKey;
+  }
+
+  const metadata = readRecordValue(notification.data, "email_metadata");
+  return readString(readRecordValue(metadata, "idempotency_key"));
 };
 
 const readJson = async (response: Response): Promise<ResendResponse> => {
@@ -91,7 +104,8 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
   static identifier = "resend";
 
   private readonly apiKey: string;
-  private readonly apiUrl: string;
+  private readonly apiUrl?: string;
+  private readonly client?: Resend;
   private readonly from: string;
   private readonly logger: Logger;
 
@@ -102,7 +116,8 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
     super();
 
     this.apiKey = options.apiKey;
-    this.apiUrl = options.apiUrl.replace(/\/+$/, "");
+    this.apiUrl = options.apiUrl?.replace(/\/+$/, "");
+    this.client = this.apiUrl ? undefined : new Resend(options.apiKey);
     this.from = options.from;
     this.logger = logger;
   }
@@ -125,15 +140,51 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
     const html =
       content.html ||
       `<h1>${escapeHtml(subject)}</h1><pre>${escapeHtml(fallbackText)}</pre>`;
-    const idempotencyKey = getIdempotencyKey(notification.data);
+    const idempotencyKey = getIdempotencyKey(notification);
 
+    const result = this.apiUrl
+      ? await this.sendWithFetch({
+          html,
+          idempotencyKey,
+          subject,
+          text,
+          to: notification.to,
+        })
+      : await this.sendWithSdk({
+          html,
+          idempotencyKey,
+          subject,
+          text,
+          to: notification.to,
+        });
+
+    this.logger.debug(
+      `Resend notification sent for ${notification.template} to ${notification.to}`,
+    );
+
+    return result;
+  }
+
+  private async sendWithFetch({
+    html,
+    idempotencyKey,
+    subject,
+    text,
+    to,
+  }: {
+    html: string;
+    idempotencyKey?: string;
+    subject: string;
+    text: string;
+    to: string;
+  }): Promise<ProviderSendNotificationResultsDTO> {
     const response = await fetch(`${this.apiUrl}/emails`, {
       body: JSON.stringify({
         from: this.from,
         html,
         subject,
         text,
-        to: notification.to,
+        to,
       }),
       headers: {
         Authorization: `Bearer ${this.apiKey}`,
@@ -150,12 +201,41 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
       );
     }
 
-    this.logger.debug(
-      `Resend notification sent for ${notification.template} to ${notification.to}`,
-    );
-
     return {
       id: typeof payload.id === "string" ? payload.id : "",
+    };
+  }
+
+  private async sendWithSdk({
+    html,
+    idempotencyKey,
+    subject,
+    text,
+    to,
+  }: {
+    html: string;
+    idempotencyKey?: string;
+    subject: string;
+    text: string;
+    to: string;
+  }): Promise<ProviderSendNotificationResultsDTO> {
+    const result = await this.client!.emails.send(
+      {
+        from: this.from,
+        html,
+        subject,
+        text,
+        to,
+      },
+      idempotencyKey ? { idempotencyKey } : undefined,
+    );
+
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+
+    return {
+      id: result.data?.id || "",
     };
   }
 }

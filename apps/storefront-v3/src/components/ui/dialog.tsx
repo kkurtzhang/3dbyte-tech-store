@@ -18,6 +18,7 @@ function Dialog({ open, onOpenChange, children }: DialogProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           {/* Backdrop */}
           <div
+            data-testid="dialog-backdrop"
             className="fixed inset-0 bg-background/80 backdrop-blur-sm"
             onClick={() => onOpenChange?.(false)}
           />
@@ -37,6 +38,8 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
   ({ className, children, onClose, ...props }, ref) => (
     <div
       ref={ref}
+      role="dialog"
+      aria-modal="true"
       className={cn(
         "relative z-50 grid w-full max-w-lg gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg",
         className

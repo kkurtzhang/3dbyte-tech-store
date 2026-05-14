@@ -214,7 +214,52 @@ export function isBundleVariantPurchasable(
     return true
   }
 
+  if (variant.allow_backorder === true) {
+    return true
+  }
+
   return (variant.inventory_quantity ?? 0) > 0
+}
+
+function getBundleVariantSelectionRank(
+  variant: InventoryAwareVariant | null | undefined
+) {
+  if (!variant) {
+    return 0
+  }
+
+  if (variant.manage_inventory === false) {
+    return 4
+  }
+
+  if ((variant.inventory_quantity ?? 0) > 0) {
+    return 3
+  }
+
+  if (isPreorder(variant.preorder_variant)) {
+    return 2
+  }
+
+  if (variant.allow_backorder === true) {
+    return 1
+  }
+
+  return 0
+}
+
+export function getPreferredBundleVariant(
+  variants: InventoryAwareVariant[] | null | undefined
+) {
+  if (!variants?.length) {
+    return undefined
+  }
+
+  return variants.reduce((preferred, variant) => {
+    const preferredRank = getBundleVariantSelectionRank(preferred)
+    const variantRank = getBundleVariantSelectionRank(variant)
+
+    return variantRank > preferredRank ? variant : preferred
+  }, variants[0])
 }
 
 function getSelectedVariant(
@@ -237,9 +282,10 @@ function getBundlesSupportedByVariant(
 
   const preorder = isPreorder(variant.preorder_variant)
   const manageInventory = variant.manage_inventory ?? true
+  const allowBackorder = variant.allow_backorder === true
   const inventoryQuantity = variant.inventory_quantity ?? 0
 
-  if (preorder || !manageInventory) {
+  if (preorder || !manageInventory || allowBackorder) {
     return {
       status: preorder ? ("preorder" as const) : ("in-stock" as const),
       quantity: null,

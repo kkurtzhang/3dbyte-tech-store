@@ -61,6 +61,7 @@ describe("syncAddressesJob", () => {
     });
     ingestAddressesMock.mockResolvedValue({
       totalRows: 17_000_000,
+      localityRows: 1_200_000,
       batchesProcessed: 340,
       durationMs: 120_000,
       indexName: "addresses_v1",
@@ -74,6 +75,7 @@ describe("syncAddressesJob", () => {
       "https://v2.openaddresses.io/batch/source.geojson.gz",
       expect.objectContaining({
         addressIndexName: "addresses",
+        localityIndexName: "localities",
       }),
       expect.any(Object)
     );

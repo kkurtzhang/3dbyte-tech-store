@@ -45,12 +45,16 @@ export interface AddressPipelineConfig {
   batchSize: number;
   /** Prefix for temporary index names (default: "addresses_tmp_") */
   tempIndexPrefix: string;
+  /** Prefix for temporary locality index names (default: "localities_tmp_") */
+  localityTempIndexPrefix: string;
   /** Meilisearch host URL */
   meilisearchHost: string;
   /** Meilisearch API key */
   meilisearchApiKey: string;
   /** Production address index name */
   addressIndexName: string;
+  /** Production locality index name */
+  localityIndexName: string;
 }
 
 /**
@@ -67,6 +71,10 @@ export interface AddressPipelineResult {
   durationMs: number;
   /** Final production index name */
   indexName: string;
+  /** Number of unique locality documents indexed */
+  localityRows: number;
+  /** Final production locality index name */
+  localityIndexName: string;
 }
 
 /**

@@ -4,8 +4,9 @@ import Image from "next/image"
 import Link from "next/link"
 import { Heart, Trash2, ShoppingCart, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useWishlist, WishlistItem } from "@/context/wishlist-context"
+import { useWishlist } from "@/context/wishlist-context"
 import { toast } from "@/lib/hooks/use-toast"
+import type { WishlistItem } from "@/lib/wishlist/types"
 
 export function WishlistClient() {
   const { wishlist, isLoading, removeFromWishlist, moveToCart, clearWishlist } = useWishlist()
@@ -17,8 +18,17 @@ export function WishlistClient() {
     }).format(amount)
   }
 
-  const handleRemoveFromWishlist = (id: string) => {
-    removeFromWishlist(id)
+  const handleRemoveFromWishlist = async (id: string) => {
+    const result = await removeFromWishlist(id)
+    if (!result.success) {
+      toast({
+        title: "Error",
+        description: result.error ?? "Failed to remove item from wishlist",
+        variant: "destructive",
+      })
+      return
+    }
+
     toast({
       title: "Removed from wishlist",
       description: "Item has been removed from your wishlist",
@@ -41,8 +51,17 @@ export function WishlistClient() {
     }
   }
 
-  const handleClearAll = () => {
-    clearWishlist()
+  const handleClearAll = async () => {
+    const result = await clearWishlist()
+    if (!result.success) {
+      toast({
+        title: "Error",
+        description: result.error ?? "Failed to clear wishlist",
+        variant: "destructive",
+      })
+      return
+    }
+
     toast({
       title: "Wishlist cleared",
       description: "All items have been removed from your wishlist",
@@ -158,6 +177,7 @@ export function WishlistClient() {
                   variant="outline"
                   size="sm"
                   onClick={() => handleRemoveFromWishlist(item.id)}
+                  aria-label={`Remove ${item.title} from wishlist`}
                   className="text-muted-foreground hover:text-destructive"
                 >
                   <Trash2 className="h-4 w-4" />

@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { getBrandByHandle } from "@/lib/search/brands";
 import { getBrandDescriptionByHandle } from "@/lib/strapi/content";
@@ -73,13 +73,14 @@ export async function generateMetadata({
  * Check if any filters are active
  */
 function hasActiveFilters(
-  params: Awaited<PageProps["searchParams"]>
+  params: Awaited<PageProps["searchParams"]>,
+  effectiveInStock: boolean
 ): boolean {
   return (
     !!params.category ||
     !!params.collection ||
     params.onSale === "true" ||
-    params.inStock === "true" ||
+    effectiveInStock ||
     !!params.minPrice ||
     !!params.maxPrice ||
     !!params.q ||
@@ -101,7 +102,7 @@ function buildPaginationUrl(
     category: params.category,
     collection: params.collection,
     onSale: params.onSale,
-    inStock: params.inStock,
+    inStock: params.inStock === "false" ? "false" : undefined,
     minPrice: params.minPrice,
     maxPrice: params.maxPrice,
     sort: sort !== "newest" ? sort : undefined,
@@ -134,32 +135,10 @@ export default async function BrandPage({
     "Explore products from this brand.";
 
   const params_cache = await searchParams;
-
-  // Redirect to add inStock=true by default if not explicitly set
-  // This ensures the In Stock filter is checked by default
-  if (params_cache.inStock === undefined) {
-    const redirectParams: ShopQueryParams = {
-      q: params_cache.q,
-      category: params_cache.category,
-      collection: params_cache.collection,
-      onSale: params_cache.onSale,
-      minPrice: params_cache.minPrice,
-      maxPrice: params_cache.maxPrice,
-      sort: params_cache.sort !== "newest" ? params_cache.sort : undefined,
-      page: params_cache.page,
-      inStock: "true",
-    };
-
-    copyDynamicOptionParams(
-      params_cache,
-      redirectParams as Record<string, string | undefined>
-    );
-
-    redirect(buildShopUrl(redirectParams, `/brands/${handle}`));
-  }
   const page = Number(params_cache.page) || 1;
   const limit = 20;
   const sort = params_cache.sort || "newest";
+  const effectiveInStock = params_cache.inStock !== "false";
 
   // Parse category filters
   const categoryIds = params_cache.category?.split(",").filter(Boolean) || [];
@@ -190,7 +169,7 @@ export default async function BrandPage({
       categoryIds: categoryIds.length > 0 ? categoryIds : undefined,
       collectionIds: collectionIds.length > 0 ? collectionIds : undefined,
       onSale: params_cache.onSale === "true" ? true : undefined,
-      inStock: params_cache.inStock === "true" ? true : undefined,
+      inStock: effectiveInStock ? true : undefined,
       minPrice,
       maxPrice,
       options: Object.keys(options).length > 0 ? options : undefined,
@@ -233,7 +212,7 @@ export default async function BrandPage({
   const totalPages = Math.ceil(result.totalCount / limit);
 
   // Check if any filters are active (for empty state)
-  const filtersActive = hasActiveFilters(params_cache);
+  const filtersActive = hasActiveFilters(params_cache, effectiveInStock);
 
   // Handle empty state
   if (result.products.length === 0) {

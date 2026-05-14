@@ -14,26 +14,26 @@ jest.mock("@/app/actions/product-shipping", () => ({
   estimateProductShippingAction: jest.fn(),
 }))
 
-jest.mock("@/lib/search/addresses", () => ({
-  searchAddresses: jest.fn(),
+jest.mock("@/lib/search/localities", () => ({
+  searchLocalities: jest.fn(),
 }))
 
 import { estimateProductShippingAction } from "@/app/actions/product-shipping"
-import { searchAddresses } from "@/lib/search/addresses"
+import { searchLocalities } from "@/lib/search/localities"
 
 const mockEstimateProductShippingAction =
   estimateProductShippingAction as jest.MockedFunction<
     typeof estimateProductShippingAction
   >
-const mockSearchAddresses = searchAddresses as jest.MockedFunction<
-  typeof searchAddresses
+const mockSearchLocalities = searchLocalities as jest.MockedFunction<
+  typeof searchLocalities
 >
 
 describe("ProductShippingEstimate", () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockSearchAddresses.mockResolvedValue({
-      addresses: [],
+    mockSearchLocalities.mockResolvedValue({
+      localities: [],
       count: 0,
       processingTimeMs: 0,
     })
@@ -127,18 +127,15 @@ describe("ProductShippingEstimate", () => {
     })
   })
 
-  it("uses an address search locality selection for city and state", async () => {
+  it("uses a locality search selection for city and state", async () => {
     const user = userEvent.setup()
 
-    mockSearchAddresses.mockResolvedValue({
-      addresses: [
+    mockSearchLocalities.mockResolvedValue({
+      localities: [
         {
-          id: "addr_wollongong",
-          full_address: "40 Crown Street, Wollongong, NSW, 2500",
-          unit: "",
-          number: "40",
-          street: "Crown Street",
-          suburb: "Wollongong",
+          id: "au_nsw_2500_wollongong",
+          display_name: "Wollongong, NSW 2500",
+          locality: "Wollongong",
           state: "NSW",
           postcode: "2500",
           country: "AU",
@@ -184,18 +181,47 @@ describe("ProductShippingEstimate", () => {
     })
   })
 
+  it("uses the locality index for typeahead suggestions", async () => {
+    const user = userEvent.setup()
+
+    mockSearchLocalities.mockResolvedValue({
+      localities: [
+        {
+          id: "au_nsw_2500_wollongong",
+          display_name: "Wollongong, NSW 2500",
+          locality: "Wollongong",
+          state: "NSW",
+          postcode: "2500",
+          country: "AU",
+        },
+      ],
+      count: 1,
+      processingTimeMs: 4,
+    })
+
+    render(<ProductShippingEstimate variantId="variant_123" />)
+
+    await user.type(screen.getByLabelText(/suburb or postcode/i), "Wol")
+
+    await waitFor(() => {
+      expect(mockSearchLocalities).toHaveBeenCalledWith("Wol", 8, {
+        country: "AU",
+      })
+    })
+    expect(
+      screen.getByRole("option", { name: "Wollongong NSW 2500" })
+    ).toBeInTheDocument()
+  })
+
   it("closes the locality suggestions after selecting one", async () => {
     const user = userEvent.setup()
 
-    mockSearchAddresses.mockResolvedValue({
-      addresses: [
+    mockSearchLocalities.mockResolvedValue({
+      localities: [
         {
-          id: "addr_wollongong",
-          full_address: "40 Crown Street, Wollongong, NSW, 2500",
-          unit: "",
-          number: "40",
-          street: "Crown Street",
-          suburb: "Wollongong",
+          id: "au_nsw_2500_wollongong",
+          display_name: "Wollongong, NSW 2500",
+          locality: "Wollongong",
           state: "NSW",
           postcode: "2500",
           country: "AU",
@@ -226,10 +252,10 @@ describe("ProductShippingEstimate", () => {
 
     await waitFor(
       () => {
-        expect(mockSearchAddresses).toHaveBeenCalledWith(
+        expect(mockSearchLocalities).toHaveBeenCalledWith(
           "Wollongong NSW 2500",
           8,
-          "AU"
+          { country: "AU" }
         )
       },
       { timeout: 1000 }
@@ -242,15 +268,12 @@ describe("ProductShippingEstimate", () => {
   it("keeps the destination but closes suggestions when reused for another product", async () => {
     const user = userEvent.setup()
 
-    mockSearchAddresses.mockResolvedValue({
-      addresses: [
+    mockSearchLocalities.mockResolvedValue({
+      localities: [
         {
-          id: "addr_wollongong",
-          full_address: "40 Crown Street, Wollongong, NSW, 2500",
-          unit: "",
-          number: "40",
-          street: "Crown Street",
-          suburb: "Wollongong",
+          id: "au_nsw_2500_wollongong",
+          display_name: "Wollongong, NSW 2500",
+          locality: "Wollongong",
           state: "NSW",
           postcode: "2500",
           country: "AU",
@@ -280,15 +303,12 @@ describe("ProductShippingEstimate", () => {
     ;(window.localStorage.getItem as jest.Mock).mockReturnValue(
       "Wollongong NSW 2500"
     )
-    mockSearchAddresses.mockResolvedValue({
-      addresses: [
+    mockSearchLocalities.mockResolvedValue({
+      localities: [
         {
-          id: "addr_wollongong",
-          full_address: "40 Crown Street, Wollongong, NSW, 2500",
-          unit: "",
-          number: "40",
-          street: "Crown Street",
-          suburb: "Wollongong",
+          id: "au_nsw_2500_wollongong",
+          display_name: "Wollongong, NSW 2500",
+          locality: "Wollongong",
           state: "NSW",
           postcode: "2500",
           country: "AU",
@@ -306,10 +326,10 @@ describe("ProductShippingEstimate", () => {
       )
     })
     await waitFor(() => {
-      expect(mockSearchAddresses).toHaveBeenCalledWith(
+      expect(mockSearchLocalities).toHaveBeenCalledWith(
         "Wollongong NSW 2500",
         8,
-        "AU"
+        { country: "AU" }
       )
     })
     expect(screen.getByLabelText(/suburb or postcode/i)).toHaveAttribute(
@@ -324,15 +344,15 @@ describe("ProductShippingEstimate", () => {
   it("does not reopen locality suggestions after the input has blurred", async () => {
     const user = userEvent.setup()
     let resolveSearch:
-      | ((value: Awaited<ReturnType<typeof searchAddresses>>) => void)
+      | ((value: Awaited<ReturnType<typeof searchLocalities>>) => void)
       | undefined
-    const searchPromise = new Promise<Awaited<ReturnType<typeof searchAddresses>>>(
+    const searchPromise = new Promise<Awaited<ReturnType<typeof searchLocalities>>>(
       (resolve) => {
         resolveSearch = resolve
       }
     )
 
-    mockSearchAddresses.mockReturnValue(searchPromise)
+    mockSearchLocalities.mockReturnValue(searchPromise)
 
     render(<ProductShippingEstimate variantId="variant_123" />)
 
@@ -340,14 +360,11 @@ describe("ProductShippingEstimate", () => {
     await user.tab()
 
     resolveSearch!({
-      addresses: [
+      localities: [
         {
-          id: "addr_wollongong",
-          full_address: "40 Crown Street, Wollongong, NSW, 2500",
-          unit: "",
-          number: "40",
-          street: "Crown Street",
-          suburb: "Wollongong",
+          id: "au_nsw_2500_wollongong",
+          display_name: "Wollongong, NSW 2500",
+          locality: "Wollongong",
           state: "NSW",
           postcode: "2500",
           country: "AU",
@@ -358,7 +375,7 @@ describe("ProductShippingEstimate", () => {
     })
 
     await waitFor(() => {
-      expect(mockSearchAddresses).toHaveBeenCalled()
+      expect(mockSearchLocalities).toHaveBeenCalled()
     })
     expect(
       screen.queryByRole("option", { name: "Wollongong NSW 2500" })

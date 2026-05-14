@@ -43,7 +43,7 @@ export function InStockNotification() {
   }
 
   const handleViewProduct = (alert: InventoryAlert) => {
-    removeAlertByProduct(alert.productId)
+    void removeAlertByProduct(alert.productId)
     setIsVisible(false)
     // Navigate to product page
     window.location.href = `/products/${alert.productHandle}`

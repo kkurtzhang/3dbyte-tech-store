@@ -1,127 +1,76 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from "@playwright/test"
+import { addTestBundleToCart, clearCartState } from "./helpers"
 
-test.describe('Checkout Flow', () => {
-  test('checkout page loads', async ({ page }) => {
-    // Navigate to checkout page
-    await page.goto('/checkout');
+test.setTimeout(120_000)
 
-    // Check that checkout page loads
-    const main = page.locator('main');
-    await expect(main).toBeVisible();
+async function openCheckoutWithBundle(page: Parameters<typeof addTestBundleToCart>[0]) {
+  await addTestBundleToCart(page)
+  await page.goto("/checkout")
+}
 
-    // Check for checkout-specific elements
-    const checkoutContainer = page.locator('[data-testid*="checkout"], .checkout, [class*="checkout"]');
-    await expect(checkoutContainer.first()).toBeVisible();
-  });
+async function continueAsGuest(page: Parameters<typeof addTestBundleToCart>[0]) {
+  await page.getByRole("button", { name: "Continue as guest" }).click()
+  await expect(page.getByText("Checking out as guest")).toBeVisible()
+}
 
-  test('can navigate to checkout from cart', async ({ page }) => {
-    await page.goto('/cart');
+function checkoutForm(page: Parameters<typeof addTestBundleToCart>[0]) {
+  return page.locator("main form").first()
+}
 
-    // Look for checkout button
-    const checkoutButton = page.locator('a[href*="checkout"], button:has-text("Checkout"), [data-testid*="checkout"]');
-    const count = await checkoutButton.count();
+test.describe("Checkout Flow", () => {
+  test("empty checkout redirects shoppers back to the storefront", async ({ page }) => {
+    await clearCartState(page)
 
-    if (count > 0) {
-      await checkoutButton.first().click();
+    await page.goto("/checkout")
 
-      // Wait for navigation to checkout
-      await page.waitForTimeout(1000);
+    await expect(page).toHaveURL("/")
+  })
 
-      // Verify we're on checkout or related page
-      const url = page.url();
-      const isCheckout = url.includes('checkout') || url.includes('cart');
-      expect(isCheckout).toBeTruthy();
-    }
-  });
+  test("checkout page loads with cart items and order summary", async ({ page }) => {
+    await openCheckoutWithBundle(page)
 
-  test('checkout form elements are present', async ({ page }) => {
-    await page.goto('/checkout');
+    await expect(page.getByRole("heading", { name: "Checkout" })).toBeVisible()
+    await expect(page.getByTestId("order-summary")).toBeVisible()
+    await expect(page.getByTestId("order-summary")).toContainText(/order summary/i)
+  })
 
-    // Check for common form elements
-    const form = page.locator('form');
-    const formExists = await form.count() > 0;
+  test("can navigate to checkout from cart", async ({ page }) => {
+    await addTestBundleToCart(page)
+    await page.goto("/cart")
 
-    if (formExists) {
-      // Look for input fields
-      const inputs = page.locator('input[type="text"], input[type="email"], input[type="tel"]');
-      const inputCount = await inputs.count();
-      expect(inputCount).toBeGreaterThan(0);
+    await page.getByText("Proceed to Checkout").click({ noWaitAfter: true })
+    await page.waitForURL(/\/checkout/, {
+      waitUntil: "domcontentloaded",
+      timeout: 60_000,
+    })
 
-      // Look for submit/continue button
-      const submitButton = page.locator('button[type="submit"], button:has-text("Continue"), button:has-text("Place Order")');
-      const submitExists = await submitButton.count() > 0;
-      expect(submitExists).toBeTruthy();
-    }
-  });
+    await expect(page.getByTestId("order-summary")).toBeVisible()
+  })
 
-  test('checkout displays order summary', async ({ page }) => {
-    await page.goto('/checkout');
+  test("shipping contact fields accept customer input", async ({ page }) => {
+    await openCheckoutWithBundle(page)
 
-    // Look for order summary section
-    const orderSummary = page.locator('[data-testid*="summary"], .order-summary, .summary, [class*="order"]');
-    const summaryExists = await orderSummary.count() > 0;
+    await continueAsGuest(page)
+    const form = checkoutForm(page)
 
-    if (summaryExists) {
-      await expect(orderSummary.first()).toBeVisible();
-    }
-  });
+    await form.getByLabel(/email address/i).fill("test@example.com")
 
-  test('can enter shipping information', async ({ page }) => {
-    await page.goto('/checkout');
+    await expect(form.getByLabel(/email address/i)).toHaveValue("test@example.com")
+    await expect(form.getByRole("button", { name: /continue to delivery/i })).toBeVisible()
+  })
 
-    // Look for email input
-    const emailInput = page.locator('input[type="email"], input[name*="email"], [data-testid*="email"]');
-    const emailExists = await emailInput.count() > 0;
+  test("checkout validation is shown before delivery selection", async ({ page }) => {
+    await openCheckoutWithBundle(page)
 
-    if (emailExists) {
-      await emailInput.first().fill('test@example.com');
-      const value = await emailInput.first().inputValue();
-      expect(value).toBe('test@example.com');
-    }
+    await continueAsGuest(page)
+    await checkoutForm(page).getByRole("button", { name: /continue to delivery/i }).click()
 
-    // Look for name input
-    const nameInput = page.locator('input[name*="name"], input[name*="first"], [data-testid*="name"]');
-    const nameExists = await nameInput.count() > 0;
+    await expect(page.getByText("Required").first()).toBeVisible()
+  })
 
-    if (nameExists) {
-      await nameInput.first().fill('Test User');
-      const value = await nameInput.first().inputValue();
-      expect(value).toBe('Test User');
-    }
-  });
+  test("payment step is represented in the checkout flow", async ({ page }) => {
+    await openCheckoutWithBundle(page)
 
-  test('checkout validation works', async ({ page }) => {
-    await page.goto('/checkout');
-
-    // Find submit button
-    const submitButton = page.locator('button[type="submit"], button:has-text("Continue"), button:has-text("Place Order")');
-    const buttonExists = await submitButton.count() > 0;
-
-    if (buttonExists) {
-      // Try to submit empty form
-      await submitButton.first().click();
-
-      // Wait for validation messages
-      await page.waitForTimeout(500);
-
-      // Look for validation errors
-      const errorMessages = page.locator(':text("required"), :text("Required"), :text("invalid"), [data-testid*="error"], .error');
-      const errorExists = await errorMessages.count() > 0;
-
-      // Either we see validation errors or form doesn't allow submission
-      expect(true).toBeTruthy();
-    }
-  });
-
-  test('payment section is accessible', async ({ page }) => {
-    await page.goto('/checkout');
-
-    // Look for payment section
-    const paymentSection = page.locator('[data-testid*="payment"], .payment, [id*="payment"]');
-    const paymentExists = await paymentSection.count() > 0;
-
-    if (paymentExists) {
-      await expect(paymentSection.first()).toBeVisible();
-    }
-  });
-});
+    await expect(page.getByLabel("Payment")).toBeVisible()
+  })
+})

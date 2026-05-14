@@ -9,7 +9,12 @@ import type { MeiliSearch } from "meilisearch" with { "resolution-mode": "import
 
 export type MeilisearchClient = MeiliSearch;
 
-export type MeilisearchIndexType = "product" | "category" | "brand" | "address";
+export type MeilisearchIndexType =
+  | "product"
+  | "category"
+  | "brand"
+  | "address"
+  | "locality";
 
 export interface MeilisearchModuleConfig {
   host: string;
@@ -18,6 +23,7 @@ export interface MeilisearchModuleConfig {
   categoryIndexName: string;
   brandIndexName: string;
   addressIndexName: string;
+  localityIndexName: string;
   settings?: MeilisearchIndexSettings;
 }
 
@@ -173,10 +179,23 @@ export interface MeilisearchAddressDocument {
   unit: string;
   number: string;
   street: string;
-  suburb: string;   // OpenAddresses "CITY" field = AU suburb
-  state: string;    // OpenAddresses "REGION" field = AU state abbreviation
+  suburb: string; // OpenAddresses "CITY" field = AU suburb
+  state: string; // OpenAddresses "REGION" field = AU state abbreviation
   postcode: string;
-  country: string;  // "AU" or "NZ"
+  country: string; // "AU" or "NZ"
+}
+
+/**
+ * Locality document for Meilisearch indexing
+ * Sourced from unique OpenAddresses city/region/postcode combinations.
+ */
+export interface MeilisearchLocalityDocument {
+  id: string;
+  display_name: string;
+  locality: string;
+  state: string;
+  postcode: string;
+  country: string; // "AU" or "NZ"
 }
 
 export interface MeilisearchSearchOptions {

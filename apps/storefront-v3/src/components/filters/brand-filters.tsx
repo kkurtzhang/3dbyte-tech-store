@@ -28,7 +28,7 @@ export function BrandFilters({ className, brandId }: BrandFiltersProps) {
   const searchParams = useSearchParams()
 
   // Parse current filter selections from URL first (needed for facet filtering)
-  const selectedInStock = searchParams.get("inStock") === "true"
+  const selectedInStock = searchParams.get("inStock") !== "false"
 
   // Build filter overrides for facet fetching
   // Include inStock filter so facet counts reflect only in-stock items when selected
@@ -122,7 +122,8 @@ export function BrandFilters({ className, brandId }: BrandFiltersProps) {
     })
 
     // Navigate, preserving current path (brand page)
-    router.push(`${pathname}?${query.toString()}`)
+    const queryString = query.toString()
+    router.push(queryString ? `${pathname}?${queryString}` : pathname)
   }
 
   // Filter change handlers
@@ -174,7 +175,7 @@ export function BrandFilters({ className, brandId }: BrandFiltersProps) {
   }
 
   const handleInStockChange: FilterSidebarProps["onInStockChange"] = (checked) => {
-    navigate({ inStock: checked ? "true" : "false" })
+    navigate({ inStock: checked ? undefined : "false" })
   }
 
   const handlePriceChange: FilterSidebarProps["onPriceChange"] = (min, max) => {
@@ -246,7 +247,7 @@ export function BrandFilters({ className, brandId }: BrandFiltersProps) {
 
   // Build clear all URL - returns to current brand with default filters
   const buildClearAllUrl = () => {
-    return `${pathname}?inStock=true`
+    return pathname
   }
 
   // Current price range
