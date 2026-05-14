@@ -43,6 +43,11 @@ Use `main` as the production branch and `staging` as the staging branch.
   `strapi` and `karrio` databases when missing and enables `pgvector` for the
   Medusa and Strapi databases, including on volumes that already existed before
   the init SQL was mounted.
+- `postgres-init` shares the Postgres Unix socket through the `postgres_socket`
+  volume so it can repair an existing volume safely when Coolify's
+  `POSTGRES_PASSWORD` has drifted from the password used at first database
+  initialization. On each deploy it syncs the database role password back to the
+  current environment value before Medusa and Strapi start.
 - If a first staging deploy started before this bootstrap existed and Strapi
   logs `database "strapi" does not exist`, either redeploy with this compose
   change or create the database manually from the Postgres container:
