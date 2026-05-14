@@ -132,6 +132,8 @@ jobs:
           grep -q 'meilisearch_data:/meili_data' "$search_compose"
           grep -q 'expose:' "$search_compose"
           grep -q '"7700"' "$search_compose"
+          grep -q 'healthcheck:' "$search_compose"
+          grep -q 'http://127.0.0.1:7700/health' "$search_compose"
           ! grep -q '^    ports:' "$search_compose"
 
           grep -qx "COMPOSE_PROJECT_NAME=3dbyte-search" "$search_env"

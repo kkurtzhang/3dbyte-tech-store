@@ -10,6 +10,8 @@ staging or production app stack.
 - Environment checklist: `deploy/search/search.env.example`
 - Do not add host port mappings for `7700`.
 - Do not use `MEILISEARCH_MASTER_KEY` in storefront, Medusa, or Strapi app envs.
+- The compose health check probes the public `/health` endpoint inside the
+  container; no API key is required for that route.
 
 After the resource is online, use the master key to create scoped API keys:
 
