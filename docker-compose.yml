@@ -284,6 +284,7 @@ services:
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - postgres_socket:/var/run/postgresql
       - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
@@ -304,10 +305,12 @@ services:
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}"
       STRAPI_DATABASE_NAME: "${STRAPI_DATABASE_NAME:-strapi}"
       KARRIO_DATABASE_NAME: "${KARRIO_DATABASE_NAME:-karrio}"
+      POSTGRES_SOCKET_DIR: /var/run/postgresql
     depends_on:
       postgres:
         condition: service_healthy
     volumes:
+      - postgres_socket:/var/run/postgresql
       - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
     command:
       - sh
@@ -356,4 +359,5 @@ services:
 
 volumes:
   postgres_data:
+  postgres_socket:
   redis_data:
