@@ -6,7 +6,6 @@ import { ListingLayout } from "@/components/layout/listing-layout";
 import { SearchFilters } from "@/components/filters";
 import { ShopSort, type SortOption } from "@/features/shop/components/shop-sort";
 import { parseDynamicOptionParams } from "@/lib/utils/search-params";
-import { redirect } from "next/navigation";
 
 interface SearchPageProps {
   searchParams: Promise<{
@@ -27,18 +26,9 @@ interface SearchPageProps {
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const params = await searchParams;
-
-  // Redirect to set inStock=true by default if not explicitly set to "false"
-  if (params.inStock === undefined) {
-    const url = new URLSearchParams();
-    Object.entries(params).forEach(([key, value]) => {
-      if (value) url.set(key, value);
-    });
-    url.set("inStock", "true");
-    redirect(`/search?${url.toString()}`);
-  }
   const query = params.q || "";
   const sort = params.sort || "newest";
+  const effectiveInStock = params.inStock !== "false";
 
   // Parse filters from searchParams for initial fetch
   const categoryIds = params.category?.split(",").filter(Boolean) || [];
@@ -59,7 +49,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       collectionIds: collectionIds.length > 0 ? collectionIds : undefined,
       isBundle: params.bundle === "true" ? true : undefined,
       onSale: params.onSale === "true" ? true : undefined,
-      inStock: params.inStock === "true" ? true : undefined,
+      inStock: effectiveInStock ? true : undefined,
       minPrice: params.minPrice ? Number(params.minPrice) : undefined,
       maxPrice: params.maxPrice ? Number(params.maxPrice) : undefined,
       options: Object.keys(dynamicOptions).length > 0 ? dynamicOptions : undefined,

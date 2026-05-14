@@ -42,6 +42,7 @@ export function ShopSort({ className, basePath = "/shop" }: ShopSortProps) {
       category: searchParams.get("category") || undefined,
       collection: searchParams.get("collection") || undefined,
       brand: searchParams.get("brand") || undefined,
+      bundle: searchParams.get("bundle") || undefined,
       onSale: searchParams.get("onSale") || undefined,
       inStock: searchParams.get("inStock") || undefined,
       minPrice: searchParams.get("minPrice") || undefined,

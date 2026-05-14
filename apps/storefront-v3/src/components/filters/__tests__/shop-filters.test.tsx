@@ -1,16 +1,19 @@
-import { render } from "@testing-library/react"
+import { fireEvent, render, screen } from "@testing-library/react"
 import { ShopFilters } from "../shop-filters"
 import { SearchFilters } from "../search-filters"
 import type { FilterFacets } from "@/features/shop/types/filters"
+import type { FilterSidebarProps } from "../filter-sidebar"
 
 const pushMock = jest.fn()
+const filterSidebarMock = jest.fn()
 
 let mockFacets: FilterFacets | null = null
+let mockSearchParams = new URLSearchParams("inStock=true")
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: pushMock }),
   useSearchParams: () =>
-    new URLSearchParams("inStock=true"),
+    mockSearchParams,
 }))
 
 jest.mock("../hooks/use-filter-facets", () => ({
@@ -33,7 +36,18 @@ jest.mock("../hooks/use-facet-labels", () => ({
 }))
 
 jest.mock("../filter-sidebar", () => ({
-  FilterSidebar: () => <div data-testid="filter-sidebar" />,
+  FilterSidebar: (props: FilterSidebarProps) => {
+    filterSidebarMock(props)
+
+    return (
+      <div data-testid="filter-sidebar" data-in-stock={String(props.selectedInStock)}>
+        <a href={props.clearAllUrl}>Clear filters</a>
+        <button type="button" onClick={() => props.onInStockChange?.(false)}>
+          Disable stock filter
+        </button>
+      </div>
+    )
+  },
 }))
 
 const FACETS_FIXTURE: FilterFacets = {
@@ -50,7 +64,9 @@ const FACETS_FIXTURE: FilterFacets = {
 describe("filter wrappers", () => {
   beforeEach(() => {
     mockFacets = null
+    mockSearchParams = new URLSearchParams("inStock=true")
     pushMock.mockReset()
+    filterSidebarMock.mockReset()
   })
 
   it("rerenders ShopFilters cleanly when facets load", () => {
@@ -79,5 +95,22 @@ describe("filter wrappers", () => {
     }).not.toThrow()
 
     consoleErrorSpy.mockRestore()
+  })
+
+  it("keeps the shop in-stock filter enabled by default without requiring an inStock URL param", () => {
+    mockSearchParams = new URLSearchParams("")
+    mockFacets = FACETS_FIXTURE
+
+    render(<ShopFilters />)
+
+    expect(screen.getByTestId("filter-sidebar")).toHaveAttribute("data-in-stock", "true")
+    expect(screen.getByRole("link", { name: "Clear filters" })).toHaveAttribute(
+      "href",
+      "/shop"
+    )
+
+    fireEvent.click(screen.getByRole("button", { name: "Disable stock filter" }))
+
+    expect(pushMock).toHaveBeenCalledWith("/shop?inStock=false")
   })
 })

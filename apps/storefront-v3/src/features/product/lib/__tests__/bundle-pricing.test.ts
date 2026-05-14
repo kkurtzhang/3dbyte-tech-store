@@ -443,7 +443,7 @@ describe("bundle-pricing", () => {
     )
   })
 
-  it("marks backorderable bundle items without stock as out of stock", () => {
+  it("treats backorderable bundle items without tracked stock as in stock", () => {
     const bundle = {
       id: "bundle_123",
       title: "Starter Bundle",
@@ -480,8 +480,8 @@ describe("bundle-pricing", () => {
 
     expect(getBundleInventorySummary(bundle)).toEqual(
       expect.objectContaining({
-        status: "out-of-stock",
-        availableQuantity: 0,
+        status: "in-stock",
+        availableQuantity: null,
       })
     )
   })

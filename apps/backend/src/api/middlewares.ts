@@ -15,6 +15,7 @@ import { z } from "@medusajs/framework/zod";
 import { createFindParams } from "@medusajs/medusa/api/utils/validators";
 import { storeSearchRoutesMiddlewares } from "./store/search/middlewares";
 import { storeAddressAutocompleteMiddlewares } from "./store/addresses/autocomplete/middlewares";
+import { storeLocalityAutocompleteMiddlewares } from "./store/localities/autocomplete/middlewares";
 import { UpsertPreorderVariantSchema } from "./admin/variants/[id]/preorders/route";
 import { AddPricedLineItemSchema } from "./store/carts/[id]/line-items-priced/route";
 import { PostAdminCreateBundledProduct } from "./admin/bundled-products/validators";
@@ -138,10 +139,31 @@ export default defineMiddlewares({
     },
     ...storeSearchRoutesMiddlewares,
     ...storeAddressAutocompleteMiddlewares,
+    ...storeLocalityAutocompleteMiddlewares,
     // Wishlist routes
     {
       matcher: "/store/wishlist",
       middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
+      matcher: "/store/waitlist",
+      methods: ["GET", "DELETE"],
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
+      matcher: "/store/waitlist",
+      methods: ["POST"],
+      middlewares: [
+        authenticate("customer", ["session", "bearer"], {
+          allowUnauthenticated: true,
+        }),
+      ],
+    },
+    {
+      matcher: "/admin/waitlist*",
+      middlewares: [
+        authenticate("user", ["session", "bearer", "api-key"]),
+      ],
     },
     {
       matcher: "/store/carts/:id/line-item-bundles",
@@ -155,6 +177,11 @@ export default defineMiddlewares({
     },
     {
       matcher: "/store/wishlist/:id",
+      methods: ["DELETE"],
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
+      matcher: "/store/waitlist/:id",
       methods: ["DELETE"],
       middlewares: [authenticate("customer", ["session", "bearer"])],
     },

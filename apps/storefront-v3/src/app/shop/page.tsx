@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { searchProducts } from "@/lib/search/products";
 
@@ -42,14 +41,17 @@ interface ShopPageProps {
 /**
  * Check if any filters are active
  */
-function hasActiveFilters(params: ShopPageProps["searchParams"] extends Promise<infer T> ? T : never): boolean {
+function hasActiveFilters(
+  params: ShopPageProps["searchParams"] extends Promise<infer T> ? T : never,
+  effectiveInStock: boolean
+): boolean {
   return (
     !!params.category ||
     !!params.brand ||
     !!params.collection ||
     params.bundle === "true" ||
     params.onSale === "true" ||
-    params.inStock === "true" ||
+    effectiveInStock ||
     !!params.minPrice ||
     !!params.maxPrice ||
     !!params.q ||
@@ -71,7 +73,7 @@ function buildPaginationUrl(
     brand: params.brand,
     bundle: params.bundle,
     onSale: params.onSale,
-    inStock: params.inStock,
+    inStock: params.inStock === "false" ? "false" : undefined,
     minPrice: params.minPrice,
     maxPrice: params.maxPrice,
     sort: sort !== "newest" ? sort : undefined,
@@ -86,19 +88,10 @@ function buildPaginationUrl(
 export default async function ShopPage({ searchParams }: ShopPageProps) {
   const params = await searchParams;
 
-  // Redirect to add inStock=true by default if not explicitly set
-  // This ensures the In Stock filter is checked by default
-  if (params.inStock === undefined) {
-    const redirectParams: ShopQueryParams = {
-      ...params,
-      inStock: "true",
-    };
-    redirect(buildShopUrl(redirectParams));
-  }
-
   const page = Number(params.page) || 1;
   const limit = 20;
   const sort = params.sort || "newest";
+  const effectiveInStock = params.inStock !== "false";
 
   // Parse category filters
   const categoryIds = params.category?.split(",").filter(Boolean) || [];
@@ -128,7 +121,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
       collectionIds: collectionIds.length > 0 ? collectionIds : undefined,
       isBundle: params.bundle === "true" ? true : undefined,
       onSale: params.onSale === "true" ? true : undefined,
-      inStock: params.inStock === "true" ? true : undefined,
+      inStock: effectiveInStock ? true : undefined,
       minPrice,
       maxPrice,
       options: Object.keys(options).length > 0 ? options : undefined,
@@ -160,7 +153,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
   const totalPages = Math.ceil(result.totalCount / limit);
 
   // Check if any filters are active (for empty state)
-  const filtersActive = hasActiveFilters(params);
+  const filtersActive = hasActiveFilters(params, effectiveInStock);
 
   // Handle empty state
   if (result.products.length === 0) {

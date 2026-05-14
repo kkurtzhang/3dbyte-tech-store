@@ -8,9 +8,9 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { formatPrice } from "@/components/ui/price-display"
 import { useDebounce } from "@/lib/hooks/use-debounce"
-import { searchAddresses } from "@/lib/search/addresses"
+import { searchLocalities } from "@/lib/search/localities"
 import {
-  getLocalitySuggestionsFromAddresses,
+  getLocalitySuggestionsFromLocalities,
   getPrimaryShippingEstimate,
   inferAustralianStateFromPostcode,
   isValidAustralianPostcode,
@@ -124,23 +124,25 @@ export function ProductShippingEstimate({
       }
     }
 
-    searchAddresses(normalizedDestination, 8, "AU").then((result) => {
-      if (!isCurrent) {
-        return
+    searchLocalities(normalizedDestination, 8, { country: "AU" }).then(
+      (result) => {
+        if (!isCurrent) {
+          return
+        }
+
+        const suggestions = getLocalitySuggestionsFromLocalities(
+          result.localities,
+          isValidAustralianPostcode(normalizedPostcode)
+            ? normalizedPostcode
+            : undefined
+        )
+
+        setLocalitySuggestions(suggestions)
+        setShowLocalitySuggestions(
+          isDestinationFocusedRef.current && suggestions.length > 0
+        )
       }
-
-      const suggestions = getLocalitySuggestionsFromAddresses(
-        result.addresses,
-        isValidAustralianPostcode(normalizedPostcode)
-          ? normalizedPostcode
-          : undefined
-      )
-
-      setLocalitySuggestions(suggestions)
-      setShowLocalitySuggestions(
-        isDestinationFocusedRef.current && suggestions.length > 0
-      )
-    })
+    )
 
     return () => {
       isCurrent = false

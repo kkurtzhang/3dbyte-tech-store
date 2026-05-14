@@ -59,8 +59,14 @@ export function CartSheet() {
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <ShoppingCart className="h-5 w-5" />
+          <span className="sr-only">
+            Open cart{itemCount > 0 ? `, ${itemCount} ${itemCount === 1 ? "item" : "items"}` : ""}
+          </span>
           {itemCount > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-sm bg-primary text-[10px] font-bold text-primary-foreground">
+            <span
+              aria-hidden="true"
+              className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-sm bg-primary text-[10px] font-bold text-primary-foreground"
+            >
               {itemCount}
             </span>
           )}

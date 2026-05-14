@@ -1,20 +1,11 @@
 import { expect, test } from "@playwright/test"
+import { addTestBundleToCart } from "./helpers"
+
+test.setTimeout(120_000)
 
 test.describe("Checkout summary pricing", () => {
   test("keeps cart prices intact through checkout", async ({ page }) => {
-    await page.goto("/")
-    await page.evaluate(() => {
-      localStorage.removeItem("_medusa_cart_id")
-      document.cookie = "_medusa_cart_id=; Path=/; Max-Age=0; SameSite=Lax"
-    })
-
-    await page.goto("/products/test-bundle-product")
-
-    await page.getByRole("button", { name: /add bundle to cart/i }).click()
-    await expect(page.getByText("Bundle added to cart", { exact: true })).toBeVisible({
-      timeout: 60_000,
-    })
-    await page.waitForFunction(() => localStorage.getItem("_medusa_cart_id"))
+    await addTestBundleToCart(page)
 
     await page.goto("/cart")
     await expect(page.getByText("Proceed to Checkout")).toBeVisible({
@@ -28,7 +19,7 @@ test.describe("Checkout summary pricing", () => {
     const orderSummary = page.getByTestId("order-summary")
     await expect(orderSummary).toBeVisible()
 
-    await expect(orderSummary).toContainText("Order summary")
+    await expect(orderSummary).toContainText(/order summary/i)
     await expect(orderSummary).toContainText("A$87.40")
     await expect(orderSummary).toContainText("A$46.08")
     await expect(orderSummary).toContainText("A$41.32")

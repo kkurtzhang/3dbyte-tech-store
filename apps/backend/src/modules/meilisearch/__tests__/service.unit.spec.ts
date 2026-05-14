@@ -34,7 +34,8 @@ function createService() {
       categoryIndexName: "categories",
       brandIndexName: "brands",
       addressIndexName: "addresses",
-    }
+      localityIndexName: "localities",
+    },
   );
 }
 
@@ -64,7 +65,7 @@ describe("MeilisearchModuleService.configureIndex", () => {
         filterableAttributes: [],
         sortableAttributes: [],
       },
-      "address"
+      "address",
     );
 
     expect(mockIndex.updateFilterableAttributes).toHaveBeenCalledWith([]);

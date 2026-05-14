@@ -13,6 +13,7 @@
  *   - MEILISEARCH_HOST: Meilisearch server URL
  *   - MEILISEARCH_API_KEY: Meilisearch API key
  *   - MEILISEARCH_ADDRESS_INDEX_NAME: Production index name (default: "addresses")
+ *   - MEILISEARCH_LOCALITY_INDEX_NAME: Locality index name (default: "localities")
  *   - OPENADDRESSES_API_TOKEN: Optional API token for OpenAddresses batch API
  *   - OPENADDRESSES_DOWNLOAD_URL: Optional override for the download URL
  */
@@ -26,7 +27,7 @@ import type { AddressPipelineConfig } from "../lib/address-pipeline/types";
 const DEFAULT_ADDRESS_SYNC_BATCH_SIZE = 50_000;
 
 export default async function syncAddressesJob(
-  container: MedusaContainer
+  container: MedusaContainer,
 ): Promise<void> {
   const logger: Logger = container.resolve("logger");
 
@@ -45,7 +46,7 @@ export default async function syncAddressesJob(
     if (jobId > 0) {
       logger.info(
         `Discovered OpenAddresses job ${jobId} ` +
-          `(${expectedCount.toLocaleString()} expected rows): ${downloadUrl}`
+          `(${expectedCount.toLocaleString()} expected rows): ${downloadUrl}`,
       );
     } else {
       logger.info(`Using override download URL: ${downloadUrl}`);
@@ -54,14 +55,16 @@ export default async function syncAddressesJob(
     // Step 2: Build pipeline config from environment
     const config: AddressPipelineConfig = {
       batchSize: Number(
-        process.env.ADDRESS_SYNC_BATCH_SIZE || DEFAULT_ADDRESS_SYNC_BATCH_SIZE
+        process.env.ADDRESS_SYNC_BATCH_SIZE || DEFAULT_ADDRESS_SYNC_BATCH_SIZE,
       ),
       tempIndexPrefix: "addresses_tmp_",
-      meilisearchHost:
-        process.env.MEILISEARCH_HOST || "http://localhost:7700",
+      localityTempIndexPrefix: "localities_tmp_",
+      meilisearchHost: process.env.MEILISEARCH_HOST || "http://localhost:7700",
       meilisearchApiKey: process.env.MEILISEARCH_API_KEY || "",
       addressIndexName:
         process.env.MEILISEARCH_ADDRESS_INDEX_NAME || "addresses",
+      localityIndexName:
+        process.env.MEILISEARCH_LOCALITY_INDEX_NAME || "localities",
     };
 
     // Step 3: Run the ingestion pipeline
@@ -69,8 +72,9 @@ export default async function syncAddressesJob(
 
     logger.info(
       `Address sync completed: ${result.totalRows.toLocaleString()} rows, ` +
+        `${result.localityRows.toLocaleString()} localities, ` +
         `${result.batchesProcessed} batches, ` +
-        `${(result.durationMs / 1000).toFixed(1)}s`
+        `${(result.durationMs / 1000).toFixed(1)}s`,
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";

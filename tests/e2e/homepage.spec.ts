@@ -8,11 +8,11 @@ test.describe('Homepage', () => {
     await expect(page).toHaveTitle(/3D Byte Tech Store/);
 
     // Check for common navigation elements
-    const navigation = page.locator('nav, header');
+    const navigation = page.getByRole('banner');
     await expect(navigation).toBeVisible();
 
     // Check that main content area is present
-    const main = page.locator('main');
+    const main = page.locator('main').first();
     await expect(main).toBeVisible();
   });
 
@@ -36,10 +36,10 @@ test.describe('Homepage', () => {
 
     // Test mobile view
     await page.setViewportSize({ width: 375, height: 667 });
-    await expect(page.locator('nav, header')).toBeVisible();
+    await expect(page.getByRole('banner')).toBeVisible();
 
     // Test desktop view
     await page.setViewportSize({ width: 1920, height: 1080 });
-    await expect(page.locator('nav, header')).toBeVisible();
+    await expect(page.getByRole('banner')).toBeVisible();
   });
 });

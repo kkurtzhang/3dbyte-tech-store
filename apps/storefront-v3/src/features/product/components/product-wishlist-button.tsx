@@ -1,9 +1,11 @@
 "use client"
 
 import { Heart } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { useWishlist, type WishlistItem } from "@/context/wishlist-context"
+import { useWishlist } from "@/context/wishlist-context"
 import { useToast } from "@/lib/hooks/use-toast"
+import type { WishlistItem } from "@/lib/wishlist/types"
 import { cn } from "@/lib/utils"
 
 interface ProductWishlistButtonProps {
@@ -16,12 +18,30 @@ export function ProductWishlistButton({
   className,
 }: ProductWishlistButtonProps) {
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
+  const router = useRouter()
   const { toast } = useToast()
   const isSaved = isInWishlist(item.id)
 
-  const handleClick = () => {
+  const handleClick = async () => {
+    const result = isSaved
+      ? await removeFromWishlist(item.id)
+      : await addToWishlist(item)
+
+    if (result.requiresAuth) {
+      router.push("/sign-in")
+      return
+    }
+
+    if (!result.success) {
+      toast({
+        title: "Wishlist update failed",
+        description: result.error ?? "Please try again.",
+        variant: "destructive",
+      })
+      return
+    }
+
     if (isSaved) {
-      removeFromWishlist(item.id)
       toast({
         title: "Removed from wishlist",
         description: "This product has been removed from your saved items.",
@@ -29,7 +49,6 @@ export function ProductWishlistButton({
       return
     }
 
-    addToWishlist(item)
     toast({
       title: "Saved to wishlist",
       description: "This product is ready in your wishlist whenever you come back.",

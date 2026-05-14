@@ -8,22 +8,31 @@ const readString = (value: string | undefined): string | undefined => {
   return trimmed ? trimmed : undefined;
 };
 
+const readBoolean = (value: string | undefined): boolean =>
+  value?.toLowerCase() === "true";
+
 export const getResendNotificationProvider = (
   env: ResendEnv = process.env,
 ): ResendProviderConfig | undefined => {
   const apiKey = readString(env.RESEND_API_KEY);
-  const from = readString(env.RESEND_FROM_EMAIL);
+  const from = readString(env.RESEND_FROM) || readString(env.RESEND_FROM_EMAIL);
+  const enabled =
+    env.RESEND_ENABLED === undefined
+      ? Boolean(apiKey && from)
+      : readBoolean(env.RESEND_ENABLED);
 
-  if (!apiKey || !from) {
+  if (!enabled || !apiKey || !from) {
     return undefined;
   }
+
+  const apiUrl = readString(env.RESEND_API_URL);
 
   return {
     resolve: "./src/modules/resend-notification",
     id: "resend",
     options: {
       apiKey,
-      apiUrl: readString(env.RESEND_API_URL) || "https://api.resend.com",
+      ...(apiUrl ? { apiUrl } : {}),
       channels: ["email"],
       from,
     },

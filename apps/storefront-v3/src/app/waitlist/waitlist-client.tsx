@@ -9,16 +9,34 @@ import { toast } from "@/lib/hooks/use-toast"
 export function WaitlistClient() {
   const { alerts, isLoading, removeAlert, clearAlerts } = useInventoryAlerts()
 
-  const handleRemoveAlert = (alert: InventoryAlert) => {
-    removeAlert(alert.id)
+  const handleRemoveAlert = async (alert: InventoryAlert) => {
+    const result = await removeAlert(alert.id)
+    if (!result.success) {
+      toast({
+        variant: "destructive",
+        title: "Unable to remove notification",
+        description: result.error,
+      })
+      return
+    }
+
     toast({
       title: "Notification removed",
       description: `You will no longer be notified about ${alert.productTitle}`,
     })
   }
 
-  const handleClearAll = () => {
-    clearAlerts()
+  const handleClearAll = async () => {
+    const result = await clearAlerts()
+    if (!result.success) {
+      toast({
+        variant: "destructive",
+        title: "Unable to clear waitlist",
+        description: result.error,
+      })
+      return
+    }
+
     toast({
       title: "Waitlist cleared",
       description: "All notifications have been removed",
@@ -163,6 +181,7 @@ export function WaitlistClient() {
                       size="sm"
                       onClick={() => handleRemoveAlert(alert)}
                       className="text-muted-foreground hover:text-destructive"
+                      aria-label={`Remove ${alert.productTitle} from waitlist`}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -233,6 +252,7 @@ export function WaitlistClient() {
                 size="sm"
                 onClick={() => handleRemoveAlert(alert)}
                 className="text-muted-foreground hover:text-destructive"
+                aria-label={`Remove ${alert.productTitle} from waitlist`}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -249,7 +269,7 @@ export function WaitlistClient() {
         </h3>
         <ul className="text-sm text-muted-foreground space-y-2 ml-7 list-disc">
           <li>You'll receive an email when any product on your waitlist is back in stock</li>
-          <li>Notifications are stored locally in your browser - they won't sync across devices</li>
+          <li>Notifications are saved to your account and sync across devices</li>
           <li>You can remove items from your waitlist at any time</li>
           <li>Once a product becomes available, the notification will be marked as fulfilled</li>
         </ul>

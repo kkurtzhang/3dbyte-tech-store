@@ -93,3 +93,52 @@ export type AdminBundledProductsResponse = {
 };
 
 export interface BundledProductQueryParams extends FindParams {}
+
+export type AdminWaitlistEntry = {
+  id: string;
+  customer_email: string;
+  customer_id?: string | null;
+  product_id: string;
+  product_variant_id?: string | null;
+  product_handle: string;
+  product_title: string;
+  variant_title?: string | null;
+  notified: boolean;
+  notification_count?: number | null;
+  created_at?: string | null;
+  notified_at?: string | null;
+  last_notified_at?: string | null;
+};
+
+export type AdminWaitlistDemand = {
+  product_id: string;
+  product_variant_id: string | null;
+  product_handle: string;
+  product_title: string;
+  variant_title: string | null;
+  queued_count: number;
+  notified_count: number;
+  total_count: number;
+};
+
+export type AdminWaitlistEntriesResponse = {
+  entries: AdminWaitlistEntry[];
+  count: number;
+  limit: number;
+  offset: number;
+};
+
+export type AdminWaitlistDemandResponse = {
+  demand: AdminWaitlistDemand[];
+};
+
+export interface WaitlistQueryParams extends FindParams {
+  product_id?: string;
+  q?: string;
+  status?: "all" | "queued" | "notified";
+}
+
+export type SendWaitlistTestNotificationParams = {
+  email: string;
+  waitlist_id: string;
+};

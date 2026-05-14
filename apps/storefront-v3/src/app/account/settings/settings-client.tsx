@@ -276,7 +276,7 @@ export function SettingsContent({ customer }: SettingsPageProps) {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            Once you delete your account, there is no going back. All your orders, saved items, and loyalty points will be permanently removed.
+            Once you delete your account, there is no going back. Your orders, account details, and saved account data will be permanently removed.
           </p>
           <DeleteAccountButton />
         </CardContent>

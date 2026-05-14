@@ -1,5 +1,6 @@
 import {
   getLocalitySuggestionsFromAddresses,
+  getLocalitySuggestionsFromLocalities,
   getPrimaryShippingEstimate,
   inferAustralianStateFromPostcode,
   isValidAustralianPostcode,
@@ -126,6 +127,41 @@ describe("product shipping estimate helpers", () => {
     ).toEqual([
       {
         id: "wollongong|NSW|2500|AU",
+        label: "Wollongong NSW 2500",
+        suburb: "Wollongong",
+        state: "NSW",
+        postcode: "2500",
+        country: "AU",
+      },
+    ])
+  })
+
+  it("builds suburb suggestions from locality search results", () => {
+    expect(
+      getLocalitySuggestionsFromLocalities(
+        [
+          {
+            id: "au_nsw_2500_wollongong",
+            display_name: "Wollongong, NSW 2500",
+            locality: "Wollongong",
+            state: "nsw",
+            postcode: "2500",
+            country: "au",
+          },
+          {
+            id: "au_tas_7000_hobart",
+            display_name: "Hobart, TAS 7000",
+            locality: "Hobart",
+            state: "TAS",
+            postcode: "7000",
+            country: "AU",
+          },
+        ],
+        "2500"
+      )
+    ).toEqual([
+      {
+        id: "au_nsw_2500_wollongong",
         label: "Wollongong NSW 2500",
         suburb: "Wollongong",
         state: "NSW",

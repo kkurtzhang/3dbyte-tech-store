@@ -6,6 +6,28 @@ import { redirect } from "next/navigation"
 import { sdk } from "@/lib/medusa/client"
 
 const SESSION_COOKIE = "_medusa_authenticated"
+const CUSTOMER_TOKEN_COOKIE = "_medusa_customer_token"
+const SESSION_MAX_AGE = 60 * 60 * 24 * 7
+
+const sessionCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  maxAge: SESSION_MAX_AGE,
+}
+
+function getAuthHeaders(token: string) {
+  return {
+    Authorization: `Bearer ${token}`,
+  }
+}
+
+export async function getCustomerAuthHeaders() {
+  const cookieStore = await cookies()
+  const token = cookieStore.get(CUSTOMER_TOKEN_COOKIE)?.value
+
+  return token ? getAuthHeaders(token) : null
+}
 
 export interface AuthUser {
   id: string
@@ -31,19 +53,15 @@ export async function loginAction(email: string, password: string) {
       }
     }
 
-    // Auth successful - SDK automatically stores the token
-    // Get current customer session
-    const { customer } = await sdk.store.customer.retrieve()
+    const { customer } = await sdk.store.customer.retrieve(
+      {},
+      getAuthHeaders(result)
+    )
 
     if (customer) {
-      // Store session marker
       const cookieStore = await cookies()
-      cookieStore.set(SESSION_COOKIE, "true", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7, // 7 days
-      })
+      cookieStore.set(SESSION_COOKIE, "true", sessionCookieOptions)
+      cookieStore.set(CUSTOMER_TOKEN_COOKIE, result, sessionCookieOptions)
 
       revalidatePath("/")
       return { success: true, user: customer as unknown as AuthUser }
@@ -64,17 +82,30 @@ export async function registerAction(
 ) {
   try {
     // Register with Medusa auth
-    await sdk.auth.register("customer", "emailpass", {
+    const registrationToken = await sdk.auth.register("customer", "emailpass", {
       email,
       password,
     })
 
+    if (typeof registrationToken !== "string") {
+      return {
+        success: false,
+        error: "Registration requires additional steps",
+      }
+    }
+
     // Create customer profile with explicit type
-    const { customer } = await sdk.store.customer.create({
-      email,
-      first_name: firstName || "",
-      last_name: lastName || "",
-    } as any)
+    const { customer } = await sdk.store.customer.create(
+      {
+        email,
+        first_name: firstName || "",
+        last_name: lastName || "",
+      } as any,
+      {},
+      {
+        Authorization: `Bearer ${registrationToken}`,
+      }
+    )
 
     if (customer) {
       // Auto-login after registration
@@ -90,7 +121,12 @@ export async function registerAction(
 
 export async function getSessionAction() {
   try {
-    const { customer } = await sdk.store.customer.retrieve()
+    const authHeaders = await getCustomerAuthHeaders()
+    if (!authHeaders) {
+      return { success: false, error: "No session" }
+    }
+
+    const { customer } = await sdk.store.customer.retrieve({}, authHeaders)
 
     if (customer) {
       return { success: true, user: customer as unknown as AuthUser }
@@ -107,6 +143,7 @@ export async function logoutAction() {
     await sdk.auth.logout()
     const cookieStore = await cookies()
     cookieStore.delete(SESSION_COOKIE)
+    cookieStore.delete(CUSTOMER_TOKEN_COOKIE)
     revalidatePath("/")
     return { success: true }
   } catch (error: any) {
@@ -121,7 +158,16 @@ export async function updateProfileAction(data: {
   phone?: string
 }) {
   try {
-    const { customer } = await sdk.store.customer.update(data as any)
+    const authHeaders = await getCustomerAuthHeaders()
+    if (!authHeaders) {
+      return { success: false, error: "No session" }
+    }
+
+    const { customer } = await sdk.store.customer.update(
+      data as any,
+      {},
+      authHeaders
+    )
     revalidatePath("/account")
     return { success: true, user: customer as unknown as AuthUser }
   } catch (error: any) {
@@ -167,7 +213,12 @@ export async function getAddressesAction(): Promise<{
   error?: string
 }> {
   try {
-    const { customer } = await sdk.store.customer.retrieve()
+    const authHeaders = await getCustomerAuthHeaders()
+    if (!authHeaders) {
+      return { success: false, error: "No session", addresses: [] }
+    }
+
+    const { customer } = await sdk.store.customer.retrieve({}, authHeaders)
     if (customer?.addresses) {
       return {
         success: true,
@@ -197,7 +248,16 @@ export async function addAddressAction(data: {
   phone?: string
 }) {
   try {
-    const { customer } = await sdk.store.customer.createAddress(data as any)
+    const authHeaders = await getCustomerAuthHeaders()
+    if (!authHeaders) {
+      return { success: false, error: "No session" }
+    }
+
+    const { customer } = await sdk.store.customer.createAddress(
+      data as any,
+      {},
+      authHeaders
+    )
     revalidatePath("/account/addresses")
     return { success: true, customer }
   } catch (error: any) {
@@ -220,7 +280,17 @@ export async function updateAddressAction(
   }>
 ) {
   try {
-    const { customer } = await sdk.store.customer.updateAddress(addressId, data as any)
+    const authHeaders = await getCustomerAuthHeaders()
+    if (!authHeaders) {
+      return { success: false, error: "No session" }
+    }
+
+    const { customer } = await sdk.store.customer.updateAddress(
+      addressId,
+      data as any,
+      {},
+      authHeaders
+    )
     revalidatePath("/account/addresses")
     return { success: true, customer }
   } catch (error: any) {
@@ -234,7 +304,12 @@ export async function updateAddressAction(
 
 export async function deleteAddressAction(addressId: string) {
   try {
-    await sdk.store.customer.deleteAddress(addressId)
+    const authHeaders = await getCustomerAuthHeaders()
+    if (!authHeaders) {
+      return { success: false, error: "No session" }
+    }
+
+    await sdk.store.customer.deleteAddress(addressId, authHeaders)
     revalidatePath("/account/addresses")
     return { success: true }
   } catch (error: any) {
@@ -248,9 +323,19 @@ export async function deleteAddressAction(addressId: string) {
 
 export async function setDefaultAddressAction(addressId: string) {
   try {
-    const { customer } = await sdk.store.customer.updateAddress(addressId, {
-      is_default: true,
-    } as any)
+    const authHeaders = await getCustomerAuthHeaders()
+    if (!authHeaders) {
+      return { success: false, error: "No session" }
+    }
+
+    const { customer } = await sdk.store.customer.updateAddress(
+      addressId,
+      {
+        is_default: true,
+      } as any,
+      {},
+      authHeaders
+    )
     revalidatePath("/account/addresses")
     return { success: true, customer }
   } catch (error: any) {

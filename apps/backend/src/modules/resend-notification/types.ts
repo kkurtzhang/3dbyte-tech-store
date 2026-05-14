@@ -1,7 +1,7 @@
 export type ResendNotificationOptions = {
   apiKey: string;
-  apiUrl: string;
-  channels: string[];
+  apiUrl?: string;
+  channels?: string[];
   from: string;
 };
 

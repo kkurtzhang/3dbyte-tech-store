@@ -93,7 +93,7 @@ export function ShopFilters({ className }: ShopFiltersProps) {
   const selectedCollections = searchParams.get("collection")?.split(",").filter(Boolean) || []
   const selectedBundleOnly = searchParams.get("bundle") === "true"
   const selectedOnSale = searchParams.get("onSale") === "true"
-  const selectedInStock = searchParams.get("inStock") === "true"
+  const selectedInStock = searchParams.get("inStock") !== "false"
 
   // Parse dynamic options from URL (e.g., options_colour=Black,White)
   const selectedOptions = useMemo(() => {
@@ -317,8 +317,7 @@ export function ShopFilters({ className }: ShopFiltersProps) {
     const params = getCurrentParams()
     updateFilters({
       ...params,
-      // Use "false" instead of undefined to prevent redirect from re-adding inStock=true
-      inStock: checked ? "true" : "false",
+      inStock: checked ? undefined : "false",
     })
   }
 
@@ -436,8 +435,7 @@ export function ShopFilters({ className }: ShopFiltersProps) {
     }
   }
 
-  // Build clear all URL (preserves inStock=true by default)
-  const clearAllUrl = "/shop?inStock=true"
+  const clearAllUrl = "/shop"
 
   // Build current price range for display
   const currentPriceRange = facets

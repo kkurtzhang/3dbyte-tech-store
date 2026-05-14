@@ -9,8 +9,8 @@ export async function GET(
   req: MedusaRequest,
   res: MedusaResponse
 ) {
-  const wishlistModule = req.scope.resolve<any>("wishlistModuleService");
-  const customerId = (req as any).auth?.actor_id;
+  const wishlistModule = req.scope.resolve<any>("wishlist");
+  const customerId = (req as any).auth_context?.actor_id;
 
   if (!customerId) {
     return res.status(401).json({
@@ -38,8 +38,8 @@ export async function POST(
   req: MedusaRequest<AddToWishlistRequest>,
   res: MedusaResponse
 ) {
-  const wishlistModule = req.scope.resolve<any>("wishlistModuleService");
-  const customerId = (req as any).auth?.actor_id;
+  const wishlistModule = req.scope.resolve<any>("wishlist");
+  const customerId = (req as any).auth_context?.actor_id;
 
   if (!customerId) {
     return res.status(401).json({

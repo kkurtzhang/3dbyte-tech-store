@@ -6,6 +6,7 @@ const addToWishlist = jest.fn()
 const removeFromWishlist = jest.fn()
 const isInWishlist = jest.fn()
 const toast = jest.fn()
+const push = jest.fn()
 
 jest.mock("@/context/wishlist-context", () => ({
   useWishlist: () => ({
@@ -18,6 +19,12 @@ jest.mock("@/context/wishlist-context", () => ({
 jest.mock("@/lib/hooks/use-toast", () => ({
   useToast: () => ({
     toast,
+  }),
+}))
+
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push,
   }),
 }))
 
@@ -40,6 +47,8 @@ const wishlistItem = {
 describe("ProductWishlistButton", () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    addToWishlist.mockResolvedValue({ success: true })
+    removeFromWishlist.mockResolvedValue({ success: true })
   })
 
   it("adds the product to wishlist when not already saved", async () => {
@@ -74,5 +83,22 @@ describe("ProductWishlistButton", () => {
         title: "Removed from wishlist",
       })
     )
+  })
+
+  it("redirects to sign in when the server action requires auth", async () => {
+    const user = userEvent.setup()
+    isInWishlist.mockReturnValue(false)
+    addToWishlist.mockResolvedValue({
+      success: false,
+      requiresAuth: true,
+      error: "Sign in to manage your wishlist.",
+    })
+
+    render(<ProductWishlistButton item={wishlistItem} />)
+
+    await user.click(screen.getByRole("button", { name: /save to wishlist/i }))
+
+    expect(push).toHaveBeenCalledWith("/sign-in")
+    expect(toast).not.toHaveBeenCalled()
   })
 })

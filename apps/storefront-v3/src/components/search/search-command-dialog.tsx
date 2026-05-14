@@ -266,6 +266,9 @@ export function SearchCommandDialog({
           <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
           <DialogPrimitive.Content className="fixed left-1/2 top-1/2 z-[60] w-[min(980px,94vw)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border/70 bg-background shadow-2xl">
             <DialogPrimitive.Title className="sr-only">Search</DialogPrimitive.Title>
+            <DialogPrimitive.Description className="sr-only">
+              Search products, categories, and brands.
+            </DialogPrimitive.Description>
             <div className="border-b border-border/70 px-5 py-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-full border border-primary/30 bg-primary/10 text-primary">

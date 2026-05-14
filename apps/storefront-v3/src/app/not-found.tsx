@@ -16,8 +16,8 @@ export default function NotFound() {
   // Navigation suggestions
   const navigationLinks = [
     { href: "/", label: "Home", icon: Home },
-    { href: "/products", label: "All Products", icon: Package },
-    { href: "/categories", label: "Categories", icon: Tags },
+    { href: "/shop", label: "All Products", icon: Package },
+    { href: "/deals", label: "Deals", icon: Tags },
     { href: "/brands", label: "Brands", icon: Store },
     { href: "/collections", label: "Collections", icon: Layers },
   ]
@@ -67,7 +67,7 @@ export default function NotFound() {
             </Link>
           </Button>
           <Button asChild variant="outline" size="lg" className="font-mono">
-            <Link href="/products">
+            <Link href="/shop">
               <Package className="mr-2 h-4 w-4" />
               Browse Products
             </Link>
