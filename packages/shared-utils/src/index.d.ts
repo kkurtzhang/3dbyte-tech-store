@@ -19,11 +19,6 @@ export interface StoreConfig {
     currency: string;
     supportedCountries: string[];
 }
-declare global {
-    interface Window {
-        localStorage: Storage;
-    }
-}
 export declare class ApiClient {
     private baseUrl;
     private defaultHeaders;

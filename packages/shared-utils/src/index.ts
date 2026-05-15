@@ -25,13 +25,6 @@ export interface StoreConfig {
   supportedCountries: string[]
 }
 
-// Window type declaration
-declare global {
-  interface Window {
-    localStorage: Storage
-  }
-}
-
 // API utilities
 export class ApiClient {
   private baseUrl: string
@@ -265,11 +258,31 @@ export const validatePostalCode = (postalCode: string, country = 'US'): boolean 
 }
 
 // Storage utilities
+type JsonStorage = {
+  getItem(key: string): string | null
+  setItem(key: string, value: string): void
+  removeItem(key: string): void
+}
+
+type GlobalWithBrowserStorage = typeof globalThis & {
+  window?: {
+    localStorage?: JsonStorage
+  }
+}
+
+const getBrowserStorage = (): JsonStorage | null => {
+  const browserWindow = (globalThis as GlobalWithBrowserStorage).window
+
+  return browserWindow?.localStorage ?? null
+}
+
 export const storage = {
   get: <T>(key: string): T | null => {
-    if (typeof window === 'undefined') return null
+    const browserStorage = getBrowserStorage()
+    if (!browserStorage) return null
+
     try {
-      const item = window.localStorage.getItem(key)
+      const item = browserStorage.getItem(key)
       return item ? JSON.parse(item) : null
     } catch {
       return null
@@ -277,17 +290,21 @@ export const storage = {
   },
 
   set: <T>(key: string, value: T): void => {
-    if (typeof window === 'undefined') return
+    const browserStorage = getBrowserStorage()
+    if (!browserStorage) return
+
     try {
-      window.localStorage.setItem(key, JSON.stringify(value))
+      browserStorage.setItem(key, JSON.stringify(value))
     } catch {
       // Silently fail
     }
   },
 
   remove: (key: string): void => {
-    if (typeof window === 'undefined') return
-    window.localStorage.removeItem(key)
+    const browserStorage = getBrowserStorage()
+    if (!browserStorage) return
+
+    browserStorage.removeItem(key)
   },
 }
 
