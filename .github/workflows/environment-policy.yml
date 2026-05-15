@@ -47,9 +47,11 @@ jobs:
           grep -qx "COMPOSE_PROJECT_NAME=3dbyte-staging" "$staging_file"
           grep -qx "COMPOSE_PROFILES=" "$staging_file"
           grep -qx "ADDRESS_REINDEX_ENABLED=false" "$staging_file"
+          grep -Eq "^ADDRESS_MANUAL_REINDEX_ENABLED=(true|false)$" "$staging_file"
           grep -qx "MEILISEARCH_HOST=https://search.3dbytetech.com.au" "$staging_file"
           grep -qx "MEILISEARCH_SERVER_HOST=https://search.3dbytetech.com.au" "$staging_file"
           grep -qx "MEILISEARCH_ADDRESS_INDEX_NAME=addresses_v1" "$staging_file"
+          grep -qx "MEILISEARCH_LOCALITY_INDEX_NAME=localities_v1" "$staging_file"
           check_maildev_disabled "$staging_file"
 
           if grep -R "^ADDRESS_REINDEX_ENABLED=true$" "$staging_file" .env.example apps/backend/.env.template; then
@@ -91,9 +93,11 @@ jobs:
           grep -qx "COMPOSE_PROJECT_NAME=3dbyte-prod" "$prod_file"
           grep -qx "COMPOSE_PROFILES=" "$prod_file"
           grep -qx "ADDRESS_REINDEX_ENABLED=true" "$prod_file"
+          grep -qx "ADDRESS_MANUAL_REINDEX_ENABLED=false" "$prod_file"
           grep -qx "MEILISEARCH_HOST=https://search.3dbytetech.com.au" "$prod_file"
           grep -qx "MEILISEARCH_SERVER_HOST=https://search.3dbytetech.com.au" "$prod_file"
           grep -qx "MEILISEARCH_ADDRESS_INDEX_NAME=addresses_v1" "$prod_file"
+          grep -qx "MEILISEARCH_LOCALITY_INDEX_NAME=localities_v1" "$prod_file"
           grep -qx "MEILISEARCH_PRODUCT_INDEX_NAME=prod_products" "$prod_file"
           check_maildev_disabled "$prod_file"
 
@@ -108,6 +112,7 @@ jobs:
 
           grep -Fqx 'name: ${COMPOSE_PROJECT_NAME:-3dbyte-tech-store}' docker-compose.yml
           grep -Fq 'ADDRESS_REINDEX_ENABLED: "${ADDRESS_REINDEX_ENABLED:-false}"' docker-compose.yml
+          grep -Fq 'ADDRESS_MANUAL_REINDEX_ENABLED: "${ADDRESS_MANUAL_REINDEX_ENABLED:-false}"' docker-compose.yml
           grep -Fq 'MAILDEV_ENABLED: "${MAILDEV_ENABLED:-false}"' docker-compose.yml
           grep -Fq 'MEILISEARCH_HOST: "${MEILISEARCH_HOST:?Set MEILISEARCH_HOST}"' docker-compose.yml
           grep -Fq 'http://127.0.0.1:3000/api/health' docker-compose.yml
