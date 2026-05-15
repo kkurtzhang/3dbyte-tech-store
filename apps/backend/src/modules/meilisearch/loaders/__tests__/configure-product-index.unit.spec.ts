@@ -22,6 +22,33 @@ describe("buildProductIndexSettings", () => {
     );
   });
 
+  it("seeds storefront price and option facets for fresh indexes", () => {
+    const settings = buildProductIndexSettings();
+
+    expect(settings.filterableAttributes).toEqual(
+      expect.arrayContaining([
+        "price_aud",
+        "options_colour",
+        "options_size",
+        "options_nozzle_type",
+        "options_nozzle_size",
+      ]),
+    );
+    expect(settings.sortableAttributes).toEqual(
+      expect.arrayContaining(["created_at_timestamp", "price_aud"]),
+    );
+    expect(settings.displayedAttributes).toEqual(
+      expect.arrayContaining([
+        "price_aud",
+        "tax_inclusive_price_aud",
+        "options_colour",
+        "options_size",
+        "options_nozzle_type",
+        "options_nozzle_size",
+      ]),
+    );
+  });
+
   it("preserves dynamic attributes from existing settings", () => {
     const settings = buildProductIndexSettings({
       filterableAttributes: ["options_colour"],

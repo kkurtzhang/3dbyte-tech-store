@@ -1,6 +1,7 @@
 "use server"
 
 import { sdk } from "@/lib/medusa/client"
+import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
 import { ORDER_TRACKING_FIELDS } from "@/lib/medusa/orders"
 import type { MedusaOrder } from "@/lib/medusa/types"
 
@@ -17,7 +18,7 @@ type TrackingPaymentMethod = {
 }
 
 function getMedusaBackendUrl() {
-  return process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
+  return resolveMedusaBaseUrl({ isServer: true })
 }
 
 function isTrackingPaymentMethod(value: unknown): value is TrackingPaymentMethod {

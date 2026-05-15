@@ -1,8 +1,6 @@
 import type { MeilisearchAddressDocument } from "@3dbyte-tech-store/shared-types"
+import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
 
-const BACKEND_URL = (
-  process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
-).replace(/\/$/, "")
 const PUBLISHABLE_API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
 
 export interface AddressSearchResult {
@@ -38,7 +36,7 @@ export async function searchAddresses(
   }
 
   try {
-    const url = `${BACKEND_URL}/store/addresses/autocomplete?${params.toString()}`
+    const url = `${resolveMedusaBaseUrl()}/store/addresses/autocomplete?${params.toString()}`
     const response = PUBLISHABLE_API_KEY
       ? await fetch(url, {
           headers: {
