@@ -1,8 +1,6 @@
 import type { MeilisearchLocalityDocument } from "@3dbyte-tech-store/shared-types"
+import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
 
-const BACKEND_URL = (
-  process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
-).replace(/\/$/, "")
 const PUBLISHABLE_API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
 
 export interface LocalitySearchFilters {
@@ -46,7 +44,7 @@ export async function searchLocalities(
   }
 
   try {
-    const url = `${BACKEND_URL}/store/localities/autocomplete?${params.toString()}`
+    const url = `${resolveMedusaBaseUrl()}/store/localities/autocomplete?${params.toString()}`
     const response = PUBLISHABLE_API_KEY
       ? await fetch(url, {
           headers: {
