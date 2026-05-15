@@ -1,4 +1,9 @@
-import { getSafePaymentMethodDisplay } from "./index";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, relative, sep } from "node:path";
+
+import { getSafePaymentMethodDisplay, storage } from "./index";
 
 describe("Shared Utils", () => {
   it("should pass", () => {
@@ -71,5 +76,59 @@ describe("Shared Utils", () => {
         payment_status: "partially_refunded",
       }),
     ).toBe("Partially Refunded");
+  });
+
+  it("does not require DOM globals when imported by Node runtimes", () => {
+    const workspace = mkdtempSync(join(tmpdir(), "shared-utils-node-"));
+    const sourceImport = relative(workspace, join(__dirname, "index"))
+      .split(sep)
+      .join("/");
+    const importPath = sourceImport.startsWith(".")
+      ? sourceImport
+      : `./${sourceImport}`;
+    const tscBin = require.resolve("typescript/bin/tsc");
+
+    try {
+      writeFileSync(
+        join(workspace, "index.ts"),
+        [
+          `import { storage } from "${importPath}";`,
+          "",
+          "const value = storage.get<{ ok: boolean }>('node-runtime');",
+          "value?.ok;",
+        ].join("\n")
+      );
+      writeFileSync(
+        join(workspace, "tsconfig.json"),
+        JSON.stringify(
+          {
+            compilerOptions: {
+              target: "ES2021",
+              module: "Node16",
+              moduleResolution: "Node16",
+              strict: true,
+              lib: ["ES2021"],
+              types: ["node"],
+              typeRoots: [join(__dirname, "../../../node_modules/@types")],
+              noEmit: true,
+              skipLibCheck: true,
+            },
+            include: ["index.ts"],
+          },
+          null,
+          2
+        )
+      );
+
+      execFileSync(process.execPath, [tscBin, "-p", workspace], {
+        stdio: "pipe",
+      });
+    } finally {
+      rmSync(workspace, { force: true, recursive: true });
+    }
+  });
+
+  it("returns null instead of reading browser storage on the server", () => {
+    expect(storage.get("missing-window")).toBeNull();
   });
 });

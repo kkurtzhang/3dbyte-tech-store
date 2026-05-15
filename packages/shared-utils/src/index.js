@@ -170,13 +170,17 @@ export const validatePostalCode = (postalCode, country = 'US') => {
         return true; // Accept any format for unspecified countries
     return pattern.test(postalCode.toUpperCase());
 };
-// Storage utilities
+const getBrowserStorage = () => {
+    const browserWindow = globalThis.window;
+    return browserWindow?.localStorage ?? null;
+};
 export const storage = {
     get: (key) => {
-        if (typeof window === 'undefined')
+        const browserStorage = getBrowserStorage();
+        if (!browserStorage)
             return null;
         try {
-            const item = window.localStorage.getItem(key);
+            const item = browserStorage.getItem(key);
             return item ? JSON.parse(item) : null;
         }
         catch {
@@ -184,19 +188,21 @@ export const storage = {
         }
     },
     set: (key, value) => {
-        if (typeof window === 'undefined')
+        const browserStorage = getBrowserStorage();
+        if (!browserStorage)
             return;
         try {
-            window.localStorage.setItem(key, JSON.stringify(value));
+            browserStorage.setItem(key, JSON.stringify(value));
         }
         catch {
             // Silently fail
         }
     },
     remove: (key) => {
-        if (typeof window === 'undefined')
+        const browserStorage = getBrowserStorage();
+        if (!browserStorage)
             return;
-        window.localStorage.removeItem(key);
+        browserStorage.removeItem(key);
     },
 };
 // Error utilities

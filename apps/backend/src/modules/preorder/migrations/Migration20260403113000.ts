@@ -11,53 +11,62 @@ export class Migration20260403113000 extends Migration {
 
     this.addSql(`alter table if exists "preorder_variant_price" add constraint "preorder_variant_price_preorder_variant_id_foreign" foreign key ("preorder_variant_id") references "preorder_variant" ("id") on update cascade;`);
     this.addSql(`
-      insert into "preorder_variant_price" (
-        "id",
-        "currency_code",
-        "amount",
-        "preorder_variant_id",
-        "raw_amount",
-        "created_at",
-        "updated_at"
-      )
-      select
-        concat('pvp_', substring(md5(concat("preorder_variant"."id", price_currency."currency_code")) from 1 for 22)),
-        price_currency."currency_code",
-        "preorder_variant"."preorder_price",
-        "preorder_variant"."id",
-        jsonb_build_object(
-          'value',
-          "preorder_variant"."preorder_price"::text,
-          'precision',
-          20
-        ),
-        now(),
-        now()
-      from "preorder_variant"
-      inner join (
-        select distinct
-          "product_variant_price_set"."variant_id",
-          "price"."currency_code"
-        from "product_variant_price_set"
-        inner join "price_set"
-          on "price_set"."id" = "product_variant_price_set"."price_set_id"
-         and "price_set"."deleted_at" is null
-        inner join "price"
-          on "price"."price_set_id" = "price_set"."id"
-         and "price"."deleted_at" is null
-         and "price"."price_list_id" is null
-        where "product_variant_price_set"."deleted_at" is null
-      ) as price_currency
-        on price_currency."variant_id" = "preorder_variant"."variant_id"
-      where "preorder_variant"."deleted_at" is null
-        and "preorder_variant"."preorder_price" is not null
-        and not exists (
-          select 1
-          from "preorder_variant_price" existing_price
-          where existing_price."preorder_variant_id" = "preorder_variant"."id"
-            and existing_price."currency_code" = price_currency."currency_code"
-            and existing_price."deleted_at" is null
-        );
+      DO $$
+      BEGIN
+        IF to_regclass('public.product_variant_price_set') IS NOT NULL
+          AND to_regclass('public.price_set') IS NOT NULL
+          AND to_regclass('public.price') IS NOT NULL THEN
+          EXECUTE $backfill$
+            insert into "preorder_variant_price" (
+              "id",
+              "currency_code",
+              "amount",
+              "preorder_variant_id",
+              "raw_amount",
+              "created_at",
+              "updated_at"
+            )
+            select
+              concat('pvp_', substring(md5(concat("preorder_variant"."id", price_currency."currency_code")) from 1 for 22)),
+              price_currency."currency_code",
+              "preorder_variant"."preorder_price",
+              "preorder_variant"."id",
+              jsonb_build_object(
+                'value',
+                "preorder_variant"."preorder_price"::text,
+                'precision',
+                20
+              ),
+              now(),
+              now()
+            from "preorder_variant"
+            inner join (
+              select distinct
+                "product_variant_price_set"."variant_id",
+                "price"."currency_code"
+              from "product_variant_price_set"
+              inner join "price_set"
+                on "price_set"."id" = "product_variant_price_set"."price_set_id"
+               and "price_set"."deleted_at" is null
+              inner join "price"
+                on "price"."price_set_id" = "price_set"."id"
+               and "price"."deleted_at" is null
+               and "price"."price_list_id" is null
+              where "product_variant_price_set"."deleted_at" is null
+            ) as price_currency
+              on price_currency."variant_id" = "preorder_variant"."variant_id"
+            where "preorder_variant"."deleted_at" is null
+              and "preorder_variant"."preorder_price" is not null
+              and not exists (
+                select 1
+                from "preorder_variant_price" existing_price
+                where existing_price."preorder_variant_id" = "preorder_variant"."id"
+                  and existing_price."currency_code" = price_currency."currency_code"
+                  and existing_price."deleted_at" is null
+              )
+          $backfill$;
+        END IF;
+      END $$;
     `);
     this.addSql(`
       insert into "preorder_variant_price" (
