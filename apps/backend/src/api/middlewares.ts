@@ -36,6 +36,12 @@ export default defineMiddlewares({
       ],
     },
     {
+      matcher: "/admin/meilisearch*",
+      middlewares: [
+        authenticate("user", ["session", "bearer", "api-key"]),
+      ],
+    },
+    {
       matcher: "/admin/brands",
       method: "POST",
       middlewares: [validateAndTransformBody(PostAdminCreateBrand)],

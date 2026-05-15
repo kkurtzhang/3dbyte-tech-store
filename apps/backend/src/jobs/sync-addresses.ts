@@ -20,11 +20,10 @@
 
 import type { MedusaContainer } from "@medusajs/framework/types";
 import type { Logger } from "@medusajs/framework/types";
-import { discoverLatestDownloadUrl } from "../lib/address-pipeline/discover";
-import { ingestAddresses } from "../lib/address-pipeline/ingest";
-import type { AddressPipelineConfig } from "../lib/address-pipeline/types";
-
-const DEFAULT_ADDRESS_SYNC_BATCH_SIZE = 50_000;
+import {
+  isAddressReindexEnabled,
+  runAddressReindex,
+} from "../lib/address-pipeline/reindex";
 
 export default async function syncAddressesJob(
   container: MedusaContainer,
@@ -32,50 +31,12 @@ export default async function syncAddressesJob(
   const logger: Logger = container.resolve("logger");
 
   try {
-    if (process.env.ADDRESS_REINDEX_ENABLED !== "true") {
+    if (!isAddressReindexEnabled("scheduled")) {
       logger.info("Address reindex disabled for this environment; skipping");
       return;
     }
 
-    logger.info("Starting scheduled address data sync...");
-
-    // Step 1: Discover latest download URL
-    const { downloadUrl, jobId, expectedCount } =
-      await discoverLatestDownloadUrl();
-
-    if (jobId > 0) {
-      logger.info(
-        `Discovered OpenAddresses job ${jobId} ` +
-          `(${expectedCount.toLocaleString()} expected rows): ${downloadUrl}`,
-      );
-    } else {
-      logger.info(`Using override download URL: ${downloadUrl}`);
-    }
-
-    // Step 2: Build pipeline config from environment
-    const config: AddressPipelineConfig = {
-      batchSize: Number(
-        process.env.ADDRESS_SYNC_BATCH_SIZE || DEFAULT_ADDRESS_SYNC_BATCH_SIZE,
-      ),
-      tempIndexPrefix: "addresses_tmp_",
-      localityTempIndexPrefix: "localities_tmp_",
-      meilisearchHost: process.env.MEILISEARCH_HOST || "http://localhost:7700",
-      meilisearchApiKey: process.env.MEILISEARCH_API_KEY || "",
-      addressIndexName:
-        process.env.MEILISEARCH_ADDRESS_INDEX_NAME || "addresses",
-      localityIndexName:
-        process.env.MEILISEARCH_LOCALITY_INDEX_NAME || "localities",
-    };
-
-    // Step 3: Run the ingestion pipeline
-    const result = await ingestAddresses(downloadUrl, config, logger);
-
-    logger.info(
-      `Address sync completed: ${result.totalRows.toLocaleString()} rows, ` +
-        `${result.localityRows.toLocaleString()} localities, ` +
-        `${result.batchesProcessed} batches, ` +
-        `${(result.durationMs / 1000).toFixed(1)}s`,
-    );
+    await runAddressReindex(container, { trigger: "scheduled" });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     logger.error(`Address sync failed: ${message}`);

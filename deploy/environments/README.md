@@ -9,6 +9,9 @@ Use `main` as the production branch and `staging` as the staging branch.
 - Use `staging.env.example` as the environment checklist.
 - Keep `COMPOSE_PROFILES` empty so staging does not start local-only services.
 - Keep `ADDRESS_REINDEX_ENABLED=false`.
+- Temporarily set `ADDRESS_MANUAL_REINDEX_ENABLED=true` only while staging
+  needs the one-off address bootstrap button. Set it back to `false` after the
+  shared address index has been created.
 - Keep `MAILDEV_ENABLED=false`; staging should not run the MailDev provider or container.
 - Use `stg_*` Meilisearch indexes for products, categories, brands, collections, and blog content.
 - Read the shared `addresses_v1` index from the dedicated shared Meilisearch resource.
@@ -19,7 +22,8 @@ Use `main` as the production branch and `staging` as the staging branch.
 - Coolify compose file: `docker-compose.yml`
 - Use `production.env.example` as the environment checklist.
 - Keep `COMPOSE_PROFILES` empty so production does not start local-only services.
-- Set `ADDRESS_REINDEX_ENABLED=true` only in production.
+- Set `ADDRESS_REINDEX_ENABLED=true` only in production. This also enables the
+  production manual address reindex button.
 - Keep `MAILDEV_ENABLED=false`; production uses Resend for transactional email.
 - Use `prod_*` Meilisearch indexes for products, categories, brands, collections, and blog content.
 - Own and update the shared `addresses_v1` index through the dedicated shared Meilisearch resource.
