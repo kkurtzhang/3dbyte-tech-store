@@ -8,6 +8,7 @@ import {
 } from "@/features/collections/components/collection-grid"
 import { ProductCard } from "@/features/product/components/product-card"
 import { getFeaturedCollections } from "@/lib/medusa/collections"
+import { getPricingContext } from "@/lib/medusa/regions.server"
 import { searchProducts } from "@/lib/search/products"
 import {
   getCollectionDescriptions,
@@ -38,8 +39,9 @@ interface Product {
   handle: string
   title: string
   thumbnail?: string
-  price_aud: number
-  original_price_aud?: number
+  price: number
+  currency_code: string
+  original_price?: number
   on_sale: boolean
   variants?: Array<{
     id: string
@@ -118,8 +120,8 @@ function ProductGrid({ products, error }: { products: Product[]; error?: boolean
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
       {products.map((product) => {
         const displayPrice = {
-          amount: product.price_aud, // Meilisearch returns prices in dollars
-          currency_code: "aud",
+          amount: product.price,
+          currency_code: product.currency_code,
         }
 
         return (
@@ -130,7 +132,7 @@ function ProductGrid({ products, error }: { products: Product[]; error?: boolean
             title={product.title}
             thumbnail={product.thumbnail || ""}
             price={displayPrice}
-            originalPrice={product.original_price_aud ?? undefined}
+            originalPrice={product.original_price}
           />
         )
       })}
@@ -139,12 +141,15 @@ function ProductGrid({ products, error }: { products: Product[]; error?: boolean
 }
 
 export default async function Home() {
+  const pricing = await getPricingContext()
+
   // Fetch featured data in parallel
   const [productsResult, collections, homepageData, collectionDescriptions] =
     await Promise.all([
       searchProducts({
         sort: "newest",
         limit: 8,
+        pricing,
       }),
       getFeaturedCollections(4),
       getHomepage().catch(() => null),

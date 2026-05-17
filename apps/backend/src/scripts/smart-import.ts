@@ -9,6 +9,21 @@ const BATCH_FILE = "products-fresh-extract.json";
 const BATCH_SIZE = 50;
 const BATCH_NUMBER = parseInt(process.env.BATCH || "1");
 
+export function toMedusaMajorUnitAmount(value: unknown): number {
+  const amount =
+    typeof value === "number"
+      ? value
+      : typeof value === "string"
+        ? Number.parseFloat(value)
+        : 0;
+
+  if (!Number.isFinite(amount)) {
+    return 0;
+  }
+
+  return Math.round(amount * 100) / 100;
+}
+
 // Parse variant title into structured options
 function parseVariantOptions(variantTitle: string, productType: string): Record<string, string> {
   const options: Record<string, string> = {};
@@ -130,7 +145,7 @@ export default async function ({ container }: ExecArgs) {
         variantsData = variants.map((v: any) => ({
           title: v.title || 'Default',
           sku: `3DB-${(product.vendor || "UNK").substring(0,3).toUpperCase()}-${v.sku || v.title}`.substring(0,100),
-          prices: [{ amount: Math.round((v.price || product.price || 0) * 100), currency_code: currency }],
+          prices: [{ amount: toMedusaMajorUnitAmount(v.price ?? product.price), currency_code: currency }],
           options: parseVariantOptions(v.title || 'Default', productType),
           manage_inventory: false,
           allow_backorder: true,
@@ -142,7 +157,7 @@ export default async function ({ container }: ExecArgs) {
         variantsData = [{
           title: v.title || 'Default',
           sku: `3DB-${(product.vendor || "UNK").substring(0,3).toUpperCase()}-${v.sku || '001'}`.substring(0,100),
-          prices: [{ amount: Math.round((v.price || product.price || 0) * 100), currency_code: currency }],
+          prices: [{ amount: toMedusaMajorUnitAmount(v.price ?? product.price), currency_code: currency }],
           options: { 'Default': 'Default' },
           manage_inventory: false,
           allow_backorder: true,

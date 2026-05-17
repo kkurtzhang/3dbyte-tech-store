@@ -2,6 +2,23 @@ import { sdk } from "./client"
 import { searchClient, INDEX_PRODUCTS } from "@/lib/search/client"
 import type { MedusaProduct } from "./types"
 import { getBundleLink } from "./bundles"
+import type { PricingContext } from "./regions"
+
+type PricingParams = Partial<PricingContext>
+
+const PRODUCT_PRICE_FIELDS =
+  "*variants.calculated_price,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory"
+
+function withPricingContext<T extends Record<string, unknown>>(
+  params: T,
+  pricing?: PricingParams
+) {
+  return {
+    ...params,
+    ...(pricing?.region_id ? { region_id: pricing.region_id } : {}),
+    ...(pricing?.country_code ? { country_code: pricing.country_code } : {}),
+  }
+}
 
 export async function getProducts(params: {
   page?: number
@@ -13,6 +30,9 @@ export async function getProducts(params: {
   sizes?: string[]
   minPrice?: number
   maxPrice?: number
+  region_id?: string
+  country_code?: string
+  currency_code?: string
 }): Promise<{ products: MedusaProduct[]; count: number }> {
   let products: MedusaProduct[] = []
   let count = 0
@@ -20,15 +40,20 @@ export async function getProducts(params: {
   try {
     const { page = 1, limit = 20, category_id, collection_id, q } = params
 
-    const { products: fetchedProducts, count: fetchedCount } = await sdk.store.product.list({
-      limit,
-      offset: (page - 1) * limit,
-      category_id,
-      collection_id,
-      q,
-      fields:
-        "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*variants.preorder_variant,*variants.preorder_variant.prices,*bundle",
-    })
+    const { products: fetchedProducts, count: fetchedCount } = await sdk.store.product.list(
+      withPricingContext(
+        {
+          limit,
+          offset: (page - 1) * limit,
+          category_id,
+          collection_id,
+          q,
+          fields:
+            `${PRODUCT_PRICE_FIELDS},*variants.preorder_variant,*variants.preorder_variant.prices,*bundle`,
+        },
+        params
+      )
+    )
 
     products = fetchedProducts as any
     count = fetchedCount
@@ -64,9 +89,12 @@ async function getProductsFromMeilisearch(params: {
   sizes?: string[]
   minPrice?: number
   maxPrice?: number
+  currency_code?: string
 }): Promise<{ products: MedusaProduct[]; count: number }> {
   try {
     const { limit = 4, q, colors, sizes, minPrice, maxPrice } = params
+    const currencyCode = params.currency_code?.toLowerCase() || "aud"
+    const priceField = `price_${currencyCode}`
 
     const filter: string[] = []
 
@@ -83,11 +111,11 @@ async function getProductsFromMeilisearch(params: {
     }
 
     if (minPrice !== undefined) {
-      filter.push(`price >= ${minPrice}`)
+      filter.push(`${priceField} >= ${minPrice}`)
     }
 
     if (maxPrice !== undefined) {
-      filter.push(`price <= ${maxPrice}`)
+      filter.push(`${priceField} <= ${maxPrice}`)
     }
 
     const searchParams: any = {
@@ -121,14 +149,22 @@ async function getProductsFromMeilisearch(params: {
   }
 }
 
-export async function getProductByHandle(handle: string): Promise<MedusaProduct | null> {
+export async function getProductByHandle(
+  handle: string,
+  pricing?: PricingParams
+): Promise<MedusaProduct | null> {
   try {
-    const { products } = await sdk.store.product.list({
-      handle,
-      limit: 1,
-      fields:
-        "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*variants.preorder_variant,*variants.preorder_variant.prices,*variants.images,*variants.calculated_price,*options,*options.values,*images,*type,*collection,*tags,*bundle",
-    })
+    const { products } = await sdk.store.product.list(
+      withPricingContext(
+        {
+          handle,
+          limit: 1,
+          fields:
+            `${PRODUCT_PRICE_FIELDS},*variants.preorder_variant,*variants.preorder_variant.prices,*variants.images,*options,*options.values,*images,*type,*collection,*tags,*bundle`,
+        },
+        pricing
+      )
+    )
 
     if (products[0]) {
       return products[0]
@@ -149,8 +185,17 @@ export async function getProductByHandle(handle: string): Promise<MedusaProduct 
 
       // Construct a variant with price data from Meilisearch
       // Note: Both Medusa v2 and Meilisearch store prices in dollars
-      const priceAud = hit.price_aud ?? 0
-      const originalPriceAud = hit.original_price_aud ?? priceAud
+      const currencyCode = pricing?.currency_code?.toLowerCase() || "aud"
+      const priceField = `price_${currencyCode}`
+      const originalPriceField = `original_price_${currencyCode}`
+      const selectedPrice =
+        typeof hit[priceField] === "number" ? hit[priceField] : hit.price_aud ?? 0
+      const selectedOriginalPrice =
+        typeof hit[originalPriceField] === "number"
+          ? hit[originalPriceField]
+          : currencyCode === "aud"
+            ? hit.original_price_aud ?? selectedPrice
+            : selectedPrice
       const onSale = hit.on_sale ?? false
 
       // Create a synthetic variant with price info for the quick view dialog
@@ -165,15 +210,17 @@ export async function getProductByHandle(handle: string): Promise<MedusaProduct 
             }
           : undefined,
         prices: [{
-          amount: priceAud,
-          currency_code: "aud",
+          amount: selectedPrice,
+          currency_code: currencyCode,
         }],
-        calculated_price: onSale && originalPriceAud > priceAud ? {
-          calculated_amount: priceAud,
-          original_amount: originalPriceAud,
+        calculated_price: onSale && selectedOriginalPrice > selectedPrice ? {
+          calculated_amount: selectedPrice,
+          original_amount: selectedOriginalPrice,
+          currency_code: currencyCode,
         } : {
-          calculated_amount: priceAud,
-          original_amount: priceAud,
+          calculated_amount: selectedPrice,
+          original_amount: selectedPrice,
+          currency_code: currencyCode,
         },
         inventory_quantity: hit.inventory_quantity ?? 0,
         manage_inventory: true,
@@ -276,17 +323,26 @@ export async function getDiscountedProducts(params: {
   limit?: number
   minDiscount?: number
   maxDiscount?: number
+  region_id?: string
+  country_code?: string
+  currency_code?: string
 }): Promise<{ products: MedusaProduct[]; count: number }> {
   let products: MedusaProduct[] = []
   let count = 0
   const { page = 1, limit = 20, minDiscount, maxDiscount } = params
 
   try {
-    const { products: fetchedProducts } = await sdk.store.product.list({
-      limit: 100,
-      offset: (page - 1) * limit,
-      fields: "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*variants.calculated_price,*variants.original_price",
-    })
+    const { products: fetchedProducts } = await sdk.store.product.list(
+      withPricingContext(
+        {
+          limit: 100,
+          offset: (page - 1) * limit,
+          fields:
+            `${PRODUCT_PRICE_FIELDS},*variants.original_price`,
+        },
+        params
+      )
+    )
 
     const discountedProducts = fetchedProducts.filter((product) => {
       const variant = product.variants?.[0]
@@ -303,8 +359,8 @@ export async function getDiscountedProducts(params: {
       if (maxDiscount !== undefined && discountPct > maxDiscount) return false
 
       ;(product as any).discountPercentage = discountPct
-      ;(product as any).originalPrice = origPrice / 100
-      ;(product as any).salePrice = calcPrice / 100
+      ;(product as any).originalPrice = origPrice
+      ;(product as any).salePrice = calcPrice
 
       return discountPct > 0
     })
@@ -329,6 +385,9 @@ export async function getDiscountedProducts(params: {
 export async function getProductBundles(params: {
   page?: number
   limit?: number
+  region_id?: string
+  country_code?: string
+  currency_code?: string
 }): Promise<{ products: MedusaProduct[]; count: number }> {
   let products: MedusaProduct[] = []
   let count = 0
@@ -336,11 +395,16 @@ export async function getProductBundles(params: {
 
   try {
     // Fetch products with bundle tag
-    const { products: fetchedProducts, count: fetchedCount } = await sdk.store.product.list({
-      limit: 100, // Fetch more to filter for bundles
-      offset: 0,
-      fields: "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*tags,*metadata,*bundle",
-    })
+    const { products: fetchedProducts, count: fetchedCount } = await sdk.store.product.list(
+      withPricingContext(
+        {
+          limit: 100, // Fetch more to filter for bundles
+          offset: 0,
+          fields: `${PRODUCT_PRICE_FIELDS},*tags,*metadata,*bundle`,
+        },
+        params
+      )
+    )
 
     const bundleProducts = fetchedProducts.filter((product) => getBundleLink(product) !== null)
 
@@ -361,7 +425,11 @@ export async function getProductBundles(params: {
  * Get related products based on category and type
  * This simulates "frequently bought together" based on product relationships
  */
-export async function getRelatedProducts(productId: string, limit = 4): Promise<MedusaProduct[]> {
+export async function getRelatedProducts(
+  productId: string,
+  limit = 4,
+  pricing?: PricingParams
+): Promise<MedusaProduct[]> {
   try {
     // First, get the current product to find its category and type
     const { products: [currentProduct] } = await sdk.store.product.list({
@@ -381,8 +449,9 @@ export async function getRelatedProducts(productId: string, limit = 4): Promise<
     // Fetch products that might be related
     const filterParams: any = {
       limit: 20, // Fetch more to filter
-      fields: "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*variants.calculated_price,*categories,*type,*collection",
+      fields: `${PRODUCT_PRICE_FIELDS},*categories,*type,*collection`,
     }
+    Object.assign(filterParams, withPricingContext({}, pricing))
 
     if (categoryIds.length > 0) {
       filterParams.category_id = categoryIds
@@ -404,7 +473,8 @@ export async function getRelatedProducts(productId: string, limit = 4): Promise<
       const { products: collectionProducts } = await sdk.store.product.list({
         collection_id: [currentProduct.collection_id],
         limit: limit + 1,
-        fields: "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory,*variants.calculated_price",
+        fields: PRODUCT_PRICE_FIELDS,
+        ...withPricingContext({}, pricing),
       })
 
       return collectionProducts

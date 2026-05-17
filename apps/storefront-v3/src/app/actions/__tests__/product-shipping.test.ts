@@ -3,6 +3,7 @@ const mockAddToCart = jest.fn()
 const mockCreateCart = jest.fn()
 const mockGetShippingOptions = jest.fn()
 const mockGetLiveShippingRates = jest.fn()
+const mockGetPricingContext = jest.fn()
 const mockUpdateCart = jest.fn()
 const mockCalculate = jest.fn()
 
@@ -28,6 +29,10 @@ jest.mock("@/lib/medusa/shipping", () => ({
   getLiveShippingRates: (...args: unknown[]) => mockGetLiveShippingRates(...args),
 }))
 
+jest.mock("@/lib/medusa/regions.server", () => ({
+  getPricingContext: (...args: unknown[]) => mockGetPricingContext(...args),
+}))
+
 import { estimateProductShippingAction } from "../product-shipping"
 
 describe("estimateProductShippingAction", () => {
@@ -39,6 +44,11 @@ describe("estimateProductShippingAction", () => {
     })
     mockAddToCart.mockResolvedValue({})
     mockAddLineItems.mockResolvedValue({})
+    mockGetPricingContext.mockResolvedValue({
+      region_id: "reg_au",
+      country_code: "au",
+      currency_code: "aud",
+    })
     mockGetLiveShippingRates.mockResolvedValue({ rates: [] })
     mockUpdateCart.mockResolvedValue({})
   })
@@ -84,6 +94,8 @@ describe("estimateProductShippingAction", () => {
     })
 
     expect(mockCalculate).not.toHaveBeenCalled()
+    expect(mockGetPricingContext).toHaveBeenCalledWith("au")
+    expect(mockCreateCart).toHaveBeenCalledWith("reg_au")
     expect(mockGetLiveShippingRates).toHaveBeenCalledWith("cart_123", {
       city: "Wollongong",
       country_code: "au",

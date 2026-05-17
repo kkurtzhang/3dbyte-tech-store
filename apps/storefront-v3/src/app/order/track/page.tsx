@@ -30,6 +30,16 @@ const statusSteps: Record<OrderStatus, string[]> = {
   refunded: ["Order placed", "Refunded"],
 }
 
+export function formatOrderTrackPrice(
+  amount: number | null | undefined,
+  currencyCode: string | null | undefined
+) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: currencyCode || "usd",
+  }).format(amount || 0)
+}
+
 function OrderStatusBadge({ status }: { status: string }) {
   return (
     <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium font-mono uppercase tracking-wider
@@ -153,10 +163,10 @@ function OrderDetails({ order }: { order: MedusaOrder }) {
                     <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                       <span>Qty: {item.quantity}</span>
                       <span className="font-mono">
-                        {new Intl.NumberFormat("en-US", {
-                          style: "currency",
-                          currency: order.currency_code || "usd",
-                        }).format((item.total || item.unit_price * item.quantity || 0) / 100)}
+                        {formatOrderTrackPrice(
+                          item.total || item.unit_price * item.quantity || 0,
+                          order.currency_code
+                        )}
                       </span>
                     </div>
                   </div>

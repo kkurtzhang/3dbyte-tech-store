@@ -5,6 +5,7 @@ jest.mock("../client", () => ({
   sdk: {
     store: {
       cart: {
+        create: jest.fn(),
         retrieve: jest.fn(),
         createLineItem: jest.fn(),
       },
@@ -38,6 +39,22 @@ describe("medusa cart helpers", () => {
     })
     expect(sdk.store.cart.retrieve).toHaveBeenCalledWith("cart_1", {
       fields: expect.stringContaining("+shipping_subtotal"),
+    })
+  })
+
+  it("creates carts with the selected Medusa region", async () => {
+    const { createCart } = await import("../cart")
+    ;(sdk.store.cart.create as jest.Mock).mockResolvedValue({
+      cart: { id: "cart_1", region_id: "reg_au" },
+    })
+
+    await expect(createCart("reg_au")).resolves.toEqual({
+      id: "cart_1",
+      region_id: "reg_au",
+    })
+
+    expect(sdk.store.cart.create).toHaveBeenCalledWith({
+      region_id: "reg_au",
     })
   })
 

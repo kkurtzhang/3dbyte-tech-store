@@ -13,6 +13,11 @@ import {
   type BundleLink,
 } from "@/lib/medusa/bundles"
 import type { MeilisearchProductDocument } from "@3dbyte-tech-store/shared-types"
+import {
+  DEFAULT_CURRENCY_CODE,
+  normalizeCurrencyCode,
+  type PricingContext,
+} from "@/lib/medusa/regions"
 
 // ============================================================================
 // Types
@@ -30,6 +35,8 @@ export interface ProductSearchParams {
   limit?: number
   /** Sort order */
   sort?: "newest" | "price-asc" | "price-desc"
+  /** Region-derived pricing context */
+  pricing?: Partial<PricingContext>
   /** Filter options */
   filters?: {
     /** Multiple category IDs (OR within) */
@@ -65,8 +72,13 @@ export interface ProductHit {
   handle: string
   title: string
   thumbnail?: string
+  price: number
+  currency_code: string
+  original_price?: number
   price_aud: number
+  price_nzd?: number
   original_price_aud?: number
+  original_price_nzd?: number
   discount_percentage?: number
   on_sale: boolean
   in_stock: boolean
@@ -126,10 +138,24 @@ export interface FacetsResult {
 // Sort Mapping
 // ============================================================================
 
-const SORT_MAP: Record<string, string[]> = {
-  newest: ["created_at_timestamp:desc"],
-  "price-asc": ["price_aud:asc"],
-  "price-desc": ["price_aud:desc"],
+function getPriceField(currencyCode?: string | null) {
+  return `price_${normalizeCurrencyCode(currencyCode) ?? DEFAULT_CURRENCY_CODE}`
+}
+
+function getOriginalPriceField(currencyCode?: string | null) {
+  return `original_price_${normalizeCurrencyCode(currencyCode) ?? DEFAULT_CURRENCY_CODE}`
+}
+
+function getSort(sort: ProductSearchParams["sort"], priceField: string) {
+  if (sort === "price-asc") {
+    return [`${priceField}:asc`]
+  }
+
+  if (sort === "price-desc") {
+    return [`${priceField}:desc`]
+  }
+
+  return sort === "newest" ? ["created_at_timestamp:desc"] : undefined
 }
 
 // ============================================================================
@@ -172,7 +198,7 @@ function buildFacetRequest(excludedFacets: string[] = []): string[] {
  * - Multi-select filters use OR within (categories, brands, options)
  * - All filters joined with AND
  */
-function buildFilters(params: ProductSearchParams): string[] {
+function buildFilters(params: ProductSearchParams, priceField: string): string[] {
   const filters: string[] = []
   const { filters: f } = params
 
@@ -218,10 +244,10 @@ function buildFilters(params: ProductSearchParams): string[] {
 
   // Price range filters
   if (f.minPrice !== undefined) {
-    filters.push(`price_aud >= ${f.minPrice}`)
+    filters.push(`${priceField} >= ${f.minPrice}`)
   }
   if (f.maxPrice !== undefined) {
-    filters.push(`price_aud <= ${f.maxPrice}`)
+    filters.push(`${priceField} <= ${f.maxPrice}`)
   }
 
   // Dynamic options filters - multi-select (OR within same option, AND across options)
@@ -301,6 +327,10 @@ export async function searchProducts(
 ): Promise<ProductSearchResult> {
   const { query = "", page = 1, limit = 20, sort } = params
   const { minDiscount, maxDiscount } = params.filters || {}
+  const currencyCode =
+    normalizeCurrencyCode(params.pricing?.currency_code) ?? DEFAULT_CURRENCY_CODE
+  const priceField = getPriceField(currencyCode)
+  const originalPriceField = getOriginalPriceField(currencyCode)
 
   // If discount filtering is requested, use Medusa directly since
   // Meilisearch doesn't have discount_percentage indexed
@@ -313,10 +343,10 @@ export async function searchProducts(
     const index = searchClient.index(INDEX_PRODUCTS)
 
     // Build filters
-    const filters = buildFilters(params)
+    const filters = buildFilters(params, priceField)
 
     // Build sort array
-    const sortArray = sort ? SORT_MAP[sort] : undefined
+    const sortArray = getSort(sort, priceField)
 
     // Calculate offset from page
     const offset = (page - 1) * limit
@@ -360,21 +390,40 @@ export async function searchProducts(
       const hitWithOriginalPrice = hit as typeof hit &
         Record<string, unknown> & {
           original_price_aud?: number
+          original_price_nzd?: number
           is_bundle?: boolean
           available_in_bundles_count?: number
         }
       const originalPriceAud = hitWithOriginalPrice.original_price_aud
+      const selectedOriginalPrice =
+        typeof hitWithOriginalPrice[originalPriceField] === "number"
+          ? hitWithOriginalPrice[originalPriceField]
+          : currencyCode === DEFAULT_CURRENCY_CODE
+            ? originalPriceAud
+            : undefined
+      const selectedPrice =
+        typeof hitWithOriginalPrice[priceField] === "number"
+          ? hitWithOriginalPrice[priceField]
+          : hit.price_aud
       const discountPercentage = calculateDiscountPercentage(
-        originalPriceAud,
-        hit.price_aud
+        selectedOriginalPrice,
+        selectedPrice
       )
       return {
         id: hit.id,
         handle: hit.handle,
         title: hit.title,
         thumbnail: hit.thumbnail,
+        price: selectedPrice ?? 0,
+        currency_code: currencyCode,
+        original_price:
+          selectedOriginalPrice && selectedOriginalPrice > (selectedPrice ?? 0)
+            ? selectedOriginalPrice
+            : undefined,
         price_aud: hit.price_aud ?? 0,
+        price_nzd: hit.price_nzd,
         original_price_aud: originalPriceAud,
+        original_price_nzd: hitWithOriginalPrice.original_price_nzd,
         discount_percentage: discountPercentage,
         on_sale: hit.on_sale,
         in_stock: hit.in_stock,
@@ -417,6 +466,8 @@ async function searchWithDiscountFilter(
 ): Promise<ProductSearchResult> {
   const { query = "", page = 1, limit = 20 } = params
   const { minDiscount, maxDiscount, onSale } = params.filters || {}
+  const currencyCode =
+    normalizeCurrencyCode(params.pricing?.currency_code) ?? DEFAULT_CURRENCY_CODE
 
   try {
     // Use getDiscountedProducts for discount filtering
@@ -427,6 +478,9 @@ async function searchWithDiscountFilter(
       category_id: params.filters?.categoryIds,
       minPrice: params.filters?.minPrice,
       maxPrice: params.filters?.maxPrice,
+      region_id: params.pricing?.region_id,
+      country_code: params.pricing?.country_code,
+      currency_code: params.pricing?.currency_code,
     })
 
     // Transform and filter products
@@ -447,6 +501,9 @@ async function searchWithDiscountFilter(
           handle: p.handle,
           title: p.title,
           thumbnail: p.thumbnail,
+          price: calcPrice,
+          currency_code: currencyCode,
+          original_price: origPrice > calcPrice ? origPrice : undefined,
           price_aud: calcPrice,
           original_price_aud: origPrice > calcPrice ? origPrice : undefined,
           discount_percentage: discountPercentage,

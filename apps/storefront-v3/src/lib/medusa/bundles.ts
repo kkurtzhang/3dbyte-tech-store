@@ -1,4 +1,5 @@
 import type { MedusaProduct } from "./types"
+import type { PricingContext } from "./regions"
 
 export type BundleLink = {
   id: string
@@ -229,7 +230,10 @@ export async function getBundleProduct(
   }
 }
 
-export async function getBundleProductsById(products: MedusaProduct[]) {
+export async function getBundleProductsById(
+  products: MedusaProduct[],
+  pricingContext?: Partial<PricingContext>
+) {
   const bundleEntries = await Promise.all(
     products.map(async (product) => {
       const bundleLink = getBundleLink(product)
@@ -238,7 +242,9 @@ export async function getBundleProductsById(products: MedusaProduct[]) {
       }
 
       const bundleProduct = await getBundleProduct(bundleLink.id, {
-        currency_code: getProductCurrencyCode(product),
+        region_id: pricingContext?.region_id,
+        currency_code:
+          pricingContext?.currency_code ?? getProductCurrencyCode(product),
       })
 
       if (!bundleProduct) {

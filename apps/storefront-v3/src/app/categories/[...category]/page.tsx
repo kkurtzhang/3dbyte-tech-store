@@ -9,6 +9,7 @@ import { ShopEmptyState } from "@/features/shop/components/shop-empty-state"
 import { ListingLayout } from "@/components/layout/listing-layout"
 import { CategoryFilters } from "@/components/filters/category-filters"
 import { parseDynamicOptionParams } from "@/lib/utils/search-params"
+import { getPricingContext } from "@/lib/medusa/regions.server"
 
 // Force dynamic rendering to prevent caching
 export const dynamic = "force-dynamic"
@@ -79,6 +80,7 @@ export default async function CategoryPage({
   const page = Number(search.page) || 1
   const limit = 20
   const sort = search.sort || "newest"
+  const pricing = await getPricingContext()
 
   // Get category data from Medusa to get category ID and name
   const categoryData = await getCategoryByHandle(category.category)
@@ -99,6 +101,7 @@ export default async function CategoryPage({
     page,
     limit,
     sort,
+    pricing,
     filters: {
       categoryIds: [categoryData.id],
       brandIds: brandIds.length > 0 ? brandIds : undefined,
@@ -181,16 +184,11 @@ export default async function CategoryPage({
     title: product.title,
     thumbnail: product.thumbnail,
     variants: product.variants,
-    price: product.price_aud,
-    currency_code: "AUD",
-    originalPrice: product.original_price_aud ?? undefined,
-    salePrice: product.on_sale ? product.price_aud : undefined,
-    discountPercentage:
-      product.on_sale && product.original_price_aud
-        ? ((product.original_price_aud - product.price_aud) /
-            product.original_price_aud) *
-          100
-        : undefined,
+    price: product.price,
+    currency_code: product.currency_code,
+    originalPrice: product.original_price,
+    salePrice: product.on_sale ? product.price : undefined,
+    discountPercentage: product.discount_percentage,
   }))
 
   return (

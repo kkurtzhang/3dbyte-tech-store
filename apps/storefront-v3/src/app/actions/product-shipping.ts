@@ -3,6 +3,7 @@
 import { z } from "zod"
 import { addLineItems, addToCart, createCart, getShippingOptions, updateCart } from "@/lib/medusa/cart"
 import { sdk } from "@/lib/medusa/client"
+import { getPricingContext } from "@/lib/medusa/regions.server"
 import { getLiveShippingRates } from "@/lib/medusa/shipping"
 import { getShippingServiceDisplayName } from "@/lib/shipping/display-name"
 import {
@@ -95,7 +96,8 @@ export async function estimateProductShippingAction(input: unknown):
     inferAustralianStateFromPostcode(postalCode)
 
   try {
-    const cart = await createCart()
+    const pricingContext = await getPricingContext(countryCode)
+    const cart = await createCart(pricingContext.region_id)
     const estimateItems = parsedInput.data.items?.length
       ? parsedInput.data.items.map((item) => ({
           variant_id: item.variantId,
