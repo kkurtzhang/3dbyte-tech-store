@@ -14,6 +14,7 @@ x-stateful-runtime: &stateful-runtime
   init: true
 x-backend-env: &backend-env
   NODE_ENV: production
+  APP_ENV: "${APP_ENV:-production}"
   PORT: "9000"
   DATABASE_URL: "postgresql://${POSTGRES_USER:?Set POSTGRES_USER}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-medusa}?sslmode=disable"
   PGSSLMODE: disable
@@ -226,6 +227,7 @@ services:
     cpus: "${CMS_CPUS:-0.75}"
     environment:
       NODE_ENV: production
+      APP_ENV: "${APP_ENV:-production}"
       HOST: 0.0.0.0
       PORT: "1337"
       DATABASE_CLIENT: postgres
@@ -243,6 +245,7 @@ services:
       TRANSFER_TOKEN_SALT: "${STRAPI_TRANSFER_TOKEN_SALT:?Set STRAPI_TRANSFER_TOKEN_SALT}"
       JWT_SECRET: "${STRAPI_JWT_SECRET:?Set STRAPI_JWT_SECRET}"
       ENCRYPTION_KEY: "${STRAPI_ENCRYPTION_KEY:?Set STRAPI_ENCRYPTION_KEY}"
+      STRAPI_RESEND_API_KEY: "${STRAPI_RESEND_API_KEY:?Set STRAPI_RESEND_API_KEY}"
       MEILISEARCH_HOST: "${MEILISEARCH_HOST:?Set MEILISEARCH_HOST}"
       MEILISEARCH_API_KEY: "${MEILISEARCH_API_KEY:?Set MEILISEARCH_API_KEY}"
       MEILISEARCH_BLOG_INDEX_NAME: "${MEILISEARCH_BLOG_INDEX_NAME:-blog}"

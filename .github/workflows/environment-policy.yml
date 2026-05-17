@@ -52,6 +52,8 @@ jobs:
           grep -qx "MEILISEARCH_SERVER_HOST=https://search.3dbytetech.com.au" "$staging_file"
           grep -qx "MEILISEARCH_ADDRESS_INDEX_NAME=addresses_v1" "$staging_file"
           grep -qx "MEILISEARCH_LOCALITY_INDEX_NAME=localities_v1" "$staging_file"
+          grep -Fqx 'RESEND_FROM_EMAIL="3D Byte Tech <staging-no-reply@3dbytetech.com.au>"' "$staging_file"
+          grep -q '^STRAPI_RESEND_API_KEY=' "$staging_file"
           check_maildev_disabled "$staging_file"
 
           if grep -R "^ADDRESS_REINDEX_ENABLED=true$" "$staging_file" .env.example apps/backend/.env.template; then
@@ -99,6 +101,8 @@ jobs:
           grep -qx "MEILISEARCH_ADDRESS_INDEX_NAME=addresses_v1" "$prod_file"
           grep -qx "MEILISEARCH_LOCALITY_INDEX_NAME=localities_v1" "$prod_file"
           grep -qx "MEILISEARCH_PRODUCT_INDEX_NAME=prod_products" "$prod_file"
+          grep -Fqx 'RESEND_FROM_EMAIL="3D Byte Tech <no-reply@3dbytetech.com.au>"' "$prod_file"
+          grep -q '^STRAPI_RESEND_API_KEY=' "$prod_file"
           check_maildev_disabled "$prod_file"
 
           if grep -R "^MAILDEV_ENABLED=true$" "$prod_file" .env.example; then
@@ -114,6 +118,8 @@ jobs:
           grep -Fq 'ADDRESS_REINDEX_ENABLED: "${ADDRESS_REINDEX_ENABLED:-false}"' docker-compose.yml
           grep -Fq 'ADDRESS_MANUAL_REINDEX_ENABLED: "${ADDRESS_MANUAL_REINDEX_ENABLED:-false}"' docker-compose.yml
           grep -Fq 'MAILDEV_ENABLED: "${MAILDEV_ENABLED:-false}"' docker-compose.yml
+          grep -Fq 'APP_ENV: "${APP_ENV:-production}"' docker-compose.yml
+          grep -Fq 'STRAPI_RESEND_API_KEY: "${STRAPI_RESEND_API_KEY:?Set STRAPI_RESEND_API_KEY}"' docker-compose.yml
           grep -Fq 'MEILISEARCH_HOST: "${MEILISEARCH_HOST:?Set MEILISEARCH_HOST}"' docker-compose.yml
           grep -Fq 'http://127.0.0.1:3000/api/health' docker-compose.yml
           grep -Fq 'http://127.0.0.1:9000/health' docker-compose.yml

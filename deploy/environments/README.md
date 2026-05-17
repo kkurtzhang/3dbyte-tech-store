@@ -13,6 +13,8 @@ Use `main` as the production branch and `staging` as the staging branch.
   needs the one-off address bootstrap button. Set it back to `false` after the
   shared address index has been created.
 - Keep `MAILDEV_ENABLED=false`; staging should not run the MailDev provider or container.
+- Keep `RESEND_FROM_EMAIL` on the staging-safe `staging-*` sender and use a
+  dedicated `STRAPI_RESEND_API_KEY` for CMS admin reset/invite emails.
 - Use `stg_*` Meilisearch indexes for products, categories, brands, collections, and blog content.
 - Read the shared `addresses_v1` index from the dedicated shared Meilisearch resource.
 
@@ -25,6 +27,8 @@ Use `main` as the production branch and `staging` as the staging branch.
 - Set `ADDRESS_REINDEX_ENABLED=true` only in production. This also enables the
   production manual address reindex button.
 - Keep `MAILDEV_ENABLED=false`; production uses Resend for transactional email.
+- Keep `RESEND_FROM_EMAIL` on the non-staging production sender and use the
+  production `STRAPI_RESEND_API_KEY` for CMS admin reset/invite emails.
 - Use `prod_*` Meilisearch indexes for products, categories, brands, collections, and blog content.
 - Own and update the shared `addresses_v1` index through the dedicated shared Meilisearch resource.
 
