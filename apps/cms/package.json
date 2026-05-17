@@ -22,6 +22,7 @@
     "@3dbyte-tech-store/shared-utils": "workspace:*",
     "@strapi/plugin-cloud": "5.33.0",
     "@strapi/plugin-users-permissions": "5.33.0",
+    "@strapi/provider-email-nodemailer": "5.33.0",
     "@strapi/provider-upload-aws-s3": "5.33.0",
     "@strapi/strapi": "5.33.0",
     "pg": "^8.11.3",

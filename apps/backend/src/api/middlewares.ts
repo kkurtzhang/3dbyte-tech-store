@@ -23,6 +23,10 @@ import {
   PostStoreCartLineItemBundles,
   PutStoreCartLineItemBundle,
 } from "./store/carts/[id]/line-item-bundles/validators";
+import {
+  PostAdminEmailSenderProfileTest,
+  PutAdminEmailSenderProfile,
+} from "./admin/email-settings/validators";
 
 export const GetBrandsSchema = createFindParams();
 
@@ -40,6 +44,22 @@ export default defineMiddlewares({
       middlewares: [
         authenticate("user", ["session", "bearer", "api-key"]),
       ],
+    },
+    {
+      matcher: "/admin/email-settings*",
+      middlewares: [
+        authenticate("user", ["session", "bearer", "api-key"]),
+      ],
+    },
+    {
+      matcher: "/admin/email-settings/profiles/:key",
+      methods: ["PUT"],
+      middlewares: [validateAndTransformBody(PutAdminEmailSenderProfile)],
+    },
+    {
+      matcher: "/admin/email-settings/profiles/:key/test",
+      methods: ["POST"],
+      middlewares: [validateAndTransformBody(PostAdminEmailSenderProfileTest)],
     },
     {
       matcher: "/admin/brands",
