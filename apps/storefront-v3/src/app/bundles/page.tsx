@@ -13,6 +13,7 @@ import {
 import type { MedusaProduct } from "@/lib/medusa/types"
 import { getBundlePricingSummary } from "@/features/product/lib/bundle-pricing"
 import { formatCustomerPrice } from "@/lib/pricing/customer-pricing"
+import { getPricingContext } from "@/lib/medusa/regions.server"
 
 interface BundlesPageProps {
   searchParams: Promise<{
@@ -34,10 +35,16 @@ function getBundlePrice(product: MedusaProduct) {
 }
 
 function getCurrencyCode(product: MedusaProduct) {
-  const variant = product.variants?.[0] as Record<string, unknown> | undefined
+  const variant = product.variants?.[0] as
+    | (Record<string, unknown> & {
+        calculated_price?: {
+          currency_code?: string | null
+        }
+      })
+    | undefined
   const prices = variant?.prices as Array<{ amount: number; currency_code: string }> | undefined
 
-  return prices?.[0]?.currency_code || "usd"
+  return variant?.calculated_price?.currency_code || prices?.[0]?.currency_code || "usd"
 }
 
 function formatPrice(amount: number, currencyCode: string) {
@@ -48,12 +55,14 @@ export default async function BundlesPage({ searchParams }: BundlesPageProps) {
   const params = await searchParams
   const page = Number(params.page) || 1
   const limit = 12
+  const pricing = await getPricingContext()
 
   const { products, count } = await getProductBundles({
     page,
     limit,
+    ...pricing,
   })
-  const bundleProductsById = await getBundleProductsById(products)
+  const bundleProductsById = await getBundleProductsById(products, pricing)
   const totalPages = Math.ceil(count / limit)
 
   return (

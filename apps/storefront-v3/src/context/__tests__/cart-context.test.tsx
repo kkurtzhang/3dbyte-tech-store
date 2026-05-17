@@ -1,6 +1,7 @@
 import { render, screen, waitFor, renderHook, act } from "@testing-library/react"
 import { CartProvider, useCart } from "../cart-context"
 import * as cartApi from "@/lib/medusa/cart"
+import { getPricingContextAction } from "@/app/actions/regions"
 import type { StoreCart } from "@medusajs/types"
 
 // Mock the cart API functions
@@ -9,10 +10,15 @@ jest.mock("@/lib/medusa/cart", () => ({
   getCart: jest.fn(),
   addToCart: jest.fn(),
   addBundleToCart: jest.fn(),
+  ensureCartPricingContext: jest.fn(),
   updateBundleInCart: jest.fn(),
   updateLineItem: jest.fn(),
   deleteLineItem: jest.fn(),
   removeBundleFromCart: jest.fn(),
+}))
+
+jest.mock("@/app/actions/regions", () => ({
+  getPricingContextAction: jest.fn(),
 }))
 
 // Mock localStorage
@@ -69,6 +75,14 @@ describe("CartProvider", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     localStorageMock.clear()
+    ;(getPricingContextAction as jest.Mock).mockResolvedValue({
+      region_id: "reg_au",
+      country_code: "au",
+      currency_code: "aud",
+    })
+    ;(cartApi.ensureCartPricingContext as jest.Mock).mockImplementation(
+      ({ cart }) => Promise.resolve(cart)
+    )
   })
 
   describe("initialization", () => {
@@ -179,7 +193,7 @@ describe("CartProvider", () => {
         await result.current.addItem("variant_1", 1)
       })
 
-      expect(cartApi.createCart).toHaveBeenCalled()
+      expect(cartApi.createCart).toHaveBeenCalledWith("reg_au")
       expect(cartApi.addToCart).toHaveBeenCalledWith({
         cartId: "cart_123",
         variantId: "variant_1",

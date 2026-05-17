@@ -19,6 +19,7 @@ import {
 } from "@/lib/utils/search-params";
 import { buildShopUrl, type ShopQueryParams } from "@/lib/utils/url";
 import { ShopFilters } from "@/components/filters";
+import { getPricingContext } from "@/lib/medusa/regions.server";
 
 interface ShopPageProps {
   searchParams: Promise<{
@@ -92,6 +93,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
   const limit = 20;
   const sort = params.sort || "newest";
   const effectiveInStock = params.inStock !== "false";
+  const pricing = await getPricingContext();
 
   // Parse category filters
   const categoryIds = params.category?.split(",").filter(Boolean) || [];
@@ -115,6 +117,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     page,
     limit,
     sort,
+    pricing,
     filters: {
       categoryIds: categoryIds.length > 0 ? categoryIds : undefined,
       brandIds: brandIds.length > 0 ? brandIds : undefined,
@@ -187,18 +190,14 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     variants: product.variants,
     inventory_quantity: product.inventory_quantity,
     in_stock: product.in_stock,
-    price: product.price_aud,
-    currency_code: "AUD",
-    originalPrice: product.original_price_aud ?? undefined,
-    salePrice: product.on_sale ? product.price_aud : undefined,
+    price: product.price,
+    currency_code: product.currency_code,
+    originalPrice: product.original_price,
+    salePrice: product.on_sale ? product.price : undefined,
     isBundle: product.is_bundle,
     availableInBundlesCount: product.available_in_bundles_count,
     discountPercentage:
-      product.on_sale && product.original_price_aud
-        ? ((product.original_price_aud - product.price_aud) /
-            product.original_price_aud) *
-          100
-        : undefined,
+      product.discount_percentage,
   }));
 
   return (

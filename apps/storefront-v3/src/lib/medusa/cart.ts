@@ -1,12 +1,13 @@
 import { sdk } from "./client"
 import type { MedusaCart, MedusaCartLineItem, MedusaOrder } from "./types"
+import type { PricingContext } from "./regions"
 export type { MedusaCart, MedusaCartLineItem } from "./types"
 export type BundleCartSelection = {
   item_id: string
   variant_id: string
 }
 
-export async function createCart(regionId?: string): Promise<MedusaCart> {
+export async function createCart(regionId: string): Promise<MedusaCart> {
   const { cart } = await sdk.store.cart.create({
     region_id: regionId,
   })
@@ -163,12 +164,36 @@ export async function updateCart({
   cartId: string
   data: {
     email?: string
+    region_id?: string
     shipping_address?: any
     billing_address?: any
   }
 }): Promise<MedusaCart> {
   await sdk.store.cart.update(cartId, data)
   return getCart(cartId)
+}
+
+export async function ensureCartPricingContext({
+  cart,
+  cartId,
+  pricingContext,
+}: {
+  cart?: MedusaCart | null
+  cartId: string
+  pricingContext: PricingContext
+}): Promise<MedusaCart> {
+  const currentCart = cart ?? (await getCart(cartId))
+
+  if (currentCart.region_id === pricingContext.region_id) {
+    return currentCart
+  }
+
+  return updateCart({
+    cartId,
+    data: {
+      region_id: pricingContext.region_id,
+    },
+  })
 }
 
 export async function addShippingMethod({

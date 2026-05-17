@@ -1,5 +1,6 @@
 import { sdk } from "./client"
 import type { MedusaProduct, MedusaProductCategory } from "./types"
+import type { PricingContext } from "./regions"
 
 export async function getCategoryByHandle(
   handle: string[]
@@ -42,7 +43,7 @@ export async function getProductsByCategory(
   params: {
     page?: number
     limit?: number
-  }
+  } & Partial<PricingContext>
 ): Promise<{ products: MedusaProduct[]; count: number }> {
   const { page = 1, limit = 20 } = params
 
@@ -50,7 +51,10 @@ export async function getProductsByCategory(
     category_id: [categoryId],
     limit,
     offset: (page - 1) * limit,
-    fields: "*variants,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory",
+    ...(params.region_id ? { region_id: params.region_id } : {}),
+    ...(params.country_code ? { country_code: params.country_code } : {}),
+    fields:
+      "*variants.calculated_price,*variants.prices,*variants.inventory_quantity,*variants.manage_inventory",
   })
 
   return {
