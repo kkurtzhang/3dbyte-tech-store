@@ -128,6 +128,40 @@ describe("ResendNotificationProviderService", () => {
     expect(send).not.toHaveBeenCalled();
   });
 
+  it("uses notification-level from and reply-to values when provided", async () => {
+    const service = new ResendNotificationProviderService(
+      { logger: logger as never },
+      {
+        apiKey: "re_test",
+        from: "3D Byte Tech <no-reply@3dbytetech.com.au>",
+      },
+    );
+
+    await service.send({
+      channel: "email",
+      content: {
+        html: "<p>Hello Ada</p>",
+        subject: "Order confirmed",
+        text: "Hello Ada",
+      },
+      data: {},
+      from: "3D Byte Tech Orders <order@3dbytetech.com.au>",
+      provider_data: {
+        reply_to: "support@3dbytetech.com.au",
+      },
+      template: "order-confirmed",
+      to: "ada@example.com",
+    } as never);
+
+    expect(send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: "3D Byte Tech Orders <order@3dbytetech.com.au>",
+        replyTo: "support@3dbytetech.com.au",
+      }),
+      undefined,
+    );
+  });
+
   it("throws useful errors from the SDK", async () => {
     send.mockResolvedValue({
       data: null,
