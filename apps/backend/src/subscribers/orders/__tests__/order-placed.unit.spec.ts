@@ -60,7 +60,13 @@ const baseOrder = {
   total: 262.49,
 };
 
-const createArgs = (order = baseOrder) => {
+const createArgs = ({
+  emailSettingsModule,
+  order = baseOrder,
+}: {
+  emailSettingsModule?: Record<string, jest.Mock>;
+  order?: typeof baseOrder;
+} = {}) => {
   const createNotifications = jest.fn().mockResolvedValue([{ id: "noti_123" }]);
   const resolve = jest.fn((key: string) => {
     if (key === "query") {
@@ -68,6 +74,9 @@ const createArgs = (order = baseOrder) => {
     }
     if (key === "notification") {
       return { createNotifications };
+    }
+    if (key === "emailSettings") {
+      return emailSettingsModule;
     }
     throw new Error(`Unexpected dependency ${key}`);
   });
@@ -169,8 +178,10 @@ describe("orderPlacedHandler", () => {
 
   it("skips notifications when the order has no email", async () => {
     const { args, createNotifications } = createArgs({
-      ...baseOrder,
-      email: null as never,
+      order: {
+        ...baseOrder,
+        email: null as never,
+      },
     });
 
     await orderPlacedHandler(args as never);
@@ -223,6 +234,38 @@ describe("orderPlacedHandler", () => {
     expect(createNotifications).toHaveBeenCalledWith(
       expect.objectContaining({
         channel: "email",
+        template: "order-placed",
+      }),
+    );
+  });
+
+  it("uses the order sender profile when sending order confirmations", async () => {
+    process.env.NODE_ENV = "production";
+    process.env.ORDER_EMAILS_ENABLED = "true";
+    process.env.MAILDEV_ENABLED = "false";
+    process.env.RESEND_API_KEY = "re_test";
+    process.env.RESEND_FROM_EMAIL = "3D Byte Tech <no-reply@3dbytetech.com.au>";
+    const emailSettingsModule = {
+      getResolvedSenderProfile: jest.fn().mockResolvedValue({
+        key: "order",
+        from: "3D Byte Tech Orders <order@3dbytetech.com.au>",
+        reply_to: "support@3dbytetech.com.au",
+      }),
+    };
+    const { args, createNotifications } = createArgs({ emailSettingsModule });
+
+    await orderPlacedHandler(args as never);
+
+    expect(emailSettingsModule.getResolvedSenderProfile).toHaveBeenCalledWith(
+      "order",
+      process.env,
+    );
+    expect(createNotifications).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from: "3D Byte Tech Orders <order@3dbytetech.com.au>",
+        provider_data: {
+          reply_to: "support@3dbytetech.com.au",
+        },
         template: "order-placed",
       }),
     );

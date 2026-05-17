@@ -18,6 +18,11 @@ type NotificationContent = {
   text?: string;
 };
 
+type NotificationWithSenderOverrides = ProviderSendNotificationDTO & {
+  from?: unknown;
+  provider_data?: unknown;
+};
+
 type ResendResponse = {
   error?: unknown;
   id?: unknown;
@@ -72,6 +77,24 @@ const getIdempotencyKey = (
 
   const metadata = readRecordValue(notification.data, "email_metadata");
   return readString(readRecordValue(metadata, "idempotency_key"));
+};
+
+const getNotificationFrom = (
+  notification: ProviderSendNotificationDTO,
+): string | undefined => {
+  return readString((notification as NotificationWithSenderOverrides).from);
+};
+
+const getNotificationReplyTo = (
+  notification: ProviderSendNotificationDTO,
+): string | undefined => {
+  const providerData = (notification as NotificationWithSenderOverrides)
+    .provider_data;
+
+  return (
+    readString(readRecordValue(providerData, "reply_to")) ||
+    readString(readRecordValue(providerData, "replyTo"))
+  );
 };
 
 const readJson = async (response: Response): Promise<ResendResponse> => {
@@ -141,18 +164,24 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
       content.html ||
       `<h1>${escapeHtml(subject)}</h1><pre>${escapeHtml(fallbackText)}</pre>`;
     const idempotencyKey = getIdempotencyKey(notification);
+    const from = getNotificationFrom(notification) || this.from;
+    const replyTo = getNotificationReplyTo(notification);
 
     const result = this.apiUrl
       ? await this.sendWithFetch({
+          from,
           html,
           idempotencyKey,
+          replyTo,
           subject,
           text,
           to: notification.to,
         })
       : await this.sendWithSdk({
+          from,
           html,
           idempotencyKey,
+          replyTo,
           subject,
           text,
           to: notification.to,
@@ -166,22 +195,27 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
   }
 
   private async sendWithFetch({
+    from,
     html,
     idempotencyKey,
+    replyTo,
     subject,
     text,
     to,
   }: {
+    from: string;
     html: string;
     idempotencyKey?: string;
+    replyTo?: string;
     subject: string;
     text: string;
     to: string;
   }): Promise<ProviderSendNotificationResultsDTO> {
     const response = await fetch(`${this.apiUrl}/emails`, {
       body: JSON.stringify({
-        from: this.from,
+        from,
         html,
+        ...(replyTo ? { reply_to: replyTo } : {}),
         subject,
         text,
         to,
@@ -207,22 +241,27 @@ class ResendNotificationProviderService extends AbstractNotificationProviderServ
   }
 
   private async sendWithSdk({
+    from,
     html,
     idempotencyKey,
+    replyTo,
     subject,
     text,
     to,
   }: {
+    from: string;
     html: string;
     idempotencyKey?: string;
+    replyTo?: string;
     subject: string;
     text: string;
     to: string;
   }): Promise<ProviderSendNotificationResultsDTO> {
     const result = await this.client!.emails.send(
       {
-        from: this.from,
+        from,
         html,
+        ...(replyTo ? { replyTo } : {}),
         subject,
         text,
         to,

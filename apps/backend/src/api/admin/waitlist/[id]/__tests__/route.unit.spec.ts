@@ -17,9 +17,11 @@ function createResponse() {
 }
 
 function createRequest({
+  emailSettingsModule,
   waitlistModule,
   notificationModule,
 }: {
+  emailSettingsModule?: Record<string, jest.Mock>
   waitlistModule: Record<string, jest.Mock>
   notificationModule?: Record<string, jest.Mock>
 }) {
@@ -32,6 +34,9 @@ function createRequest({
         }
         if (key === "notification") {
           return notificationModule
+        }
+        if (key === "emailSettings") {
+          return emailSettingsModule
         }
         throw new Error(`Unexpected module ${key}`)
       }),
@@ -97,7 +102,18 @@ describe("admin waitlist item routes", () => {
     const notificationModule = {
       createNotifications: jest.fn().mockResolvedValue({ id: "notif_1" }),
     }
-    const req = createRequest({ waitlistModule, notificationModule })
+    const emailSettingsModule = {
+      getResolvedSenderProfile: jest.fn().mockResolvedValue({
+        key: "stock",
+        from: "3D Byte Tech Stock Alerts <stock@3dbytetech.com.au>",
+        reply_to: "support@3dbytetech.com.au",
+      }),
+    }
+    const req = createRequest({
+      emailSettingsModule,
+      waitlistModule,
+      notificationModule,
+    })
     const res = createResponse()
 
     await resend(req as never, res as never)
@@ -105,6 +121,10 @@ describe("admin waitlist item routes", () => {
     expect(notificationModule.createNotifications).toHaveBeenCalledWith(
       expect.objectContaining({
         to: "ava@example.com",
+        from: "3D Byte Tech Stock Alerts <stock@3dbytetech.com.au>",
+        provider_data: {
+          reply_to: "support@3dbytetech.com.au",
+        },
         template: "waitlist-back-in-stock",
         idempotency_key: "waitlist-back-in-stock/wait_1/1",
       })

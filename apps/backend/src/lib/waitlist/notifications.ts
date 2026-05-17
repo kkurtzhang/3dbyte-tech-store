@@ -1,6 +1,7 @@
 import type { MedusaContainer } from "@medusajs/framework/types"
 
 import { renderWaitlistBackInStockEmail } from "../../emails/renderers/waitlist-back-in-stock"
+import { resolveSenderProfileFromContainer } from "../email-settings/sender-profiles"
 import { createWaitlistManageToken } from "./tokens"
 import type { WaitlistAdminEntry } from "./admin"
 
@@ -42,6 +43,10 @@ export const sendWaitlistBackInStockNotification = async ({
   testEmail,
 }: SendWaitlistNotificationInput) => {
   const notificationModule = container.resolve("notification")
+  const senderProfile = await resolveSenderProfileFromContainer(
+    container,
+    "stock"
+  )
   const content = await renderWaitlistBackInStockEmail({
     manageUrl: buildWaitlistManageUrl(entry),
     productTitle: entry.product_title,
@@ -54,6 +59,10 @@ export const sendWaitlistBackInStockNotification = async ({
     to,
     channel: "email",
     template: "waitlist-back-in-stock",
+    from: senderProfile.from,
+    provider_data: {
+      reply_to: senderProfile.reply_to,
+    },
     idempotency_key: testEmail
       ? `waitlist-back-in-stock/test/${entry.id}/${to}`
       : `waitlist-back-in-stock/${entry.id}/${notificationCount}`,

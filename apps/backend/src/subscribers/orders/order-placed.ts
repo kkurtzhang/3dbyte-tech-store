@@ -7,6 +7,7 @@ import {
   retrieveStripePaymentMethod,
   type OrderWithPayments,
 } from "../../utils/stripe-payment-method";
+import { resolveSenderProfileFromContainer } from "../../lib/email-settings/sender-profiles";
 
 type OrderPlacedEvent = {
   id: string;
@@ -175,6 +176,10 @@ export default async function orderPlacedHandler({
   }
 
   const notificationModule = container.resolve("notification");
+  const senderProfile = await resolveSenderProfileFromContainer(
+    container,
+    "order",
+  );
   const trackingPaymentMethod = await getTrackingPaymentMethod(
     order as OrderWithPayments,
   );
@@ -194,6 +199,10 @@ export default async function orderPlacedHandler({
     to: order.email,
     channel: "email",
     template: "order-placed",
+    from: senderProfile.from,
+    provider_data: {
+      reply_to: senderProfile.reply_to,
+    },
     idempotency_key: `order-placed/${order.id}`,
     content,
     data: {
