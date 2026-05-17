@@ -22,7 +22,7 @@ function formatMajorAmount(amount: number, currencyCode: string) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: currencyCode,
-  }).format(toCustomerPriceAmount(amount / 100, currencyCode))
+  }).format(toCustomerPriceAmount(amount, currencyCode))
 }
 
 export function getCompactCartNoticeLines(
