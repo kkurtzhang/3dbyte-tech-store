@@ -1,0 +1,72 @@
+{
+  "kind": "collectionType",
+  "collectionName": "product_documents",
+  "info": {
+    "singularName": "product-document",
+    "pluralName": "product-documents",
+    "displayName": "Product Document",
+    "description": "Public product manuals, datasheets, safety sheets, and support downloads"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "medusa_product_id": {
+      "type": "string",
+      "required": true
+    },
+    "product_title": {
+      "type": "string",
+      "required": true
+    },
+    "product_handle": {
+      "type": "string",
+      "required": true
+    },
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "document_type": {
+      "type": "enumeration",
+      "default": "other",
+      "enum": [
+        "manual",
+        "datasheet",
+        "install_guide",
+        "safety_sheet",
+        "warranty",
+        "other"
+      ],
+      "required": true
+    },
+    "file": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "files"
+      ]
+    },
+    "version": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string",
+      "default": "en"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true,
+      "required": true
+    },
+    "search_keywords": {
+      "type": "json"
+    },
+    "sort_order": {
+      "type": "integer",
+      "default": 0
+    }
+  }
+}
