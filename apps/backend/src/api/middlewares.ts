@@ -192,6 +192,12 @@ export default defineMiddlewares({
       ],
     },
     {
+      matcher: "/admin/support-tickets*",
+      middlewares: [
+        authenticate("user", ["session", "bearer", "api-key"]),
+      ],
+    },
+    {
       matcher: "/store/carts/:id/line-item-bundles",
       methods: ["POST"],
       middlewares: [validateAndTransformBody(PostStoreCartLineItemBundles)],
