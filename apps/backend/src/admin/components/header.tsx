@@ -37,12 +37,11 @@ export const Header = ({ title, subtitle, actions = [] }: HeadingProps) => {
       {actions.length > 0 && (
         <div className="flex items-center justify-center gap-x-2">
           {actions.map((action, index) => (
-            <>
+            <React.Fragment key={index}>
               {action.type === "button" && (
                 <Button
                   {...action.props}
                   size={action.props.size || "small"}
-                  key={index}
                 >
                   <>
                     {action.props.children}
@@ -54,7 +53,7 @@ export const Header = ({ title, subtitle, actions = [] }: HeadingProps) => {
                 <ActionMenu {...action.props} />
               )}
               {action.type === "custom" && action.children}
-            </>
+            </React.Fragment>
           ))}
         </div>
       )}
