@@ -75,6 +75,7 @@ export default async function ProductPage({
         bundleProduct={pageData.bundleProduct}
         availableInBundles={pageData.availableInBundles}
         sourceContext={sourceContext}
+        productDocuments={pageData.productDocuments}
       />
     </Suspense>
   )

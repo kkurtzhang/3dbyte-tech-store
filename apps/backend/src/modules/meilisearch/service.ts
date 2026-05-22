@@ -6,6 +6,7 @@ import type {
   MeilisearchModuleConfig,
   MeilisearchCategoryDocument,
   MeilisearchProductDocument,
+  MeilisearchProductDocumentFile,
   MeilisearchSearchResponse,
   MeilisearchSearchOptions,
   MeilisearchIndexStats,
@@ -155,6 +156,10 @@ export default class MeilisearchModuleService {
         return this.options_.addressIndexName;
       case "locality":
         return this.options_.localityIndexName;
+      case "product_document":
+        return (
+          this.options_.productDocumentIndexName || "product_documents_public"
+        );
       default:
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
@@ -227,7 +232,12 @@ export default class MeilisearchModuleService {
     return task;
   }
 
-  async search<T = MeilisearchProductDocument | MeilisearchCategoryDocument>(
+  async search<
+    T =
+      | MeilisearchProductDocument
+      | MeilisearchCategoryDocument
+      | MeilisearchProductDocumentFile,
+  >(
     query: string,
     type: MeilisearchIndexType = "product",
     options?: MeilisearchSearchOptions,
@@ -581,5 +591,52 @@ export const LOCALITY_INDEX_SETTINGS: MeilisearchIndexSettings = {
 
   pagination: {
     maxTotalHits: 100,
+  },
+};
+
+export const PRODUCT_DOCUMENT_INDEX_SETTINGS: MeilisearchIndexSettings = {
+  searchableAttributes: [
+    "title",
+    "product_title",
+    "product_handle",
+    "search_keywords",
+  ],
+  filterableAttributes: [
+    "id",
+    "medusa_product_id",
+    "product_handle",
+    "document_type",
+    "language",
+  ],
+  sortableAttributes: ["sort_order", "published_at_timestamp", "title"],
+  rankingRules: ["words", "typo", "proximity", "attribute", "sort", "exactness"],
+  displayedAttributes: [
+    "id",
+    "medusa_product_id",
+    "product_handle",
+    "product_title",
+    "title",
+    "document_type",
+    "version",
+    "language",
+    "file_name",
+    "file_size",
+    "public_download_path",
+    "search_keywords",
+    "sort_order",
+    "published_at_timestamp",
+  ],
+  typoTolerance: {
+    enabled: true,
+    minWordSizeForTypos: {
+      oneTypo: 4,
+      twoTypos: 8,
+    },
+  },
+  faceting: {
+    maxValuesPerFacet: 100,
+  },
+  pagination: {
+    maxTotalHits: 10000,
   },
 };
