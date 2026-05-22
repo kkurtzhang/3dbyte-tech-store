@@ -1,5 +1,3 @@
-import { defineRouteConfig } from "@medusajs/admin-sdk"
-import { ChatBubbleLeftRight } from "@medusajs/icons"
 import {
   Badge,
   Button,
@@ -300,10 +298,5 @@ const SupportTicketDetailPage = () => {
     </div>
   )
 }
-
-export const config = defineRouteConfig({
-  label: "Support Ticket",
-  icon: ChatBubbleLeftRight,
-})
 
 export default SupportTicketDetailPage
