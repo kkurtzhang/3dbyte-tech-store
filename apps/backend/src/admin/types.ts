@@ -142,3 +142,90 @@ export type SendWaitlistTestNotificationParams = {
   email: string;
   waitlist_id: string;
 };
+
+export type AdminSupportTicket = {
+  id: string;
+  ticket_number: string;
+  status: string;
+  priority: string;
+  category: string;
+  source: string;
+  subject: string;
+  customer_name: string;
+  customer_email: string;
+  customer_id?: string | null;
+  order_id?: string | null;
+  order_reference?: string | null;
+  product_id?: string | null;
+  product_handle?: string | null;
+  assigned_admin_id?: string | null;
+  ai_summary?: string | null;
+  metadata?: Record<string, unknown> | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  last_message_at?: string | null;
+  resolved_at?: string | null;
+  closed_at?: string | null;
+};
+
+export type AdminSupportTicketMessage = {
+  id: string;
+  ticket_id: string;
+  author_type: string;
+  direction: string;
+  visibility: string;
+  body: string;
+  author_name?: string | null;
+  author_email?: string | null;
+  metadata?: Record<string, unknown> | null;
+  created_at?: string | null;
+};
+
+export type AdminSupportTicketEvent = {
+  id: string;
+  ticket_id: string;
+  type: string;
+  from_value?: string | null;
+  to_value?: string | null;
+  actor_type?: string | null;
+  actor_id?: string | null;
+  metadata?: Record<string, unknown> | null;
+  created_at?: string | null;
+};
+
+export type AdminSupportTicketsResponse = {
+  tickets: AdminSupportTicket[];
+  count: number;
+  limit: number;
+  offset: number;
+};
+
+export type AdminSupportTicketResponse = {
+  ticket: AdminSupportTicket;
+  messages: AdminSupportTicketMessage[];
+  events: AdminSupportTicketEvent[];
+};
+
+export interface SupportTicketQueryParams extends FindParams {
+  category?: string;
+  q?: string;
+  source?: string;
+  status?: string;
+}
+
+export type UpdateSupportTicketStatusParams = {
+  status: string;
+};
+
+export type AdminSupportTicketStatusResponse = {
+  ticket: AdminSupportTicket;
+};
+
+export type CreateSupportTicketMessageParams = {
+  body: string;
+  visibility: "customer" | "internal";
+};
+
+export type AdminSupportTicketMessageResponse = {
+  message: AdminSupportTicketMessage;
+};

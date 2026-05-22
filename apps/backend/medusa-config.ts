@@ -112,6 +112,9 @@ module.exports = defineConfig({
       resolve: "./src/modules/waitlist",
     },
     {
+      resolve: "./src/modules/support-ticket",
+    },
+    {
       resolve: "./src/modules/reviews",
     },
     {
