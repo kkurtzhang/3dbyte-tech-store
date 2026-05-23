@@ -118,6 +118,19 @@ describe("ShoppingAssistantDrawer", () => {
     ).not.toBeInTheDocument()
   })
 
+  it("renders the polished assistant shell from the drawer UI update", async () => {
+    mockUsePathname.mockReturnValue("/shop")
+    const user = userEvent.setup()
+
+    render(<ShoppingAssistantDrawer />)
+
+    await user.click(screen.getByRole("button", { name: /shopping assistant/i }))
+
+    expect(screen.getByText(/instant product guidance/i)).toBeInTheDocument()
+    expect(screen.getByPlaceholderText(/ask me anything/i)).toBeInTheDocument()
+    expect(screen.getByText(/ai can make mistakes/i)).toBeInTheDocument()
+  })
+
   it("renders product suggestions as customer-clicked links without cart mutation", () => {
     render(
       <AssistantProductCard
