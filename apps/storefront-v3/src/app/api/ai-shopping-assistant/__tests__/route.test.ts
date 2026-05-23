@@ -70,9 +70,9 @@ function configureAiEnv() {
   process.env = {
     ...originalEnv,
     AI_PROVIDER: "deepseek",
-    AI_MODEL: "deepseek-chat",
+    AI_MODEL: "deepseek-v4-flash",
     DEEPSEEK_API_KEY: "test-deepseek-key",
-    DEEPSEEK_BASE_URL: "https://api.deepseek.com/v1",
+    DEEPSEEK_BASE_URL: "https://api.deepseek.com",
     INTERNAL_API_TOKEN: "test-internal-token",
     NEXT_PUBLIC_MEDUSA_BACKEND_URL: "http://localhost:9000",
   }
@@ -202,18 +202,21 @@ describe("POST /api/ai-shopping-assistant", () => {
     )
 
     expect(response.status).toBe(200)
-    expect(createOpenAIMock).toHaveBeenCalledWith({
-      apiKey: "test-deepseek-key",
-      baseURL: "https://api.deepseek.com/v1",
-      name: "deepseek",
-    })
-    expect(providerChatModelMock).toHaveBeenCalledWith("deepseek-chat")
+    expect(createOpenAIMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        apiKey: "test-deepseek-key",
+        baseURL: "https://api.deepseek.com",
+        fetch: expect.any(Function),
+        name: "deepseek",
+      })
+    )
+    expect(providerChatModelMock).toHaveBeenCalledWith("deepseek-v4-flash")
     expect(providerModelMock).not.toHaveBeenCalled()
 
     const streamConfig = streamTextMock.mock.calls[0]?.[0]
     expect(streamConfig.model).toEqual({
       provider: "deepseek.chat",
-      model: "deepseek-chat",
+      model: "deepseek-v4-flash",
     })
     expect(streamConfig.system).toContain("suggest-only")
     expect(streamConfig.system).toContain("explicit customer confirmation")
@@ -246,6 +249,51 @@ describe("POST /api/ai-shopping-assistant", () => {
           "x-3db-internal-token": "test-internal-token",
         }),
         body: expect.stringContaining("\"source\":\"ai_chat\""),
+      })
+    )
+  })
+
+  it("defaults to V4 Flash and disables DeepSeek thinking mode for tool loops", async () => {
+    configureAiEnv()
+    delete process.env.AI_MODEL
+    delete process.env.DEEPSEEK_BASE_URL
+    const { POST } = await import("../route")
+
+    const response = await POST(
+      createJsonRequest({
+        messages: [{ role: "user", content: "Create a support ticket" }],
+      })
+    )
+
+    expect(response.status).toBe(200)
+    expect(providerChatModelMock).toHaveBeenCalledWith("deepseek-v4-flash")
+
+    const providerConfig = createOpenAIMock.mock.calls[0]?.[0]
+    expect(providerConfig).toEqual(
+      expect.objectContaining({
+        apiKey: "test-deepseek-key",
+        baseURL: "https://api.deepseek.com",
+        fetch: expect.any(Function),
+        name: "deepseek",
+      })
+    )
+
+    await providerConfig.fetch("https://api.deepseek.com/chat/completions", {
+      body: JSON.stringify({
+        messages: [{ role: "user", content: "Create a support ticket" }],
+        model: "deepseek-v4-flash",
+      }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+
+    const forwardedInit = fetchMock.mock.calls[0]?.[1]
+    const forwardedBody = JSON.parse(forwardedInit.body)
+
+    expect(forwardedBody).toEqual(
+      expect.objectContaining({
+        model: "deepseek-v4-flash",
+        thinking: { type: "disabled" },
       })
     )
   })

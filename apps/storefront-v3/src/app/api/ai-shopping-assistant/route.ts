@@ -10,6 +10,10 @@ import { z } from "zod"
 import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
 import { checkRateLimit } from "@/lib/security/rate-limit"
 
+const DEFAULT_AI_MODEL = "deepseek-v4-flash"
+const DEFAULT_DEEPSEEK_BASE_URL = "https://api.deepseek.com"
+const DEEPSEEK_NON_THINKING_MODE = { type: "disabled" } as const
+
 const assistantTextPartSchema = z.object({
   type: z.literal("text"),
   text: z.string().trim().min(1).max(4_000),
@@ -129,8 +133,8 @@ const systemPrompt = [
 function getConfig() {
   const provider = process.env.AI_PROVIDER || "deepseek"
   const apiKey = process.env.DEEPSEEK_API_KEY
-  const baseURL = process.env.DEEPSEEK_BASE_URL || "https://api.deepseek.com/v1"
-  const model = process.env.AI_MODEL || "deepseek-chat"
+  const baseURL = process.env.DEEPSEEK_BASE_URL || DEFAULT_DEEPSEEK_BASE_URL
+  const model = process.env.AI_MODEL || DEFAULT_AI_MODEL
   const internalToken = process.env.INTERNAL_API_TOKEN
   const backendUrl = resolveMedusaBaseUrl({ isServer: true })
 
@@ -139,6 +143,49 @@ function getConfig() {
   }
 
   return { apiKey, backendUrl, baseURL, internalToken, model }
+}
+
+function isJsonRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value)
+}
+
+function toDeepSeekNonThinkingBody(body: BodyInit | null | undefined) {
+  if (typeof body !== "string") {
+    return body
+  }
+
+  try {
+    const parsedBody: unknown = JSON.parse(body)
+
+    if (
+      !isJsonRecord(parsedBody) ||
+      typeof parsedBody.model !== "string" ||
+      !parsedBody.model.startsWith("deepseek-") ||
+      !Array.isArray(parsedBody.messages)
+    ) {
+      return body
+    }
+
+    return JSON.stringify({
+      ...parsedBody,
+      thinking: DEEPSEEK_NON_THINKING_MODE,
+    })
+  } catch {
+    return body
+  }
+}
+
+function createDeepSeekFetch(fetchImpl: typeof fetch = fetch): typeof fetch {
+  return (input, init) => {
+    if (!init) {
+      return fetchImpl(input, init)
+    }
+
+    return fetchImpl(input, {
+      ...init,
+      body: toDeepSeekNonThinkingBody(init.body),
+    })
+  }
 }
 
 async function callInternalBackend<T>(
@@ -226,6 +273,7 @@ export async function POST(req: Request): Promise<Response> {
   const deepseek = createOpenAI({
     apiKey: config.apiKey,
     baseURL: config.baseURL,
+    fetch: createDeepSeekFetch(),
     name: "deepseek",
   })
   const uiMessages = parsed.data.messages.map((message) => ({
