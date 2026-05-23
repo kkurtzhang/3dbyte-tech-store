@@ -34,6 +34,8 @@ test.describe("Auth and account secondary coverage", () => {
     for (const accountPath of [
       "/account",
       "/account/orders",
+      "/account/product-files",
+      "/account/product-registrations",
       "/account/addresses",
       "/account/settings",
     ]) {

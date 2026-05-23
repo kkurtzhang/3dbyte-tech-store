@@ -6,12 +6,14 @@ import { ProductActions } from "../components/product-actions"
 import { SpecSheet } from "../components/spec-sheet"
 import { ProductBreadcrumbs } from "../components/product-breadcrumbs"
 import { ProductSupportPanel } from "../components/product-support-panel"
+import { ProductDocumentsPanel } from "../components/product-documents-panel"
 import { RecentlyViewedProducts } from "@/components/product/recently-viewed-products"
 import { Separator } from "@/components/ui/separator"
 import { useQueryState } from "nuqs"
 import { useRecentlyViewed } from "@/lib/hooks/use-recently-viewed"
 import type { MedusaProduct, MedusaProductVariant } from "@/lib/medusa/types"
 import type { BundleProduct } from "@/lib/medusa/bundles"
+import type { PublicProductDocument } from "@/lib/product-documents/types"
 import { getVariantOptionsMap } from "../lib/product-variants"
 import {
   buildProductBreadcrumbs,
@@ -31,6 +33,7 @@ interface ProductTemplateProps {
   bundleProduct?: BundleProduct | null
   availableInBundles?: BundleProduct[]
   sourceContext?: ProductSourceContext | null
+  productDocuments?: PublicProductDocument[]
 }
 
 export function ProductTemplate({
@@ -40,6 +43,7 @@ export function ProductTemplate({
   bundleProduct,
   availableInBundles = [],
   sourceContext,
+  productDocuments = [],
 }: ProductTemplateProps) {
   const [variantId, setVariantId] = useQueryState("variant", {
     shallow: false,
@@ -142,6 +146,8 @@ export function ProductTemplate({
            />
 
            <ProductSupportPanel />
+
+           <ProductDocumentsPanel documents={productDocuments} />
 
            <Separator />
 

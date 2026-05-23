@@ -29,4 +29,7 @@ export const INDEX_BRANDS =
   process.env.NEXT_PUBLIC_MEILISEARCH_BRAND_INDEX_NAME || "brands";
 export const INDEX_BLOG =
   process.env.NEXT_PUBLIC_MEILISEARCH_BLOG_INDEX_NAME || "blog";
+export const INDEX_PRODUCT_DOCUMENTS =
+  process.env.NEXT_PUBLIC_MEILISEARCH_PRODUCT_DOCUMENT_INDEX_NAME ||
+  "product_documents_public";
 export const INDEX_ADDRESSES = "addresses";
