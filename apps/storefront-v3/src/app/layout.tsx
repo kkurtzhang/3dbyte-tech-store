@@ -13,6 +13,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { AnnouncementBarSlot } from "@/components/layout/announcement-bar-slot";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { ShoppingAssistantDrawer } from "@/features/ai-shopping-assistant/components/shopping-assistant-drawer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -67,6 +68,7 @@ export default function RootLayout({
                       <Footer />
                     </div>
                     <Toaster />
+                    <ShoppingAssistantDrawer />
                   </InventoryAlertProvider>
                 </WishlistProvider>
               </SavedItemsProvider>
