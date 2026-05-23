@@ -1,287 +1,243 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { Search, BookOpen, Wrench, Layers, Printer, Scissors, Thermometer, Zap, Settings, Package, ArrowRight, Clock, Star } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  Download,
+  Layers,
+  Search,
+  Settings,
+  Wrench,
+} from "lucide-react";
+
 import { NewsletterSignup } from "@/components/layout/newsletter-signup";
 import { ContentSearchBox } from "@/features/search/components/content-search-box";
+import { getBlogPostCategories, getBlogPosts } from "@/lib/strapi/content";
+import type { BlogPost, BlogPostCategory } from "@/lib/strapi/types";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "3D Printing Guides",
-  description: "Expert guides on 3D printing, Voron builds, and filament selection for makers and enthusiasts.",
+  description:
+    "Practical 3D printing guides for maintenance, calibration, filament selection, and troubleshooting.",
 };
 
-export default function GuidesPage() {
-  const categories = [
-    {
-      title: "Voron Builds",
-      description: "Complete build guides for Voron 2.4, V0, and Trident printers",
-      icon: Printer,
-      color: "bg-blue-500/10 text-blue-500",
-      guides: [
-        "Voron 2.4 Full Build Guide",
-        "V0.2 Build Tutorial",
-        "Trident Assembly Walkthrough",
-        "Afterburner Mod Installation",
-      ],
-    },
-    {
-      title: "Filament Selection",
-      description: "Choose the right material for your project",
-      icon: Layers,
-      color: "bg-green-500/10 text-green-500",
-      guides: [
-        "PLA vs PETG vs ABS Comparison",
-        "Best Filaments for Functional Parts",
-        "TPU Printing Tips",
-        "Carbon Fiber Reinforced Filaments",
-      ],
-    },
-    {
-      title: "Printer Calibration",
-      description: "Optimize your prints with proper calibration",
-      icon: Settings,
-      color: "bg-purple-500/10 text-purple-500",
-      guides: [
-        "First Layer Calibration Guide",
-        "Pressure Advance Tuning",
-        "Retraction Settings Explained",
-        "PID Autotune Tutorial",
-      ],
-    },
-    {
-      title: "Print Troubleshooting",
-      description: "Solve common 3D printing problems",
-      icon: Wrench,
-      color: "bg-orange-500/10 text-orange-500",
-      guides: [
-        "Layer Shifting Solutions",
-        "Stringing and Oozing Fixes",
-        "Warping Prevention Tips",
-        "Bridge Quality Improvement",
-      ],
-    },
-    {
-      title: "Bed Adhesion",
-      description: "Get your prints to stick every time",
-      icon: Thermometer,
-      color: "bg-red-500/10 text-red-500",
-      guides: [
-        "PEI Sheet Care Guide",
-        "Bed Temperature Recommendations",
-        "Glue Stick Usage Tips",
-        "Brim vs Raft When to Use",
-      ],
-    },
-    {
-      title: "Post-Processing",
-      description: "Finish your prints like a pro",
-      icon: Scissors,
-      color: "bg-yellow-500/10 text-yellow-500",
-      guides: [
-        "Sanding and Painting Tips",
-        "Epoxy Coating Guide",
-        "Support Removal Techniques",
-        "Vapor Smoothing PLA",
-      ],
-    },
-  ];
+const fallbackTopics = [
+  {
+    title: "Printer Maintenance",
+    description: "Keep motion systems, nozzles, beds, and electronics reliable.",
+    href: "/blog?category=maintenance",
+    icon: Wrench,
+  },
+  {
+    title: "Filament Selection",
+    description: "Choose materials by strength, temperature, finish, and print risk.",
+    href: "/blog?category=filament-selection",
+    icon: Layers,
+  },
+  {
+    title: "Calibration",
+    description: "Tune first layers, flow, pressure advance, temperature, and speed.",
+    href: "/blog?category=calibration",
+    icon: Settings,
+  },
+];
 
-  const featuredGuides = [
-    {
-      title: "Complete Voron 2.4 Build Guide",
-      category: "Voron Builds",
-      readTime: "4 hours",
-      rating: "4.9",
-      image: "printer",
-      description: "A comprehensive step-by-step guide to building your own Voron 2.4 3D printer from scratch.",
-    },
-    {
-      title: "Filament Guide: Which Material for Your Project?",
-      category: "Filament Selection",
-      readTime: "15 min",
-      rating: "4.8",
-      image: "layers",
-      description: "Learn the differences between PLA, PETG, ABS, TPU, and specialty filaments.",
-    },
-    {
-      title: "First Layer Perfect Every Time",
-      category: "Calibration",
-      readTime: "10 min",
-      rating: "4.9",
-      image: "settings",
-      description: "Master the most important layer in 3D printing with this calibration guide.",
-    },
-  ];
+function formatDate(date: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(date));
+}
 
-  const quickLinks = [
-    { title: "Getting Started with 3D Printing", icon: Zap, href: "/blog" },
-    { title: "Nozzle Maintenance Guide", icon: Wrench, href: "/blog" },
-    { title: "SD Card Setup for Klipper", icon: Package, href: "/docs" },
-    { title: "Voltage Theory Explained", icon: Thermometer, href: "/docs" },
-  ];
+function getCategoryLabel(post: BlogPost) {
+  return post.Categories?.[0]?.Title || "Guide";
+}
+
+function getCategoryHref(category: BlogPostCategory) {
+  return `/blog?category=${category.Slug}`;
+}
+
+function normalizeCategories(categories: BlogPostCategory[]) {
+  return categories.filter((category) => category.Title && category.Slug);
+}
+
+async function loadGuideContent() {
+  try {
+    const [postsResponse, categoriesResponse] = await Promise.all([
+      getBlogPosts({ limit: 6 }),
+      getBlogPostCategories(),
+    ]);
+
+    return {
+      posts: postsResponse.data || [],
+      categories: normalizeCategories(categoriesResponse.data || []),
+    };
+  } catch {
+    return {
+      posts: [] as BlogPost[],
+      categories: [] as BlogPostCategory[],
+    };
+  }
+}
+
+export default async function GuidesPage() {
+  const { posts, categories } = await loadGuideContent();
+  const featuredPosts = posts.slice(0, 3);
+  const topicLinks =
+    categories.length > 0
+      ? categories.slice(0, 6).map((category) => ({
+          title: category.Title,
+          description: "Browse related tutorials, comparisons, and practical notes.",
+          href: getCategoryHref(category),
+          icon: BookOpen,
+        }))
+      : fallbackTopics;
 
   return (
-    <div className="container py-12 md:py-16">
-      {/* Header */}
-      <div className="mb-12 text-center">
-        <h1 className="text-4xl font-bold tracking-tight mb-4">
-          3D Printing Guides
-        </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Expert tutorials and walkthroughs for building, calibrating, and mastering your 3D printer.
-        </p>
-      </div>
+    <main>
+      <section className="border-b bg-muted/30">
+        <div className="container grid gap-8 py-12 md:grid-cols-[minmax(0,1fr)_minmax(300px,420px)] md:items-end md:py-16">
+          <div className="max-w-3xl">
+            <p className="text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground">
+              Learning Hub
+            </p>
+            <h1 className="mt-4 text-4xl font-bold tracking-tight md:text-5xl">
+              3D Printing Guides
+            </h1>
+            <p className="mt-4 text-base leading-7 text-muted-foreground md:text-lg">
+              Practical learning content from the CMS: maintenance, calibration,
+              filament choice, troubleshooting, and setup notes. Product files
+              still live in the Download Center.
+            </p>
+          </div>
 
-      {/* Search Section */}
-      <div className="mb-16 max-w-2xl mx-auto">
-        <ContentSearchBox
-          scope="guides"
-          placeholder="Search guides and tutorials..."
-        />
-      </div>
-
-      {/* Featured Guides */}
-      <section className="mb-16">
-        <h2 className="text-2xl font-semibold mb-8">
-          Featured Guides
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {featuredGuides.map((guide) => (
-            <div
-              key={guide.title}
-              className="group rounded-lg border bg-card overflow-hidden hover:border-primary transition-colors cursor-pointer"
-            >
-              <div className="h-32 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                <BookOpen className="h-12 w-12 text-primary/60" />
-              </div>
-              <div className="p-5">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-medium bg-primary/10 text-primary px-2 py-0.5 rounded">
-                    {guide.category}
-                  </span>
-                </div>
-                <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors">
-                  {guide.title}
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                  {guide.description}
-                </p>
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    <span>{guide.readTime}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-                    <span>{guide.rating}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Guide Categories */}
-      <section className="mb-16">
-        <h2 className="text-2xl font-semibold mb-8">
-          Browse by Category
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {categories.map((category) => (
-            <div
-              key={category.title}
-              className="group rounded-lg border bg-card p-6 hover:border-primary transition-colors cursor-pointer"
-            >
-              <div className="flex items-start gap-4 mb-4">
-                <div className={`rounded-lg p-3 ${category.color} group-hover:scale-110 transition-transform`}>
-                  <category.icon className="h-6 w-6" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg mb-1 group-hover:text-primary transition-colors">
-                    {category.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {category.description}
-                  </p>
-                </div>
-              </div>
-              <ul className="space-y-2">
-                {category.guides.slice(0, 3).map((guide) => (
-                  <li key={guide} className="text-sm text-muted-foreground flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" />
-                    {guide}
-                  </li>
-                ))}
-              </ul>
-              {category.guides.length > 3 && (
-                <div className="mt-4 text-sm text-primary font-medium flex items-center gap-1">
-                  View all {category.guides.length} guides
-                  <ArrowRight className="h-4 w-4" />
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Quick Links */}
-      <section className="mb-16">
-        <h2 className="text-2xl font-semibold mb-8">
-          Popular Topics
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {quickLinks.map((link) => (
-            <Link
-              key={link.title}
-              href={link.href}
-              className="group flex items-center gap-3 p-4 rounded-lg border hover:border-primary transition-colors hover:bg-accent/50"
-            >
-              <div className="rounded-lg bg-primary/10 p-2 group-hover:bg-primary/20 transition-colors">
-                <link.icon className="h-5 w-5 text-primary" />
-              </div>
-              <span className="font-medium text-sm group-hover:text-primary transition-colors">
-                {link.title}
-              </span>
-              <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors ml-auto" />
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Newsletter Signup */}
-      <section className="rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-8 md:p-12">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-2xl font-semibold mb-4">
-            Stay Updated with New Guides
-          </h2>
-          <p className="text-muted-foreground mb-6">
-            Get the latest 3D printing guides, tutorials, and tips delivered to your inbox.
-          </p>
-          <div className="max-w-md mx-auto">
-            <NewsletterSignup compact variant="minimal" />
+          <div className="rounded-lg border bg-background p-4 shadow-sm">
+            <ContentSearchBox
+              scope="guides"
+              placeholder="Search guides and tutorials..."
+            />
           </div>
         </div>
       </section>
 
-      {/* Quick Links Footer */}
-      <section className="mt-16 pt-16 border-t">
-        <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
-          <Link href="/help" className="hover:text-primary transition-colors flex items-center gap-1">
-            <BookOpen className="h-4 w-4" />
-            Help Center
-          </Link>
-          <span className="hidden sm:inline">•</span>
-          <Link href="/faq" className="hover:text-primary transition-colors flex items-center gap-1">
-            <Search className="h-4 w-4" />
-            FAQ
-          </Link>
-          <span className="hidden sm:inline">•</span>
-          <Link href="/contact" className="hover:text-primary transition-colors flex items-center gap-1">
-            <Wrench className="h-4 w-4" />
-            Contact Support
+      <section className="container py-10 md:py-14">
+        <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight">
+              Featured Guides
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Pulled from CMS blog content so the storefront stays current.
+            </p>
+          </div>
+          <Link
+            href="/blog"
+            className="inline-flex items-center gap-2 text-sm font-medium text-primary"
+          >
+            View all articles
+            <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
+
+        {featuredPosts.length > 0 ? (
+          <div className="grid gap-4 md:grid-cols-3">
+            {featuredPosts.map((post) => (
+              <Link
+                key={post.id}
+                href={`/blog/${post.Slug}`}
+                className="group rounded-lg border bg-card p-5 transition-colors hover:border-primary/70 hover:bg-accent/30"
+              >
+                <span
+                  aria-hidden="true"
+                  className="inline-flex rounded-md bg-primary/10 px-2 py-1 text-xs font-medium text-primary"
+                >
+                  {getCategoryLabel(post)}
+                </span>
+                <h3 className="mt-4 text-lg font-semibold leading-6 group-hover:text-primary">
+                  {post.Title}
+                </h3>
+                {post.Excerpt ? (
+                  <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground">
+                    {post.Excerpt}
+                  </p>
+                ) : null}
+                <span className="mt-5 flex items-center justify-between text-sm text-muted-foreground">
+                  <time dateTime={post.publishedAt}>
+                    {formatDate(post.publishedAt)}
+                  </time>
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1 group-hover:text-primary" />
+                </span>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-lg border bg-card p-8 text-center">
+            <Search className="mx-auto h-8 w-8 text-muted-foreground" />
+            <h3 className="mt-4 font-semibold">Guides are coming from CMS</h3>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+              Publish guide-style blog posts or categories in Strapi and this
+              page will fill itself from managed content.
+            </p>
+          </div>
+        )}
       </section>
-    </div>
+
+      <section className="border-t bg-muted/20">
+        <div className="container py-10 md:py-14">
+          <div className="mb-6">
+            <h2 className="text-2xl font-semibold tracking-tight">
+              Browse by Topic
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Categories are pulled from CMS when available, with practical
+              fallback topics for a new content library.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            {topicLinks.map((topic) => (
+              <Link
+                key={topic.href}
+                href={topic.href}
+                className="group rounded-lg border bg-background p-5 transition-colors hover:border-primary/70"
+              >
+                <topic.icon className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
+                <h3 className="mt-4 font-semibold">{topic.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  {topic.description}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="container py-10 md:py-14">
+        <div className="grid gap-4 md:grid-cols-2">
+          <Link
+            href="/downloads"
+            className="group rounded-lg border bg-card p-5 transition-colors hover:border-primary/70"
+          >
+            <Download className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
+            <h2 className="mt-4 text-xl font-semibold">Need a file?</h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Manuals, datasheets, install files, safety sheets, and warranty
+              documents belong in the Download Center.
+            </p>
+          </Link>
+
+          <div className="rounded-lg border bg-card p-5">
+            <h2 className="text-xl font-semibold">Stay Updated</h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Get new practical guides, product notes, and restock updates.
+            </p>
+            <NewsletterSignup compact variant="minimal" className="mt-4" />
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }

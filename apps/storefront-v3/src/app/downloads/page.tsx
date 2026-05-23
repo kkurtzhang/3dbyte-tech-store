@@ -1,4 +1,11 @@
-import { FileText, Search } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  Download,
+  FileText,
+  LockKeyhole,
+  Search,
+} from "lucide-react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -20,6 +27,18 @@ function formatType(type: string) {
     .join(" ");
 }
 
+const documentTypes = [
+  { label: "Manuals", value: "manual" },
+  { label: "Datasheets", value: "datasheet" },
+  { label: "Install guides", value: "install_guide" },
+  { label: "Safety sheets", value: "safety_sheet" },
+  { label: "Warranty", value: "warranty" },
+];
+
+function buildTypeHref(value?: string) {
+  return value ? `/downloads?type=${value}` : "/downloads";
+}
+
 export default async function DownloadsPage({
   searchParams,
 }: DownloadsPageProps) {
@@ -32,64 +51,168 @@ export default async function DownloadsPage({
   });
 
   return (
-    <main className="container py-8 md:py-12">
-      <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-            Download Center
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Search public manuals, datasheets, safety sheets, and installation guides.
-          </p>
-        </div>
-        <form className="flex w-full gap-2 md:w-[420px]">
-          <Input
-            name="q"
-            defaultValue={query}
-            placeholder="Search by product, model, or document"
-            aria-label="Search public product documents"
-          />
-          {type ? <input type="hidden" name="type" value={type} /> : null}
-          <Button type="submit" size="icon" aria-label="Search downloads">
-            <Search className="h-4 w-4" />
-          </Button>
-        </form>
-      </div>
+    <main>
+      <section className="border-b bg-muted/30">
+        <div className="container py-10 md:py-14">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-end">
+            <div className="max-w-3xl">
+              <p className="text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground">
+                Public Files
+              </p>
+              <h1 className="mt-4 text-4xl font-bold tracking-tight md:text-5xl">
+                Download Center
+              </h1>
+              <p className="mt-4 text-base leading-7 text-muted-foreground md:text-lg">
+                Find public product manuals, datasheets, safety sheets,
+                warranty notes, and installation files. Private entitled files
+                stay in your account after product registration.
+              </p>
+            </div>
 
-      <div className="mb-4 text-sm text-muted-foreground">
-        {total} {total === 1 ? "document" : "documents"} found
-      </div>
+            <form className="rounded-lg border bg-background p-3 shadow-sm">
+              <div className="flex gap-2">
+                <Input
+                  name="q"
+                  defaultValue={query}
+                  placeholder="Search by product, model, or document"
+                  aria-label="Search public product documents"
+                  className="h-11"
+                />
+                {type ? <input type="hidden" name="type" value={type} /> : null}
+                <Button type="submit" size="icon" aria-label="Search downloads">
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
+            </form>
+          </div>
 
-      <div className="divide-y rounded-sm border">
-        {documents.map((document) => (
-          <Link
-            key={document.id}
-            href={getPublicDocumentDownloadUrl(document.public_download_path)}
-            className="flex items-start justify-between gap-4 p-4 transition-colors hover:bg-muted/40"
-          >
-            <span className="flex min-w-0 gap-3">
-              <FileText className="mt-1 h-5 w-5 shrink-0 text-muted-foreground" />
-              <span className="min-w-0">
-                <span className="block font-medium text-foreground">
-                  {document.title}
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <Link
+              href="/guides"
+              className="group rounded-lg border bg-background p-4 transition-colors hover:border-primary/70"
+            >
+              <BookOpen className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
+              <span className="mt-3 flex items-center justify-between gap-3">
+                <span>
+                  <span className="block font-medium">Product guides</span>
+                  <span className="mt-1 block text-sm text-muted-foreground">
+                    Learn setup, maintenance, materials, and tuning.
+                  </span>
                 </span>
-                <span className="mt-1 block text-sm text-muted-foreground">
-                  {document.product_title}
-                  {document.version ? ` · ${document.version}` : ""}
+                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+              </span>
+            </Link>
+            <Link
+              href="/account/product-files"
+              className="group rounded-lg border bg-background p-4 transition-colors hover:border-primary/70"
+            >
+              <LockKeyhole className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
+              <span className="mt-3 flex items-center justify-between gap-3">
+                <span>
+                  <span className="block font-medium">Account files</span>
+                  <span className="mt-1 block text-sm text-muted-foreground">
+                    Unlock firmware and restricted files with serial registration.
+                  </span>
+                </span>
+                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+              </span>
+            </Link>
+            <Link
+              href="/docs"
+              className="group rounded-lg border bg-background p-4 transition-colors hover:border-primary/70"
+            >
+              <FileText className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
+              <span className="mt-3 flex items-center justify-between gap-3">
+                <span>
+                  <span className="block font-medium">Resource center</span>
+                  <span className="mt-1 block text-sm text-muted-foreground">
+                    Browse all customer support and learning destinations.
+                  </span>
+                </span>
+                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+              </span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="container py-8 md:py-10">
+        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight">
+              Public Documents
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {total} {total === 1 ? "document" : "documents"} found
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={buildTypeHref()}
+              className={`rounded-md border px-3 py-2 text-sm transition-colors ${
+                !type
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "bg-background hover:border-primary/60"
+              }`}
+            >
+              All files
+            </Link>
+            {documentTypes.map((documentType) => (
+              <Link
+                key={documentType.value}
+                href={buildTypeHref(documentType.value)}
+                className={`rounded-md border px-3 py-2 text-sm transition-colors ${
+                  type === documentType.value
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "bg-background hover:border-primary/60"
+                }`}
+              >
+                {documentType.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <div className="divide-y rounded-lg border bg-background">
+          {documents.map((document) => (
+            <Link
+              key={document.id}
+              href={getPublicDocumentDownloadUrl(document.public_download_path)}
+              className="group flex items-start justify-between gap-4 p-4 transition-colors hover:bg-muted/40 md:p-5"
+            >
+              <span className="flex min-w-0 gap-3">
+                <span className="mt-1 rounded-md bg-muted p-2 text-muted-foreground group-hover:text-primary">
+                  <Download className="h-4 w-4" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block font-medium text-foreground">
+                    {document.title}
+                  </span>
+                  <span className="mt-1 block text-sm leading-6 text-muted-foreground">
+                    {document.product_title}
+                    {document.version ? ` · ${document.version}` : ""}
+                    {document.file_name ? ` · ${document.file_name}` : ""}
+                  </span>
                 </span>
               </span>
-            </span>
-            <Badge variant="outline" className="shrink-0">
-              {formatType(document.document_type)}
-            </Badge>
-          </Link>
-        ))}
-        {documents.length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">
-            No public documents matched your search.
-          </div>
-        ) : null}
-      </div>
+              <Badge variant="outline" className="shrink-0">
+                {formatType(document.document_type)}
+              </Badge>
+            </Link>
+          ))}
+          {documents.length === 0 ? (
+            <div className="p-10 text-center">
+              <FileText className="mx-auto h-8 w-8 text-muted-foreground" />
+              <h3 className="mt-4 font-semibold">No documents found</h3>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+                Try another product name, document type, or model number. General
+                learning articles are available in product guides.
+              </p>
+            </div>
+          ) : null}
+        </div>
+      </section>
     </main>
   );
 }
