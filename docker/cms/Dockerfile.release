@@ -25,6 +25,7 @@ ENV PATH=/opt/node_modules/.bin:$PATH
 ENV NODE_OPTIONS=--max-old-space-size=4096
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY packages/observability/package.json ./packages/observability/
 COPY packages/shared-types/package.json ./packages/shared-types/
 COPY packages/shared-utils/package.json ./packages/shared-utils/
 COPY packages/shared-config/package.json ./packages/shared-config/

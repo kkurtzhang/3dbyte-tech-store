@@ -9,6 +9,7 @@ WORKDIR /opt
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/backend/package.json apps/backend/package.json
+COPY packages/observability/package.json packages/observability/package.json
 COPY packages/shared-types/package.json packages/shared-types/package.json
 COPY packages/shared-utils/package.json packages/shared-utils/package.json
 COPY packages/shared-config/package.json packages/shared-config/package.json
@@ -16,6 +17,7 @@ COPY packages/shared-config/package.json packages/shared-config/package.json
 RUN corepack enable && pnpm install --frozen-lockfile
 
 COPY apps/backend apps/backend
+COPY packages/observability packages/observability
 COPY packages/shared-types packages/shared-types
 COPY packages/shared-utils packages/shared-utils
 COPY packages/shared-config packages/shared-config
@@ -37,6 +39,7 @@ COPY --from=builder --chown=medusa:nodejs /opt/package.json /opt/pnpm-lock.yaml 
 COPY --from=builder --chown=medusa:nodejs /opt/node_modules /opt/node_modules
 COPY --from=builder --chown=medusa:nodejs /opt/apps/backend/node_modules /opt/apps/backend/node_modules
 COPY --from=builder --chown=medusa:nodejs /opt/apps/backend/.medusa/server /opt/apps/backend/.medusa/server
+COPY --from=builder --chown=medusa:nodejs /opt/packages/observability /opt/packages/observability
 COPY --from=builder --chown=medusa:nodejs /opt/packages/shared-types /opt/packages/shared-types
 COPY --from=builder --chown=medusa:nodejs /opt/packages/shared-utils /opt/packages/shared-utils
 COPY --from=builder --chown=medusa:nodejs /opt/packages/shared-config /opt/packages/shared-config
