@@ -15,6 +15,7 @@ RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
 FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/storefront-v3/package.json apps/storefront-v3/package.json
+COPY packages/observability/package.json packages/observability/package.json
 COPY packages/shared-config/package.json packages/shared-config/package.json
 COPY packages/shared-types/package.json packages/shared-types/package.json
 COPY packages/shared-utils/package.json packages/shared-utils/package.json
@@ -58,6 +59,7 @@ ENV NEXT_PUBLIC_SPACE_DOMAIN=$NEXT_PUBLIC_SPACE_DOMAIN
 ENV NEXT_PUBLIC_SPACE_ENDPOINT=$NEXT_PUBLIC_SPACE_ENDPOINT
 
 COPY packages/shared-config packages/shared-config
+COPY packages/observability packages/observability
 COPY packages/shared-types packages/shared-types
 COPY packages/shared-utils packages/shared-utils
 COPY apps/storefront-v3 apps/storefront-v3
