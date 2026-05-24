@@ -5,16 +5,20 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --turbopack -H 127.0.0.1 -p 3001",
+    "predev": "pnpm --filter=@3dbyte-tech-store/observability build",
     "build": "next build",
+    "prebuild": "pnpm --filter=@3dbyte-tech-store/observability build",
     "start": "next start",
     "lint": "eslint .",
     "test": "jest",
+    "pretest": "pnpm --filter=@3dbyte-tech-store/observability build",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:coverage:critical": "jest --coverage --config=jest.critical.config.ts",
     "test:ci": "pnpm test && pnpm test:coverage:critical"
   },
   "dependencies": {
+    "@3dbyte-tech-store/observability": "workspace:*",
     "@3dbyte-tech-store/shared-types": "workspace:*",
     "@3dbyte-tech-store/shared-utils": "workspace:*",
     "@ai-sdk/openai": "^3.0.65",

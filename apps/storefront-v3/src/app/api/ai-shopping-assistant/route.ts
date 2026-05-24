@@ -1,10 +1,6 @@
 import { createOpenAI } from "@ai-sdk/openai"
-import {
-  convertToModelMessages,
-  stepCountIs,
-  streamText,
-  tool,
-} from "ai"
+import { isAiTelemetryEnabled } from "@3dbyte-tech-store/observability"
+import { convertToModelMessages, stepCountIs, streamText, tool } from "ai"
 import { z } from "zod"
 
 import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
@@ -77,7 +73,7 @@ const shippingEstimateInputSchema = z.object({
       z.object({
         variantId: z.string().trim().min(1),
         quantity: z.number().int().min(1).max(99).default(1),
-      })
+      }),
     )
     .min(1)
     .max(20),
@@ -191,7 +187,7 @@ function createDeepSeekFetch(fetchImpl: typeof fetch = fetch): typeof fetch {
 async function callInternalBackend<T>(
   path: string,
   body: unknown,
-  config: NonNullable<ReturnType<typeof getConfig>>
+  config: NonNullable<ReturnType<typeof getConfig>>,
 ): Promise<T> {
   const response = await fetch(`${config.backendUrl}${path}`, {
     method: "POST",
@@ -212,7 +208,7 @@ async function callInternalBackend<T>(
 }
 
 function toSupportTicketPayload(
-  input: z.infer<typeof supportTicketInputSchema>
+  input: z.infer<typeof supportTicketInputSchema>,
 ) {
   return {
     source: "ai_chat",
@@ -237,7 +233,8 @@ function toSupportTicketPayload(
 }
 
 export async function POST(req: Request): Promise<Response> {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"
   const rate = checkRateLimit(`ai-shopping-assistant:${ip}`, 12, 60_000)
 
   if (!rate.allowed) {
@@ -248,16 +245,18 @@ export async function POST(req: Request): Promise<Response> {
         headers: {
           "Retry-After": Math.ceil(rate.retryAfterMs / 1000).toString(),
         },
-      }
+      },
     )
   }
 
-  const parsed = assistantRequestSchema.safeParse(await req.json().catch(() => null))
+  const parsed = assistantRequestSchema.safeParse(
+    await req.json().catch(() => null),
+  )
 
   if (!parsed.success) {
     return Response.json(
       { error: "Invalid assistant request" },
-      { status: 400 }
+      { status: 400 },
     )
   }
 
@@ -266,7 +265,7 @@ export async function POST(req: Request): Promise<Response> {
   if (!config) {
     return Response.json(
       { error: "Assistant configuration is incomplete" },
-      { status: 503 }
+      { status: 503 },
     )
   }
 
@@ -286,6 +285,14 @@ export async function POST(req: Request): Promise<Response> {
     model: deepseek.chat(config.model),
     system: systemPrompt,
     messages: await convertToModelMessages(uiMessages),
+    experimental_telemetry: {
+      functionId: "storefront.ai-shopping-assistant",
+      isEnabled: isAiTelemetryEnabled(),
+      metadata: {
+        provider: "deepseek",
+        service: "storefront-v3",
+      },
+    },
     stopWhen: stepCountIs(5),
     tools: {
       searchProducts: tool({
@@ -323,7 +330,7 @@ export async function POST(req: Request): Promise<Response> {
           callInternalBackend(
             "/ai/support-ticket",
             toSupportTicketPayload(input),
-            config
+            config,
           ),
       }),
     },

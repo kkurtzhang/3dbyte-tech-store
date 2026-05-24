@@ -14,16 +14,22 @@
   ],
   "scripts": {
     "build": "medusa build",
+    "prebuild": "pnpm --filter=@3dbyte-tech-store/observability build",
+    "predev": "pnpm --filter=@3dbyte-tech-store/observability build",
     "seed": "medusa exec ./src/scripts/seed.ts",
     "start": "medusa start",
     "predeploy": "echo predeploy-disabled",
     "dev": "XDG_CONFIG_HOME=.medusa medusa develop",
+    "pretest:unit": "pnpm --filter=@3dbyte-tech-store/observability build",
+    "pretest:integration:http": "pnpm --filter=@3dbyte-tech-store/observability build",
+    "pretest:integration:modules": "pnpm --filter=@3dbyte-tech-store/observability build",
     "postinstall": "patch-package",
     "test:integration:http": "TEST_TYPE=integration:http NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",
     "test:integration:modules": "TEST_TYPE=integration:modules NODE_OPTIONS=--experimental-vm-modules jest --silent --runInBand --forceExit",
     "test:unit": "TEST_TYPE=unit NODE_OPTIONS=--experimental-vm-modules jest --silent --runInBand --forceExit"
   },
   "dependencies": {
+    "@3dbyte-tech-store/observability": "workspace:*",
     "@3dbyte-tech-store/shared-types": "workspace:*",
     "@3dbyte-tech-store/shared-utils": "workspace:*",
     "@medusajs/admin-sdk": "2.13.3",
