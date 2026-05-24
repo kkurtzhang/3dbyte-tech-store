@@ -15,6 +15,7 @@ interface StrapiConfig {
 
 interface StrapiRequestOptions extends RequestInit {
   suppressErrorLog?: boolean;
+  useAuth?: boolean;
 }
 
 interface ListProductDocumentsOptions {
@@ -59,17 +60,20 @@ class StrapiModuleService {
     endpoint: string,
     options: StrapiRequestOptions = {}
   ): Promise<any> {
-    if (!this.config_.apiToken) {
+    const { suppressErrorLog = false, useAuth = true, ...fetchOptions } = options;
+
+    if (useAuth && !this.config_.apiToken) {
       throw new Error("Strapi API token not configured");
     }
 
     const url = `${this.config_.apiUrl}/api/${endpoint}`;
-    const { suppressErrorLog = false, ...fetchOptions } = options;
 
-    const defaultHeaders = {
+    const defaultHeaders: Record<string, string> = {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${this.config_.apiToken}`,
     };
+    if (useAuth) {
+      defaultHeaders.Authorization = `Bearer ${this.config_.apiToken}`;
+    }
 
     try {
       const response = await fetch(url, {
@@ -306,7 +310,7 @@ class StrapiModuleService {
     try {
       response = await this.makeRequest(
         `product-documents?populate[file]=true&filters[is_public][$eq]=true${filters}&sort[0]=sort_order:asc&sort[1]=title:asc&pagination[pageSize]=200`,
-        { suppressErrorLog: options.failSoft }
+        { suppressErrorLog: options.failSoft, useAuth: false }
       );
     } catch (error) {
       if (options.failSoft) {
@@ -328,10 +332,12 @@ class StrapiModuleService {
     documentId: string
   ): Promise<PublicProductDocument | null> {
     try {
+      const encodedDocumentId = encodeURIComponent(documentId);
       const response = await this.makeRequest(
-        `product-documents/${documentId}?populate[file]=true`
+        `product-documents?populate[file]=true&filters[documentId][$eq]=${encodedDocumentId}&filters[is_public][$eq]=true&pagination[pageSize]=1`,
+        { useAuth: false }
       );
-      const document = normalizeStrapiProductDocument(response.data);
+      const document = normalizeStrapiProductDocument(response.data?.[0]);
 
       return document.id && document.file_url ? document : null;
     } catch (error) {
