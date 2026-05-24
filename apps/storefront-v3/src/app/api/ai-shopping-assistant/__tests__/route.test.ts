@@ -25,7 +25,7 @@ jest.mock(
     streamText: (config: unknown) => streamTextMock(config),
     tool: (config: unknown) => toolMock(config),
   }),
-  { virtual: true }
+  { virtual: true },
 )
 
 jest.mock(
@@ -33,7 +33,7 @@ jest.mock(
   () => ({
     createOpenAI: (config: unknown) => createOpenAIMock(config),
   }),
-  { virtual: true }
+  { virtual: true },
 )
 
 jest.mock("@/lib/security/rate-limit", () => ({
@@ -74,7 +74,12 @@ function configureAiEnv() {
     DEEPSEEK_API_KEY: "test-deepseek-key",
     DEEPSEEK_BASE_URL: "https://api.deepseek.com",
     INTERNAL_API_TOKEN: "test-internal-token",
+    LANGFUSE_HOST: "http://observability.tailnet.local:3000",
+    LANGFUSE_PUBLIC_KEY: "pk-lf-test",
+    LANGFUSE_SECRET_KEY: "sk-lf-test",
     NEXT_PUBLIC_MEDUSA_BACKEND_URL: "http://localhost:9000",
+    OTEL_EXPORTER_OTLP_ENDPOINT: "http://observability.tailnet.local:4318",
+    OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf",
   }
 }
 
@@ -103,7 +108,7 @@ describe("POST /api/ai-shopping-assistant", () => {
     createOpenAIMock.mockReturnValue(deepseekProviderMock)
     streamTextMock.mockReturnValue({
       toUIMessageStreamResponse: jest.fn(
-        () => new Response("assistant-stream", { status: 200 })
+        () => new Response("assistant-stream", { status: 200 }),
       ),
     })
   })
@@ -132,7 +137,7 @@ describe("POST /api/ai-shopping-assistant", () => {
     const response = await POST(
       createJsonRequest({
         messages: [{ role: "user", content: "Which Voron kit should I buy?" }],
-      })
+      }),
     )
     const body = await response.json()
 
@@ -143,13 +148,16 @@ describe("POST /api/ai-shopping-assistant", () => {
 
   it("rate limits expensive assistant requests before model creation", async () => {
     configureAiEnv()
-    checkRateLimitMock.mockReturnValueOnce({ allowed: false, retryAfterMs: 2_000 })
+    checkRateLimitMock.mockReturnValueOnce({
+      allowed: false,
+      retryAfterMs: 2_000,
+    })
     const { POST } = await import("../route")
 
     const response = await POST(
       createJsonRequest({
         messages: [{ role: "user", content: "Find compatible nozzles" }],
-      })
+      }),
     )
     const body = await response.json()
 
@@ -158,7 +166,7 @@ describe("POST /api/ai-shopping-assistant", () => {
     expect(checkRateLimitMock).toHaveBeenCalledWith(
       "ai-shopping-assistant:203.0.113.42",
       12,
-      60_000
+      60_000,
     )
     expect(streamTextMock).not.toHaveBeenCalled()
   })
@@ -178,7 +186,7 @@ describe("POST /api/ai-shopping-assistant", () => {
           },
         ],
         trigger: "submit-message",
-      })
+      }),
     )
 
     expect(response.status).toBe(200)
@@ -198,7 +206,7 @@ describe("POST /api/ai-shopping-assistant", () => {
     const response = await POST(
       createJsonRequest({
         messages: [{ role: "user", content: "Find a beginner Voron kit" }],
-      })
+      }),
     )
 
     expect(response.status).toBe(200)
@@ -208,7 +216,7 @@ describe("POST /api/ai-shopping-assistant", () => {
         baseURL: "https://api.deepseek.com",
         fetch: expect.any(Function),
         name: "deepseek",
-      })
+      }),
     )
     expect(providerChatModelMock).toHaveBeenCalledWith("deepseek-v4-flash")
     expect(providerModelMock).not.toHaveBeenCalled()
@@ -217,6 +225,14 @@ describe("POST /api/ai-shopping-assistant", () => {
     expect(streamConfig.model).toEqual({
       provider: "deepseek.chat",
       model: "deepseek-v4-flash",
+    })
+    expect(streamConfig.experimental_telemetry).toEqual({
+      functionId: "storefront.ai-shopping-assistant",
+      isEnabled: true,
+      metadata: {
+        provider: "deepseek",
+        service: "storefront-v3",
+      },
     })
     expect(streamConfig.system).toContain("suggest-only")
     expect(streamConfig.system).toContain("explicit customer confirmation")
@@ -248,8 +264,8 @@ describe("POST /api/ai-shopping-assistant", () => {
           "content-type": "application/json",
           "x-3db-internal-token": "test-internal-token",
         }),
-        body: expect.stringContaining("\"source\":\"ai_chat\""),
-      })
+        body: expect.stringContaining('"source":"ai_chat"'),
+      }),
     )
   })
 
@@ -262,7 +278,7 @@ describe("POST /api/ai-shopping-assistant", () => {
     const response = await POST(
       createJsonRequest({
         messages: [{ role: "user", content: "Create a support ticket" }],
-      })
+      }),
     )
 
     expect(response.status).toBe(200)
@@ -275,7 +291,7 @@ describe("POST /api/ai-shopping-assistant", () => {
         baseURL: "https://api.deepseek.com",
         fetch: expect.any(Function),
         name: "deepseek",
-      })
+      }),
     )
 
     await providerConfig.fetch("https://api.deepseek.com/chat/completions", {
@@ -294,7 +310,7 @@ describe("POST /api/ai-shopping-assistant", () => {
       expect.objectContaining({
         model: "deepseek-v4-flash",
         thinking: { type: "disabled" },
-      })
+      }),
     )
   })
 })

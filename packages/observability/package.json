@@ -1,0 +1,36 @@
+{
+  "name": "@3dbyte-tech-store/observability",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "lint": "echo 'observability lint pending (no ESLint config yet)'",
+    "test": "jest",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@3dbyte-tech-store/shared-config": "workspace:*",
+    "@types/jest": "^29.5.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.4.6",
+    "typescript": "^5.3.3"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@langfuse/otel": "5.3.0",
+    "@opentelemetry/api": "1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "0.61.0",
+    "@opentelemetry/exporter-trace-otlp-grpc": "0.202.0",
+    "@opentelemetry/exporter-trace-otlp-http": "0.202.0",
+    "@opentelemetry/instrumentation": "0.202.0",
+    "@opentelemetry/resources": "2.2.0",
+    "@opentelemetry/sdk-node": "0.202.0",
+    "@opentelemetry/sdk-trace-base": "2.2.0",
+    "@opentelemetry/semantic-conventions": "1.38.0"
+  }
+}
