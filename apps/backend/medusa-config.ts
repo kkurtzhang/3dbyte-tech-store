@@ -112,6 +112,12 @@ module.exports = defineConfig({
       resolve: "./src/modules/waitlist",
     },
     {
+      resolve: "./src/modules/support-ticket",
+    },
+    {
+      resolve: "./src/modules/product-files",
+    },
+    {
       resolve: "./src/modules/reviews",
     },
     {
@@ -144,6 +150,9 @@ module.exports = defineConfig({
           process.env.MEILISEARCH_ADDRESS_INDEX_NAME || "addresses",
         localityIndexName:
           process.env.MEILISEARCH_LOCALITY_INDEX_NAME || "localities",
+        productDocumentIndexName:
+          process.env.MEILISEARCH_PRODUCT_DOCUMENT_INDEX_NAME ||
+          "product_documents_public",
       },
     },
     {

@@ -27,6 +27,9 @@ import {
   PostAdminEmailSenderProfileTest,
   PutAdminEmailSenderProfile,
 } from "./admin/email-settings/validators";
+import { PostStoreProductRegistrationSchema } from "./store/customers/me/product-registrations/route";
+import { PostAdminProductRegistrationSchema } from "./admin/product-registrations/route";
+import { PostAdminProductEntitlementFileSchema } from "./admin/product-entitlement-files/route";
 
 export const GetBrandsSchema = createFindParams();
 
@@ -49,6 +52,30 @@ export default defineMiddlewares({
       matcher: "/admin/email-settings*",
       middlewares: [
         authenticate("user", ["session", "bearer", "api-key"]),
+      ],
+    },
+    {
+      matcher: "/admin/product-registrations*",
+      middlewares: [
+        authenticate("user", ["session", "bearer", "api-key"]),
+      ],
+    },
+    {
+      matcher: "/admin/product-registrations",
+      methods: ["POST"],
+      middlewares: [validateAndTransformBody(PostAdminProductRegistrationSchema)],
+    },
+    {
+      matcher: "/admin/product-entitlement-files*",
+      middlewares: [
+        authenticate("user", ["session", "bearer", "api-key"]),
+      ],
+    },
+    {
+      matcher: "/admin/product-entitlement-files",
+      methods: ["POST"],
+      middlewares: [
+        validateAndTransformBody(PostAdminProductEntitlementFileSchema),
       ],
     },
     {
@@ -192,6 +219,12 @@ export default defineMiddlewares({
       ],
     },
     {
+      matcher: "/admin/support-tickets*",
+      middlewares: [
+        authenticate("user", ["session", "bearer", "api-key"]),
+      ],
+    },
+    {
       matcher: "/store/carts/:id/line-item-bundles",
       methods: ["POST"],
       middlewares: [validateAndTransformBody(PostStoreCartLineItemBundles)],
@@ -204,6 +237,18 @@ export default defineMiddlewares({
     {
       matcher: "/store/wishlist/:id",
       methods: ["DELETE"],
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
+      matcher: "/store/customers/me/product-registrations",
+      methods: ["POST"],
+      middlewares: [
+        authenticate("customer", ["session", "bearer"]),
+        validateAndTransformBody(PostStoreProductRegistrationSchema),
+      ],
+    },
+    {
+      matcher: "/store/customers/me/product-files*",
       middlewares: [authenticate("customer", ["session", "bearer"])],
     },
     {

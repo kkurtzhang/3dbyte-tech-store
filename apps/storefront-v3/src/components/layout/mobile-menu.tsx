@@ -57,6 +57,18 @@ export function MobileMenu() {
               Collections
             </Link>
             <Link
+              href="/downloads"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Download Center
+            </Link>
+            <Link
+              href="/guides"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Guides
+            </Link>
+            <Link
               href="/blog"
               className="text-sm font-medium transition-colors hover:text-primary"
             >

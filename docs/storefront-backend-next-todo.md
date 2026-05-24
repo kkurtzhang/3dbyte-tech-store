@@ -50,17 +50,26 @@ This document tracks the remaining work after the current storefront-v3 content 
   - `blog` index has meaningful volume.
   - `/api/content-search` returns relevant article/guide hits for common queries.
 
-### 4) Replace contact `mailto` with ticket endpoint (Backend + Storefront)
+### 4) Launch Medusa-native support tickets with AI handoff (Backend + Storefront + Admin + AI)
 
-- Status (Option A): Deferred for launch planning. Keep the current `mailto` support flow for launch; implement the endpoint post-launch.
+- Status: In implementation for the launch-minimum support workflow.
 
-- Problem: current support form opens an email draft; no tracking/workflow.
+- Problem: current support form opens an email draft; no tracking/workflow, and the AI chatbot needs a safe path to hand a customer to a human without creating a separate support system.
 - Deliverable:
-  - Backend endpoint for support requests (validation, persistence, response contract).
-  - Storefront contact form submits to API and displays success/error states.
+  - Medusa support-ticket module for tickets, messages, and audit events.
+  - Storefront contact form submits to `/api/support-tickets` and displays success/error states with a ticket number.
+  - Admin support-ticket list/detail pages for triage, status updates, internal notes, and customer replies.
+  - AI handoff endpoint at `/ai/support-ticket`, protected by `x-3db-internal-token`, accepting customer details, AI summary, optional verified order/product context, and transcript excerpt only when the customer consent flag is true.
+  - Notification integration for customer acknowledgements, internal alerts, and customer-visible support replies.
 - Acceptance:
   - Form submits without email client dependency.
-  - Requests are auditable and can be processed downstream.
+  - Requests are persisted, auditable, and visible in Medusa Admin.
+  - AI chatbot can create a human handoff ticket by calling the internal endpoint instead of inventing a parallel queue.
+  - Transcript context is omitted unless `consent_to_include_transcript` is explicitly true.
+- Deferred after launch:
+  - External OSS helpdesk sync, if Medusa Admin becomes too thin for support workload.
+  - Customer account ticket history and threaded customer replies from the storefront.
+  - SLA dashboards, assignment queues, tags, saved views, and attachment uploads.
 
 ### 5) Move remaining static Help/Guides blocks to CMS (Storefront + CMS)
 
@@ -91,4 +100,3 @@ This document tracks the remaining work after the current storefront-v3 content 
 3. Key routes return expected status codes.
 4. Meilisearch live checks validate expected indexes/doc counts.
 5. No placeholder/dead links.
-

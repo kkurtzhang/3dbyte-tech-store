@@ -16,6 +16,7 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: path.resolve(dirname, "../.."),
   pageExtensions: ["js", "jsx", "mdx", "ts", "tsx"],
   transpilePackages: [
+    "@3dbyte-tech-store/observability",
     "@3dbyte-tech-store/shared-types",
     "@3dbyte-tech-store/shared-utils",
   ],

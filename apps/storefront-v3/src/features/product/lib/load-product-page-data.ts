@@ -6,6 +6,7 @@ import {
   getBundleProduct,
 } from "@/lib/medusa/bundles"
 import { getStrapiContent } from "@/lib/strapi/content"
+import { getPublicProductDocuments } from "@/lib/product-documents/api"
 import type { PricingContext } from "@/lib/medusa/regions"
 
 interface StrapiProductDescription {
@@ -58,6 +59,7 @@ export async function loadProductPageData(
           currency_code: currencyCode,
         }),
   ])
+  const productDocuments = await getPublicProductDocuments(product.id)
 
   const variantImageUrls =
     product.variants?.flatMap((variant) =>
@@ -76,6 +78,7 @@ export async function loadProductPageData(
     bundleProduct,
     availableInBundles,
     variantImageUrls,
+    productDocuments,
     richDescription: enrichedContent?.rich_text,
   }
 }

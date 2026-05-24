@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, Send } from "lucide-react";
+import { CheckCircle2, Send } from "lucide-react";
 
 const SUBJECTS = [
   "General Inquiry",
@@ -16,16 +16,28 @@ const SUBJECTS = [
   "Other",
 ];
 
+const SUBJECT_CATEGORY_MAP: Record<string, string> = {
+  "General Inquiry": "general",
+  "Product Support": "product_support",
+  "Order Status": "order_status",
+  "Returns & Refunds": "returns_refunds",
+  Partnership: "general",
+  Wholesale: "wholesale",
+  Other: "other",
+};
+
 export function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [ticketNumber, setTicketNumber] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
-    const formData = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
 
     const name = String(formData.get("name") || "").trim();
     const email = String(formData.get("email") || "").trim();
@@ -38,35 +50,58 @@ export function ContactForm() {
       return;
     }
 
-    const subjectLine = `[3DByte Support] ${subject}`;
-    const body = [
-      `Name: ${name}`,
-      `Email: ${email}`,
-      "",
-      "Message:",
-      message,
-    ].join("\n");
+    try {
+      const response = await fetch("/api/support-tickets", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          subject,
+          category: SUBJECT_CATEGORY_MAP[subject] || "general",
+          message,
+          source: "contact_form",
+        }),
+      });
+      const data = await response.json().catch(() => null);
 
-    const mailtoHref = `mailto:support@3dbytetech.com.au?subject=${encodeURIComponent(subjectLine)}&body=${encodeURIComponent(body)}`;
+      if (!response.ok) {
+        throw new Error(data?.message || "Unable to create support ticket");
+      }
 
-    window.location.href = mailtoHref;
-    setIsSubmitting(false);
-    setSubmitted(true);
+      setTicketNumber(data?.ticket?.ticket_number || null);
+      setSubmitted(true);
+      form.reset();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to create support ticket",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   if (submitted) {
     return (
       <div className="rounded-lg border bg-card p-8 text-center">
         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-          <Mail className="h-6 w-6 text-green-600" />
+          <CheckCircle2 className="h-6 w-6 text-green-600" />
         </div>
-        <h3 className="text-xl font-semibold mb-2">Message Sent!</h3>
+        <h3 className="text-xl font-semibold mb-2">Support Request Received</h3>
         <p className="text-muted-foreground mb-4">
-          Your email draft has been opened. Send it to reach our support team.
+          Our team will review it and reply as soon as possible.
         </p>
+        {ticketNumber && (
+          <p className="mb-4 font-mono text-sm font-medium">{ticketNumber}</p>
+        )}
         <Button
           variant="outline"
-          onClick={() => setSubmitted(false)}
+          onClick={() => {
+            setSubmitted(false);
+            setTicketNumber(null);
+          }}
         >
           Send Another Message
         </Button>

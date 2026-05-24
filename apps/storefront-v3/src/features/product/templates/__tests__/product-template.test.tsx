@@ -29,6 +29,10 @@ jest.mock("../../components/product-support-panel", () => ({
   ProductSupportPanel: () => <div data-testid="product-support-panel" />,
 }))
 
+jest.mock("../../components/product-documents-panel", () => ({
+  ProductDocumentsPanel: () => <div data-testid="product-documents-panel" />,
+}))
+
 jest.mock("@/components/product/recently-viewed-products", () => ({
   RecentlyViewedProducts: () => <div data-testid="recently-viewed" />,
 }))
@@ -80,5 +84,26 @@ describe("ProductTemplate", () => {
         history: "replace",
       })
     )
+  })
+
+  it("renders product documents when public downloads are available", () => {
+    const { getByTestId } = render(
+      <ProductTemplate
+        product={createProduct()}
+        productDocuments={[
+          {
+            id: "doc_1",
+            title: "Manual",
+            document_type: "manual",
+            product_title: "Test Product",
+            product_handle: "test-product",
+            medusa_product_id: "prod_1",
+            public_download_path: "/store/product-documents/doc_1/download",
+          },
+        ]}
+      />
+    )
+
+    expect(getByTestId("product-documents-panel")).toBeInTheDocument()
   })
 })

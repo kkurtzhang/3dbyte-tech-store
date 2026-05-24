@@ -24,6 +24,8 @@ const accountNavItems: AccountNavItem[] = [
   { label: "Profile", href: "/account" },
   { label: "Settings", href: "/account/settings" },
   { label: "Orders", href: "/account/orders" },
+  { label: "Product Files", href: "/account/product-files" },
+  { label: "Registrations", href: "/account/product-registrations" },
   { label: "Addresses", href: "/account/addresses" },
   { label: "Wishlist", href: "/wishlist" },
   { label: "Waitlist", href: "/waitlist" },

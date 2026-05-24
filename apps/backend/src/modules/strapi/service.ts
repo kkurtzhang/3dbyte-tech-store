@@ -1,4 +1,8 @@
 import { Logger } from "@medusajs/framework/types";
+import {
+  normalizeStrapiProductDocument,
+  type PublicProductDocument,
+} from "../product-files/utils/public-documents";
 
 type InjectedDependencies = {
   logger: Logger;
@@ -7,6 +11,15 @@ type InjectedDependencies = {
 interface StrapiConfig {
   apiUrl: string;
   apiToken: string;
+}
+
+interface StrapiRequestOptions extends RequestInit {
+  suppressErrorLog?: boolean;
+  useAuth?: boolean;
+}
+
+interface ListProductDocumentsOptions {
+  failSoft?: boolean;
 }
 
 export interface SyncProductData {
@@ -45,25 +58,29 @@ class StrapiModuleService {
 
   private async makeRequest(
     endpoint: string,
-    options: RequestInit = {}
+    options: StrapiRequestOptions = {}
   ): Promise<any> {
-    if (!this.config_.apiToken) {
+    const { suppressErrorLog = false, useAuth = true, ...fetchOptions } = options;
+
+    if (useAuth && !this.config_.apiToken) {
       throw new Error("Strapi API token not configured");
     }
 
     const url = `${this.config_.apiUrl}/api/${endpoint}`;
 
-    const defaultHeaders = {
+    const defaultHeaders: Record<string, string> = {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${this.config_.apiToken}`,
     };
+    if (useAuth) {
+      defaultHeaders.Authorization = `Bearer ${this.config_.apiToken}`;
+    }
 
     try {
       const response = await fetch(url, {
-        ...options,
+        ...fetchOptions,
         headers: {
           ...defaultHeaders,
-          ...options.headers,
+          ...fetchOptions.headers,
         },
       });
 
@@ -76,10 +93,14 @@ class StrapiModuleService {
 
       return await response.json();
     } catch (error) {
-      this.logger_.error(
-        `Strapi API request failed: ${endpoint}`,
-        new Error(error.message)
-      );
+      if (!suppressErrorLog) {
+        const normalizedError =
+          error instanceof Error ? error : new Error(String(error));
+        this.logger_.error(
+          `Strapi API request failed: ${endpoint}`,
+          normalizedError
+        );
+      }
       throw error;
     }
   }
@@ -275,6 +296,59 @@ class StrapiModuleService {
     }
   }
   //====End======Product Description Section===============
+
+  //===============Product Documents Section===============
+  async listProductDocuments(
+    medusaProductId?: string,
+    options: ListProductDocumentsOptions = {}
+  ): Promise<PublicProductDocument[]> {
+    const filters = medusaProductId
+      ? `&filters[medusa_product_id][$eq]=${encodeURIComponent(medusaProductId)}`
+      : "";
+    let response: any;
+
+    try {
+      response = await this.makeRequest(
+        `product-documents?populate[file]=true&filters[is_public][$eq]=true${filters}&sort[0]=sort_order:asc&sort[1]=title:asc&pagination[pageSize]=200`,
+        { suppressErrorLog: options.failSoft, useAuth: false }
+      );
+    } catch (error) {
+      if (options.failSoft) {
+        return [];
+      }
+
+      throw error;
+    }
+
+    return (response.data || [])
+      .map((document: unknown) => normalizeStrapiProductDocument(document))
+      .filter(
+        (document: PublicProductDocument) =>
+          Boolean(document.id) && Boolean(document.file_url)
+      );
+  }
+
+  async getProductDocument(
+    documentId: string
+  ): Promise<PublicProductDocument | null> {
+    try {
+      const encodedDocumentId = encodeURIComponent(documentId);
+      const response = await this.makeRequest(
+        `product-documents?populate[file]=true&filters[documentId][$eq]=${encodedDocumentId}&filters[is_public][$eq]=true&pagination[pageSize]=1`,
+        { useAuth: false }
+      );
+      const document = normalizeStrapiProductDocument(response.data?.[0]);
+
+      return document.id && document.file_url ? document : null;
+    } catch (error) {
+      this.logger_.error(
+        `Failed to get product document for ${documentId}`,
+        new Error(error.message)
+      );
+      return null;
+    }
+  }
+  //====End======Product Documents Section===============
 
   //===============Brand Description Section===============
 

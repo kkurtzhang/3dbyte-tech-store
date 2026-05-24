@@ -14,7 +14,8 @@ export type MeilisearchIndexType =
   | "category"
   | "brand"
   | "address"
-  | "locality";
+  | "locality"
+  | "product_document";
 
 export interface MeilisearchModuleConfig {
   host: string;
@@ -24,6 +25,7 @@ export interface MeilisearchModuleConfig {
   brandIndexName: string;
   addressIndexName: string;
   localityIndexName: string;
+  productDocumentIndexName?: string;
   settings?: MeilisearchIndexSettings;
 }
 
@@ -198,6 +200,29 @@ export interface MeilisearchLocalityDocument {
   country: string; // "AU" or "NZ"
 }
 
+export interface MeilisearchProductDocumentFile {
+  id: string;
+  medusa_product_id: string;
+  product_handle: string;
+  product_title: string;
+  title: string;
+  document_type:
+    | "manual"
+    | "datasheet"
+    | "install_guide"
+    | "safety_sheet"
+    | "warranty"
+    | "other";
+  version?: string;
+  language?: string;
+  file_name: string;
+  file_size: number;
+  public_download_path: string;
+  search_keywords: string[];
+  sort_order: number;
+  published_at_timestamp: number;
+}
+
 export interface MeilisearchSearchOptions {
   limit?: number;
   offset?: number;
@@ -207,7 +232,10 @@ export interface MeilisearchSearchOptions {
 }
 
 export interface MeilisearchSearchResponse<
-  T = MeilisearchProductDocument | MeilisearchCategoryDocument,
+  T =
+    | MeilisearchProductDocument
+    | MeilisearchCategoryDocument
+    | MeilisearchProductDocumentFile,
 > {
   hits: T[];
   estimatedTotalHits: number;

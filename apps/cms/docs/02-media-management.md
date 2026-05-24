@@ -137,6 +137,8 @@ uploads/
     └── specifications/
 ```
 
+For product files, use the `Product Document` content type for public manuals, datasheets, install guides, safety sheets, and warranty files. Restricted files such as firmware, calibration packs, and service-only software are managed by the Medusa product-file entitlement gateway, not by public Strapi media entries.
+
 ### Editing Media Metadata
 
 #### Image Metadata

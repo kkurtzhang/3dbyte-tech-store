@@ -80,6 +80,12 @@ export function Navbar() {
               Brands
             </Link>
             <Link
+              href="/downloads"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Downloads
+            </Link>
+            <Link
               href="/blog"
               className="text-sm font-medium transition-colors hover:text-primary"
             >

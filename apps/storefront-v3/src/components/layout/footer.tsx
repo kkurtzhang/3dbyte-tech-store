@@ -75,6 +75,14 @@ export function Footer() {
               </li>
               <li>
                 <Link
+                  href="/downloads"
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Download Center
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/returns"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
@@ -111,7 +119,7 @@ export function Footer() {
                   href="/docs"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  Documentation
+                  Resource Center
                 </Link>
               </li>
               <li>
