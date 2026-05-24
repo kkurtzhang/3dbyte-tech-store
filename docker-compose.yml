@@ -12,7 +12,20 @@ x-stateful-runtime: &stateful-runtime
   security_opt:
     - no-new-privileges:true
   init: true
+x-observability-env: &observability-env
+  OTEL_SDK_DISABLED: "${OTEL_SDK_DISABLED:-}"
+  OTEL_TRACING_ENABLED: "${OTEL_TRACING_ENABLED:-}"
+  OTEL_DEPLOYMENT_ENVIRONMENT: "${APP_ENV:-production}"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "${OTEL_EXPORTER_OTLP_ENDPOINT:-}"
+  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-}"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "${OTEL_EXPORTER_OTLP_PROTOCOL:-http/protobuf}"
+  OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: "${OTEL_EXPORTER_OTLP_TRACES_PROTOCOL:-}"
+  OTEL_RESOURCE_ATTRIBUTES: "${OTEL_RESOURCE_ATTRIBUTES:-}"
+  LANGFUSE_HOST: "${LANGFUSE_HOST:-}"
+  LANGFUSE_PUBLIC_KEY: "${LANGFUSE_PUBLIC_KEY:-}"
+  LANGFUSE_SECRET_KEY: "${LANGFUSE_SECRET_KEY:-}"
 x-backend-env: &backend-env
+  <<: *observability-env
   NODE_ENV: production
   APP_ENV: "${APP_ENV:-production}"
   PORT: "9000"
@@ -64,6 +77,7 @@ x-backend-env: &backend-env
   ADDRESS_REINDEX_ENABLED: "${ADDRESS_REINDEX_ENABLED:-false}"
   ADDRESS_MANUAL_REINDEX_ENABLED: "${ADDRESS_MANUAL_REINDEX_ENABLED:-false}"
   INTERNAL_API_TOKEN: "${INTERNAL_API_TOKEN:?Set INTERNAL_API_TOKEN}"
+  SUPPORT_TICKET_INBOX_EMAIL: "${SUPPORT_TICKET_INBOX_EMAIL:-support@3dbytetech.com.au}"
 
 services:
   storefront:
@@ -100,6 +114,7 @@ services:
     mem_limit: ${STOREFRONT_MEMORY_LIMIT:-1024m}
     cpus: "${STOREFRONT_CPUS:-0.75}"
     environment:
+      <<: *observability-env
       NODE_ENV: production
       HOSTNAME: 0.0.0.0
       PORT: "3000"
@@ -229,6 +244,7 @@ services:
     mem_limit: ${CMS_MEMORY_LIMIT:-2048m}
     cpus: "${CMS_CPUS:-0.75}"
     environment:
+      <<: *observability-env
       NODE_ENV: production
       APP_ENV: "${APP_ENV:-production}"
       HOST: 0.0.0.0
