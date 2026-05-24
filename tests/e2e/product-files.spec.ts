@@ -10,6 +10,6 @@ test.describe("Product file surfaces", () => {
     await expect(
       page.getByLabel(/search public product documents/i),
     ).toBeVisible()
-    await expect(page.getByText(/documents found/i)).toBeVisible()
+    await expect(page.getByText(/documents? found/i)).toBeVisible()
   })
 })
