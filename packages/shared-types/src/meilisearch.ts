@@ -9,7 +9,13 @@ import type { MeiliSearch } from "meilisearch" with { "resolution-mode": "import
 
 export type MeilisearchClient = MeiliSearch;
 
-export type MeilisearchIndexType = "product" | "category" | "brand" | "address";
+export type MeilisearchIndexType =
+  | "product"
+  | "category"
+  | "brand"
+  | "address"
+  | "locality"
+  | "product_document";
 
 export interface MeilisearchModuleConfig {
   host: string;
@@ -18,6 +24,8 @@ export interface MeilisearchModuleConfig {
   categoryIndexName: string;
   brandIndexName: string;
   addressIndexName: string;
+  localityIndexName: string;
+  productDocumentIndexName?: string;
   settings?: MeilisearchIndexSettings;
 }
 
@@ -64,7 +72,35 @@ export const BRAND_INDEX_SETTINGS = {
   },
 } as const;
 
-export interface MeilisearchProductDocument {
+export interface AiProductMetadataSearchFields {
+  tdp_schema_version?: number;
+  tdp_product_kind?: string;
+  tdp_material?: string;
+  tdp_diameter_mm?: number;
+  tdp_nozzle_temp_min_c?: number;
+  tdp_nozzle_temp_max_c?: number;
+  tdp_bed_temp_min_c?: number;
+  tdp_bed_temp_max_c?: number;
+  tdp_requires_enclosure?: boolean;
+  tdp_requires_hardened_nozzle?: boolean;
+  tdp_drying_recommended?: boolean;
+  tdp_compatible_printers?: string[];
+  tdp_compatible_build_surfaces?: string[];
+  tdp_best_for?: string[];
+  tdp_not_recommended_for?: string[];
+  tdp_common_issues?: string[];
+  tdp_ai_search_keywords?: string[];
+  rcb_schema_version?: number;
+  rcb_component_role?: string;
+  rcb_compatible_project_types?: string[];
+  rcb_voltage?: string;
+  rcb_connector_type?: string;
+  rcb_used_for?: string[];
+  rcb_best_for?: string[];
+  rcb_ai_search_keywords?: string[];
+}
+
+export interface MeilisearchProductDocument extends AiProductMetadataSearchFields {
   // --- 1. CORE IDENTITY ---
   id: string;
   title: string;
@@ -79,6 +115,8 @@ export interface MeilisearchProductDocument {
   // --- 3. MULTI-CURRENCY PRICING ---
   // Dynamic keys: price_aud, price_usd, etc.
   [key: `price_${string}`]: number | undefined;
+  // Dynamic keys: tax_inclusive_price_aud, tax_inclusive_price_usd, etc.
+  [key: `tax_inclusive_price_${string}`]: boolean | undefined;
   on_sale: boolean;
 
   // --- 4. INVENTORY & AVAILABILITY ---
@@ -171,10 +209,46 @@ export interface MeilisearchAddressDocument {
   unit: string;
   number: string;
   street: string;
-  suburb: string;   // OpenAddresses "CITY" field = AU suburb
-  state: string;    // OpenAddresses "REGION" field = AU state abbreviation
+  suburb: string; // OpenAddresses "CITY" field = AU suburb
+  state: string; // OpenAddresses "REGION" field = AU state abbreviation
   postcode: string;
-  country: string;  // "AU" or "NZ"
+  country: string; // "AU" or "NZ"
+}
+
+/**
+ * Locality document for Meilisearch indexing
+ * Sourced from unique OpenAddresses city/region/postcode combinations.
+ */
+export interface MeilisearchLocalityDocument {
+  id: string;
+  display_name: string;
+  locality: string;
+  state: string;
+  postcode: string;
+  country: string; // "AU" or "NZ"
+}
+
+export interface MeilisearchProductDocumentFile {
+  id: string;
+  medusa_product_id: string;
+  product_handle: string;
+  product_title: string;
+  title: string;
+  document_type:
+    | "manual"
+    | "datasheet"
+    | "install_guide"
+    | "safety_sheet"
+    | "warranty"
+    | "other";
+  version?: string;
+  language?: string;
+  file_name: string;
+  file_size: number;
+  public_download_path: string;
+  search_keywords: string[];
+  sort_order: number;
+  published_at_timestamp: number;
 }
 
 export interface MeilisearchSearchOptions {
@@ -186,7 +260,10 @@ export interface MeilisearchSearchOptions {
 }
 
 export interface MeilisearchSearchResponse<
-  T = MeilisearchProductDocument | MeilisearchCategoryDocument,
+  T =
+    | MeilisearchProductDocument
+    | MeilisearchCategoryDocument
+    | MeilisearchProductDocumentFile,
 > {
   hits: T[];
   estimatedTotalHits: number;
@@ -215,6 +292,7 @@ export interface SyncProductsStepProduct {
   status: string;
   created_at: string;
   updated_at: string;
+  metadata?: Record<string, unknown> | null;
   variants?: Array<{
     id: string;
     title?: string;

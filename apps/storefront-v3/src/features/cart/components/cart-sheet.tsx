@@ -19,6 +19,7 @@ import { getCompactCartNoticeLines } from "./cart-notices"
 import { CartItem } from "./cart-item"
 import { BundleCartGroup } from "./bundle-cart-group"
 import { buildCartDisplayGroups, getCartDisplayItemCount } from "../lib/bundle-groups"
+import { resolveCartItemsSubtotalInclTax } from "../lib/cart-totals"
 
 export function CartSheet() {
   const { cart, isLoading } = useCart()
@@ -30,10 +31,12 @@ export function CartSheet() {
     return getCartDisplayItemCount(cartDisplayGroups)
   }, [cartDisplayGroups])
 
+  // Assuming USD for now or fallback to first item currency
+  const currencyCode = cart?.region?.currency_code || "usd"
+
   const subtotal = useMemo(() => {
-    if (typeof cart?.subtotal === "number") return cart.subtotal
-    return cart?.total ?? 0
-  }, [cart])
+    return resolveCartItemsSubtotalInclTax(cart, currencyCode)
+  }, [cart, currencyCode])
 
   const formatPrice = (amount: number, currency: string) => {
     return new Intl.NumberFormat("en-US", {
@@ -42,8 +45,6 @@ export function CartSheet() {
     }).format(amount)
   }
 
-  // Assuming USD for now or fallback to first item currency
-  const currencyCode = cart?.region?.currency_code || "usd"
   const compactNoticeLines = useMemo(
     () => getCompactCartNoticeLines(cart?.items, currencyCode),
     [cart?.items, currencyCode]
@@ -58,8 +59,14 @@ export function CartSheet() {
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <ShoppingCart className="h-5 w-5" />
+          <span className="sr-only">
+            Open cart{itemCount > 0 ? `, ${itemCount} ${itemCount === 1 ? "item" : "items"}` : ""}
+          </span>
           {itemCount > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-sm bg-primary text-[10px] font-bold text-primary-foreground">
+            <span
+              aria-hidden="true"
+              className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-sm bg-primary text-[10px] font-bold text-primary-foreground"
+            >
               {itemCount}
             </span>
           )}

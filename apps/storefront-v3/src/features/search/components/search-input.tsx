@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { useEffect, useState, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { sdk } from "@/lib/medusa/client"
+import { getClientPricingContext } from "@/lib/medusa/regions"
 import { getBundleLink, getProductPath } from "@/lib/medusa/bundles"
 import type { MedusaProduct } from "@/lib/medusa/types"
 
@@ -96,7 +97,9 @@ export function SearchInput() {
       const { products } = await sdk.store.product.list({
         q: searchTerm,
         limit: 6,
-        fields: "id,handle,title,thumbnail,*variants,*variants.prices,*bundle",
+        ...getClientPricingContext(),
+        fields:
+          "id,handle,title,thumbnail,*variants,*variants.calculated_price,*variants.prices,*bundle",
       })
       setSuggestions(products)
       setShowDropdown(true)

@@ -16,21 +16,35 @@ This document tracks the remaining work after the current storefront-v3 content 
 4. Keep all internal navigation links route-valid and avoid placeholder links.
 5. Ship with tests first (TDD): write failing tests, implement, then verify.
 
+## Completed Since This TODO Was Written
+
+These items are no longer open TODOs and should be treated as shipped baseline unless a regression is found.
+
+- `/collections` landing page exists and overlays Strapi collection content by handle with empty/error states.
+- Medusa-native support tickets exist across backend module, Storefront contact flow, Medusa Admin list/detail routes, AI handoff endpoint, ticket events/messages, and notification hooks.
+- Product documents exist across Strapi product-document content type, backend public document APIs/download routes, Meilisearch `product_documents_public`, Storefront product-page downloads, and the Download Center.
+- AI shopping assistant routes exist for product guidance, order lookup, tracking, shipping estimate, and support-ticket handoff.
+- Observability tracing plumbing exists for backend, CMS, and storefront through `@3dbyte-tech-store/observability`.
+- AI-ready realistic product Chunk A exists on `feature/ai-ready-realistic-products`: metadata flattening, product index settings, `/ai/product-guidance` `aiContext`, deterministic `ai-*` seed catalogue, and pathway docs.
+
 ## Remaining TODO (Priority Order)
 
-### 1) Add `/collections` landing page (Storefront)
+### 0) Security dependency upgrade pass (All apps)
 
-- Problem: homepage links to `/collections`, but only `/collections/[handle]` exists.
-- Deliverable:
-  - Create `/collections` index route.
-  - List collections from Medusa.
-  - Overlay Strapi collection content (title/description/image) by `Handle`.
-  - Provide empty/error states consistent with listing pages.
+- Problem: `pnpm audit` currently reports high/critical advisories across CMS, backend, storefront, and root tooling. The audit does not currently block builds or CI because CI runs it with `continue-on-error`, but the advisories should be handled before wider staging/product-data work.
+- Current audit targets:
+  - Upgrade Strapi packages from `5.33.0` toward the latest compatible `5.46.x` line.
+  - Upgrade Next.js from `16.1.0` toward `16.2.6+`.
+  - Review Medusa packages from `2.13.3` toward the latest compatible `2.15.x` line.
+  - Review Nodemailer `6.10.1` advisories; plan carefully because latest major is `8.x`.
+  - Upgrade root Turbo from `^2.6.3` toward `2.9.14+`.
 - Acceptance:
-  - `/collections` returns `200`.
-  - No broken internal links from homepage.
+  - `pnpm audit --audit-level=high` is clean, or any remaining advisories have explicit risk acceptance notes with owner/date.
+  - CMS, backend, and storefront builds pass after upgrades.
+  - Strapi admin/content APIs, Medusa backend, storefront core routes, and Meilisearch sync paths are smoke-tested.
+  - Lockfile changes are reviewed separately from feature work.
 
-### 2) Expand Strapi collection content coverage (CMS Content)
+### 1) Expand Strapi collection content coverage (CMS Content)
 
 - Problem: Strapi currently has sparse collection rows and handle mismatches.
 - Deliverable:
@@ -40,7 +54,7 @@ This document tracks the remaining work after the current storefront-v3 content 
   - Overlay appears on homepage cards and collection detail pages.
   - Fallback path still works if a collection has no Strapi row.
 
-### 3) Increase indexed blog content for Help/Guides search (CMS + Search)
+### 2) Increase indexed blog content for Help/Guides search (CMS + Search)
 
 - Problem: Meilisearch `blog` index has too few documents, limiting search quality.
 - Deliverable:
@@ -50,19 +64,20 @@ This document tracks the remaining work after the current storefront-v3 content 
   - `blog` index has meaningful volume.
   - `/api/content-search` returns relevant article/guide hits for common queries.
 
-### 4) Replace contact `mailto` with ticket endpoint (Backend + Storefront)
+### 3) Harden support-ticket workflow after launch (Backend + Storefront + Admin + AI)
 
-- Status (Option A): Deferred for launch planning. Keep the current `mailto` support flow for launch; implement the endpoint post-launch.
+- Status: Launch-minimum workflow is implemented.
+- Remaining follow-up:
+  - Smoke-test staging ticket creation from Storefront and AI assistant after each deploy.
+  - Verify customer acknowledgement, internal alert, and customer-visible reply notifications with the selected email provider.
+  - Confirm Admin list/detail triage works for real staged tickets.
+  - Add any missing operational views only after real support flow usage.
+- Deferred:
+  - External OSS helpdesk sync, if Medusa Admin becomes too thin for support workload.
+  - Customer account ticket history and threaded customer replies from the storefront.
+  - SLA dashboards, assignment queues, tags, saved views, and attachment uploads.
 
-- Problem: current support form opens an email draft; no tracking/workflow.
-- Deliverable:
-  - Backend endpoint for support requests (validation, persistence, response contract).
-  - Storefront contact form submits to API and displays success/error states.
-- Acceptance:
-  - Form submits without email client dependency.
-  - Requests are auditable and can be processed downstream.
-
-### 5) Move remaining static Help/Guides blocks to CMS (Storefront + CMS)
+### 4) Move remaining static Help/Guides blocks to CMS (Storefront + CMS)
 
 - Problem: category/popular-resource blocks are still hardcoded.
 - Deliverable:
@@ -76,13 +91,14 @@ This document tracks the remaining work after the current storefront-v3 content 
 
 ### Storefront worktree
 
-- Implement TODO #1 and #5.
-- Integrate API contract for TODO #4 client submission flow.
+- Implement TODO #4.
+- Smoke-test support-ticket and product-document flows after staging deploys.
 
 ### Backend worktree
 
-- Implement TODO #4 backend endpoint + validations + tests.
-- Add any indexing/sync hooks needed for TODO #3.
+- Handle TODO #0 backend/CMS dependency upgrades in a dedicated security PR.
+- Add any indexing/sync hooks needed for TODO #2.
+- Support AI-ready product Chunk B after Coolify redeploys the Phase 1 code.
 
 ## Validation Checklist (each PR)
 
@@ -91,4 +107,3 @@ This document tracks the remaining work after the current storefront-v3 content 
 3. Key routes return expected status codes.
 4. Meilisearch live checks validate expected indexes/doc counts.
 5. No placeholder/dead links.
-

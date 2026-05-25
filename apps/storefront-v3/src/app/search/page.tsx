@@ -6,7 +6,7 @@ import { ListingLayout } from "@/components/layout/listing-layout";
 import { SearchFilters } from "@/components/filters";
 import { ShopSort, type SortOption } from "@/features/shop/components/shop-sort";
 import { parseDynamicOptionParams } from "@/lib/utils/search-params";
-import { redirect } from "next/navigation";
+import { getPricingContext } from "@/lib/medusa/regions.server";
 
 interface SearchPageProps {
   searchParams: Promise<{
@@ -27,18 +27,10 @@ interface SearchPageProps {
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const params = await searchParams;
-
-  // Redirect to set inStock=true by default if not explicitly set to "false"
-  if (params.inStock === undefined) {
-    const url = new URLSearchParams();
-    Object.entries(params).forEach(([key, value]) => {
-      if (value) url.set(key, value);
-    });
-    url.set("inStock", "true");
-    redirect(`/search?${url.toString()}`);
-  }
   const query = params.q || "";
   const sort = params.sort || "newest";
+  const effectiveInStock = params.inStock !== "false";
+  const pricing = await getPricingContext();
 
   // Parse filters from searchParams for initial fetch
   const categoryIds = params.category?.split(",").filter(Boolean) || [];
@@ -53,13 +45,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     query,
     sort,
     limit: 20,
+    pricing,
     filters: {
       categoryIds: categoryIds.length > 0 ? categoryIds : undefined,
       brandIds: brandIds.length > 0 ? brandIds : undefined,
       collectionIds: collectionIds.length > 0 ? collectionIds : undefined,
       isBundle: params.bundle === "true" ? true : undefined,
       onSale: params.onSale === "true" ? true : undefined,
-      inStock: params.inStock === "true" ? true : undefined,
+      inStock: effectiveInStock ? true : undefined,
       minPrice: params.minPrice ? Number(params.minPrice) : undefined,
       maxPrice: params.maxPrice ? Number(params.maxPrice) : undefined,
       options: Object.keys(dynamicOptions).length > 0 ? dynamicOptions : undefined,
@@ -77,13 +70,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     title: p.title,
     thumbnail: p.thumbnail || "",
     price: {
-      amount: p.price_aud ?? 0,
-      currency_code: "AUD",
+      amount: p.price ?? 0,
+      currency_code: p.currency_code,
     },
-    originalPrice: p.original_price_aud,
-    discountPercentage: p.on_sale && p.original_price_aud && p.price_aud
-      ? Math.round((1 - p.price_aud / p.original_price_aud) * 100)
-      : undefined,
+    originalPrice: p.original_price,
+    discountPercentage: p.discount_percentage,
     isBundle: p.is_bundle,
     availableInBundlesCount: p.available_in_bundles_count,
   }));

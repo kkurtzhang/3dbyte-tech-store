@@ -1,4 +1,4 @@
-import { getOrder } from "../orders"
+import { getOrder, ORDER_TRACKING_FIELDS } from "../orders"
 import { sdk } from "../client"
 
 jest.mock("../client", () => ({
@@ -18,7 +18,7 @@ describe("medusa order helpers", () => {
     await getOrder("order_1")
 
     expect(sdk.store.order.retrieve).toHaveBeenCalledWith("order_1", {
-      fields: "*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product,*items.variant.preorder_variant,*items.variant.preorder_variant.prices",
+      fields: ORDER_TRACKING_FIELDS.join(","),
     })
   })
 })

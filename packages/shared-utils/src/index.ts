@@ -25,13 +25,6 @@ export interface StoreConfig {
   supportedCountries: string[]
 }
 
-// Window type declaration
-declare global {
-  interface Window {
-    localStorage: Storage
-  }
-}
-
 // API utilities
 export class ApiClient {
   private baseUrl: string
@@ -116,6 +109,127 @@ export const formatDate = (
   return dateObj.toLocaleDateString(locale)
 }
 
+export type SafePaymentMethodOrder = {
+  payment_collections?: unknown
+  payment_status?: unknown
+  tracking_payment_method?: unknown
+}
+
+type SafeCardDetails = {
+  brand?: unknown
+  last4?: unknown
+}
+
+function humanizePaymentStatus(status: unknown) {
+  if (typeof status !== 'string' || !status.trim()) return 'Payment status pending'
+
+  return status
+    .split('_')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+}
+
+export function formatCardBrand(brand: string) {
+  const normalizedBrand = brand.trim().toLowerCase()
+
+  if (normalizedBrand === 'visa') return 'Visa'
+  if (normalizedBrand === 'mastercard') return 'Mastercard'
+  if (normalizedBrand === 'amex') return 'American Express'
+
+  return normalizedBrand
+    .split(/[\s_-]+/)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function getNestedRecord(
+  value: Record<string, unknown>,
+  key: string
+): Record<string, unknown> | null {
+  const nestedValue = value[key]
+
+  return isRecord(nestedValue) ? nestedValue : null
+}
+
+function getPaymentCard(payment: unknown): SafeCardDetails | null {
+  if (!isRecord(payment)) {
+    return null
+  }
+
+  const data = getNestedRecord(payment, 'data')
+  if (!data) {
+    return null
+  }
+
+  const paymentMethodDetails = getNestedRecord(data, 'payment_method_details')
+  const paymentMethod = getNestedRecord(data, 'payment_method')
+  const card =
+    (paymentMethodDetails && getNestedRecord(paymentMethodDetails, 'card')) ||
+    (paymentMethod && getNestedRecord(paymentMethod, 'card'))
+
+  return card
+}
+
+function isStripePayment(payment: unknown) {
+  if (!isRecord(payment)) {
+    return false
+  }
+
+  const providerId = payment.provider_id
+
+  return typeof providerId === 'string' && providerId.includes('stripe')
+}
+
+function formatSafeCardDetails(card: SafeCardDetails | null) {
+  if (typeof card?.brand === 'string' && typeof card?.last4 === 'string') {
+    return `${formatCardBrand(card.brand)} ending in ${card.last4}`
+  }
+
+  return null
+}
+
+export function getSafePaymentMethodDisplay(order: SafePaymentMethodOrder) {
+  const trackingPaymentMethod = isRecord(order.tracking_payment_method)
+    ? order.tracking_payment_method
+    : null
+
+  if (trackingPaymentMethod?.type === 'card') {
+    const trackingCardDisplay = formatSafeCardDetails(trackingPaymentMethod)
+    if (trackingCardDisplay) {
+      return trackingCardDisplay
+    }
+  }
+
+  const paymentCollections = Array.isArray(order.payment_collections)
+    ? order.payment_collections
+    : []
+  const payments = paymentCollections.flatMap((collection) => {
+    if (!isRecord(collection) || !Array.isArray(collection.payments)) {
+      return []
+    }
+
+    return collection.payments
+  })
+
+  for (const payment of payments) {
+    const cardDisplay = formatSafeCardDetails(getPaymentCard(payment))
+
+    if (cardDisplay) {
+      return cardDisplay
+    }
+  }
+
+  if (payments.some(isStripePayment)) {
+    return 'Card payment'
+  }
+
+  return humanizePaymentStatus(order.payment_status)
+}
+
 export const slugify = (text: string): string => {
   return text
     .toLowerCase()
@@ -144,11 +258,31 @@ export const validatePostalCode = (postalCode: string, country = 'US'): boolean 
 }
 
 // Storage utilities
+type JsonStorage = {
+  getItem(key: string): string | null
+  setItem(key: string, value: string): void
+  removeItem(key: string): void
+}
+
+type GlobalWithBrowserStorage = typeof globalThis & {
+  window?: {
+    localStorage?: JsonStorage
+  }
+}
+
+const getBrowserStorage = (): JsonStorage | null => {
+  const browserWindow = (globalThis as GlobalWithBrowserStorage).window
+
+  return browserWindow?.localStorage ?? null
+}
+
 export const storage = {
   get: <T>(key: string): T | null => {
-    if (typeof window === 'undefined') return null
+    const browserStorage = getBrowserStorage()
+    if (!browserStorage) return null
+
     try {
-      const item = window.localStorage.getItem(key)
+      const item = browserStorage.getItem(key)
       return item ? JSON.parse(item) : null
     } catch {
       return null
@@ -156,17 +290,21 @@ export const storage = {
   },
 
   set: <T>(key: string, value: T): void => {
-    if (typeof window === 'undefined') return
+    const browserStorage = getBrowserStorage()
+    if (!browserStorage) return
+
     try {
-      window.localStorage.setItem(key, JSON.stringify(value))
+      browserStorage.setItem(key, JSON.stringify(value))
     } catch {
       // Silently fail
     }
   },
 
   remove: (key: string): void => {
-    if (typeof window === 'undefined') return
-    window.localStorage.removeItem(key)
+    const browserStorage = getBrowserStorage()
+    if (!browserStorage) return
+
+    browserStorage.removeItem(key)
   },
 }
 

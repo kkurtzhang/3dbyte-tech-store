@@ -12,17 +12,25 @@ export async function searchBrands({
   limit = 20,
   offset = 0,
 }: SearchBrandsParams = {}) {
-  const index = searchClient.index(INDEX_BRANDS);
+  try {
+    const index = searchClient.index(INDEX_BRANDS);
 
-  const response = await index.search(q, {
-    limit,
-    offset,
-  });
+    const response = await index.search(q, {
+      limit,
+      offset,
+    });
 
-  return {
-    hits: response.hits as Brand[],
-    count: response.estimatedTotalHits,
-  };
+    return {
+      hits: response.hits as Brand[],
+      count: response.estimatedTotalHits,
+    };
+  } catch (error) {
+    console.warn("Failed to fetch brands from Meilisearch", error);
+    return {
+      hits: [],
+      count: 0,
+    };
+  }
 }
 
 export async function getBrandByHandle(handle: string): Promise<Brand | null> {

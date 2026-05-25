@@ -5,8 +5,11 @@
   "description": "A Strapi application",
   "scripts": {
     "build": "strapi build",
+    "prebuild": "pnpm --filter=@3dbyte-tech-store/observability build",
     "console": "strapi console",
     "deploy": "strapi deploy",
+    "predev": "pnpm --filter=@3dbyte-tech-store/observability build",
+    "predevelop": "pnpm --filter=@3dbyte-tech-store/observability build",
     "dev": "strapi develop",
     "develop": "strapi develop",
     "seed:blog-guides:api": "node ./scripts/seed-blog-guides-via-api.mjs",
@@ -18,10 +21,12 @@
     "upgrade:dry": "npx @strapi/upgrade latest --dry"
   },
   "dependencies": {
+    "@3dbyte-tech-store/observability": "workspace:*",
     "@3dbyte-tech-store/shared-types": "workspace:*",
     "@3dbyte-tech-store/shared-utils": "workspace:*",
     "@strapi/plugin-cloud": "5.33.0",
     "@strapi/plugin-users-permissions": "5.33.0",
+    "@strapi/provider-email-nodemailer": "5.33.0",
     "@strapi/provider-upload-aws-s3": "5.33.0",
     "@strapi/strapi": "5.33.0",
     "pg": "^8.11.3",

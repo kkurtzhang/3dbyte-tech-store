@@ -66,6 +66,7 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
   const [authSheetMode, setAuthSheetMode] = useState<AuthSheetMode>("login")
   const [isAuthSheetOpen, setIsAuthSheetOpen] = useState(false)
   const [billingSameAsShipping, setBillingSameAsShipping] = useState(true)
+  const [joinEmailList, setJoinEmailList] = useState(false)
 
   const {
     register,
@@ -249,6 +250,22 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
     void loadSavedAddresses()
   }
 
+  const joinEmailListIfRequested = async (email: string) => {
+    if (!joinEmailList || !email.trim()) return
+
+    try {
+      await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      })
+    } catch (error) {
+      console.warn("Newsletter opt-in failed during checkout", error)
+    }
+  }
+
   const onSubmit = async (data: AddressFormData) => {
     setIsSubmitting(true)
     try {
@@ -271,6 +288,7 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
         ...data,
         billing_address: billingSameAsShipping ? undefined : data.billing_address,
       })
+      await joinEmailListIfRequested(data.email)
     } catch (error) {
       console.error(error)
     } finally {
@@ -351,13 +369,30 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
         )}
         <div className="grid gap-2">
           <Label htmlFor="email">Email Address</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="engineer@example.com"
-            {...register("email")}
-            className={cn(errors.email && "border-destructive")}
-          />
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+            <Input
+              id="email"
+              type="email"
+              placeholder="engineer@example.com"
+              {...register("email")}
+              className={cn(errors.email && "border-destructive")}
+            />
+            {checkoutMode === "guest" && !authUser ? (
+              <div className="flex items-center gap-2 rounded-md border bg-muted/20 px-3 py-2">
+                <Checkbox
+                  id="join_email_list"
+                  checked={joinEmailList}
+                  onCheckedChange={(checked) => setJoinEmailList(checked === true)}
+                />
+                <Label
+                  htmlFor="join_email_list"
+                  className="text-sm font-normal leading-snug"
+                >
+                  Join us for product updates
+                </Label>
+              </div>
+            ) : null}
+          </div>
           {errors.email && <span className="text-xs text-destructive">{errors.email.message}</span>}
         </div>
 

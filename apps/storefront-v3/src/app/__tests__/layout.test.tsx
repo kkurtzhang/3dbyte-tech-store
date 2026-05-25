@@ -1,5 +1,5 @@
 import type { ReactNode } from "react"
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import RootLayout from "../layout"
 import { useInventoryAlerts } from "@/context/inventory-alert-context"
 
@@ -32,6 +32,15 @@ jest.mock("@/components/ui/toaster", () => ({
   Toaster: () => <div data-testid="toaster" />,
 }))
 
+jest.mock(
+  "@/features/ai-shopping-assistant/components/shopping-assistant-drawer",
+  () => ({
+    ShoppingAssistantDrawer: () => (
+      <div data-testid="shopping-assistant-drawer" />
+    ),
+  })
+)
+
 jest.mock("@/context/cart-context", () => ({
   CartProvider: ({ children }: { children: ReactNode }) => children,
 }))
@@ -40,8 +49,15 @@ jest.mock("@/context/wishlist-context", () => ({
   WishlistProvider: ({ children }: { children: ReactNode }) => children,
 }))
 
-jest.mock("@/context/compare-context", () => ({
-  CompareProvider: ({ children }: { children: ReactNode }) => children,
+jest.mock("@/app/actions/waitlist", () => ({
+  getWaitlistAction: jest.fn().mockResolvedValue({
+    success: true,
+    customerEmail: "",
+    waitlist: [],
+  }),
+  addWaitlistItemAction: jest.fn(),
+  removeWaitlistItemAction: jest.fn(),
+  clearWaitlistAction: jest.fn(),
 }))
 
 function InventoryAlertsConsumer() {
@@ -51,7 +67,7 @@ function InventoryAlertsConsumer() {
 }
 
 describe("RootLayout", () => {
-  it("provides inventory alerts context to app children", () => {
+  it("provides inventory alerts context to app children", async () => {
     const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
 
     render(
@@ -60,7 +76,11 @@ describe("RootLayout", () => {
       </RootLayout>
     )
 
-    expect(screen.getByText(/loading|ready/)).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText("ready")).toBeInTheDocument()
+    })
+
+    expect(screen.getByTestId("shopping-assistant-drawer")).toBeInTheDocument()
 
     consoleErrorSpy.mockRestore()
   })

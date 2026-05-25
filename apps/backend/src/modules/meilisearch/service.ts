@@ -6,6 +6,7 @@ import type {
   MeilisearchModuleConfig,
   MeilisearchCategoryDocument,
   MeilisearchProductDocument,
+  MeilisearchProductDocumentFile,
   MeilisearchSearchResponse,
   MeilisearchSearchOptions,
   MeilisearchIndexStats,
@@ -123,11 +124,12 @@ export default class MeilisearchModuleService {
       !options.productIndexName ||
       !options.categoryIndexName ||
       !options.brandIndexName ||
-      !options.addressIndexName
+      !options.addressIndexName ||
+      !options.localityIndexName
     ) {
       throw new MedusaError(
         MedusaError.Types.INVALID_ARGUMENT,
-        "Meilisearch options are required (host, apiKey, productIndexName, categoryIndexName, brandIndexName, addressIndexName)",
+        "Meilisearch options are required (host, apiKey, productIndexName, categoryIndexName, brandIndexName, addressIndexName, localityIndexName)",
       );
     }
 
@@ -152,6 +154,12 @@ export default class MeilisearchModuleService {
         return this.options_.brandIndexName;
       case "address":
         return this.options_.addressIndexName;
+      case "locality":
+        return this.options_.localityIndexName;
+      case "product_document":
+        return (
+          this.options_.productDocumentIndexName || "product_documents_public"
+        );
       default:
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
@@ -225,7 +233,10 @@ export default class MeilisearchModuleService {
   }
 
   async search<
-    T = MeilisearchProductDocument | MeilisearchCategoryDocument,
+    T =
+      | MeilisearchProductDocument
+      | MeilisearchCategoryDocument
+      | MeilisearchProductDocumentFile,
   >(
     query: string,
     type: MeilisearchIndexType = "product",
@@ -345,7 +356,8 @@ export default class MeilisearchModuleService {
       searchableAttributes: settings.searchableAttributes,
       displayedAttributes: settings.displayedAttributes,
       rankingRules: settings.rankingRules,
-      typoTolerance: settings.typoTolerance as MeilisearchIndexSettings["typoTolerance"],
+      typoTolerance:
+        settings.typoTolerance as MeilisearchIndexSettings["typoTolerance"],
       faceting: settings.faceting as MeilisearchIndexSettings["faceting"],
       pagination: settings.pagination as MeilisearchIndexSettings["pagination"],
     };
@@ -491,16 +503,11 @@ export const ADDRESS_INDEX_SETTINGS: MeilisearchIndexSettings = {
   // 1. SEARCHABLE
   // Primary: full composed address for broad matching
   // Secondary: individual fields for specific queries (e.g., postcode-first)
-  searchableAttributes: [
-    "full_address",
-    "postcode",
-  ],
+  searchableAttributes: ["full_address", "postcode"],
 
   // 2. FILTERABLE
   // Keep only country filtering exposed by the store API
-  filterableAttributes: [
-    "country",
-  ],
+  filterableAttributes: ["country"],
 
   // 3. SORTABLE
   // Addresses are not typically sorted by the user
@@ -508,13 +515,7 @@ export const ADDRESS_INDEX_SETTINGS: MeilisearchIndexSettings = {
 
   // 4. RANKING RULES
   // Prioritize exact matches and word proximity for address autocomplete
-  rankingRules: [
-    "words",
-    "typo",
-    "proximity",
-    "attribute",
-    "exactness",
-  ],
+  rankingRules: ["words", "typo", "proximity", "attribute", "exactness"],
 
   // 5. DISPLAYED
   // Return all fields needed for auto-filling the checkout form
@@ -549,5 +550,93 @@ export const ADDRESS_INDEX_SETTINGS: MeilisearchIndexSettings = {
   },
   pagination: {
     maxTotalHits: 100, // Autocomplete never needs deep pagination
+  },
+};
+
+/**
+ * Locality index settings for Meilisearch
+ * Optimized for suburb/postcode autocomplete and PDP availability checks.
+ */
+export const LOCALITY_INDEX_SETTINGS: MeilisearchIndexSettings = {
+  searchableAttributes: ["display_name", "locality", "postcode"],
+
+  filterableAttributes: ["country", "state"],
+
+  sortableAttributes: [],
+
+  rankingRules: ["words", "typo", "proximity", "attribute", "exactness"],
+
+  displayedAttributes: [
+    "id",
+    "display_name",
+    "locality",
+    "state",
+    "postcode",
+    "country",
+  ],
+
+  typoTolerance: {
+    enabled: true,
+    minWordSizeForTypos: {
+      oneTypo: 4,
+      twoTypos: 8,
+    },
+    disableOnNumbers: true,
+    disableOnAttributes: ["postcode"],
+  },
+
+  faceting: {
+    maxValuesPerFacet: 20,
+  },
+
+  pagination: {
+    maxTotalHits: 100,
+  },
+};
+
+export const PRODUCT_DOCUMENT_INDEX_SETTINGS: MeilisearchIndexSettings = {
+  searchableAttributes: [
+    "title",
+    "product_title",
+    "product_handle",
+    "search_keywords",
+  ],
+  filterableAttributes: [
+    "id",
+    "medusa_product_id",
+    "product_handle",
+    "document_type",
+    "language",
+  ],
+  sortableAttributes: ["sort_order", "published_at_timestamp", "title"],
+  rankingRules: ["words", "typo", "proximity", "attribute", "sort", "exactness"],
+  displayedAttributes: [
+    "id",
+    "medusa_product_id",
+    "product_handle",
+    "product_title",
+    "title",
+    "document_type",
+    "version",
+    "language",
+    "file_name",
+    "file_size",
+    "public_download_path",
+    "search_keywords",
+    "sort_order",
+    "published_at_timestamp",
+  ],
+  typoTolerance: {
+    enabled: true,
+    minWordSizeForTypos: {
+      oneTypo: 4,
+      twoTypos: 8,
+    },
+  },
+  faceting: {
+    maxValuesPerFacet: 100,
+  },
+  pagination: {
+    maxTotalHits: 10000,
   },
 };

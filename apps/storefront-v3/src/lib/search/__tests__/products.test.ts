@@ -76,6 +76,9 @@ const createMockProductHit = (overrides: Partial<ProductHit> = {}): ProductHit =
   title: "Test Product",
   thumbnail: "https://example.com/image.jpg",
   price_aud: 100,
+  price_nzd: 110,
+  price: 100,
+  currency_code: "aud",
   original_price_aud: 150,
   discount_percentage: 33.33,
   on_sale: true,
@@ -215,6 +218,40 @@ describe("searchProducts", () => {
       const result = await searchProducts()
 
       expect(result.facets).toEqual(mockFacets)
+    })
+
+    it("uses the selected launch currency for Meilisearch price fields", async () => {
+      const mockHits = [
+        createMockProductHit({
+          price_aud: 100,
+          price_nzd: 115,
+        }),
+      ]
+      mockClient.__mockSearch.mockResolvedValueOnce(createMockMeilisearchResponse(mockHits))
+
+      const result = await searchProducts({
+        pricing: {
+          currency_code: "nzd",
+        },
+        sort: "price-asc",
+        filters: {
+          minPrice: 100,
+          maxPrice: 120,
+        },
+      })
+
+      expect(mockClient.__mockSearch).toHaveBeenCalledWith(
+        "",
+        expect.objectContaining({
+          filter: "price_nzd >= 100 AND price_nzd <= 120",
+          sort: ["price_nzd:asc"],
+        })
+      )
+      expect(result.products[0]).toMatchObject({
+        price: 115,
+        currency_code: "nzd",
+        price_aud: 100,
+      })
     })
 
     it("keeps standard products ahead of bundle products in result ordering", async () => {

@@ -111,11 +111,13 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
         >,
       );
 
-      const carrierIds = optionData.carrier_id
-        ? [optionData.carrier_id as string]
+      const selectedCarrierId = data.carrier_id || optionData.carrier_id;
+      const selectedService = data.service || optionData.service;
+      const carrierIds = selectedCarrierId
+        ? [selectedCarrierId as string]
         : undefined;
-      const services = optionData.service
-        ? [optionData.service as string]
+      const services = selectedService
+        ? [selectedService as string]
         : undefined;
 
       const rateResponse = await this.client.fetchRates({
@@ -141,7 +143,7 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
 
       return {
         calculated_amount: Number(rate.total_charge.toFixed(2)),
-        is_calculated_price_tax_inclusive: false,
+        is_calculated_price_tax_inclusive: true,
       };
     } catch (error) {
       this.logger.warn(`Karrio: Price calculation failed: ${error}`);

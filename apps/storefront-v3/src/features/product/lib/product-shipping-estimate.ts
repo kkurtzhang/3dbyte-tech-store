@@ -1,4 +1,7 @@
-import type { MeilisearchAddressDocument } from "@3dbyte-tech-store/shared-types"
+import type {
+  MeilisearchAddressDocument,
+  MeilisearchLocalityDocument,
+} from "@3dbyte-tech-store/shared-types"
 
 export interface ProductShippingEstimateOption {
   id: string
@@ -156,6 +159,44 @@ export function getLocalitySuggestionsFromAddresses(
         suburb,
         state,
         postcode: addressPostcode,
+        country,
+      })
+    }
+  }
+
+  return Array.from(suggestions.values()).slice(0, 6)
+}
+
+export function getLocalitySuggestionsFromLocalities(
+  localities: MeilisearchLocalityDocument[],
+  postcode?: string
+): ProductShippingLocalitySuggestion[] {
+  const normalizedPostcode = postcode ? normalizePostcodeInput(postcode) : ""
+  const suggestions = new Map<string, ProductShippingLocalitySuggestion>()
+
+  for (const localityDocument of localities) {
+    const suburb = normalizeLocalityInput(localityDocument.locality)
+    const state = localityDocument.state.trim().toUpperCase()
+    const localityPostcode = normalizePostcodeInput(localityDocument.postcode)
+    const country = localityDocument.country.trim().toUpperCase()
+
+    if (!suburb || !state || !localityPostcode || !country) {
+      continue
+    }
+
+    if (normalizedPostcode && localityPostcode !== normalizedPostcode) {
+      continue
+    }
+
+    const key = `${suburb.toLowerCase()}|${state}|${localityPostcode}|${country}`
+
+    if (!suggestions.has(key)) {
+      suggestions.set(key, {
+        id: localityDocument.id || key,
+        label: `${suburb} ${state} ${localityPostcode}`,
+        suburb,
+        state,
+        postcode: localityPostcode,
         country,
       })
     }

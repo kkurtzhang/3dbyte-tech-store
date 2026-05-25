@@ -4,8 +4,8 @@ export async function DELETE(
   req: MedusaRequest,
   res: MedusaResponse
 ) {
-  const wishlistModule = req.scope.resolve<any>("wishlistModuleService");
-  const customerId = (req as any).auth?.actor_id;
+  const wishlistModule = req.scope.resolve<any>("wishlist");
+  const customerId = (req as any).auth_context?.actor_id;
   const { id } = req.params;
 
   if (!customerId) {

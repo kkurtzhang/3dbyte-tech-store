@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button"
 import { useCart } from "@/context/cart-context"
 import { useToast } from "@/lib/hooks/use-toast"
 import { PriceDisplay } from "@/components/ui/price-display"
+import { formatCustomerPrice } from "@/lib/pricing/customer-pricing"
 import { Badge } from "@/components/ui/badge"
 import { AlertTriangle, CheckCircle2, XCircle } from "lucide-react"
 import { SocialShare } from "./social-share"
 import { ProductShippingEstimate } from "./product-shipping-estimate"
+import { ProductWishlistButton } from "./product-wishlist-button"
 import type { BundleProduct } from "@/lib/medusa/bundles"
 import type { MedusaProduct } from "@/lib/medusa/types"
 import { cn } from "@/lib/utils"
@@ -17,9 +19,9 @@ import {
   getBundleInventorySummary,
   getBundleItemPricing,
   getBundlePricingSummary,
+  getPreferredBundleVariant,
   getRenderableOptions,
   getSelectedVariantLabel,
-  isBundleVariantPurchasable,
 } from "@/features/product/lib/bundle-pricing"
 
 interface BundleProductActionsProps {
@@ -32,9 +34,7 @@ function getInitialSelections(bundleProduct: BundleProduct) {
   const selectedOptions: Record<string, Record<string, string>> = {}
 
   for (const item of bundleProduct.items) {
-    const preferredVariant =
-      item.product.variants?.find((variant) => isBundleVariantPurchasable(variant)) ??
-      item.product.variants?.[0]
+    const preferredVariant = getPreferredBundleVariant(item.product.variants)
 
     if (!preferredVariant?.id) {
       continue
@@ -55,10 +55,7 @@ function getInitialSelections(bundleProduct: BundleProduct) {
 }
 
 function formatMoney(amount: number, currencyCode = "AUD") {
-  return new Intl.NumberFormat("en-AU", {
-    style: "currency",
-    currency: currencyCode.toUpperCase(),
-  }).format(amount)
+  return formatCustomerPrice(amount, currencyCode.toUpperCase())
 }
 
 function BundleInventoryBadge({
@@ -187,6 +184,14 @@ export function BundleProductActions({
   )
   const isOutOfStock = bundleInventory.status === "out-of-stock"
   const maxBundleQuantity = bundleInventory.availableQuantity
+  const wishlistItem = {
+    id: product.id,
+    handle: product.handle || product.id,
+    title: product.title,
+    thumbnail: product.thumbnail || product.images?.[0]?.url || "",
+    price: priceInfo.price,
+    variantId: product.variants?.[0]?.id,
+  }
 
   const handleBundleOptionChange = (
     bundleItemId: string,
@@ -405,46 +410,52 @@ export function BundleProductActions({
       </div>
 
       <div className="border-t pt-6">
-        <div className="flex items-stretch gap-3">
-          <div className="flex h-14 min-w-[132px] items-stretch overflow-hidden rounded-sm border bg-background">
-            <button
-              type="button"
-              className="flex h-full w-12 items-center justify-center text-sm transition-colors hover:bg-secondary disabled:opacity-50"
-              aria-label="Decrease bundle quantity"
-              disabled={bundleQuantity <= 1 || isAdding}
-              onClick={() => setBundleQuantity((current) => Math.max(1, current - 1))}
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3">
+          <div className="flex items-stretch gap-3">
+            <div className="flex h-14 min-w-[132px] items-stretch overflow-hidden rounded-sm border bg-background">
+              <button
+                type="button"
+                className="flex h-full w-12 items-center justify-center text-sm transition-colors hover:bg-secondary disabled:opacity-50"
+                aria-label="Decrease bundle quantity"
+                disabled={bundleQuantity <= 1 || isAdding}
+                onClick={() =>
+                  setBundleQuantity((current) => Math.max(1, current - 1))
+                }
+              >
+                -
+              </button>
+              <span className="flex flex-1 items-center justify-center border-x font-mono text-sm">
+                {bundleQuantity}
+              </span>
+              <button
+                type="button"
+                className="flex h-full w-12 items-center justify-center text-sm transition-colors hover:bg-secondary disabled:opacity-50"
+                aria-label="Increase bundle quantity"
+                disabled={
+                  isAdding ||
+                  isOutOfStock ||
+                  (maxBundleQuantity !== null && bundleQuantity >= maxBundleQuantity)
+                }
+                onClick={() => setBundleQuantity((current) => current + 1)}
+              >
+                +
+              </button>
+            </div>
+            <Button
+              size="lg"
+              className="h-14 flex-1 font-mono text-lg uppercase tracking-widest"
+              disabled={!allBundleItemsSelected || isAdding || isOutOfStock}
+              onClick={handleAddBundle}
             >
-              -
-            </button>
-            <span className="flex flex-1 items-center justify-center border-x font-mono text-sm">
-              {bundleQuantity}
-            </span>
-            <button
-              type="button"
-              className="flex h-full w-12 items-center justify-center text-sm transition-colors hover:bg-secondary disabled:opacity-50"
-              aria-label="Increase bundle quantity"
-              disabled={
-                isAdding ||
-                isOutOfStock ||
-                (maxBundleQuantity !== null && bundleQuantity >= maxBundleQuantity)
-              }
-              onClick={() => setBundleQuantity((current) => current + 1)}
-            >
-              +
-            </button>
+              {isAdding
+                ? "Adding bundle..."
+                : isOutOfStock
+                  ? "Out of Stock"
+                  : "Add Bundle to Cart"}
+            </Button>
           </div>
-          <Button
-            size="lg"
-            className="h-14 flex-1 font-mono text-lg uppercase tracking-widest"
-            disabled={!allBundleItemsSelected || isAdding || isOutOfStock}
-            onClick={handleAddBundle}
-          >
-            {isAdding
-              ? "Adding bundle..."
-              : isOutOfStock
-                ? "Out of Stock"
-                : "Add Bundle to Cart"}
-          </Button>
+
+          <ProductWishlistButton item={wishlistItem} />
         </div>
         <p className="mt-2 text-center text-xs font-mono text-muted-foreground">
           Each bundle item is added together and grouped in your cart.

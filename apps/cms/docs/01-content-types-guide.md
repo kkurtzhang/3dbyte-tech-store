@@ -60,6 +60,29 @@ This guide provides detailed documentation for all content types available in th
   - Custom product features and specifications
   - Manual overrides for product content
 
+#### Product Document
+- **Purpose**: Manage public product downloads such as manuals, datasheets, installation guides, safety sheets, and warranty documents
+- **Collection Name**: `product_documents`
+- **Fields**:
+  - `medusa_product_id` (string, required) - Reference to Medusa product
+  - `product_title` (string, required) - Product name for editor clarity and search display
+  - `product_handle` (string, required) - Product URL handle for download-center filtering
+  - `title` (string, required) - Customer-facing document title
+  - `document_type` (enum, required) - manual, datasheet, install_guide, safety_sheet, warranty, or other
+  - `file` (media, single, required) - Public downloadable file from the Media Library
+  - `version` (string) - Optional document version
+  - `language` (string) - Optional language code, defaults to `en`
+  - `is_public` (boolean, required) - Public visibility flag; only true documents are synced
+  - `search_keywords` (JSON) - Extra terms for the Download Center
+  - `sort_order` (integer) - Manual ordering on PDP/download surfaces
+- **Features**:
+  - Draft and publish workflow
+  - Public Meilisearch sync through Medusa
+- **Use Cases**:
+  - PDP download panels
+  - Public Download Center search
+  - AI assistant public-document lookup through backend-safe tools
+
 #### Product Variant Color
 - **Purpose**: Manage product color variants
 - **Collection Name**: `product_variant_colors`

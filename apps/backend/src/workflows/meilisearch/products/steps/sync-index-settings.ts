@@ -1,6 +1,12 @@
 import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk";
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils";
 import { MEILISEARCH_MODULE } from "../../../../modules/meilisearch";
+import {
+  DEFAULT_PRODUCT_DISPLAYED_ATTRIBUTES,
+  DEFAULT_PRODUCT_FILTERABLE_ATTRIBUTES,
+  DEFAULT_PRODUCT_SEARCHABLE_ATTRIBUTES,
+  DEFAULT_PRODUCT_SORTABLE_ATTRIBUTES,
+} from "../../../../modules/meilisearch/product-index-settings";
 import type MeilisearchModuleService from "../../../../modules/meilisearch/service";
 import type { MeilisearchIndexSettings } from "@3dbyte-tech-store/shared-types";
 import type { Logger, MedusaContainer } from "@medusajs/framework/types";
@@ -12,6 +18,7 @@ export type SyncIndexSettingsStepInput = {
 export type SyncIndexSettingsStepOutput = {
   filterableAttributes: string[];
   priceAttributes: string[];
+  taxInclusivePriceAttributes: string[];
   optionAttributes: string[];
 };
 
@@ -71,56 +78,30 @@ export async function syncIndexSettingsFn(
   const priceAttributes = uniqueCurrencies.map(
     (currency) => `price_${currency.toLowerCase()}`,
   );
-
-  // Static attributes that are always filterable
-  const staticAttributes: string[] = [
-    "id",
-    "handle",
-    "brand.id",
-    "category_ids",
-    "collection_ids",
-    "type_id",
-    "on_sale",
-    "in_stock",
-  ];
+  const taxInclusivePriceAttributes = uniqueCurrencies.map(
+    (currency) => `tax_inclusive_price_${currency.toLowerCase()}`,
+  );
 
   // Combine all filterable attributes
   const filterableAttributes = [
-    ...staticAttributes,
+    ...DEFAULT_PRODUCT_FILTERABLE_ATTRIBUTES,
     ...priceAttributes,
     ...optionAttributes,
   ];
 
   // Build the complete settings object
   const settings: MeilisearchIndexSettings = {
-    filterableAttributes,
-    searchableAttributes: [
-      "title",
-      "rich_description",
-      "variants.sku",
-      "variants.title",
+    filterableAttributes: [...new Set(filterableAttributes)],
+    searchableAttributes: DEFAULT_PRODUCT_SEARCHABLE_ATTRIBUTES,
+    sortableAttributes: [
+      ...new Set([...DEFAULT_PRODUCT_SORTABLE_ATTRIBUTES, ...priceAttributes]),
     ],
-    sortableAttributes: ["created_at_timestamp", ...priceAttributes],
     displayedAttributes: [
-      "id",
-      "title",
-      "handle",
-      "thumbnail",
-      // Price attributes (dynamic)
+      ...DEFAULT_PRODUCT_DISPLAYED_ATTRIBUTES,
       ...priceAttributes,
-      // Option attributes (dynamic)
+      ...taxInclusivePriceAttributes,
       ...optionAttributes,
-      "brand",
-      "on_sale",
-      "in_stock",
-      "inventory_quantity",
-      "categories",
-      "_tags",
-      "collection_ids",
-      "type_id",
-      "created_at_timestamp",
-      "variants",
-    ],
+    ].filter((attribute, index, attributes) => attributes.indexOf(attribute) === index),
     rankingRules: [
       "words",
       "typo",
@@ -159,6 +140,7 @@ export async function syncIndexSettingsFn(
   return {
     filterableAttributes,
     priceAttributes,
+    taxInclusivePriceAttributes,
     optionAttributes,
   };
 }

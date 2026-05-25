@@ -6,7 +6,7 @@
  */
 import type { MeiliSearch } from "meilisearch" with { "resolution-mode": "import" };
 export type MeilisearchClient = MeiliSearch;
-export type MeilisearchIndexType = "product" | "category" | "brand" | "address";
+export type MeilisearchIndexType = "product" | "category" | "brand" | "address" | "locality";
 export interface MeilisearchModuleConfig {
     host: string;
     apiKey: string;
@@ -14,6 +14,7 @@ export interface MeilisearchModuleConfig {
     categoryIndexName: string;
     brandIndexName: string;
     addressIndexName: string;
+    localityIndexName: string;
     settings?: MeilisearchIndexSettings;
 }
 /**
@@ -141,6 +142,18 @@ export interface MeilisearchAddressDocument {
     number: string;
     street: string;
     suburb: string;
+    state: string;
+    postcode: string;
+    country: string;
+}
+/**
+ * Locality document for Meilisearch indexing
+ * Sourced from unique OpenAddresses city/region/postcode combinations.
+ */
+export interface MeilisearchLocalityDocument {
+    id: string;
+    display_name: string;
+    locality: string;
     state: string;
     postcode: string;
     country: string;

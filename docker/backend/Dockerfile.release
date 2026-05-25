@@ -1,10 +1,15 @@
-FROM node:20-alpine AS builder
+# syntax=docker/dockerfile:1.7
+
+ARG TARGETPLATFORM=linux/arm64
+
+FROM --platform=${TARGETPLATFORM} node:20-alpine AS builder
 
 RUN apk add --no-cache libc6-compat
 WORKDIR /opt
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/backend/package.json apps/backend/package.json
+COPY packages/observability/package.json packages/observability/package.json
 COPY packages/shared-types/package.json packages/shared-types/package.json
 COPY packages/shared-utils/package.json packages/shared-utils/package.json
 COPY packages/shared-config/package.json packages/shared-config/package.json
@@ -12,6 +17,7 @@ COPY packages/shared-config/package.json packages/shared-config/package.json
 RUN corepack enable && pnpm install --frozen-lockfile
 
 COPY apps/backend apps/backend
+COPY packages/observability packages/observability
 COPY packages/shared-types packages/shared-types
 COPY packages/shared-utils packages/shared-utils
 COPY packages/shared-config packages/shared-config
@@ -22,18 +28,21 @@ RUN pnpm build && \
       cp -R .medusa/server/public/admin/* .medusa/server/public/; \
     fi
 
-FROM node:20-alpine AS runtime
+FROM --platform=${TARGETPLATFORM} node:20-alpine AS runtime
 
 RUN apk add --no-cache libc6-compat
 WORKDIR /opt
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S medusa -u 1001
 
-COPY --from=builder /opt/package.json /opt/pnpm-lock.yaml /opt/pnpm-workspace.yaml ./
-COPY --from=builder /opt/node_modules /opt/node_modules
-COPY --from=builder /opt/apps/backend/node_modules /opt/apps/backend/node_modules
-COPY --from=builder /opt/apps/backend/.medusa/server /opt/apps/backend/.medusa/server
-COPY --from=builder /opt/packages/shared-types /opt/packages/shared-types
-COPY --from=builder /opt/packages/shared-utils /opt/packages/shared-utils
-COPY --from=builder /opt/packages/shared-config /opt/packages/shared-config
+COPY --from=builder --chown=medusa:nodejs /opt/package.json /opt/pnpm-lock.yaml /opt/pnpm-workspace.yaml ./
+COPY --from=builder --chown=medusa:nodejs /opt/node_modules /opt/node_modules
+COPY --from=builder --chown=medusa:nodejs /opt/apps/backend/node_modules /opt/apps/backend/node_modules
+COPY --from=builder --chown=medusa:nodejs /opt/apps/backend/.medusa/server /opt/apps/backend/.medusa/server
+COPY --from=builder --chown=medusa:nodejs /opt/packages/observability /opt/packages/observability
+COPY --from=builder --chown=medusa:nodejs /opt/packages/shared-types /opt/packages/shared-types
+COPY --from=builder --chown=medusa:nodejs /opt/packages/shared-utils /opt/packages/shared-utils
+COPY --from=builder --chown=medusa:nodejs /opt/packages/shared-config /opt/packages/shared-config
 
 WORKDIR /opt/apps/backend/.medusa/server
 
@@ -41,4 +50,5 @@ ENV NODE_ENV=production
 ENV PORT=9000
 EXPOSE 9000
 
+USER medusa
 CMD ["sh", "-lc", "/opt/apps/backend/node_modules/.bin/medusa db:migrate && /opt/apps/backend/node_modules/.bin/medusa start"]

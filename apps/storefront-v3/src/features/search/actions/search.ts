@@ -1,6 +1,7 @@
 "use server"
 
 import { searchClient, INDEX_PRODUCTS } from "@/lib/search/client"
+import { getPricingContext } from "@/lib/medusa/regions.server"
 
 export interface SearchOptions {
   limit?: number
@@ -49,13 +50,20 @@ function deEmphasizeBundleRanking<T extends { isBundle?: boolean }>(hits: T[]): 
  * Note: Index uses created_at_timestamp (Unix timestamp) for sorting by date
  */
 function getSortOrder(sort: string): string | undefined {
+  return getSortOrderForPriceField(sort, "price_aud")
+}
+
+function getSortOrderForPriceField(
+  sort: string,
+  priceField: string
+): string | undefined {
   switch (sort) {
     case "newest":
       return "created_at_timestamp:desc"
     case "price-asc":
-      return "price_aud:asc"
+      return `${priceField}:asc`
     case "price-desc":
-      return "price_aud:desc"
+      return `${priceField}:desc`
     default:
       return "created_at_timestamp:desc"
   }
@@ -76,6 +84,10 @@ export async function searchProducts(query: string, options: SearchOptions = {})
   } = options
 
   try {
+    const pricing = await getPricingContext()
+    const currencyCode = pricing.currency_code
+    const priceField = `price_${currencyCode}`
+    const originalPriceField = `original_price_${currencyCode}`
     const index = searchClient.index(INDEX_PRODUCTS)
 
     const filter: string[] = []
@@ -107,10 +119,10 @@ export async function searchProducts(query: string, options: SearchOptions = {})
 
     // Price range filters
     if (minPrice !== undefined) {
-      filter.push(`price_aud >= ${minPrice}`)
+      filter.push(`${priceField} >= ${minPrice}`)
     }
     if (maxPrice !== undefined) {
-      filter.push(`price_aud <= ${maxPrice}`)
+      filter.push(`${priceField} <= ${maxPrice}`)
     }
 
     // Dynamic options filters (e.g., colour, size, nozzle_type)
@@ -122,7 +134,7 @@ export async function searchProducts(query: string, options: SearchOptions = {})
       })
     }
 
-    const sortOrder = getSortOrder(sort)
+    const sortOrder = getSortOrderForPriceField(sort, priceField)
 
     const result = await index.search(query, {
       limit,
@@ -131,7 +143,7 @@ export async function searchProducts(query: string, options: SearchOptions = {})
       // Request actual fields from Meilisearch index
       attributesToRetrieve: [
         "id", "handle", "title", "thumbnail",
-        "price_aud", "original_price_aud", "on_sale",
+        priceField, originalPriceField, "price_aud", "original_price_aud", "on_sale",
         "in_stock", "inventory_quantity",
         "categories", "category_ids", "brand", "collection_ids",
         "is_bundle", "available_in_bundles_count"
@@ -139,29 +151,40 @@ export async function searchProducts(query: string, options: SearchOptions = {})
     })
 
     // Transform hits to match ProductCard expected format
-    const hits = deEmphasizeBundleRanking(result.hits.map((hit: any) => ({
-      id: hit.id,
-      handle: hit.handle,
-      title: hit.title,
-      thumbnail: hit.thumbnail,
-      // Transform price to ProductCard format
-      price: {
-        amount: hit.price_aud ?? 0,
-        currency_code: "aud",
-      },
-      originalPrice: hit.original_price_aud && hit.original_price_aud > hit.price_aud
-        ? hit.original_price_aud
-        : undefined,
-      discountPercentage: hit.original_price_aud && hit.price_aud && hit.original_price_aud > hit.price_aud
-        ? Math.round((1 - hit.price_aud / hit.original_price_aud) * 100)
-        : undefined,
-      isBundle: hit.is_bundle === true,
-      availableInBundlesCount:
-        typeof hit.available_in_bundles_count === "number"
-          ? hit.available_in_bundles_count
-          : 0,
-      specs: [],
-    })))
+    const hits = deEmphasizeBundleRanking(result.hits.map((hit: any) => {
+      const amount =
+        typeof hit[priceField] === "number" ? hit[priceField] : hit.price_aud ?? 0
+      const originalAmount =
+        typeof hit[originalPriceField] === "number"
+          ? hit[originalPriceField]
+          : currencyCode === "aud"
+            ? hit.original_price_aud
+            : undefined
+
+      return {
+        id: hit.id,
+        handle: hit.handle,
+        title: hit.title,
+        thumbnail: hit.thumbnail,
+        // Transform price to ProductCard format
+        price: {
+          amount,
+          currency_code: currencyCode,
+        },
+        originalPrice: originalAmount && originalAmount > amount
+          ? originalAmount
+          : undefined,
+        discountPercentage: originalAmount && originalAmount > amount
+          ? Math.round((1 - amount / originalAmount) * 100)
+          : undefined,
+        isBundle: hit.is_bundle === true,
+        availableInBundlesCount:
+          typeof hit.available_in_bundles_count === "number"
+            ? hit.available_in_bundles_count
+            : 0,
+        specs: [],
+      }
+    }))
 
     return {
       hits,

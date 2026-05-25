@@ -6,6 +6,7 @@ import { Minus, Plus, Trash2, Bookmark, ImageOff } from "lucide-react"
 import { useCart } from "@/context/cart-context"
 import { useSavedItems } from "@/context/saved-items-context"
 import { getCartItemVariantTitle } from "@/features/cart/lib/variant-display"
+import { toCustomerPriceAmount } from "@/lib/pricing/customer-pricing"
 import type { MedusaCartLineItem } from "@/lib/medusa/cart"
 import type { MedusaCartLineItemWithPreorder } from "@/lib/medusa/types"
 import { isPreorder } from "@/lib/util/is-preorder"
@@ -71,16 +72,16 @@ export function CartItem({
   )
 
   const lineTotal = useMemo(() => {
-    if (typeof item.subtotal === "number") {
-      return item.subtotal
-    }
-
     if (typeof item.total === "number") {
       return item.total
     }
 
-    return linePrice.amount * item.quantity
-  }, [item.quantity, item.subtotal, item.total, linePrice.amount])
+    if (typeof item.subtotal === "number") {
+      return toCustomerPriceAmount(item.subtotal, currencyCode)
+    }
+
+    return toCustomerPriceAmount(linePrice.amount * item.quantity, currencyCode)
+  }, [currencyCode, item.quantity, item.subtotal, item.total, linePrice.amount])
 
   const thumbnail =
     item.thumbnail ||

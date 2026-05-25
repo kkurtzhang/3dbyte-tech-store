@@ -39,6 +39,10 @@ jest.mock("../product-shipping-estimate", () => ({
   ),
 }))
 
+jest.mock("../product-wishlist-button", () => ({
+  ProductWishlistButton: () => <button>Wishlist</button>,
+}))
+
 jest.mock("lucide-react", () => ({
   AlertTriangle: () => <svg data-testid="icon-alert-triangle" />,
   CheckCircle2: () => <svg data-testid="icon-check-circle" />,
@@ -525,7 +529,7 @@ describe("BundleProductActions", () => {
     expect(screen.getByRole("button", { name: /out of stock/i })).toBeDisabled()
   })
 
-  it("does not treat bundle component backorders as in stock", () => {
+  it("treats Medusa backorder variants as purchasable bundle components", () => {
     const product = {
       id: "prod_bundle",
       title: "Starter Bundle",
@@ -577,14 +581,14 @@ describe("BundleProductActions", () => {
 
     render(<BundleProductActions product={product} bundleProduct={bundleProduct} />)
 
-    expect(screen.getAllByText("Out of Stock")).toHaveLength(2)
+    expect(screen.getByText("In Stock")).toBeInTheDocument()
     expect(
-      screen.getByText(/this bundle is unavailable with the current variant selection/i)
-    ).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: /out of stock/i })).toBeDisabled()
+      screen.queryByText(/this bundle is unavailable with the current variant selection/i)
+    ).not.toBeInTheDocument()
+    expect(screen.getByRole("button", { name: /add bundle to cart/i })).toBeEnabled()
   })
 
-  it("prefers an in-stock variant for the initial bundle selection", () => {
+  it("prefers an in-stock variant over a backorder variant for the initial bundle selection", () => {
     const product = {
       id: "prod_bundle",
       title: "Starter Bundle",
@@ -620,49 +624,49 @@ describe("BundleProductActions", () => {
             variants: [
               {
                 id: "variant_oos",
-                title: "Black",
+                title: "Hardware Kit + Panel / Black - 160",
                 inventory_quantity: 0,
                 manage_inventory: true,
-                allow_backorder: false,
+                allow_backorder: true,
                 prices: [{ amount: 50, currency_code: "aud" }],
                 options: [
                   {
                     id: "optval_black",
-                    option_id: "opt_finish",
-                    value: "Black",
+                    option_id: "opt_size",
+                    value: "Black - 160",
                   },
                 ],
               },
               {
                 id: "variant_in_stock",
-                title: "Orange",
+                title: "Hardware Kit + Panel / Black - 180",
                 inventory_quantity: 6,
                 manage_inventory: true,
-                allow_backorder: false,
+                allow_backorder: true,
                 prices: [{ amount: 50, currency_code: "aud" }],
                 options: [
                   {
                     id: "optval_orange",
-                    option_id: "opt_finish",
-                    value: "Orange",
+                    option_id: "opt_size",
+                    value: "Black - 180",
                   },
                 ],
               },
             ],
             options: [
               {
-                id: "opt_finish",
-                title: "Finish",
+                id: "opt_size",
+                title: "Variant",
                 values: [
                   {
                     id: "optval_black",
-                    option_id: "opt_finish",
-                    value: "Black",
+                    option_id: "opt_size",
+                    value: "Black - 160",
                   },
                   {
                     id: "optval_orange",
-                    option_id: "opt_finish",
-                    value: "Orange",
+                    option_id: "opt_size",
+                    value: "Black - 180",
                   },
                 ],
               },
@@ -675,6 +679,7 @@ describe("BundleProductActions", () => {
     render(<BundleProductActions product={product} bundleProduct={bundleProduct} />)
 
     expect(screen.getByText("In Stock")).toBeInTheDocument()
+    expect(screen.getByText("Hardware Kit + Panel / Black - 180")).toBeInTheDocument()
     expect(screen.queryByText(/\(6 bundles left\)/i)).not.toBeInTheDocument()
     expect(screen.queryByText(/\(6 bundles available\)/i)).not.toBeInTheDocument()
     expect(screen.queryByText(/available with the current selection/i)).not.toBeInTheDocument()

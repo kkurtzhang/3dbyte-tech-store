@@ -24,7 +24,7 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
   const searchParams = useSearchParams()
 
   // Parse inStock filter early (needed for facet filtering)
-  const selectedInStock = searchParams.get("inStock") === "true"
+  const selectedInStock = searchParams.get("inStock") !== "false"
 
   // Build filter overrides for facet fetching
   // Include inStock filter so facet counts reflect only in-stock items when selected
@@ -263,8 +263,7 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
     const params = getCurrentParams()
     updateFilters({
       ...params,
-      // Use "false" instead of undefined to prevent redirect from re-adding inStock=true
-      inStock: checked ? "true" : "false",
+      inStock: checked ? undefined : "false",
     })
   }
 
@@ -382,8 +381,9 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
     }
   }
 
-  // Build clear all URL (preserves the search query and inStock=true by default)
-  const clearAllUrl = searchQuery ? `/search?q=${encodeURIComponent(searchQuery)}&inStock=true` : "/search?inStock=true"
+  const clearAllUrl = searchQuery
+    ? `/search?q=${encodeURIComponent(searchQuery)}`
+    : "/search"
 
   // Build current price range for display
   const currentPriceRange = facets

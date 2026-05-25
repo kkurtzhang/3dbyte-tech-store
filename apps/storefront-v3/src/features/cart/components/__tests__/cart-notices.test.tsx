@@ -344,7 +344,7 @@ describe("CartNotices", () => {
         items={[
           createLineItem({
             id: "line_bundle_1",
-            unit_price: 900,
+            unit_price: 9,
             metadata: {
               bundle_id: "bundle_123",
               bundle_title: "Starter Bundle",
@@ -353,12 +353,12 @@ describe("CartNotices", () => {
             variant: {
               id: "variant_bundle_1",
               title: "Default Variant",
-              prices: [{ amount: 1100, currency_code: "usd" }],
+              prices: [{ amount: 11, currency_code: "usd" }],
             },
           }),
           createLineItem({
             id: "line_bundle_2",
-            unit_price: 600,
+            unit_price: 6,
             metadata: {
               bundle_id: "bundle_123",
               bundle_title: "Starter Bundle",
@@ -367,7 +367,7 @@ describe("CartNotices", () => {
             variant: {
               id: "variant_bundle_2",
               title: "Default Variant",
-              prices: [{ amount: 700, currency_code: "usd" }],
+              prices: [{ amount: 7, currency_code: "usd" }],
             },
           }),
         ]}
@@ -447,7 +447,7 @@ describe("CartNotices", () => {
         items={[
           createLineItem({
             id: "line_bundle_1",
-            unit_price: 900,
+            unit_price: 9,
             metadata: {
               bundle_id: "bundle_123",
               bundle_title: "Starter Bundle",
@@ -456,12 +456,12 @@ describe("CartNotices", () => {
             variant: {
               id: "variant_bundle_1",
               title: "Default Variant",
-              prices: [{ amount: 1100, currency_code: "usd" }],
+              prices: [{ amount: 11, currency_code: "usd" }],
             },
           }),
           createLineItem({
             id: "line_bundle_2",
-            unit_price: 600,
+            unit_price: 6,
             metadata: {
               bundle_id: "bundle_123",
               bundle_title: "Starter Bundle",
@@ -470,7 +470,7 @@ describe("CartNotices", () => {
             variant: {
               id: "variant_bundle_2",
               title: "Default Variant",
-              prices: [{ amount: 700, currency_code: "usd" }],
+              prices: [{ amount: 7, currency_code: "usd" }],
             },
           }),
         ]}

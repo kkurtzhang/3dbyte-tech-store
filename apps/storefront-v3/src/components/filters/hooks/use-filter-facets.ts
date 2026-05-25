@@ -2,6 +2,11 @@
 
 import { useEffect, useState, useMemo } from "react"
 import { searchClient, INDEX_PRODUCTS } from "@/lib/search/client"
+import {
+  DEFAULT_CURRENCY_CODE,
+  getClientPricingContext,
+  normalizeCurrencyCode,
+} from "@/lib/medusa/regions"
 import type { FilterFacets, FilterOption } from "@/features/shop/types/filters"
 import type { FacetDistribution } from "@/lib/search/products"
 
@@ -17,19 +22,29 @@ export interface UseFilterFacetsResult {
   error: Error | null
 }
 
-const FACETS_TO_REQUEST = [
+function getPriceField() {
+  const currencyCode =
+    normalizeCurrencyCode(getClientPricingContext().currency_code) ??
+    DEFAULT_CURRENCY_CODE
+
+  return `price_${currencyCode}`
+}
+
+function getFacetsToRequest(priceField: string) {
+  return [
   "brand.id",
   "category_ids",
   "collection_ids",
   "is_bundle",
   "on_sale",
   "in_stock",
-  "price_aud",
+  priceField,
   "options_colour",
   "options_size",
   "options_nozzle_type",
   "options_nozzle_size",
-]
+  ]
+}
 
 function getUnsupportedFacet(error: unknown): string | null {
   const message = error instanceof Error ? error.message : String(error)
@@ -61,25 +76,27 @@ export function useFilterFacets(
 
       try {
         const index = searchClient.index(indexName)
+        const priceField = getPriceField()
+        const facetsToRequest = getFacetsToRequest(priceField)
 
         let result
 
         try {
           result = await index.search(query, {
             limit: 0,
-            facets: FACETS_TO_REQUEST,
+            facets: facetsToRequest,
             filter: filterOverrides,
           })
         } catch (searchError) {
           const unsupportedFacet = getUnsupportedFacet(searchError)
 
-          if (!unsupportedFacet || !FACETS_TO_REQUEST.includes(unsupportedFacet)) {
+          if (!unsupportedFacet || !facetsToRequest.includes(unsupportedFacet)) {
             throw searchError
           }
 
           result = await index.search(query, {
             limit: 0,
-            facets: FACETS_TO_REQUEST.filter((facet) => facet !== unsupportedFacet),
+            facets: facetsToRequest.filter((facet) => facet !== unsupportedFacet),
             filter: filterOverrides,
           })
         }
@@ -135,7 +152,7 @@ export function useFilterFacets(
         }))
 
         // Calculate price range
-        const priceKeys = Object.keys(facetDistribution["price_aud"] || {}).map(
+        const priceKeys = Object.keys(facetDistribution[priceField] || {}).map(
           Number
         )
         const priceRange = {

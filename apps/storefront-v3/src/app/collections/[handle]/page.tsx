@@ -11,6 +11,7 @@ import { ShopEmptyState } from "@/features/shop/components/shop-empty-state"
 import { ListingLayout } from "@/components/layout/listing-layout"
 import { CollectionFilters } from "@/components/filters/collection-filters"
 import { parseDynamicOptionParams } from "@/lib/utils/search-params"
+import { getPricingContext } from "@/lib/medusa/regions.server"
 
 // Force dynamic rendering to prevent caching
 export const dynamic = "force-dynamic"
@@ -81,6 +82,7 @@ export default async function CollectionPage({
   const page = Number(search.page) || 1
   const limit = 20
   const sort = search.sort || "newest"
+  const pricing = await getPricingContext()
 
   // Fetch collection data from Medusa and Strapi in parallel
   const [collection, collectionContent] = await Promise.all([
@@ -107,6 +109,7 @@ export default async function CollectionPage({
     page,
     limit,
     sort,
+    pricing,
     filters: {
       collectionIds: [collection.id],
       categoryIds: categoryIds.length > 0 ? categoryIds : undefined,
@@ -181,16 +184,11 @@ export default async function CollectionPage({
     title: product.title,
     thumbnail: product.thumbnail,
     variants: product.variants,
-    price: product.price_aud,
-    currency_code: "AUD",
-    originalPrice: product.original_price_aud ?? undefined,
-    salePrice: product.on_sale ? product.price_aud : undefined,
-    discountPercentage:
-      product.on_sale && product.original_price_aud
-        ? ((product.original_price_aud - product.price_aud) /
-            product.original_price_aud) *
-          100
-        : undefined,
+    price: product.price,
+    currency_code: product.currency_code,
+    originalPrice: product.original_price,
+    salePrice: product.on_sale ? product.price : undefined,
+    discountPercentage: product.discount_percentage,
   }))
 
   return (

@@ -1,6 +1,7 @@
 import { render, screen, waitFor, renderHook, act } from "@testing-library/react"
 import { CartProvider, useCart } from "../cart-context"
 import * as cartApi from "@/lib/medusa/cart"
+import { getPricingContextAction } from "@/app/actions/regions"
 import type { StoreCart } from "@medusajs/types"
 
 // Mock the cart API functions
@@ -9,10 +10,15 @@ jest.mock("@/lib/medusa/cart", () => ({
   getCart: jest.fn(),
   addToCart: jest.fn(),
   addBundleToCart: jest.fn(),
+  ensureCartPricingContext: jest.fn(),
   updateBundleInCart: jest.fn(),
   updateLineItem: jest.fn(),
   deleteLineItem: jest.fn(),
   removeBundleFromCart: jest.fn(),
+}))
+
+jest.mock("@/app/actions/regions", () => ({
+  getPricingContextAction: jest.fn(),
 }))
 
 // Mock localStorage
@@ -53,11 +59,14 @@ const createMockCart = (overrides?: Partial<StoreCart>): StoreCart =>
 
 // Test wrapper component
 const TestComponent = () => {
-  const { cart, isLoading } = useCart()
+  const { cart, isLoading, clearCart } = useCart()
   return (
     <div>
       <span data-testid="loading">{isLoading ? "Loading" : "Not Loading"}</span>
       <span data-testid="cart-id">{cart?.id || "No Cart"}</span>
+      <button type="button" onClick={clearCart}>
+        Clear Cart
+      </button>
     </div>
   )
 }
@@ -66,6 +75,14 @@ describe("CartProvider", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     localStorageMock.clear()
+    ;(getPricingContextAction as jest.Mock).mockResolvedValue({
+      region_id: "reg_au",
+      country_code: "au",
+      currency_code: "aud",
+    })
+    ;(cartApi.ensureCartPricingContext as jest.Mock).mockImplementation(
+      ({ cart }) => Promise.resolve(cart)
+    )
   })
 
   describe("initialization", () => {
@@ -125,6 +142,33 @@ describe("CartProvider", () => {
       expect(result.current).toHaveProperty("removeBundle")
       expect(result.current).toHaveProperty("updateBundle")
       expect(result.current).toHaveProperty("refreshCart")
+      expect(result.current).toHaveProperty("clearCart")
+    })
+
+    it("clears cart state, local storage, and cookie after checkout completes", async () => {
+      localStorageMock.setItem("_medusa_cart_id", "cart_123")
+      document.cookie = "_medusa_cart_id=cart_123; Path=/"
+      ;(cartApi.getCart as jest.Mock).mockResolvedValue(createMockCart())
+
+      render(
+        <CartProvider>
+          <TestComponent />
+        </CartProvider>
+      )
+
+      await waitFor(() => {
+        expect(screen.getByTestId("cart-id")).toHaveTextContent("cart_123")
+      })
+
+      await act(async () => {
+        screen.getByRole("button", { name: "Clear Cart" }).click()
+      })
+
+      await waitFor(() => {
+        expect(screen.getByTestId("cart-id")).toHaveTextContent("No Cart")
+      })
+      expect(localStorageMock.removeItem).toHaveBeenCalledWith("_medusa_cart_id")
+      expect(document.cookie).not.toContain("_medusa_cart_id=cart_123")
     })
   })
 
@@ -149,7 +193,7 @@ describe("CartProvider", () => {
         await result.current.addItem("variant_1", 1)
       })
 
-      expect(cartApi.createCart).toHaveBeenCalled()
+      expect(cartApi.createCart).toHaveBeenCalledWith("reg_au")
       expect(cartApi.addToCart).toHaveBeenCalledWith({
         cartId: "cart_123",
         variantId: "variant_1",

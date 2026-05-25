@@ -1,5 +1,6 @@
 import { Metadata } from "next"
 import { redirect } from "next/navigation"
+import { getSessionAction } from "@/app/actions/auth"
 import { WishlistClient } from "./wishlist-client"
 
 export const metadata: Metadata = {
@@ -7,7 +8,11 @@ export const metadata: Metadata = {
   description: "Your saved products and favorites",
 }
 
-export default function WishlistPage() {
-  // Wishlist is client-side only, so we redirect to the client component
+export default async function WishlistPage() {
+  const session = await getSessionAction()
+  if (!session.success) {
+    redirect("/sign-in")
+  }
+
   return <WishlistClient />
 }

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Tag, ArrowRight } from "lucide-react";
 import { ShopErrorState } from "@/features/shop/components/shop-error-state";
 import { ShopEmptyState } from "@/features/shop/components/shop-empty-state";
+import { getPricingContext } from "@/lib/medusa/regions.server";
 
 // Force dynamic rendering to prevent caching
 export const dynamic = "force-dynamic";
@@ -26,11 +27,13 @@ export default async function DealsPage({ searchParams }: DealsPageProps) {
   const limit = 20;
   const minDiscount = params.minDiscount ? Number(params.minDiscount) : undefined;
   const maxDiscount = params.maxDiscount ? Number(params.maxDiscount) : undefined;
+  const pricing = await getPricingContext();
 
   // Fetch products on sale from Meilisearch
   const result = await searchProducts({
     page,
     limit,
+    pricing,
     filters: {
       onSale: true,
       minDiscount,
@@ -109,16 +112,11 @@ export default async function DealsPage({ searchParams }: DealsPageProps) {
     title: product.title,
     thumbnail: product.thumbnail,
     variants: product.variants,
-    price: product.price_aud,
-    currency_code: "AUD",
-    originalPrice: product.original_price_aud ?? undefined,
-    salePrice: product.on_sale ? product.price_aud : undefined,
-    discountPercentage:
-      product.on_sale && product.original_price_aud
-        ? ((product.original_price_aud - product.price_aud) /
-            product.original_price_aud) *
-          100
-        : undefined,
+    price: product.price,
+    currency_code: product.currency_code,
+    originalPrice: product.original_price,
+    salePrice: product.on_sale ? product.price : undefined,
+    discountPercentage: product.discount_percentage,
   }));
 
   // Generate discount filter options based on the transformed products

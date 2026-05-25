@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react"
 import {
   createCart,
+  ensureCartPricingContext,
   getCart,
   addToCart,
   updateLineItem,
@@ -12,6 +13,7 @@ import {
   updateBundleInCart,
   type BundleCartSelection,
 } from "@/lib/medusa/cart"
+import { getPricingContextAction } from "@/app/actions/regions"
 import type { MedusaCart } from "@/lib/medusa/cart"
 
 export const CART_STORAGE_KEY = "_medusa_cart_id"
@@ -32,6 +34,7 @@ interface CartContextType {
   removeBundle: (bundleId: string) => Promise<void>
   updateBundle: (bundleId: string, quantity: number) => Promise<void>
   refreshCart: () => Promise<void>
+  clearCart: () => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -77,6 +80,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const clearCart = (): void => {
+    clearCartId()
+    setCart(null)
+    setIsLoading(false)
+  }
+
   useEffect(() => {
     const cartId = getCartId()
     if (cartId) {
@@ -87,12 +96,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const ensureCart = async (): Promise<string> => {
     let cartId = getCartId()
+    const pricingContext = await getPricingContextAction()
 
     if (!cartId) {
-      const newCart = await createCart()
+      const newCart = await createCart(pricingContext.region_id)
       cartId = newCart.id
       setCartId(cartId)
       setCart(newCart)
+      return cartId
+    }
+
+    const currentCart = cart ?? (await getCart(cartId))
+    const regionCart = await ensureCartPricingContext({
+      cart: currentCart,
+      cartId,
+      pricingContext,
+    })
+    if (regionCart !== currentCart) {
+      setCart(regionCart)
     }
 
     return cartId
@@ -226,6 +247,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         removeBundle,
         updateBundle,
         refreshCart,
+        clearCart,
       }}
     >
       {children}

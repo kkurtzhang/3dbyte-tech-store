@@ -1,27 +1,34 @@
-import { loadEnv, defineConfig } from "@medusajs/framework/utils";
+import type { Context, OrderTypes } from "@medusajs/framework/types";
+import { loadEnv, defineConfig, Modules } from "@medusajs/framework/utils";
 import { customSchema } from "./src/custom-index-schema";
+import { generateOrderCustomDisplayId } from "./src/lib/order-display-id";
+import { getMaildevNotificationProvider } from "./src/modules/maildev-notification/config";
+import { getResendNotificationProvider } from "./src/modules/resend-notification/config";
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd());
 
-const mergeCors = (
-  value: string | undefined,
-  defaults: string[]
-): string => {
+const maildevNotificationProvider = getMaildevNotificationProvider();
+const notificationProvider =
+  getResendNotificationProvider() || maildevNotificationProvider;
+
+const mergeCors = (value: string | undefined, defaults: string[]): string => {
   return Array.from(
     new Set(
       [value, ...defaults]
         .filter(Boolean)
         .flatMap((entry) => entry!.split(","))
         .map((entry) => entry.trim())
-        .filter(Boolean)
-    )
+        .filter(Boolean),
+    ),
   ).join(",");
 };
 
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
-    workerMode: (process.env.MEDUSA_WORKER_MODE as "shared" | "worker" | "server") || "server",
+    workerMode:
+      (process.env.MEDUSA_WORKER_MODE as "shared" | "worker" | "server") ||
+      "server",
     http: {
       storeCors: mergeCors(process.env.STORE_CORS, [
         "http://localhost:3001",
@@ -49,6 +56,15 @@ module.exports = defineConfig({
     backendUrl: process.env.MEDUSA_BACKEND_URL,
   },
   modules: [
+    {
+      key: Modules.ORDER,
+      options: {
+        generateCustomDisplayId: async (
+          _order: OrderTypes.CreateOrderDTO,
+          _sharedContext: Context,
+        ): Promise<string> => generateOrderCustomDisplayId(),
+      },
+    },
     {
       resolve: "./src/modules/strapi",
       options: {
@@ -93,11 +109,33 @@ module.exports = defineConfig({
       resolve: "./src/modules/wishlist",
     },
     {
+      resolve: "./src/modules/waitlist",
+    },
+    {
+      resolve: "./src/modules/support-ticket",
+    },
+    {
+      resolve: "./src/modules/product-files",
+    },
+    {
       resolve: "./src/modules/reviews",
     },
     {
       resolve: "./src/modules/newsletter",
     },
+    {
+      resolve: "./src/modules/email-settings",
+    },
+    ...(notificationProvider
+      ? [
+          {
+            resolve: "@medusajs/medusa/notification",
+            options: {
+              providers: [notificationProvider],
+            },
+          },
+        ]
+      : []),
     {
       resolve: "./src/modules/meilisearch",
       options: {
@@ -108,7 +146,13 @@ module.exports = defineConfig({
         categoryIndexName:
           process.env.MEILISEARCH_CATEGORY_INDEX_NAME || "categories",
         brandIndexName: process.env.MEILISEARCH_BRAND_INDEX_NAME || "brands",
-        addressIndexName: process.env.MEILISEARCH_ADDRESS_INDEX_NAME || "addresses",
+        addressIndexName:
+          process.env.MEILISEARCH_ADDRESS_INDEX_NAME || "addresses",
+        localityIndexName:
+          process.env.MEILISEARCH_LOCALITY_INDEX_NAME || "localities",
+        productDocumentIndexName:
+          process.env.MEILISEARCH_PRODUCT_DOCUMENT_INDEX_NAME ||
+          "product_documents_public",
       },
     },
     {

@@ -24,10 +24,11 @@ const accountNavItems: AccountNavItem[] = [
   { label: "Profile", href: "/account" },
   { label: "Settings", href: "/account/settings" },
   { label: "Orders", href: "/account/orders" },
+  { label: "Product Files", href: "/account/product-files" },
+  { label: "Registrations", href: "/account/product-registrations" },
   { label: "Addresses", href: "/account/addresses" },
-  { label: "Saved Items", href: "/account/saved" },
-  { label: "Inventory Alerts", href: "/account/alerts" },
-  { label: "Loyalty Rewards", href: "/loyalty" },
+  { label: "Wishlist", href: "/wishlist" },
+  { label: "Waitlist", href: "/waitlist" },
 ];
 
 export default function AccountLayout({

@@ -1,11 +1,15 @@
-import { isIndexableAddressFeature, transformFeature } from "../ingest";
+import {
+  extractLocalityDocument,
+  isIndexableAddressFeature,
+  transformFeature,
+} from "../ingest";
 import type { OpenAddressFeature } from "../types";
 
 /**
  * Factory function for creating test GeoJSON Features
  */
 function createFeature(
-  overrides: Partial<OpenAddressFeature["properties"]> = {}
+  overrides: Partial<OpenAddressFeature["properties"]> = {},
 ): OpenAddressFeature {
   return {
     type: "Feature",
@@ -150,5 +154,47 @@ describe("isIndexableAddressFeature", () => {
     const feature = createFeature({ street: "", number: "" });
 
     expect(isIndexableAddressFeature(feature)).toBe(false);
+  });
+});
+
+describe("extractLocalityDocument", () => {
+  it("extracts a locality document from OpenAddresses locality fields", () => {
+    const feature = createFeature({
+      city: "  Sydney  ",
+      region: " nsw ",
+      postcode: " 2000 ",
+    });
+
+    expect(extractLocalityDocument(feature)).toEqual({
+      id: "au_nsw_2000_sydney",
+      display_name: "Sydney, NSW 2000",
+      locality: "Sydney",
+      state: "NSW",
+      postcode: "2000",
+      country: "AU",
+    });
+  });
+
+  it("dedupe key is stable across case and whitespace changes", () => {
+    const first = extractLocalityDocument(
+      createFeature({ city: " Sydney ", region: "NSW", postcode: "2000" }),
+    );
+    const second = extractLocalityDocument(
+      createFeature({ city: "sydney", region: " nsw ", postcode: " 2000 " }),
+    );
+
+    expect(first?.id).toBe(second?.id);
+  });
+
+  it("returns null when locality fields are incomplete", () => {
+    expect(extractLocalityDocument(createFeature({ city: "" }))).toBeNull();
+    expect(extractLocalityDocument(createFeature({ region: "" }))).toBeNull();
+    expect(extractLocalityDocument(createFeature({ postcode: "" }))).toBeNull();
+  });
+
+  it("does not include address_count", () => {
+    const doc = extractLocalityDocument(createFeature());
+
+    expect(doc).not.toHaveProperty("address_count");
   });
 });

@@ -1,7 +1,9 @@
 import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk";
-import { ContainerRegistrationKeys } from "@medusajs/framework/utils";
+import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
 import { MEILISEARCH_MODULE } from "../../../../modules/meilisearch";
 import {
+  buildRegionsForPricing,
+  type PricePreferenceForPricing,
   toMeilisearchDocument,
   type RegionForPricing,
 } from "../../../../modules/meilisearch/utils/index";
@@ -22,6 +24,16 @@ export type SyncProductsStepInput = {
 type SyncProductsStepCompensationData = {
   newProductIds: string[];
   existingProducts: Record<string, unknown>[];
+};
+
+type PricingModuleServiceForMeilisearch = {
+  listPricePreferences(
+    filters: {
+      attribute?: string[];
+      value?: string[];
+    },
+    config?: Record<string, unknown>,
+  ): Promise<PricePreferenceForPricing[]>;
 };
 
 export const syncProductsStep = createStep(
@@ -51,10 +63,24 @@ export const syncProductsStep = createStep(
       entity: "region",
       fields: ["id", "currency_code"],
     });
-    const regionsForPricing: RegionForPricing[] = regions.map((r: unknown) => ({
+    const normalizedRegions = regions.map((r: unknown) => ({
       id: (r as { id: string }).id,
       currency_code: (r as { currency_code: string }).currency_code,
     }));
+    const pricingModuleService =
+      container.resolve<PricingModuleServiceForMeilisearch>(Modules.PRICING);
+    const pricePreferences =
+      await pricingModuleService.listPricePreferences({
+        attribute: ["region_id", "currency_code"],
+        value: [
+          ...normalizedRegions.map((region) => region.id),
+          ...normalizedRegions.map((region) => region.currency_code),
+        ],
+      });
+    const regionsForPricing: RegionForPricing[] = buildRegionsForPricing(
+      normalizedRegions,
+      pricePreferences,
+    );
 
     // Retrieve existing products BEFORE indexing (for rollback)
     const existingProducts = await meilisearchModuleService.retrieveFromIndex(

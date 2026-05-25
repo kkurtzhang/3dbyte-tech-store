@@ -1,5 +1,7 @@
 import { CheckCircle2 } from "lucide-react"
+import { getSafePaymentMethodDisplay } from "@3dbyte-tech-store/shared-utils"
 import { Separator } from "@/components/ui/separator"
+import { formatCustomerPrice, toCustomerPriceAmount } from "@/lib/pricing/customer-pricing"
 import { buildCartDisplayGroups } from "@/features/cart/lib/bundle-groups"
 import { getCartItemVariantTitle } from "@/features/cart/lib/variant-display"
 import { analyzeCartContents } from "@/lib/util/cart-analysis"
@@ -10,10 +12,124 @@ import { isPreorder } from "@/lib/util/is-preorder"
 import { resolvePreorderPrice } from "@/lib/util/preorder-pricing"
 import { resolveCartLineRegularUnitPrice } from "@/features/cart/lib/cart-line-pricing"
 import { getOrderLifecycle } from "@/features/order/lib/order-lifecycle"
+import { OrderTotalsSummary } from "./order-totals-summary"
 
 export interface OrderSummaryProps {
   order: MedusaOrder
   className?: string
+}
+
+type OrderAddress = {
+  first_name?: string | null
+  last_name?: string | null
+  company?: string | null
+  address_1?: string | null
+  address_2?: string | null
+  city?: string | null
+  province?: string | null
+  postal_code?: string | null
+  country_code?: string | null
+}
+
+const countryNames = new Map([
+  ["au", "Australia"],
+  ["ca", "Canada"],
+  ["gb", "United Kingdom"],
+  ["nz", "New Zealand"],
+  ["us", "United States"],
+])
+
+export const getCustomerOrderNumber = (order: MedusaOrder): string => {
+  const orderWithDisplayIds = order as MedusaOrder & {
+    custom_display_id?: string | null
+    display_id?: number | string | null
+  }
+  const customDisplayId = orderWithDisplayIds.custom_display_id?.trim()
+
+  if (customDisplayId) return customDisplayId
+  if (orderWithDisplayIds.display_id) return `#${orderWithDisplayIds.display_id}`
+
+  return order.id
+}
+
+export const getOrderTrackingReference = (order: MedusaOrder): string => {
+  const orderWithDisplayIds = order as MedusaOrder & {
+    custom_display_id?: string | null
+  }
+
+  return orderWithDisplayIds.custom_display_id?.trim() || order.id
+}
+
+const getAddressLines = (address?: OrderAddress | null): string[] => {
+  if (!address) return []
+
+  const name = [address.first_name, address.last_name]
+    .filter(Boolean)
+    .join(" ")
+    .trim()
+  const cityLine = [address.city, address.province, address.postal_code]
+    .filter(Boolean)
+    .join(" ")
+    .trim()
+  const countryCode = address.country_code?.trim().toLowerCase()
+  const countryLine = countryCode
+    ? countryNames.get(countryCode) ?? countryCode.toUpperCase()
+    : null
+
+  return [
+    name,
+    address.company,
+    address.address_1,
+    address.address_2,
+    cityLine,
+    countryLine,
+  ].filter((line): line is string => Boolean(line))
+}
+
+const areOrderAddressesEqual = (
+  left?: OrderAddress | null,
+  right?: OrderAddress | null
+) => {
+  const leftLines = getAddressLines(left).map((line) => line.toLowerCase())
+  const rightLines = getAddressLines(right).map((line) => line.toLowerCase())
+
+  return (
+    leftLines.length > 0 &&
+    leftLines.length === rightLines.length &&
+    leftLines.every((line, index) => line === rightLines[index])
+  )
+}
+
+function AddressBlock({
+  address,
+  title,
+}: {
+  address?: OrderAddress | null
+  title: string
+}) {
+  const lines = getAddressLines(address)
+
+  if (!lines.length) return null
+
+  return (
+    <div className="space-y-2">
+      <h3 className="font-medium">{title}</h3>
+      <div className="space-y-0.5 text-sm">
+        {lines.map((line) => (
+          <p key={line}>{line}</p>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function SameAddressBlock({ title }: { title: string }) {
+  return (
+    <div className="space-y-2">
+      <h3 className="font-medium">{title}</h3>
+      <p className="text-sm text-muted-foreground">Same as shipping address</p>
+    </div>
+  )
 }
 
 export function OrderSummary({ order, className }: OrderSummaryProps) {
@@ -41,32 +157,35 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
     }
   }
 
-  const getPaymentStatus = (order: MedusaOrder) => {
-    if (!order.payment_status) return "Unknown"
-
-    switch (order.payment_status) {
-      case "not_paid":
-        return "Not Paid"
-      case "captured":
-        return "Paid"
-      case "refunded":
-        return "Refunded"
-      case "partially_refunded":
-        return "Partially Refunded"
-      default:
-        return order.payment_status
-    }
-  }
-
   const status = getOrderStatus(order)
   const lifecycle = getOrderLifecycle(order)
   const currencyCode = order.currency_code || "USD"
   const orderDisplayGroups = buildCartDisplayGroups(order.items)
   const orderAnalysis = analyzeCartContents(order.items, currencyCode)
   const orderTotals = order as MedusaOrder & {
+    billing_address?: OrderAddress | null
     item_subtotal?: number | null
     shipping_subtotal?: number | null
   }
+  const shippingAddress = order.shipping_address as OrderAddress | null | undefined
+  const billingAddress = orderTotals.billing_address
+  const billingMatchesShipping = areOrderAddressesEqual(
+    shippingAddress,
+    billingAddress
+  )
+  const orderNumber = getCustomerOrderNumber(order)
+  const discountTotal =
+    typeof order.discount_total === "number" ? order.discount_total : 0
+  const shippingTotal =
+    typeof order.shipping_total === "number"
+      ? order.shipping_total
+      : typeof orderTotals.shipping_subtotal === "number"
+        ? orderTotals.shipping_subtotal
+        : null
+  const displayedSubtotal =
+    shippingTotal !== null && typeof order.total === "number"
+      ? Math.max(0, order.total - shippingTotal + discountTotal)
+      : orderTotals.item_subtotal ?? order.subtotal ?? 0
 
   const formatAvailabilityDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
@@ -83,10 +202,19 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
     const preorderItem = item as MedusaOrderLineItemWithPreorder
     const preorderPrice = resolvePreorderPrice(preorderItem.variant, currencyCode)
     const displayCurrency = preorderPrice?.currency_code || currencyCode
+    const quantity = item.quantity || 0
     const unitPrice = preorderPrice?.amount ?? item.unit_price ?? 0
     const totalPrice =
-      typeof item.subtotal === "number" ? item.subtotal : unitPrice * (item.quantity || 0)
+      typeof item.total === "number"
+        ? item.total
+        : typeof item.subtotal === "number"
+          ? toCustomerPriceAmount(item.subtotal, displayCurrency)
+          : toCustomerPriceAmount(unitPrice * quantity, displayCurrency)
     const regularUnitPrice = resolveCartLineRegularUnitPrice(item, currencyCode)
+    const regularLineTotal =
+      typeof regularUnitPrice === "number" && regularUnitPrice > unitPrice
+        ? regularUnitPrice * quantity
+        : null
     const variantTitle = getCartItemVariantTitle(item)
 
     return (
@@ -100,38 +228,98 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
             <p className="text-xs text-muted-foreground">{variantTitle}</p>
           ) : null}
           <p className="text-xs text-muted-foreground">
-            Qty: {item.quantity}
+            Qty {quantity} x {formatCustomerPrice(unitPrice, displayCurrency)}
           </p>
           {isPreorder(preorderItem.variant?.preorder_variant) && (
-            <div className="space-y-0.5 text-xs text-primary">
-              <p>
-                Pre-order available on{" "}
-                {new Date(preorderItem.variant!.preorder_variant!.available_date).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })}
-              </p>
-              {typeof regularUnitPrice === "number" && regularUnitPrice > unitPrice && (
-                <div className="flex items-baseline gap-2 font-mono text-xs text-muted-foreground">
-                  <span>{formatPrice(unitPrice, displayCurrency)}</span>
-                  <span className="line-through">
-                    {formatPrice(regularUnitPrice, currencyCode)}
-                  </span>
-                </div>
-              )}
-            </div>
+            <p className="text-xs text-primary">
+              Pre-order available on{" "}
+              {new Date(preorderItem.variant!.preorder_variant!.available_date).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })}
+            </p>
           )}
         </div>
         <div className="text-right">
           <p className="font-mono text-sm">
-            {formatPrice(unitPrice, displayCurrency)}
-          </p>
-          <p className="text-xs text-muted-foreground">
             {formatPrice(totalPrice, displayCurrency)}
           </p>
+          {regularLineTotal ? (
+            <p className="font-mono text-xs text-muted-foreground line-through">
+              {formatCustomerPrice(regularLineTotal, currencyCode)}
+            </p>
+          ) : null}
         </div>
       </div>
+    )
+  }
+
+  const getBundleLineTotal = (
+    items: NonNullable<MedusaOrder["items"]>
+  ): number =>
+    items.reduce((sum, item) => {
+      const quantity = item.quantity || 0
+      const unitPrice = item.unit_price ?? 0
+      const lineTotal =
+        typeof item.total === "number"
+          ? item.total
+          : typeof item.subtotal === "number"
+            ? item.subtotal
+            : unitPrice * quantity
+
+      return sum + lineTotal
+    }, 0)
+
+  const getBundleChildLabel = (
+    item: NonNullable<MedusaOrder["items"]>[number]
+  ) => {
+    const variantTitle = getCartItemVariantTitle(item)
+
+    return `${item.quantity || 0} x ${item.title}${
+      variantTitle ? ` - ${variantTitle}` : ""
+    }`
+  }
+
+  const renderBundleGroup = (
+    group: Extract<(typeof orderDisplayGroups)[number], { type: "bundle" }>
+  ) => {
+    const lineTotal = getBundleLineTotal(group.items)
+    const bundleUnitPrice =
+      group.quantity > 0 ? lineTotal / group.quantity : lineTotal
+
+    return (
+      <details
+        key={group.bundleId}
+        className="rounded-lg border border-dashed border-primary/30 bg-primary/5 p-4"
+      >
+        <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
+          <div className="flex-1">
+            <p className="text-sm font-medium">
+              {group.bundleTitle ?? "Product Bundle"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Qty {group.quantity} x {formatCustomerPrice(bundleUnitPrice, currencyCode)}
+            </p>
+            <p className="mt-1 text-xs text-primary">View included items</p>
+          </div>
+          <p className="font-mono text-sm">
+            {formatCustomerPrice(lineTotal, currencyCode)}
+          </p>
+        </summary>
+        <div className="mt-3 border-t border-primary/20 pt-3">
+          <p className="mb-2 text-xs font-medium text-muted-foreground">
+            Includes
+          </p>
+          <ul className="space-y-1 text-xs text-muted-foreground">
+            {group.items.map((item, groupIndex) => (
+              <li key={`${group.bundleId}-${item.id || groupIndex}`}>
+                {getBundleChildLabel(item)}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </details>
     )
   }
 
@@ -140,8 +328,8 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
       {/* Order Header */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-muted-foreground">Order ID</p>
-          <p className="font-mono text-sm font-medium">{order.id}</p>
+          <p className="text-sm text-muted-foreground">Order Number</p>
+          <p className="font-mono text-sm font-medium">{orderNumber}</p>
         </div>
         <div className="text-right">
           <p className="text-sm text-muted-foreground">Date</p>
@@ -177,7 +365,7 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
         </div>
 
         <div className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-xs font-medium bg-card">
-          Payment: {getPaymentStatus(order)}
+          Payment: {getSafePaymentMethodDisplay(order)}
         </div>
 
         <div className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-xs font-medium bg-card">
@@ -201,24 +389,7 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
         <div className="space-y-3">
           {orderDisplayGroups.map((group, index) =>
             group.type === "bundle" ? (
-              <div
-                key={group.bundleId}
-                className="rounded-lg border border-dashed border-primary/30 bg-primary/5 p-4"
-              >
-                <div className="mb-3 border-b pb-3">
-                  <p className="text-sm font-medium">
-                    {group.bundleTitle ?? "Product Bundle"}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {group.items.length} {group.items.length === 1 ? "item" : "items"}
-                  </p>
-                </div>
-                <div className="space-y-3">
-                  {group.items.map((item, groupIndex) =>
-                    renderItem(item, `${group.bundleId}-${item.id || groupIndex}`)
-                  )}
-                </div>
-              </div>
+              renderBundleGroup(group)
             ) : (
               renderItem(group.item, group.item.id || String(index))
             )
@@ -228,89 +399,35 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
 
       <Separator />
 
-      {/* Shipping Address */}
-      {order.shipping_address && (
-        <div className="space-y-2">
-          <h3 className="font-medium">Shipping Address</h3>
-          <div className="text-sm space-y-0.5">
-            <p>
-              {order.shipping_address.first_name}{" "}
-              {order.shipping_address.last_name}
-            </p>
-            {order.shipping_address.company && (
-              <p className="text-muted-foreground">
-                {order.shipping_address.company}
-              </p>
-            )}
-            <p>{order.shipping_address.address_1}</p>
-            {order.shipping_address.address_2 && (
-              <p>{order.shipping_address.address_2}</p>
-            )}
-            <p>
-              {order.shipping_address.city}
-              {order.shipping_address.province
-                ? `, ${order.shipping_address.province}`
-                : ""}
-              {` ${order.shipping_address.postal_code}`}
-            </p>
-            <p>{order.shipping_address.country_code?.toUpperCase()}</p>
-          </div>
+      {/* Addresses */}
+      {(shippingAddress || billingAddress) && (
+        <div className="grid gap-6 md:grid-cols-2">
+          <AddressBlock
+            title="Shipping Address"
+            address={shippingAddress}
+          />
+          {billingMatchesShipping ? (
+            <SameAddressBlock title="Billing Address" />
+          ) : (
+            <AddressBlock
+              title="Billing Address"
+              address={billingAddress}
+            />
+          )}
         </div>
       )}
 
       <Separator />
 
-      {/* Totals */}
-      <div className="space-y-3">
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Subtotal</span>
-          <span className="font-mono">
-            {formatPrice(
-              orderTotals.item_subtotal ?? order.subtotal ?? 0,
-              currencyCode
-            )}
-          </span>
-        </div>
-
-        {((orderTotals.shipping_subtotal ?? order.shipping_total) || 0) > 0 ? (
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Shipping</span>
-            <span className="font-mono">
-              {formatPrice(
-                orderTotals.shipping_subtotal ?? order.shipping_total ?? 0,
-                currencyCode
-              )}
-            </span>
-          </div>
-        ) : null}
-
-        {order.tax_total && order.tax_total > 0 ? (
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Tax</span>
-            <span className="font-mono">
-              {formatPrice(order.tax_total, currencyCode)}
-            </span>
-          </div>
-        ) : null}
-
-        {order.discount_total && order.discount_total > 0 ? (
-          <div className="flex justify-between text-sm text-primary">
-            <span>Discount</span>
-            <span className="font-mono">
-              -{formatPrice(order.discount_total, currencyCode)}
-            </span>
-          </div>
-        ) : null}
-
-        <Separator />
-
-        <div className="flex justify-between text-base font-bold">
-          <span>Total</span>
-          <span className="font-mono">
-            {formatPrice(order.total || 0, currencyCode)}
-          </span>
-        </div>
-      </div>
+      <OrderTotalsSummary
+        currencyCode={currencyCode}
+        discountTotal={discountTotal}
+        shippingLabel="Not charged"
+        shippingTotal={(shippingTotal || 0) > 0 ? shippingTotal : null}
+        subtotal={displayedSubtotal}
+        taxTotal={order.tax_total ?? 0}
+        total={order.total || 0}
+      />
     </div>
   )
 }

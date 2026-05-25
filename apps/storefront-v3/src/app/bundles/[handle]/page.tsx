@@ -5,6 +5,7 @@ import { ProductTemplate } from "@/features/product/templates/product-template"
 import { loadProductPageData } from "@/features/product/lib/load-product-page-data"
 import { getBundleLink } from "@/lib/medusa/bundles"
 import { getProductByHandle } from "@/lib/medusa/products"
+import { getPricingContext } from "@/lib/medusa/regions.server"
 
 export const revalidate = 3600
 
@@ -39,7 +40,8 @@ export default async function BundleProductPage({
   params: Promise<{ handle: string }>
 }) {
   const { handle } = await params
-  const pageData = await loadProductPageData(handle)
+  const pricing = await getPricingContext()
+  const pageData = await loadProductPageData(handle, pricing)
 
   if (!pageData || !pageData.bundleLink || !pageData.bundleProduct) {
     notFound()

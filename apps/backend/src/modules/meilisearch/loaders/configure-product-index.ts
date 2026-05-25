@@ -1,71 +1,33 @@
 import type { LoaderOptions } from "@medusajs/framework/types";
 import type { Logger } from "@medusajs/framework/types";
 import type { MeilisearchIndexSettings } from "@3dbyte-tech-store/shared-types";
+import {
+  DEFAULT_PRODUCT_DISPLAYED_ATTRIBUTES,
+  DEFAULT_PRODUCT_FILTERABLE_ATTRIBUTES,
+  DEFAULT_PRODUCT_SEARCHABLE_ATTRIBUTES,
+  DEFAULT_PRODUCT_SORTABLE_ATTRIBUTES,
+} from "../product-index-settings";
 import { type MeilisearchOptions } from "../service";
 import MeilisearchModuleService from "../service";
 
 export function buildProductIndexSettings(
   existingSettings: MeilisearchIndexSettings | null = null,
 ): MeilisearchIndexSettings {
-  const staticFilterable: string[] = [
-    "id",
-    "handle",
-    "brand.id",
-    "category_ids",
-    "collection_ids",
-    "type_id",
-    "on_sale",
-    "in_stock",
-    "is_bundle",
-    "bundle_id",
-  ];
-
-  const staticSortable: string[] = ["created_at_timestamp"];
-
-  const staticSearchable: string[] = [
-    "title",
-    "rich_description",
-    "bundle_item_titles",
-    "variants.sku",
-    "variants.title",
-  ];
-
-  const staticDisplayed: string[] = [
-    "id",
-    "title",
-    "handle",
-    "thumbnail",
-    "brand",
-    "is_bundle",
-    "bundle_id",
-    "bundle_item_count",
-    "bundle_item_titles",
-    "on_sale",
-    "in_stock",
-    "inventory_quantity",
-    "categories",
-    "_tags",
-    "collection_ids",
-    "type_id",
-    "created_at_timestamp",
-    "variants",
-  ];
-
   const mergedFilterable = existingSettings?.filterableAttributes
-    ? [...new Set([...staticFilterable, ...existingSettings.filterableAttributes])]
-    : staticFilterable;
+    ? [...new Set([...DEFAULT_PRODUCT_FILTERABLE_ATTRIBUTES, ...existingSettings.filterableAttributes])]
+    : DEFAULT_PRODUCT_FILTERABLE_ATTRIBUTES;
 
   const mergedSortable = existingSettings?.sortableAttributes
-    ? [...new Set([...staticSortable, ...existingSettings.sortableAttributes])]
-    : staticSortable;
+    ? [...new Set([...DEFAULT_PRODUCT_SORTABLE_ATTRIBUTES, ...existingSettings.sortableAttributes])]
+    : DEFAULT_PRODUCT_SORTABLE_ATTRIBUTES;
 
   const mergedSearchable = existingSettings?.searchableAttributes
-    ? [...new Set([...staticSearchable, ...existingSettings.searchableAttributes])]
-    : staticSearchable;
+    ? [...new Set([...DEFAULT_PRODUCT_SEARCHABLE_ATTRIBUTES, ...existingSettings.searchableAttributes])]
+    : DEFAULT_PRODUCT_SEARCHABLE_ATTRIBUTES;
 
   const mergedDisplayed = existingSettings?.displayedAttributes
-    ? [...new Set([...staticDisplayed, ...existingSettings.displayedAttributes])]
-    : staticDisplayed;
+    ? [...new Set([...DEFAULT_PRODUCT_DISPLAYED_ATTRIBUTES, ...existingSettings.displayedAttributes])]
+    : DEFAULT_PRODUCT_DISPLAYED_ATTRIBUTES;
 
   return {
     filterableAttributes: mergedFilterable,
@@ -149,7 +111,7 @@ export default async function configureProductIndexLoader({
     }
 
     const settings = buildProductIndexSettings(existingSettings);
-    const staticFilterableCount = 10;
+    const staticFilterableCount = DEFAULT_PRODUCT_FILTERABLE_ATTRIBUTES.length;
 
     logger.info(
       `Configuring product index with ${settings.filterableAttributes?.length || 0} filterable attributes ` +

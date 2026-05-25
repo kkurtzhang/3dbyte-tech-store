@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   description: "Explore our curated list of premium 3D printing brands.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function BrandsPage() {
   const [{ hits: brands }, brandDescriptionsResponse] = await Promise.all([
     searchBrands({ limit: 100 }),

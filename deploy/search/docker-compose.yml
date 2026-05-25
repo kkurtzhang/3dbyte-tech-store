@@ -1,0 +1,44 @@
+name: ${COMPOSE_PROJECT_NAME:-3dbyte-search}
+
+x-arm64: &arm64 linux/arm64
+x-restart: &restart unless-stopped
+x-stateful-runtime: &stateful-runtime
+  security_opt:
+    - no-new-privileges:true
+  init: true
+
+services:
+  meilisearch:
+    <<: *stateful-runtime
+    platform: *arm64
+    image: getmeili/meilisearch:v1.31.0
+    restart: *restart
+    pids_limit: ${MEILISEARCH_PIDS_LIMIT:-1024}
+    mem_limit: ${MEILISEARCH_MEMORY_LIMIT:-8192m}
+    cpus: "${MEILISEARCH_CPUS:-1.5}"
+    environment:
+      MEILI_ENV: production
+      MEILI_MASTER_KEY: "${MEILISEARCH_MASTER_KEY:?Set MEILISEARCH_MASTER_KEY}"
+      MEILI_NO_ANALYTICS: "true"
+      MEILI_DB_PATH: /meili_data
+      MEILI_LOG_LEVEL: "${MEILI_LOG_LEVEL:-INFO}"
+      MEILI_HTTP_PAYLOAD_SIZE_LIMIT: "${MEILI_HTTP_PAYLOAD_SIZE_LIMIT:-200Mb}"
+      MEILI_MAX_INDEXING_MEMORY: "${MEILI_MAX_INDEXING_MEMORY:-6Gb}"
+      MEILI_MAX_INDEXING_THREADS: "${MEILI_MAX_INDEXING_THREADS:-2}"
+    volumes:
+      - meilisearch_data:/meili_data
+    expose:
+      - "7700"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://127.0.0.1:7700/health | grep -q 'available'",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+volumes:
+  meilisearch_data:

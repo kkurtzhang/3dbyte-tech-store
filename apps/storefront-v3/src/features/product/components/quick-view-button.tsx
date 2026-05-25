@@ -12,6 +12,7 @@ interface QuickViewButtonProps {
 export function QuickViewButton({ onClick, className }: QuickViewButtonProps) {
   return (
     <Button
+      type="button"
       variant="ghost"
       size="sm"
       onClick={onClick}

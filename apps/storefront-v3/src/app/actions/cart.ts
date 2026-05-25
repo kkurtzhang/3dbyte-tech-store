@@ -2,7 +2,16 @@
 
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
-import { createCart, getCart, addToCart, updateLineItem, deleteLineItem, addLineItems } from "@/lib/medusa/cart"
+import {
+  addLineItems,
+  addToCart,
+  createCart,
+  deleteLineItem,
+  ensureCartPricingContext,
+  getCart,
+  updateLineItem,
+} from "@/lib/medusa/cart"
+import { getPricingContext } from "@/lib/medusa/regions.server"
 import { z } from "zod"
 
 const CART_COOKIE = "_medusa_cart_id"
@@ -39,10 +48,17 @@ export async function addToCartAction(variantId: string, quantity: number) {
   let cartId = cookieStore.get(CART_COOKIE)?.value
 
   try {
+    const pricingContext = await getPricingContext()
+
     if (!cartId) {
-      const cart = await createCart()
+      const cart = await createCart(pricingContext.region_id)
       cartId = cart.id
       cookieStore.set(CART_COOKIE, cartId)
+    } else {
+      await ensureCartPricingContext({
+        cartId,
+        pricingContext,
+      })
     }
 
     const cart = await addToCart({ cartId, variantId: parsed.data.variantId, quantity: parsed.data.quantity })
@@ -65,10 +81,17 @@ export async function addMultipleToCartAction(items: { variantId: string; quanti
   let cartId = cookieStore.get(CART_COOKIE)?.value
 
   try {
+    const pricingContext = await getPricingContext()
+
     if (!cartId) {
-      const cart = await createCart()
+      const cart = await createCart(pricingContext.region_id)
       cartId = cart.id
       cookieStore.set(CART_COOKIE, cartId)
+    } else {
+      await ensureCartPricingContext({
+        cartId,
+        pricingContext,
+      })
     }
 
     const cart = await addLineItems({ 

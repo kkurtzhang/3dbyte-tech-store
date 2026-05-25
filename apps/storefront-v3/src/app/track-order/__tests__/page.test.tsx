@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react"
 
-import { OrderDetails } from "../page"
+import TrackOrderPage, { OrderDetails } from "../page"
 import type { MedusaOrder } from "@/lib/medusa/types"
 
 jest.mock("next/navigation", () => ({
@@ -31,6 +31,7 @@ jest.mock("lucide-react", () => ({
 
 const order = {
   id: "order_01KQJV8S9GVN1A1YBW2XENDK65",
+  custom_display_id: "3DBO-H7KM-2P9QXR",
   status: "pending",
   payment_status: "authorized",
   currency_code: "aud",
@@ -129,13 +130,33 @@ const order = {
 } as MedusaOrder
 
 describe("Track order page order details", () => {
+  it("prompts for the current customer order reference format", () => {
+    render(<TrackOrderPage />)
+
+    expect(
+      screen.getByPlaceholderText("3DBO-H7KM-2P9QXR or order_...")
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByPlaceholderText("3DB-1777978800123 or order_...")
+    ).not.toBeInTheDocument()
+  })
+
   it("formats order prices as major units", () => {
     render(<OrderDetails order={order} />)
 
+    expect(
+      screen.getByRole("heading", { name: "Order 3DBO-H7KM-2P9QXR" })
+    ).toBeInTheDocument()
     expect(screen.getAllByText("A$19.00").length).toBeGreaterThan(0)
-    expect(screen.getByText("A$12.05")).toBeInTheDocument()
-    expect(screen.getByText("A$3.11")).toBeInTheDocument()
+    expect(screen.getByText("Subtotal")).toBeInTheDocument()
+    expect(screen.getByText("A$20.90")).toBeInTheDocument()
+    expect(screen.getByText("Shipping")).toBeInTheDocument()
+    expect(screen.getByText("A$13.26")).toBeInTheDocument()
+    expect(screen.queryByText("A$12.05")).not.toBeInTheDocument()
+    expect(screen.queryByText("Includes GST")).not.toBeInTheDocument()
+    expect(screen.getByText("(Includes GST: A$3.11)")).toBeInTheDocument()
     expect(screen.getByText("A$34.16")).toBeInTheDocument()
+    expect(screen.getByText("Total (AUD)")).toBeInTheDocument()
     expect(screen.queryByText("A$0.34")).not.toBeInTheDocument()
   })
 

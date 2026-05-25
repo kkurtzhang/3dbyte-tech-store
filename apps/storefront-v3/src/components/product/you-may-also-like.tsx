@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, ShoppingCart, Loader2, Sparkles } from "lucide-react"
 import { useCart } from "@/context/cart-context"
 import { getYouMayAlsoLikeAction } from "@/app/actions/products"
+import { formatCustomerPrice } from "@/lib/pricing/customer-pricing"
 import { cn } from "@/lib/utils"
 
 interface YouMayAlsoLikeProps {
@@ -102,10 +103,7 @@ export function YouMayAlsoLike({ productId }: YouMayAlsoLikeProps) {
   }
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-AU", {
-      style: "currency",
-      currency: "AUD",
-    }).format(price)
+    return formatCustomerPrice(price, "AUD")
   }
 
   const handleAddToCart = async (product: MedusaProduct, e: React.MouseEvent) => {

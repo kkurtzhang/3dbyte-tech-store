@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import { CartProvider } from "@/context/cart-context";
 import { SavedItemsProvider } from "@/context/saved-items-context";
 import { WishlistProvider } from "@/context/wishlist-context";
-import { CompareProvider } from "@/context/compare-context";
 import { InventoryAlertProvider } from "@/context/inventory-alert-context";
 import { Toaster } from "@/components/ui/toaster";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
@@ -14,6 +13,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { AnnouncementBarSlot } from "@/components/layout/announcement-bar-slot";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { ShoppingAssistantDrawer } from "@/features/ai-shopping-assistant/components/shopping-assistant-drawer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -58,19 +58,18 @@ export default function RootLayout({
             <CartProvider>
               <SavedItemsProvider>
                 <WishlistProvider>
-                  <CompareProvider>
-                    <InventoryAlertProvider>
-                      <div className="relative flex min-h-screen flex-col">
-                        <Suspense fallback={null}>
-                          <AnnouncementBarSlot />
-                        </Suspense>
-                        <Navbar />
-                        <main className="flex-1">{children}</main>
-                        <Footer />
-                      </div>
-                      <Toaster />
-                    </InventoryAlertProvider>
-                  </CompareProvider>
+                  <InventoryAlertProvider>
+                    <div className="relative flex min-h-screen flex-col">
+                      <Suspense fallback={null}>
+                        <AnnouncementBarSlot />
+                      </Suspense>
+                      <Navbar />
+                      <main className="flex-1">{children}</main>
+                      <Footer />
+                    </div>
+                    <Toaster />
+                    <ShoppingAssistantDrawer />
+                  </InventoryAlertProvider>
                 </WishlistProvider>
               </SavedItemsProvider>
             </CartProvider>

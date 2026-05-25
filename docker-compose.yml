@@ -1,0 +1,390 @@
+name: ${COMPOSE_PROJECT_NAME:-3dbyte-tech-store}
+
+x-arm64: &arm64 linux/arm64
+x-restart: &restart unless-stopped
+x-hardened-runtime: &hardened-runtime
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+  init: true
+x-stateful-runtime: &stateful-runtime
+  security_opt:
+    - no-new-privileges:true
+  init: true
+x-observability-env: &observability-env
+  OTEL_SDK_DISABLED: "${OTEL_SDK_DISABLED:-}"
+  OTEL_TRACING_ENABLED: "${OTEL_TRACING_ENABLED:-}"
+  OTEL_DEPLOYMENT_ENVIRONMENT: "${APP_ENV:-production}"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "${OTEL_EXPORTER_OTLP_ENDPOINT:-}"
+  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-}"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "${OTEL_EXPORTER_OTLP_PROTOCOL:-http/protobuf}"
+  OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: "${OTEL_EXPORTER_OTLP_TRACES_PROTOCOL:-}"
+  OTEL_RESOURCE_ATTRIBUTES: "${OTEL_RESOURCE_ATTRIBUTES:-}"
+  LANGFUSE_HOST: "${LANGFUSE_HOST:-}"
+  LANGFUSE_PUBLIC_KEY: "${LANGFUSE_PUBLIC_KEY:-}"
+  LANGFUSE_SECRET_KEY: "${LANGFUSE_SECRET_KEY:-}"
+x-backend-env: &backend-env
+  <<: *observability-env
+  NODE_ENV: production
+  APP_ENV: "${APP_ENV:-production}"
+  PORT: "9000"
+  DATABASE_URL: "postgresql://${POSTGRES_USER:?Set POSTGRES_USER}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-medusa}?sslmode=disable"
+  PGSSLMODE: disable
+  REDIS_URL: "redis://redis:6379/0"
+  JWT_SECRET: "${MEDUSA_JWT_SECRET:?Set MEDUSA_JWT_SECRET}"
+  COOKIE_SECRET: "${MEDUSA_COOKIE_SECRET:?Set MEDUSA_COOKIE_SECRET}"
+  STORE_CORS: "${STORE_CORS:?Set STORE_CORS}"
+  ADMIN_CORS: "${ADMIN_CORS:?Set ADMIN_CORS}"
+  AUTH_CORS: "${AUTH_CORS:?Set AUTH_CORS}"
+  MEDUSA_BACKEND_URL: "${MEDUSA_BACKEND_URL:?Set MEDUSA_BACKEND_URL}"
+  STRAPI_API_URL: "http://cms:1337"
+  STRAPI_API_TOKEN: "${STRAPI_API_TOKEN:?Set STRAPI_API_TOKEN}"
+  STRAPI_WEBHOOK_SECRET: "${STRAPI_WEBHOOK_SECRET:?Set STRAPI_WEBHOOK_SECRET}"
+  MEILISEARCH_HOST: "${MEILISEARCH_HOST:?Set MEILISEARCH_HOST}"
+  MEILISEARCH_API_KEY: "${MEILISEARCH_API_KEY:?Set MEILISEARCH_API_KEY}"
+  MEILISEARCH_PRODUCT_INDEX_NAME: "${MEILISEARCH_PRODUCT_INDEX_NAME:-products}"
+  MEILISEARCH_CATEGORY_INDEX_NAME: "${MEILISEARCH_CATEGORY_INDEX_NAME:-categories}"
+  MEILISEARCH_BRAND_INDEX_NAME: "${MEILISEARCH_BRAND_INDEX_NAME:-brands}"
+  MEILISEARCH_PRODUCT_DOCUMENT_INDEX_NAME: "${MEILISEARCH_PRODUCT_DOCUMENT_INDEX_NAME:-product_documents_public}"
+  MEILISEARCH_ADDRESS_INDEX_NAME: "${MEILISEARCH_ADDRESS_INDEX_NAME:-addresses}"
+  MEILISEARCH_LOCALITY_INDEX_NAME: "${MEILISEARCH_LOCALITY_INDEX_NAME:-localities}"
+  S3_FILE_URL: "${CLOUDFLARE_R2_PUBLIC_URL:?Set CLOUDFLARE_R2_PUBLIC_URL}"
+  S3_ACCESS_KEY_ID: "${CLOUDFLARE_R2_ACCESS_KEY_ID:?Set CLOUDFLARE_R2_ACCESS_KEY_ID}"
+  S3_SECRET_ACCESS_KEY: "${CLOUDFLARE_R2_SECRET_ACCESS_KEY:?Set CLOUDFLARE_R2_SECRET_ACCESS_KEY}"
+  S3_REGION: "${CLOUDFLARE_R2_REGION:-auto}"
+  S3_BUCKET: "${CLOUDFLARE_R2_BUCKET_NAME:?Set CLOUDFLARE_R2_BUCKET_NAME}"
+  S3_ENDPOINT: "${CLOUDFLARE_R2_ENDPOINT:?Set CLOUDFLARE_R2_ENDPOINT}"
+  S3_ROOTPATH: "${MEDUSA_R2_ROOT_PATH:-medusaUpload/}"
+  KARRIO_API_URL: "${KARRIO_API_URL:?Set KARRIO_API_URL}"
+  KARRIO_API_KEY: "${KARRIO_API_KEY:?Set KARRIO_API_KEY}"
+  KARRIO_TEST_MODE: "${KARRIO_TEST_MODE:-false}"
+  KARRIO_FULFILLMENT_OPTIONS: "${KARRIO_FULFILLMENT_OPTIONS:-}"
+  STRIPE_SECRET_KEY: "${STRIPE_SECRET_KEY:?Set STRIPE_SECRET_KEY}"
+  STRIPE_WEBHOOK_SECRET: "${STRIPE_WEBHOOK_SECRET:?Set STRIPE_WEBHOOK_SECRET}"
+  ORDER_EMAILS_ENABLED: "${ORDER_EMAILS_ENABLED:-true}"
+  ORDER_EMAIL_STORE_NAME: "${ORDER_EMAIL_STORE_NAME:-3D Byte Tech}"
+  ORDER_EMAIL_TRACKING_BASE_URL: "${ORDER_EMAIL_TRACKING_BASE_URL:?Set ORDER_EMAIL_TRACKING_BASE_URL}"
+  MAILDEV_ENABLED: "${MAILDEV_ENABLED:-false}"
+  MAILDEV_SMTP_HOST: "${MAILDEV_SMTP_HOST:-maildev}"
+  MAILDEV_SMTP_PORT: "${MAILDEV_SMTP_PORT:-1025}"
+  MAILDEV_SMTP_SECURE: "${MAILDEV_SMTP_SECURE:-false}"
+  MAILDEV_SMTP_REJECT_UNAUTHORIZED: "${MAILDEV_SMTP_REJECT_UNAUTHORIZED:-false}"
+  MAILDEV_FROM: "${MAILDEV_FROM:-no-reply@3dbytetech.com.au}"
+  MAILDEV_WEB_URL: "${MAILDEV_WEB_URL:-http://maildev:1080}"
+  RESEND_API_KEY: "${RESEND_API_KEY:?Set RESEND_API_KEY}"
+  RESEND_API_URL: "${RESEND_API_URL:-https://api.resend.com}"
+  RESEND_FROM_EMAIL: "${RESEND_FROM_EMAIL:?Set RESEND_FROM_EMAIL}"
+  ADDRESS_REINDEX_ENABLED: "${ADDRESS_REINDEX_ENABLED:-false}"
+  ADDRESS_MANUAL_REINDEX_ENABLED: "${ADDRESS_MANUAL_REINDEX_ENABLED:-false}"
+  INTERNAL_API_TOKEN: "${INTERNAL_API_TOKEN:?Set INTERNAL_API_TOKEN}"
+  SUPPORT_TICKET_INBOX_EMAIL: "${SUPPORT_TICKET_INBOX_EMAIL:-support@3dbytetech.com.au}"
+
+services:
+  storefront:
+    <<: *hardened-runtime
+    platform: *arm64
+    build:
+      context: .
+      dockerfile: apps/storefront-v3/Dockerfile
+      args:
+        TARGETPLATFORM: linux/arm64
+        NEXT_PUBLIC_SITE_URL: "${NEXT_PUBLIC_SITE_URL:?Set NEXT_PUBLIC_SITE_URL}"
+        NEXT_PUBLIC_MEDUSA_BACKEND_URL: "${NEXT_PUBLIC_MEDUSA_BACKEND_URL:?Set NEXT_PUBLIC_MEDUSA_BACKEND_URL}"
+        NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: "${NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY:?Set NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY}"
+        NEXT_PUBLIC_STRAPI_URL: "${NEXT_PUBLIC_STRAPI_URL:?Set NEXT_PUBLIC_STRAPI_URL}"
+        NEXT_PUBLIC_STRAPI_READ_TOKEN: "${NEXT_PUBLIC_STRAPI_READ_TOKEN:-}"
+        NEXT_PUBLIC_MEILISEARCH_HOST: "${NEXT_PUBLIC_MEILISEARCH_HOST:?Set NEXT_PUBLIC_MEILISEARCH_HOST}"
+        NEXT_PUBLIC_MEILISEARCH_API_KEY: "${NEXT_PUBLIC_MEILISEARCH_API_KEY:?Set NEXT_PUBLIC_MEILISEARCH_API_KEY}"
+        NEXT_PUBLIC_MEILISEARCH_INDEX_NAME: "${NEXT_PUBLIC_MEILISEARCH_INDEX_NAME:-products}"
+        NEXT_PUBLIC_MEILISEARCH_PRODUCT_INDEX_NAME: "${NEXT_PUBLIC_MEILISEARCH_PRODUCT_INDEX_NAME:-${NEXT_PUBLIC_MEILISEARCH_INDEX_NAME:-products}}"
+        NEXT_PUBLIC_MEILISEARCH_CATEGORY_INDEX_NAME: "${NEXT_PUBLIC_MEILISEARCH_CATEGORY_INDEX_NAME:-categories}"
+        NEXT_PUBLIC_MEILISEARCH_BRAND_INDEX_NAME: "${NEXT_PUBLIC_MEILISEARCH_BRAND_INDEX_NAME:-brands}"
+        NEXT_PUBLIC_MEILISEARCH_COLLECTION_INDEX_NAME: "${NEXT_PUBLIC_MEILISEARCH_COLLECTION_INDEX_NAME:-collections}"
+        NEXT_PUBLIC_MEILISEARCH_BLOG_INDEX_NAME: "${NEXT_PUBLIC_MEILISEARCH_BLOG_INDEX_NAME:-blog}"
+        NEXT_PUBLIC_MEILISEARCH_PRODUCT_DOCUMENT_INDEX_NAME: "${NEXT_PUBLIC_MEILISEARCH_PRODUCT_DOCUMENT_INDEX_NAME:-product_documents_public}"
+        NEXT_PUBLIC_STRIPE_KEY: "${NEXT_PUBLIC_STRIPE_KEY:?Set NEXT_PUBLIC_STRIPE_KEY}"
+        NEXT_PUBLIC_CDN_SPACE_DOMAIN: "${NEXT_PUBLIC_CDN_SPACE_DOMAIN:?Set NEXT_PUBLIC_CDN_SPACE_DOMAIN}"
+        NEXT_PUBLIC_SPACE_DOMAIN: "${NEXT_PUBLIC_SPACE_DOMAIN:-}"
+        NEXT_PUBLIC_SPACE_ENDPOINT: "${NEXT_PUBLIC_SPACE_ENDPOINT:-}"
+    restart: *restart
+    read_only: true
+    tmpfs:
+      - /tmp:size=256m,mode=1777
+      - /app/apps/storefront-v3/.next/cache:size=128m,uid=1001,gid=1001,mode=1777
+    pids_limit: ${STOREFRONT_PIDS_LIMIT:-512}
+    mem_limit: ${STOREFRONT_MEMORY_LIMIT:-1024m}
+    cpus: "${STOREFRONT_CPUS:-0.75}"
+    environment:
+      <<: *observability-env
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: "3000"
+      MEDUSA_SERVER_BACKEND_URL: "${MEDUSA_SERVER_BACKEND_URL:-http://medusa:9000}"
+      NEXT_PUBLIC_SITE_URL: "${NEXT_PUBLIC_SITE_URL:?Set NEXT_PUBLIC_SITE_URL}"
+      NEXT_PUBLIC_MEDUSA_BACKEND_URL: "${NEXT_PUBLIC_MEDUSA_BACKEND_URL:?Set NEXT_PUBLIC_MEDUSA_BACKEND_URL}"
+      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: "${NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY:?Set NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY}"
+      NEXT_PUBLIC_STRAPI_URL: "${NEXT_PUBLIC_STRAPI_URL:?Set NEXT_PUBLIC_STRAPI_URL}"
+      NEXT_PUBLIC_STRAPI_READ_TOKEN: "${NEXT_PUBLIC_STRAPI_READ_TOKEN:-}"
+      NEXT_PUBLIC_MEILISEARCH_HOST: "${NEXT_PUBLIC_MEILISEARCH_HOST:?Set NEXT_PUBLIC_MEILISEARCH_HOST}"
+      NEXT_PUBLIC_MEILISEARCH_API_KEY: "${NEXT_PUBLIC_MEILISEARCH_API_KEY:?Set NEXT_PUBLIC_MEILISEARCH_API_KEY}"
+      NEXT_PUBLIC_MEILISEARCH_INDEX_NAME: "${NEXT_PUBLIC_MEILISEARCH_INDEX_NAME:-products}"
+      NEXT_PUBLIC_MEILISEARCH_PRODUCT_INDEX_NAME: "${NEXT_PUBLIC_MEILISEARCH_PRODUCT_INDEX_NAME:-${NEXT_PUBLIC_MEILISEARCH_INDEX_NAME:-products}}"
+      NEXT_PUBLIC_MEILISEARCH_CATEGORY_INDEX_NAME: "${NEXT_PUBLIC_MEILISEARCH_CATEGORY_INDEX_NAME:-categories}"
+      NEXT_PUBLIC_MEILISEARCH_BRAND_INDEX_NAME: "${NEXT_PUBLIC_MEILISEARCH_BRAND_INDEX_NAME:-brands}"
+      NEXT_PUBLIC_MEILISEARCH_COLLECTION_INDEX_NAME: "${NEXT_PUBLIC_MEILISEARCH_COLLECTION_INDEX_NAME:-collections}"
+      NEXT_PUBLIC_MEILISEARCH_BLOG_INDEX_NAME: "${NEXT_PUBLIC_MEILISEARCH_BLOG_INDEX_NAME:-blog}"
+      NEXT_PUBLIC_MEILISEARCH_PRODUCT_DOCUMENT_INDEX_NAME: "${NEXT_PUBLIC_MEILISEARCH_PRODUCT_DOCUMENT_INDEX_NAME:-product_documents_public}"
+      NEXT_PUBLIC_STRIPE_KEY: "${NEXT_PUBLIC_STRIPE_KEY:?Set NEXT_PUBLIC_STRIPE_KEY}"
+      NEXT_PUBLIC_CDN_SPACE_DOMAIN: "${NEXT_PUBLIC_CDN_SPACE_DOMAIN:?Set NEXT_PUBLIC_CDN_SPACE_DOMAIN}"
+      NEXT_PUBLIC_SPACE_DOMAIN: "${NEXT_PUBLIC_SPACE_DOMAIN:-}"
+      NEXT_PUBLIC_SPACE_ENDPOINT: "${NEXT_PUBLIC_SPACE_ENDPOINT:-}"
+      STRAPI_WEBHOOK_REVALIDATION_SECRET: "${STRAPI_WEBHOOK_REVALIDATION_SECRET:?Set STRAPI_WEBHOOK_REVALIDATION_SECRET}"
+      STRAPI_READ_TOKEN: "${STRAPI_READ_TOKEN:-}"
+      MEILISEARCH_SERVER_HOST: "${MEILISEARCH_SERVER_HOST:?Set MEILISEARCH_SERVER_HOST}"
+      AI_PROVIDER: "${AI_PROVIDER:-deepseek}"
+      AI_MODEL: "${AI_MODEL:-deepseek-v4-flash}"
+      DEEPSEEK_API_KEY: "${DEEPSEEK_API_KEY:-}"
+      DEEPSEEK_BASE_URL: "${DEEPSEEK_BASE_URL:-https://api.deepseek.com}"
+      INTERNAL_API_TOKEN: "${INTERNAL_API_TOKEN:?Set INTERNAL_API_TOKEN}"
+    depends_on:
+      medusa:
+        condition: service_started
+      cms:
+        condition: service_started
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          node -e "fetch('http://127.0.0.1:3000/api/health').then((res) => process.exit(res.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    expose:
+      - "3000"
+
+  medusa:
+    <<: *hardened-runtime
+    platform: *arm64
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile.release
+      args:
+        TARGETPLATFORM: linux/arm64
+    restart: *restart
+    tmpfs:
+      - /tmp:size=512m,mode=1777
+    pids_limit: ${MEDUSA_PIDS_LIMIT:-768}
+    mem_limit: ${MEDUSA_MEMORY_LIMIT:-2048m}
+    cpus: "${MEDUSA_CPUS:-1.25}"
+    environment:
+      <<: *backend-env
+      MEDUSA_WORKER_MODE: server
+      DISABLE_MEDUSA_ADMIN: "${DISABLE_MEDUSA_ADMIN:-false}"
+    depends_on:
+      postgres-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          node -e "fetch('http://127.0.0.1:9000/health').then((res) => process.exit(res.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+    expose:
+      - "9000"
+
+  medusa-worker:
+    <<: *hardened-runtime
+    platform: *arm64
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile.release
+      args:
+        TARGETPLATFORM: linux/arm64
+    restart: *restart
+    tmpfs:
+      - /tmp:size=512m,mode=1777
+    pids_limit: ${MEDUSA_WORKER_PIDS_LIMIT:-768}
+    mem_limit: ${MEDUSA_WORKER_MEMORY_LIMIT:-1536m}
+    cpus: "${MEDUSA_WORKER_CPUS:-0.75}"
+    command: ["sh", "-lc", "/opt/apps/backend/node_modules/.bin/medusa start"]
+    environment:
+      <<: *backend-env
+      MEDUSA_WORKER_MODE: worker
+      DISABLE_MEDUSA_ADMIN: "true"
+    depends_on:
+      medusa:
+        condition: service_started
+      postgres-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+  cms:
+    <<: *hardened-runtime
+    platform: *arm64
+    build:
+      context: .
+      dockerfile: docker/cms/Dockerfile.release
+      args:
+        TARGETPLATFORM: linux/arm64
+    restart: *restart
+    tmpfs:
+      - /tmp:size=512m,mode=1777
+    pids_limit: ${CMS_PIDS_LIMIT:-768}
+    mem_limit: ${CMS_MEMORY_LIMIT:-2048m}
+    cpus: "${CMS_CPUS:-0.75}"
+    environment:
+      <<: *observability-env
+      NODE_ENV: production
+      APP_ENV: "${APP_ENV:-production}"
+      HOST: 0.0.0.0
+      PORT: "1337"
+      DATABASE_CLIENT: postgres
+      DATABASE_URL: "postgresql://${POSTGRES_USER:?Set POSTGRES_USER}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/${STRAPI_DATABASE_NAME:-strapi}?sslmode=disable"
+      DATABASE_HOST: postgres
+      DATABASE_PORT: "5432"
+      DATABASE_NAME: "${STRAPI_DATABASE_NAME:-strapi}"
+      DATABASE_USERNAME: "${POSTGRES_USER:?Set POSTGRES_USER}"
+      DATABASE_PASSWORD: "${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}"
+      DATABASE_SSL: "false"
+      PGSSLMODE: disable
+      APP_KEYS: "${STRAPI_APP_KEYS:?Set STRAPI_APP_KEYS}"
+      API_TOKEN_SALT: "${STRAPI_API_TOKEN_SALT:?Set STRAPI_API_TOKEN_SALT}"
+      ADMIN_JWT_SECRET: "${STRAPI_ADMIN_JWT_SECRET:?Set STRAPI_ADMIN_JWT_SECRET}"
+      TRANSFER_TOKEN_SALT: "${STRAPI_TRANSFER_TOKEN_SALT:?Set STRAPI_TRANSFER_TOKEN_SALT}"
+      JWT_SECRET: "${STRAPI_JWT_SECRET:?Set STRAPI_JWT_SECRET}"
+      ENCRYPTION_KEY: "${STRAPI_ENCRYPTION_KEY:?Set STRAPI_ENCRYPTION_KEY}"
+      STRAPI_RESEND_API_KEY: "${STRAPI_RESEND_API_KEY:?Set STRAPI_RESEND_API_KEY}"
+      MEILISEARCH_HOST: "${MEILISEARCH_HOST:?Set MEILISEARCH_HOST}"
+      MEILISEARCH_API_KEY: "${MEILISEARCH_API_KEY:?Set MEILISEARCH_API_KEY}"
+      MEILISEARCH_BLOG_INDEX_NAME: "${MEILISEARCH_BLOG_INDEX_NAME:-blog}"
+      MEILISEARCH_BLOG_CATEGORY_INDEX_NAME: "${MEILISEARCH_BLOG_CATEGORY_INDEX_NAME:-blog_post_categories}"
+      AWS_ACCESS_KEY_ID: "${CLOUDFLARE_R2_ACCESS_KEY_ID:?Set CLOUDFLARE_R2_ACCESS_KEY_ID}"
+      AWS_SECRET_ACCESS_KEY: "${CLOUDFLARE_R2_SECRET_ACCESS_KEY:?Set CLOUDFLARE_R2_SECRET_ACCESS_KEY}"
+      AWS_REGION: "${CLOUDFLARE_R2_REGION:-auto}"
+      AWS_BUCKET: "${CLOUDFLARE_R2_BUCKET_NAME:?Set CLOUDFLARE_R2_BUCKET_NAME}"
+      AWS_ENDPOINT: "${CLOUDFLARE_R2_ENDPOINT:?Set CLOUDFLARE_R2_ENDPOINT}"
+      AWS_FORCE_PATH_STYLE: "${CLOUDFLARE_R2_FORCE_PATH_STYLE:-true}"
+      AWS_ROOT_PATH: "${STRAPI_R2_ROOT_PATH:-strapiUpload}"
+      AWS_SIGNED_URL_EXPIRES: "${AWS_SIGNED_URL_EXPIRES:-900}"
+    depends_on:
+      postgres-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          node -e "fetch('http://127.0.0.1:1337/admin/init').then((res) => process.exit(res.status < 500 ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+    expose:
+      - "1337"
+
+  postgres:
+    <<: *stateful-runtime
+    platform: *arm64
+    image: pgvector/pgvector:0.8.2-pg16
+    restart: *restart
+    shm_size: "${POSTGRES_SHM_SIZE:-1gb}"
+    pids_limit: ${POSTGRES_PIDS_LIMIT:-512}
+    mem_limit: ${POSTGRES_MEMORY_LIMIT:-6144m}
+    cpus: "${POSTGRES_CPUS:-1.0}"
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB:-medusa}"
+      POSTGRES_USER: "${POSTGRES_USER:?Set POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - postgres_socket:/var/run/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  postgres-init:
+    <<: *stateful-runtime
+    platform: *arm64
+    build:
+      context: .
+      dockerfile: docker/postgres/Dockerfile.init
+      args:
+        TARGETPLATFORM: linux/arm64
+    restart: "no"
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB:-medusa}"
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: "${POSTGRES_USER:?Set POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}"
+      STRAPI_DATABASE_NAME: "${STRAPI_DATABASE_NAME:-strapi}"
+      KARRIO_DATABASE_NAME: "${KARRIO_DATABASE_NAME:-karrio}"
+      POSTGRES_SOCKET_DIR: /var/run/postgresql
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - postgres_socket:/var/run/postgresql
+
+  redis:
+    <<: *stateful-runtime
+    platform: *arm64
+    image: redis:8.4.0
+    restart: *restart
+    pids_limit: ${REDIS_PIDS_LIMIT:-256}
+    mem_limit: ${REDIS_MEMORY_LIMIT:-768m}
+    cpus: "${REDIS_CPUS:-0.25}"
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --maxmemory
+      - "${REDIS_MAXMEMORY:-512mb}"
+      - --maxmemory-policy
+      - allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  maildev:
+    <<: *hardened-runtime
+    platform: *arm64
+    image: maildev/maildev:2.2.1
+    restart: *restart
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    pids_limit: ${MAILDEV_PIDS_LIMIT:-256}
+    mem_limit: ${MAILDEV_MEMORY_LIMIT:-256m}
+    cpus: "${MAILDEV_CPUS:-0.25}"
+    profiles:
+      - local
+    ports:
+      - "127.0.0.1:${MAILDEV_SMTP_PORT:-1025}:1025"
+      - "127.0.0.1:${MAILDEV_WEB_PORT:-1080}:1080"
+
+volumes:
+  postgres_data:
+  postgres_socket:
+  redis_data:

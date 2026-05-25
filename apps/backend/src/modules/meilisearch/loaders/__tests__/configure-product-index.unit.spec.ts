@@ -22,6 +22,33 @@ describe("buildProductIndexSettings", () => {
     );
   });
 
+  it("seeds storefront price and option facets for fresh indexes", () => {
+    const settings = buildProductIndexSettings();
+
+    expect(settings.filterableAttributes).toEqual(
+      expect.arrayContaining([
+        "price_aud",
+        "options_colour",
+        "options_size",
+        "options_nozzle_type",
+        "options_nozzle_size",
+      ]),
+    );
+    expect(settings.sortableAttributes).toEqual(
+      expect.arrayContaining(["created_at_timestamp", "price_aud"]),
+    );
+    expect(settings.displayedAttributes).toEqual(
+      expect.arrayContaining([
+        "price_aud",
+        "tax_inclusive_price_aud",
+        "options_colour",
+        "options_size",
+        "options_nozzle_type",
+        "options_nozzle_size",
+      ]),
+    );
+  });
+
   it("preserves dynamic attributes from existing settings", () => {
     const settings = buildProductIndexSettings({
       filterableAttributes: ["options_colour"],
@@ -41,6 +68,50 @@ describe("buildProductIndexSettings", () => {
     );
     expect(settings.sortableAttributes).toEqual(
       expect.arrayContaining(["created_at_timestamp", "price_aud"]),
+    );
+  });
+
+  it("adds AI-ready product metadata fields to product index settings", () => {
+    const settings = buildProductIndexSettings();
+
+    expect(settings.filterableAttributes).toEqual(
+      expect.arrayContaining([
+        "tdp_product_kind",
+        "tdp_material",
+        "tdp_requires_enclosure",
+        "tdp_requires_hardened_nozzle",
+        "tdp_drying_recommended",
+        "tdp_compatible_printers",
+        "tdp_compatible_build_surfaces",
+        "rcb_component_role",
+        "rcb_compatible_project_types",
+        "rcb_connector_type",
+        "rcb_voltage",
+      ]),
+    );
+    expect(settings.searchableAttributes).toEqual(
+      expect.arrayContaining([
+        "tdp_best_for",
+        "tdp_not_recommended_for",
+        "tdp_common_issues",
+        "tdp_ai_search_keywords",
+        "rcb_used_for",
+        "rcb_best_for",
+        "rcb_ai_search_keywords",
+      ]),
+    );
+    expect(settings.displayedAttributes).toEqual(
+      expect.arrayContaining([
+        "tdp_product_kind",
+        "tdp_material",
+        "tdp_requires_hardened_nozzle",
+        "tdp_best_for",
+        "tdp_ai_search_keywords",
+        "rcb_component_role",
+        "rcb_used_for",
+        "rcb_best_for",
+        "rcb_ai_search_keywords",
+      ]),
     );
   });
 });

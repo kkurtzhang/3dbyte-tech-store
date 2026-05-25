@@ -4,6 +4,7 @@ import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
 import { createCart, getCart, addToCart } from "@/lib/medusa/cart"
 import { sdk } from "@/lib/medusa/client"
+import { getPricingContext } from "@/lib/medusa/regions.server"
 
 const CART_COOKIE = "_medusa_cart_id"
 
@@ -83,7 +84,8 @@ export async function reorderAction(orderId: string): Promise<ReorderResult> {
     let cartId = cookieStore.get(CART_COOKIE)?.value
     
     if (!cartId) {
-      const cart = await createCart()
+      const pricingContext = await getPricingContext()
+      const cart = await createCart(pricingContext.region_id)
       cartId = cart.id
       cookieStore.set(CART_COOKIE, cartId)
     }

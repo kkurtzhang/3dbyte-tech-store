@@ -4,13 +4,14 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { ArrowRight, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/cart-context";
 import { useSavedItems } from "@/context/saved-items-context";
 import { CartItem } from "./cart-item";
 import { CartNotices } from "./cart-notices";
 import { BundleCartGroup } from "./bundle-cart-group";
 import { buildCartDisplayGroups, getCartDisplayItemCount } from "../lib/bundle-groups";
+import { resolveCartItemsSubtotalInclTax } from "../lib/cart-totals";
+import { OrderTotalsSummary } from "@/features/order/components/order-totals-summary";
 import {
   Card,
   CardContent,
@@ -27,20 +28,13 @@ export function CartTemplate() {
     return getCartDisplayItemCount(buildCartDisplayGroups(cart?.items));
   }, [cart]);
 
-  const subtotal = useMemo(() => {
-    if (!cart?.total) return 0;
-    return cart.total;
-  }, [cart]);
-
-  const formatPrice = (amount: number, currency: string) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency,
-    }).format(amount);
-  };
-
   // Assuming USD for now or fallback to first item currency
   const currencyCode = cart?.region?.currency_code || "usd";
+
+  const subtotal = useMemo(() => {
+    return resolveCartItemsSubtotalInclTax(cart, currencyCode);
+  }, [cart, currencyCode]);
+
   const cartDisplayGroups = useMemo(() => buildCartDisplayGroups(cart?.items), [cart?.items]);
 
   if (isLoading && !cart) {
@@ -215,9 +209,6 @@ export function CartTemplate() {
                 <Bookmark className="h-5 w-5" />
                 Saved for Later
               </h2>
-              <Button variant="link" asChild>
-                <Link href="/account/saved">View All</Link>
-              </Button>
             </div>
             <div className="rounded-lg border bg-card">
               <div className="divide-y p-1">
@@ -243,35 +234,15 @@ export function CartTemplate() {
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Subtotal</span>
-              <span className="font-mono font-medium">
-                {formatPrice(subtotal, currencyCode)}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Shipping</span>
-              <span className="text-muted-foreground italic">
-                Calculated at checkout
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Taxes</span>
-              <span className="text-muted-foreground italic">
-                Calculated at checkout
-              </span>
-            </div>
-
-            <Separator className="my-2" />
-
             <CartNotices items={cart.items} currencyCode={currencyCode} />
-
-            <div className="flex items-center justify-between font-medium">
-              <span>Total</span>
-              <span className="font-mono text-xl text-primary">
-                {formatPrice(subtotal, currencyCode)}
-              </span>
-            </div>
+            <OrderTotalsSummary
+              currencyCode={currencyCode}
+              shippingLabel="Calculated at checkout"
+              shippingTotal={null}
+              subtotal={subtotal}
+              taxTotal={cart.tax_total ?? 0}
+              total={subtotal}
+            />
           </CardContent>
           <CardFooter>
             <Button

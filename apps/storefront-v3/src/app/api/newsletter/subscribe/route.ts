@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
+import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
 import { checkRateLimit } from "@/lib/security/rate-limit"
 
 const subscribeSchema = z.object({
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     const { email, firstName, lastName } = parsed.data
 
-    const backendUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
+    const backendUrl = resolveMedusaBaseUrl({ isServer: true })
 
     const response = await fetch(`${backendUrl}/store/newsletter/subscribe`, {
       method: "POST",

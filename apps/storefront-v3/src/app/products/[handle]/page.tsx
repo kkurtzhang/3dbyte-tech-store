@@ -5,6 +5,7 @@ import { loadProductPageData } from "@/features/product/lib/load-product-page-da
 import { Metadata } from "next"
 import { Suspense } from "react"
 import type { ProductSourceContext } from "@/features/product/lib/product-detail-content"
+import { getPricingContext } from "@/lib/medusa/regions.server"
 
 // Revalidate every hour
 export const revalidate = 3600
@@ -50,7 +51,8 @@ export default async function ProductPage({
 }) {
   const { handle } = await params
   const { from, fromLabel } = await searchParams
-  const pageData = await loadProductPageData(handle)
+  const pricing = await getPricingContext()
+  const pageData = await loadProductPageData(handle, pricing)
 
   if (!pageData) {
     notFound()
@@ -73,6 +75,7 @@ export default async function ProductPage({
         bundleProduct={pageData.bundleProduct}
         availableInBundles={pageData.availableInBundles}
         sourceContext={sourceContext}
+        productDocuments={pageData.productDocuments}
       />
     </Suspense>
   )

@@ -1,9 +1,9 @@
 import Medusa from "@medusajs/js-sdk";
 
+import { getAdminSdkAuthConfig } from "./admin-sdk-auth";
+
 export const sdk = new Medusa({
-  baseUrl: process.env.VITE_BACKEND_URL || "/",
-  debug: process.env.NODE_ENV === "development",
-  auth: {
-    type: "jwt",
-  },
+  baseUrl: import.meta.env.VITE_BACKEND_URL || "/",
+  debug: import.meta.env.DEV,
+  auth: getAdminSdkAuthConfig(),
 });

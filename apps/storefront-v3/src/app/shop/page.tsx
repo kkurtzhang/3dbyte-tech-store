@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { searchProducts } from "@/lib/search/products";
 
@@ -20,6 +19,7 @@ import {
 } from "@/lib/utils/search-params";
 import { buildShopUrl, type ShopQueryParams } from "@/lib/utils/url";
 import { ShopFilters } from "@/components/filters";
+import { getPricingContext } from "@/lib/medusa/regions.server";
 
 interface ShopPageProps {
   searchParams: Promise<{
@@ -42,14 +42,17 @@ interface ShopPageProps {
 /**
  * Check if any filters are active
  */
-function hasActiveFilters(params: ShopPageProps["searchParams"] extends Promise<infer T> ? T : never): boolean {
+function hasActiveFilters(
+  params: ShopPageProps["searchParams"] extends Promise<infer T> ? T : never,
+  effectiveInStock: boolean
+): boolean {
   return (
     !!params.category ||
     !!params.brand ||
     !!params.collection ||
     params.bundle === "true" ||
     params.onSale === "true" ||
-    params.inStock === "true" ||
+    effectiveInStock ||
     !!params.minPrice ||
     !!params.maxPrice ||
     !!params.q ||
@@ -71,7 +74,7 @@ function buildPaginationUrl(
     brand: params.brand,
     bundle: params.bundle,
     onSale: params.onSale,
-    inStock: params.inStock,
+    inStock: params.inStock === "false" ? "false" : undefined,
     minPrice: params.minPrice,
     maxPrice: params.maxPrice,
     sort: sort !== "newest" ? sort : undefined,
@@ -86,19 +89,11 @@ function buildPaginationUrl(
 export default async function ShopPage({ searchParams }: ShopPageProps) {
   const params = await searchParams;
 
-  // Redirect to add inStock=true by default if not explicitly set
-  // This ensures the In Stock filter is checked by default
-  if (params.inStock === undefined) {
-    const redirectParams: ShopQueryParams = {
-      ...params,
-      inStock: "true",
-    };
-    redirect(buildShopUrl(redirectParams));
-  }
-
   const page = Number(params.page) || 1;
   const limit = 20;
   const sort = params.sort || "newest";
+  const effectiveInStock = params.inStock !== "false";
+  const pricing = await getPricingContext();
 
   // Parse category filters
   const categoryIds = params.category?.split(",").filter(Boolean) || [];
@@ -122,13 +117,14 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     page,
     limit,
     sort,
+    pricing,
     filters: {
       categoryIds: categoryIds.length > 0 ? categoryIds : undefined,
       brandIds: brandIds.length > 0 ? brandIds : undefined,
       collectionIds: collectionIds.length > 0 ? collectionIds : undefined,
       isBundle: params.bundle === "true" ? true : undefined,
       onSale: params.onSale === "true" ? true : undefined,
-      inStock: params.inStock === "true" ? true : undefined,
+      inStock: effectiveInStock ? true : undefined,
       minPrice,
       maxPrice,
       options: Object.keys(options).length > 0 ? options : undefined,
@@ -160,7 +156,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
   const totalPages = Math.ceil(result.totalCount / limit);
 
   // Check if any filters are active (for empty state)
-  const filtersActive = hasActiveFilters(params);
+  const filtersActive = hasActiveFilters(params, effectiveInStock);
 
   // Handle empty state
   if (result.products.length === 0) {
@@ -194,18 +190,14 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     variants: product.variants,
     inventory_quantity: product.inventory_quantity,
     in_stock: product.in_stock,
-    price: product.price_aud,
-    currency_code: "AUD",
-    originalPrice: product.original_price_aud ?? undefined,
-    salePrice: product.on_sale ? product.price_aud : undefined,
+    price: product.price,
+    currency_code: product.currency_code,
+    originalPrice: product.original_price,
+    salePrice: product.on_sale ? product.price : undefined,
     isBundle: product.is_bundle,
     availableInBundlesCount: product.available_in_bundles_count,
     discountPercentage:
-      product.on_sale && product.original_price_aud
-        ? ((product.original_price_aud - product.price_aud) /
-            product.original_price_aud) *
-          100
-        : undefined,
+      product.discount_percentage,
   }));
 
   return (

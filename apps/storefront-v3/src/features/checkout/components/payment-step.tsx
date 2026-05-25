@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { CreditCard, Wallet } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -15,12 +15,16 @@ export function PaymentStep({ onBack, onComplete }: PaymentStepProps) {
   const [method, setMethod] = useState<"card" | "manual">("card")
   const [isProcessing, setIsProcessing] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const isProcessingRef = useRef(false)
 
   const stripe = useStripe()
   const elements = useElements()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isProcessingRef.current) return
+
+    isProcessingRef.current = true
     setIsProcessing(true)
     setErrorMessage(null)
 
@@ -60,12 +64,35 @@ export function PaymentStep({ onBack, onComplete }: PaymentStepProps) {
       console.error(error)
       setErrorMessage(error.message || "Payment processing failed")
     } finally {
+      isProcessingRef.current = false
       setIsProcessing(false)
     }
   }
 
+  const selectPaymentMethod = (nextMethod: "card" | "manual") => {
+    if (isProcessing) return
+    setMethod(nextMethod)
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6" aria-busy={isProcessing}>
+      {isProcessing && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="rounded-lg border bg-card px-6 py-5 text-center shadow-lg">
+            <p className="font-mono text-sm uppercase tracking-widest">
+              Finalising your payment
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Please keep this page open while we confirm your order.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="grid gap-2">
         <h2 className="text-xl font-bold">Payment</h2>
         <p className="text-sm text-muted-foreground">
@@ -74,14 +101,19 @@ export function PaymentStep({ onBack, onComplete }: PaymentStepProps) {
       </div>
 
       <div className="grid gap-4">
-        <div
+        <button
+          type="button"
+          disabled={isProcessing}
+          aria-disabled={isProcessing}
+          aria-pressed={method === "card"}
           className={cn(
-            "flex items-center gap-4 rounded-lg border p-4 cursor-pointer transition-all",
+            "flex w-full items-center gap-4 rounded-lg border p-4 text-left transition-all",
+            isProcessing ? "cursor-not-allowed opacity-60" : "cursor-pointer",
             method === "card"
               ? "border-primary bg-primary/5 ring-1 ring-primary"
               : "hover:border-primary/50"
           )}
-          onClick={() => setMethod("card")}
+          onClick={() => selectPaymentMethod("card")}
         >
           <CreditCard className="h-6 w-6 text-primary" />
           <div className="flex-1">
@@ -96,7 +128,7 @@ export function PaymentStep({ onBack, onComplete }: PaymentStepProps) {
           )}>
             {method === "card" && <div className="h-2 w-2 rounded-full bg-background" />}
           </div>
-        </div>
+        </button>
 
         {/* Stripe Payment Element */}
         {method === "card" && (
@@ -115,14 +147,19 @@ export function PaymentStep({ onBack, onComplete }: PaymentStepProps) {
           </div>
         )}
 
-        <div
+        <button
+          type="button"
+          disabled={isProcessing}
+          aria-disabled={isProcessing}
+          aria-pressed={method === "manual"}
           className={cn(
-            "flex items-center gap-4 rounded-lg border p-4 cursor-pointer transition-all",
+            "flex w-full items-center gap-4 rounded-lg border p-4 text-left transition-all",
+            isProcessing ? "cursor-not-allowed opacity-60" : "cursor-pointer",
             method === "manual"
               ? "border-primary bg-primary/5 ring-1 ring-primary"
               : "hover:border-primary/50"
           )}
-          onClick={() => setMethod("manual")}
+          onClick={() => selectPaymentMethod("manual")}
         >
           <Wallet className="h-6 w-6 text-primary" />
           <div className="flex-1">
@@ -137,7 +174,7 @@ export function PaymentStep({ onBack, onComplete }: PaymentStepProps) {
           )}>
               {method === "manual" && <div className="h-2 w-2 rounded-full bg-background" />}
           </div>
-        </div>
+        </button>
       </div>
 
       {errorMessage && (
@@ -160,8 +197,9 @@ export function PaymentStep({ onBack, onComplete }: PaymentStepProps) {
           className="flex-1 font-mono uppercase tracking-widest"
           size="lg"
           disabled={isProcessing || (method === "card" && !stripe)}
+          aria-label={isProcessing ? "Pay now finalising payment" : "Pay now"}
         >
-          {isProcessing ? "Processing..." : "Pay Now"}
+          {isProcessing ? "Finalising..." : "Pay Now"}
         </Button>
       </div>
     </form>

@@ -93,4 +93,53 @@ describe("track order action", () => {
       })
     )
   })
+
+  it("looks up custom display ids through the backend lookup endpoint", async () => {
+    mockRetrieveOrder.mockRejectedValue({ status: 404 })
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          order: {
+            id: "order_123",
+            custom_display_id: "3DB-1777978800123",
+            email: "customer@example.com",
+          },
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ payment_method: null }),
+      })
+
+    await expect(
+      lookupOrder(" 3DB-1777978800123 ", " CUSTOMER@example.com ")
+    ).resolves.toMatchObject({
+      success: true,
+      order: {
+        id: "order_123",
+        custom_display_id: "3DB-1777978800123",
+      },
+    })
+
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      1,
+      new URL(
+        "http://localhost:9000/store/orders/lookup?reference=3DB-1777978800123&email=customer%40example.com"
+      ),
+      expect.objectContaining({
+        cache: "no-store",
+        headers: {
+          "x-publishable-api-key": "pk_test",
+        },
+      })
+    )
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      2,
+      new URL(
+        "http://localhost:9000/store/orders/order_123/payment-method?email=customer%40example.com"
+      ),
+      expect.any(Object)
+    )
+  })
 })

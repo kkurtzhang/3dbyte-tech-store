@@ -19,8 +19,15 @@ import { createGunzip } from "node:zlib";
 import { createInterface } from "node:readline";
 import { Readable } from "node:stream";
 import type { Logger } from "@medusajs/framework/types";
-import type { MeilisearchAddressDocument } from "@3dbyte-tech-store/shared-types";
-import { ADDRESS_INDEX_SETTINGS } from "../../modules/meilisearch/service";
+import type {
+  MeilisearchAddressDocument,
+  MeilisearchIndexSettings,
+  MeilisearchLocalityDocument,
+} from "@3dbyte-tech-store/shared-types";
+import {
+  ADDRESS_INDEX_SETTINGS,
+  LOCALITY_INDEX_SETTINGS,
+} from "../../modules/meilisearch/service";
 import type {
   OpenAddressFeature,
   AddressPipelineConfig,
@@ -49,27 +56,29 @@ interface MeilisearchCompletedTask {
 interface MeilisearchTaskClient {
   waitForTask(
     task: MeilisearchEnqueuedTask | number,
-    options: { timeout: number; interval: number }
+    options: { timeout: number; interval: number },
   ): Promise<MeilisearchCompletedTask>;
 }
 
 interface MeilisearchIndexClient {
   addDocuments(
-    documents: MeilisearchAddressDocument[],
-    options: { primaryKey: string }
+    documents: Array<MeilisearchAddressDocument | MeilisearchLocalityDocument>,
+    options: { primaryKey: string },
   ): Promise<MeilisearchEnqueuedTask>;
-  updateSettings(settings: typeof ADDRESS_INDEX_SETTINGS): Promise<MeilisearchEnqueuedTask>;
+  updateSettings(
+    settings: MeilisearchIndexSettings,
+  ): Promise<MeilisearchEnqueuedTask>;
   getStats(): Promise<{ numberOfDocuments: number }>;
 }
 
 interface MeilisearchClient {
   createIndex(
     indexName: string,
-    options: { primaryKey: string }
+    options: { primaryKey: string },
   ): Promise<MeilisearchEnqueuedTask>;
   index(indexName: string): MeilisearchIndexClient;
   swapIndexes(
-    swaps: Array<{ indexes: [string, string]; rename: boolean }>
+    swaps: Array<{ indexes: [string, string]; rename: boolean }>,
   ): Promise<MeilisearchEnqueuedTask>;
   deleteIndex(indexName: string): Promise<MeilisearchEnqueuedTask>;
   tasks: MeilisearchTaskClient;
@@ -84,7 +93,7 @@ interface MeilisearchClient {
  */
 export function transformFeature(
   feature: OpenAddressFeature,
-  rowIndex: number
+  rowIndex: number,
 ): MeilisearchAddressDocument {
   const props = feature.properties;
   const number = props.number?.trim() || "";
@@ -96,7 +105,7 @@ export function transformFeature(
 
   const streetWithNumber = `${number} ${street}`.trim();
   const fullParts = [unit, streetWithNumber, suburb, state, postcode].filter(
-    Boolean
+    Boolean,
   );
 
   return {
@@ -112,10 +121,63 @@ export function transformFeature(
   };
 }
 
+function toTitleCase(value: string): string {
+  return value
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
+    .join(" ");
+}
+
+function normalizeLocalityIdPart(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+/**
+ * Extract a unique locality document from an OpenAddresses GeoJSON Feature.
+ */
+export function extractLocalityDocument(
+  feature: OpenAddressFeature,
+): MeilisearchLocalityDocument | null {
+  const props = feature.properties;
+  if (!props) {
+    return null;
+  }
+
+  const locality = toTitleCase(props.city?.trim() || "");
+  const state = props.region?.trim().toUpperCase() || "";
+  const postcode = props.postcode?.trim() || "";
+  const country = "AU";
+
+  if (!locality || !state || !postcode) {
+    return null;
+  }
+
+  const idParts = [country, state, postcode, locality].map(
+    normalizeLocalityIdPart,
+  );
+
+  return {
+    id: idParts.join("_"),
+    display_name: `${locality}, ${state} ${postcode}`,
+    locality,
+    state,
+    postcode,
+    country,
+  };
+}
+
 /**
  * Return whether an OpenAddresses feature has enough address data to index.
  */
-export function isIndexableAddressFeature(feature: OpenAddressFeature): boolean {
+export function isIndexableAddressFeature(
+  feature: OpenAddressFeature,
+): boolean {
   const props = feature.properties;
   if (!props) {
     return false;
@@ -131,7 +193,7 @@ async function waitForMeilisearchTask(
   client: MeilisearchClient,
   task: MeilisearchEnqueuedTask,
   action: string,
-  logger: Logger
+  logger: Logger,
 ): Promise<void> {
   const completedTask = await client.tasks.waitForTask(task, {
     timeout: MEILISEARCH_TASK_TIMEOUT_MS,
@@ -141,7 +203,7 @@ async function waitForMeilisearchTask(
   if (completedTask.status !== "succeeded") {
     const reason = completedTask.error?.message || "Unknown Meilisearch error";
     throw new Error(
-      `Meilisearch task ${completedTask.uid} failed while ${action}: ${reason}`
+      `Meilisearch task ${completedTask.uid} failed while ${action}: ${reason}`,
     );
   }
 
@@ -154,13 +216,19 @@ async function waitForMeilisearchTask(
 async function flushBatch(
   client: MeilisearchClient,
   index: MeilisearchIndexClient,
-  batch: MeilisearchAddressDocument[],
-  logger: Logger
+  batch: Array<MeilisearchAddressDocument | MeilisearchLocalityDocument>,
+  logger: Logger,
+  documentType: "address" | "locality",
 ): Promise<void> {
   const task = await index.addDocuments(batch, { primaryKey: "id" });
-  await waitForMeilisearchTask(client, task, "adding address documents", logger);
+  await waitForMeilisearchTask(
+    client,
+    task,
+    `adding ${documentType} documents`,
+    logger,
+  );
   logger.info(
-    `Flushed batch of ${batch.length} documents (task: ${task.taskUid})`
+    `Flushed batch of ${batch.length} ${documentType} documents (task: ${task.taskUid})`,
   );
 }
 
@@ -182,7 +250,7 @@ async function flushBatch(
 export async function ingestAddresses(
   downloadUrl: string,
   config: AddressPipelineConfig,
-  logger: Logger
+  logger: Logger,
 ): Promise<AddressPipelineResult> {
   const startTime = Date.now();
 
@@ -197,15 +265,32 @@ export async function ingestAddresses(
     apiKey: config.meilisearchApiKey,
   }) as MeilisearchClient;
 
-  const tempIndexName = `${config.tempIndexPrefix}${Date.now()}`;
+  const tempIndexSuffix = Date.now();
+  const tempIndexName = `${config.tempIndexPrefix}${tempIndexSuffix}`;
+  const localityTempIndexName = `${config.localityTempIndexPrefix}${tempIndexSuffix}`;
   logger.info(`Creating temporary index: ${tempIndexName}`);
+  logger.info(`Creating temporary locality index: ${localityTempIndexName}`);
 
   try {
-    // Step 1: Create and configure temp index
+    // Step 1: Create and configure temp indexes
     const createTask = await client.createIndex(tempIndexName, {
       primaryKey: "id",
     });
-    await waitForMeilisearchTask(client, createTask, "creating temp index", logger);
+    await waitForMeilisearchTask(
+      client,
+      createTask,
+      "creating temp index",
+      logger,
+    );
+    const createLocalityTask = await client.createIndex(localityTempIndexName, {
+      primaryKey: "id",
+    });
+    await waitForMeilisearchTask(
+      client,
+      createLocalityTask,
+      "creating temp locality index",
+      logger,
+    );
 
     const tempIndex = client.index(tempIndexName);
     const settingsTask = await tempIndex.updateSettings(ADDRESS_INDEX_SETTINGS);
@@ -213,9 +298,23 @@ export async function ingestAddresses(
       client,
       settingsTask,
       "configuring temp index settings",
-      logger
+      logger,
     );
     logger.info(`Temporary index configured with ADDRESS_INDEX_SETTINGS`);
+
+    const localityTempIndex = client.index(localityTempIndexName);
+    const localitySettingsTask = await localityTempIndex.updateSettings(
+      LOCALITY_INDEX_SETTINGS,
+    );
+    await waitForMeilisearchTask(
+      client,
+      localitySettingsTask,
+      "configuring temp locality index settings",
+      logger,
+    );
+    logger.info(
+      `Temporary locality index configured with LOCALITY_INDEX_SETTINGS`,
+    );
 
     // Step 2: Download and stream GeoJSON.gz
     const safeDownloadUrl = validateDownloadUrl(downloadUrl);
@@ -223,7 +322,7 @@ export async function ingestAddresses(
     const response = await fetch(safeDownloadUrl);
     if (!response.ok) {
       throw new Error(
-        `Download failed: ${response.status} ${response.statusText}`
+        `Download failed: ${response.status} ${response.statusText}`,
       );
     }
     if (!response.body) {
@@ -232,7 +331,7 @@ export async function ingestAddresses(
 
     // Convert Web ReadableStream to Node.js Readable for piping
     const nodeStream = Readable.fromWeb(
-      response.body as import("node:stream/web").ReadableStream
+      response.body as import("node:stream/web").ReadableStream,
     );
 
     const gunzip = createGunzip();
@@ -243,8 +342,12 @@ export async function ingestAddresses(
 
     // Step 3: Stream, transform, batch, flush
     let batch: MeilisearchAddressDocument[] = [];
+    let localityBatch: MeilisearchLocalityDocument[] = [];
+    let seenLocalityIds = new Set<string>();
     let totalRows = 0;
     let batchesProcessed = 0;
+    let localityBatchesProcessed = 0;
+    let localityRows = 0;
     let skippedRows = 0;
 
     for await (const line of rl) {
@@ -253,6 +356,24 @@ export async function ingestAddresses(
 
       try {
         const feature: OpenAddressFeature = JSON.parse(trimmedLine);
+        const localityDoc = extractLocalityDocument(feature);
+        if (localityDoc && !seenLocalityIds.has(localityDoc.id)) {
+          seenLocalityIds = new Set([...seenLocalityIds, localityDoc.id]);
+          localityBatch = [...localityBatch, localityDoc];
+          localityRows++;
+
+          if (localityBatch.length >= config.batchSize) {
+            await flushBatch(
+              client,
+              localityTempIndex,
+              localityBatch,
+              logger,
+              "locality",
+            );
+            localityBatchesProcessed++;
+            localityBatch = [];
+          }
+        }
 
         if (!isIndexableAddressFeature(feature)) {
           skippedRows++;
@@ -265,14 +386,14 @@ export async function ingestAddresses(
 
         // Flush when batch is full
         if (batch.length >= config.batchSize) {
-          await flushBatch(client, tempIndex, batch, logger);
+          await flushBatch(client, tempIndex, batch, logger, "address");
           batchesProcessed++;
           batch = [];
 
           // Progress logging every 100 batches (~500k rows)
           if (batchesProcessed % 100 === 0) {
             logger.info(
-              `Progress: ${totalRows.toLocaleString()} rows, ${batchesProcessed} batches`
+              `Progress: ${totalRows.toLocaleString()} rows, ${batchesProcessed} batches`,
             );
           }
         }
@@ -291,35 +412,74 @@ export async function ingestAddresses(
 
     // Flush remaining documents
     if (batch.length > 0) {
-      await flushBatch(client, tempIndex, batch, logger);
+      await flushBatch(client, tempIndex, batch, logger, "address");
       batchesProcessed++;
+    }
+    if (localityBatch.length > 0) {
+      await flushBatch(
+        client,
+        localityTempIndex,
+        localityBatch,
+        logger,
+        "locality",
+      );
+      localityBatchesProcessed++;
     }
 
     logger.info(
-      `Streaming complete: ${totalRows.toLocaleString()} rows, ${batchesProcessed} batches, ${skippedRows} skipped`
+      `Streaming complete: ${totalRows.toLocaleString()} rows, ` +
+        `${batchesProcessed} address batches, ` +
+        `${localityRows.toLocaleString()} localities, ` +
+        `${localityBatchesProcessed} locality batches, ` +
+        `${skippedRows} skipped`,
     );
 
     if (totalRows === 0) {
       // Don't swap if no data was ingested — something went wrong
       throw new Error(
-        "No address data was ingested. Aborting swap to protect production index."
+        "No address data was ingested. Aborting swap to protect production index.",
       );
     }
 
     // Step 4: Zero-downtime index swap
     logger.info(
-      `Swapping indexes: ${config.addressIndexName} ↔ ${tempIndexName}`
+      `Swapping indexes: ${config.addressIndexName} ↔ ${tempIndexName}`,
+    );
+    logger.info(
+      `Swapping locality indexes: ${config.localityIndexName} ↔ ${localityTempIndexName}`,
     );
     const swapTask = await client.swapIndexes([
       { indexes: [config.addressIndexName, tempIndexName], rename: false },
+      {
+        indexes: [config.localityIndexName, localityTempIndexName],
+        rename: false,
+      },
     ]);
-    await waitForMeilisearchTask(client, swapTask, "swapping address indexes", logger);
+    await waitForMeilisearchTask(
+      client,
+      swapTask,
+      "swapping address and locality indexes",
+      logger,
+    );
     logger.info("Index swap completed successfully");
 
-    // Step 5: Delete old index (now at tempIndexName)
+    // Step 5: Delete old indexes (now at temp index names)
     const deleteTask = await client.deleteIndex(tempIndexName);
-    await waitForMeilisearchTask(client, deleteTask, "deleting old address index", logger);
+    await waitForMeilisearchTask(
+      client,
+      deleteTask,
+      "deleting old address index",
+      logger,
+    );
     logger.info(`Deleted old index: ${tempIndexName}`);
+    const deleteLocalityTask = await client.deleteIndex(localityTempIndexName);
+    await waitForMeilisearchTask(
+      client,
+      deleteLocalityTask,
+      "deleting old locality index",
+      logger,
+    );
+    logger.info(`Deleted old locality index: ${localityTempIndexName}`);
 
     // Step 6: Health check — verify document count
     const prodIndex = client.index(config.addressIndexName);
@@ -328,11 +488,11 @@ export async function ingestAddresses(
       logger.warn(
         `Address index has fewer documents than expected ` +
           `(${stats.numberOfDocuments.toLocaleString()} < ${MIN_EXPECTED_DOCUMENTS.toLocaleString()}). ` +
-          `Data may be incomplete.`
+          `Data may be incomplete.`,
       );
     } else {
       logger.info(
-        `Health check passed: ${stats.numberOfDocuments.toLocaleString()} documents in production index`
+        `Health check passed: ${stats.numberOfDocuments.toLocaleString()} documents in production index`,
       );
     }
 
@@ -342,9 +502,11 @@ export async function ingestAddresses(
       batchesProcessed,
       durationMs,
       indexName: config.addressIndexName,
+      localityRows,
+      localityIndexName: config.localityIndexName,
     };
   } catch (error) {
-    // Cleanup: attempt to delete the temp index on failure
+    // Cleanup: attempt to delete the temp indexes on failure
     try {
       logger.warn(`Pipeline failed. Cleaning up temp index: ${tempIndexName}`);
       const cleanupTask = await client.deleteIndex(tempIndexName);
@@ -352,15 +514,30 @@ export async function ingestAddresses(
         client,
         cleanupTask,
         "cleaning up failed temp address index",
-        logger
+        logger,
       );
       logger.info(`Temp index ${tempIndexName} cleaned up`);
+      logger.warn(
+        `Pipeline failed. Cleaning up temp locality index: ${localityTempIndexName}`,
+      );
+      const localityCleanupTask = await client.deleteIndex(
+        localityTempIndexName,
+      );
+      await waitForMeilisearchTask(
+        client,
+        localityCleanupTask,
+        "cleaning up failed temp locality index",
+        logger,
+      );
+      logger.info(`Temp locality index ${localityTempIndexName} cleaned up`);
     } catch (cleanupError) {
       const msg =
         cleanupError instanceof Error
           ? cleanupError.message
           : "Unknown cleanup error";
-      logger.warn(`Failed to clean up temp index ${tempIndexName}: ${msg}`);
+      logger.warn(
+        `Failed to clean up temp indexes ${tempIndexName}/${localityTempIndexName}: ${msg}`,
+      );
     }
     throw error;
   }

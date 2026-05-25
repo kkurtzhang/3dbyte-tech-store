@@ -1,6 +1,7 @@
 "use server"
 
 import { sdk } from "@/lib/medusa/client"
+import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
 import { ORDER_TRACKING_FIELDS } from "@/lib/medusa/orders"
 import type { MedusaOrder } from "@/lib/medusa/types"
 
@@ -17,7 +18,7 @@ type TrackingPaymentMethod = {
 }
 
 function getMedusaBackendUrl() {
-  return process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
+  return resolveMedusaBaseUrl({ isServer: true })
 }
 
 function isTrackingPaymentMethod(value: unknown): value is TrackingPaymentMethod {
@@ -66,6 +67,30 @@ async function getTrackingPaymentMethod(orderId: string, email: string) {
   }
 }
 
+async function lookupOrderByCustomerReference(reference: string, email: string) {
+  const lookupUrl = new URL("/store/orders/lookup", getMedusaBackendUrl())
+  lookupUrl.searchParams.set("reference", reference)
+  lookupUrl.searchParams.set("email", email)
+
+  const response = await fetch(lookupUrl, {
+    headers: process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+      ? {
+          "x-publishable-api-key":
+            process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
+        }
+      : undefined,
+    cache: "no-store",
+  })
+
+  if (!response.ok) {
+    return null
+  }
+
+  const data = (await response.json()) as { order?: MedusaOrder | null }
+
+  return data.order || null
+}
+
 export async function lookupOrder(
   orderId: string,
   email: string
@@ -75,15 +100,18 @@ export async function lookupOrder(
     const cleanOrderId = orderId.trim()
     const cleanEmail = email.trim().toLowerCase()
 
-    // Retrieve the order
-    const { order } = await sdk.store.order.retrieve(cleanOrderId, {
-      fields: ORDER_TRACKING_FIELDS.join(","),
-    })
+    const order = cleanOrderId.startsWith("order_")
+      ? (
+          await sdk.store.order.retrieve(cleanOrderId, {
+            fields: ORDER_TRACKING_FIELDS.join(","),
+          })
+        ).order
+      : await lookupOrderByCustomerReference(cleanOrderId, cleanEmail)
 
     if (!order) {
       return {
         success: false,
-        error: "Order not found. Please check your order ID and try again.",
+        error: "Order not found. Please check your order number or reference and try again.",
       }
     }
 
@@ -103,7 +131,7 @@ export async function lookupOrder(
       order: {
         ...order,
         tracking_payment_method: await getTrackingPaymentMethod(
-          cleanOrderId,
+          order.id,
           cleanEmail
         ),
       } as MedusaOrder,
@@ -115,7 +143,7 @@ export async function lookupOrder(
     if (error?.status === 404 || error?.response?.status === 404) {
       return {
         success: false,
-        error: "Order not found. Please check your order ID and try again.",
+        error: "Order not found. Please check your order number or reference and try again.",
       }
     }
 

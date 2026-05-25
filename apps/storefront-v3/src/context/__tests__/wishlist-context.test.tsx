@@ -1,50 +1,60 @@
-import { render, screen, waitFor, act, renderHook } from "@testing-library/react"
-import { WishlistProvider, useWishlist, type WishlistItem } from "../wishlist-context"
+import type { ReactNode } from "react"
+import { act, render, renderHook, screen, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
+import {
+  addWishlistItemAction,
+  clearWishlistAction,
+  getWishlistAction,
+  removeWishlistItemAction,
+} from "@/app/actions/wishlist"
+import type { WishlistItem } from "@/lib/wishlist/types"
 import { useCart } from "../cart-context"
+import { WishlistProvider, useWishlist } from "../wishlist-context"
 
-// Mock cart-context
+jest.mock("@/app/actions/wishlist", () => ({
+  getWishlistAction: jest.fn(),
+  addWishlistItemAction: jest.fn(),
+  removeWishlistItemAction: jest.fn(),
+  clearWishlistAction: jest.fn(),
+}))
+
 jest.mock("../cart-context", () => ({
   useCart: jest.fn(),
 }))
 
-// Mock localStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {}
-  return {
-    getItem: jest.fn((key: string) => store[key] || null),
-    setItem: jest.fn((key: string, value: string) => {
-      store[key] = value
-    }),
-    removeItem: jest.fn((key: string) => {
-      delete store[key]
-    }),
-    clear: jest.fn(() => {
-      store = {}
-    }),
-    get store() {
-      return store
-    },
-  }
-})()
+const mockGetWishlistAction = getWishlistAction as jest.MockedFunction<
+  typeof getWishlistAction
+>
+const mockAddWishlistItemAction = addWishlistItemAction as jest.MockedFunction<
+  typeof addWishlistItemAction
+>
+const mockRemoveWishlistItemAction =
+  removeWishlistItemAction as jest.MockedFunction<typeof removeWishlistItemAction>
+const mockClearWishlistAction = clearWishlistAction as jest.MockedFunction<
+  typeof clearWishlistAction
+>
 
-Object.defineProperty(window, "localStorage", {
-  value: localStorageMock,
-})
-
-// Helper to create mock wishlist item
-const createMockItem = (id: string, variantId?: string): WishlistItem => ({
+const createMockItem = (
+  id: string,
+  wishlistId = `wish_${id}`,
+  variantId = `variant_${id}`
+): WishlistItem => ({
   id,
+  wishlistId,
   handle: `product-${id}`,
   title: `Product ${id}`,
   thumbnail: `/thumbnail-${id}.jpg`,
   price: {
     amount: 1000,
-    currency_code: "aud",
+    currency_code: "AUD",
   },
-  variantId: variantId || `variant_${id}`,
+  variantId,
 })
 
-// Test component
+const wrapper = ({ children }: { children: ReactNode }) => (
+  <WishlistProvider>{children}</WishlistProvider>
+)
+
 const TestComponent = () => {
   const {
     wishlist,
@@ -61,305 +71,189 @@ const TestComponent = () => {
       <span data-testid="loading">{isLoading ? "Loading" : "Not Loading"}</span>
       <span data-testid="count">{wishlist.length}</span>
       <span data-testid="ids">{wishlist.map((i) => i.id).join(",")}</span>
+      <span data-testid="in-list">
+        {isInWishlist("item_1") ? "Yes" : "No"}
+      </span>
       <button
-        onClick={() => addToWishlist(createMockItem("item_1"))}
+        onClick={() => void addToWishlist(createMockItem("item_2"))}
         data-testid="add"
       >
         Add
       </button>
       <button
-        onClick={() => removeFromWishlist("item_1")}
+        onClick={() => void removeFromWishlist("item_1")}
         data-testid="remove"
       >
         Remove
       </button>
-      <button onClick={() => clearWishlist()} data-testid="clear">
+      <button onClick={() => void clearWishlist()} data-testid="clear">
         Clear
       </button>
       <button
-        onClick={() => moveToCart(createMockItem("item_1", "variant_1"))}
+        onClick={() => void moveToCart(createMockItem("item_1"))}
         data-testid="move-to-cart"
       >
         Move to Cart
       </button>
-      <span data-testid="in-list">
-        {isInWishlist("item_1") ? "Yes" : "No"}
-      </span>
     </div>
   )
 }
 
 describe("WishlistProvider", () => {
   const mockAddToCart = jest.fn()
+  const serverItem = createMockItem("item_1")
 
   beforeEach(() => {
     jest.clearAllMocks()
-    localStorageMock.clear()
     ;(useCart as jest.Mock).mockReturnValue({
       addItem: mockAddToCart,
     })
+    mockGetWishlistAction.mockResolvedValue({
+      success: true,
+      wishlist: [serverItem],
+    })
+    mockAddWishlistItemAction.mockResolvedValue({
+      success: true,
+      item: createMockItem("item_2"),
+    })
+    mockRemoveWishlistItemAction.mockResolvedValue({ success: true })
+    mockClearWishlistAction.mockResolvedValue({ success: true })
   })
 
-  describe("initialization", () => {
-    it("starts in loading state", () => {
-      render(
-        <WishlistProvider>
-          <TestComponent />
-        </WishlistProvider>
-      )
+  it("starts in loading state", () => {
+    mockGetWishlistAction.mockReturnValue(new Promise(() => {}))
 
-      expect(screen.getByTestId("loading")).toHaveTextContent("Loading")
-    })
+    render(
+      <WishlistProvider>
+        <TestComponent />
+      </WishlistProvider>
+    )
 
-    it("sets loading to false after initialization", async () => {
-      render(
-        <WishlistProvider>
-          <TestComponent />
-        </WishlistProvider>
-      )
+    expect(screen.getByTestId("loading")).toHaveTextContent("Loading")
+  })
 
-      await waitFor(() => {
-        expect(screen.getByTestId("loading")).toHaveTextContent("Not Loading")
-      })
-    })
+  it("loads wishlist items from the server", async () => {
+    render(
+      <WishlistProvider>
+        <TestComponent />
+      </WishlistProvider>
+    )
 
-    it("loads items from localStorage", async () => {
-      localStorageMock.store["3dbyte-wishlist"] = JSON.stringify([
-        createMockItem("stored_1"),
-      ])
-
-      render(
-        <WishlistProvider>
-          <TestComponent />
-        </WishlistProvider>
-      )
-
-      await waitFor(() => {
-        expect(screen.getByTestId("count")).toHaveTextContent("1")
-        expect(screen.getByTestId("ids")).toHaveTextContent("stored_1")
-      })
+    await waitFor(() => {
+      expect(screen.getByTestId("loading")).toHaveTextContent("Not Loading")
+      expect(screen.getByTestId("count")).toHaveTextContent("1")
+      expect(screen.getByTestId("ids")).toHaveTextContent("item_1")
     })
   })
 
-  describe("useWishlist hook", () => {
-    it("throws error when used outside WishlistProvider", () => {
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation()
+  it("throws when useWishlist is called outside WishlistProvider", () => {
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation()
 
-      expect(() => {
-        renderHook(() => useWishlist())
-      }).toThrow("useWishlist must be used within a WishlistProvider")
+    expect(() => renderHook(() => useWishlist())).toThrow(
+      "useWishlist must be used within a WishlistProvider"
+    )
 
-      consoleSpy.mockRestore()
+    consoleSpy.mockRestore()
+  })
+
+  it("adds an item with the server action result", async () => {
+    const user = userEvent.setup()
+
+    render(
+      <WishlistProvider>
+        <TestComponent />
+      </WishlistProvider>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId("loading")).toHaveTextContent("Not Loading")
     })
 
-    it("provides wishlist context values", async () => {
-      const { result } = renderHook(() => useWishlist(), {
-        wrapper: WishlistProvider,
-      })
+    await user.click(screen.getByTestId("add"))
 
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false)
-      })
-
-      expect(result.current).toHaveProperty("wishlist")
-      expect(result.current).toHaveProperty("addToWishlist")
-      expect(result.current).toHaveProperty("removeFromWishlist")
-      expect(result.current).toHaveProperty("isInWishlist")
-      expect(result.current).toHaveProperty("clearWishlist")
-      expect(result.current).toHaveProperty("moveToCart")
+    await waitFor(() => {
+      expect(mockAddWishlistItemAction).toHaveBeenCalledWith(createMockItem("item_2"))
+      expect(screen.getByTestId("count")).toHaveTextContent("2")
+      expect(screen.getByTestId("ids")).toHaveTextContent("item_1,item_2")
     })
   })
 
-  describe("addToWishlist", () => {
-    it("adds item to wishlist", async () => {
-      render(
-        <WishlistProvider>
-          <TestComponent />
-        </WishlistProvider>
-      )
+  it("does not create a duplicate when the item is already loaded", async () => {
+    const { result } = renderHook(() => useWishlist(), { wrapper })
 
-      await waitFor(() => {
-        expect(screen.getByTestId("loading")).toHaveTextContent("Not Loading")
-      })
-
-      await act(async () => {
-        screen.getByTestId("add").click()
-      })
-
-      await waitFor(() => {
-        expect(screen.getByTestId("count")).toHaveTextContent("1")
-        expect(screen.getByTestId("ids")).toHaveTextContent("item_1")
-      })
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
     })
 
-    it("does not add duplicate items", async () => {
-      render(
-        <WishlistProvider>
-          <TestComponent />
-        </WishlistProvider>
-      )
+    await act(async () => {
+      await result.current.addToWishlist(createMockItem("item_1"))
+    })
 
-      await waitFor(() => {
-        expect(screen.getByTestId("loading")).toHaveTextContent("Not Loading")
-      })
+    expect(mockAddWishlistItemAction).not.toHaveBeenCalled()
+    expect(result.current.wishlist).toHaveLength(1)
+  })
 
-      // Add same item twice
-      await act(async () => {
-        screen.getByTestId("add").click()
-      })
-      await act(async () => {
-        screen.getByTestId("add").click()
-      })
+  it("removes an item by its server wishlist id", async () => {
+    const user = userEvent.setup()
 
-      await waitFor(() => {
-        expect(screen.getByTestId("count")).toHaveTextContent("1")
-      })
+    render(
+      <WishlistProvider>
+        <TestComponent />
+      </WishlistProvider>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId("count")).toHaveTextContent("1")
+    })
+
+    await user.click(screen.getByTestId("remove"))
+
+    await waitFor(() => {
+      expect(mockRemoveWishlistItemAction).toHaveBeenCalledWith(serverItem.wishlistId)
+      expect(screen.getByTestId("count")).toHaveTextContent("0")
+      expect(screen.getByTestId("in-list")).toHaveTextContent("No")
     })
   })
 
-  describe("removeFromWishlist", () => {
-    it("removes item from wishlist", async () => {
-      localStorageMock.store["3dbyte-wishlist"] = JSON.stringify([
-        createMockItem("item_1"),
-        createMockItem("item_2"),
-      ])
+  it("clears the server wishlist ids", async () => {
+    const user = userEvent.setup()
 
-      render(
-        <WishlistProvider>
-          <TestComponent />
-        </WishlistProvider>
-      )
+    render(
+      <WishlistProvider>
+        <TestComponent />
+      </WishlistProvider>
+    )
 
-      await waitFor(() => {
-        expect(screen.getByTestId("count")).toHaveTextContent("2")
-      })
+    await waitFor(() => {
+      expect(screen.getByTestId("count")).toHaveTextContent("1")
+    })
 
-      await act(async () => {
-        screen.getByTestId("remove").click()
-      })
+    await user.click(screen.getByTestId("clear"))
 
-      await waitFor(() => {
-        expect(screen.getByTestId("count")).toHaveTextContent("1")
-        expect(screen.getByTestId("ids")).toHaveTextContent("item_2")
-      })
+    await waitFor(() => {
+      expect(mockClearWishlistAction).toHaveBeenCalledWith([serverItem.wishlistId])
+      expect(screen.getByTestId("count")).toHaveTextContent("0")
     })
   })
 
-  describe("isInWishlist", () => {
-    it("returns true when item is in wishlist", async () => {
-      localStorageMock.store["3dbyte-wishlist"] = JSON.stringify([
-        createMockItem("item_1"),
-      ])
+  it("moves a wishlist item to the cart", async () => {
+    const user = userEvent.setup()
 
-      render(
-        <WishlistProvider>
-          <TestComponent />
-        </WishlistProvider>
-      )
+    render(
+      <WishlistProvider>
+        <TestComponent />
+      </WishlistProvider>
+    )
 
-      await waitFor(() => {
-        expect(screen.getByTestId("in-list")).toHaveTextContent("Yes")
-      })
+    await waitFor(() => {
+      expect(screen.getByTestId("count")).toHaveTextContent("1")
     })
 
-    it("returns false when item is not in wishlist", async () => {
-      render(
-        <WishlistProvider>
-          <TestComponent />
-        </WishlistProvider>
-      )
+    await user.click(screen.getByTestId("move-to-cart"))
 
-      await waitFor(() => {
-        expect(screen.getByTestId("in-list")).toHaveTextContent("No")
-      })
-    })
-  })
-
-  describe("clearWishlist", () => {
-    it("clears all items", async () => {
-      localStorageMock.store["3dbyte-wishlist"] = JSON.stringify([
-        createMockItem("item_1"),
-        createMockItem("item_2"),
-      ])
-
-      render(
-        <WishlistProvider>
-          <TestComponent />
-        </WishlistProvider>
-      )
-
-      await waitFor(() => {
-        expect(screen.getByTestId("count")).toHaveTextContent("2")
-      })
-
-      await act(async () => {
-        screen.getByTestId("clear").click()
-      })
-
-      await waitFor(() => {
-        expect(screen.getByTestId("count")).toHaveTextContent("0")
-      })
-    })
-  })
-
-  describe("moveToCart", () => {
-    it("adds item to cart and removes from wishlist", async () => {
-      mockAddToCart.mockResolvedValue(undefined)
-      localStorageMock.store["3dbyte-wishlist"] = JSON.stringify([
-        createMockItem("item_1", "variant_1"),
-      ])
-
-      render(
-        <WishlistProvider>
-          <TestComponent />
-        </WishlistProvider>
-      )
-
-      await waitFor(() => {
-        expect(screen.getByTestId("count")).toHaveTextContent("1")
-      })
-
-      await act(async () => {
-        screen.getByTestId("move-to-cart").click()
-      })
-
-      await waitFor(() => {
-        expect(mockAddToCart).toHaveBeenCalledWith("variant_1", 1)
-        expect(screen.getByTestId("count")).toHaveTextContent("0")
-      })
-    })
-
-    it("does nothing if item has no variantId", async () => {
-      const itemWithoutVariant = createMockItem("item_no_variant")
-      delete itemWithoutVariant.variantId
-
-      localStorageMock.store["3dbyte-wishlist"] = JSON.stringify([
-        itemWithoutVariant,
-      ])
-
-      render(
-        <WishlistProvider>
-          <TestComponent />
-        </WishlistProvider>
-      )
-
-      await waitFor(() => {
-        expect(screen.getByTestId("count")).toHaveTextContent("1")
-      })
-
-      const { result } = renderHook(() => useWishlist(), {
-        wrapper: WishlistProvider,
-      })
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false)
-      })
-
-      await act(async () => {
-        await result.current.moveToCart(itemWithoutVariant)
-      })
-
-      expect(mockAddToCart).not.toHaveBeenCalled()
+    await waitFor(() => {
+      expect(mockAddToCart).toHaveBeenCalledWith(serverItem.variantId, 1)
+      expect(mockRemoveWishlistItemAction).toHaveBeenCalledWith(serverItem.wishlistId)
     })
   })
 })

@@ -65,7 +65,7 @@ describe("CheckoutSummary", () => {
   it("renders order summary header", () => {
     render(<CheckoutSummary cart={createMockCart()} />)
 
-    expect(screen.getByText("Order summary")).toBeInTheDocument()
+    expect(screen.getByText("Order Summary")).toBeInTheDocument()
   })
 
   it("displays cart items", () => {
@@ -143,6 +143,11 @@ describe("CheckoutSummary", () => {
 
   it("uses the pre-tax line subtotal when tax-inclusive item totals are present", () => {
     const cart = createMockCart({
+      region: {
+        id: "reg_2",
+        currency_code: "aud",
+        name: "Australia",
+      },
       items: [
         {
           id: "item_1",
@@ -170,8 +175,8 @@ describe("CheckoutSummary", () => {
 
     render(<CheckoutSummary cart={cart} />)
 
-    expect(screen.getAllByText("$46.08").length).toBeGreaterThan(0)
-    expect(screen.getAllByText("$50.69")).toHaveLength(1)
+    expect(screen.queryByText("A$46.08")).not.toBeInTheDocument()
+    expect(screen.getAllByText("A$50.69").length).toBeGreaterThanOrEqual(2)
   })
 
   it("displays variant title when not default", () => {
@@ -467,22 +472,24 @@ describe("CheckoutSummary", () => {
 
     render(<CheckoutSummary cart={cart} />)
 
-    const priceElements = screen.getAllByText(/A?\$20\.00/)
+    const priceElements = screen.getAllByText(/A?\$22\.00/)
     expect(priceElements.length).toBeGreaterThan(0)
   })
 
-  it("displays subtotal", () => {
+  it("displays clean subtotal label", () => {
     const cart = createMockCart()
     render(<CheckoutSummary cart={cart} />)
 
     expect(screen.getByText("Subtotal")).toBeInTheDocument()
+    expect(screen.queryByText("Subtotal incl. GST")).not.toBeInTheDocument()
   })
 
   it("displays shipping placeholder", () => {
     render(<CheckoutSummary cart={createMockCart()} />)
 
     expect(screen.getByText("Shipping")).toBeInTheDocument()
-    expect(screen.getAllByText("Calculated next")).toHaveLength(2)
+    expect(screen.queryByText("Shipping incl. GST")).not.toBeInTheDocument()
+    expect(screen.getByText("Calculated next")).toBeInTheDocument()
   })
 
   it("displays actual shipping and tax totals once calculated", () => {
@@ -496,13 +503,18 @@ describe("CheckoutSummary", () => {
     render(<CheckoutSummary cart={cart} />)
 
     expect(screen.getByText("$12.95")).toBeInTheDocument()
-    expect(screen.getByText("$3.30")).toBeInTheDocument()
+    expect(screen.getByText("(Includes GST: $3.30)")).toBeInTheDocument()
     expect(screen.getByText("$36.25")).toBeInTheDocument()
     expect(screen.queryByText("Calculated next")).not.toBeInTheDocument()
   })
 
-  it("displays the shipping subtotal when Medusa also returns a tax-inclusive shipping total", () => {
+  it("displays customer-facing GST-inclusive totals that reconcile", () => {
     const cart = createMockCart({
+      region: {
+        id: "reg_2",
+        currency_code: "aud",
+        name: "Australia",
+      },
       item_subtotal: 19,
       subtotal: 31.05,
       shipping_methods: [{ id: "ship_1" }],
@@ -514,12 +526,17 @@ describe("CheckoutSummary", () => {
 
     render(<CheckoutSummary cart={cart} />)
 
-    expect(screen.getByText("$19.00")).toBeInTheDocument()
-    expect(screen.getByText("$12.05")).toBeInTheDocument()
-    expect(screen.getByText("$3.11")).toBeInTheDocument()
-    expect(screen.getByText("$34.16")).toBeInTheDocument()
-    expect(screen.queryByText("$31.05")).not.toBeInTheDocument()
-    expect(screen.queryByText("$13.26")).not.toBeInTheDocument()
+    expect(screen.getByText("Subtotal")).toBeInTheDocument()
+    expect(screen.getByText("A$20.90")).toBeInTheDocument()
+    expect(screen.getByText("Shipping")).toBeInTheDocument()
+    expect(screen.getByText("A$13.26")).toBeInTheDocument()
+    expect(screen.queryByText("A$12.05")).not.toBeInTheDocument()
+    expect(screen.queryByText("Includes GST")).not.toBeInTheDocument()
+    expect(screen.getByText("(Includes GST: A$3.11)")).toBeInTheDocument()
+    expect(screen.getByText("A$34.16")).toBeInTheDocument()
+    expect(screen.queryByText("Taxes")).not.toBeInTheDocument()
+    expect(screen.getByText("Total (AUD)")).toBeInTheDocument()
+    expect(screen.queryByText("A$31.05")).not.toBeInTheDocument()
   })
 
   it("keeps shipping and taxes pending when no shipping method is selected", () => {
@@ -531,7 +548,7 @@ describe("CheckoutSummary", () => {
 
     render(<CheckoutSummary cart={cart} />)
 
-    expect(screen.getAllByText("Calculated next")).toHaveLength(2)
+    expect(screen.getByText("Calculated next")).toBeInTheDocument()
   })
 
   it("keeps shipping pending but displays tax after address totals are calculated", () => {
@@ -545,7 +562,7 @@ describe("CheckoutSummary", () => {
     render(<CheckoutSummary cart={cart} />)
 
     expect(screen.getByText("Calculated next")).toBeInTheDocument()
-    expect(screen.getByText("$2.20")).toBeInTheDocument()
+    expect(screen.getByText("(Includes GST: $2.20)")).toBeInTheDocument()
   })
 
   it("displays the selected delivery estimate before the shipping method is saved", () => {
@@ -576,17 +593,18 @@ describe("CheckoutSummary", () => {
     expect(screen.queryByText("Calculated next")).not.toBeInTheDocument()
   })
 
-  it("displays taxes placeholder", () => {
+  it("displays included GST under the total instead of as its own row", () => {
     render(<CheckoutSummary cart={createMockCart()} />)
 
-    expect(screen.getByText("Taxes")).toBeInTheDocument()
+    expect(screen.queryByText("Includes GST")).not.toBeInTheDocument()
+    expect(screen.getByText("(Includes GST: $0.00)")).toBeInTheDocument()
   })
 
   it("displays total", () => {
     const cart = createMockCart({ total: 25 })
     render(<CheckoutSummary cart={cart} />)
 
-    expect(screen.getByText("Total")).toBeInTheDocument()
+    expect(screen.getByText("Total (USD)")).toBeInTheDocument()
   })
 
   it("handles empty cart", () => {
@@ -598,7 +616,7 @@ describe("CheckoutSummary", () => {
 
     render(<CheckoutSummary cart={cart} />)
 
-    expect(screen.getByText("Order summary")).toBeInTheDocument()
+    expect(screen.getByText("Order Summary")).toBeInTheDocument()
     expect(screen.getAllByText(/\$0\.00/).length).toBeGreaterThan(0)
   })
 

@@ -1,0 +1,176 @@
+const mockGraph = jest.fn();
+
+import { GET } from "../route";
+
+const amount = (value: number) => ({
+  toJSON: () => value,
+  valueOf: () => value,
+});
+
+describe("GET /store/orders/lookup", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("returns an email-verified order by custom display id", async () => {
+    mockGraph.mockResolvedValue({
+      data: [
+        {
+          id: "order_123",
+          custom_display_id: "3DB-1777978800123",
+          email: "customer@example.com",
+        },
+      ],
+    });
+
+    const req = {
+      query: {
+        email: " CUSTOMER@example.com ",
+        reference: " 3DB-1777978800123 ",
+      },
+      scope: {
+        resolve: jest.fn().mockReturnValue({ graph: mockGraph }),
+      },
+    };
+    const res = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+
+    await GET(req as never, res as never);
+
+    expect(mockGraph).toHaveBeenCalledWith(
+      expect.objectContaining({
+        entity: "order",
+        fields: expect.arrayContaining([
+          "item_total",
+          "items.quantity",
+          "items.unit_price",
+          "items.total",
+          "items.variant.preorder_variant.available_date",
+          "shipping_address.address_1",
+          "billing_address.address_1",
+          "shipping_methods.name",
+          "payment_collections.payments.data",
+        ]),
+        filters: {
+          custom_display_id: "3DB-1777978800123",
+        },
+      }),
+    );
+    expect(res.json).toHaveBeenCalledWith({
+      order: expect.objectContaining({
+        id: "order_123",
+        custom_display_id: "3DB-1777978800123",
+      }),
+    });
+  });
+
+  it("normalizes graph totals so custom reference lookups match customer-facing order details", async () => {
+    mockGraph.mockResolvedValue({
+      data: [
+        {
+          id: "order_123",
+          custom_display_id: "3DBO-NSX9-UUTPSK",
+          email: "customer@example.com",
+          currency_code: "aud",
+          subtotal: amount(383.39),
+          item_subtotal: amount(356.89),
+          item_total: amount(392.579),
+          shipping_subtotal: amount(26.5),
+          shipping_total: amount(29.15),
+          tax_total: amount(38.339),
+          total: amount(421.729),
+          items: [
+            {
+              id: "item_1",
+              title: "LDO Colony Clacker Door Kit",
+              quantity: 3,
+              unit_price: amount(48.03),
+              subtotal: amount(144.09),
+              total: amount(158.499),
+            },
+          ],
+        },
+      ],
+    });
+
+    const req = {
+      query: {
+        email: "customer@example.com",
+        reference: "3DBO-NSX9-UUTPSK",
+      },
+      scope: {
+        resolve: jest.fn().mockReturnValue({ graph: mockGraph }),
+      },
+    };
+    const res = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+
+    await GET(req as never, res as never);
+
+    const payload = res.json.mock.calls[0]?.[0];
+
+    expect(payload.order).toEqual(
+      expect.objectContaining({
+        id: "order_123",
+        item_total: 356.89,
+        shipping_total: 26.5,
+        total: 383.39,
+      })
+    );
+    expect(payload.order.subtotal).toBeCloseTo(348.5364, 4);
+    expect(payload.order.item_subtotal).toBeCloseTo(324.4455, 4);
+    expect(payload.order.shipping_subtotal).toBeCloseTo(24.0909, 4);
+    expect(payload.order.tax_total).toBeCloseTo(34.8536, 4);
+    expect(payload.order.items[0]).toEqual(
+      expect.objectContaining({
+        total: 144.09,
+      })
+    );
+    expect(payload.order.items[0].subtotal).toBeCloseTo(130.9909, 4);
+  });
+
+  it("rejects lookup when the email does not match", async () => {
+    mockGraph.mockResolvedValue({
+      data: [
+        {
+          id: "order_123",
+          custom_display_id: "3DB-1777978800123",
+          email: "owner@example.com",
+        },
+      ],
+    });
+
+    const req = {
+      query: {
+        email: "other@example.com",
+        reference: "3DB-1777978800123",
+      },
+      scope: {
+        resolve: jest.fn().mockReturnValue({ graph: mockGraph }),
+      },
+    };
+    const res = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+
+    await GET(req as never, res as never);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ order: null });
+  });
+
+  it("requires both reference and email", async () => {
+    const req = {
+      query: {
+        email: "",
+        reference: "",
+      },
+      scope: {
+        resolve: jest.fn().mockReturnValue({ graph: mockGraph }),
+      },
+    };
+    const res = { json: jest.fn(), status: jest.fn().mockReturnThis() };
+
+    await GET(req as never, res as never);
+
+    expect(mockGraph).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ order: null });
+  });
+});

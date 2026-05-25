@@ -2,6 +2,7 @@
 
 import { AlertTriangle, Clock3, Package } from "lucide-react"
 import type { MedusaCartLineItem } from "@/lib/medusa/cart"
+import { toCustomerPriceAmount } from "@/lib/pricing/customer-pricing"
 import { analyzeCartContents } from "@/lib/util/cart-analysis"
 
 interface CartNoticesProps {
@@ -17,11 +18,11 @@ function formatAvailabilityDate(date: Date) {
   }).format(date)
 }
 
-function formatMinorAmount(amount: number, currencyCode: string) {
+function formatMajorAmount(amount: number, currencyCode: string) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: currencyCode,
-  }).format(amount / 100)
+  }).format(toCustomerPriceAmount(amount, currencyCode))
 }
 
 export function getCompactCartNoticeLines(
@@ -99,7 +100,7 @@ export function CartNotices({ items, currencyCode }: CartNoticesProps) {
             <div className="space-y-1">
               <p className="font-medium">Bundle savings applied</p>
               <p>
-                {formatMinorAmount(analysis.bundleSavingsTotal, currencyCode)} saved across
+                {formatMajorAmount(analysis.bundleSavingsTotal, currencyCode)} saved across
                 bundle items.
               </p>
             </div>
@@ -109,4 +110,3 @@ export function CartNotices({ items, currencyCode }: CartNoticesProps) {
     </div>
   )
 }
-

@@ -6,6 +6,8 @@ import {
   getBundleProduct,
 } from "@/lib/medusa/bundles"
 import { getStrapiContent } from "@/lib/strapi/content"
+import { getPublicProductDocuments } from "@/lib/product-documents/api"
+import type { PricingContext } from "@/lib/medusa/regions"
 
 interface StrapiProductDescription {
   id: number
@@ -26,9 +28,12 @@ interface StrapiResponse<T> {
   }
 }
 
-export async function loadProductPageData(handle: string) {
+export async function loadProductPageData(
+  handle: string,
+  pricingContext?: PricingContext
+) {
   const [product, strapiData] = await Promise.all([
-    getProductByHandle(handle),
+    getProductByHandle(handle, pricingContext),
     getStrapiContent<StrapiResponse<StrapiProductDescription>>("product-descriptions", {
       filters: { medusa_id: { $eq: null } },
     }).catch(() => ({ data: [] })),
@@ -39,19 +44,22 @@ export async function loadProductPageData(handle: string) {
   }
 
   const bundleLink = getBundleLink(product)
-  const currencyCode = getProductCurrencyCode(product)
+  const currencyCode = pricingContext?.currency_code ?? getProductCurrencyCode(product)
   const [bundleProduct, availableInBundles] = await Promise.all([
     bundleLink
       ? getBundleProduct(bundleLink.id, {
+          region_id: pricingContext?.region_id,
           currency_code: currencyCode,
         })
       : Promise.resolve(null),
     bundleLink
       ? Promise.resolve([])
       : getAvailableInBundleProducts(product.id, {
+          region_id: pricingContext?.region_id,
           currency_code: currencyCode,
         }),
   ])
+  const productDocuments = await getPublicProductDocuments(product.id)
 
   const variantImageUrls =
     product.variants?.flatMap((variant) =>
@@ -70,6 +78,7 @@ export async function loadProductPageData(handle: string) {
     bundleProduct,
     availableInBundles,
     variantImageUrls,
+    productDocuments,
     richDescription: enrichedContent?.rich_text,
   }
 }

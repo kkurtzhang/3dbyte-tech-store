@@ -6,6 +6,7 @@ import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { Flame } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { formatCustomerPrice } from "@/lib/pricing/customer-pricing"
 import { getProductPath } from "@/lib/medusa/bundles"
 import { QuickViewButton } from "./quick-view-button"
 import { QuickViewDialog } from "./quick-view-dialog"
@@ -68,10 +69,7 @@ export function ProductCard({
   }
 
   const formatPrice = (amount: number, currency: string) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency,
-    }).format(amount)
+    return formatCustomerPrice(amount, currency)
   }
 
   const hasDiscount = discountPercentage && discountPercentage > 0

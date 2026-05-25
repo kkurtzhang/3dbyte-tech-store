@@ -15,6 +15,7 @@ import { z } from "@medusajs/framework/zod";
 import { createFindParams } from "@medusajs/medusa/api/utils/validators";
 import { storeSearchRoutesMiddlewares } from "./store/search/middlewares";
 import { storeAddressAutocompleteMiddlewares } from "./store/addresses/autocomplete/middlewares";
+import { storeLocalityAutocompleteMiddlewares } from "./store/localities/autocomplete/middlewares";
 import { UpsertPreorderVariantSchema } from "./admin/variants/[id]/preorders/route";
 import { AddPricedLineItemSchema } from "./store/carts/[id]/line-items-priced/route";
 import { PostAdminCreateBundledProduct } from "./admin/bundled-products/validators";
@@ -22,6 +23,13 @@ import {
   PostStoreCartLineItemBundles,
   PutStoreCartLineItemBundle,
 } from "./store/carts/[id]/line-item-bundles/validators";
+import {
+  PostAdminEmailSenderProfileTest,
+  PutAdminEmailSenderProfile,
+} from "./admin/email-settings/validators";
+import { PostStoreProductRegistrationSchema } from "./store/customers/me/product-registrations/route";
+import { PostAdminProductRegistrationSchema } from "./admin/product-registrations/route";
+import { PostAdminProductEntitlementFileSchema } from "./admin/product-entitlement-files/route";
 
 export const GetBrandsSchema = createFindParams();
 
@@ -33,6 +41,52 @@ export default defineMiddlewares({
       middlewares: [
         authenticate("user", ["session", "bearer", "api-key"]),
       ],
+    },
+    {
+      matcher: "/admin/meilisearch*",
+      middlewares: [
+        authenticate("user", ["session", "bearer", "api-key"]),
+      ],
+    },
+    {
+      matcher: "/admin/email-settings*",
+      middlewares: [
+        authenticate("user", ["session", "bearer", "api-key"]),
+      ],
+    },
+    {
+      matcher: "/admin/product-registrations*",
+      middlewares: [
+        authenticate("user", ["session", "bearer", "api-key"]),
+      ],
+    },
+    {
+      matcher: "/admin/product-registrations",
+      methods: ["POST"],
+      middlewares: [validateAndTransformBody(PostAdminProductRegistrationSchema)],
+    },
+    {
+      matcher: "/admin/product-entitlement-files*",
+      middlewares: [
+        authenticate("user", ["session", "bearer", "api-key"]),
+      ],
+    },
+    {
+      matcher: "/admin/product-entitlement-files",
+      methods: ["POST"],
+      middlewares: [
+        validateAndTransformBody(PostAdminProductEntitlementFileSchema),
+      ],
+    },
+    {
+      matcher: "/admin/email-settings/profiles/:key",
+      methods: ["PUT"],
+      middlewares: [validateAndTransformBody(PutAdminEmailSenderProfile)],
+    },
+    {
+      matcher: "/admin/email-settings/profiles/:key/test",
+      methods: ["POST"],
+      middlewares: [validateAndTransformBody(PostAdminEmailSenderProfileTest)],
     },
     {
       matcher: "/admin/brands",
@@ -138,10 +192,37 @@ export default defineMiddlewares({
     },
     ...storeSearchRoutesMiddlewares,
     ...storeAddressAutocompleteMiddlewares,
+    ...storeLocalityAutocompleteMiddlewares,
     // Wishlist routes
     {
       matcher: "/store/wishlist",
       middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
+      matcher: "/store/waitlist",
+      methods: ["GET", "DELETE"],
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
+      matcher: "/store/waitlist",
+      methods: ["POST"],
+      middlewares: [
+        authenticate("customer", ["session", "bearer"], {
+          allowUnauthenticated: true,
+        }),
+      ],
+    },
+    {
+      matcher: "/admin/waitlist*",
+      middlewares: [
+        authenticate("user", ["session", "bearer", "api-key"]),
+      ],
+    },
+    {
+      matcher: "/admin/support-tickets*",
+      middlewares: [
+        authenticate("user", ["session", "bearer", "api-key"]),
+      ],
     },
     {
       matcher: "/store/carts/:id/line-item-bundles",
@@ -155,6 +236,23 @@ export default defineMiddlewares({
     },
     {
       matcher: "/store/wishlist/:id",
+      methods: ["DELETE"],
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
+      matcher: "/store/customers/me/product-registrations",
+      methods: ["POST"],
+      middlewares: [
+        authenticate("customer", ["session", "bearer"]),
+        validateAndTransformBody(PostStoreProductRegistrationSchema),
+      ],
+    },
+    {
+      matcher: "/store/customers/me/product-files*",
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
+      matcher: "/store/waitlist/:id",
       methods: ["DELETE"],
       middlewares: [authenticate("customer", ["session", "bearer"])],
     },

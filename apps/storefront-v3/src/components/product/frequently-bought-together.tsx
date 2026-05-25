@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Check, ShoppingCart, Loader2, Package } from "lucide-react"
 import { useCart } from "@/context/cart-context"
 import { getFrequentlyBoughtTogetherAction } from "@/app/actions/products"
+import { formatCustomerPrice } from "@/lib/pricing/customer-pricing"
 
 interface FrequentlyBoughtTogetherProps {
   productId: string
@@ -68,10 +69,7 @@ export function FrequentlyBoughtTogether({ productId }: FrequentlyBoughtTogether
   }
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-AU", {
-      style: "currency",
-      currency: "AUD",
-    }).format(price)
+    return formatCustomerPrice(price, "AUD")
   }
 
   const handleAddAllToCart = async () => {

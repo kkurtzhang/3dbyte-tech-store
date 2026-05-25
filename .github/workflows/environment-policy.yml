@@ -1,0 +1,162 @@
+name: environment-policy
+
+on:
+  pull_request:
+    branches: [main, staging]
+  push:
+    branches: [main, staging, build/containerize-monorepo]
+
+permissions:
+  contents: read
+
+jobs:
+  address-reindex-policy:
+    name: address-reindex-policy
+    runs-on: ubuntu-latest
+    env:
+      TARGET_BRANCH: ${{ github.base_ref || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify staging policy
+        run: |
+          set -euo pipefail
+
+          check_maildev_disabled() {
+            env_file="$1"
+            grep -qx "MAILDEV_ENABLED=false" "$env_file"
+
+            profiles="$(grep '^COMPOSE_PROFILES=' "$env_file" | cut -d= -f2-)"
+            if [ -z "$profiles" ]; then
+              return
+            fi
+
+            IFS=',' read -ra profile_list <<< "$profiles"
+            for raw_profile in "${profile_list[@]}"; do
+              profile="$(echo "$raw_profile" | xargs)"
+              if [ "$profile" = "local" ]; then
+                echo "$env_file must not enable the local MailDev profile."
+                exit 1
+              fi
+            done
+          }
+
+          staging_file="deploy/environments/staging.env.example"
+          test -f "$staging_file"
+
+          grep -qx "COMPOSE_PROJECT_NAME=3dbyte-staging" "$staging_file"
+          grep -qx "COMPOSE_PROFILES=" "$staging_file"
+          grep -qx "ADDRESS_REINDEX_ENABLED=false" "$staging_file"
+          grep -Eq "^ADDRESS_MANUAL_REINDEX_ENABLED=(true|false)$" "$staging_file"
+          grep -qx "MEILISEARCH_HOST=https://search.3dbytetech.com.au" "$staging_file"
+          grep -qx "MEILISEARCH_SERVER_HOST=https://search.3dbytetech.com.au" "$staging_file"
+          grep -qx "MEILISEARCH_ADDRESS_INDEX_NAME=addresses_v1" "$staging_file"
+          grep -qx "MEILISEARCH_LOCALITY_INDEX_NAME=localities_v1" "$staging_file"
+          grep -Fqx 'RESEND_FROM_EMAIL="3D Byte Tech <staging-no-reply@3dbytetech.com.au>"' "$staging_file"
+          grep -q '^STRAPI_RESEND_API_KEY=' "$staging_file"
+          check_maildev_disabled "$staging_file"
+
+          if grep -R "^ADDRESS_REINDEX_ENABLED=true$" "$staging_file" .env.example apps/backend/.env.template; then
+            echo "Staging/default env files must not enable the shared address reindex job."
+            exit 1
+          fi
+
+          if grep -R "^MAILDEV_ENABLED=true$" "$staging_file" .env.example; then
+            echo "Staging/default deployment env files must not enable MailDev."
+            exit 1
+          fi
+
+      - name: Verify production policy
+        run: |
+          set -euo pipefail
+
+          check_maildev_disabled() {
+            env_file="$1"
+            grep -qx "MAILDEV_ENABLED=false" "$env_file"
+
+            profiles="$(grep '^COMPOSE_PROFILES=' "$env_file" | cut -d= -f2-)"
+            if [ -z "$profiles" ]; then
+              return
+            fi
+
+            IFS=',' read -ra profile_list <<< "$profiles"
+            for raw_profile in "${profile_list[@]}"; do
+              profile="$(echo "$raw_profile" | xargs)"
+              if [ "$profile" = "local" ]; then
+                echo "$env_file must not enable the local MailDev profile."
+                exit 1
+              fi
+            done
+          }
+
+          prod_file="deploy/environments/production.env.example"
+          test -f "$prod_file"
+
+          grep -qx "COMPOSE_PROJECT_NAME=3dbyte-prod" "$prod_file"
+          grep -qx "COMPOSE_PROFILES=" "$prod_file"
+          grep -qx "ADDRESS_REINDEX_ENABLED=true" "$prod_file"
+          grep -qx "ADDRESS_MANUAL_REINDEX_ENABLED=false" "$prod_file"
+          grep -qx "MEILISEARCH_HOST=https://search.3dbytetech.com.au" "$prod_file"
+          grep -qx "MEILISEARCH_SERVER_HOST=https://search.3dbytetech.com.au" "$prod_file"
+          grep -qx "MEILISEARCH_ADDRESS_INDEX_NAME=addresses_v1" "$prod_file"
+          grep -qx "MEILISEARCH_LOCALITY_INDEX_NAME=localities_v1" "$prod_file"
+          grep -qx "MEILISEARCH_PRODUCT_INDEX_NAME=prod_products" "$prod_file"
+          grep -Fqx 'RESEND_FROM_EMAIL="3D Byte Tech <no-reply@3dbytetech.com.au>"' "$prod_file"
+          grep -q '^STRAPI_RESEND_API_KEY=' "$prod_file"
+          check_maildev_disabled "$prod_file"
+
+          if grep -R "^MAILDEV_ENABLED=true$" "$prod_file" .env.example; then
+            echo "Production/default deployment env files must not enable MailDev."
+            exit 1
+          fi
+
+      - name: Verify compose defaults are staging-safe
+        run: |
+          set -euo pipefail
+
+          grep -Fqx 'name: ${COMPOSE_PROJECT_NAME:-3dbyte-tech-store}' docker-compose.yml
+          grep -Fq 'ADDRESS_REINDEX_ENABLED: "${ADDRESS_REINDEX_ENABLED:-false}"' docker-compose.yml
+          grep -Fq 'ADDRESS_MANUAL_REINDEX_ENABLED: "${ADDRESS_MANUAL_REINDEX_ENABLED:-false}"' docker-compose.yml
+          grep -Fq 'MAILDEV_ENABLED: "${MAILDEV_ENABLED:-false}"' docker-compose.yml
+          grep -Fq 'APP_ENV: "${APP_ENV:-production}"' docker-compose.yml
+          grep -Fq 'STRAPI_RESEND_API_KEY: "${STRAPI_RESEND_API_KEY:?Set STRAPI_RESEND_API_KEY}"' docker-compose.yml
+          grep -Fq 'MEILISEARCH_HOST: "${MEILISEARCH_HOST:?Set MEILISEARCH_HOST}"' docker-compose.yml
+          grep -Fq 'http://127.0.0.1:3000/api/health' docker-compose.yml
+          grep -Fq 'http://127.0.0.1:9000/health' docker-compose.yml
+          grep -Fq 'http://127.0.0.1:1337/admin/init' docker-compose.yml
+          grep -Fq 'kill -0 1' docker-compose.yml
+          grep -Fq 'dockerfile: docker/postgres/Dockerfile.init' docker-compose.yml
+          grep -Fq 'POSTGRES_SOCKET_DIR: /var/run/postgresql' docker-compose.yml
+          grep -Fq 'postgres_socket:/var/run/postgresql' docker-compose.yml
+          ! grep -Fq './docker/postgres/init:/docker-entrypoint-initdb.d:ro' docker-compose.yml
+          grep -q 'profiles:' docker-compose.yml
+          grep -Fxq '      - local' docker-compose.yml
+          ! grep -q -- '- local-search' docker-compose.yml
+          ! grep -q 'getmeili/meilisearch' docker-compose.yml
+          ! grep -q '^networks:' docker-compose.yml
+
+      - name: Verify shared Meilisearch owner
+        run: |
+          set -euo pipefail
+
+          search_compose="deploy/search/docker-compose.yml"
+          search_env="deploy/search/search.env.example"
+          test -f "$search_compose"
+          test -f "$search_env"
+
+          grep -Fqx 'name: ${COMPOSE_PROJECT_NAME:-3dbyte-search}' "$search_compose"
+          grep -q 'getmeili/meilisearch:v1.31.0' "$search_compose"
+          grep -Fq 'MEILI_MASTER_KEY: "${MEILISEARCH_MASTER_KEY:?Set MEILISEARCH_MASTER_KEY}"' "$search_compose"
+          grep -q 'MEILI_DB_PATH: /meili_data' "$search_compose"
+          grep -q 'meilisearch_data:/meili_data' "$search_compose"
+          grep -q 'expose:' "$search_compose"
+          grep -q '"7700"' "$search_compose"
+          grep -q 'healthcheck:' "$search_compose"
+          grep -q 'http://127.0.0.1:7700/health' "$search_compose"
+          ! grep -q '^    ports:' "$search_compose"
+
+          grep -qx "COMPOSE_PROJECT_NAME=3dbyte-search" "$search_env"
+          grep -q '^MEILISEARCH_MASTER_KEY=' "$search_env"
+
+      - name: Report target branch
+        run: echo "environment policy checked for ${TARGET_BRANCH}"

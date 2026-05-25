@@ -42,6 +42,54 @@ Visit the [Quickstart Guide](https://docs.medusajs.com/learn/installation) to se
 
 Visit the [Docs](https://docs.medusajs.com/learn/installation#get-started) to learn more about our system requirements.
 
+## Development email testing
+
+The backend registers a development-only Medusa notification provider for
+MailDev. It is enabled by default when `NODE_ENV=development` and sends
+email-channel notifications to the shared development MailDev instance:
+
+- SMTP: `192.168.0.45:1025`
+- Inbox UI: `http://192.168.0.45:1080`
+
+Use these environment variables to override the defaults:
+
+```bash
+MAILDEV_ENABLED=true
+MAILDEV_SMTP_HOST=192.168.0.45
+MAILDEV_SMTP_PORT=1025
+MAILDEV_SMTP_SECURE=false
+MAILDEV_SMTP_REJECT_UNAUTHORIZED=false
+MAILDEV_FROM=no-reply@3dbyte-tech.local
+MAILDEV_WEB_URL=http://192.168.0.45:1080
+# MAILDEV_SMTP_USER=
+# MAILDEV_SMTP_PASS=
+```
+
+Set `MAILDEV_ENABLED=false` to disable the provider locally. Outside
+development, the provider remains disabled unless `MAILDEV_ENABLED=true` is set
+explicitly.
+
+### Order confirmation email flow
+
+The backend sends order confirmation email through Medusa's Notification Module.
+The flow is provider-neutral:
+
+1. `order.placed` event fires after checkout completion.
+2. `src/subscribers/orders/order-placed.ts` queries order and store data.
+3. `src/emails/renderers/order-placed.tsx` renders React Email HTML plus plain text.
+4. `notification.createNotifications` sends the email through the active provider.
+
+Development uses the MailDev provider. Production can switch to a Resend
+provider without changing the subscriber or React Email templates because the
+provider receives the same `content.subject`, `content.html`, and `content.text`
+payload.
+
+Verification note, 2026-05-05: a local Store API checkout completed against
+`http://localhost:9000` with MailDev at `http://192.168.0.45:1080`; the MailDev
+inbox showed order `order_01KQVBWP7P9SM2GEJG69PKS4V5` sent to
+`maildev-checkout+20260505@3dbyte.tech` with subject
+`Order Confirmation - Medusa Store #4`.
+
 ## What is Medusa
 
 Medusa is a set of commerce modules and tools that allow you to build rich, reliable, and performant commerce applications without reinventing core commerce logic. The modules can be customized and used to build advanced ecommerce stores, marketplaces, or any product that needs foundational commerce primitives. All modules are open-source and freely available on npm.

@@ -1,45 +1,66 @@
-import { render, screen, waitFor, act, renderHook } from "@testing-library/react"
+import type { ReactNode } from "react"
+import { act, render, renderHook, screen, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
+import {
+  addWaitlistItemAction,
+  clearWaitlistAction,
+  getWaitlistAction,
+  removeWaitlistItemAction,
+} from "@/app/actions/waitlist"
 import {
   InventoryAlertProvider,
   useInventoryAlerts,
   type InventoryAlert,
 } from "../inventory-alert-context"
 
-// Mock localStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {}
-  return {
-    getItem: jest.fn((key: string) => store[key] || null),
-    setItem: jest.fn((key: string, value: string) => {
-      store[key] = value
-    }),
-    removeItem: jest.fn((key: string) => {
-      delete store[key]
-    }),
-    clear: jest.fn(() => {
-      store = {}
-    }),
-    get store() {
-      return store
-    },
-  }
-})()
+jest.mock("@/app/actions/waitlist", () => ({
+  getWaitlistAction: jest.fn(),
+  addWaitlistItemAction: jest.fn(),
+  removeWaitlistItemAction: jest.fn(),
+  clearWaitlistAction: jest.fn(),
+}))
 
-Object.defineProperty(window, "localStorage", {
-  value: localStorageMock,
+const mockGetWaitlistAction = getWaitlistAction as jest.MockedFunction<
+  typeof getWaitlistAction
+>
+const mockAddWaitlistItemAction = addWaitlistItemAction as jest.MockedFunction<
+  typeof addWaitlistItemAction
+>
+const mockRemoveWaitlistItemAction =
+  removeWaitlistItemAction as jest.MockedFunction<typeof removeWaitlistItemAction>
+const mockClearWaitlistAction = clearWaitlistAction as jest.MockedFunction<
+  typeof clearWaitlistAction
+>
+
+const createMockAlert = (
+  productId: string,
+  waitlistId = `wait_${productId}`,
+  variantId = `variant_${productId}`
+): InventoryAlert => ({
+  id: productId,
+  waitlistId,
+  productId,
+  productHandle: `product-${productId}`,
+  productTitle: `Product ${productId}`,
+  variantTitle: "Black - 180",
+  variantId,
+  email: "ava@example.com",
+  createdAt: "2026-05-12T00:00:00.000Z",
+  notified: false,
 })
 
-// Helper to create mock alert data
-const createMockAlertData = () => ({
-  productId: "prod_1",
+const createMockAlertInput = () => ({
+  productId: "prod_2",
   productHandle: "test-product",
   productTitle: "Test Product",
-  variantTitle: "Default",
-  variantId: "variant_1",
-  email: "test@example.com",
+  variantTitle: "Black - 180",
+  variantId: "variant_2",
 })
 
-// Test component
+const wrapper = ({ children }: { children: ReactNode }) => (
+  <InventoryAlertProvider>{children}</InventoryAlertProvider>
+)
+
 const TestComponent = () => {
   const {
     alerts,
@@ -55,20 +76,23 @@ const TestComponent = () => {
     <div>
       <span data-testid="loading">{isLoading ? "Loading" : "Not Loading"}</span>
       <span data-testid="count">{alerts.length}</span>
-      <span data-testid="ids">{alerts.map((a) => a.id).join(",")}</span>
-      <button onClick={() => addAlert(createMockAlertData())} data-testid="add">
+      <span data-testid="ids">{alerts.map((alert) => alert.id).join(",")}</span>
+      <button
+        onClick={() => void addAlert(createMockAlertInput())}
+        data-testid="add"
+      >
         Add Alert
       </button>
-      <button onClick={() => removeAlert(alerts[0]?.id)} data-testid="remove">
+      <button onClick={() => void removeAlert(alerts[0]?.id)} data-testid="remove">
         Remove
       </button>
       <button
-        onClick={() => removeAlertByProduct("prod_1", "variant_1")}
+        onClick={() => void removeAlertByProduct("prod_1", "variant_1")}
         data-testid="remove-by-product"
       >
         Remove by Product
       </button>
-      <button onClick={() => clearAlerts()} data-testid="clear">
+      <button onClick={() => void clearAlerts()} data-testid="clear">
         Clear
       </button>
       <span data-testid="has-alert">
@@ -79,241 +103,185 @@ const TestComponent = () => {
 }
 
 describe("InventoryAlertProvider", () => {
+  const serverAlert = createMockAlert("prod_1", "wait_1", "variant_1")
+
   beforeEach(() => {
     jest.clearAllMocks()
-    localStorageMock.clear()
+    mockGetWaitlistAction.mockResolvedValue({
+      success: true,
+      customerEmail: "ava@example.com",
+      waitlist: [serverAlert],
+    })
+    mockAddWaitlistItemAction.mockResolvedValue({
+      success: true,
+      item: createMockAlert("prod_2", "wait_2", "variant_2"),
+    })
+    mockRemoveWaitlistItemAction.mockResolvedValue({ success: true })
+    mockClearWaitlistAction.mockResolvedValue({ success: true })
   })
 
-  describe("initialization", () => {
-    it("starts in loading state", () => {
-      render(
-        <InventoryAlertProvider>
-          <TestComponent />
-        </InventoryAlertProvider>
-      )
+  it("starts in loading state", () => {
+    mockGetWaitlistAction.mockReturnValue(new Promise(() => {}))
 
-      expect(screen.getByTestId("loading")).toHaveTextContent("Loading")
-    })
+    render(
+      <InventoryAlertProvider>
+        <TestComponent />
+      </InventoryAlertProvider>
+    )
 
-    it("sets loading to false after initialization", async () => {
-      render(
-        <InventoryAlertProvider>
-          <TestComponent />
-        </InventoryAlertProvider>
-      )
+    expect(screen.getByTestId("loading")).toHaveTextContent("Loading")
+  })
 
-      await waitFor(() => {
-        expect(screen.getByTestId("loading")).toHaveTextContent("Not Loading")
-      })
-    })
+  it("loads alerts from the server", async () => {
+    render(
+      <InventoryAlertProvider>
+        <TestComponent />
+      </InventoryAlertProvider>
+    )
 
-    it("loads alerts from localStorage", async () => {
-      const storedAlert: InventoryAlert = {
-        ...createMockAlertData(),
-        id: "alert_stored",
-        createdAt: new Date().toISOString(),
-        notified: false,
-      }
-      localStorageMock.store["inventory_alerts"] = JSON.stringify([storedAlert])
-
-      render(
-        <InventoryAlertProvider>
-          <TestComponent />
-        </InventoryAlertProvider>
-      )
-
-      await waitFor(() => {
-        expect(screen.getByTestId("count")).toHaveTextContent("1")
-        expect(screen.getByTestId("ids")).toHaveTextContent("alert_stored")
-      })
+    await waitFor(() => {
+      expect(screen.getByTestId("loading")).toHaveTextContent("Not Loading")
+      expect(screen.getByTestId("count")).toHaveTextContent("1")
+      expect(screen.getByTestId("ids")).toHaveTextContent("prod_1")
     })
   })
 
-  describe("useInventoryAlerts hook", () => {
-    it("throws error when used outside InventoryAlertProvider", () => {
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation()
+  it("does not read or write localStorage", async () => {
+    const getItem = jest.spyOn(Storage.prototype, "getItem")
+    const setItem = jest.spyOn(Storage.prototype, "setItem")
 
-      expect(() => {
-        renderHook(() => useInventoryAlerts())
-      }).toThrow("useInventoryAlerts must be used within an InventoryAlertProvider")
+    render(
+      <InventoryAlertProvider>
+        <TestComponent />
+      </InventoryAlertProvider>
+    )
 
-      consoleSpy.mockRestore()
+    await waitFor(() => {
+      expect(screen.getByTestId("loading")).toHaveTextContent("Not Loading")
     })
 
-    it("provides context values", async () => {
-      const { result } = renderHook(() => useInventoryAlerts(), {
-        wrapper: InventoryAlertProvider,
-      })
+    expect(getItem).not.toHaveBeenCalledWith("inventory_alerts")
+    expect(setItem).not.toHaveBeenCalledWith(
+      "inventory_alerts",
+      expect.any(String)
+    )
+  })
 
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false)
-      })
+  it("throws when used outside InventoryAlertProvider", () => {
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation()
 
-      expect(result.current).toHaveProperty("alerts")
-      expect(result.current).toHaveProperty("addAlert")
-      expect(result.current).toHaveProperty("removeAlert")
-      expect(result.current).toHaveProperty("removeAlertByProduct")
-      expect(result.current).toHaveProperty("clearAlerts")
-      expect(result.current).toHaveProperty("hasAlert")
+    expect(() => renderHook(() => useInventoryAlerts())).toThrow(
+      "useInventoryAlerts must be used within an InventoryAlertProvider"
+    )
+
+    consoleSpy.mockRestore()
+  })
+
+  it("adds an alert with the server action result", async () => {
+    const user = userEvent.setup()
+
+    render(
+      <InventoryAlertProvider>
+        <TestComponent />
+      </InventoryAlertProvider>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId("loading")).toHaveTextContent("Not Loading")
+    })
+
+    await user.click(screen.getByTestId("add"))
+
+    await waitFor(() => {
+      expect(mockAddWaitlistItemAction).toHaveBeenCalledWith(createMockAlertInput())
+      expect(screen.getByTestId("count")).toHaveTextContent("2")
+      expect(screen.getByTestId("ids")).toHaveTextContent("prod_1,prod_2")
     })
   })
 
-  describe("addAlert", () => {
-    it("adds alert with generated id and timestamp", async () => {
-      const { result } = renderHook(() => useInventoryAlerts(), {
-        wrapper: InventoryAlertProvider,
-      })
+  it("does not create a duplicate when the item is already loaded", async () => {
+    const { result } = renderHook(() => useInventoryAlerts(), { wrapper })
 
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false)
-      })
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
 
-      act(() => {
-        result.current.addAlert(createMockAlertData())
+    await act(async () => {
+      await result.current.addAlert(createMockAlertInput())
+      await result.current.addAlert({
+        productId: "prod_1",
+        productHandle: "product-prod_1",
+        productTitle: "Product prod_1",
+        variantId: "variant_1",
+        variantTitle: "Black - 180",
       })
+    })
 
-      await waitFor(() => {
-        expect(result.current.alerts.length).toBe(1)
-        expect(result.current.alerts[0].id).toMatch(/^alert_/)
-        expect(result.current.alerts[0].createdAt).toBeDefined()
-        expect(result.current.alerts[0].notified).toBe(false)
-      })
+    expect(mockAddWaitlistItemAction).toHaveBeenCalledTimes(1)
+    expect(result.current.alerts).toHaveLength(2)
+  })
+
+  it("removes an alert by its server waitlist id", async () => {
+    const user = userEvent.setup()
+
+    render(
+      <InventoryAlertProvider>
+        <TestComponent />
+      </InventoryAlertProvider>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId("count")).toHaveTextContent("1")
+    })
+
+    await user.click(screen.getByTestId("remove"))
+
+    await waitFor(() => {
+      expect(mockRemoveWaitlistItemAction).toHaveBeenCalledWith("wait_1")
+      expect(screen.getByTestId("count")).toHaveTextContent("0")
+      expect(screen.getByTestId("has-alert")).toHaveTextContent("No")
     })
   })
 
-  describe("removeAlert", () => {
-    it("removes alert by id", async () => {
-      const storedAlert: InventoryAlert = {
-        ...createMockAlertData(),
-        id: "alert_to_remove",
-        createdAt: new Date().toISOString(),
-        notified: false,
-      }
-      localStorageMock.store["inventory_alerts"] = JSON.stringify([storedAlert])
+  it("removes an alert by product and variant", async () => {
+    const user = userEvent.setup()
 
-      render(
-        <InventoryAlertProvider>
-          <TestComponent />
-        </InventoryAlertProvider>
-      )
+    render(
+      <InventoryAlertProvider>
+        <TestComponent />
+      </InventoryAlertProvider>
+    )
 
-      await waitFor(() => {
-        expect(screen.getByTestId("count")).toHaveTextContent("1")
-      })
+    await waitFor(() => {
+      expect(screen.getByTestId("count")).toHaveTextContent("1")
+    })
 
-      await act(async () => {
-        screen.getByTestId("remove").click()
-      })
+    await user.click(screen.getByTestId("remove-by-product"))
 
-      await waitFor(() => {
-        expect(screen.getByTestId("count")).toHaveTextContent("0")
-      })
+    await waitFor(() => {
+      expect(mockRemoveWaitlistItemAction).toHaveBeenCalledWith("wait_1")
+      expect(screen.getByTestId("count")).toHaveTextContent("0")
     })
   })
 
-  describe("removeAlertByProduct", () => {
-    it("removes alert by product and variant id", async () => {
-      const storedAlert: InventoryAlert = {
-        ...createMockAlertData(),
-        id: "alert_prod1",
-        createdAt: new Date().toISOString(),
-        notified: false,
-      }
-      const otherAlert: InventoryAlert = {
-        ...createMockAlertData(),
-        id: "alert_prod2",
-        productId: "prod_2",
-        variantId: "variant_2",
-        createdAt: new Date().toISOString(),
-        notified: false,
-      }
-      localStorageMock.store["inventory_alerts"] = JSON.stringify([
-        storedAlert,
-        otherAlert,
-      ])
+  it("clears alerts through the server action", async () => {
+    const user = userEvent.setup()
 
-      render(
-        <InventoryAlertProvider>
-          <TestComponent />
-        </InventoryAlertProvider>
-      )
+    render(
+      <InventoryAlertProvider>
+        <TestComponent />
+      </InventoryAlertProvider>
+    )
 
-      await waitFor(() => {
-        expect(screen.getByTestId("count")).toHaveTextContent("2")
-      })
-
-      await act(async () => {
-        screen.getByTestId("remove-by-product").click()
-      })
-
-      await waitFor(() => {
-        expect(screen.getByTestId("count")).toHaveTextContent("1")
-        expect(screen.getByTestId("ids")).toHaveTextContent("alert_prod2")
-      })
-    })
-  })
-
-  describe("hasAlert", () => {
-    it("returns true when alert exists", async () => {
-      const storedAlert: InventoryAlert = {
-        ...createMockAlertData(),
-        id: "alert_1",
-        createdAt: new Date().toISOString(),
-        notified: false,
-      }
-      localStorageMock.store["inventory_alerts"] = JSON.stringify([storedAlert])
-
-      render(
-        <InventoryAlertProvider>
-          <TestComponent />
-        </InventoryAlertProvider>
-      )
-
-      await waitFor(() => {
-        expect(screen.getByTestId("has-alert")).toHaveTextContent("Yes")
-      })
+    await waitFor(() => {
+      expect(screen.getByTestId("count")).toHaveTextContent("1")
     })
 
-    it("returns false when no alert exists", async () => {
-      render(
-        <InventoryAlertProvider>
-          <TestComponent />
-        </InventoryAlertProvider>
-      )
+    await user.click(screen.getByTestId("clear"))
 
-      await waitFor(() => {
-        expect(screen.getByTestId("has-alert")).toHaveTextContent("No")
-      })
-    })
-  })
-
-  describe("clearAlerts", () => {
-    it("clears all alerts", async () => {
-      const storedAlert: InventoryAlert = {
-        ...createMockAlertData(),
-        id: "alert_1",
-        createdAt: new Date().toISOString(),
-        notified: false,
-      }
-      localStorageMock.store["inventory_alerts"] = JSON.stringify([storedAlert])
-
-      render(
-        <InventoryAlertProvider>
-          <TestComponent />
-        </InventoryAlertProvider>
-      )
-
-      await waitFor(() => {
-        expect(screen.getByTestId("count")).toHaveTextContent("1")
-      })
-
-      await act(async () => {
-        screen.getByTestId("clear").click()
-      })
-
-      await waitFor(() => {
-        expect(screen.getByTestId("count")).toHaveTextContent("0")
-      })
+    await waitFor(() => {
+      expect(mockClearWaitlistAction).toHaveBeenCalled()
+      expect(screen.getByTestId("count")).toHaveTextContent("0")
     })
   })
 })

@@ -2,12 +2,12 @@ name: ci
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, staging]
     paths-ignore:
       - '**/*.md'
       - 'docs/**'
   push:
-    branches: [main]
+    branches: [main, staging]
     paths-ignore:
       - '**/*.md'
       - 'docs/**'
