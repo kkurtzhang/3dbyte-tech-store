@@ -98,6 +98,21 @@ describe("internal AI routes", () => {
           handle: "ldo-voron-24-kit",
           status: "published",
           description: "Complete kit for Voron builders.",
+          metadata: {
+            three_d_printing: {
+              schema_version: 1,
+              product_kind: "printer_kit",
+              compatible_printers: ["Voron 2.4"],
+              best_for: ["advanced enclosed printer builds"],
+              ai_search_keywords: ["Voron kit", "CoreXY printer"],
+            },
+            rc_model_building: {
+              schema_version: 1,
+              component_role: "project_hardware",
+              compatible_project_types: ["3d_printed_rc_car"],
+              used_for: ["3DSets-style assembly"],
+            },
+          },
           variants: [{ id: "var_123", sku: "LDO-V24", title: "Default" }],
         },
       ],
@@ -121,6 +136,7 @@ describe("internal AI routes", () => {
     expect(productGraph).toHaveBeenCalledWith(
       expect.objectContaining({
         entity: "product",
+        fields: expect.arrayContaining(["metadata"]),
         filters: { id: ["prod_123"] },
       })
     )
@@ -130,6 +146,17 @@ describe("internal AI routes", () => {
         expect.objectContaining({
           id: "prod_123",
           handle: "ldo-voron-24-kit",
+          aiContext: expect.objectContaining({
+            tdp_schema_version: 1,
+            tdp_product_kind: "printer_kit",
+            tdp_compatible_printers: ["Voron 2.4"],
+            tdp_best_for: ["advanced enclosed printer builds"],
+            tdp_ai_search_keywords: ["Voron kit", "CoreXY printer"],
+            rcb_schema_version: 1,
+            rcb_component_role: "project_hardware",
+            rcb_compatible_project_types: ["3d_printed_rc_car"],
+            rcb_used_for: ["3DSets-style assembly"],
+          }),
           authoritativeContext: expect.objectContaining({
             medusa: true,
             meilisearch: true,

@@ -17,6 +17,7 @@
     "prebuild": "pnpm --filter=@3dbyte-tech-store/observability build",
     "predev": "pnpm --filter=@3dbyte-tech-store/observability build",
     "seed": "medusa exec ./src/scripts/seed.ts",
+    "seed:ai-ready-catalogue": "medusa exec ./src/scripts/seed-ai-ready-catalogue.ts",
     "start": "medusa start",
     "predeploy": "echo predeploy-disabled",
     "dev": "XDG_CONFIG_HOME=.medusa medusa develop",

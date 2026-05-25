@@ -5,6 +5,7 @@ import type {
   SyncProductsStepBundle,
   SyncProductsStepProduct,
 } from "@3dbyte-tech-store/shared-types";
+import { flattenAiProductMetadata } from "./ai-product-metadata";
 
 /**
  * Region type for pricing calculation
@@ -242,6 +243,7 @@ export function toMeilisearchDocument(
       ?.map((item) => item.product?.title?.trim())
       .filter((title): title is string => Boolean(title)) ?? [];
   const bundle_item_count = bundle?.items?.length ?? 0;
+  const aiProductMetadata = flattenAiProductMetadata(product.metadata);
 
   return {
     // 1. CORE IDENTITY
@@ -284,6 +286,9 @@ export function toMeilisearchDocument(
 
     // 9. VARIANTS
     variants,
+
+    // 10. AI-READY PRODUCT FACTS
+    ...aiProductMetadata,
   };
 }
 

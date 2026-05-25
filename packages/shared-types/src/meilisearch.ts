@@ -72,7 +72,35 @@ export const BRAND_INDEX_SETTINGS = {
   },
 } as const;
 
-export interface MeilisearchProductDocument {
+export interface AiProductMetadataSearchFields {
+  tdp_schema_version?: number;
+  tdp_product_kind?: string;
+  tdp_material?: string;
+  tdp_diameter_mm?: number;
+  tdp_nozzle_temp_min_c?: number;
+  tdp_nozzle_temp_max_c?: number;
+  tdp_bed_temp_min_c?: number;
+  tdp_bed_temp_max_c?: number;
+  tdp_requires_enclosure?: boolean;
+  tdp_requires_hardened_nozzle?: boolean;
+  tdp_drying_recommended?: boolean;
+  tdp_compatible_printers?: string[];
+  tdp_compatible_build_surfaces?: string[];
+  tdp_best_for?: string[];
+  tdp_not_recommended_for?: string[];
+  tdp_common_issues?: string[];
+  tdp_ai_search_keywords?: string[];
+  rcb_schema_version?: number;
+  rcb_component_role?: string;
+  rcb_compatible_project_types?: string[];
+  rcb_voltage?: string;
+  rcb_connector_type?: string;
+  rcb_used_for?: string[];
+  rcb_best_for?: string[];
+  rcb_ai_search_keywords?: string[];
+}
+
+export interface MeilisearchProductDocument extends AiProductMetadataSearchFields {
   // --- 1. CORE IDENTITY ---
   id: string;
   title: string;
@@ -264,6 +292,7 @@ export interface SyncProductsStepProduct {
   status: string;
   created_at: string;
   updated_at: string;
+  metadata?: Record<string, unknown> | null;
   variants?: Array<{
     id: string;
     title?: string;
