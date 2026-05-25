@@ -33,6 +33,7 @@ export const syncProductsWorkflow = createWorkflow(
         "description",
         "thumbnail",
         "status",
+        "metadata",
         "created_at",
         "updated_at",
         "collection_id",

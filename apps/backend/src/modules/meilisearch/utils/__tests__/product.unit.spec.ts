@@ -142,6 +142,109 @@ describe("toMeilisearchDocument", () => {
     expect(document.price_aud).toBe(149);
     expect(document.tax_inclusive_price_aud).toBe(true);
   });
+
+  it("flattens 3D printing metadata into searchable product facts", () => {
+    const document = toMeilisearchDocument(
+      createProduct({
+        metadata: {
+          three_d_printing: {
+            schema_version: 1,
+            product_kind: "filament",
+            material: "PETG",
+            diameter_mm: 1.75,
+            recommended_nozzle_temp_c: { min: 230, max: 250 },
+            recommended_bed_temp_c: { min: 70, max: 85 },
+            requires_enclosure: false,
+            requires_hardened_nozzle: false,
+            drying_recommended: true,
+            compatible_printers: ["Bambu A1", "Prusa MK4"],
+            compatible_build_surfaces: ["textured_pei", "satin_pei"],
+            best_for: ["functional parts", "3DSets body panels"],
+            not_recommended_for: ["high-temperature parts"],
+            common_issues: ["stringing"],
+            ai_search_keywords: ["PETG filament", "outdoor prints"],
+          },
+        },
+      } as Partial<SyncProductsStepProduct>),
+      regions,
+    );
+
+    expect(document).toEqual(
+      expect.objectContaining({
+        tdp_schema_version: 1,
+        tdp_product_kind: "filament",
+        tdp_material: "PETG",
+        tdp_diameter_mm: 1.75,
+        tdp_nozzle_temp_min_c: 230,
+        tdp_nozzle_temp_max_c: 250,
+        tdp_bed_temp_min_c: 70,
+        tdp_bed_temp_max_c: 85,
+        tdp_requires_enclosure: false,
+        tdp_requires_hardened_nozzle: false,
+        tdp_drying_recommended: true,
+        tdp_compatible_printers: ["Bambu A1", "Prusa MK4"],
+        tdp_compatible_build_surfaces: ["textured_pei", "satin_pei"],
+        tdp_best_for: ["functional parts", "3DSets body panels"],
+        tdp_not_recommended_for: ["high-temperature parts"],
+        tdp_common_issues: ["stringing"],
+        tdp_ai_search_keywords: ["PETG filament", "outdoor prints"],
+      }),
+    );
+  });
+
+  it("flattens RC model building metadata into searchable product facts", () => {
+    const document = toMeilisearchDocument(
+      createProduct({
+        metadata: {
+          rc_model_building: {
+            schema_version: 1,
+            component_role: "drive_motor",
+            compatible_project_types: ["3d_printed_rc_car"],
+            voltage: "7.4V",
+            connector_type: "XT60",
+            used_for: ["crawler drivetrain"],
+            best_for: ["3DSets-style RC builds"],
+            ai_search_keywords: ["RC motor", "3DSets drivetrain"],
+          },
+        },
+      } as Partial<SyncProductsStepProduct>),
+      regions,
+    );
+
+    expect(document).toEqual(
+      expect.objectContaining({
+        rcb_schema_version: 1,
+        rcb_component_role: "drive_motor",
+        rcb_compatible_project_types: ["3d_printed_rc_car"],
+        rcb_voltage: "7.4V",
+        rcb_connector_type: "XT60",
+        rcb_used_for: ["crawler drivetrain"],
+        rcb_best_for: ["3DSets-style RC builds"],
+        rcb_ai_search_keywords: ["RC motor", "3DSets drivetrain"],
+      }),
+    );
+  });
+
+  it("ignores malformed AI metadata while indexing the product normally", () => {
+    const document = toMeilisearchDocument(
+      createProduct({
+        metadata: {
+          three_d_printing: "not-an-object",
+          rc_model_building: {
+            component_role: ["not", "a", "string"],
+            best_for: ["valid use", "", 42],
+          },
+        },
+      } as Partial<SyncProductsStepProduct>),
+      regions,
+    );
+
+    expect(document.id).toBe("prod_bundle");
+    expect(document.title).toBe("Starter Bundle");
+    expect(document.tdp_product_kind).toBeUndefined();
+    expect(document.rcb_component_role).toBeUndefined();
+    expect(document.rcb_best_for).toEqual(["valid use"]);
+  });
 });
 
 describe("buildRegionsForPricing", () => {

@@ -2,6 +2,7 @@ import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 
 import { MEILISEARCH_MODULE } from "../../../modules/meilisearch"
 import type MeilisearchModuleService from "../../../modules/meilisearch/service"
+import { flattenAiProductMetadata } from "../../../modules/meilisearch/utils/ai-product-metadata"
 import { STRAPI_MODULE, type StrapiModuleService } from "../../../modules/strapi"
 import {
   authorizeInternalAiRequest,
@@ -32,6 +33,7 @@ const productFields = [
   "status",
   "description",
   "thumbnail",
+  "metadata",
   "variants.id",
   "variants.title",
   "variants.sku",
@@ -54,6 +56,7 @@ function toProductResponse(
     priceAud: hit?.price_aud ?? null,
     inStock: hit?.in_stock ?? null,
     variants: product.variants ?? hit?.variants ?? [],
+    aiContext: flattenAiProductMetadata(product.metadata),
     strapi: strapiDescription
       ? {
           richDescription: strapiDescription.rich_description ?? null,
