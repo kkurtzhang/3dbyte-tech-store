@@ -42,7 +42,8 @@ RUN pnpm --filter @3dbyte-tech-store/shared-types build && \
 
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S strapi -u 1001 && \
-    chown -R strapi:nodejs /opt
+    mkdir -p /opt/apps/cms/.tmp /opt/apps/cms/.cache /opt/apps/cms/public/uploads && \
+    chown -R strapi:nodejs /opt/apps/cms
 
 USER strapi
 WORKDIR /opt/apps/cms
