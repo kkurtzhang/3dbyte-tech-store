@@ -149,6 +149,7 @@ Evidence captured:
   - `/downloads?q=hardened%20nozzle`
   - `/downloads?q=PETG%20datasheet`
 - Browser QA found `/api/filter-labels` returning 500 because storefront facet labels used the literal `brands` index instead of the configured staging brand index. A regression test and fix were added so facet labels use `NEXT_PUBLIC_MEILISEARCH_BRAND_INDEX_NAME`.
+- Assistant product guidance now returns a canonical `productUrl` for each product and the storefront assistant prompt instructs product recommendations to use that field, never image or thumbnail URLs, for product links.
 - Assistant smoke prompts returned `200 text/event-stream` for PETG outdoor parts, carbon-fibre nozzle guidance, 3DSets-style RC hardware, and support-ticket handoff.
 - Support-ticket handoff guardrail held: the assistant did not call `createSupportTicket` without required customer confirmation and contact details.
 
@@ -157,7 +158,7 @@ Remaining Phase 1 content gaps:
 - Strapi rich descriptions for the 29 AI-ready products are still sparse.
 - Public product-document coverage is intentionally small at 6 documents; add more manuals, datasheets, safety sheets, install guides, and warranty documents as source material becomes available.
 - Seeded placeholder media should be replaced with realistic product-source media before broader customer-facing review.
-- Assistant product-link grounding remains a follow-up: product recommendations should use canonical `/products/{handle}` links or structured product cards, never placeholder image URLs.
+- Assistant product-card rendering from structured tool output remains a future improvement; model-authored product links are now grounded through `productUrl`.
 
 ## Local Testing Notes
 

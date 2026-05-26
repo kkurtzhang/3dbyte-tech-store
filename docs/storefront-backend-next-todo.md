@@ -91,14 +91,15 @@ These items are no longer open TODOs and should be treated as shipped baseline u
   - Customer account ticket history and threaded customer replies from the storefront.
   - SLA dashboards, assignment queues, tags, saved views, and attachment uploads.
 
-### 5) Harden AI assistant product-link grounding (Storefront + Backend)
+### 5) Render assistant recommendations from structured product cards (Storefront + Backend)
 
-- Problem: Live staging assistant responses can ground product recommendations correctly but may label seeded placeholder image URLs as "View product" links when the tool context does not provide an explicit storefront product URL.
+- Status: canonical `productUrl` is now included in AI product guidance and the assistant prompt forbids using image/thumbnail URLs as product links.
+- Problem: model-authored Markdown links are still less reliable than UI-rendered product cards from structured tool output.
 - Deliverable:
-  - Include canonical storefront product URLs in AI product guidance context, or render assistant product cards from structured tool output instead of model-authored links.
-  - Update the assistant prompt/tests so product links must use `/products/{handle}` or no link.
+  - Render assistant product cards from `searchProducts` tool output instead of relying on model-authored product links.
+  - Keep prompt/tests requiring product links to use `productUrl` or no link.
 - Acceptance:
-  - Assistant product recommendations link to route-valid product pages.
+  - Assistant product cards link to route-valid product pages.
   - Placeholder image URLs are never presented as product navigation links.
   - Existing support-ticket confirmation guardrails remain intact.
 

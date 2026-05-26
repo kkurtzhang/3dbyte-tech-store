@@ -236,6 +236,8 @@ describe("POST /api/ai-shopping-assistant", () => {
     })
     expect(streamConfig.system).toContain("suggest-only")
     expect(streamConfig.system).toContain("explicit customer confirmation")
+    expect(streamConfig.system).toContain("productUrl")
+    expect(streamConfig.system).toContain("Never use image or thumbnail URLs as product links")
     expect(Object.keys(streamConfig.tools)).toEqual([
       "searchProducts",
       "lookupOrder",
