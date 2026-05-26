@@ -1,7 +1,4 @@
-import {
-  INDEX_PRODUCT_DOCUMENTS,
-  searchClient,
-} from "@/lib/search/client";
+import { MeiliSearch } from "meilisearch";
 import type {
   ProductDocumentType,
   PublicProductDocument,
@@ -13,6 +10,21 @@ interface SearchPublicProductDocumentsInput {
   productHandle?: string;
   limit?: number;
 }
+
+const envValue = (name: string) => process.env[name];
+
+const getProductDocumentIndexName = () =>
+  envValue("NEXT_PUBLIC_MEILISEARCH_PRODUCT_DOCUMENT_INDEX_NAME") ||
+  "product_documents_public";
+
+const getProductDocumentSearchClient = () =>
+  new MeiliSearch({
+    host:
+      envValue("MEILISEARCH_SERVER_HOST") ||
+      envValue("NEXT_PUBLIC_MEILISEARCH_HOST") ||
+      "http://localhost:7700",
+    apiKey: envValue("NEXT_PUBLIC_MEILISEARCH_API_KEY"),
+  });
 
 export async function searchPublicProductDocuments({
   query = "",
@@ -28,8 +40,8 @@ export async function searchPublicProductDocuments({
     productHandle ? `product_handle = "${productHandle}"` : null,
   ].filter((item): item is string => Boolean(item));
   try {
-    const result = await searchClient
-      .index(INDEX_PRODUCT_DOCUMENTS)
+    const result = await getProductDocumentSearchClient()
+      .index(getProductDocumentIndexName())
       .search<PublicProductDocument>(query, {
         limit,
         filter,

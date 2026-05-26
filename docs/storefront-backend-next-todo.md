@@ -77,7 +77,18 @@ These items are no longer open TODOs and should be treated as shipped baseline u
   - Customer account ticket history and threaded customer replies from the storefront.
   - SLA dashboards, assignment queues, tags, saved views, and attachment uploads.
 
-### 4) Move remaining static Help/Guides blocks to CMS (Storefront + CMS)
+### 4) Harden AI assistant product-link grounding (Storefront + Backend)
+
+- Problem: Live staging assistant responses can ground product recommendations correctly but may label seeded placeholder image URLs as "View product" links when the tool context does not provide an explicit storefront product URL.
+- Deliverable:
+  - Include canonical storefront product URLs in AI product guidance context, or render assistant product cards from structured tool output instead of model-authored links.
+  - Update the assistant prompt/tests so product links must use `/products/{handle}` or no link.
+- Acceptance:
+  - Assistant product recommendations link to route-valid product pages.
+  - Placeholder image URLs are never presented as product navigation links.
+  - Existing support-ticket confirmation guardrails remain intact.
+
+### 5) Move remaining static Help/Guides blocks to CMS (Storefront + CMS)
 
 - Problem: category/popular-resource blocks are still hardcoded.
 - Deliverable:
@@ -92,6 +103,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 ### Storefront worktree
 
 - Implement TODO #4.
+- Implement TODO #5.
 - Smoke-test support-ticket and product-document flows after staging deploys.
 
 ### Backend worktree

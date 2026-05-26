@@ -21,14 +21,32 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: pnpm/action-setup@v4
+      - name: Checkout without token
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            git fetch --no-tags --prune --depth=1 origin \
+              "+refs/pull/${PR_NUMBER}/merge:refs/remotes/pull/${PR_NUMBER}/merge" \
+              "main:refs/remotes/origin/main" \
+              "${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+            git checkout --force "refs/remotes/pull/${PR_NUMBER}/merge"
+          else
+            git fetch --no-tags --prune --depth=2 origin "$GITHUB_SHA"
+            git checkout --force FETCH_HEAD
+          fi
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.32.1 --activate
       - name: Cache Turborepo
         uses: actions/cache@v4
         with:
@@ -49,14 +67,32 @@ jobs:
     name: type-check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: pnpm/action-setup@v4
+      - name: Checkout without token
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            git fetch --no-tags --prune --depth=1 origin \
+              "+refs/pull/${PR_NUMBER}/merge:refs/remotes/pull/${PR_NUMBER}/merge" \
+              "main:refs/remotes/origin/main" \
+              "${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+            git checkout --force "refs/remotes/pull/${PR_NUMBER}/merge"
+          else
+            git fetch --no-tags --prune --depth=2 origin "$GITHUB_SHA"
+            git checkout --force FETCH_HEAD
+          fi
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.32.1 --activate
       - name: Cache Turborepo
         uses: actions/cache@v4
         with:
@@ -77,14 +113,32 @@ jobs:
     name: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: pnpm/action-setup@v4
+      - name: Checkout without token
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            git fetch --no-tags --prune --depth=1 origin \
+              "+refs/pull/${PR_NUMBER}/merge:refs/remotes/pull/${PR_NUMBER}/merge" \
+              "main:refs/remotes/origin/main" \
+              "${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+            git checkout --force "refs/remotes/pull/${PR_NUMBER}/merge"
+          else
+            git fetch --no-tags --prune --depth=2 origin "$GITHUB_SHA"
+            git checkout --force FETCH_HEAD
+          fi
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.32.1 --activate
       - name: Cache Turborepo
         uses: actions/cache@v4
         with:
@@ -105,12 +159,32 @@ jobs:
     name: e2e-smoke
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - name: Checkout without token
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            git fetch --no-tags --prune --depth=1 origin \
+              "+refs/pull/${PR_NUMBER}/merge:refs/remotes/pull/${PR_NUMBER}/merge" \
+              "main:refs/remotes/origin/main" \
+              "${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+            git checkout --force "refs/remotes/pull/${PR_NUMBER}/merge"
+          else
+            git fetch --no-tags --prune --depth=2 origin "$GITHUB_SHA"
+            git checkout --force FETCH_HEAD
+          fi
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.32.1 --activate
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright --version
       - run: pnpm exec playwright test --list
@@ -119,7 +193,25 @@ jobs:
     name: security-scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout without token
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            git fetch --no-tags --prune --depth=1 origin \
+              "+refs/pull/${PR_NUMBER}/merge:refs/remotes/pull/${PR_NUMBER}/merge" \
+              "main:refs/remotes/origin/main" \
+              "${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+            git checkout --force "refs/remotes/pull/${PR_NUMBER}/merge"
+          else
+            git fetch --no-tags --prune --depth=2 origin "$GITHUB_SHA"
+            git checkout --force FETCH_HEAD
+          fi
       - name: Install gitleaks
         run: |
           curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz \
@@ -128,11 +220,13 @@ jobs:
       - name: Secret scan (filesystem)
         continue-on-error: true
         run: gitleaks detect --source . --no-git --redact --exit-code 1
-      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.32.1 --activate
       - run: pnpm install --frozen-lockfile
       - name: Dependency audit (high+)
         continue-on-error: true
