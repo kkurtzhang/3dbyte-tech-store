@@ -68,5 +68,16 @@ describe("AI-ready realistic product catalogue", () => {
     expect(input.variants[0]?.prices).toEqual([
       { amount: 32.95, currency_code: "aud" },
     ]);
+    expect(input.images?.[0]?.url).toBe(
+      "https://placehold.co/900x900/png?text=AI+PETG+Black",
+    );
+  });
+
+  it("uses raster placeholder images that Next image optimization accepts", () => {
+    expect(
+      AI_READY_CATALOGUE_PRODUCTS.every((product) =>
+        product.imageUrl.startsWith("https://placehold.co/900x900/png?"),
+      ),
+    ).toBe(true);
   });
 });

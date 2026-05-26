@@ -8,6 +8,7 @@ import { Flame } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { formatCustomerPrice } from "@/lib/pricing/customer-pricing"
 import { getProductPath } from "@/lib/medusa/bundles"
+import { normalizeOptimizableImageUrl } from "@/lib/images/optimizable-url"
 import { QuickViewButton } from "./quick-view-button"
 import { QuickViewDialog } from "./quick-view-dialog"
 import type { QuickViewProductPreview } from "../lib/quick-view-product"
@@ -53,6 +54,7 @@ export function ProductCard({
 }: ProductCardProps) {
   const [quickViewOpen, setQuickViewOpen] = useState(false)
   const basePath = getProductPath(handle, isBundle)
+  const displayThumbnail = normalizeOptimizableImageUrl(thumbnail)
   const productHref =
     sourceHref && sourceLabel
       ? `${basePath}?from=${encodeURIComponent(sourceHref)}&fromLabel=${encodeURIComponent(sourceLabel)}`
@@ -61,7 +63,7 @@ export function ProductCard({
     id,
     handle,
     title,
-    thumbnail,
+    thumbnail: displayThumbnail,
     price,
     originalPrice,
     inventoryQuantity,
@@ -84,9 +86,9 @@ export function ProductCard({
       )}
     >
       <Link href={productHref} className="relative aspect-square overflow-hidden bg-secondary/20">
-        {thumbnail ? (
+        {displayThumbnail ? (
           <Image
-            src={thumbnail}
+            src={displayThumbnail}
             alt={title}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
