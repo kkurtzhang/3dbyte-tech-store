@@ -6,6 +6,7 @@ Use `main` as the production branch and `staging` as the staging branch.
 
 - Deploy branch: `staging`
 - Coolify compose file: `docker-compose.yml`
+- Use `staging` as the ground-truth branch for staging deploy decisions.
 - Use `staging.env.example` as the environment checklist.
 - Keep `COMPOSE_PROFILES` empty so staging does not start local-only services.
 - Keep `ADDRESS_REINDEX_ENABLED=false`.
@@ -80,3 +81,10 @@ or if MailDev is enabled. It blocks production if the production policy no
 longer owns the shared address reindex job, or if MailDev is enabled. It also
 checks that Meilisearch is owned by `deploy/search/docker-compose.yml` instead
 of the staging or production app stack.
+
+## Scoped Redeploys
+
+For one-app staging hotfixes, prefer the scoped helper in
+`deploy/coolify/README.md` instead of letting the full compose resource rebuild
+unchanged services. This is especially useful for storefront-only changes, where
+Medusa, CMS, Postgres, Redis, and workers should keep running unchanged.
