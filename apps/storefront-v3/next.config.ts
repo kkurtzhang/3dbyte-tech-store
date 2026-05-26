@@ -57,6 +57,11 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "placehold.co",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "cdn.shopify.com",
       },
       ...imageHostnames.map((hostname) => ({
