@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils"
 import { useState, useEffect, useMemo } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import type { MedusaProduct, MedusaProductVariant } from "@/lib/medusa/types"
+import { normalizeOptimizableImageUrl } from "@/lib/images/optimizable-url"
 
 interface ImageItem {
   id: string
@@ -28,7 +29,9 @@ export function ProductGallery({ product, selectedVariant, variantImageUrls }: P
     const imagesByUrl = new Map<string, ImageItem>()
 
     product.images?.forEach((img) => {
-      const url = typeof img.url === "string" ? img.url : String(img.url)
+      const url = normalizeOptimizableImageUrl(
+        typeof img.url === "string" ? img.url : String(img.url)
+      )
 
       if (imagesByUrl.has(url)) {
         return
@@ -48,7 +51,8 @@ export function ProductGallery({ product, selectedVariant, variantImageUrls }: P
     variantImageUrls?.forEach((jsonStr) => {
       try {
         const img = JSON.parse(jsonStr)
-        const existingImage = imagesByUrl.get(img.url)
+        const url = normalizeOptimizableImageUrl(String(img.url))
+        const existingImage = imagesByUrl.get(url)
 
         if (existingImage) {
           existingImage.variantId = existingImage.variantId || img.variantId
@@ -58,7 +62,7 @@ export function ProductGallery({ product, selectedVariant, variantImageUrls }: P
 
         const image = {
           id: img.id,
-          url: img.url,
+          url,
           alt: "Variant image",
           variantId: img.variantId,
         }

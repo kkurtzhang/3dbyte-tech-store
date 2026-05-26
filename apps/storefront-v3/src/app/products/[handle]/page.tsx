@@ -9,6 +9,7 @@ import { getPricingContext } from "@/lib/medusa/regions.server"
 
 // Revalidate every hour
 export const revalidate = 3600
+export const dynamic = "force-dynamic"
 
 export async function generateStaticParams() {
   const handles = await getProductHandles()
