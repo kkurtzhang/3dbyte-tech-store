@@ -61,6 +61,11 @@ describe("internal AI routes", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     process.env.INTERNAL_API_TOKEN = "test-internal-token"
+    delete process.env.STOREFRONT_URL
+    delete process.env.NEXT_PUBLIC_SITE_URL
+    delete process.env.SERVICE_FQDN_STOREFRONT
+    delete process.env.SERVICE_URL_STOREFRONT
+    delete process.env.STORE_CORS
   })
 
   it("rejects product guidance without the internal token", async () => {
@@ -78,6 +83,7 @@ describe("internal AI routes", () => {
   })
 
   it("builds product guidance from Meilisearch, Medusa, and Strapi context", async () => {
+    process.env.STOREFRONT_URL = "https://store.example.com/"
     meiliSearch.mockResolvedValue({
       hits: [
         {
@@ -146,6 +152,7 @@ describe("internal AI routes", () => {
         expect.objectContaining({
           id: "prod_123",
           handle: "ldo-voron-24-kit",
+          productUrl: "https://store.example.com/products/ldo-voron-24-kit",
           aiContext: expect.objectContaining({
             tdp_schema_version: 1,
             tdp_product_kind: "printer_kit",
@@ -162,6 +169,40 @@ describe("internal AI routes", () => {
             meilisearch: true,
             strapi: true,
           }),
+        }),
+      ],
+    })
+  })
+
+  it("uses the first concrete storefront CORS origin when STOREFRONT_URL is not set", async () => {
+    process.env.STORE_CORS = "*, https://store-cors.example.com, http://localhost:3001"
+    meiliSearch.mockResolvedValue({
+      hits: [{ id: "prod_456", handle: "ai-petg-black-175-1kg" }],
+    })
+    productGraph.mockResolvedValue({
+      data: [
+        {
+          id: "prod_456",
+          title: "AI PETG Black 1.75mm 1kg",
+          handle: "ai-petg-black-175-1kg",
+          status: "published",
+        },
+      ],
+    })
+    getProductDescription.mockResolvedValue(null)
+    const res = createResponse()
+
+    await productGuidancePOST(
+      createRequest({ query: "PETG outdoor", limit: 1 }) as never,
+      res as never
+    )
+
+    expect(res.json).toHaveBeenCalledWith({
+      products: [
+        expect.objectContaining({
+          handle: "ai-petg-black-175-1kg",
+          productUrl:
+            "https://store-cors.example.com/products/ai-petg-black-175-1kg",
         }),
       ],
     })

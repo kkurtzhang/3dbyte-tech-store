@@ -26,6 +26,33 @@ type ProductHit = Record<string, unknown> & {
   in_stock?: boolean
 }
 
+const trimTrailingSlash = (value: string): string => value.trim().replace(/\/$/, "")
+
+const isHttpOrigin = (value: string | undefined): value is string => {
+  const trimmedValue = value?.trim()
+
+  return Boolean(trimmedValue && /^https?:\/\//.test(trimmedValue))
+}
+
+const getFirstStoreCorsOrigin = (): string | undefined =>
+  process.env.STORE_CORS?.split(",")
+    .map((origin) => origin.trim())
+    .find(isHttpOrigin)
+
+const getStorefrontUrl = (): string =>
+  trimTrailingSlash(
+    [
+      process.env.STOREFRONT_URL,
+      process.env.NEXT_PUBLIC_SITE_URL,
+      process.env.SERVICE_FQDN_STOREFRONT,
+      process.env.SERVICE_URL_STOREFRONT,
+      getFirstStoreCorsOrigin(),
+    ].find(isHttpOrigin) ?? "http://localhost:3001"
+  )
+
+const buildProductUrl = (handle: string | undefined): string | null =>
+  handle ? `${getStorefrontUrl()}/products/${encodeURIComponent(handle)}` : null
+
 const productFields = [
   "id",
   "title",
@@ -47,10 +74,13 @@ function toProductResponse(
   hit: ProductHit | undefined,
   strapiDescription: Record<string, unknown> | null
 ) {
+  const handle = product.handle ?? hit?.handle
+
   return {
     id: product.id,
     title: product.title ?? hit?.title ?? "Untitled product",
-    handle: product.handle ?? hit?.handle,
+    handle,
+    productUrl: buildProductUrl(handle),
     description: product.description ?? null,
     thumbnail: product.thumbnail ?? hit?.thumbnail ?? null,
     priceAud: hit?.price_aud ?? null,
