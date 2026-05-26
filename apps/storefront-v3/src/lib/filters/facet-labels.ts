@@ -1,5 +1,5 @@
 import { sdk } from "@/lib/medusa/client"
-import { searchClient } from "@/lib/search/client"
+import { INDEX_BRANDS, searchClient } from "@/lib/search/client"
 
 export interface FacetLabels {
   categories: Record<string, string>
@@ -11,7 +11,7 @@ export async function getFacetLabels(): Promise<FacetLabels> {
   const [categoriesRes, collectionsRes, brandsRes] = await Promise.all([
     sdk.store.category.list({ limit: 100 }),
     sdk.store.collection.list({ limit: 100 }),
-    searchClient.index("brands").search("", {
+    searchClient.index(INDEX_BRANDS).search("", {
       limit: 1000,
       attributesToRetrieve: ["id", "name"],
     }),

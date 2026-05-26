@@ -26,6 +26,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 - AI shopping assistant routes exist for product guidance, order lookup, tracking, shipping estimate, and support-ticket handoff.
 - Observability tracing plumbing exists for backend, CMS, and storefront through `@3dbyte-tech-store/observability`.
 - AI-ready realistic product Chunk A exists on `feature/ai-ready-realistic-products`: metadata flattening, product index settings, `/ai/product-guidance` `aiContext`, deterministic `ai-*` seed catalogue, and pathway docs.
+- Phase 1 AI-ready realistic products technical staging bring-up is complete: 29 `ai-*` products, 6 public product documents, product/document Meilisearch sync, Download Center search, product-page downloads, and assistant smoke prompts have been verified on staging.
 
 ## Remaining TODO (Priority Order)
 
@@ -44,7 +45,20 @@ These items are no longer open TODOs and should be treated as shipped baseline u
   - Strapi admin/content APIs, Medusa backend, storefront core routes, and Meilisearch sync paths are smoke-tested.
   - Lockfile changes are reviewed separately from feature work.
 
-### 1) Expand Strapi collection content coverage (CMS Content)
+### 1) Complete AI-ready realistic product content polish (Medusa + CMS + Search)
+
+- Status: Phase 1 technical path is live on staging, but content depth is intentionally thin.
+- Deliverable:
+  - Add Strapi rich descriptions for all 29 `ai-*` products.
+  - Expand product-document coverage beyond the initial 6 docs.
+  - Replace seeded placeholder media with realistic product-source media.
+  - Re-sync product documents after each content batch.
+- Acceptance:
+  - Product pages look credible without placeholder-heavy content.
+  - Download Center has useful manual/datasheet/SDS/install/warranty coverage for common product questions.
+  - Assistant answers are grounded in product metadata plus documents, not generic filler.
+
+### 2) Expand Strapi collection content coverage (CMS Content)
 
 - Problem: Strapi currently has sparse collection rows and handle mismatches.
 - Deliverable:
@@ -54,7 +68,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
   - Overlay appears on homepage cards and collection detail pages.
   - Fallback path still works if a collection has no Strapi row.
 
-### 2) Increase indexed blog content for Help/Guides search (CMS + Search)
+### 3) Increase indexed blog content for Help/Guides search (CMS + Search)
 
 - Problem: Meilisearch `blog` index has too few documents, limiting search quality.
 - Deliverable:
@@ -64,7 +78,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
   - `blog` index has meaningful volume.
   - `/api/content-search` returns relevant article/guide hits for common queries.
 
-### 3) Harden support-ticket workflow after launch (Backend + Storefront + Admin + AI)
+### 4) Harden support-ticket workflow after launch (Backend + Storefront + Admin + AI)
 
 - Status: Launch-minimum workflow is implemented.
 - Remaining follow-up:
@@ -77,7 +91,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
   - Customer account ticket history and threaded customer replies from the storefront.
   - SLA dashboards, assignment queues, tags, saved views, and attachment uploads.
 
-### 4) Harden AI assistant product-link grounding (Storefront + Backend)
+### 5) Harden AI assistant product-link grounding (Storefront + Backend)
 
 - Problem: Live staging assistant responses can ground product recommendations correctly but may label seeded placeholder image URLs as "View product" links when the tool context does not provide an explicit storefront product URL.
 - Deliverable:
@@ -88,7 +102,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
   - Placeholder image URLs are never presented as product navigation links.
   - Existing support-ticket confirmation guardrails remain intact.
 
-### 5) Move remaining static Help/Guides blocks to CMS (Storefront + CMS)
+### 6) Move remaining static Help/Guides blocks to CMS (Storefront + CMS)
 
 - Problem: category/popular-resource blocks are still hardcoded.
 - Deliverable:
@@ -102,15 +116,15 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 
 ### Storefront worktree
 
-- Implement TODO #4.
 - Implement TODO #5.
+- Implement TODO #6.
 - Smoke-test support-ticket and product-document flows after staging deploys.
 
 ### Backend worktree
 
 - Handle TODO #0 backend/CMS dependency upgrades in a dedicated security PR.
-- Add any indexing/sync hooks needed for TODO #2.
-- Support AI-ready product Chunk B after Coolify redeploys the Phase 1 code.
+- Add any indexing/sync hooks needed for TODO #3.
+- Support TODO #1 content/document seeding as richer product source material becomes available.
 
 ## Validation Checklist (each PR)
 
