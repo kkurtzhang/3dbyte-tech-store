@@ -130,6 +130,35 @@ Run only after Coolify redeploys the backend image that contains Chunk A.
   - Can you create a support ticket for compatibility help?
 - Assistant does not invent stock, price, discounts, safety claims, or protected 3DSets model content.
 
+## Staging Verification Evidence
+
+Last updated: 2026-05-27
+
+Current technical acceptance status: passed after staging deploy, runtime env correction, scoped storefront recreation, and storefront filter-label hotfix.
+
+Evidence captured:
+
+- Coolify staging services ran the expected `staging` image commit `5509b07d1252ce3e0fc0af91557b2dd850d64649` before closeout hotfix work.
+- Seed command completed idempotently with `created=0`, `updated=29`, `total=29` when rerun with `AI_CATALOGUE_SALES_CHANNEL_NAME="Web Store"`.
+- Product Meilisearch index `stg_products` contained 29 AI-ready products with flattened `tdp_*` and `rcb_*` fields.
+- Product document index `stg_product_documents_public` contained 6 public product documents.
+- Storefront checks passed for:
+  - `/api/health`
+  - `/search?q=PETG`
+  - `/products/ai-petg-black-175-1kg`
+  - `/downloads?q=hardened%20nozzle`
+  - `/downloads?q=PETG%20datasheet`
+- Browser QA found `/api/filter-labels` returning 500 because storefront facet labels used the literal `brands` index instead of the configured staging brand index. A regression test and fix were added so facet labels use `NEXT_PUBLIC_MEILISEARCH_BRAND_INDEX_NAME`.
+- Assistant smoke prompts returned `200 text/event-stream` for PETG outdoor parts, carbon-fibre nozzle guidance, 3DSets-style RC hardware, and support-ticket handoff.
+- Support-ticket handoff guardrail held: the assistant did not call `createSupportTicket` without required customer confirmation and contact details.
+
+Remaining Phase 1 content gaps:
+
+- Strapi rich descriptions for the 29 AI-ready products are still sparse.
+- Public product-document coverage is intentionally small at 6 documents; add more manuals, datasheets, safety sheets, install guides, and warranty documents as source material becomes available.
+- Seeded placeholder media should be replaced with realistic product-source media before broader customer-facing review.
+- Assistant product-link grounding remains a follow-up: product recommendations should use canonical `/products/{handle}` links or structured product cards, never placeholder image URLs.
+
 ## Local Testing Notes
 
 Local DREMC data is useful for reference and regression checks, but Phase 1 acceptance happens on fresh staging after deploy. The `ai-*` handles avoid collisions with DREMC imports and make local reruns idempotent.
