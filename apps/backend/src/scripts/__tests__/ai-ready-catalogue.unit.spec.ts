@@ -75,6 +75,7 @@ describe("AI-ready realistic product catalogue", () => {
     expect(input.images?.[0]?.url).toMatch(
       /\/ai-catalogue\/products\/ai-petg-black-175-1kg\.png$/,
     );
+    expect(input.thumbnail).toBe(input.images?.[0]?.url);
   });
 
   it("uses storefront-hosted raster product media", () => {
@@ -85,6 +86,11 @@ describe("AI-ready realistic product catalogue", () => {
         ),
       ),
     ).toBe(true);
+    expect(
+      AI_READY_CATALOGUE_PRODUCTS.every((product) =>
+        product.imageUrl.includes("placehold.co"),
+      ),
+    ).toBe(false);
   });
 
   it("builds rich Strapi product descriptions from AI metadata", () => {
