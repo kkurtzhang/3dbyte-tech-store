@@ -210,11 +210,6 @@ export function ProductGallery({ product, selectedVariant, variantImageUrls }: P
                     className="object-cover"
                     sizes="80px"
                   />
-                  {shouldHighlight && (
-                    <div className="absolute top-0 right-0 bg-green-500 text-white text-[8px] px-1">
-                      {selectedVariant.title?.split(" ")[0]}
-                    </div>
-                  )}
                 </button>
               )
             })}

@@ -12,6 +12,7 @@ let mockIsAuthenticated = false
 jest.mock("lucide-react", () => ({
   Bell: () => <span data-testid="bell-icon" />,
   BellOff: () => <span data-testid="bell-off-icon" />,
+  X: () => <span data-testid="x-icon" />,
 }))
 
 jest.mock("@/context/inventory-alert-context", () => ({
@@ -54,11 +55,17 @@ describe("NotifyMeButton", () => {
 
     render(<NotifyMeButton {...props} />)
 
+    // Open Dialog
+    await user.click(screen.getByRole("button", { name: /notify me/i }))
+
     await user.type(
       screen.getByRole("textbox", { name: /email address/i }),
       "guest@example.com"
     )
-    await user.click(screen.getByRole("button", { name: /notify me/i }))
+
+    // Click submit button in the Dialog
+    const buttons = screen.getAllByRole("button", { name: /notify me/i })
+    await user.click(buttons[1])
 
     await waitFor(() => {
       expect(mockAddAlert).toHaveBeenCalledWith({
@@ -84,10 +91,16 @@ describe("NotifyMeButton", () => {
 
     render(<NotifyMeButton {...props} />)
 
+    // Open Dialog
+    await user.click(screen.getByRole("button", { name: /notify me/i }))
+
     expect(screen.getByRole("textbox", { name: /email address/i })).toHaveValue(
       "ava@example.com"
     )
-    await user.click(screen.getByRole("button", { name: /notify me/i }))
+
+    // Click submit button in the Dialog
+    const buttons = screen.getAllByRole("button", { name: /notify me/i })
+    await user.click(buttons[1])
 
     await waitFor(() => {
       expect(mockAddAlert).toHaveBeenCalledWith(
@@ -103,8 +116,14 @@ describe("NotifyMeButton", () => {
 
     render(<NotifyMeButton {...props} />)
 
-    await user.type(screen.getByRole("textbox", { name: /email address/i }), "nope")
+    // Open Dialog
     await user.click(screen.getByRole("button", { name: /notify me/i }))
+
+    await user.type(screen.getByRole("textbox", { name: /email address/i }), "nope")
+
+    // Click submit button in the Dialog
+    const buttons = screen.getAllByRole("button", { name: /notify me/i })
+    await user.click(buttons[1])
 
     expect(mockAddAlert).not.toHaveBeenCalled()
     expect(mockToast).toHaveBeenCalledWith(

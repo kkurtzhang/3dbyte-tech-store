@@ -230,8 +230,8 @@ describe("ProductGallery", () => {
       />
     )
 
-    // Should show variant badge
-    expect(screen.getByText("Test")).toBeInTheDocument()
+    // Should show variant thumbnail
+    expect(screen.getByRole("button", { name: /view image 2/i })).toBeInTheDocument()
   })
 
   it("auto-selects the matching variant image when the selected option changes", () => {

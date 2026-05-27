@@ -17,9 +17,6 @@ jest.mock("../../components/product-actions", () => ({
   ProductActions: () => <div data-testid="product-actions" />,
 }))
 
-jest.mock("../../components/spec-sheet", () => ({
-  SpecSheet: () => <div data-testid="spec-sheet" />,
-}))
 
 jest.mock("../../components/product-breadcrumbs", () => ({
   ProductBreadcrumbs: () => <div data-testid="product-breadcrumbs" />,
@@ -126,7 +123,7 @@ describe("ProductTemplate", () => {
         Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy()
     expect(
-      descriptionHeading.compareDocumentPosition(purchaseColumn) &
+      purchaseColumn.compareDocumentPosition(descriptionHeading) &
         Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy()
     expect(descriptionHeading.parentElement).toHaveTextContent(
