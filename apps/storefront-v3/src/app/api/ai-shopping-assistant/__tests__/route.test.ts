@@ -623,6 +623,9 @@ describe("POST /api/ai-shopping-assistant", () => {
     expect(streamConfig.system).toContain(
       "Never use image or thumbnail URLs as product links",
     )
+    expect(streamConfig.system).toContain(
+      "Copy productUrl values exactly, character for character",
+    )
     expect(Object.keys(streamConfig.tools)).toEqual([
       "searchProducts",
       "lookupOrder",
