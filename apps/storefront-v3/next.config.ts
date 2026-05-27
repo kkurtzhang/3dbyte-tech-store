@@ -2,14 +2,14 @@ import type { NextConfig } from "next";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import createMDX from "@next/mdx";
+import {
+  getAiCatalogueRemotePatterns,
+  getAssetImageHostnames,
+} from "./src/lib/images/remote-image-config";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const imageHostnames = [
-  process.env.NEXT_PUBLIC_SPACE_DOMAIN,
-  process.env.NEXT_PUBLIC_CDN_SPACE_DOMAIN,
-  process.env.NEXT_PUBLIC_SPACE_ENDPOINT,
-].filter((hostname): hostname is string => Boolean(hostname));
+const imageHostnames = getAssetImageHostnames();
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -68,6 +68,7 @@ const nextConfig: NextConfig = {
         protocol: "https" as const,
         hostname,
       })),
+      ...getAiCatalogueRemotePatterns(),
     ],
   },
 };
