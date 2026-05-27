@@ -160,7 +160,7 @@ Staging was brought up from the deployed `staging` branch with:
 
 Last updated: 2026-05-27
 
-Current technical acceptance status: reopened after human visual QA found PDP rich-description and product-document download regressions. Re-close Phase 1 only after the regression fix branch is deployed, the content seed repairs stale document media, product documents are re-synced, and assistant smoke is rerun.
+Current technical acceptance status: closed for Phase 1 staging after PR #93 / `d1a1694` deployed, the content seed repaired stale document media, product documents were rebuilt in Meilisearch, and assistant smoke passed.
 
 Evidence captured:
 
@@ -169,21 +169,26 @@ Evidence captured:
   - PR #89 `3e09b2e`: generated media included in seed create inputs.
   - PR #90 `18671cf`: existing seeded products update `thumbnail` during reseed.
   - PR #91 `3e90ac4`: storefront image optimizer allows env-derived AI catalogue media hosts.
+  - PR #93 `d1a1694`: PDP rich descriptions load from current Strapi schema, render below the gallery, document downloads proxy public media with safe PDF filenames, and stale AI document media is repaired or retired during content seed.
 - Catalogue reseed completed idempotently with `created=0`, `updated=29`, `total=29` using `AI_CATALOGUE_SALES_CHANNEL_NAME="Web Store"` and staging media base URL.
 - Content seed completed with 29 product descriptions and public product documents for every AI-ready product.
 - Product sync indexed 29 documents into Meilisearch product index `stg_products`.
-- Product-document sync indexed 64 documents into `stg_product_documents_public`.
+- Regression content seed completed with `products=29`, `descriptions_updated=29`, `documents_updated=58`, and `documents_retired=6`.
+- Product-document index was rebuilt with 58 public documents in `stg_product_documents_public`.
 - Storefront HTTP checks passed:
   - generated PNG `200`;
   - `/products/ai-petg-black-175-1kg` `200`;
   - `/api/products/by-handle/ai-petg-black-175-1kg` `200` with generated PNG thumbnail;
   - `/search?q=PETG` `200` and contains PETG;
-  - `/downloads?q=PETG` `200` and contains `AI PETG Black 1.75mm Datasheet`.
+  - `/downloads?q=PETG` `200` and contains AI-ready PDF product documents;
+  - `/api/product-documents/kk5zztwey1p8inhnl6gygonn/download` `200 application/pdf` with `filename="ai-petg-cf-black-175-1kg-safety-sheet.pdf"`;
+  - `/api/product-documents/otll970k7rj398wo1asses3d/download` `200 application/pdf` with `filename="ai-petg-black-175-1kg-datasheet.pdf"`.
 - Browser QA passed on the PETG product page:
   - page title visible;
   - no `placehold.co` product image;
   - Next optimized image uses `/ai-catalogue/products/ai-petg-black-175-1kg.png`;
   - optimized image loaded at `640x640`;
+  - rich description appears below the gallery and includes AI-ready Strapi copy;
   - browser console had 0 errors and 0 warnings.
 - Meilisearch sample product `ai-petg-black-175-1kg` contains:
   - generated thumbnail under `https://store.staging.3dbytetech.com.au/ai-catalogue/products/`;
@@ -196,12 +201,12 @@ Evidence captured:
   - `tdp_requires_hardened_nozzle`;
   - `rcb_component_role`.
 - `/ai/product-guidance` returned `200` for `PETG outdoor parts`, with 3 products, canonical storefront `productUrl`, metadata-derived `aiContext`, rich Strapi context, and authoritative context from Medusa, Meilisearch, and Strapi.
-- Earlier assistant smoke prompts returned `200 text/event-stream` for PETG outdoor parts, carbon-fibre nozzle guidance, 3DSets-style RC hardware, and support-ticket handoff.
+- Assistant smoke prompts returned `200 text/event-stream` for PETG outdoor parts, carbon-fibre nozzle guidance, 3DSets-style RC hardware, and support-ticket handoff.
+- PETG search includes compatible accessories intentionally because `tdp_best_for` marks brass V6 nozzles as suitable for non-abrasive PETG and the bed release stick/build plates as useful for PETG bed adhesion/release.
 - Support-ticket handoff guardrail held: the assistant did not call `createSupportTicket` without required customer confirmation and contact details.
 
 Remaining follow-ups after Phase 1:
 
-- Before re-closing Phase 1, verify PDP rich descriptions render below the image gallery, product-document downloads return PDFs with `.pdf` filenames, and the assistant smoke prompts run against staging.
 - Assistant product-card rendering from structured tool output remains a future improvement; model-authored product links are now grounded through `productUrl`.
 - Future real supplier/manufacturer product media can replace the generated Phase 1 catalogue media when approved source assets are available.
 - Dependency security upgrades are tracked separately in `docs/storefront-backend-next-todo.md`.

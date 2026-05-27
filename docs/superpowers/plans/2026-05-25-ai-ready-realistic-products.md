@@ -41,7 +41,7 @@
 - [x] Move PDP rich descriptions below the image gallery instead of the purchase column.
 - [x] Add regression coverage for product-document download filenames and backend media proxying.
 - [x] Repair the content seed so stale AI document media is replaced or retired.
-- [ ] Deploy the regression branch to staging.
-- [ ] Rerun `seed:ai-ready-content` against staging.
-- [ ] Rerun product-document Meilisearch sync.
-- [ ] Verify PDP rich descriptions, PDF downloads, Download Center results, and assistant smoke on staging.
+- [x] Deploy the regression branch to staging.
+- [x] Rerun `seed:ai-ready-content` against staging.
+- [x] Rerun product-document Meilisearch sync.
+- [x] Verify PDP rich descriptions, PDF downloads, Download Center results, and assistant smoke on staging.
