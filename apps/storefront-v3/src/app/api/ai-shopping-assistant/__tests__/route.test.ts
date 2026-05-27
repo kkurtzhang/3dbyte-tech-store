@@ -620,6 +620,11 @@ describe("POST /api/ai-shopping-assistant", () => {
     expect(streamConfig.system).toContain("suggest-only")
     expect(streamConfig.system).toContain("explicit customer confirmation")
     expect(streamConfig.system).toContain("productUrl")
+    expect(streamConfig.system).toContain("expertContext")
+    expect(streamConfig.system).toContain("expertSignals")
+    expect(streamConfig.system).toContain("print_process")
+    expect(streamConfig.system).toContain("rc_model_building")
+    expect(streamConfig.system).toContain("compatibility_triage")
     expect(streamConfig.system).toContain(
       "Never use image or thumbnail URLs as product links",
     )

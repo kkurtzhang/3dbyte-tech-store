@@ -22,4 +22,5 @@ This pathway captures the staged plan for making 3D Byte Tech Store useful to AI
 ## Key Docs
 
 - [Phase 1 Realistic Products](./phase-1-realistic-products.md)
+- [Phase 2 Expert Product Models](./phase-2-expert-product-models.md)
 - [Future Change Register](./future-change-register.md)

@@ -147,7 +147,19 @@ describe("internal AI routes", () => {
       })
     )
     expect(getProductDescription).toHaveBeenCalledWith("prod_123")
-    expect(res.json).toHaveBeenCalledWith({
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      expertContext: expect.objectContaining({
+        activeExperts: expect.arrayContaining([
+          expect.objectContaining({ id: "print_process" }),
+          expect.objectContaining({ id: "rc_model_building" }),
+        ]),
+        responseRules: expect.arrayContaining([
+          expect.stringContaining("Use only provided product facts"),
+        ]),
+        supportHandoff: expect.objectContaining({
+          allowedOnlyAfterConfirmation: true,
+        }),
+      }),
       products: [
         expect.objectContaining({
           id: "prod_123",
@@ -169,9 +181,150 @@ describe("internal AI routes", () => {
             meilisearch: true,
             strapi: true,
           }),
+          expertSignals: expect.arrayContaining([
+            expect.objectContaining({
+              expertId: "print_process",
+              evidence: expect.arrayContaining([
+                expect.stringContaining("printer_kit"),
+              ]),
+            }),
+            expect.objectContaining({
+              expertId: "rc_model_building",
+              evidence: expect.arrayContaining([
+                expect.stringContaining("project_hardware"),
+              ]),
+            }),
+          ]),
         }),
       ],
+    }))
+  })
+
+  it("activates compatibility triage and support handoff for RC compatibility help", async () => {
+    meiliSearch.mockResolvedValue({
+      hits: [
+        {
+          id: "prod_rc_1",
+          title: "AI 35A Brushless ESC",
+          handle: "ai-35a-brushless-esc-xt60",
+        },
+      ],
     })
+    productGraph.mockResolvedValue({
+      data: [
+        {
+          id: "prod_rc_1",
+          title: "AI 35A Brushless ESC",
+          handle: "ai-35a-brushless-esc-xt60",
+          status: "published",
+          metadata: {
+            rc_model_building: {
+              schema_version: 1,
+              component_role: "esc",
+              compatible_project_types: ["3d_printed_rc_car"],
+              voltage: "7.4V",
+              connector_type: "XT60",
+              used_for: ["3DSets-style drivetrain"],
+            },
+          },
+        },
+      ],
+    })
+    getProductDescription.mockResolvedValue(null)
+    const res = createResponse()
+
+    await productGuidancePOST(
+      createRequest({
+        query: "Can a human check if this ESC is compatible with my 3DSets RC build?",
+        limit: 1,
+      }) as never,
+      res as never
+    )
+
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      expertContext: expect.objectContaining({
+        activeExperts: expect.arrayContaining([
+          expect.objectContaining({ id: "rc_model_building" }),
+          expect.objectContaining({ id: "compatibility_triage" }),
+          expect.objectContaining({ id: "support_handoff" }),
+        ]),
+        followUpQuestions: expect.arrayContaining([
+          expect.stringContaining("project"),
+        ]),
+        supportHandoff: expect.objectContaining({
+          recommended: true,
+          requiredFields: ["name", "email", "subject", "message"],
+        }),
+      }),
+      products: [
+        expect.objectContaining({
+          expertSignals: expect.arrayContaining([
+            expect.objectContaining({
+              expertId: "rc_model_building",
+              evidence: expect.arrayContaining([
+                expect.stringContaining("XT60"),
+              ]),
+            }),
+            expect.objectContaining({
+              expertId: "compatibility_triage",
+            }),
+          ]),
+        }),
+      ],
+    }))
+  })
+
+  it("does not activate support handoff for generic check wording", async () => {
+    meiliSearch.mockResolvedValue({
+      hits: [
+        {
+          id: "prod_petg_1",
+          title: "AI PETG Black 1.75mm 1kg",
+          handle: "ai-petg-black-175-1kg",
+        },
+      ],
+    })
+    productGraph.mockResolvedValue({
+      data: [
+        {
+          id: "prod_petg_1",
+          title: "AI PETG Black 1.75mm 1kg",
+          handle: "ai-petg-black-175-1kg",
+          status: "published",
+          metadata: {
+            three_d_printing: {
+              schema_version: 1,
+              product_kind: "filament",
+              material: "PETG",
+              best_for: ["outdoor brackets"],
+            },
+          },
+        },
+      ],
+    })
+    getProductDescription.mockResolvedValue(null)
+    const res = createResponse()
+
+    await productGuidancePOST(
+      createRequest({
+        query: "Can you check which PETG should I use outdoors?",
+        limit: 1,
+      }) as never,
+      res as never
+    )
+
+    const body = (res.json as jest.Mock).mock.calls[0]?.[0]
+    const activeExpertIds = body.expertContext.activeExperts.map(
+      (expert: { id: string }) => expert.id
+    )
+
+    expect(activeExpertIds).toEqual(["print_process"])
+    expect(body.expertContext.supportHandoff).toEqual(
+      expect.objectContaining({
+        recommended: false,
+        reason: null,
+      })
+    )
   })
 
   it("uses the first concrete storefront CORS origin when STOREFRONT_URL is not set", async () => {
@@ -197,7 +350,7 @@ describe("internal AI routes", () => {
       res as never
     )
 
-    expect(res.json).toHaveBeenCalledWith({
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
       products: [
         expect.objectContaining({
           handle: "ai-petg-black-175-1kg",
@@ -205,7 +358,7 @@ describe("internal AI routes", () => {
             "https://store-cors.example.com/products/ai-petg-black-175-1kg",
         }),
       ],
-    })
+    }))
   })
 
   it("requires order proof before lookup", async () => {

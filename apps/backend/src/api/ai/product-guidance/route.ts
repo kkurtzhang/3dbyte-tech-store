@@ -10,6 +10,7 @@ import {
   getTrimmedString,
   type AiRouteBody,
 } from "../_utils"
+import { buildExpertProductGuidance } from "./product-experts"
 
 type ProductRecord = Record<string, unknown> & {
   id: string
@@ -151,6 +152,14 @@ export const POST = async (
       return toProductResponse(product, hitById.get(product.id), strapiDescription)
     })
   )
+  const expertGuidance = buildExpertProductGuidance(queryText, enrichedProducts)
+  const productsWithExpertSignals = enrichedProducts.map((product) => ({
+    ...product,
+    expertSignals: expertGuidance.productSignalsById[product.id] ?? [],
+  }))
 
-  res.json({ products: enrichedProducts })
+  res.json({
+    products: productsWithExpertSignals,
+    expertContext: expertGuidance.expertContext,
+  })
 }
