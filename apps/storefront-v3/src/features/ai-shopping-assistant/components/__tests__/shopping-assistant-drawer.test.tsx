@@ -12,7 +12,7 @@ let chatState = {
   messages: [] as Array<{
     id: string
     role: "user" | "assistant"
-    parts: Array<{ type: "text"; text: string }>
+    parts: Array<Record<string, unknown>>
   }>,
   status: "ready",
   error: null as Error | null,
@@ -129,6 +129,45 @@ describe("ShoppingAssistantDrawer", () => {
     expect(screen.getByText(/instant product guidance/i)).toBeInTheDocument()
     expect(screen.getByPlaceholderText(/ask me anything/i)).toBeInTheDocument()
     expect(screen.getByText(/ai can make mistakes/i)).toBeInTheDocument()
+  })
+
+  it("formats assistant markdown-style recommendations for scanning", async () => {
+    mockUsePathname.mockReturnValue("/shop")
+    const user = userEvent.setup()
+    chatState = {
+      ...chatState,
+      messages: [
+        {
+          id: "msg-assistant",
+          role: "assistant",
+          parts: [
+            {
+              type: "text",
+              text: [
+                "### PETG for outdoor parts",
+                "- Use PETG when the part needs sunlight and moisture resistance.",
+                "- Choose black PETG for better UV tolerance.",
+                "",
+                "**Tip:** Dry the spool before printing.",
+              ].join("\n"),
+            },
+            { type: "tool-searchProducts", state: "output-available" },
+          ],
+        },
+      ],
+    }
+
+    render(<ShoppingAssistantDrawer />)
+
+    await user.click(screen.getByRole("button", { name: /shopping assistant/i }))
+
+    expect(
+      screen.getByRole("heading", { name: /petg for outdoor parts/i })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/use petg when the part needs sunlight/i)
+    ).toBeInTheDocument()
+    expect(screen.getByText(/dry the spool/i)).toBeInTheDocument()
   })
 
   it("renders product suggestions as customer-clicked links without cart mutation", () => {
