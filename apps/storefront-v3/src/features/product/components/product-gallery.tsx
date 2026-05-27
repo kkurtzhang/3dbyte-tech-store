@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import { cn } from "@/lib/utils"
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import type { MedusaProduct, MedusaProductVariant } from "@/lib/medusa/types"
 import { normalizeOptimizableImageUrl } from "@/lib/images/optimizable-url"
@@ -67,7 +67,7 @@ export function ProductGallery({ product, selectedVariant, variantImageUrls }: P
           variantId: img.variantId,
         }
 
-        imagesByUrl.set(img.url, image)
+        imagesByUrl.set(url, image)
         allImages.push(image)
       } catch {
         return
@@ -77,18 +77,84 @@ export function ProductGallery({ product, selectedVariant, variantImageUrls }: P
     return allImages
   }, [product, variantImageUrls])
 
+  // Find the image that best matches the selected variant
+  const bestImage = useMemo<ImageItem | null>(() => {
+    if (!selectedVariant) return null
+
+    let bestImg: ImageItem | null = null
+    let maxScore = -1
+
+    images.forEach((img) => {
+      let score = 0
+
+      // Match against SKU
+      if (selectedVariant.sku) {
+        const skuLower = selectedVariant.sku.toLowerCase()
+        const skuParts = skuLower.split("-")
+        const lastSkuPart = skuParts[skuParts.length - 1]
+
+        if (img.url.toLowerCase().includes(skuLower)) {
+          score += 10
+        } else if (lastSkuPart && lastSkuPart.length > 2 && img.url.toLowerCase().includes(lastSkuPart)) {
+          score += 8
+        }
+      }
+
+      // Match against variant title / options
+      if (selectedVariant.title) {
+        const titleLower = selectedVariant.title.toLowerCase()
+        if (img.url.toLowerCase().includes(titleLower)) {
+          score += 5
+        }
+      }
+
+      selectedVariant.options?.forEach((opt) => {
+        const optValLower = opt.value.toLowerCase()
+        if (img.url.toLowerCase().includes(optValLower)) {
+          score += 4
+        }
+      })
+
+      // Explicit variant mapping from variantImageUrls (if any)
+      if (img.variantId === selectedVariant.id) {
+        score += 2
+      }
+
+      if (score > maxScore) {
+        maxScore = score
+        bestImg = img
+      }
+    })
+
+    return maxScore > 0 ? bestImg : null
+  }, [images, selectedVariant])
+
+  const lastVariantIdRef = useRef<string | undefined>(undefined)
+
   // Auto-select first variant image when variant changes
   useEffect(() => {
     if (selectedVariant?.id && images.length) {
-      const firstVariantImage = images.find((img) => img.variantId === selectedVariant.id)
-      if (firstVariantImage) {
-        const index = images.findIndex((img) => img.id === firstVariantImage.id)
-        if (index !== -1 && index !== selectedIndex) {
-          setSelectedIndex(index)
+      if (selectedVariant.id !== lastVariantIdRef.current) {
+        lastVariantIdRef.current = selectedVariant.id
+
+        if (bestImage) {
+          const index = images.findIndex((img) => img.id === bestImage.id)
+          if (index !== -1) {
+            setSelectedIndex(index)
+            return
+          }
+        }
+
+        const firstVariantImage = images.find((img) => img.variantId === selectedVariant.id)
+        if (firstVariantImage) {
+          const index = images.findIndex((img) => img.id === firstVariantImage.id)
+          if (index !== -1) {
+            setSelectedIndex(index)
+          }
         }
       }
     }
-  }, [selectedVariant?.id, images, selectedIndex])
+  }, [selectedVariant?.id, images, bestImage])
 
   const canScroll = images.length > 5
 
@@ -185,9 +251,7 @@ export function ProductGallery({ product, selectedVariant, variantImageUrls }: P
 
           <div className="thumbnail-scroll flex gap-2 overflow-x-auto pb-2 px-6 scrollbar-hide">
             {images.map((image, index) => {
-              const isVariantImage = image.variantId === selectedVariant?.id
               const isSelected = selectedIndex === index
-              const shouldHighlight = selectedVariant && isVariantImage
 
               return (
                 <button
@@ -196,10 +260,8 @@ export function ProductGallery({ product, selectedVariant, variantImageUrls }: P
                   className={cn(
                     "relative h-20 w-20 flex-none overflow-hidden rounded-sm border-2 bg-background transition-all",
                     isSelected
-                      ? "border-primary ring-2 ring-primary/20"
-                      : shouldHighlight
-                      ? "border-green-500 ring-2 ring-green-500/20"
-                      : "border-input hover:border-primary/50"
+                      ? "border-cyan-500 ring-2 ring-cyan-500/20"
+                      : "border-border hover:border-cyan-500/50"
                   )}
                   aria-label={`View image ${index + 1}`}
                 >
@@ -210,11 +272,6 @@ export function ProductGallery({ product, selectedVariant, variantImageUrls }: P
                     className="object-cover"
                     sizes="80px"
                   />
-                  {shouldHighlight && (
-                    <div className="absolute top-0 right-0 bg-green-500 text-white text-[8px] px-1">
-                      {selectedVariant.title?.split(" ")[0]}
-                    </div>
-                  )}
                 </button>
               )
             })}

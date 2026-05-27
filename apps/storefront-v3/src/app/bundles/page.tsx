@@ -90,10 +90,10 @@ export default async function BundlesPage({ searchParams }: BundlesPageProps) {
       }
     >
       <div className="space-y-8">
-        <div className="relative overflow-hidden rounded-lg border bg-[radial-gradient(circle_at_top_left,_rgba(220,38,38,0.12),_transparent_42%),linear-gradient(135deg,_rgba(15,23,42,0.98),_rgba(30,41,59,0.94))] px-6 py-8 text-white">
-          <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:20px_20px]" />
+        <div className="relative overflow-hidden rounded-sm border border-cyan-500/10 bg-[radial-gradient(circle_at_top_left,_rgba(6,182,212,0.08),_transparent_42%),linear-gradient(135deg,_rgba(15,23,42,0.98),_rgba(30,41,59,0.94))] px-6 py-8 text-white shadow-[0_0_15px_rgba(6,182,212,0.02)]">
+          <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(6,182,212,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.1)_1px,transparent_1px)] [background-size:20px_20px]" />
           <div className="relative max-w-2xl space-y-3">
-            <p className="text-xs font-mono uppercase tracking-[0.3em] text-primary-foreground/70">
+            <p className="text-xs font-mono uppercase tracking-[0.3em] text-cyan-400">
               Real Bundle Inventory
             </p>
             <h2 className="text-3xl font-bold tracking-tight">
@@ -122,7 +122,7 @@ export default async function BundlesPage({ searchParams }: BundlesPageProps) {
               return (
                 <article
                   key={product.id}
-                  className="group relative flex flex-col overflow-hidden rounded-2xl border bg-card shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
+                  className="group relative flex flex-col overflow-hidden rounded-sm border bg-card shadow-sm transition-all hover:border-cyan-500/50 hover:shadow-[0_0_15px_rgba(6,182,212,0.03)]"
                 >
                   <div className="relative aspect-[4/3] overflow-hidden bg-muted">
                     {product.thumbnail ? (
@@ -137,7 +137,7 @@ export default async function BundlesPage({ searchParams }: BundlesPageProps) {
                         <Package className="h-14 w-14 text-muted-foreground/30" />
                       </div>
                     )}
-                    <div className="absolute left-4 top-4 rounded-full bg-background/95 px-3 py-1 text-xs font-mono uppercase tracking-[0.2em] text-foreground shadow-sm">
+                    <div className="absolute left-4 top-4 rounded-sm bg-background/95 px-3 py-1 text-xs font-mono uppercase tracking-[0.2em] text-cyan-500 border border-cyan-500/10 shadow-sm">
                       Bundle
                     </div>
                   </div>
@@ -154,7 +154,7 @@ export default async function BundlesPage({ searchParams }: BundlesPageProps) {
                       </p>
                     </div>
 
-                    <div className="mt-5 space-y-3 rounded-xl border bg-muted/30 p-4">
+                    <div className="mt-5 space-y-3 rounded-sm border bg-muted/30 p-4">
                       <div className="flex items-center justify-between">
                         <p className="text-xs font-mono uppercase tracking-[0.2em] text-muted-foreground">
                           Included Items
@@ -196,14 +196,14 @@ export default async function BundlesPage({ searchParams }: BundlesPageProps) {
                             <span className="text-sm text-muted-foreground line-through">
                               {formatPrice(originalTotal, currencyCode)}
                             </span>
-                            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                            <span className="rounded-sm bg-cyan-950/30 border border-cyan-500/20 px-2 py-0.5 text-xs font-semibold text-cyan-400 font-mono">
                               Save {formatPrice(savings, currencyCode)}
                             </span>
                           </>
                         ) : null}
                       </div>
 
-                      <Button className="mt-4 w-full" asChild>
+                      <Button className="mt-4 w-full rounded-sm font-mono tracking-wider" asChild>
                         <Link href={getProductPath(product.handle, true)}>
                           <ShoppingCart className="mr-2 h-4 w-4" />
                           Configure Bundle
@@ -216,13 +216,13 @@ export default async function BundlesPage({ searchParams }: BundlesPageProps) {
             })}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed py-16 text-center">
+          <div className="flex flex-col items-center justify-center rounded-sm border border-dashed border-cyan-500/20 bg-slate-900/5 py-16 text-center">
             <Package className="h-14 w-14 text-muted-foreground/30" />
             <h3 className="mt-4 text-lg font-semibold">No bundles available yet</h3>
             <p className="mt-2 max-w-md text-sm text-muted-foreground">
               Create a bundled product in the backend and it will surface here automatically once its linked Medusa product is published.
             </p>
-            <Button className="mt-6" asChild>
+            <Button className="mt-6 rounded-sm font-mono" asChild>
               <Link href="/shop">
                 Browse Products
                 <ArrowRight className="ml-2 h-4 w-4" />
@@ -247,10 +247,10 @@ export default async function BundlesPage({ searchParams }: BundlesPageProps) {
                   <Link
                     key={pageNumber}
                     href={`/bundles${query.size ? `?${query.toString()}` : ""}`}
-                    className={`inline-flex h-10 w-10 items-center justify-center rounded-md border font-mono text-sm transition-colors ${
+                    className={`inline-flex h-10 w-10 items-center justify-center rounded-sm border font-mono text-sm transition-colors ${
                       isCurrent
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "hover:border-primary/50 hover:bg-accent"
+                        ? "border-cyan-500 bg-cyan-500 text-slate-950 font-bold"
+                        : "hover:border-cyan-500/50 hover:text-cyan-500"
                     }`}
                     aria-current={isCurrent ? "page" : undefined}
                   >

@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo, useRef } from "react"
 import { ProductGallery } from "../components/product-gallery"
 import { ProductActions } from "../components/product-actions"
-import { SpecSheet } from "../components/spec-sheet"
 import { ProductBreadcrumbs } from "../components/product-breadcrumbs"
 import { ProductSupportPanel } from "../components/product-support-panel"
 import { ProductDocumentsPanel } from "../components/product-documents-panel"
@@ -46,9 +45,9 @@ function ProductRichDescription({
   }
 
   return (
-    <section className="prose prose-sm max-w-none rounded-sm border bg-muted/30 p-6 dark:prose-invert">
-      <h3 className="mb-3 text-lg font-semibold">Product Description</h3>
-      <div dangerouslySetInnerHTML={{ __html: richDescription }} />
+    <section className="prose prose-sm max-w-none dark:prose-invert prose-cyan prose-headings:font-semibold prose-a:text-cyan-500 hover:prose-a:text-cyan-400 rounded-sm border border-cyan-500/10 bg-slate-900/10 dark:bg-slate-950/20 p-6 shadow-[0_0_15px_rgba(6,182,212,0.02)]">
+      <h3 className="mb-3 text-lg font-semibold tracking-wider font-mono text-cyan-500 uppercase">Product Description</h3>
+      <div className="prose-p:leading-relaxed prose-li:my-1" dangerouslySetInnerHTML={{ __html: richDescription }} />
     </section>
   )
 }
@@ -118,17 +117,7 @@ export function ProductTemplate({
     }
   }
 
-  // Extract specs for the SpecSheet
-  // In a real app, these might come from product metadata or a dedicated Strapi content type
-  const specs = [
-    { label: "Material", value: product.material || "N/A" },
-    { label: "Weight", value: product.weight ? `${product.weight}g` : "N/A" },
-    { label: "Origin", value: product.origin_country ? product.origin_country.toUpperCase() : "N/A" },
-    { label: "Type", value: product.type?.value || "Standard" },
-  ]
 
-  // Filter out empty specs
-  const validSpecs = specs.filter(s => s.value !== "N/A")
   const breadcrumbs = useMemo(
     () => buildProductBreadcrumbs(product, sourceContext),
     [product, sourceContext]
@@ -148,7 +137,6 @@ export function ProductTemplate({
                 variantImageUrls={variantImageUrls}
              />
            </div>
-           <ProductRichDescription richDescription={richDescription} />
         </div>
 
         {/* Right Column: Details & Actions */}
@@ -166,12 +154,14 @@ export function ProductTemplate({
            <ProductSupportPanel />
 
            <ProductDocumentsPanel documents={productDocuments} />
-
-           <Separator />
-
-           {validSpecs.length > 0 && <SpecSheet specs={validSpecs} />}
         </div>
       </div>
+
+      {richDescription && (
+        <div className="mt-12 md:mt-16 border-t border-border pt-8 md:pt-12">
+          <ProductRichDescription richDescription={richDescription} />
+        </div>
+      )}
 
       {/* Recently Viewed Products Section */}
       <div className="mt-12">

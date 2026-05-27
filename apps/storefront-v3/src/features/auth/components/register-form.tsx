@@ -3,12 +3,12 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { registerAction } from "@/app/actions/auth"
+import { zodFormResolver } from "@/lib/forms/zod-form-resolver"
 
 const registerSchema = z
   .object({
@@ -24,6 +24,7 @@ const registerSchema = z
   })
 
 type RegisterFormData = z.infer<typeof registerSchema>
+const registerResolver = zodFormResolver<RegisterFormData>(registerSchema)
 
 interface RegisterFormProps {
   onSuccess?: () => void
@@ -55,7 +56,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
     handleSubmit,
     formState: { errors },
   } = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
+    resolver: registerResolver,
   })
 
   const onSubmit = async (data: RegisterFormData) => {

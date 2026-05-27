@@ -237,10 +237,10 @@ export function ProductActions({
                         type="button"
                         onClick={() => updateOption(option.id, value.value)}
                         className={cn(
-                            "px-4 py-2 text-sm border transition-all",
+                            "px-4 py-2 text-sm border rounded-sm font-mono transition-all",
                             isSelected
                                 ? "bg-primary text-primary-foreground border-primary ring-1 ring-primary/50"
-                                : "bg-background hover:border-primary/50 hover:text-primary"
+                                : "bg-background hover:border-cyan-500/50 hover:text-cyan-500 hover:bg-cyan-500/5"
                         )}
                     >
                         {value.value}

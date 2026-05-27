@@ -24,13 +24,13 @@ const supportItems = [
 
 export function ProductSupportPanel() {
   return (
-    <div className="rounded-xl border border-border/70 bg-muted/30 p-4 md:p-5">
+    <div className="rounded-sm border border-border bg-muted/20 p-4 md:p-5">
       <div className="mb-4">
-        <p className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
+        <p className="text-xs font-mono uppercase tracking-[0.18em] text-cyan-500">
           Before You Order
         </p>
         <h3 className="mt-2 text-base font-semibold text-foreground">
-          Clear buying signals for a first-launch PDP.
+          Delivery, Returns, and Compatibility Help
         </h3>
       </div>
 
@@ -42,15 +42,15 @@ export function ProductSupportPanel() {
             <Link
               key={item.title}
               href={item.href}
-              className="group flex items-start gap-3 rounded-lg border border-border/60 bg-background px-3 py-3 transition-colors hover:border-foreground/20"
+              className="group flex items-start gap-3 rounded-sm border border-border/60 bg-background px-3 py-3 transition-colors hover:border-cyan-500/30 hover:bg-muted/10"
             >
-              <div className="rounded-md bg-muted p-2 text-muted-foreground">
+              <div className="rounded-sm bg-muted p-2 text-muted-foreground group-hover:text-cyan-500 group-hover:bg-cyan-500/10 transition-colors">
                 <Icon className="h-4 w-4" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-sm font-medium text-foreground">{item.title}</span>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                  <span className="text-sm font-medium text-foreground group-hover:text-cyan-500 transition-colors">{item.title}</span>
+                  <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-cyan-500" />
                 </div>
                 <p className="mt-1 text-sm leading-5 text-muted-foreground">
                   {item.description}

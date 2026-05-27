@@ -230,8 +230,8 @@ describe("ProductGallery", () => {
       />
     )
 
-    // Should show variant badge
-    expect(screen.getByText("Test")).toBeInTheDocument()
+    // Should show variant thumbnail
+    expect(screen.getByRole("button", { name: /view image 2/i })).toBeInTheDocument()
   })
 
   it("auto-selects the matching variant image when the selected option changes", () => {
@@ -261,6 +261,30 @@ describe("ProductGallery", () => {
       />
     )
 
+    expect(screen.getByText("2 / 2")).toBeInTheDocument()
+  })
+
+  it("smart-selects matching image by SKU suffix when variant changes", () => {
+    const product = createMockProduct([
+      { id: "img_1", url: "/polymaker-pa18001.png" },
+      { id: "img_2", url: "/polymaker-pa18006.png" },
+    ])
+
+    const selectedVariant = {
+      id: "var_yellow",
+      title: "Yellow",
+      sku: "3DB-POL-PA18006",
+      options: [{ value: "Yellow" }],
+    } as unknown as StoreProductVariant
+
+    render(
+      <ProductGallery
+        product={product}
+        selectedVariant={selectedVariant}
+      />
+    )
+
+    // Should automatically select the second image (index 1) because the url includes pa18006
     expect(screen.getByText("2 / 2")).toBeInTheDocument()
   })
 })
