@@ -69,17 +69,17 @@ export default async function DownloadsPage({
               </p>
             </div>
 
-            <form className="rounded-lg border bg-background p-3 shadow-sm">
+            <form className="rounded-sm border border-border bg-background p-3 shadow-sm focus-within:border-cyan-500/50 focus-within:ring-1 focus-within:ring-cyan-500/20 transition-all">
               <div className="flex gap-2">
                 <Input
                   name="q"
                   defaultValue={query}
                   placeholder="Search by product, model, or document"
                   aria-label="Search public product documents"
-                  className="h-11"
+                  className="h-11 rounded-sm focus-visible:ring-cyan-500"
                 />
                 {type ? <input type="hidden" name="type" value={type} /> : null}
-                <Button type="submit" size="icon" aria-label="Search downloads">
+                <Button type="submit" size="icon" className="rounded-sm" aria-label="Search downloads">
                   <Search className="h-4 w-4" />
                 </Button>
               </div>
@@ -89,47 +89,47 @@ export default async function DownloadsPage({
           <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <Link
               href="/guides"
-              className="group rounded-lg border bg-background p-4 transition-colors hover:border-primary/70"
+              className="group rounded-sm border bg-background p-4 transition-colors hover:border-cyan-500/50 hover:bg-cyan-500/5"
             >
-              <BookOpen className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
+              <BookOpen className="h-5 w-5 text-muted-foreground group-hover:text-cyan-500 transition-colors" />
               <span className="mt-3 flex items-center justify-between gap-3">
                 <span>
-                  <span className="block font-medium">Product guides</span>
+                  <span className="block font-medium group-hover:text-cyan-500 transition-colors">Product guides</span>
                   <span className="mt-1 block text-sm text-muted-foreground">
                     Learn setup, maintenance, materials, and tuning.
                   </span>
                 </span>
-                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-cyan-500" />
               </span>
             </Link>
             <Link
               href="/account/product-files"
-              className="group rounded-lg border bg-background p-4 transition-colors hover:border-primary/70"
+              className="group rounded-sm border bg-background p-4 transition-colors hover:border-cyan-500/50 hover:bg-cyan-500/5"
             >
-              <LockKeyhole className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
+              <LockKeyhole className="h-5 w-5 text-muted-foreground group-hover:text-cyan-500 transition-colors" />
               <span className="mt-3 flex items-center justify-between gap-3">
                 <span>
-                  <span className="block font-medium">Account files</span>
+                  <span className="block font-medium group-hover:text-cyan-500 transition-colors">Account files</span>
                   <span className="mt-1 block text-sm text-muted-foreground">
                     Unlock firmware and restricted files with serial registration.
                   </span>
                 </span>
-                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-cyan-500" />
               </span>
             </Link>
             <Link
               href="/docs"
-              className="group rounded-lg border bg-background p-4 transition-colors hover:border-primary/70"
+              className="group rounded-sm border bg-background p-4 transition-colors hover:border-cyan-500/50 hover:bg-cyan-500/5"
             >
-              <FileText className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
+              <FileText className="h-5 w-5 text-muted-foreground group-hover:text-cyan-500 transition-colors" />
               <span className="mt-3 flex items-center justify-between gap-3">
                 <span>
-                  <span className="block font-medium">Resource center</span>
+                  <span className="block font-medium group-hover:text-cyan-500 transition-colors">Resource center</span>
                   <span className="mt-1 block text-sm text-muted-foreground">
                     Browse all customer support and learning destinations.
                   </span>
                 </span>
-                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-cyan-500" />
               </span>
             </Link>
           </div>
@@ -150,10 +150,10 @@ export default async function DownloadsPage({
           <div className="flex flex-wrap gap-2">
             <Link
               href={buildTypeHref()}
-              className={`rounded-md border px-3 py-2 text-sm transition-colors ${
+              className={`rounded-sm border px-3 py-2 text-sm font-mono transition-colors ${
                 !type
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "bg-background hover:border-primary/60"
+                  ? "border-cyan-500 bg-cyan-500 text-slate-950 font-bold"
+                  : "bg-background hover:border-cyan-500/50 hover:text-cyan-500"
               }`}
             >
               All files
@@ -162,10 +162,10 @@ export default async function DownloadsPage({
               <Link
                 key={documentType.value}
                 href={buildTypeHref(documentType.value)}
-                className={`rounded-md border px-3 py-2 text-sm transition-colors ${
+                className={`rounded-sm border px-3 py-2 text-sm font-mono transition-colors ${
                   type === documentType.value
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "bg-background hover:border-primary/60"
+                    ? "border-cyan-500 bg-cyan-500 text-slate-950 font-bold"
+                    : "bg-background hover:border-cyan-500/50 hover:text-cyan-500"
                 }`}
               >
                 {documentType.label}
@@ -174,7 +174,7 @@ export default async function DownloadsPage({
           </div>
         </div>
 
-        <div className="divide-y rounded-lg border bg-background">
+        <div className="divide-y rounded-sm border bg-background">
           {documents.map((document) => (
             <Link
               key={document.id}
@@ -182,11 +182,11 @@ export default async function DownloadsPage({
               className="group flex items-start justify-between gap-4 p-4 transition-colors hover:bg-muted/40 md:p-5"
             >
               <span className="flex min-w-0 gap-3">
-                <span className="mt-1 rounded-md bg-muted p-2 text-muted-foreground group-hover:text-primary">
+                <span className="mt-1 rounded-sm bg-muted p-2 text-muted-foreground group-hover:text-cyan-500 group-hover:bg-cyan-500/10 transition-colors">
                   <Download className="h-4 w-4" />
                 </span>
                 <span className="min-w-0">
-                  <span className="block font-medium text-foreground">
+                  <span className="block font-medium text-foreground group-hover:text-cyan-500 transition-colors">
                     {document.title}
                   </span>
                   <span className="mt-1 block text-sm leading-6 text-muted-foreground">
@@ -196,7 +196,7 @@ export default async function DownloadsPage({
                   </span>
                 </span>
               </span>
-              <Badge variant="outline" className="shrink-0">
+              <Badge variant="outline" className="shrink-0 rounded-sm font-mono text-[10px] uppercase border-cyan-500/30 text-cyan-500">
                 {formatType(document.document_type)}
               </Badge>
             </Link>

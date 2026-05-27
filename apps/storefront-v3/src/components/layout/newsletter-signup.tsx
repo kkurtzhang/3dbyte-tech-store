@@ -85,8 +85,8 @@ export function NewsletterSignup({
 
   if (isSubmitted) {
     return (
-      <div className="rounded-lg border bg-muted/50 p-4">
-        <p className="text-sm text-muted-foreground">
+      <div className="rounded-sm border border-cyan-500/10 bg-slate-900/10 dark:bg-slate-950/20 p-4">
+        <p className="text-sm font-mono text-cyan-500">
           ✓ Thanks for subscribing!
         </p>
       </div>
@@ -116,7 +116,7 @@ export function NewsletterSignup({
       className={cn(
         compact
           ? "space-y-4"
-          : "rounded-lg border bg-muted/50 p-5 md:p-6",
+          : "rounded-sm border border-cyan-500/10 bg-slate-900/10 dark:bg-slate-950/20 p-5 md:p-6 shadow-[0_0_15px_rgba(6,182,212,0.02)]",
         className
       )}
     >

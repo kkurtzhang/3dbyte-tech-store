@@ -17,7 +17,7 @@ export default function SignUpPage() {
         </p>
       </div>
 
-      <div className="p-6 border rounded-lg bg-card text-card-foreground shadow-sm">
+      <div className="p-6 border rounded-sm border-cyan-500/10 bg-slate-900/10 dark:bg-slate-950/20 text-card-foreground shadow-[0_0_15px_rgba(6,182,212,0.02)]">
         <RegisterForm />
       </div>
 

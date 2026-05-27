@@ -46,9 +46,9 @@ function ProductRichDescription({
   }
 
   return (
-    <section className="prose prose-sm max-w-none rounded-sm border bg-muted/30 p-6 dark:prose-invert">
-      <h3 className="mb-3 text-lg font-semibold">Product Description</h3>
-      <div dangerouslySetInnerHTML={{ __html: richDescription }} />
+    <section className="prose prose-sm max-w-none dark:prose-invert prose-cyan prose-headings:font-semibold prose-a:text-cyan-500 hover:prose-a:text-cyan-400 rounded-sm border border-cyan-500/10 bg-slate-900/10 dark:bg-slate-950/20 p-6 shadow-[0_0_15px_rgba(6,182,212,0.02)]">
+      <h3 className="mb-3 text-lg font-semibold tracking-wider font-mono text-cyan-500 uppercase">Product Description</h3>
+      <div className="prose-p:leading-relaxed prose-li:my-1" dangerouslySetInnerHTML={{ __html: richDescription }} />
     </section>
   )
 }
