@@ -131,15 +131,15 @@ Includes:
 
 ## Chunk B: Staging Bring-Up
 
-Run only after Coolify redeploys the backend image that contains Chunk A.
+Status: complete on staging.
 
-1. Confirm staging deployed the expected commit.
-2. Run the AI catalogue seed command against staging.
-3. Run product Meilisearch sync.
-4. Run product document Meilisearch sync.
-5. Add or seed matching Strapi descriptions.
-6. Add or upload selected product documents: manual, datasheet, safety sheet, install guide, warranty where useful.
-7. Verify storefront listing/search, product pages, product document downloads, Meilisearch flattened fields, and assistant answers.
+Staging was brought up from the deployed `staging` branch with:
+
+1. AI catalogue reseed into the `Web Store` sales channel.
+2. AI content seed for 29 Strapi product descriptions and public product documents.
+3. Product Meilisearch sync.
+4. Product-document Meilisearch sync into `stg_product_documents_public`.
+5. Storefront, search, downloads, browser image, and assistant product-guidance verification.
 
 ## Staging Acceptance Checks
 
@@ -158,29 +158,50 @@ Run only after Coolify redeploys the backend image that contains Chunk A.
 
 Last updated: 2026-05-27
 
-Current technical acceptance status: passed after staging deploy, runtime env correction, scoped storefront recreation, and storefront filter-label hotfix.
+Current technical acceptance status: passed after Phase 1 content closeout, thumbnail reseed hotfixes, and storefront image-host hotfix.
 
 Evidence captured:
 
-- Coolify staging services ran the expected `staging` image commit `5509b07d1252ce3e0fc0af91557b2dd850d64649` before closeout hotfix work.
-- Seed command completed idempotently with `created=0`, `updated=29`, `total=29` when rerun with `AI_CATALOGUE_SALES_CHANNEL_NAME="Web Store"`.
-- Product Meilisearch index `stg_products` contained 29 AI-ready products with flattened `tdp_*` and `rcb_*` fields.
-- Product document index `stg_product_documents_public` contained 6 public product documents.
-- Storefront checks passed for:
-  - `/api/health`
-  - `/search?q=PETG`
-  - `/products/ai-petg-black-175-1kg`
-  - `/downloads?q=hardened%20nozzle`
-  - `/downloads?q=PETG%20datasheet`
-- Browser QA found `/api/filter-labels` returning 500 because storefront facet labels used the literal `brands` index instead of the configured staging brand index. A regression test and fix were added so facet labels use `NEXT_PUBLIC_MEILISEARCH_BRAND_INDEX_NAME`.
-- Assistant product guidance now returns a canonical `productUrl` for each product and the storefront assistant prompt instructs product recommendations to use that field, never image or thumbnail URLs, for product links.
-- Assistant smoke prompts returned `200 text/event-stream` for PETG outdoor parts, carbon-fibre nozzle guidance, 3DSets-style RC hardware, and support-ticket handoff.
+- Deployed staging commits:
+  - PR #88 `67e0372`: Phase 1 content closeout tooling, generated media, Strapi content/document seed.
+  - PR #89 `3e09b2e`: generated media included in seed create inputs.
+  - PR #90 `18671cf`: existing seeded products update `thumbnail` during reseed.
+  - PR #91 `3e90ac4`: storefront image optimizer allows env-derived AI catalogue media hosts.
+- Catalogue reseed completed idempotently with `created=0`, `updated=29`, `total=29` using `AI_CATALOGUE_SALES_CHANNEL_NAME="Web Store"` and staging media base URL.
+- Content seed completed with 29 product descriptions and public product documents for every AI-ready product.
+- Product sync indexed 29 documents into Meilisearch product index `stg_products`.
+- Product-document sync indexed 64 documents into `stg_product_documents_public`.
+- Storefront HTTP checks passed:
+  - generated PNG `200`;
+  - `/products/ai-petg-black-175-1kg` `200`;
+  - `/api/products/by-handle/ai-petg-black-175-1kg` `200` with generated PNG thumbnail;
+  - `/search?q=PETG` `200` and contains PETG;
+  - `/downloads?q=PETG` `200` and contains `AI PETG Black 1.75mm Datasheet`.
+- Browser QA passed on the PETG product page:
+  - page title visible;
+  - no `placehold.co` product image;
+  - Next optimized image uses `/ai-catalogue/products/ai-petg-black-175-1kg.png`;
+  - optimized image loaded at `640x640`;
+  - browser console had 0 errors and 0 warnings.
+- Meilisearch sample product `ai-petg-black-175-1kg` contains:
+  - generated thumbnail under `https://store.staging.3dbytetech.com.au/ai-catalogue/products/`;
+  - `tdp_material: PETG`;
+  - `tdp_product_kind: filament`;
+  - `tdp_requires_hardened_nozzle: false`;
+  - `rcb_component_role: print_material`.
+- Product index settings include useful AI filters:
+  - `tdp_material`;
+  - `tdp_requires_hardened_nozzle`;
+  - `rcb_component_role`.
+- `/ai/product-guidance` returned `200` for `PETG outdoor parts`, with 3 products, canonical storefront `productUrl`, metadata-derived `aiContext`, rich Strapi context, and authoritative context from Medusa, Meilisearch, and Strapi.
+- Earlier assistant smoke prompts returned `200 text/event-stream` for PETG outdoor parts, carbon-fibre nozzle guidance, 3DSets-style RC hardware, and support-ticket handoff.
 - Support-ticket handoff guardrail held: the assistant did not call `createSupportTicket` without required customer confirmation and contact details.
 
 Remaining follow-ups after Phase 1:
 
 - Assistant product-card rendering from structured tool output remains a future improvement; model-authored product links are now grounded through `productUrl`.
 - Future real supplier/manufacturer product media can replace the generated Phase 1 catalogue media when approved source assets are available.
+- Dependency security upgrades are tracked separately in `docs/storefront-backend-next-todo.md`.
 
 ## Local Testing Notes
 
