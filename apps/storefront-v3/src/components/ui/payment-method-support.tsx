@@ -34,7 +34,7 @@ export function PaymentMethodSupport({
   return (
     <div
       className={cn(
-        "rounded-xl border border-border/70 bg-muted/20",
+        "rounded-sm border border-border/70 bg-muted/20",
         compact ? "px-3 py-3" : "px-4 py-4",
         className
       )}
@@ -52,7 +52,7 @@ export function PaymentMethodSupport({
               aria-label={methodLabel}
               title={methodLabel}
               className={cn(
-                "inline-flex items-center justify-center rounded-lg border border-border/70 bg-background/80 text-foreground",
+                "inline-flex items-center justify-center rounded-sm border border-border/70 bg-background/80 text-foreground",
                 compact ? "h-9 min-w-9 px-2" : "h-10 min-w-10 px-2.5"
               )}
             >
