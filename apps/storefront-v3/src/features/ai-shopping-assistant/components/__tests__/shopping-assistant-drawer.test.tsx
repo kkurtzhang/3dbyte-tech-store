@@ -12,7 +12,7 @@ let chatState = {
   messages: [] as Array<{
     id: string
     role: "user" | "assistant"
-    parts: Array<{ type: "text"; text: string }>
+    parts: Array<Record<string, unknown>>
   }>,
   status: "ready",
   error: null as Error | null,
@@ -60,14 +60,18 @@ describe("ShoppingAssistantDrawer", () => {
 
     render(<ShoppingAssistantDrawer />)
 
-    await user.click(screen.getByRole("button", { name: /shopping assistant/i }))
+    await user.click(
+      screen.getByRole("button", { name: /shopping assistant/i }),
+    )
     await user.type(
       screen.getByRole("textbox", { name: /ask the shopping assistant/i }),
-      "Which hotend fits my K1?"
+      "Which hotend fits my K1?",
     )
     await user.click(screen.getByRole("button", { name: /send/i }))
 
-    expect(sendMessageMock).toHaveBeenCalledWith({ text: "Which hotend fits my K1?" })
+    expect(sendMessageMock).toHaveBeenCalledWith({
+      text: "Which hotend fits my K1?",
+    })
   })
 
   it("shows a streaming pending state", async () => {
@@ -87,7 +91,9 @@ describe("ShoppingAssistantDrawer", () => {
 
     render(<ShoppingAssistantDrawer />)
 
-    await user.click(screen.getByRole("button", { name: /shopping assistant/i }))
+    await user.click(
+      screen.getByRole("button", { name: /shopping assistant/i }),
+    )
 
     await waitFor(() => {
       expect(screen.getByText(/thinking/i)).toBeInTheDocument()
@@ -100,7 +106,7 @@ describe("ShoppingAssistantDrawer", () => {
     render(<ShoppingAssistantDrawer />)
 
     expect(
-      screen.queryByRole("button", { name: /shopping assistant/i })
+      screen.queryByRole("button", { name: /shopping assistant/i }),
     ).not.toBeInTheDocument()
   })
 
@@ -110,11 +116,13 @@ describe("ShoppingAssistantDrawer", () => {
 
     render(<ShoppingAssistantDrawer />)
 
-    await user.click(screen.getByRole("button", { name: /shopping assistant/i }))
+    await user.click(
+      screen.getByRole("button", { name: /shopping assistant/i }),
+    )
 
     expect(screen.getByText(/human support is available/i)).toBeInTheDocument()
     expect(
-      screen.queryByRole("button", { name: /create ticket/i })
+      screen.queryByRole("button", { name: /create ticket/i }),
     ).not.toBeInTheDocument()
   })
 
@@ -124,11 +132,54 @@ describe("ShoppingAssistantDrawer", () => {
 
     render(<ShoppingAssistantDrawer />)
 
-    await user.click(screen.getByRole("button", { name: /shopping assistant/i }))
+    await user.click(
+      screen.getByRole("button", { name: /shopping assistant/i }),
+    )
 
     expect(screen.getByText(/instant product guidance/i)).toBeInTheDocument()
     expect(screen.getByPlaceholderText(/ask me anything/i)).toBeInTheDocument()
     expect(screen.getByText(/ai can make mistakes/i)).toBeInTheDocument()
+  })
+
+  it("formats assistant markdown-style recommendations for scanning", async () => {
+    mockUsePathname.mockReturnValue("/shop")
+    const user = userEvent.setup()
+    chatState = {
+      ...chatState,
+      messages: [
+        {
+          id: "msg-assistant",
+          role: "assistant",
+          parts: [
+            {
+              type: "text",
+              text: [
+                "### PETG for outdoor parts",
+                "- Use PETG when the part needs sunlight and moisture resistance.",
+                "- Choose black PETG for better UV tolerance.",
+                "",
+                "**Tip:** Dry the spool before printing.",
+              ].join("\n"),
+            },
+            { type: "tool-searchProducts", state: "output-available" },
+          ],
+        },
+      ],
+    }
+
+    render(<ShoppingAssistantDrawer />)
+
+    await user.click(
+      screen.getByRole("button", { name: /shopping assistant/i }),
+    )
+
+    expect(
+      screen.getByRole("heading", { name: /petg for outdoor parts/i }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/use petg when the part needs sunlight/i),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/dry the spool/i)).toBeInTheDocument()
   })
 
   it("renders product suggestions as customer-clicked links without cart mutation", () => {
@@ -143,19 +194,18 @@ describe("ShoppingAssistantDrawer", () => {
           inStock: true,
           reason: "Good match for a complete CoreXY build.",
         }}
-      />
+      />,
     )
 
-    expect(screen.getByRole("link", { name: /ldo voron 2.4 kit/i })).toHaveAttribute(
-      "href",
-      "/products/ldo-voron-24-kit"
-    )
+    expect(
+      screen.getByRole("link", { name: /ldo voron 2.4 kit/i }),
+    ).toHaveAttribute("href", "/products/ldo-voron-24-kit")
     expect(screen.getByRole("link", { name: /view product/i })).toHaveAttribute(
       "href",
-      "/products/ldo-voron-24-kit"
+      "/products/ldo-voron-24-kit",
     )
     expect(
-      screen.queryByRole("button", { name: /add to cart/i })
+      screen.queryByRole("button", { name: /add to cart/i }),
     ).not.toBeInTheDocument()
   })
 })

@@ -90,7 +90,19 @@ These items are no longer open TODOs and should be treated as shipped baseline u
   - Placeholder image URLs are never presented as product navigation links.
   - Existing support-ticket confirmation guardrails remain intact.
 
-### 5) Move remaining static Help/Guides blocks to CMS (Storefront + CMS)
+### 5) Enrich material search result sections (Storefront + Search)
+
+- Problem: material searches such as `PETG` can legitimately return compatible accessories because `tdp_best_for` says those products are useful for PETG, but the result page does not yet separate exact material products from helpful accessories.
+- Deliverable:
+  - Add a **Filament only** filter/section for material queries using exact material/product-kind metadata where available.
+  - Add a **Best useful for PETG** style section for compatible accessories such as nozzles, adhesion tools, build surfaces, drying/storage, and maintenance products.
+  - Consider a ranking boost for exact filament/material matches so PETG filament is visually primary while related accessories remain discoverable.
+- Acceptance:
+  - Searching `PETG` clearly distinguishes PETG filament from PETG-compatible accessories.
+  - Accessory results are still discoverable without looking like the main material match.
+  - Section labels are metadata-driven enough to work in production, not hardcoded only for staging seed handles.
+
+### 6) Move remaining static Help/Guides blocks to CMS (Storefront + CMS)
 
 - Problem: category/popular-resource blocks are still hardcoded.
 - Deliverable:
@@ -106,6 +118,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 
 - Implement TODO #4.
 - Implement TODO #5.
+- Implement TODO #6.
 - Smoke-test support-ticket and product-document flows after staging deploys.
 
 ### Backend worktree

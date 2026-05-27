@@ -199,6 +199,126 @@ describe("POST /api/ai-shopping-assistant", () => {
     ])
   })
 
+  it("accepts follow-up payloads when previous assistant messages include tool parts", async () => {
+    configureAiEnv()
+    const { POST } = await import("../route")
+
+    const response = await POST(
+      createJsonRequest({
+        messages: [
+          {
+            id: "msg-first-user",
+            role: "user",
+            parts: [
+              {
+                type: "text",
+                text: "Which PETG should I use for outdoor parts?",
+              },
+            ],
+          },
+          {
+            id: "msg-first-assistant",
+            role: "assistant",
+            parts: [
+              { type: "step-start" },
+              {
+                type: "tool-searchProducts",
+                state: "output-available",
+                input: { query: "PETG outdoor parts", limit: 4 },
+                output: { products: [{ handle: "ai-petg-black-175-1kg" }] },
+              },
+              {
+                type: "text",
+                text: "Use PETG for outdoor parts and avoid PLA for heat exposure.",
+              },
+            ],
+          },
+          {
+            id: "msg-follow-up-user",
+            role: "user",
+            parts: [
+              {
+                type: "text",
+                text: "Can I print that with a brass nozzle?",
+              },
+            ],
+          },
+        ],
+        trigger: "submit-message",
+      }),
+    )
+
+    expect(response.status).toBe(200)
+    const streamConfig = streamTextMock.mock.calls[0]?.[0]
+    expect(streamConfig.messages).toEqual([
+      {
+        role: "user",
+        parts: [
+          {
+            type: "text",
+            text: "Which PETG should I use for outdoor parts?",
+          },
+        ],
+      },
+      {
+        role: "assistant",
+        parts: [
+          { type: "step-start" },
+          {
+            type: "tool-searchProducts",
+            state: "output-available",
+            input: { query: "PETG outdoor parts", limit: 4 },
+            output: { products: [{ handle: "ai-petg-black-175-1kg" }] },
+          },
+          {
+            type: "text",
+            text: "Use PETG for outdoor parts and avoid PLA for heat exposure.",
+          },
+        ],
+      },
+      {
+        role: "user",
+        parts: [
+          {
+            type: "text",
+            text: "Can I print that with a brass nozzle?",
+          },
+        ],
+      },
+    ])
+  })
+
+  it("rejects oversized tool part payloads before model creation", async () => {
+    configureAiEnv()
+    const { POST } = await import("../route")
+
+    const response = await POST(
+      createJsonRequest({
+        messages: [
+          {
+            role: "user",
+            parts: [{ type: "text", text: "Can we continue?" }],
+          },
+          {
+            role: "assistant",
+            parts: [
+              {
+                type: "tool-searchProducts",
+                state: "output-available",
+                output: { products: "x".repeat(30_000) },
+              },
+            ],
+          },
+        ],
+      }),
+    )
+    const body = await response.json()
+
+    expect(response.status).toBe(400)
+    expect(body.error).toContain("Invalid assistant request")
+    expect(streamTextMock).not.toHaveBeenCalled()
+  })
+
   it("streams with DeepSeek and exposes support ticket handoff only as confirmed user action", async () => {
     configureAiEnv()
     const { POST } = await import("../route")
@@ -237,7 +357,9 @@ describe("POST /api/ai-shopping-assistant", () => {
     expect(streamConfig.system).toContain("suggest-only")
     expect(streamConfig.system).toContain("explicit customer confirmation")
     expect(streamConfig.system).toContain("productUrl")
-    expect(streamConfig.system).toContain("Never use image or thumbnail URLs as product links")
+    expect(streamConfig.system).toContain(
+      "Never use image or thumbnail URLs as product links",
+    )
     expect(Object.keys(streamConfig.tools)).toEqual([
       "searchProducts",
       "lookupOrder",

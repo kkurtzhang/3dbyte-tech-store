@@ -2,10 +2,24 @@
 
 import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
-import { Bot, LifeBuoy, Loader2, Send, ShoppingBag, Sparkles } from "lucide-react"
+import {
+  Bot,
+  LifeBuoy,
+  Loader2,
+  Send,
+  ShoppingBag,
+  Sparkles,
+} from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
+import {
+  FormEvent,
+  ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -37,7 +51,11 @@ export function AssistantProductCard({
 
   return (
     <article className="rounded-md border bg-background p-3 shadow-sm">
-      <Link href={productHref} className="flex gap-3" aria-label={product.title}>
+      <Link
+        href={productHref}
+        className="flex gap-3"
+        aria-label={product.title}
+      >
         {product.thumbnail ? (
           <img
             src={product.thumbnail}
@@ -52,7 +70,9 @@ export function AssistantProductCard({
         <div className="min-w-0 flex-1">
           <h3 className="line-clamp-2 text-sm font-medium">{product.title}</h3>
           {product.price ? (
-            <p className="mt-1 text-sm text-muted-foreground">{product.price}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {product.price}
+            </p>
           ) : null}
           {product.reason ? (
             <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
@@ -82,13 +102,173 @@ function getMessageText(message: { parts?: Array<Record<string, unknown>> }) {
   )
 }
 
+type AssistantContentBlock =
+  | { text: string; type: "heading" }
+  | { text: string; type: "paragraph" }
+  | { items: string[]; ordered: boolean; type: "list" }
+
+type AssistantParseState = {
+  blocks: AssistantContentBlock[]
+  listItems: string[]
+  orderedList: boolean
+  paragraphLines: string[]
+}
+
+function flushParagraph(state: AssistantParseState): AssistantParseState {
+  if (state.paragraphLines.length === 0) return state
+
+  return {
+    ...state,
+    blocks: [
+      ...state.blocks,
+      { text: state.paragraphLines.join(" "), type: "paragraph" },
+    ],
+    paragraphLines: [],
+  }
+}
+
+function flushList(state: AssistantParseState): AssistantParseState {
+  if (state.listItems.length === 0) return state
+
+  return {
+    ...state,
+    blocks: [
+      ...state.blocks,
+      { items: state.listItems, ordered: state.orderedList, type: "list" },
+    ],
+    listItems: [],
+  }
+}
+
+function parseAssistantContent(content: string) {
+  const initialState: AssistantParseState = {
+    blocks: [],
+    listItems: [],
+    orderedList: false,
+    paragraphLines: [],
+  }
+
+  const parsedState = content.split(/\r?\n/).reduce((state, line) => {
+    const trimmedLine = line.trim()
+
+    if (!trimmedLine) {
+      return flushList(flushParagraph(state))
+    }
+
+    const heading = trimmedLine.match(/^#{1,3}\s+(.+)$/)
+
+    if (heading) {
+      const flushedState = flushList(flushParagraph(state))
+
+      return {
+        ...flushedState,
+        blocks: [
+          ...flushedState.blocks,
+          { text: heading[1].trim(), type: "heading" as const },
+        ],
+      }
+    }
+
+    const listItem = trimmedLine.match(/^((?:[-*])|(?:\d+\.))\s+(.+)$/)
+
+    if (listItem) {
+      const ordered = /^\d+\.$/.test(listItem[1])
+      const flushedState = flushParagraph(state)
+      const listState =
+        flushedState.listItems.length > 0 &&
+        flushedState.orderedList !== ordered
+          ? flushList(flushedState)
+          : flushedState
+
+      return {
+        ...listState,
+        listItems: [...listState.listItems, listItem[2].trim()],
+        orderedList: ordered,
+      }
+    }
+
+    const flushedState = flushList(state)
+
+    return {
+      ...flushedState,
+      paragraphLines: [...flushedState.paragraphLines, trimmedLine],
+    }
+  }, initialState)
+
+  return flushList(flushParagraph(parsedState)).blocks
+}
+
+function renderInlineText(text: string): ReactNode[] {
+  return text
+    .split(/(\*\*[^*]+\*\*)/g)
+    .filter(Boolean)
+    .map((segment, index) => {
+      const strongText = segment.match(/^\*\*([^*]+)\*\*$/)?.[1]
+
+      if (strongText) {
+        return (
+          <strong
+            className="font-semibold text-foreground"
+            key={`${segment}-${index}`}
+          >
+            {strongText}
+          </strong>
+        )
+      }
+
+      return segment
+    })
+}
+
+function FormattedAssistantMessage({ content }: { content: string }) {
+  const blocks = parseAssistantContent(content)
+
+  return (
+    <div className="space-y-2 leading-relaxed">
+      {blocks.map((block, index) => {
+        if (block.type === "heading") {
+          return (
+            <h3
+              className="text-sm font-semibold text-foreground"
+              key={`${block.text}-${index}`}
+            >
+              {renderInlineText(block.text)}
+            </h3>
+          )
+        }
+
+        if (block.type === "list") {
+          const ListTag = block.ordered ? "ol" : "ul"
+
+          return (
+            <ListTag
+              className={`space-y-1 pl-4 ${
+                block.ordered ? "list-decimal" : "list-disc"
+              }`}
+              key={`${block.items.join("|")}-${index}`}
+            >
+              {block.items.map((item) => (
+                <li key={item}>{renderInlineText(item)}</li>
+              ))}
+            </ListTag>
+          )
+        }
+
+        return (
+          <p key={`${block.text}-${index}`}>{renderInlineText(block.text)}</p>
+        )
+      })}
+    </div>
+  )
+}
+
 export function ShoppingAssistantDrawer() {
   const pathname = usePathname()
   const [input, setInput] = useState("")
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const transport = useMemo(
     () => new DefaultChatTransport({ api: "/api/ai-shopping-assistant" }),
-    []
+    [],
   )
   const { messages, sendMessage, status, error } = useChat({ transport })
   const isStreaming = status === "submitted" || status === "streaming"
@@ -130,7 +310,8 @@ export function ShoppingAssistantDrawer() {
             AI Shopping Assistant
           </SheetTitle>
           <SheetDescription className="text-sm">
-            Instant product guidance, compatibility checks, order help, and human support.
+            Instant product guidance, compatibility checks, order help, and
+            human support.
           </SheetDescription>
         </SheetHeader>
         <div className="flex-1 space-y-4 overflow-y-auto bg-muted/10 px-6 py-6 scroll-smooth">
@@ -141,8 +322,8 @@ export function ShoppingAssistantDrawer() {
                   <Sparkles className="h-8 w-8 text-cyan-600 dark:text-cyan-300" />
                 </div>
                 <p className="max-w-[280px] text-sm text-muted-foreground">
-                  I'm your AI shopping assistant. Ask about products, compatibility,
-                  shipping estimates, or recent orders.
+                  I'm your AI shopping assistant. Ask about products,
+                  compatibility, shipping estimates, or recent orders.
                 </p>
               </div>
               <div className="rounded-md border bg-background p-4 text-sm text-muted-foreground shadow-sm">
@@ -151,8 +332,8 @@ export function ShoppingAssistantDrawer() {
                   Human support is available
                 </div>
                 Ask for product help, order/tracking support, or say you want a
-                human to follow up. I will ask for confirmation before creating a
-                support ticket.
+                human to follow up. I will ask for confirmation before creating
+                a support ticket.
               </div>
             </div>
           ) : null}
@@ -175,7 +356,11 @@ export function ShoppingAssistantDrawer() {
                       : "rounded-2xl rounded-tl-sm border bg-background"
                   }`}
                 >
-                  {content}
+                  {message.role === "assistant" ? (
+                    <FormattedAssistantMessage content={content} />
+                  ) : (
+                    <span className="whitespace-pre-wrap">{content}</span>
+                  )}
                 </div>
               </div>
             )
