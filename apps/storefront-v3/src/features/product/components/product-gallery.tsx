@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import { cn } from "@/lib/utils"
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import type { MedusaProduct, MedusaProductVariant } from "@/lib/medusa/types"
 import { normalizeOptimizableImageUrl } from "@/lib/images/optimizable-url"
@@ -129,26 +129,32 @@ export function ProductGallery({ product, selectedVariant, variantImageUrls }: P
     return maxScore > 0 ? bestImg : null
   }, [images, selectedVariant])
 
+  const lastVariantIdRef = useRef<string | undefined>(undefined)
+
   // Auto-select first variant image when variant changes
   useEffect(() => {
     if (selectedVariant?.id && images.length) {
-      if (bestImage) {
-        const index = images.findIndex((img) => img.id === bestImage.id)
-        if (index !== -1 && index !== selectedIndex) {
-          setSelectedIndex(index)
-          return
-        }
-      }
+      if (selectedVariant.id !== lastVariantIdRef.current) {
+        lastVariantIdRef.current = selectedVariant.id
 
-      const firstVariantImage = images.find((img) => img.variantId === selectedVariant.id)
-      if (firstVariantImage) {
-        const index = images.findIndex((img) => img.id === firstVariantImage.id)
-        if (index !== -1 && index !== selectedIndex) {
-          setSelectedIndex(index)
+        if (bestImage) {
+          const index = images.findIndex((img) => img.id === bestImage.id)
+          if (index !== -1) {
+            setSelectedIndex(index)
+            return
+          }
+        }
+
+        const firstVariantImage = images.find((img) => img.variantId === selectedVariant.id)
+        if (firstVariantImage) {
+          const index = images.findIndex((img) => img.id === firstVariantImage.id)
+          if (index !== -1) {
+            setSelectedIndex(index)
+          }
         }
       }
     }
-  }, [selectedVariant?.id, images, selectedIndex, bestImage])
+  }, [selectedVariant?.id, images, bestImage])
 
   const canScroll = images.length > 5
 
