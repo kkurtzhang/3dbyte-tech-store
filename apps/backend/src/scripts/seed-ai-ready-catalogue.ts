@@ -196,6 +196,7 @@ export default async function seedAiReadyCatalogue({
       handle: productInput.handle,
       description: productInput.description,
       status: productInput.status,
+      thumbnail: productInput.thumbnail,
       is_giftcard: productInput.is_giftcard,
       discountable: productInput.discountable,
       images: productInput.images,
