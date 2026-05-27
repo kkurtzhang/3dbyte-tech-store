@@ -305,7 +305,6 @@ describe("POST /api/ai-shopping-assistant", () => {
             state: "output-available",
             input: { query: "PETG outdoor parts", limit: 4 },
             output: { products: [{ handle: "ai-petg-black-175-1kg" }] },
-            providerExecuted: true,
             callProviderMetadata: { deepseek: { requestId: "req_01" } },
             resultProviderMetadata: { deepseek: { resultId: "res_01" } },
             approval: {
@@ -390,7 +389,6 @@ describe("POST /api/ai-shopping-assistant", () => {
       input: undefined,
       rawInput: { query: "PETG filament", limit: 6 },
       errorText: "Backend unavailable",
-      providerExecuted: true,
       callProviderMetadata: { deepseek: { requestId: "req_02" } },
       resultProviderMetadata: { deepseek: { resultId: "res_02" } },
       approval: {
