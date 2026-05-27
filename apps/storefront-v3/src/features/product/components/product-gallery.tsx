@@ -78,10 +78,10 @@ export function ProductGallery({ product, selectedVariant, variantImageUrls }: P
   }, [product, variantImageUrls])
 
   // Find the image that best matches the selected variant
-  const bestImage = useMemo(() => {
+  const bestImage = useMemo<ImageItem | null>(() => {
     if (!selectedVariant) return null
 
-    let bestImg = null
+    let bestImg: ImageItem | null = null
     let maxScore = -1
 
     images.forEach((img) => {

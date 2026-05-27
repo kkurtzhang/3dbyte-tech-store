@@ -71,9 +71,6 @@ const nextConfig: NextConfig = {
       ...getAiCatalogueRemotePatterns(),
     ],
   },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
 };
 
 const withMDX = createMDX({

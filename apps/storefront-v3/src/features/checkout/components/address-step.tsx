@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import type { MeilisearchAddressDocument } from "@3dbyte-tech-store/shared-types"
 import { Button } from "@/components/ui/button"
@@ -17,6 +16,7 @@ import { cn } from "@/lib/utils"
 import { Home, MapPin, Plus, User, UserPlus } from "lucide-react"
 import { getAddressesAction, getSessionAction, CustomerAddress, AuthUser } from "@/app/actions/auth"
 import { AuthSheet } from "@/features/auth/components/auth-sheet"
+import { zodFormResolver } from "@/lib/forms/zod-form-resolver"
 import { AddressAutocomplete } from "./address-autocomplete"
 
 const addressSchema = z.object({
@@ -46,6 +46,7 @@ const addressSchema = z.object({
 })
 
 type AddressFormData = z.infer<typeof addressSchema>
+const addressResolver = zodFormResolver<AddressFormData>(addressSchema)
 type CheckoutIdentityMode = "guest" | "account"
 type AuthSheetMode = "login" | "register"
 
@@ -76,7 +77,7 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
     watch,
     setValue,
   } = useForm<AddressFormData>({
-    resolver: zodResolver(addressSchema),
+    resolver: addressResolver,
     defaultValues: {
       email: "",
       country_code: "au",

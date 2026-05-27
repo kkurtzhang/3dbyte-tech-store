@@ -4,13 +4,13 @@ import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { loginAction } from "@/app/actions/auth"
 import { GoogleIcon } from "@/components/ui/google-icon"
+import { zodFormResolver } from "@/lib/forms/zod-form-resolver"
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -18,6 +18,7 @@ const loginSchema = z.object({
 })
 
 type LoginFormData = z.infer<typeof loginSchema>
+const loginResolver = zodFormResolver<LoginFormData>(loginSchema)
 
 interface LoginFormProps {
   onSuccess?: () => void
@@ -48,7 +49,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+    resolver: loginResolver,
   })
 
   const onSubmit = async (data: LoginFormData) => {
