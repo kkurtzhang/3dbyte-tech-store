@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
+import { useChat } from "@ai-sdk/react"
+import { DefaultChatTransport } from "ai"
 import {
   Bot,
   LifeBuoy,
@@ -9,9 +9,9 @@ import {
   Send,
   ShoppingBag,
   Sparkles,
-} from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+} from "lucide-react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import {
   FormEvent,
   ReactNode,
@@ -19,9 +19,9 @@ import {
   useMemo,
   useRef,
   useState,
-} from "react";
+} from "react"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import {
   Sheet,
   SheetContent,
@@ -29,25 +29,25 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet";
-import { Textarea } from "@/components/ui/textarea";
+} from "@/components/ui/sheet"
+import { Textarea } from "@/components/ui/textarea"
 
 export type AssistantProductSuggestion = {
-  id: string;
-  title: string;
-  handle: string;
-  thumbnail?: string | null;
-  price?: string | null;
-  inStock?: boolean | null;
-  reason?: string | null;
-};
+  id: string
+  title: string
+  handle: string
+  thumbnail?: string | null
+  price?: string | null
+  inStock?: boolean | null
+  reason?: string | null
+}
 
 export function AssistantProductCard({
   product,
 }: {
-  product: AssistantProductSuggestion;
+  product: AssistantProductSuggestion
 }) {
-  const productHref = `/products/${product.handle}`;
+  const productHref = `/products/${product.handle}`
 
   return (
     <article className="rounded-md border bg-background p-3 shadow-sm">
@@ -90,7 +90,7 @@ export function AssistantProductCard({
         </Button>
       </div>
     </article>
-  );
+  )
 }
 
 function getMessageText(message: { parts?: Array<Record<string, unknown>> }) {
@@ -99,23 +99,23 @@ function getMessageText(message: { parts?: Array<Record<string, unknown>> }) {
       ?.filter((part) => part.type === "text" && typeof part.text === "string")
       .map((part) => part.text as string)
       .join("") ?? ""
-  );
+  )
 }
 
 type AssistantContentBlock =
   | { text: string; type: "heading" }
   | { text: string; type: "paragraph" }
-  | { items: string[]; ordered: boolean; type: "list" };
+  | { items: string[]; ordered: boolean; type: "list" }
 
 type AssistantParseState = {
-  blocks: AssistantContentBlock[];
-  listItems: string[];
-  orderedList: boolean;
-  paragraphLines: string[];
-};
+  blocks: AssistantContentBlock[]
+  listItems: string[]
+  orderedList: boolean
+  paragraphLines: string[]
+}
 
 function flushParagraph(state: AssistantParseState): AssistantParseState {
-  if (state.paragraphLines.length === 0) return state;
+  if (state.paragraphLines.length === 0) return state
 
   return {
     ...state,
@@ -124,11 +124,11 @@ function flushParagraph(state: AssistantParseState): AssistantParseState {
       { text: state.paragraphLines.join(" "), type: "paragraph" },
     ],
     paragraphLines: [],
-  };
+  }
 }
 
 function flushList(state: AssistantParseState): AssistantParseState {
-  if (state.listItems.length === 0) return state;
+  if (state.listItems.length === 0) return state
 
   return {
     ...state,
@@ -137,7 +137,7 @@ function flushList(state: AssistantParseState): AssistantParseState {
       { items: state.listItems, ordered: state.orderedList, type: "list" },
     ],
     listItems: [],
-  };
+  }
 }
 
 function parseAssistantContent(content: string) {
@@ -146,19 +146,19 @@ function parseAssistantContent(content: string) {
     listItems: [],
     orderedList: false,
     paragraphLines: [],
-  };
+  }
 
   const parsedState = content.split(/\r?\n/).reduce((state, line) => {
-    const trimmedLine = line.trim();
+    const trimmedLine = line.trim()
 
     if (!trimmedLine) {
-      return flushList(flushParagraph(state));
+      return flushList(flushParagraph(state))
     }
 
-    const heading = trimmedLine.match(/^#{1,3}\s+(.+)$/);
+    const heading = trimmedLine.match(/^#{1,3}\s+(.+)$/)
 
     if (heading) {
-      const flushedState = flushList(flushParagraph(state));
+      const flushedState = flushList(flushParagraph(state))
 
       return {
         ...flushedState,
@@ -166,36 +166,36 @@ function parseAssistantContent(content: string) {
           ...flushedState.blocks,
           { text: heading[1].trim(), type: "heading" as const },
         ],
-      };
+      }
     }
 
-    const listItem = trimmedLine.match(/^((?:[-*])|(?:\d+\.))\s+(.+)$/);
+    const listItem = trimmedLine.match(/^((?:[-*])|(?:\d+\.))\s+(.+)$/)
 
     if (listItem) {
-      const ordered = /^\d+\.$/.test(listItem[1]);
-      const flushedState = flushParagraph(state);
+      const ordered = /^\d+\.$/.test(listItem[1])
+      const flushedState = flushParagraph(state)
       const listState =
         flushedState.listItems.length > 0 &&
         flushedState.orderedList !== ordered
           ? flushList(flushedState)
-          : flushedState;
+          : flushedState
 
       return {
         ...listState,
         listItems: [...listState.listItems, listItem[2].trim()],
         orderedList: ordered,
-      };
+      }
     }
 
-    const flushedState = flushList(state);
+    const flushedState = flushList(state)
 
     return {
       ...flushedState,
       paragraphLines: [...flushedState.paragraphLines, trimmedLine],
-    };
-  }, initialState);
+    }
+  }, initialState)
 
-  return flushList(flushParagraph(parsedState)).blocks;
+  return flushList(flushParagraph(parsedState)).blocks
 }
 
 function renderInlineText(text: string): ReactNode[] {
@@ -203,7 +203,7 @@ function renderInlineText(text: string): ReactNode[] {
     .split(/(\*\*[^*]+\*\*)/g)
     .filter(Boolean)
     .map((segment, index) => {
-      const strongText = segment.match(/^\*\*([^*]+)\*\*$/)?.[1];
+      const strongText = segment.match(/^\*\*([^*]+)\*\*$/)?.[1]
 
       if (strongText) {
         return (
@@ -213,15 +213,15 @@ function renderInlineText(text: string): ReactNode[] {
           >
             {strongText}
           </strong>
-        );
+        )
       }
 
-      return segment;
-    });
+      return segment
+    })
 }
 
 function FormattedAssistantMessage({ content }: { content: string }) {
-  const blocks = parseAssistantContent(content);
+  const blocks = parseAssistantContent(content)
 
   return (
     <div className="space-y-2 leading-relaxed">
@@ -234,11 +234,11 @@ function FormattedAssistantMessage({ content }: { content: string }) {
             >
               {renderInlineText(block.text)}
             </h3>
-          );
+          )
         }
 
         if (block.type === "list") {
-          const ListTag = block.ordered ? "ol" : "ul";
+          const ListTag = block.ordered ? "ol" : "ul"
 
           return (
             <ListTag
@@ -251,42 +251,42 @@ function FormattedAssistantMessage({ content }: { content: string }) {
                 <li key={item}>{renderInlineText(item)}</li>
               ))}
             </ListTag>
-          );
+          )
         }
 
         return (
           <p key={`${block.text}-${index}`}>{renderInlineText(block.text)}</p>
-        );
+        )
       })}
     </div>
-  );
+  )
 }
 
 export function ShoppingAssistantDrawer() {
-  const pathname = usePathname();
-  const [input, setInput] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname()
+  const [input, setInput] = useState("")
+  const messagesEndRef = useRef<HTMLDivElement>(null)
   const transport = useMemo(
     () => new DefaultChatTransport({ api: "/api/ai-shopping-assistant" }),
     [],
-  );
-  const { messages, sendMessage, status, error } = useChat({ transport });
-  const isStreaming = status === "submitted" || status === "streaming";
+  )
+  const { messages, sendMessage, status, error } = useChat({ transport })
+  const isStreaming = status === "submitted" || status === "streaming"
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, status]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages, status])
 
-  if (pathname?.startsWith("/checkout")) return null;
+  if (pathname?.startsWith("/checkout")) return null
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const nextInput = input.trim();
+    event.preventDefault()
+    const nextInput = input.trim()
 
-    if (!nextInput || isStreaming) return;
+    if (!nextInput || isStreaming) return
 
-    sendMessage({ text: nextInput });
-    setInput("");
+    sendMessage({ text: nextInput })
+    setInput("")
   }
 
   return (
@@ -338,9 +338,9 @@ export function ShoppingAssistantDrawer() {
             </div>
           ) : null}
           {messages.map((message) => {
-            const content = getMessageText(message);
+            const content = getMessageText(message)
 
-            if (!content) return null;
+            if (!content) return null
 
             return (
               <div
@@ -363,7 +363,7 @@ export function ShoppingAssistantDrawer() {
                   )}
                 </div>
               </div>
-            );
+            )
           })}
           {isStreaming ? (
             <div className="flex justify-start animate-in fade-in duration-300">
@@ -394,9 +394,9 @@ export function ShoppingAssistantDrawer() {
               onChange={(event) => setInput(event.target.value)}
               onKeyDown={(event) => {
                 if (event.key === "Enter" && !event.shiftKey) {
-                  event.preventDefault();
+                  event.preventDefault()
                   if (input.trim() && !isStreaming) {
-                    event.currentTarget.form?.requestSubmit();
+                    event.currentTarget.form?.requestSubmit()
                   }
                 }
               }}
@@ -419,5 +419,5 @@ export function ShoppingAssistantDrawer() {
         </form>
       </SheetContent>
     </Sheet>
-  );
+  )
 }

@@ -1,28 +1,28 @@
-const startNodeTracingAsyncMock = jest.fn();
+const startNodeTracingAsyncMock = jest.fn()
 
 jest.mock("@3dbyte-tech-store/observability", () => ({
   startNodeTracingAsync: (options: unknown) =>
     startNodeTracingAsyncMock(options),
-}));
+}))
 
 describe("storefront node instrumentation", () => {
-  const originalEnv = process.env;
-  const originalInfo = console.info;
+  const originalEnv = process.env
+  const originalInfo = console.info
 
   beforeEach(() => {
-    jest.resetModules();
-    jest.clearAllMocks();
-    console.info = jest.fn();
+    jest.resetModules()
+    jest.clearAllMocks()
+    console.info = jest.fn()
     process.env = {
       ...originalEnv,
       VERCEL_GIT_COMMIT_SHA: "5d2e4cf",
-    };
-  });
+    }
+  })
 
   afterAll(() => {
-    console.info = originalInfo;
-    process.env = originalEnv;
-  });
+    console.info = originalInfo
+    process.env = originalEnv
+  })
 
   it("logs a sanitized tracing startup summary for staging verification", async () => {
     startNodeTracingAsyncMock.mockResolvedValueOnce({
@@ -40,16 +40,16 @@ describe("storefront node instrumentation", () => {
         tracesEndpoint: "http://observability.tailnet.local:4318/v1/traces",
       },
       started: true,
-    });
+    })
 
-    const { registerNodeTracing } = await import("../../instrumentation.node");
+    const { registerNodeTracing } = await import("../../instrumentation.node")
 
-    await registerNodeTracing();
+    await registerNodeTracing()
 
     expect(startNodeTracingAsyncMock).toHaveBeenCalledWith({
       serviceName: "3dbyte-tech-store-storefront",
       serviceVersion: "5d2e4cf",
-    });
+    })
     expect(console.info).toHaveBeenCalledWith(
       "[observability] storefront tracing startup",
       {
@@ -61,6 +61,6 @@ describe("storefront node instrumentation", () => {
         started: true,
         tracesEndpoint: "http://observability.tailnet.local:4318/v1/traces",
       },
-    );
-  });
-});
+    )
+  })
+})
