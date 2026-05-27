@@ -1,14 +1,14 @@
-import { createOpenAI } from "@ai-sdk/openai"
-import { isAiTelemetryEnabled } from "@3dbyte-tech-store/observability"
-import { convertToModelMessages, stepCountIs, streamText, tool } from "ai"
-import { z } from "zod"
+import { createOpenAI } from "@ai-sdk/openai";
+import { isAiTelemetryEnabled } from "@3dbyte-tech-store/observability";
+import { convertToModelMessages, stepCountIs, streamText, tool } from "ai";
+import { z } from "zod";
 
-import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
-import { checkRateLimit } from "@/lib/security/rate-limit"
+import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 
-const DEFAULT_AI_MODEL = "deepseek-v4-flash"
-const DEFAULT_DEEPSEEK_BASE_URL = "https://api.deepseek.com"
-const DEEPSEEK_NON_THINKING_MODE = { type: "disabled" } as const
+const DEFAULT_AI_MODEL = "deepseek-v4-flash";
+const DEFAULT_DEEPSEEK_BASE_URL = "https://api.deepseek.com";
+const DEEPSEEK_NON_THINKING_MODE = { type: "disabled" } as const;
 
 const assistantPartSchema = z
   .object({
@@ -16,15 +16,15 @@ const assistantPartSchema = z
     text: z.string().max(4_000).optional(),
   })
   .superRefine((part, ctx) => {
-    if (part.type !== "text") return
+    if (part.type !== "text") return;
 
     if (!part.text?.trim()) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Text part content is required",
-      })
+      });
     }
-  })
+  });
 
 const assistantMessageSchema = z
   .object({
@@ -33,26 +33,26 @@ const assistantMessageSchema = z
     parts: z.array(assistantPartSchema).min(1).max(40).optional(),
   })
   .superRefine((message, ctx) => {
-    const content = getAssistantMessageContent(message)
+    const content = getAssistantMessageContent(message);
 
     if (!content) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Assistant message content is required",
-      })
+      });
     }
 
     if (content.length > 4_000) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Assistant message content is too long",
-      })
+      });
     }
-  })
+  });
 
 function getAssistantMessageContent(message: {
-  content?: string
-  parts?: Array<{ text?: string; type: string }>
+  content?: string;
+  parts?: Array<{ text?: string; type: string }>;
 }) {
   return (
     message.content ??
@@ -61,22 +61,22 @@ function getAssistantMessageContent(message: {
       .map((part) => part.text ?? "")
       .join("") ??
     ""
-  ).trim()
+  ).trim();
 }
 
 const assistantRequestSchema = z.object({
   messages: z.array(assistantMessageSchema).min(1).max(20),
-})
+});
 
 const productSearchInputSchema = z.object({
   query: z.string().trim().min(1).max(200),
   limit: z.number().int().min(1).max(6).default(4),
-})
+});
 
 const orderProofInputSchema = z.object({
   reference: z.string().trim().min(1).max(80),
   email: z.string().trim().email().max(254),
-})
+});
 
 const shippingEstimateInputSchema = z.object({
   items: z
@@ -94,7 +94,7 @@ const shippingEstimateInputSchema = z.object({
     countryCode: z.string().trim().length(2).default("AU"),
     province: z.string().trim().max(16).optional(),
   }),
-})
+});
 
 const supportTicketInputSchema = z.object({
   confirmedByCustomer: z.literal(true),
@@ -124,7 +124,7 @@ const supportTicketInputSchema = z.object({
   transcriptExcerpt: z.string().trim().max(4_000).optional(),
   consentToIncludeTranscript: z.boolean().default(false),
   verifiedOrderContext: z.record(z.unknown()).optional(),
-})
+});
 
 const systemPrompt = [
   "You are the 3D Byte Tech shopping assistant.",
@@ -136,34 +136,34 @@ const systemPrompt = [
   "You may create a support ticket only after explicit customer confirmation and after collecting name, email, subject, and message.",
   "Do not include transcript excerpts in a ticket unless the customer explicitly consents.",
   "Keep answers concise and mention uncertainty when context is incomplete.",
-].join(" ")
+].join(" ");
 
 function getConfig() {
-  const provider = process.env.AI_PROVIDER || "deepseek"
-  const apiKey = process.env.DEEPSEEK_API_KEY
-  const baseURL = process.env.DEEPSEEK_BASE_URL || DEFAULT_DEEPSEEK_BASE_URL
-  const model = process.env.AI_MODEL || DEFAULT_AI_MODEL
-  const internalToken = process.env.INTERNAL_API_TOKEN
-  const backendUrl = resolveMedusaBaseUrl({ isServer: true })
+  const provider = process.env.AI_PROVIDER || "deepseek";
+  const apiKey = process.env.DEEPSEEK_API_KEY;
+  const baseURL = process.env.DEEPSEEK_BASE_URL || DEFAULT_DEEPSEEK_BASE_URL;
+  const model = process.env.AI_MODEL || DEFAULT_AI_MODEL;
+  const internalToken = process.env.INTERNAL_API_TOKEN;
+  const backendUrl = resolveMedusaBaseUrl({ isServer: true });
 
   if (provider !== "deepseek" || !apiKey || !internalToken || !backendUrl) {
-    return null
+    return null;
   }
 
-  return { apiKey, backendUrl, baseURL, internalToken, model }
+  return { apiKey, backendUrl, baseURL, internalToken, model };
 }
 
 function isJsonRecord(value: unknown): value is Record<string, unknown> {
-  return Boolean(value) && typeof value === "object" && !Array.isArray(value)
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
 function toDeepSeekNonThinkingBody(body: BodyInit | null | undefined) {
   if (typeof body !== "string") {
-    return body
+    return body;
   }
 
   try {
-    const parsedBody: unknown = JSON.parse(body)
+    const parsedBody: unknown = JSON.parse(body);
 
     if (
       !isJsonRecord(parsedBody) ||
@@ -171,29 +171,29 @@ function toDeepSeekNonThinkingBody(body: BodyInit | null | undefined) {
       !parsedBody.model.startsWith("deepseek-") ||
       !Array.isArray(parsedBody.messages)
     ) {
-      return body
+      return body;
     }
 
     return JSON.stringify({
       ...parsedBody,
       thinking: DEEPSEEK_NON_THINKING_MODE,
-    })
+    });
   } catch {
-    return body
+    return body;
   }
 }
 
 function createDeepSeekFetch(fetchImpl: typeof fetch = fetch): typeof fetch {
   return (input, init) => {
     if (!init) {
-      return fetchImpl(input, init)
+      return fetchImpl(input, init);
     }
 
     return fetchImpl(input, {
       ...init,
       body: toDeepSeekNonThinkingBody(init.body),
-    })
-  }
+    });
+  };
 }
 
 async function callInternalBackend<T>(
@@ -208,15 +208,15 @@ async function callInternalBackend<T>(
       "x-3db-internal-token": config.internalToken,
     },
     body: JSON.stringify(body),
-  })
+  });
 
   if (!response.ok) {
     return {
       error: "The store assistant could not verify that request right now.",
-    } as T
+    } as T;
   }
 
-  return response.json() as Promise<T>
+  return response.json() as Promise<T>;
 }
 
 function toSupportTicketPayload(
@@ -241,13 +241,13 @@ function toSupportTicketPayload(
       : undefined,
     consent_to_include_transcript: input.consentToIncludeTranscript,
     verified_order_context: input.verifiedOrderContext,
-  }
+  };
 }
 
 export async function POST(req: Request): Promise<Response> {
   const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"
-  const rate = checkRateLimit(`ai-shopping-assistant:${ip}`, 12, 60_000)
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const rate = checkRateLimit(`ai-shopping-assistant:${ip}`, 12, 60_000);
 
   if (!rate.allowed) {
     return Response.json(
@@ -258,27 +258,27 @@ export async function POST(req: Request): Promise<Response> {
           "Retry-After": Math.ceil(rate.retryAfterMs / 1000).toString(),
         },
       },
-    )
+    );
   }
 
   const parsed = assistantRequestSchema.safeParse(
     await req.json().catch(() => null),
-  )
+  );
 
   if (!parsed.success) {
     return Response.json(
       { error: "Invalid assistant request" },
       { status: 400 },
-    )
+    );
   }
 
-  const config = getConfig()
+  const config = getConfig();
 
   if (!config) {
     return Response.json(
       { error: "Assistant configuration is incomplete" },
       { status: 503 },
-    )
+    );
   }
 
   const deepseek = createOpenAI({
@@ -286,13 +286,13 @@ export async function POST(req: Request): Promise<Response> {
     baseURL: config.baseURL,
     fetch: createDeepSeekFetch(),
     name: "deepseek",
-  })
+  });
   const uiMessages = parsed.data.messages.map((message) => ({
     role: message.role,
     parts: [
       { type: "text" as const, text: getAssistantMessageContent(message) },
     ],
-  }))
+  }));
   const result = streamText({
     model: deepseek.chat(config.model),
     system: systemPrompt,
@@ -346,7 +346,7 @@ export async function POST(req: Request): Promise<Response> {
           ),
       }),
     },
-  })
+  });
 
-  return result.toUIMessageStreamResponse()
+  return result.toUIMessageStreamResponse();
 }

@@ -57,7 +57,11 @@ function shouldExportLangfuseSpan({ otelSpan }: { otelSpan: ReadableSpan }) {
   const isAiOperation =
     typeof operationName === "string" && operationName.startsWith("ai.");
 
-  return hasAiAttributes || isAiOperation || otelSpan.instrumentationScope.name === "ai";
+  return (
+    hasAiAttributes ||
+    isAiOperation ||
+    otelSpan.instrumentationScope.name === "ai"
+  );
 }
 
 export function buildSpanProcessors(config: TracingConfig): SpanProcessor[] {
