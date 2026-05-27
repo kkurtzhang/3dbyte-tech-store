@@ -74,7 +74,7 @@ Unknown or malformed metadata is intentionally dropped. The product still indexe
 
 ## Seed Catalogue
 
-The backend includes a deterministic catalogue of 25 AI-ready products with stable `ai-*` handles.
+The backend includes a deterministic catalogue of 29 AI-ready products with stable `ai-*` handles.
 
 Command:
 
@@ -87,10 +87,32 @@ The seed script:
 - upserts by stable handle;
 - creates a default shipping profile if needed;
 - creates/uses the default sales channel;
-- creates missing products with variants, AUD prices, images, shipping profile, sales channel, and metadata;
+- creates missing products with variants, AUD prices, storefront-hosted PNG images, shipping profile, sales channel, and metadata;
 - updates existing seeded products at product level without creating duplicates.
 
 Use `AI_CATALOGUE_CURRENCY_CODE` to override `aud`, and `AI_CATALOGUE_SALES_CHANNEL_NAME` to override `Default Sales Channel`.
+
+Use `AI_CATALOGUE_MEDIA_BASE_URL` to override the product media base URL. It defaults through `STOREFRONT_URL`, `NEXT_PUBLIC_SITE_URL`, and concrete `STORE_CORS` origins. Phase 1 product media lives under `/ai-catalogue/products/{handle}.png`.
+
+## CMS Content and Documents Seed
+
+The backend also includes a deterministic CMS content seed for the AI-ready catalogue.
+
+Command:
+
+```bash
+pnpm --filter=@3dbyte-tech-store/backend seed:ai-ready-content
+```
+
+The content seed:
+
+- upserts rich Strapi product descriptions for all 29 `ai-*` products by Medusa product id;
+- generates metadata-derived feature lists, specifications, SEO fields, and search keywords;
+- creates or updates public product documents for each product;
+- uploads generated Phase 1 PDF files to Strapi before linking them to `product-document` entries;
+- leaves existing document entries idempotent by matching `medusa_product_id` plus document title.
+
+The command requires `STRAPI_API_TOKEN` with create/update/upload permissions and uses `STRAPI_API_URL` or `STRAPI_URL`, defaulting to `http://cms:1337` inside the deployed Compose network.
 
 ## Chunk A: Code and Docs
 
@@ -103,6 +125,8 @@ Includes:
 - Meilisearch product index settings for `tdp_*` and `rcb_*`;
 - `/ai/product-guidance` metadata-derived `aiContext`;
 - deterministic AI-ready seed catalogue and command;
+- deterministic AI-ready CMS content/document seed command;
+- storefront-hosted AI catalogue media assets;
 - docs and future change register.
 
 ## Chunk B: Staging Bring-Up
@@ -153,12 +177,10 @@ Evidence captured:
 - Assistant smoke prompts returned `200 text/event-stream` for PETG outdoor parts, carbon-fibre nozzle guidance, 3DSets-style RC hardware, and support-ticket handoff.
 - Support-ticket handoff guardrail held: the assistant did not call `createSupportTicket` without required customer confirmation and contact details.
 
-Remaining Phase 1 content gaps:
+Remaining follow-ups after Phase 1:
 
-- Strapi rich descriptions for the 29 AI-ready products are still sparse.
-- Public product-document coverage is intentionally small at 6 documents; add more manuals, datasheets, safety sheets, install guides, and warranty documents as source material becomes available.
-- Seeded placeholder media should be replaced with realistic product-source media before broader customer-facing review.
 - Assistant product-card rendering from structured tool output remains a future improvement; model-authored product links are now grounded through `productUrl`.
+- Future real supplier/manufacturer product media can replace the generated Phase 1 catalogue media when approved source assets are available.
 
 ## Local Testing Notes
 
