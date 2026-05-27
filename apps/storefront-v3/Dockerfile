@@ -84,6 +84,8 @@ RUN addgroup -g 1001 -S nodejs && \
 COPY --from=builder --chown=nextjs:nodejs /app/apps/storefront-v3/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/storefront-v3/public ./apps/storefront-v3/public
 COPY --from=builder --chown=nextjs:nodejs /app/apps/storefront-v3/.next/static ./apps/storefront-v3/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/storefront-v3/.next/server/instrumentation.js* ./apps/storefront-v3/.next/server/
+COPY --from=builder --chown=nextjs:nodejs /app/apps/storefront-v3/.next/server/chunks ./apps/storefront-v3/.next/server/chunks
 
 USER nextjs
 EXPOSE 3000

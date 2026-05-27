@@ -9,6 +9,7 @@
 **/.next
 **/dist
 **/build
+**/*.tsbuildinfo
 
 # Local env / secrets
 **/.env
