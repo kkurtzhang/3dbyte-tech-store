@@ -45,6 +45,7 @@ type SeedResult = {
   descriptionsUpdated: number;
   documentsCreated: number;
   documentsUpdated: number;
+  documentsRetired: number;
   productsProcessed: number;
 };
 
@@ -83,6 +84,68 @@ function escapePdfText(value: string): string {
     .replace(/\\/g, "\\\\")
     .replace(/\(/g, "\\(")
     .replace(/\)/g, "\\)");
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object"
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function asString(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function asBoolean(value: unknown): boolean {
+  return value === true;
+}
+
+function getEntryFile(entry: unknown): Record<string, unknown> {
+  const record = asRecord(entry);
+  const file = asRecord(record.file);
+  const data = asRecord(file.data);
+  const attributes = asRecord(data.attributes);
+
+  return Object.keys(attributes).length > 0 ? attributes : file;
+}
+
+function hasFileExtension(filename: string): boolean {
+  return /\.[a-z0-9]{2,8}$/i.test(filename);
+}
+
+export function shouldReplaceAiReadyDocumentFile(
+  existing: unknown,
+  document: Pick<AiReadyProductDocumentSeed, "filename">,
+): boolean {
+  const file = getEntryFile(existing);
+  const fileName = asString(file.name);
+  const mime = asString(file.mime)?.toLowerCase();
+
+  return (
+    !fileName ||
+    !hasFileExtension(fileName) ||
+    fileName !== document.filename ||
+    mime !== "application/pdf"
+  );
+}
+
+export function shouldRetireLegacyAiReadyDocument(
+  existing: unknown,
+  desiredTitles: Set<string>,
+): boolean {
+  const entry = asRecord(existing);
+  const title = asString(entry.title);
+  const file = getEntryFile(existing);
+  const fileName = asString(file.name) || "";
+  const mime = asString(file.mime)?.toLowerCase();
+
+  return (
+    Boolean(asString(entry.documentId)) &&
+    asBoolean(entry.is_public) &&
+    Boolean(title) &&
+    !desiredTitles.has(title as string) &&
+    (mime === "text/plain" || !hasFileExtension(fileName))
+  );
 }
 
 function wrapText(value: string, maxLength = 86): string[] {
@@ -222,6 +285,21 @@ async function findStrapiEntry(
   return draft.data?.[0] ?? null;
 }
 
+async function listStrapiEntries(
+  client: StrapiClient,
+  collection: string,
+  filters: string[],
+  populate = "",
+): Promise<StrapiEntry[]> {
+  const filterQuery = filters.join("&");
+  const response = await strapiJson<{ data?: StrapiEntry[] }>(
+    client,
+    `${collection}?${filterQuery}${populate}&pagination[pageSize]=200`,
+  );
+
+  return response.data ?? [];
+}
+
 async function upsertProductDescription(
   client: StrapiClient,
   product: AiReadyCatalogueProduct,
@@ -231,7 +309,7 @@ async function upsertProductDescription(
   const existing = await findStrapiEntry(client, "product-descriptions", [
     encodeFilter("medusa_product_id", medusaProduct.id),
   ]);
-  const payload = {
+  const payload: { data: Record<string, unknown> } = {
     data: {
       medusa_product_id: medusaProduct.id,
       product_title: medusaProduct.title ?? product.title,
@@ -279,7 +357,7 @@ async function upsertProductDocument(
     ],
     "&populate[file]=true",
   );
-  const payload = {
+  const payload: { data: Record<string, unknown> } = {
     data: {
       medusa_product_id: medusaProduct.id,
       product_title: medusaProduct.title ?? product.title,
@@ -295,6 +373,11 @@ async function upsertProductDocument(
   };
 
   if (existing?.documentId) {
+    if (shouldReplaceAiReadyDocumentFile(existing, document)) {
+      const uploadedFile = await uploadPdf(client, document);
+      payload.data.file = uploadedFile.id;
+    }
+
     await strapiJson(client, `product-documents/${existing.documentId}?status=published`, {
       method: "PUT",
       body: JSON.stringify(payload),
@@ -316,6 +399,48 @@ async function upsertProductDocument(
   });
 
   return "created";
+}
+
+async function retireLegacyProductDocuments(
+  client: StrapiClient,
+  medusaProduct: MedusaProduct,
+  desiredDocuments: AiReadyProductDocumentSeed[],
+): Promise<number> {
+  if (!medusaProduct.id) {
+    return 0;
+  }
+
+  const desiredTitles = new Set(
+    desiredDocuments.map((document) => document.title),
+  );
+  const existingDocuments = await listStrapiEntries(
+    client,
+    "product-documents",
+    [
+      encodeFilter("medusa_product_id", medusaProduct.id),
+      encodeFilter("is_public", "true"),
+    ],
+    "&populate[file]=true",
+  );
+  let retired = 0;
+
+  for (const existing of existingDocuments) {
+    if (!shouldRetireLegacyAiReadyDocument(existing, desiredTitles)) {
+      continue;
+    }
+
+    await strapiJson(client, `product-documents/${existing.documentId}?status=published`, {
+      method: "PUT",
+      body: JSON.stringify({
+        data: {
+          is_public: false,
+        },
+      }),
+    });
+    retired += 1;
+  }
+
+  return retired;
 }
 
 async function getMedusaProductByHandle(
@@ -348,6 +473,7 @@ export default async function seedAiReadyContent({
     descriptionsUpdated: 0,
     documentsCreated: 0,
     documentsUpdated: 0,
+    documentsRetired: 0,
     productsProcessed: 0,
   };
 
@@ -370,7 +496,9 @@ export default async function seedAiReadyContent({
     if (descriptionAction === "created") result.descriptionsCreated += 1;
     else result.descriptionsUpdated += 1;
 
-    for (const document of buildAiReadyProductDocuments(product)) {
+    const desiredDocuments = buildAiReadyProductDocuments(product);
+
+    for (const document of desiredDocuments) {
       const documentAction = await upsertProductDocument(
         client,
         product,
@@ -382,11 +510,17 @@ export default async function seedAiReadyContent({
       else result.documentsUpdated += 1;
     }
 
+    result.documentsRetired += await retireLegacyProductDocuments(
+      client,
+      medusaProduct,
+      desiredDocuments,
+    );
+
     result.productsProcessed += 1;
   }
 
   logger.info(
-    `AI-ready content seed completed: products=${result.productsProcessed}, descriptions_created=${result.descriptionsCreated}, descriptions_updated=${result.descriptionsUpdated}, documents_created=${result.documentsCreated}, documents_updated=${result.documentsUpdated}`,
+    `AI-ready content seed completed: products=${result.productsProcessed}, descriptions_created=${result.descriptionsCreated}, descriptions_updated=${result.descriptionsUpdated}, documents_created=${result.documentsCreated}, documents_updated=${result.documentsUpdated}, documents_retired=${result.documentsRetired}`,
   );
 
   return result;
