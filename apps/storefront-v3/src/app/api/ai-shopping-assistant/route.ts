@@ -126,6 +126,13 @@ function isSafeDataPart(part: AssistantPart) {
   return part.type.startsWith("data-") && "data" in part
 }
 
+function toModelToolHistoryPart(part: AssistantPart) {
+  const { providerExecuted: _providerExecuted, ...safePart } =
+    part as AssistantPart & { providerExecuted?: unknown }
+
+  return safePart as AssistantPart
+}
+
 function toSafeToolHistoryPart(part: AssistantPart): AssistantPart | null {
   if (!part.type.startsWith("tool-") || !isNonEmptyString(part.toolCallId)) {
     return null
@@ -140,7 +147,7 @@ function toSafeToolHistoryPart(part: AssistantPart): AssistantPart | null {
       return null
     }
 
-    return { ...part }
+    return toModelToolHistoryPart(part)
   }
 
   if (part.state === "output-error") {
@@ -148,7 +155,7 @@ function toSafeToolHistoryPart(part: AssistantPart): AssistantPart | null {
       return null
     }
 
-    return { ...part }
+    return toModelToolHistoryPart(part)
   }
 
   if (part.state === "output-denied") {
@@ -159,7 +166,7 @@ function toSafeToolHistoryPart(part: AssistantPart): AssistantPart | null {
       return null
     }
 
-    return { ...part }
+    return toModelToolHistoryPart(part)
   }
 
   return null
