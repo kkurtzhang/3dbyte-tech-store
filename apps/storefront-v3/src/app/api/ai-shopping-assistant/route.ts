@@ -10,16 +10,27 @@ const DEFAULT_AI_MODEL = "deepseek-v4-flash"
 const DEFAULT_DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 const DEEPSEEK_NON_THINKING_MODE = { type: "disabled" } as const
 
-const assistantTextPartSchema = z.object({
-  type: z.literal("text"),
-  text: z.string().trim().min(1).max(4_000),
-})
+const assistantPartSchema = z
+  .object({
+    type: z.string().trim().min(1).max(120),
+    text: z.string().max(4_000).optional(),
+  })
+  .superRefine((part, ctx) => {
+    if (part.type !== "text") return
+
+    if (!part.text?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Text part content is required",
+      })
+    }
+  })
 
 const assistantMessageSchema = z
   .object({
     role: z.enum(["user", "assistant"]),
     content: z.string().trim().min(1).max(4_000).optional(),
-    parts: z.array(assistantTextPartSchema).min(1).max(20).optional(),
+    parts: z.array(assistantPartSchema).min(1).max(40).optional(),
   })
   .superRefine((message, ctx) => {
     const content = getAssistantMessageContent(message)
@@ -41,13 +52,13 @@ const assistantMessageSchema = z
 
 function getAssistantMessageContent(message: {
   content?: string
-  parts?: Array<{ text: string; type: string }>
+  parts?: Array<{ text?: string; type: string }>
 }) {
   return (
     message.content ??
     message.parts
       ?.filter((part) => part.type === "text")
-      .map((part) => part.text)
+      .map((part) => part.text ?? "")
       .join("") ??
     ""
   ).trim()

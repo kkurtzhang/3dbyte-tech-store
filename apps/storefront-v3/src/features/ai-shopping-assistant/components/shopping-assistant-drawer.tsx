@@ -5,7 +5,7 @@ import { DefaultChatTransport } from "ai"
 import { Bot, LifeBuoy, Loader2, Send, ShoppingBag, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
+import { FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -79,6 +79,160 @@ function getMessageText(message: { parts?: Array<Record<string, unknown>> }) {
       ?.filter((part) => part.type === "text" && typeof part.text === "string")
       .map((part) => part.text as string)
       .join("") ?? ""
+  )
+}
+
+type AssistantContentBlock =
+  | { text: string; type: "heading" }
+  | { text: string; type: "paragraph" }
+  | { items: string[]; ordered: boolean; type: "list" }
+
+type AssistantParseState = {
+  blocks: AssistantContentBlock[]
+  listItems: string[]
+  orderedList: boolean
+  paragraphLines: string[]
+}
+
+function flushParagraph(state: AssistantParseState): AssistantParseState {
+  if (state.paragraphLines.length === 0) return state
+
+  return {
+    ...state,
+    blocks: [
+      ...state.blocks,
+      { text: state.paragraphLines.join(" "), type: "paragraph" },
+    ],
+    paragraphLines: [],
+  }
+}
+
+function flushList(state: AssistantParseState): AssistantParseState {
+  if (state.listItems.length === 0) return state
+
+  return {
+    ...state,
+    blocks: [
+      ...state.blocks,
+      { items: state.listItems, ordered: state.orderedList, type: "list" },
+    ],
+    listItems: [],
+  }
+}
+
+function parseAssistantContent(content: string) {
+  const initialState: AssistantParseState = {
+    blocks: [],
+    listItems: [],
+    orderedList: false,
+    paragraphLines: [],
+  }
+
+  const parsedState = content.split(/\r?\n/).reduce((state, line) => {
+    const trimmedLine = line.trim()
+
+    if (!trimmedLine) {
+      return flushList(flushParagraph(state))
+    }
+
+    const heading = trimmedLine.match(/^#{1,3}\s+(.+)$/)
+
+    if (heading) {
+      const flushedState = flushList(flushParagraph(state))
+
+      return {
+        ...flushedState,
+        blocks: [
+          ...flushedState.blocks,
+          { text: heading[1].trim(), type: "heading" as const },
+        ],
+      }
+    }
+
+    const listItem = trimmedLine.match(/^((?:[-*])|(?:\d+\.))\s+(.+)$/)
+
+    if (listItem) {
+      const ordered = /^\d+\.$/.test(listItem[1])
+      const flushedState = flushParagraph(state)
+      const listState =
+        flushedState.listItems.length > 0 &&
+        flushedState.orderedList !== ordered
+          ? flushList(flushedState)
+          : flushedState
+
+      return {
+        ...listState,
+        listItems: [...listState.listItems, listItem[2].trim()],
+        orderedList: ordered,
+      }
+    }
+
+    const flushedState = flushList(state)
+
+    return {
+      ...flushedState,
+      paragraphLines: [...flushedState.paragraphLines, trimmedLine],
+    }
+  }, initialState)
+
+  return flushList(flushParagraph(parsedState)).blocks
+}
+
+function renderInlineText(text: string): ReactNode[] {
+  return text
+    .split(/(\*\*[^*]+\*\*)/g)
+    .filter(Boolean)
+    .map((segment, index) => {
+      const strongText = segment.match(/^\*\*([^*]+)\*\*$/)?.[1]
+
+      if (strongText) {
+        return (
+          <strong className="font-semibold text-foreground" key={`${segment}-${index}`}>
+            {strongText}
+          </strong>
+        )
+      }
+
+      return segment
+    })
+}
+
+function FormattedAssistantMessage({ content }: { content: string }) {
+  const blocks = parseAssistantContent(content)
+
+  return (
+    <div className="space-y-2 leading-relaxed">
+      {blocks.map((block, index) => {
+        if (block.type === "heading") {
+          return (
+            <h3 className="text-sm font-semibold text-foreground" key={`${block.text}-${index}`}>
+              {renderInlineText(block.text)}
+            </h3>
+          )
+        }
+
+        if (block.type === "list") {
+          const ListTag = block.ordered ? "ol" : "ul"
+
+          return (
+            <ListTag
+              className={`space-y-1 pl-4 ${
+                block.ordered ? "list-decimal" : "list-disc"
+              }`}
+              key={`${block.items.join("|")}-${index}`}
+            >
+              {block.items.map((item) => (
+                <li key={item}>{renderInlineText(item)}</li>
+              ))}
+            </ListTag>
+          )
+        }
+
+        return (
+          <p key={`${block.text}-${index}`}>{renderInlineText(block.text)}</p>
+        )
+      })}
+    </div>
   )
 }
 
@@ -175,7 +329,11 @@ export function ShoppingAssistantDrawer() {
                       : "rounded-2xl rounded-tl-sm border bg-background"
                   }`}
                 >
-                  {content}
+                  {message.role === "assistant" ? (
+                    <FormattedAssistantMessage content={content} />
+                  ) : (
+                    <span className="whitespace-pre-wrap">{content}</span>
+                  )}
                 </div>
               </div>
             )

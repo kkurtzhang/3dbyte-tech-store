@@ -49,11 +49,15 @@ function getGlobalState() {
 }
 
 function shouldExportLangfuseSpan({ otelSpan }: { otelSpan: ReadableSpan }) {
-  const hasGenAiAttributes = Object.keys(otelSpan.attributes).some(
-    (attribute) => attribute.startsWith("gen_ai."),
+  const hasAiAttributes = Object.keys(otelSpan.attributes).some(
+    (attribute) =>
+      attribute.startsWith("ai.") || attribute.startsWith("gen_ai."),
   );
+  const operationName = otelSpan.attributes["operation.name"];
+  const isAiOperation =
+    typeof operationName === "string" && operationName.startsWith("ai.");
 
-  return hasGenAiAttributes || otelSpan.instrumentationScope.name === "ai";
+  return hasAiAttributes || isAiOperation || otelSpan.instrumentationScope.name === "ai";
 }
 
 export function buildSpanProcessors(config: TracingConfig): SpanProcessor[] {
