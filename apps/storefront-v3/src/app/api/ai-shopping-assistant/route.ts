@@ -9,19 +9,26 @@ import { checkRateLimit } from "@/lib/security/rate-limit"
 const DEFAULT_AI_MODEL = "deepseek-v4-flash"
 const DEFAULT_DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 const DEEPSEEK_NON_THINKING_MODE = { type: "disabled" } as const
+const MAX_ASSISTANT_PART_BYTES = 25_000
 
 const assistantPartSchema = z
   .object({
     type: z.string().trim().min(1).max(120),
     text: z.string().max(4_000).optional(),
   })
+  .passthrough()
   .superRefine((part, ctx) => {
-    if (part.type !== "text") return
-
-    if (!part.text?.trim()) {
+    if (part.type === "text" && !part.text?.trim()) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Text part content is required",
+      })
+    }
+
+    if (JSON.stringify(part).length > MAX_ASSISTANT_PART_BYTES) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Assistant message part is too large",
       })
     }
   })
@@ -35,10 +42,17 @@ const assistantMessageSchema = z
   .superRefine((message, ctx) => {
     const content = getAssistantMessageContent(message)
 
-    if (!content) {
+    if (message.role === "user" && !content) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Assistant message content is required",
+        message: "User message content is required",
+      })
+    }
+
+    if (message.role === "assistant" && !content && !message.parts?.length) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Assistant message content or parts are required",
       })
     }
 
@@ -62,6 +76,33 @@ function getAssistantMessageContent(message: {
       .join("") ??
     ""
   ).trim()
+}
+
+type AssistantMessage = z.infer<typeof assistantMessageSchema>
+
+function hasTextPart(parts: AssistantMessage["parts"]) {
+  return Boolean(
+    parts?.some((part) => part.type === "text" && part.text?.trim()),
+  )
+}
+
+function toUiMessage(message: AssistantMessage) {
+  const content = getAssistantMessageContent(message)
+
+  if (message.parts?.length) {
+    return {
+      role: message.role,
+      parts:
+        message.content && !hasTextPart(message.parts)
+          ? [{ type: "text" as const, text: content }, ...message.parts]
+          : message.parts,
+    }
+  }
+
+  return {
+    role: message.role,
+    parts: [{ type: "text" as const, text: content }],
+  }
 }
 
 const assistantRequestSchema = z.object({
@@ -287,12 +328,7 @@ export async function POST(req: Request): Promise<Response> {
     fetch: createDeepSeekFetch(),
     name: "deepseek",
   })
-  const uiMessages = parsed.data.messages.map((message) => ({
-    role: message.role,
-    parts: [
-      { type: "text" as const, text: getAssistantMessageContent(message) },
-    ],
-  }))
+  const uiMessages = parsed.data.messages.map(toUiMessage)
   const result = streamText({
     model: deepseek.chat(config.model),
     system: systemPrompt,

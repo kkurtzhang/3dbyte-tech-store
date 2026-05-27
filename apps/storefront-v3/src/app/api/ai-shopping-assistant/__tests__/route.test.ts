@@ -263,6 +263,13 @@ describe("POST /api/ai-shopping-assistant", () => {
       {
         role: "assistant",
         parts: [
+          { type: "step-start" },
+          {
+            type: "tool-searchProducts",
+            state: "output-available",
+            input: { query: "PETG outdoor parts", limit: 4 },
+            output: { products: [{ handle: "ai-petg-black-175-1kg" }] },
+          },
           {
             type: "text",
             text: "Use PETG for outdoor parts and avoid PLA for heat exposure.",
@@ -279,6 +286,37 @@ describe("POST /api/ai-shopping-assistant", () => {
         ],
       },
     ])
+  })
+
+  it("rejects oversized tool part payloads before model creation", async () => {
+    configureAiEnv()
+    const { POST } = await import("../route")
+
+    const response = await POST(
+      createJsonRequest({
+        messages: [
+          {
+            role: "user",
+            parts: [{ type: "text", text: "Can we continue?" }],
+          },
+          {
+            role: "assistant",
+            parts: [
+              {
+                type: "tool-searchProducts",
+                state: "output-available",
+                output: { products: "x".repeat(30_000) },
+              },
+            ],
+          },
+        ],
+      }),
+    )
+    const body = await response.json()
+
+    expect(response.status).toBe(400)
+    expect(body.error).toContain("Invalid assistant request")
+    expect(streamTextMock).not.toHaveBeenCalled()
   })
 
   it("streams with DeepSeek and exposes support ticket handoff only as confirmed user action", async () => {

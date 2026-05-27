@@ -37,7 +37,8 @@ describe("storefront node instrumentation", () => {
         },
         protocol: "http/protobuf",
         serviceName: "3dbyte-tech-store-storefront",
-        tracesEndpoint: "http://observability.tailnet.local:4318/v1/traces",
+        tracesEndpoint:
+          "http://otel-user:otel-secret@observability.tailnet.local:4318/v1/traces?token=private",
       },
       started: true,
     })
