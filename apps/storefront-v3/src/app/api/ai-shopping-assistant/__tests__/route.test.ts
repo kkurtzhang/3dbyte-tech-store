@@ -182,7 +182,20 @@ describe("POST /api/ai-shopping-assistant", () => {
           {
             id: "msg-local",
             role: "user",
-            parts: [{ type: "text", text: "Find a beginner Voron kit" }],
+            parts: [
+              { type: "text", text: "Find a beginner Voron kit" },
+              {
+                type: "file",
+                mediaType: "application/pdf",
+                filename: "printer-settings.pdf",
+                url: "data:application/pdf;base64,JVBERi0xLjQ=",
+              },
+              {
+                type: "data-printerProfile",
+                id: "profile_01",
+                data: { printer: "Bambu Lab P1S", nozzleDiameterMm: 0.4 },
+              },
+            ],
           },
         ],
         trigger: "submit-message",
@@ -194,7 +207,20 @@ describe("POST /api/ai-shopping-assistant", () => {
     expect(streamConfig.messages).toEqual([
       {
         role: "user",
-        parts: [{ type: "text", text: "Find a beginner Voron kit" }],
+        parts: [
+          { type: "text", text: "Find a beginner Voron kit" },
+          {
+            type: "file",
+            mediaType: "application/pdf",
+            filename: "printer-settings.pdf",
+            url: "data:application/pdf;base64,JVBERi0xLjQ=",
+          },
+          {
+            type: "data-printerProfile",
+            id: "profile_01",
+            data: { printer: "Bambu Lab P1S", nozzleDiameterMm: 0.4 },
+          },
+        ],
       },
     ])
   })
@@ -223,9 +249,18 @@ describe("POST /api/ai-shopping-assistant", () => {
               { type: "step-start" },
               {
                 type: "tool-searchProducts",
+                toolCallId: "call_01_petg_search",
                 state: "output-available",
                 input: { query: "PETG outdoor parts", limit: 4 },
                 output: { products: [{ handle: "ai-petg-black-175-1kg" }] },
+                providerExecuted: true,
+                callProviderMetadata: { deepseek: { requestId: "req_01" } },
+                resultProviderMetadata: { deepseek: { resultId: "res_01" } },
+                approval: {
+                  id: "approval_01",
+                  approved: true,
+                  reason: "Customer confirmed product search.",
+                },
               },
               {
                 type: "text",
@@ -266,13 +301,243 @@ describe("POST /api/ai-shopping-assistant", () => {
           { type: "step-start" },
           {
             type: "tool-searchProducts",
+            toolCallId: "call_01_petg_search",
             state: "output-available",
             input: { query: "PETG outdoor parts", limit: 4 },
             output: { products: [{ handle: "ai-petg-black-175-1kg" }] },
+            providerExecuted: true,
+            callProviderMetadata: { deepseek: { requestId: "req_01" } },
+            resultProviderMetadata: { deepseek: { resultId: "res_01" } },
+            approval: {
+              id: "approval_01",
+              approved: true,
+              reason: "Customer confirmed product search.",
+            },
           },
           {
             type: "text",
             text: "Use PETG for outdoor parts and avoid PLA for heat exposure.",
+          },
+        ],
+      },
+      {
+        role: "user",
+        parts: [
+          {
+            type: "text",
+            text: "Can I print that with a brass nozzle?",
+          },
+        ],
+      },
+    ])
+  })
+
+  it("preserves completed tool error metadata for follow-up prompts", async () => {
+    configureAiEnv()
+    const { POST } = await import("../route")
+
+    const response = await POST(
+      createJsonRequest({
+        messages: [
+          {
+            role: "user",
+            parts: [
+              {
+                type: "text",
+                text: "Search for PETG filament.",
+              },
+            ],
+          },
+          {
+            role: "assistant",
+            parts: [
+              {
+                type: "tool-searchProducts",
+                toolCallId: "call_02_failed_search",
+                state: "output-error",
+                input: undefined,
+                rawInput: { query: "PETG filament", limit: 6 },
+                errorText: "Backend unavailable",
+                providerExecuted: true,
+                callProviderMetadata: { deepseek: { requestId: "req_02" } },
+                resultProviderMetadata: { deepseek: { resultId: "res_02" } },
+                approval: {
+                  id: "approval_02",
+                  approved: true,
+                  reason: "Customer confirmed lookup.",
+                },
+              },
+              {
+                type: "text",
+                text: "I could not verify live products yet.",
+              },
+            ],
+          },
+          {
+            role: "user",
+            parts: [{ type: "text", text: "Please try again." }],
+          },
+        ],
+      }),
+    )
+
+    expect(response.status).toBe(200)
+    const streamConfig = streamTextMock.mock.calls[0]?.[0]
+    expect(streamConfig.messages[1].parts[0]).toEqual({
+      type: "tool-searchProducts",
+      toolCallId: "call_02_failed_search",
+      state: "output-error",
+      input: undefined,
+      rawInput: { query: "PETG filament", limit: 6 },
+      errorText: "Backend unavailable",
+      providerExecuted: true,
+      callProviderMetadata: { deepseek: { requestId: "req_02" } },
+      resultProviderMetadata: { deepseek: { resultId: "res_02" } },
+      approval: {
+        id: "approval_02",
+        approved: true,
+        reason: "Customer confirmed lookup.",
+      },
+    })
+  })
+
+  it("preserves denied tool approvals for follow-up prompts", async () => {
+    configureAiEnv()
+    const { POST } = await import("../route")
+
+    const response = await POST(
+      createJsonRequest({
+        messages: [
+          {
+            role: "user",
+            parts: [{ type: "text", text: "Create a support ticket." }],
+          },
+          {
+            role: "assistant",
+            parts: [
+              {
+                type: "tool-createSupportTicket",
+                toolCallId: "call_03_denied_ticket",
+                state: "output-denied",
+                input: {
+                  confirmedByCustomer: true,
+                  name: "Ava Customer",
+                  email: "ava@example.com",
+                  subject: "Compatibility help",
+                  message: "Please check PETG compatibility.",
+                },
+                approval: {
+                  id: "approval_03",
+                  approved: false,
+                  reason: "Customer did not consent to ticket creation.",
+                },
+                callProviderMetadata: { deepseek: { requestId: "req_03" } },
+              },
+              {
+                type: "text",
+                text: "I will not create a ticket without confirmation.",
+              },
+            ],
+          },
+          {
+            role: "user",
+            parts: [{ type: "text", text: "What should I do instead?" }],
+          },
+        ],
+      }),
+    )
+
+    expect(response.status).toBe(200)
+    const streamConfig = streamTextMock.mock.calls[0]?.[0]
+    expect(streamConfig.messages[1].parts[0]).toEqual({
+      type: "tool-createSupportTicket",
+      toolCallId: "call_03_denied_ticket",
+      state: "output-denied",
+      input: {
+        confirmedByCustomer: true,
+        name: "Ava Customer",
+        email: "ava@example.com",
+        subject: "Compatibility help",
+        message: "Please check PETG compatibility.",
+      },
+      approval: {
+        id: "approval_03",
+        approved: false,
+        reason: "Customer did not consent to ticket creation.",
+      },
+      callProviderMetadata: { deepseek: { requestId: "req_03" } },
+    })
+  })
+
+  it("drops malformed tool history and raw stream chunks before model conversion", async () => {
+    configureAiEnv()
+    const { POST } = await import("../route")
+
+    const response = await POST(
+      createJsonRequest({
+        messages: [
+          {
+            role: "user",
+            parts: [
+              {
+                type: "text",
+                text: "Which PETG should I use for outdoor parts?",
+              },
+            ],
+          },
+          {
+            role: "assistant",
+            parts: [
+              { type: "step-start" },
+              {
+                type: "tool-searchProducts",
+                state: "output-available",
+                input: { query: "PETG outdoor parts", limit: 4 },
+                output: { products: [{ handle: "ai-petg-black-175-1kg" }] },
+              },
+              {
+                type: "tool-output-available",
+                toolCallId: "call_01_raw_chunk",
+                output: { products: [{ handle: "ai-petg-cf-black-175-1kg" }] },
+              },
+              {
+                type: "text",
+                text: "PETG is a good outdoor choice.",
+              },
+            ],
+          },
+          {
+            role: "user",
+            parts: [
+              {
+                type: "text",
+                text: "Can I print that with a brass nozzle?",
+              },
+            ],
+          },
+        ],
+      }),
+    )
+
+    expect(response.status).toBe(200)
+    const streamConfig = streamTextMock.mock.calls[0]?.[0]
+    expect(streamConfig.messages).toEqual([
+      {
+        role: "user",
+        parts: [
+          {
+            type: "text",
+            text: "Which PETG should I use for outdoor parts?",
+          },
+        ],
+      },
+      {
+        role: "assistant",
+        parts: [
+          { type: "step-start" },
+          {
+            type: "text",
+            text: "PETG is a good outdoor choice.",
           },
         ],
       },

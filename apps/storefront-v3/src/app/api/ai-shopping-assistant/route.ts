@@ -86,30 +86,165 @@ function getAssistantMessageContent(message: {
 
 type AssistantMessage = z.infer<typeof assistantMessageSchema>
 type AssistantUiMessage = Omit<UIMessage, "id">
+type AssistantPart = NonNullable<AssistantMessage["parts"]>[number]
 
-function hasTextPart(parts: AssistantMessage["parts"]) {
-  return Boolean(
-    parts?.some((part) => part.type === "text" && part.text?.trim()),
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0
+}
+
+function hasOptionalString(value: unknown) {
+  return value === undefined || typeof value === "string"
+}
+
+function isApprovalRecord(value: unknown, approved: boolean) {
+  return (
+    isJsonRecord(value) &&
+    isNonEmptyString(value.id) &&
+    value.approved === approved &&
+    hasOptionalString(value.reason)
   )
 }
 
-function toUiMessage(message: AssistantMessage): AssistantUiMessage {
+function hasOptionalApprovedApproval(part: AssistantPart) {
+  return (
+    !("approval" in part) ||
+    part.approval === undefined ||
+    isApprovalRecord(part.approval, true)
+  )
+}
+
+function isSafeFilePart(part: AssistantPart) {
+  return (
+    part.type === "file" &&
+    isNonEmptyString(part.mediaType) &&
+    isNonEmptyString(part.url) &&
+    hasOptionalString(part.filename)
+  )
+}
+
+function isSafeDataPart(part: AssistantPart) {
+  return part.type.startsWith("data-") && "data" in part
+}
+
+function toSafeToolHistoryPart(part: AssistantPart): AssistantPart | null {
+  if (!part.type.startsWith("tool-") || !isNonEmptyString(part.toolCallId)) {
+    return null
+  }
+
+  if (part.state === "output-available") {
+    if (
+      !("input" in part) ||
+      !("output" in part) ||
+      !hasOptionalApprovedApproval(part)
+    ) {
+      return null
+    }
+
+    return { ...part }
+  }
+
+  if (part.state === "output-error") {
+    if (!isNonEmptyString(part.errorText) || !hasOptionalApprovedApproval(part)) {
+      return null
+    }
+
+    return { ...part }
+  }
+
+  if (part.state === "output-denied") {
+    if (
+      !("input" in part) ||
+      !isApprovalRecord(part.approval, false)
+    ) {
+      return null
+    }
+
+    return { ...part }
+  }
+
+  return null
+}
+
+function toSafeAssistantPart(part: AssistantPart): AssistantPart | null {
+  if (part.type === "text" && part.text?.trim()) {
+    return { ...part, text: part.text }
+  }
+
+  if (part.type === "step-start") {
+    return { type: "step-start" }
+  }
+
+  if (part.type === "reasoning" && part.text?.trim()) {
+    return { ...part, text: part.text }
+  }
+
+  if (isSafeFilePart(part) || isSafeDataPart(part)) {
+    return { ...part }
+  }
+
+  return toSafeToolHistoryPart(part)
+}
+
+function hasUsefulPart(parts: AssistantPart[]) {
+  return parts.some((part) => part.type !== "step-start")
+}
+
+function toSafeUserPart(part: AssistantPart): AssistantPart | null {
+  if (part.type === "text" && part.text?.trim()) {
+    return { ...part, text: part.text }
+  }
+
+  if (isSafeFilePart(part) || isSafeDataPart(part)) {
+    return { ...part }
+  }
+
+  return null
+}
+
+function toUiMessage(message: AssistantMessage): AssistantUiMessage | null {
   const content = getAssistantMessageContent(message)
 
-  if (message.parts?.length) {
+  if (message.role === "user") {
+    const safeParts = (message.parts ?? [])
+      .map(toSafeUserPart)
+      .filter((part): part is AssistantPart => Boolean(part))
+    const parts =
+      content && !safeParts.some((part) => part.type === "text")
+        ? [{ type: "text" as const, text: content }, ...safeParts]
+        : safeParts
+    const uiParts = (
+      parts.length ? parts : [{ type: "text" as const, text: content }]
+    ) as AssistantUiMessage["parts"]
+
     return {
-      role: message.role,
-      parts:
-        message.content && !hasTextPart(message.parts)
-          ? [{ type: "text" as const, text: content }, ...message.parts]
-          : message.parts,
+      role: "user",
+      parts: uiParts,
     } as AssistantUiMessage
   }
 
-  return {
-    role: message.role,
-    parts: [{ type: "text" as const, text: content }],
+  const safeParts = (message.parts ?? [])
+    .map(toSafeAssistantPart)
+    .filter((part): part is AssistantPart => Boolean(part))
+
+  const parts =
+    content && !safeParts.some((part) => part.type === "text")
+      ? [{ type: "text" as const, text: content }, ...safeParts]
+      : safeParts
+
+  if (!content && !hasUsefulPart(parts)) {
+    return null
   }
+
+  return {
+    role: "assistant",
+    parts,
+  } as AssistantUiMessage
+}
+
+function toUiMessages(messages: AssistantMessage[]) {
+  return messages
+    .map(toUiMessage)
+    .filter((message): message is AssistantUiMessage => Boolean(message))
 }
 
 const assistantRequestSchema = z.object({
@@ -335,11 +470,13 @@ export async function POST(req: Request): Promise<Response> {
     fetch: createDeepSeekFetch(),
     name: "deepseek",
   })
-  const uiMessages = parsed.data.messages.map(toUiMessage)
+  const uiMessages = toUiMessages(parsed.data.messages)
   const result = streamText({
     model: deepseek.chat(config.model),
     system: systemPrompt,
-    messages: await convertToModelMessages(uiMessages),
+    messages: await convertToModelMessages(uiMessages, {
+      ignoreIncompleteToolCalls: true,
+    }),
     experimental_telemetry: {
       functionId: "storefront.ai-shopping-assistant",
       isEnabled: isAiTelemetryEnabled(),
