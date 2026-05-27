@@ -36,6 +36,23 @@ interface ProductTemplateProps {
   productDocuments?: PublicProductDocument[]
 }
 
+function ProductRichDescription({
+  richDescription,
+}: {
+  richDescription?: string
+}) {
+  if (!richDescription) {
+    return null
+  }
+
+  return (
+    <section className="prose prose-sm max-w-none rounded-sm border bg-muted/30 p-6 dark:prose-invert">
+      <h3 className="mb-3 text-lg font-semibold">Product Description</h3>
+      <div dangerouslySetInnerHTML={{ __html: richDescription }} />
+    </section>
+  )
+}
+
 export function ProductTemplate({
   product,
   richDescription,
@@ -123,14 +140,15 @@ export function ProductTemplate({
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-16">
         {/* Left Column: Gallery */}
-        <div className="relative">
-           <div className="sticky top-24">
+        <div className="relative space-y-6">
+           <div className="md:sticky md:top-24">
              <ProductGallery
                 product={product}
                 selectedVariant={selectedVariant}
                 variantImageUrls={variantImageUrls}
              />
            </div>
+           <ProductRichDescription richDescription={richDescription} />
         </div>
 
         {/* Right Column: Details & Actions */}
@@ -152,14 +170,6 @@ export function ProductTemplate({
            <Separator />
 
            {validSpecs.length > 0 && <SpecSheet specs={validSpecs} />}
-
-           {/* Rich Description from Strapi (if available) */}
-           {richDescription && (
-             <div className="prose prose-sm dark:prose-invert bg-muted/30 p-6 rounded-lg border">
-                <h3 className="text-lg font-semibold mb-3">Product Description</h3>
-                <div dangerouslySetInnerHTML={{ __html: richDescription }} />
-             </div>
-           )}
         </div>
       </div>
 

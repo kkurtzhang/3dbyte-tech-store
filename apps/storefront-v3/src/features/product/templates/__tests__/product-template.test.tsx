@@ -106,4 +106,31 @@ describe("ProductTemplate", () => {
 
     expect(getByTestId("product-documents-panel")).toBeInTheDocument()
   })
+
+  it("renders rich product copy under the gallery before the purchase column", () => {
+    const { getByRole, getByTestId } = render(
+      <ProductTemplate
+        product={createProduct()}
+        richDescription="<p>AI-ready PETG guidance from Strapi.</p>"
+      />
+    )
+
+    const gallery = getByTestId("product-gallery")
+    const descriptionHeading = getByRole("heading", {
+      name: /product description/i,
+    })
+    const purchaseColumn = getByTestId("product-actions")
+
+    expect(
+      gallery.compareDocumentPosition(descriptionHeading) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy()
+    expect(
+      descriptionHeading.compareDocumentPosition(purchaseColumn) &
+        Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy()
+    expect(descriptionHeading.parentElement).toHaveTextContent(
+      "AI-ready PETG guidance from Strapi."
+    )
+  })
 })

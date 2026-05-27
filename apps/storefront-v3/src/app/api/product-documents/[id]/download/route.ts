@@ -10,7 +10,27 @@ interface RouteContext {
   }>;
 }
 
-function safeAttachmentFilename(id: string): string {
+const MIME_EXTENSION: Record<string, string> = {
+  "application/pdf": ".pdf",
+  "text/plain": ".txt",
+  "application/json": ".json",
+  "text/csv": ".csv",
+};
+
+function extensionForContentType(contentType: string | null): string {
+  const mime = contentType?.split(";")[0]?.trim().toLowerCase();
+
+  return mime ? MIME_EXTENSION[mime] ?? "" : "";
+}
+
+function hasFileExtension(filename: string): boolean {
+  return /\.[a-z0-9]{2,8}$/i.test(filename);
+}
+
+function safeAttachmentFilename(
+  id: string,
+  contentType: string | null,
+): string {
   const decoded = (() => {
     try {
       return decodeURIComponent(id);
@@ -23,8 +43,13 @@ function safeAttachmentFilename(id: string): string {
     .replace(/[^a-zA-Z0-9._-]/g, "_")
     .replace(/_+/g, "_")
     .replace(/^_+|_+$/g, "");
+  const fallback = filename || "product-document";
 
-  return filename || "product-document";
+  if (hasFileExtension(fallback)) {
+    return fallback;
+  }
+
+  return `${fallback}${extensionForContentType(contentType)}`;
 }
 
 function proxiedDownloadHeaders(response: Response, id: string): Headers {
@@ -49,9 +74,11 @@ function proxiedDownloadHeaders(response: Response, id: string): Headers {
   }
 
   if (!headers.has("content-disposition")) {
+    const contentType = headers.get("content-type");
+
     headers.set(
       "content-disposition",
-      `attachment; filename="${safeAttachmentFilename(id)}"`,
+      `attachment; filename="${safeAttachmentFilename(id, contentType)}"`,
     );
   }
 

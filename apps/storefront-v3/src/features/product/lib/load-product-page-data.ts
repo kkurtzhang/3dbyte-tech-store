@@ -11,9 +11,11 @@ import type { PricingContext } from "@/lib/medusa/regions"
 
 interface StrapiProductDescription {
   id: number
-  medusa_id: string
-  rich_text: string
   documentId: string
+  medusa_product_id?: string
+  product_handle?: string
+  rich_description?: string
+  rich_text?: string
 }
 
 interface StrapiResponse<T> {
@@ -35,7 +37,15 @@ export async function loadProductPageData(
   const [product, strapiData] = await Promise.all([
     getProductByHandle(handle, pricingContext),
     getStrapiContent<StrapiResponse<StrapiProductDescription>>("product-descriptions", {
-      filters: { medusa_id: { $eq: null } },
+      filters: {
+        product_handle: {
+          $eq: handle,
+        },
+      },
+      pagination: {
+        page: 1,
+        pageSize: 1,
+      },
     }).catch(() => ({ data: [] })),
   ])
 
@@ -69,7 +79,10 @@ export async function loadProductPageData(
     ) || []
 
   const enrichedContent = strapiData?.data?.find(
-    (item) => item.medusa_id === product.id
+    (item) =>
+      item.medusa_product_id === product.id ||
+      item.product_handle === product.handle ||
+      item.product_handle === handle
   )
 
   return {
@@ -79,6 +92,7 @@ export async function loadProductPageData(
     availableInBundles,
     variantImageUrls,
     productDocuments,
-    richDescription: enrichedContent?.rich_text,
+    richDescription:
+      enrichedContent?.rich_description ?? enrichedContent?.rich_text,
   }
 }

@@ -91,7 +91,7 @@ describe("GET /api/product-documents/:id/download", () => {
       ok: true,
       status: 200,
       body: "file",
-      headers: new Headers({ "content-type": "application/octet-stream" }),
+      headers: new Headers({ "content-type": "application/pdf" }),
     })
 
     const response = await GET({} as Request, {
@@ -99,7 +99,7 @@ describe("GET /api/product-documents/:id/download", () => {
     })
 
     expect(response.headers.get("content-disposition")).toBe(
-      'attachment; filename="doc_1_.._bad"',
+      'attachment; filename="doc_1_.._bad.pdf"',
     )
   })
 })

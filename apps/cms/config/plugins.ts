@@ -85,6 +85,7 @@ export default ({ env }: { env: EnvReader }) => {
       config: {
         provider: "aws-s3",
         providerOptions: {
+          baseUrl: env("AWS_BASE_URL"),
           rootPath: env("AWS_ROOT_PATH"),
           s3Options: {
             credentials: {

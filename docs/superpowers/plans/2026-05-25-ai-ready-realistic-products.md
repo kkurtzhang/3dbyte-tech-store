@@ -34,3 +34,14 @@
 - [ ] Verify storefront product listing/search and product pages.
 - [ ] Verify Meilisearch product documents contain `tdp_*` and `rcb_*`.
 - [ ] Verify assistant answer and support-ticket guardrails.
+
+## Phase 1 Regression Re-Close
+
+- [x] Add regression coverage for PDP rich-description loading from Strapi product descriptions.
+- [x] Move PDP rich descriptions below the image gallery instead of the purchase column.
+- [x] Add regression coverage for product-document download filenames and backend media proxying.
+- [x] Repair the content seed so stale AI document media is replaced or retired.
+- [ ] Deploy the regression branch to staging.
+- [ ] Rerun `seed:ai-ready-content` against staging.
+- [ ] Rerun product-document Meilisearch sync.
+- [ ] Verify PDP rich descriptions, PDF downloads, Download Center results, and assistant smoke on staging.

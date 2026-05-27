@@ -111,6 +111,8 @@ The content seed:
 - creates or updates public product documents for each product;
 - uploads generated Phase 1 PDF files to Strapi before linking them to `product-document` entries;
 - leaves existing document entries idempotent by matching `medusa_product_id` plus document title.
+- repairs desired AI-ready document entries when the attached Strapi media is missing, not a PDF, or has the wrong filename;
+- retires legacy public AI document entries that are outside the deterministic seed set and still point at text/no-extension media.
 
 The command requires `STRAPI_API_TOKEN` with create/update/upload permissions and uses `STRAPI_API_URL` or `STRAPI_URL`, defaulting to `http://cms:1337` inside the deployed Compose network.
 
@@ -158,7 +160,7 @@ Staging was brought up from the deployed `staging` branch with:
 
 Last updated: 2026-05-27
 
-Current technical acceptance status: passed after Phase 1 content closeout, thumbnail reseed hotfixes, and storefront image-host hotfix.
+Current technical acceptance status: reopened after human visual QA found PDP rich-description and product-document download regressions. Re-close Phase 1 only after the regression fix branch is deployed, the content seed repairs stale document media, product documents are re-synced, and assistant smoke is rerun.
 
 Evidence captured:
 
@@ -199,6 +201,7 @@ Evidence captured:
 
 Remaining follow-ups after Phase 1:
 
+- Before re-closing Phase 1, verify PDP rich descriptions render below the image gallery, product-document downloads return PDFs with `.pdf` filenames, and the assistant smoke prompts run against staging.
 - Assistant product-card rendering from structured tool output remains a future improvement; model-authored product links are now grounded through `productUrl`.
 - Future real supplier/manufacturer product media can replace the generated Phase 1 catalogue media when approved source assets are available.
 - Dependency security upgrades are tracked separately in `docs/storefront-backend-next-todo.md`.
