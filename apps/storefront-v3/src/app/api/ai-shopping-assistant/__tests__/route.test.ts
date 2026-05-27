@@ -626,6 +626,11 @@ describe("POST /api/ai-shopping-assistant", () => {
     expect(streamConfig.system).toContain("rc_model_building")
     expect(streamConfig.system).toContain("compatibility_triage")
     expect(streamConfig.system).toContain(
+      "Start product advice with a short recommendation",
+    )
+    expect(streamConfig.system).toContain("Use clear sections")
+    expect(streamConfig.system).toContain("Ask one focused follow-up question")
+    expect(streamConfig.system).toContain(
       "Never use image or thumbnail URLs as product links",
     )
     expect(streamConfig.system).toContain(
