@@ -472,6 +472,7 @@ export function buildAiCatalogueProductInput(
       source: "3dbyte-ai-ready-catalogue",
       ...product.metadata,
     },
+    thumbnail: product.imageUrl,
     images: [{ url: product.imageUrl }],
   };
 }
