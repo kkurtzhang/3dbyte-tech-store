@@ -1,6 +1,12 @@
 import { createOpenAI } from "@ai-sdk/openai"
 import { isAiTelemetryEnabled } from "@3dbyte-tech-store/observability"
-import { convertToModelMessages, stepCountIs, streamText, tool } from "ai"
+import {
+  convertToModelMessages,
+  stepCountIs,
+  streamText,
+  tool,
+  type UIMessage,
+} from "ai"
 import { z } from "zod"
 
 import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
@@ -79,6 +85,7 @@ function getAssistantMessageContent(message: {
 }
 
 type AssistantMessage = z.infer<typeof assistantMessageSchema>
+type AssistantUiMessage = Omit<UIMessage, "id">
 
 function hasTextPart(parts: AssistantMessage["parts"]) {
   return Boolean(
@@ -86,7 +93,7 @@ function hasTextPart(parts: AssistantMessage["parts"]) {
   )
 }
 
-function toUiMessage(message: AssistantMessage) {
+function toUiMessage(message: AssistantMessage): AssistantUiMessage {
   const content = getAssistantMessageContent(message)
 
   if (message.parts?.length) {
@@ -96,7 +103,7 @@ function toUiMessage(message: AssistantMessage) {
         message.content && !hasTextPart(message.parts)
           ? [{ type: "text" as const, text: content }, ...message.parts]
           : message.parts,
-    }
+    } as AssistantUiMessage
   }
 
   return {
