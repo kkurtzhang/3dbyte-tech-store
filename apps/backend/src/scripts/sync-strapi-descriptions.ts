@@ -1,8 +1,20 @@
 import { ExecArgs } from "@medusajs/framework/types";
 import { Modules } from "@medusajs/framework/utils";
 
-const STRAPI_URL = "http://192.168.0.45:1337";
-const STRAPI_TOKEN = "0fe54a2a66615700eca2265a6420ca9b7df81856eababd43c61b2fbac4608b3c48b3b7a771f79aade1c1e232bcf3191cf98981a9fa9c1295cd3873eeeb552191c4164a066bd4111c4d40de8ee1f29caf977d57d38b7bc08cf76d16e55519d635554ae04b0c632ac78d2765ccedfa3f2c999c68f924b731ff9c80a3791a441a47";
+const STRAPI_URL = (
+  process.env.STRAPI_API_URL ||
+  process.env.STRAPI_URL ||
+  "http://localhost:1337"
+).replace(/\/$/, "");
+const STRAPI_TOKEN = process.env.STRAPI_API_TOKEN?.trim();
+
+function getStrapiAuthHeaders(): { Authorization: string } {
+  if (!STRAPI_TOKEN) {
+    throw new Error("STRAPI_API_TOKEN is required to sync Strapi descriptions.");
+  }
+
+  return { Authorization: `Bearer ${STRAPI_TOKEN}` };
+}
 
 // Generate SEO-friendly description based on product data
 function generateDescription(product: any): { rich: string; seo_title: string; seo_description: string } {
@@ -98,7 +110,7 @@ export default async function ({ container }: ExecArgs) {
   while (true) {
     const url = `${STRAPI_URL}/api/product-descriptions?pagination[page]=${page}&pagination[pageSize]=100`;
     const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${STRAPI_TOKEN}` }
+      headers: getStrapiAuthHeaders()
     });
     
     if (!res.ok) break;
@@ -145,7 +157,7 @@ export default async function ({ container }: ExecArgs) {
       try {
         const res = await fetch(`${STRAPI_URL}/api/product-descriptions/${documentId}`, {
           method: "DELETE",
-          headers: { Authorization: `Bearer ${STRAPI_TOKEN}` }
+          headers: getStrapiAuthHeaders()
         });
         
         if (res.ok) {
@@ -199,7 +211,7 @@ export default async function ({ container }: ExecArgs) {
       const res = await fetch(`${STRAPI_URL}/api/product-descriptions`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${STRAPI_TOKEN}`,
+          ...getStrapiAuthHeaders(),
           "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)

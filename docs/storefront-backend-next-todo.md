@@ -27,6 +27,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 - Observability tracing plumbing exists for backend, CMS, and storefront through `@3dbyte-tech-store/observability`.
 - AI-ready realistic product Chunk A exists on `feature/ai-ready-realistic-products`: metadata flattening, product index settings, `/ai/product-guidance` `aiContext`, deterministic `ai-*` seed catalogue, and pathway docs.
 - Phase 1 AI-ready realistic products technical staging bring-up is complete: 29 `ai-*` products, 6 public product documents, product/document Meilisearch sync, Download Center search, product-page downloads, and assistant smoke prompts have been verified on staging.
+- Phase 1 AI-ready realistic product closeout tooling exists: generated storefront product media, 29 rich Strapi descriptions, and public product-document seeding for every `ai-*` product.
 
 ## Remaining TODO (Priority Order)
 
@@ -47,15 +48,16 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 
 ### 1) Complete AI-ready realistic product content polish (Medusa + CMS + Search)
 
-- Status: Phase 1 technical path is live on staging, but content depth is intentionally thin.
-- Deliverable:
-  - Add Strapi rich descriptions for all 29 `ai-*` products.
-  - Expand product-document coverage beyond the initial 6 docs.
-  - Replace seeded placeholder media with realistic product-source media.
-  - Re-sync product documents after each content batch.
+- Status: Phase 1 closeout tooling has been added. Keep this item open only until staging is reseeded and verified after deployment.
+- Deployment step:
+  - Run `seed:ai-ready-catalogue` to refresh product image URLs.
+  - Run `seed:ai-ready-content` to upsert rich descriptions and public product documents.
+  - Re-sync product and product-document indexes.
 - Acceptance:
-  - Product pages look credible without placeholder-heavy content.
-  - Download Center has useful manual/datasheet/SDS/install/warranty coverage for common product questions.
+  - Product pages use generated `/ai-catalogue/products/{handle}.png` media instead of `placehold.co`.
+  - All 29 `ai-*` products have Strapi rich descriptions.
+  - Product-document coverage includes every `ai-*` product.
+  - Download Center has useful manual/datasheet/safety/install/warranty coverage for common product questions.
   - Assistant answers are grounded in product metadata plus documents, not generic filler.
 
 ### 2) Expand Strapi collection content coverage (CMS Content)

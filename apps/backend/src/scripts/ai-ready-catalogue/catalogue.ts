@@ -52,10 +52,37 @@ function isPresent<T>(value: T | null | undefined): value is T {
   return value !== null && value !== undefined;
 }
 
-function buildAiCataloguePlaceholderImageUrl(label: string): string {
-  const text = encodeURIComponent(label).replace(/%20/g, "+");
+function trimTrailingSlash(value: string): string {
+  return value.trim().replace(/\/$/, "");
+}
 
-  return `https://placehold.co/900x900/png?text=${text}`;
+function isHttpOrigin(value: string | undefined): value is string {
+  const trimmedValue = value?.trim();
+
+  return Boolean(trimmedValue && /^https?:\/\//.test(trimmedValue));
+}
+
+function getFirstStoreCorsOrigin(): string | undefined {
+  return process.env.STORE_CORS?.split(",")
+    .map((origin) => origin.trim())
+    .find(isHttpOrigin);
+}
+
+function getAiCatalogueMediaBaseUrl(): string {
+  return trimTrailingSlash(
+    [
+      process.env.AI_CATALOGUE_MEDIA_BASE_URL,
+      process.env.STOREFRONT_URL,
+      process.env.NEXT_PUBLIC_SITE_URL,
+      process.env.SERVICE_FQDN_STOREFRONT,
+      process.env.SERVICE_URL_STOREFRONT,
+      getFirstStoreCorsOrigin(),
+    ].find(isHttpOrigin) ?? "https://store.example.com.au",
+  );
+}
+
+export function buildAiCatalogueProductImageUrl(handle: string): string {
+  return `${getAiCatalogueMediaBaseUrl()}/ai-catalogue/products/${handle}.png`;
 }
 
 export type AiReadyCatalogueProduct = {
@@ -71,7 +98,12 @@ export type AiReadyCatalogueProduct = {
   };
 };
 
-export const AI_READY_CATALOGUE_PRODUCTS: AiReadyCatalogueProduct[] = [
+type AiReadyCatalogueProductDefinition = Omit<
+  AiReadyCatalogueProduct,
+  "imageUrl"
+>;
+
+const AI_READY_CATALOGUE_PRODUCT_DEFINITIONS: AiReadyCatalogueProductDefinition[] = [
   {
     title: "AI PETG Black 1.75mm 1kg",
     handle: "ai-petg-black-175-1kg",
@@ -79,7 +111,6 @@ export const AI_READY_CATALOGUE_PRODUCTS: AiReadyCatalogueProduct[] = [
     description:
       "Reliable PETG filament for functional 3D prints and light-duty outdoor RC body or bracket parts.",
     priceAud: 32.95,
-    imageUrl: buildAiCataloguePlaceholderImageUrl("AI PETG Black"),
     metadata: {
       three_d_printing: {
         schema_version: 1,
@@ -113,7 +144,6 @@ export const AI_READY_CATALOGUE_PRODUCTS: AiReadyCatalogueProduct[] = [
     sku: "AI-FIL-PLAP-WHT-175-1KG",
     description: "Easy-print PLA+ for visual parts, prototypes, and beginner prints.",
     priceAud: 28.95,
-    imageUrl: buildAiCataloguePlaceholderImageUrl("AI PLA+ White"),
     metadata: {
       three_d_printing: {
         schema_version: 1,
@@ -145,7 +175,6 @@ export const AI_READY_CATALOGUE_PRODUCTS: AiReadyCatalogueProduct[] = [
     sku: "AI-FIL-ASA-GRY-175-1KG",
     description: "UV-resistant ASA filament for stronger outdoor-capable prints.",
     priceAud: 44.95,
-    imageUrl: buildAiCataloguePlaceholderImageUrl("AI ASA Grey"),
     metadata: {
       three_d_printing: {
         schema_version: 1,
@@ -171,7 +200,6 @@ export const AI_READY_CATALOGUE_PRODUCTS: AiReadyCatalogueProduct[] = [
     sku: "AI-FIL-TPU95A-BLK-175-500G",
     description: "Flexible TPU for bumpers, tires, pads, and vibration-resistant parts.",
     priceAud: 36.95,
-    imageUrl: buildAiCataloguePlaceholderImageUrl("AI TPU 95A"),
     metadata: {
       three_d_printing: {
         schema_version: 1,
@@ -203,7 +231,6 @@ export const AI_READY_CATALOGUE_PRODUCTS: AiReadyCatalogueProduct[] = [
     sku: "AI-FIL-PCBLEND-NAT-175-750G",
     description: "Tough PC blend for higher-strength printer and RC components.",
     priceAud: 59.95,
-    imageUrl: buildAiCataloguePlaceholderImageUrl("AI PC Blend"),
     metadata: {
       three_d_printing: {
         schema_version: 1,
@@ -228,7 +255,6 @@ export const AI_READY_CATALOGUE_PRODUCTS: AiReadyCatalogueProduct[] = [
     sku: "AI-FIL-PLACF-BLK-175-1KG",
     description: "Carbon-fibre-filled PLA for stiff matte parts with low warp.",
     priceAud: 49.95,
-    imageUrl: buildAiCataloguePlaceholderImageUrl("AI PLA-CF"),
     metadata: {
       three_d_printing: {
         schema_version: 1,
@@ -253,7 +279,6 @@ export const AI_READY_CATALOGUE_PRODUCTS: AiReadyCatalogueProduct[] = [
     sku: "AI-FIL-PETGCF-BLK-175-1KG",
     description: "Carbon-fibre PETG for stiffer functional parts with improved dimensional stability.",
     priceAud: 54.95,
-    imageUrl: buildAiCataloguePlaceholderImageUrl("AI PETG-CF"),
     metadata: {
       three_d_printing: {
         schema_version: 1,
@@ -278,7 +303,6 @@ export const AI_READY_CATALOGUE_PRODUCTS: AiReadyCatalogueProduct[] = [
     sku: "AI-FIL-SUPPORT-175-500G",
     description: "Breakaway support material for multi-material prints.",
     priceAud: 39.95,
-    imageUrl: buildAiCataloguePlaceholderImageUrl("AI Support"),
     metadata: {
       three_d_printing: {
         schema_version: 1,
@@ -307,7 +331,6 @@ export const AI_READY_CATALOGUE_PRODUCTS: AiReadyCatalogueProduct[] = [
     sku: sku as string,
     description: `${title} for printer maintenance and material compatibility testing.`,
     priceAud: priceAud as number,
-    imageUrl: buildAiCataloguePlaceholderImageUrl(title as string),
     metadata: {
       three_d_printing: {
         schema_version: 1 as const,
@@ -334,7 +357,6 @@ export const AI_READY_CATALOGUE_PRODUCTS: AiReadyCatalogueProduct[] = [
     sku: sku as string,
     description: `${title} for controlled bed adhesion and repeatable first layers.`,
     priceAud: priceAud as number,
-    imageUrl: buildAiCataloguePlaceholderImageUrl(title as string),
     metadata: {
       three_d_printing: {
         schema_version: 1 as const,
@@ -356,7 +378,6 @@ export const AI_READY_CATALOGUE_PRODUCTS: AiReadyCatalogueProduct[] = [
     sku: sku as string,
     description: `${title} for AI-ready 3D printing setup, maintenance, and troubleshooting workflows.`,
     priceAud: priceAud as number,
-    imageUrl: buildAiCataloguePlaceholderImageUrl(title as string),
     metadata: {
       three_d_printing: {
         schema_version: 1 as const,
@@ -381,7 +402,6 @@ export const AI_READY_CATALOGUE_PRODUCTS: AiReadyCatalogueProduct[] = [
     sku: sku as string,
     description: `${title} for 3DSets-style 3D printed RC model assembly.`,
     priceAud: priceAud as number,
-    imageUrl: buildAiCataloguePlaceholderImageUrl(title as string),
     metadata: {
       rc_model_building: {
         schema_version: 1 as const,
@@ -396,6 +416,12 @@ export const AI_READY_CATALOGUE_PRODUCTS: AiReadyCatalogueProduct[] = [
     },
   })),
 ];
+
+export const AI_READY_CATALOGUE_PRODUCTS: AiReadyCatalogueProduct[] =
+  AI_READY_CATALOGUE_PRODUCT_DEFINITIONS.map((product) => ({
+    ...product,
+    imageUrl: buildAiCatalogueProductImageUrl(product.handle),
+  }));
 
 export function getAiCatalogueCoverage(
   products: AiReadyCatalogueProduct[],
