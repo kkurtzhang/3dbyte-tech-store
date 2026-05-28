@@ -1,7 +1,13 @@
 /// <reference types="node" />
 
+import { mkdir, writeFile } from "node:fs/promises"
+import { dirname } from "node:path"
+
 import { customerAiEvalCases } from "../src/app/api/ai-shopping-assistant/evals/customer-evals"
-import { evaluateCustomerAiCase } from "../src/app/api/ai-shopping-assistant/evals/customer-eval-runner"
+import {
+  buildCustomerAiEvalReport,
+  evaluateCustomerAiCase,
+} from "../src/app/api/ai-shopping-assistant/evals/customer-eval-runner"
 
 function getEnvValue(key: string) {
   const value = process.env[key]?.trim()
@@ -45,10 +51,19 @@ function formatResultLine(
   return `[${status}] ${result.id} status=${result.status ?? "n/a"} duration=${result.durationMs}ms chars=${result.answerChars} ${includeText}${warningText}`
 }
 
+async function writeReportFile(
+  outputFile: string,
+  report: ReturnType<typeof buildCustomerAiEvalReport>,
+) {
+  await mkdir(dirname(outputFile), { recursive: true })
+  await writeFile(outputFile, `${JSON.stringify(report, null, 2)}\n`, "utf8")
+}
+
 async function main() {
   const endpointUrl = resolveEndpointUrl()
   const evalCases = resolveCases()
   const outputJson = getEnvValue("AI_ASSISTANT_EVAL_OUTPUT") === "json"
+  const outputFile = getEnvValue("AI_ASSISTANT_EVAL_OUTPUT_FILE")
 
   if (!evalCases.length) {
     throw new Error("No customer AI eval cases matched the requested filters.")
@@ -74,26 +89,25 @@ async function main() {
     }
   }
 
-  const summary = {
-    endpointUrl,
-    failed: results.filter((result) => !result.passed).length,
-    passed: results.filter((result) => result.passed).length,
-    total: results.length,
-    warnings: results.reduce(
-      (total, result) => total + result.formatWarnings.length,
-      0,
-    ),
+  const report = buildCustomerAiEvalReport(results, endpointUrl)
+
+  if (outputFile) {
+    await writeReportFile(outputFile, report)
+
+    if (!outputJson) {
+      console.log(`Wrote eval report to ${outputFile}`)
+    }
   }
 
   if (outputJson) {
-    console.log(JSON.stringify({ results, summary }, null, 2))
+    console.log(JSON.stringify(report, null, 2))
   } else {
     console.log(
-      `Summary: ${summary.passed}/${summary.total} passed, ${summary.failed} failed, ${summary.warnings} warnings`,
+      `Summary: ${report.summary.passed}/${report.summary.total} passed, ${report.summary.failed} failed, ${report.summary.warnings} warnings`,
     )
   }
 
-  if (summary.failed > 0) {
+  if (report.summary.failed > 0) {
     process.exitCode = 1
   }
 }

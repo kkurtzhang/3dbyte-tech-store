@@ -1,5 +1,7 @@
 import type { CustomerAiEvalCase } from "../evals/customer-evals"
+import type { CustomerAiEvalRunResult } from "../evals/customer-eval-runner"
 import {
+  buildCustomerAiEvalReport,
   decodeAssistantStream,
   evaluateCustomerAiCase,
   scoreCustomerEvalAnswer,
@@ -18,6 +20,25 @@ const baseEvalCase: CustomerAiEvalCase = {
     ],
     formatHints: ["Start with a short recommendation."],
   },
+}
+
+function makeRunResult(
+  overrides: Partial<CustomerAiEvalRunResult>,
+): CustomerAiEvalRunResult {
+  return {
+    answer: "",
+    answerChars: 0,
+    durationMs: 1,
+    forbiddenMatches: [],
+    formatWarnings: [],
+    id: "base-case",
+    includeMatched: [],
+    includeMissing: [],
+    passed: false,
+    prompt: "Customer prompt",
+    status: 200,
+    ...overrides,
+  }
 }
 
 describe("customer AI eval runner", () => {
@@ -81,5 +102,39 @@ describe("customer AI eval runner", () => {
     expect(result.status).toBe(200)
     expect(result.answer).toContain("PETG")
     expect(result.passed).toBe(true)
+  })
+
+  it("builds a durable eval report summary for artifact output", () => {
+    const endpointUrl =
+      "https://store.staging.3dbytetech.com.au/api/ai-shopping-assistant"
+    const report = buildCustomerAiEvalReport(
+      [
+        makeRunResult({
+          formatWarnings: ["Missing focused follow-up cue"],
+          id: "passing-case",
+          passed: true,
+        }),
+        makeRunResult({
+          formatWarnings: ["Missing visible recommendation cue"],
+          id: "failing-case",
+          passed: false,
+        }),
+      ],
+      endpointUrl,
+      "2026-05-28T00:00:00.000Z",
+    )
+
+    expect(report.summary).toEqual({
+      endpointUrl,
+      failed: 1,
+      generatedAt: "2026-05-28T00:00:00.000Z",
+      passed: 1,
+      total: 2,
+      warnings: 2,
+    })
+    expect(report.results.map((result) => result.id)).toEqual([
+      "passing-case",
+      "failing-case",
+    ])
   })
 })

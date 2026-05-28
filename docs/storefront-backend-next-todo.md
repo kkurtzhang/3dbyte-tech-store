@@ -112,6 +112,18 @@ These items are no longer open TODOs and should be treated as shipped baseline u
   - Content team can update Help/Guides without code changes.
   - Page remains stable if CMS fields are missing.
 
+### 7) Improve Langfuse top-level trace names (Observability + AI)
+
+- Problem: assistant smoke runs create useful Langfuse observations/spans such as `storefront.ai-shopping-assistant:ai.streamText`, but the top-level `traces.name` currently appears blank in ClickHouse/Langfuse. This makes the UI harder to scan during deploy verification.
+- Deliverable:
+  - Set a friendly top-level trace name for storefront assistant requests, for example `storefront.ai-shopping-assistant`.
+  - Preserve the existing child observation/span names used for model calls and product search.
+  - Keep trace naming environment-safe so staging and production both use the same instrumentation behavior without hardcoded hostnames.
+- Acceptance:
+  - A customer-style assistant smoke run shows a non-empty top-level trace name in Langfuse.
+  - Existing observation names, model-call spans, and `searchProducts` spans still appear.
+  - ClickHouse verification can find recent named traces and observations after a staging deploy.
+
 ## Suggested Execution Order by Worktree
 
 ### Storefront worktree
@@ -119,6 +131,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 - Implement TODO #4.
 - Implement TODO #5.
 - Implement TODO #6.
+- Implement TODO #7.
 - Smoke-test support-ticket and product-document flows after staging deploys.
 
 ### Backend worktree
