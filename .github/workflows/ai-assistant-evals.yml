@@ -1,0 +1,70 @@
+name: ai-assistant-evals
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Storefront base URL to evaluate.
+        required: true
+        default: https://store.staging.3dbytetech.com.au
+        type: string
+      cases:
+        description: Optional comma-separated eval case ids.
+        required: false
+        default: ""
+        type: string
+      limit:
+        description: Optional max number of eval cases.
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  customer-smoke:
+    name: customer-smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout without token
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git fetch --no-tags --prune --depth=1 origin "$GITHUB_SHA"
+          git checkout --force FETCH_HEAD
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.32.1 --activate
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Run customer AI evals
+        env:
+          AI_ASSISTANT_EVAL_BASE_URL: ${{ inputs.base_url }}
+          AI_ASSISTANT_EVAL_CASES: ${{ inputs.cases }}
+          AI_ASSISTANT_EVAL_LIMIT: ${{ inputs.limit }}
+          AI_ASSISTANT_EVAL_OUTPUT: json
+          AI_ASSISTANT_EVAL_OUTPUT_FILE: artifacts/customer-ai-evals.json
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          pnpm --filter=@3dbyte-tech-store/storefront-v3 eval:ai:customer \
+            | tee artifacts/customer-ai-evals.stdout.log
+
+      - name: Upload eval report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: customer-ai-evals-${{ github.run_number }}
+          path: artifacts/*
+          if-no-files-found: error
+          retention-days: 14

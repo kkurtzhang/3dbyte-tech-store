@@ -20,6 +20,20 @@ export type CustomerAiEvalRunResult = CustomerAiEvalScore & {
   status?: number
 }
 
+export type CustomerAiEvalSummary = {
+  endpointUrl: string
+  failed: number
+  generatedAt: string
+  passed: number
+  total: number
+  warnings: number
+}
+
+export type CustomerAiEvalReport = {
+  results: CustomerAiEvalRunResult[]
+  summary: CustomerAiEvalSummary
+}
+
 export type EvaluateCustomerAiCaseOptions = {
   endpointUrl: string
   fetchImpl?: AssistantFetch
@@ -160,6 +174,27 @@ export function scoreCustomerEvalAnswer(
     includeMatched,
     includeMissing,
     passed: includeMatched.length > 0 && forbiddenMatches.length === 0,
+  }
+}
+
+export function buildCustomerAiEvalReport(
+  results: CustomerAiEvalRunResult[],
+  endpointUrl: string,
+  generatedAt = new Date().toISOString(),
+): CustomerAiEvalReport {
+  return {
+    results,
+    summary: {
+      endpointUrl,
+      failed: results.filter((result) => !result.passed).length,
+      generatedAt,
+      passed: results.filter((result) => result.passed).length,
+      total: results.length,
+      warnings: results.reduce(
+        (total, result) => total + result.formatWarnings.length,
+        0,
+      ),
+    },
   }
 }
 
