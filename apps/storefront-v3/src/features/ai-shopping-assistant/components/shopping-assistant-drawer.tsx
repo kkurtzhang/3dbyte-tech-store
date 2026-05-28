@@ -293,11 +293,11 @@ export function ShoppingAssistantDrawer() {
     <Sheet modal={false}>
       <SheetTrigger asChild>
         <Button
-          className="fixed bottom-6 right-6 z-40 h-12 gap-2 rounded-sm border border-primary bg-background px-5 text-primary shadow-[0_4px_20px_rgba(6,182,212,0.15)] transition-all duration-200 hover:bg-primary hover:text-primary-foreground font-mono uppercase tracking-wider text-sm"
+          className="fixed bottom-6 right-6 z-40 h-12 w-12 sm:w-auto gap-2 rounded-sm border border-primary bg-background p-0 sm:px-5 text-primary shadow-[0_4px_20px_rgba(6,182,212,0.15)] transition-all duration-200 hover:bg-primary hover:text-primary-foreground font-mono uppercase tracking-wider text-sm"
           aria-label="Shopping assistant"
         >
           <Sparkles className="h-4 w-4 animate-pulse" />
-          <span>AI Assistant</span>
+          <span className="hidden sm:inline">AI Assistant</span>
         </Button>
       </SheetTrigger>
       <SheetContent
