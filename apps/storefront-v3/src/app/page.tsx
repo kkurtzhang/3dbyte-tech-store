@@ -209,11 +209,11 @@ export default async function Home() {
             </span>
           ))}
         </div>
-        <div className="flex w-full items-center justify-start gap-2 py-2">
-          <Button asChild size="lg" className="rounded-sm font-mono text-sm">
+        <div className="flex flex-col sm:flex-row w-full items-stretch sm:items-center justify-start gap-2 py-2">
+          <Button asChild size="lg" className="rounded-sm font-mono text-sm w-full sm:w-auto">
             <Link href={primaryCtaLink}>{primaryCtaText}</Link>
           </Button>
-          <Button asChild size="lg" variant="outline" className="rounded-sm font-mono text-sm">
+          <Button asChild size="lg" variant="outline" className="rounded-sm font-mono text-sm w-full sm:w-auto">
             <Link href={secondaryCtaLink}>{secondaryCtaText}</Link>
           </Button>
         </div>

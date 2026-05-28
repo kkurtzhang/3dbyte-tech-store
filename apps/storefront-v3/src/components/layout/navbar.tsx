@@ -122,18 +122,18 @@ export function Navbar() {
                 <User className="h-5 w-5 animate-pulse" />
               </Button>
             ) : isLoggedIn ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <Link href="/account">
-                  <Button variant="ghost" size="sm">
-                    <User className="h-5 w-5 mr-2" />
-                    My Account
+                  <Button variant="ghost" size="icon" className="sm:h-9 sm:w-auto sm:px-3">
+                    <User className="h-5 w-5 sm:mr-2" />
+                    <span className="hidden sm:inline-block">My Account</span>
                   </Button>
                 </Link>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleLogout}
-                  className="text-muted-foreground"
+                  className="text-muted-foreground hidden sm:inline-flex"
                 >
                   Sign Out
                 </Button>
@@ -141,11 +141,12 @@ export function Navbar() {
             ) : (
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={() => setAuthOpen(true)}
+                className="sm:h-9 sm:w-auto sm:px-3"
               >
-                <User className="h-5 w-5 mr-2" />
-                Sign In
+                <User className="h-5 w-5 sm:mr-2" />
+                <span className="hidden sm:inline-block">Sign In</span>
               </Button>
             )}
 
