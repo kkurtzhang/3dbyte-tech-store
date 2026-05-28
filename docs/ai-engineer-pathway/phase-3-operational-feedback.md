@@ -37,19 +37,23 @@ pnpm --filter=@3dbyte-tech-store/storefront-v3 eval:ai:customer
 
 ## Phase 3B: Manual Staging Eval Artifacts
 
-The repo now includes a manually triggered GitHub Actions workflow:
+The repo now includes a GitHub Actions workflow:
 
 ```text
 .github/workflows/ai-assistant-evals.yml
 ```
 
-Use it after staging deploys that affect assistant behavior, product guidance, search grounding, product documents, support-ticket handoff, or observability. The workflow accepts:
+On `staging`, it runs automatically on pushes that change the assistant eval runner, assistant route/evals, this workflow, or this Phase 3 doc. It defaults to a 3-case staging smoke so every relevant staging merge gets a durable artifact without running the full suite by accident.
+
+Manual `workflow_dispatch` is also defined, but GitHub only exposes manually dispatched workflows after the workflow file exists on the repository default branch. Until then, use the local command for ad hoc full-suite staging checks and rely on the automatic `staging` push run for GitHub-hosted artifacts.
+
+When manual dispatch is available, the workflow accepts:
 
 | Input | Purpose |
 | --- | --- |
 | `base_url` | Storefront base URL, defaulting to staging. |
 | `cases` | Optional comma-separated eval case ids. |
-| `limit` | Optional max number of eval cases for quick smoke runs. |
+| `limit` | Optional max number of eval cases for quick smoke runs. Defaults to `3`. |
 
 The workflow uploads `customer-ai-evals-<run-number>` with:
 
