@@ -16,8 +16,15 @@ on:
       limit:
         description: Optional max number of eval cases.
         required: false
-        default: ""
+        default: "3"
         type: string
+  push:
+    branches: [staging]
+    paths:
+      - .github/workflows/ai-assistant-evals.yml
+      - apps/storefront-v3/scripts/run-customer-ai-evals.ts
+      - apps/storefront-v3/src/app/api/ai-shopping-assistant/**
+      - docs/ai-engineer-pathway/phase-3-operational-feedback.md
 
 permissions:
   contents: read
@@ -49,9 +56,9 @@ jobs:
 
       - name: Run customer AI evals
         env:
-          AI_ASSISTANT_EVAL_BASE_URL: ${{ inputs.base_url }}
-          AI_ASSISTANT_EVAL_CASES: ${{ inputs.cases }}
-          AI_ASSISTANT_EVAL_LIMIT: ${{ inputs.limit }}
+          AI_ASSISTANT_EVAL_BASE_URL: ${{ inputs.base_url || 'https://store.staging.3dbytetech.com.au' }}
+          AI_ASSISTANT_EVAL_CASES: ${{ inputs.cases || '' }}
+          AI_ASSISTANT_EVAL_LIMIT: ${{ inputs.limit || '3' }}
           AI_ASSISTANT_EVAL_OUTPUT: json
           AI_ASSISTANT_EVAL_OUTPUT_FILE: artifacts/customer-ai-evals.json
         run: |
