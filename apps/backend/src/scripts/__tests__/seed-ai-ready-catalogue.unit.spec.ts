@@ -1,11 +1,15 @@
 const mockCreateProductsRun = jest.fn();
 const mockCreateSalesChannelsRun = jest.fn();
 const mockCreateShippingProfilesRun = jest.fn();
+const mockCreateProductCategoriesRun = jest.fn();
 const mockUpdateProductsRun = jest.fn();
+const mockCreateBrandRun = jest.fn();
+const mockLinkProductsToBrandRun = jest.fn();
 
 jest.mock("@medusajs/framework/utils", () => ({
   ContainerRegistrationKeys: {
     LOGGER: "logger",
+    QUERY: "query",
   },
   Modules: {
     FULFILLMENT: "fulfillment",
@@ -21,6 +25,9 @@ jest.mock("@medusajs/medusa/core-flows", () => ({
   createProductsWorkflow: jest.fn(() => ({
     run: mockCreateProductsRun,
   })),
+  createProductCategoriesWorkflow: jest.fn(() => ({
+    run: mockCreateProductCategoriesRun,
+  })),
   createSalesChannelsWorkflow: jest.fn(() => ({
     run: mockCreateSalesChannelsRun,
   })),
@@ -32,18 +39,35 @@ jest.mock("@medusajs/medusa/core-flows", () => ({
   })),
 }));
 
+jest.mock("../../workflows/brand/create-brand", () => ({
+  createBrandWorkflow: jest.fn(() => ({
+    run: mockCreateBrandRun,
+  })),
+}));
+
+jest.mock("../../workflows/brand/link-products-to-brand", () => ({
+  LinkProductsToBrandWorkflow: jest.fn(() => ({
+    run: mockLinkProductsToBrandRun,
+  })),
+}));
+
 import seedAiReadyCatalogue from "../seed-ai-ready-catalogue";
 
 describe("seedAiReadyCatalogue", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockCreateProductsRun.mockResolvedValue({ result: [] });
+    mockCreateProductCategoriesRun.mockResolvedValue({ result: [] });
     mockCreateSalesChannelsRun.mockResolvedValue({ result: [] });
     mockCreateShippingProfilesRun.mockResolvedValue({ result: [] });
     mockUpdateProductsRun.mockResolvedValue({ result: [] });
+    mockCreateBrandRun.mockResolvedValue({
+      result: { id: "brand_created", handle: "created-brand" },
+    });
+    mockLinkProductsToBrandRun.mockResolvedValue({ result: {} });
   });
 
-  it("updates existing AI products with storefront-hosted thumbnails", async () => {
+  it("updates existing source-backed products and attaches taxonomy relations", async () => {
     const logger = {
       info: jest.fn(),
       warn: jest.fn(),
@@ -52,11 +76,21 @@ describe("seedAiReadyCatalogue", () => {
       listProducts: jest.fn(async ({ handle }: { handle: string }) => [
         {
           id: `prod_${handle}`,
+          handle,
           metadata: {
             existing_metadata: true,
           },
         },
       ]),
+      listProductCollections: jest.fn(async () => [
+        { id: "pc_premium", handle: "premium-filaments" },
+        { id: "pc_storage", handle: "filament-drying-storage" },
+        { id: "pc_nozzles", handle: "nozzles-tips" },
+        { id: "pc_hotends", handle: "hotend-upgrades" },
+        { id: "pc_build", handle: "build-plates-surfaces" },
+        { id: "pc_rc", handle: "rc-model-building" },
+      ]),
+      updateProducts: jest.fn(async () => ({})),
     };
     const fulfillmentModuleService = {
       listShippingProfiles: jest.fn(async () => [{ id: "sp_default" }]),
@@ -64,12 +98,45 @@ describe("seedAiReadyCatalogue", () => {
     const salesChannelModuleService = {
       listSalesChannels: jest.fn(async () => [{ id: "sc_web_store" }]),
     };
+    const brandModuleService = {
+      listBrands: jest.fn(async () => [
+        { id: "brand_polymaker", handle: "polymaker" },
+        { id: "brand_bambu", handle: "bambu-lab" },
+        { id: "brand_phaetus", handle: "phaetus" },
+      ]),
+    };
+    const query = {
+      graph: jest.fn(async ({ entity }: { entity: string }) => {
+        if (entity === "product_category") {
+          return {
+            data: [
+              { id: "cat_filament", handle: "filament" },
+              { id: "cat_petg", handle: "filament/petg" },
+              { id: "cat_tools", handle: "tools" },
+              { id: "cat_nozzles", handle: "spare-parts/nozzles" },
+              { id: "cat_hotends", handle: "spare-parts/hotends" },
+              { id: "cat_build", handle: "build-plates" },
+              { id: "cat_electronics", handle: "electronics" },
+              { id: "cat_motion", handle: "motion" },
+            ],
+          };
+        }
+
+        if (entity === "product") {
+          return { data: [{ id: "prod_sample", brand: null }] };
+        }
+
+        return { data: [] };
+      }),
+    };
     const container = {
       resolve: jest.fn((key: string) => {
         const services: Record<string, unknown> = {
+          brand: brandModuleService,
           fulfillment: fulfillmentModuleService,
           logger,
           product: productModuleService,
+          query,
           sales_channel: salesChannelModuleService,
         };
 
@@ -81,6 +148,8 @@ describe("seedAiReadyCatalogue", () => {
 
     expect(mockCreateProductsRun).not.toHaveBeenCalled();
     expect(mockUpdateProductsRun).toHaveBeenCalledTimes(1);
+    expect(productModuleService.updateProducts).toHaveBeenCalled();
+    expect(mockLinkProductsToBrandRun).toHaveBeenCalled();
 
     const updateInput = mockUpdateProductsRun.mock.calls[0]?.[0] as {
       input?: {
@@ -93,14 +162,24 @@ describe("seedAiReadyCatalogue", () => {
     };
     const products = updateInput.input?.products ?? [];
     const petgProduct = products.find(
-      (product) => product.handle === "ai-petg-black-175-1kg",
+      (product) => product.handle === "polymaker-polylite-petg-black-175-1kg",
     );
 
     expect(petgProduct).toBeDefined();
     expect(petgProduct?.thumbnail).toBe(petgProduct?.images?.[0]?.url);
-    expect(petgProduct?.thumbnail).toContain(
-      "/ai-catalogue/products/ai-petg-black-175-1kg.png",
-    );
+    expect(petgProduct?.thumbnail).toContain("shop.polymaker.com");
     expect(petgProduct?.thumbnail).not.toContain("placehold.co");
+    expect(productModuleService.updateProducts).toHaveBeenCalledWith(
+      expect.stringContaining("polymaker-polylite-petg-black-175-1kg"),
+      expect.objectContaining({
+        categories: [{ id: "cat_petg" }],
+        collection_id: "pc_premium",
+        tags: expect.arrayContaining([
+          { value: "filament" },
+          { value: "petg" },
+          { value: "polymaker" },
+        ]),
+      }),
+    );
   });
 });
