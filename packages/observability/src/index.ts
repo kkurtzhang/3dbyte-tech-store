@@ -7,6 +7,11 @@ export {
   type TracingConfig,
 } from "./config";
 export {
+  createActiveLangfuseTraceAttributeWriter,
+  setActiveLangfuseTraceAttributes,
+  type LangfuseTraceAttributeInput,
+} from "./langfuse";
+export {
   buildSpanProcessors,
   buildSpanProcessorsAsync,
   createNodeAutoInstrumentations,

@@ -56,5 +56,16 @@ describe("observability node tracing", () => {
         },
       }),
     ).toBe(false);
+    expect(
+      processorConfig.shouldExportSpan({
+        otelSpan: {
+          attributes: {
+            "http.route": "/api/ai-shopping-assistant",
+            "langfuse.trace.name": "storefront.ai-shopping-assistant",
+          },
+          instrumentationScope: { name: "next" },
+        },
+      }),
+    ).toBe(true);
   });
 });

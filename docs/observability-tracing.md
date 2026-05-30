@@ -51,4 +51,23 @@ Map the printed init key names into the app runtime names above.
 - Next.js loads Node-only tracing through `apps/storefront-v3/instrumentation.ts` and `instrumentation.node.ts`.
 - AI model/tool spans are enabled in `apps/storefront-v3/src/app/api/ai-shopping-assistant/route.ts` when OTLP or Langfuse env is configured.
 
+## Storefront Assistant Traces
+
+The storefront AI drawer sends a browser-tab chat session id with every assistant request. Langfuse should show:
+
+- trace name: `storefront.ai-shopping-assistant`;
+- session id: one browser chat conversation;
+- tags: `ai-chatbot`, `storefront`, `shopping-assistant`, `storefront.shopping-assistant`;
+- metadata: `chatbot_id`, `chatbot_surface`, `service`, `route`, `provider`, and `model`.
+
+DeepSeek streaming requests include `stream_options.include_usage=true` so the final provider usage chunk can report cache-aware token counts. Configure the Langfuse `deepseek-v4-flash` model pricing with these usage detail keys:
+
+```text
+input_cache_hit_tokens
+input_cache_miss_tokens
+output
+```
+
+The assistant route records usage details with those keys when the stream finishes. If provider-specific cache fields are unavailable, input tokens are conservatively treated as cache misses.
+
 Set `OTEL_TRACING_ENABLED=false` or `OTEL_SDK_DISABLED=true` to disable tracing for a runtime.

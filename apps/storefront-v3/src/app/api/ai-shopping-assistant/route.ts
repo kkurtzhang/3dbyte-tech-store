@@ -1,5 +1,8 @@
 import { createOpenAI } from "@ai-sdk/openai"
-import { isAiTelemetryEnabled } from "@3dbyte-tech-store/observability"
+import {
+  createActiveLangfuseTraceAttributeWriter,
+  isAiTelemetryEnabled,
+} from "@3dbyte-tech-store/observability"
 import {
   convertToModelMessages,
   stepCountIs,
@@ -15,7 +18,17 @@ import { checkRateLimit } from "@/lib/security/rate-limit"
 const DEFAULT_AI_MODEL = "deepseek-v4-flash"
 const DEFAULT_DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 const DEEPSEEK_NON_THINKING_MODE = { type: "disabled" } as const
+const ASSISTANT_CHATBOT_ID = "storefront.shopping-assistant"
+const ASSISTANT_SURFACE = "storefront-floating-drawer"
+const ASSISTANT_TRACE_NAME = "storefront.ai-shopping-assistant"
+const ASSISTANT_TRACE_TAGS = [
+  "ai-chatbot",
+  "storefront",
+  "shopping-assistant",
+  ASSISTANT_CHATBOT_ID,
+]
 const MAX_ASSISTANT_PART_BYTES = 25_000
+const TRACE_CONTEXT_ID_PATTERN = /^[a-zA-Z0-9._:-]+$/
 
 const assistantPartSchema = z
   .object({
@@ -256,6 +269,39 @@ function toUiMessages(messages: AssistantMessage[]) {
 
 const assistantRequestSchema = z.object({
   messages: z.array(assistantMessageSchema).min(1).max(20),
+  traceContext: z
+    .object({
+      chatbotId: z
+        .string()
+        .trim()
+        .min(1)
+        .max(100)
+        .regex(TRACE_CONTEXT_ID_PATTERN)
+        .optional(),
+      sessionId: z
+        .string()
+        .trim()
+        .min(1)
+        .max(160)
+        .regex(TRACE_CONTEXT_ID_PATTERN)
+        .optional(),
+      surface: z
+        .string()
+        .trim()
+        .min(1)
+        .max(100)
+        .regex(TRACE_CONTEXT_ID_PATTERN)
+        .optional(),
+      userId: z
+        .string()
+        .trim()
+        .min(1)
+        .max(160)
+        .regex(TRACE_CONTEXT_ID_PATTERN)
+        .optional(),
+    })
+    .strict()
+    .optional(),
 })
 
 const productSearchInputSchema = z.object({
@@ -356,6 +402,125 @@ function isJsonRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value)
 }
 
+type DeepSeekUsage = {
+  completionTokens?: number
+  promptCacheHitTokens?: number
+  promptCacheMissTokens?: number
+  promptTokens?: number
+  totalTokens?: number
+}
+
+type UsageSnapshot = {
+  cachedInputTokens?: number
+  inputTokens?: number
+  outputTokens?: number
+  totalTokens?: number
+}
+
+function getOptionalNumber(record: Record<string, unknown>, key: string) {
+  const value = record[key]
+
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined
+}
+
+function normalizeDeepSeekUsage(usage: unknown): DeepSeekUsage | null {
+  if (!isJsonRecord(usage)) {
+    return null
+  }
+
+  return {
+    completionTokens: getOptionalNumber(usage, "completion_tokens"),
+    promptCacheHitTokens: getOptionalNumber(usage, "prompt_cache_hit_tokens"),
+    promptCacheMissTokens: getOptionalNumber(usage, "prompt_cache_miss_tokens"),
+    promptTokens: getOptionalNumber(usage, "prompt_tokens"),
+    totalTokens: getOptionalNumber(usage, "total_tokens"),
+  }
+}
+
+function captureDeepSeekUsageFromSseLine(
+  line: string,
+  usageRef: { current: DeepSeekUsage | null },
+) {
+  const trimmed = line.trim()
+
+  if (!trimmed.startsWith("data:")) {
+    return
+  }
+
+  const payload = trimmed.slice("data:".length).trim()
+
+  if (!payload || payload === "[DONE]") {
+    return
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(payload)
+    const usage = isJsonRecord(parsed)
+      ? normalizeDeepSeekUsage(parsed.usage)
+      : null
+
+    if (usage) {
+      usageRef.current = usage
+    }
+  } catch {
+    // SSE chunks are best-effort observability data; never break the model stream.
+  }
+}
+
+function createDeepSeekUsageTransform(usageRef: {
+  current: DeepSeekUsage | null
+}) {
+  const decoder = new TextDecoder()
+  let bufferedText = ""
+
+  return new TransformStream<Uint8Array, Uint8Array>({
+    transform(chunk, controller) {
+      bufferedText += decoder.decode(chunk, { stream: true })
+      const lines = bufferedText.split(/\r?\n/)
+      bufferedText = lines.pop() ?? ""
+
+      for (const line of lines) {
+        captureDeepSeekUsageFromSseLine(line, usageRef)
+      }
+
+      controller.enqueue(chunk)
+    },
+    flush() {
+      bufferedText += decoder.decode()
+
+      if (bufferedText) {
+        for (const line of bufferedText.split(/\r?\n/)) {
+          captureDeepSeekUsageFromSseLine(line, usageRef)
+        }
+      }
+    },
+  })
+}
+
+function withDeepSeekUsageCapture(
+  response: Response,
+  usageRef: { current: DeepSeekUsage | null },
+) {
+  if (typeof response.headers?.get !== "function") {
+    return response
+  }
+
+  const contentType = response.headers.get("content-type") ?? ""
+
+  if (!response.body || !contentType.includes("text/event-stream")) {
+    return response
+  }
+
+  return new Response(
+    response.body.pipeThrough(createDeepSeekUsageTransform(usageRef)),
+    {
+      headers: response.headers,
+      status: response.status,
+      statusText: response.statusText,
+    },
+  )
+}
+
 function toDeepSeekNonThinkingBody(body: BodyInit | null | undefined) {
   if (typeof body !== "string") {
     return body
@@ -375,6 +540,12 @@ function toDeepSeekNonThinkingBody(body: BodyInit | null | undefined) {
 
     return JSON.stringify({
       ...parsedBody,
+      stream_options: {
+        ...(isJsonRecord(parsedBody.stream_options)
+          ? parsedBody.stream_options
+          : {}),
+        include_usage: true,
+      },
       thinking: DEEPSEEK_NON_THINKING_MODE,
     })
   } catch {
@@ -382,17 +553,119 @@ function toDeepSeekNonThinkingBody(body: BodyInit | null | undefined) {
   }
 }
 
-function createDeepSeekFetch(fetchImpl: typeof fetch = fetch): typeof fetch {
-  return (input, init) => {
+function createDeepSeekFetch(
+  fetchImpl: typeof fetch = fetch,
+  usageRef: { current: DeepSeekUsage | null } = { current: null },
+): typeof fetch {
+  return async (input, init) => {
     if (!init) {
       return fetchImpl(input, init)
     }
 
-    return fetchImpl(input, {
+    const response = await fetchImpl(input, {
       ...init,
       body: toDeepSeekNonThinkingBody(init.body),
     })
+
+    return withDeepSeekUsageCapture(response, usageRef)
   }
+}
+
+type AssistantTraceContext = z.infer<
+  typeof assistantRequestSchema
+>["traceContext"]
+
+function getTraceContextValue(
+  traceContext: AssistantTraceContext,
+  key: keyof NonNullable<AssistantTraceContext>,
+  fallback: string,
+) {
+  const value = traceContext?.[key]
+
+  return typeof value === "string" && value.trim() ? value.trim() : fallback
+}
+
+function buildAssistantTraceMetadata(
+  config: NonNullable<ReturnType<typeof getConfig>>,
+  traceContext: AssistantTraceContext,
+) {
+  return {
+    chatbot_id: getTraceContextValue(
+      traceContext,
+      "chatbotId",
+      ASSISTANT_CHATBOT_ID,
+    ),
+    chatbot_surface: getTraceContextValue(
+      traceContext,
+      "surface",
+      ASSISTANT_SURFACE,
+    ),
+    model: config.model,
+    provider: "deepseek",
+    route: "/api/ai-shopping-assistant",
+    service: "storefront-v3",
+  }
+}
+
+function buildAssistantTelemetryMetadata(
+  config: NonNullable<ReturnType<typeof getConfig>>,
+  traceContext: AssistantTraceContext,
+) {
+  return {
+    ...buildAssistantTraceMetadata(config, traceContext),
+    ...(traceContext?.sessionId ? { sessionId: traceContext.sessionId } : {}),
+    tags: ASSISTANT_TRACE_TAGS,
+    ...(traceContext?.userId ? { userId: traceContext.userId } : {}),
+  }
+}
+
+function toFiniteNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined
+}
+
+function buildDeepSeekUsageDetails(
+  usage: UsageSnapshot,
+  deepSeekUsage: DeepSeekUsage | null,
+) {
+  const inputTokens =
+    toFiniteNumber(deepSeekUsage?.promptTokens) ??
+    toFiniteNumber(usage.inputTokens) ??
+    0
+  const cacheHitTokens =
+    toFiniteNumber(deepSeekUsage?.promptCacheHitTokens) ??
+    toFiniteNumber(usage.cachedInputTokens) ??
+    0
+  const cacheMissTokens =
+    toFiniteNumber(deepSeekUsage?.promptCacheMissTokens) ??
+    Math.max(inputTokens - cacheHitTokens, 0)
+  const outputTokens =
+    toFiniteNumber(deepSeekUsage?.completionTokens) ??
+    toFiniteNumber(usage.outputTokens) ??
+    0
+  const totalTokens =
+    toFiniteNumber(deepSeekUsage?.totalTokens) ??
+    toFiniteNumber(usage.totalTokens) ??
+    cacheHitTokens + cacheMissTokens + outputTokens
+
+  return {
+    input_cache_hit_tokens: cacheHitTokens,
+    input_cache_miss_tokens: cacheMissTokens,
+    output: outputTokens,
+    total: totalTokens,
+  }
+}
+
+function getCacheHitRatio(
+  usageDetails: ReturnType<typeof buildDeepSeekUsageDetails>,
+) {
+  const inputTotal =
+    usageDetails.input_cache_hit_tokens + usageDetails.input_cache_miss_tokens
+
+  if (inputTotal <= 0) {
+    return 0
+  }
+
+  return Number((usageDetails.input_cache_hit_tokens / inputTotal).toFixed(4))
 }
 
 async function callInternalBackend<T>(
@@ -480,10 +753,29 @@ export async function POST(req: Request): Promise<Response> {
     )
   }
 
+  const traceMetadata = buildAssistantTraceMetadata(
+    config,
+    parsed.data.traceContext,
+  )
+  const telemetryMetadata = buildAssistantTelemetryMetadata(
+    config,
+    parsed.data.traceContext,
+  )
+  const setLangfuseTraceAttributes = createActiveLangfuseTraceAttributeWriter()
+
+  setLangfuseTraceAttributes({
+    metadata: traceMetadata,
+    name: ASSISTANT_TRACE_NAME,
+    sessionId: parsed.data.traceContext?.sessionId,
+    tags: ASSISTANT_TRACE_TAGS,
+    userId: parsed.data.traceContext?.userId,
+  })
+
+  const deepSeekUsageRef: { current: DeepSeekUsage | null } = { current: null }
   const deepseek = createOpenAI({
     apiKey: config.apiKey,
     baseURL: config.baseURL,
-    fetch: createDeepSeekFetch(),
+    fetch: createDeepSeekFetch(fetch, deepSeekUsageRef),
     name: "deepseek",
   })
   const uiMessages = toUiMessages(parsed.data.messages)
@@ -496,10 +788,22 @@ export async function POST(req: Request): Promise<Response> {
     experimental_telemetry: {
       functionId: "storefront.ai-shopping-assistant",
       isEnabled: isAiTelemetryEnabled(),
-      metadata: {
-        provider: "deepseek",
-        service: "storefront-v3",
-      },
+      metadata: telemetryMetadata,
+    },
+    onFinish: ({ usage }) => {
+      const usageDetails = buildDeepSeekUsageDetails(
+        usage as UsageSnapshot,
+        deepSeekUsageRef.current,
+      )
+
+      setLangfuseTraceAttributes({
+        metadata: {
+          ...traceMetadata,
+          deepseek_cache_hit_ratio: getCacheHitRatio(usageDetails),
+        },
+        model: config.model,
+        usageDetails,
+      })
     },
     stopWhen: stepCountIs(5),
     tools: {

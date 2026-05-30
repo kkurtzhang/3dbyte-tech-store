@@ -53,12 +53,16 @@ function shouldExportLangfuseSpan({ otelSpan }: { otelSpan: ReadableSpan }) {
     (attribute) =>
       attribute.startsWith("ai.") || attribute.startsWith("gen_ai."),
   );
+  const hasLangfuseAttributes = Object.keys(otelSpan.attributes).some(
+    (attribute) => attribute.startsWith("langfuse."),
+  );
   const operationName = otelSpan.attributes["operation.name"];
   const isAiOperation =
     typeof operationName === "string" && operationName.startsWith("ai.");
 
   return (
     hasAiAttributes ||
+    hasLangfuseAttributes ||
     isAiOperation ||
     otelSpan.instrumentationScope.name === "ai"
   );

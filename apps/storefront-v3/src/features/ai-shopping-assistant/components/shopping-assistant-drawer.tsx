@@ -32,6 +32,15 @@ import {
 } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
 
+const ASSISTANT_SESSION_STORAGE_KEY = "3db:ai-assistant-session-id"
+const ASSISTANT_CHATBOT_ID = "storefront.shopping-assistant"
+const ASSISTANT_SURFACE = "storefront-floating-drawer"
+
+type PrepareSendMessagesRequestInput = {
+  id: string
+  messages: unknown[]
+}
+
 export type AssistantProductSuggestion = {
   id: string
   title: string
@@ -100,6 +109,40 @@ function getMessageText(message: { parts?: Array<Record<string, unknown>> }) {
       .map((part) => part.text as string)
       .join("") ?? ""
   )
+}
+
+function createAssistantSessionId() {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
+    return crypto.randomUUID()
+  }
+
+  return `assistant-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
+}
+
+function getAssistantSessionId() {
+  if (typeof window === "undefined") {
+    return createAssistantSessionId()
+  }
+
+  try {
+    const existing = window.sessionStorage.getItem(
+      ASSISTANT_SESSION_STORAGE_KEY,
+    )
+
+    if (existing) {
+      return existing
+    }
+
+    const sessionId = createAssistantSessionId()
+    window.sessionStorage.setItem(ASSISTANT_SESSION_STORAGE_KEY, sessionId)
+
+    return sessionId
+  } catch {
+    return createAssistantSessionId()
+  }
 }
 
 type AssistantContentBlock =
@@ -266,9 +309,27 @@ export function ShoppingAssistantDrawer() {
   const pathname = usePathname()
   const [input, setInput] = useState("")
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const assistantSessionId = useMemo(() => getAssistantSessionId(), [])
   const transport = useMemo(
-    () => new DefaultChatTransport({ api: "/api/ai-shopping-assistant" }),
-    [],
+    () =>
+      new DefaultChatTransport({
+        api: "/api/ai-shopping-assistant",
+        prepareSendMessagesRequest: ({
+          id,
+          messages,
+        }: PrepareSendMessagesRequestInput) => ({
+          body: {
+            id,
+            messages,
+            traceContext: {
+              chatbotId: ASSISTANT_CHATBOT_ID,
+              sessionId: assistantSessionId,
+              surface: ASSISTANT_SURFACE,
+            },
+          },
+        }),
+      }),
+    [assistantSessionId],
   )
   const { messages, sendMessage, status, error } = useChat({ transport })
   const isStreaming = status === "submitted" || status === "streaming"
