@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import { DefaultChatTransport } from "ai"
 import { usePathname } from "next/navigation"
 
 import {
@@ -42,6 +43,7 @@ jest.mock("lucide-react", () => ({
 }))
 
 const mockUsePathname = usePathname as jest.Mock
+const mockDefaultChatTransport = DefaultChatTransport as unknown as jest.Mock
 
 describe("ShoppingAssistantDrawer", () => {
   beforeEach(() => {
@@ -52,6 +54,12 @@ describe("ShoppingAssistantDrawer", () => {
       error: null,
       sendMessage: sendMessageMock,
     }
+    window.sessionStorage.clear()
+    jest.spyOn(window.crypto, "randomUUID").mockReturnValue("trace-session-01")
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
   })
 
   it("floats on shopping surfaces and sends messages through the assistant API", async () => {
@@ -72,6 +80,67 @@ describe("ShoppingAssistantDrawer", () => {
     expect(sendMessageMock).toHaveBeenCalledWith({
       text: "Which hotend fits my K1?",
     })
+  })
+
+  it("sends a stable browser chat session context with assistant requests", () => {
+    mockUsePathname.mockReturnValue("/shop")
+
+    render(<ShoppingAssistantDrawer />)
+
+    const transportOptions = mockDefaultChatTransport.mock.calls[0]?.[0]
+    const request = transportOptions.prepareSendMessagesRequest({
+      id: "chat_01",
+      messages: [
+        {
+          id: "msg_01",
+          role: "user",
+          parts: [{ type: "text", text: "Which PETG should I buy?" }],
+        },
+      ],
+    })
+
+    expect(request.body).toEqual({
+      id: "chat_01",
+      messages: [
+        {
+          id: "msg_01",
+          role: "user",
+          parts: [{ type: "text", text: "Which PETG should I buy?" }],
+        },
+      ],
+      traceContext: {
+        chatbotId: "storefront.shopping-assistant",
+        sessionId: "trace-session-01",
+        surface: "storefront-floating-drawer",
+      },
+    })
+    expect(window.sessionStorage.setItem).toHaveBeenCalledWith(
+      "3db:ai-assistant-session-id",
+      "trace-session-01",
+    )
+  })
+
+  it("falls back to an ephemeral chat session when browser storage is unavailable", () => {
+    mockUsePathname.mockReturnValue("/shop")
+    jest.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new Error("Storage blocked")
+    })
+
+    render(<ShoppingAssistantDrawer />)
+
+    const transportOptions = mockDefaultChatTransport.mock.calls[0]?.[0]
+    const request = transportOptions.prepareSendMessagesRequest({
+      id: "chat_01",
+      messages: [
+        {
+          id: "msg_01",
+          role: "user",
+          parts: [{ type: "text", text: "PETG?" }],
+        },
+      ],
+    })
+
+    expect(request.body.traceContext.sessionId).toBe("trace-session-01")
   })
 
   it("shows a streaming pending state", async () => {

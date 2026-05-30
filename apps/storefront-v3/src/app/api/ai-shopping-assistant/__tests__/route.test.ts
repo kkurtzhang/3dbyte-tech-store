@@ -1,6 +1,10 @@
+import { ReadableStream, TransformStream } from "stream/web"
+import { TextDecoder } from "util"
+
 const streamTextMock = jest.fn()
 const toolMock = jest.fn((config) => config)
 const createOpenAIMock = jest.fn()
+const setActiveLangfuseTraceAttributesMock = jest.fn()
 const providerModelMock = jest.fn((model: string) => ({
   provider: "deepseek.responses",
   model,
@@ -41,7 +45,18 @@ jest.mock("@/lib/security/rate-limit", () => ({
     checkRateLimitMock(key, limit, windowMs),
 }))
 
+jest.mock("@3dbyte-tech-store/observability", () => ({
+  createActiveLangfuseTraceAttributeWriter: () =>
+    setActiveLangfuseTraceAttributesMock,
+  isAiTelemetryEnabled: () => true,
+  setActiveLangfuseTraceAttributes: (attributes: unknown) =>
+    setActiveLangfuseTraceAttributesMock(attributes),
+}))
+
 const originalEnv = process.env
+const originalResponse = global.Response
+const originalTextDecoder = global.TextDecoder
+const originalTransformStream = global.TransformStream
 const fetchMock = jest.fn()
 
 class MockResponse {
@@ -63,6 +78,81 @@ class MockResponse {
 
   static json(body: unknown, init?: { status?: number }) {
     return new MockResponse(body, init)
+  }
+}
+
+class StreamingMockResponse {
+  readonly body: ReadableStream<Uint8Array> | null
+  readonly headers: { get: (name: string) => string | null }
+  readonly status: number
+  readonly statusText: string
+
+  constructor(
+    body?: ReadableStream<Uint8Array> | string | null,
+    init?: {
+      headers?:
+        | Record<string, string>
+        | { get: (name: string) => string | null }
+      status?: number
+      statusText?: string
+    },
+  ) {
+    this.body =
+      typeof body === "string" ? stringToReadableStream(body) : (body ?? null)
+    this.headers = toHeaders(init?.headers)
+    this.status = init?.status ?? 200
+    this.statusText = init?.statusText ?? "OK"
+  }
+
+  async text() {
+    if (!this.body) {
+      return ""
+    }
+
+    const reader = this.body.getReader()
+    const chunks: Uint8Array[] = []
+
+    while (true) {
+      const read = await reader.read()
+
+      if (read.done) {
+        break
+      }
+
+      chunks.push(read.value)
+    }
+
+    return Buffer.concat(chunks.map((chunk) => Buffer.from(chunk))).toString(
+      "utf8",
+    )
+  }
+}
+
+function stringToReadableStream(text: string) {
+  return new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(Buffer.from(text, "utf8"))
+      controller.close()
+    },
+  })
+}
+
+function toHeaders(
+  headers?: Record<string, string> | { get: (name: string) => string | null },
+) {
+  if (headers && "get" in headers) {
+    return headers
+  }
+
+  const normalized = Object.fromEntries(
+    Object.entries(headers ?? {}).map(([key, value]) => [
+      key.toLowerCase(),
+      value,
+    ]),
+  )
+
+  return {
+    get: (name: string) => normalized[name.toLowerCase()] ?? null,
   }
 }
 
@@ -99,6 +189,9 @@ describe("POST /api/ai-shopping-assistant", () => {
     jest.clearAllMocks()
     process.env = { ...originalEnv }
     global.Response = MockResponse as unknown as typeof Response
+    global.TextDecoder = TextDecoder as unknown as typeof global.TextDecoder
+    global.TransformStream =
+      TransformStream as unknown as typeof global.TransformStream
     global.fetch = fetchMock
     fetchMock.mockResolvedValue({
       ok: true,
@@ -115,6 +208,9 @@ describe("POST /api/ai-shopping-assistant", () => {
 
   afterAll(() => {
     process.env = originalEnv
+    global.Response = originalResponse
+    global.TextDecoder = originalTextDecoder
+    global.TransformStream = originalTransformStream
   })
 
   it("rejects invalid chat payloads before creating a model stream", async () => {
@@ -588,6 +684,11 @@ describe("POST /api/ai-shopping-assistant", () => {
 
     const response = await POST(
       createJsonRequest({
+        traceContext: {
+          sessionId: "assistant-session_01",
+          chatbotId: "storefront.shopping-assistant",
+          surface: "storefront-floating-drawer",
+        },
         messages: [{ role: "user", content: "Find a beginner Voron kit" }],
       }),
     )
@@ -613,10 +714,40 @@ describe("POST /api/ai-shopping-assistant", () => {
       functionId: "storefront.ai-shopping-assistant",
       isEnabled: true,
       metadata: {
+        chatbot_id: "storefront.shopping-assistant",
+        chatbot_surface: "storefront-floating-drawer",
+        model: "deepseek-v4-flash",
         provider: "deepseek",
+        route: "/api/ai-shopping-assistant",
         service: "storefront-v3",
+        sessionId: "assistant-session_01",
+        tags: [
+          "ai-chatbot",
+          "storefront",
+          "shopping-assistant",
+          "storefront.shopping-assistant",
+        ],
       },
     })
+    expect(setActiveLangfuseTraceAttributesMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata: expect.objectContaining({
+          chatbot_id: "storefront.shopping-assistant",
+          chatbot_surface: "storefront-floating-drawer",
+          model: "deepseek-v4-flash",
+          provider: "deepseek",
+          service: "storefront-v3",
+        }),
+        name: "storefront.ai-shopping-assistant",
+        sessionId: "assistant-session_01",
+        tags: [
+          "ai-chatbot",
+          "storefront",
+          "shopping-assistant",
+          "storefront.shopping-assistant",
+        ],
+      }),
+    )
     expect(streamConfig.system).toContain("suggest-only")
     expect(streamConfig.system).toContain("explicit customer confirmation")
     expect(streamConfig.system).toContain("productUrl")
@@ -669,6 +800,25 @@ describe("POST /api/ai-shopping-assistant", () => {
     )
   })
 
+  it("rejects malformed trace context before model creation", async () => {
+    configureAiEnv()
+    const { POST } = await import("../route")
+
+    const response = await POST(
+      createJsonRequest({
+        traceContext: {
+          sessionId: "../not-a-safe-session-id",
+        },
+        messages: [{ role: "user", content: "Find PETG for outdoors" }],
+      }),
+    )
+    const body = await response.json()
+
+    expect(response.status).toBe(400)
+    expect(body.error).toContain("Invalid assistant request")
+    expect(streamTextMock).not.toHaveBeenCalled()
+  })
+
   it("defaults to V4 Flash and disables DeepSeek thinking mode for tool loops", async () => {
     configureAiEnv()
     delete process.env.AI_MODEL
@@ -709,7 +859,116 @@ describe("POST /api/ai-shopping-assistant", () => {
     expect(forwardedBody).toEqual(
       expect.objectContaining({
         model: "deepseek-v4-flash",
+        stream_options: { include_usage: true },
         thinking: { type: "disabled" },
+      }),
+    )
+  })
+
+  it("records DeepSeek cache-aware Langfuse usage details when streaming finishes", async () => {
+    configureAiEnv()
+    const { POST } = await import("../route")
+
+    await POST(
+      createJsonRequest({
+        traceContext: { sessionId: "assistant-session_02" },
+        messages: [{ role: "user", content: "Which PETG should I buy?" }],
+      }),
+    )
+
+    const streamConfig = streamTextMock.mock.calls[0]?.[0]
+
+    streamConfig.onFinish({
+      usage: {
+        cachedInputTokens: 120,
+        inputTokens: 320,
+        outputTokens: 80,
+        totalTokens: 400,
+      },
+    })
+
+    expect(setActiveLangfuseTraceAttributesMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        metadata: expect.objectContaining({
+          deepseek_cache_hit_ratio: 0.375,
+        }),
+        model: "deepseek-v4-flash",
+        usageDetails: {
+          input_cache_hit_tokens: 120,
+          input_cache_miss_tokens: 200,
+          output: 80,
+          total: 400,
+        },
+      }),
+    )
+  })
+
+  it("prefers DeepSeek provider cache usage chunks over generic AI SDK usage", async () => {
+    configureAiEnv()
+    const { POST } = await import("../route")
+
+    await POST(
+      createJsonRequest({
+        traceContext: { sessionId: "assistant-session_03" },
+        messages: [{ role: "user", content: "Which PETG should I buy?" }],
+      }),
+    )
+
+    const providerConfig = createOpenAIMock.mock.calls[0]?.[0]
+    const streamConfig = streamTextMock.mock.calls[0]?.[0]
+    const deepSeekStream = [
+      'data: {"choices":[],"usage":{"prompt_tokens":200,"prompt_cache_hit_tokens":42,"prompt_cache_miss_tokens":158,"completion_tokens":80,"total_tokens":280}}',
+      "",
+      "data: [DONE]",
+      "",
+    ].join("\n")
+
+    global.Response = StreamingMockResponse as unknown as typeof Response
+    fetchMock.mockResolvedValueOnce(
+      new StreamingMockResponse(deepSeekStream, {
+        headers: { "content-type": "text/event-stream" },
+      }),
+    )
+
+    try {
+      const response = await providerConfig.fetch(
+        "https://api.deepseek.com/chat/completions",
+        {
+          body: JSON.stringify({
+            messages: [{ role: "user", content: "Which PETG should I buy?" }],
+            model: "deepseek-v4-flash",
+            stream: true,
+          }),
+          headers: { "content-type": "application/json" },
+          method: "POST",
+        },
+      )
+
+      await response.text()
+    } finally {
+      global.Response = MockResponse as unknown as typeof Response
+    }
+
+    streamConfig.onFinish({
+      usage: {
+        cachedInputTokens: 999,
+        inputTokens: 999,
+        outputTokens: 999,
+        totalTokens: 999,
+      },
+    })
+
+    expect(setActiveLangfuseTraceAttributesMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        metadata: expect.objectContaining({
+          deepseek_cache_hit_ratio: 0.21,
+        }),
+        usageDetails: {
+          input_cache_hit_tokens: 42,
+          input_cache_miss_tokens: 158,
+          output: 80,
+          total: 280,
+        },
       }),
     )
   })
