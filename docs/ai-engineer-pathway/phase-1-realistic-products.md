@@ -98,6 +98,14 @@ The source-backed catalogue uses official/supplier product image URLs. Storefron
 
 The original 29 synthetic `ai-*` products remain historical staging evidence only. They should not be treated as production seed data.
 
+Retire those legacy synthetic products after the source-backed code deploys:
+
+```bash
+pnpm --filter=@3dbyte-tech-store/backend exec medusa exec ./src/scripts/retire-legacy-ai-catalogue-products.ts
+```
+
+The cleanup script archives only products with all three old-seed markers: an `ai-*` handle, `metadata.ai_catalogue_seed = true`, and `metadata.source = "3dbyte-ai-ready-catalogue"`. Archive mode is the default and sets matching products to `draft` with retirement metadata so they drop out of product sync without destroying audit history. Hard delete is available only with `AI_CATALOGUE_LEGACY_CLEANUP_MODE=delete`.
+
 ### Source-Backed Launch Coverage
 
 - Filaments: Polymaker, eSUN, and Bambu Lab PLA/PETG/ASA/TPU/support/specialty materials.
@@ -158,11 +166,12 @@ Status: complete on staging.
 
 Staging was brought up from the deployed `staging` branch with:
 
-1. AI catalogue reseed into the `Web Store` sales channel.
-2. AI content seed for 29 Strapi product descriptions and public product documents.
-3. Product Meilisearch sync.
-4. Product-document Meilisearch sync into `stg_product_documents_public`.
-5. Storefront, search, downloads, browser image, and assistant product-guidance verification.
+1. Legacy synthetic `ai-*` product retirement.
+2. AI catalogue reseed into the `Web Store` sales channel.
+3. AI content seed for Strapi product descriptions and public product documents.
+4. Product Meilisearch sync.
+5. Product-document Meilisearch sync into `stg_product_documents_public`.
+6. Storefront, search, downloads, browser image, and assistant product-guidance verification.
 
 ## Staging Acceptance Checks
 
