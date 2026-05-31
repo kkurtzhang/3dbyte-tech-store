@@ -1,6 +1,7 @@
 import MeilisearchModuleService from "../service";
 
 const mockIndex = {
+  getDocuments: jest.fn(),
   updateFilterableAttributes: jest.fn(),
   updateSortableAttributes: jest.fn(),
   updateSearchableAttributes: jest.fn(),
@@ -52,7 +53,17 @@ function createTask(taskUid: number) {
 describe("MeilisearchModuleService.configureIndex", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    Object.values(mockIndex).forEach((method, index) => {
+    mockIndex.getDocuments.mockResolvedValue({ results: [], total: 0 });
+    [
+      mockIndex.updateFilterableAttributes,
+      mockIndex.updateSortableAttributes,
+      mockIndex.updateSearchableAttributes,
+      mockIndex.updateDisplayedAttributes,
+      mockIndex.updateRankingRules,
+      mockIndex.updateTypoTolerance,
+      mockIndex.updateFaceting,
+      mockIndex.updatePagination,
+    ].forEach((method, index) => {
       method.mockResolvedValue(createTask(index + 1));
     });
   });
@@ -70,5 +81,48 @@ describe("MeilisearchModuleService.configureIndex", () => {
 
     expect(mockIndex.updateFilterableAttributes).toHaveBeenCalledWith([]);
     expect(mockIndex.updateSortableAttributes).toHaveBeenCalledWith([]);
+  });
+});
+
+describe("MeilisearchModuleService.listDocumentIds", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("paginates through index documents and returns normalized string IDs", async () => {
+    mockIndex.getDocuments
+      .mockResolvedValueOnce({
+        results: [{ id: "doc_1" }, { id: 42 }],
+        total: 3,
+      })
+      .mockResolvedValueOnce({
+        results: [{ id: "doc_3" }],
+        total: 3,
+      });
+    const service = createService();
+
+    await expect(
+      service.listDocumentIds("product_document", 2),
+    ).resolves.toEqual(["doc_1", "42", "doc_3"]);
+
+    expect(mockIndex.getDocuments).toHaveBeenNthCalledWith(1, {
+      fields: ["id"],
+      limit: 2,
+      offset: 0,
+    });
+    expect(mockIndex.getDocuments).toHaveBeenNthCalledWith(2, {
+      fields: ["id"],
+      limit: 2,
+      offset: 2,
+    });
+  });
+
+  it("treats a missing index as an empty document set", async () => {
+    mockIndex.getDocuments.mockRejectedValueOnce({
+      cause: { code: "index_not_found" },
+    });
+    const service = createService();
+
+    await expect(service.listDocumentIds("brand")).resolves.toEqual([]);
   });
 });

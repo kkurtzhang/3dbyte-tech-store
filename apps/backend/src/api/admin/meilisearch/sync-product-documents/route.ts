@@ -10,6 +10,7 @@ import {
   StrapiModuleService,
 } from "../../../../modules/strapi";
 import { toPublicProductDocumentSearchDocument } from "../../../../modules/product-files/utils/public-documents";
+import { deleteStaleIndexDocuments } from "../utils/reconcile-index";
 import type { Logger } from "@medusajs/framework/types";
 
 export async function POST(
@@ -37,9 +38,18 @@ export async function POST(
       await meilisearchService.indexData(indexDocuments, "product_document");
     }
 
+    const deleted = await deleteStaleIndexDocuments({
+      currentIds: searchDocuments.map((document) => document.id),
+      label: "product document",
+      logger,
+      meilisearchService,
+      type: "product_document",
+    });
+
     res.json({
       message: "Product documents synced to Meilisearch successfully",
       indexed: searchDocuments.length,
+      deleted,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";

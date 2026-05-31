@@ -27,6 +27,16 @@ interface MeiliSearchIndex {
     options?: { primaryKey?: string },
   ): Promise<MeiliSearchEnqueuedTask>;
   deleteDocuments(documentIds: string[]): Promise<MeiliSearchEnqueuedTask>;
+  getDocuments(params?: {
+    fields?: string[];
+    limit?: number;
+    offset?: number;
+  }): Promise<{
+    results: Record<string, unknown>[];
+    total: number;
+    limit?: number;
+    offset?: number;
+  }>;
   getDocument(documentId: string): Promise<Record<string, unknown>>;
   search(
     query: string,
@@ -216,6 +226,64 @@ export default class MeilisearchModuleService {
     return results.filter(
       (doc): doc is Record<string, unknown> => doc !== null,
     );
+  }
+
+  async listDocumentIds(
+    type: MeilisearchIndexType = "product",
+    batchSize = 1000,
+  ): Promise<string[]> {
+    const index = await this.getIndex(type);
+    const safeBatchSize = Math.max(1, batchSize);
+    const ids: string[] = [];
+    let offset = 0;
+    let total = 0;
+
+    do {
+      let page: {
+        results: Record<string, unknown>[];
+        total: number;
+        limit?: number;
+        offset?: number;
+      };
+
+      try {
+        page = await index.getDocuments({
+          fields: ["id"],
+          limit: safeBatchSize,
+          offset,
+        });
+      } catch (error) {
+        const errorCode = (error as { cause?: { code?: unknown } })?.cause
+          ?.code;
+
+        if (errorCode === "index_not_found") {
+          this.logger_.info(`Index for ${type} does not exist yet`);
+          return [];
+        }
+
+        throw error;
+      }
+
+      const pageIds = page.results
+        .map((document) => document.id)
+        .filter(
+          (id): id is string | number =>
+            typeof id === "string" || typeof id === "number",
+        )
+        .map((id) => String(id));
+
+      ids.push(...pageIds);
+      total = page.total;
+      offset += page.results.length;
+
+      if (page.results.length === 0) {
+        break;
+      }
+    } while (offset < total);
+
+    this.logger_.info(`Listed ${ids.length} document IDs from ${type} index`);
+
+    return ids;
   }
 
   async deleteFromIndex(

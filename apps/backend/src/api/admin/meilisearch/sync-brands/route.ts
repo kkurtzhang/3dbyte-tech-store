@@ -1,6 +1,9 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { MedusaError } from "@medusajs/framework/utils"
+import { MEILISEARCH_MODULE } from "../../../../modules/meilisearch"
+import type MeilisearchModuleService from "../../../../modules/meilisearch/service"
 import { syncBrandsWorkflow } from "../../../../workflows/meilisearch/brands/sync-brands"
+import { deleteStaleIndexDocuments } from "../utils/reconcile-index"
 import type { Logger } from "@medusajs/framework/types"
 
 /**
@@ -12,6 +15,7 @@ import type { Logger } from "@medusajs/framework/types"
  * - Fetch all brands from Medusa
  * - Fetch enriched content from Strapi (if available)
  * - Index all brands to Meilisearch
+ * - Delete stale brands from Meilisearch
  *
  * Example:
  * POST /admin/meilisearch/sync-brands
@@ -29,6 +33,9 @@ export const POST = async (
     let offset = 0
     const limit = 50
     let totalIndexed = 0
+    const syncedBrandIds: string[] = []
+    const meilisearchService =
+      req.scope.resolve<MeilisearchModuleService>(MEILISEARCH_MODULE)
 
     // Paginated sync following official pattern
     while (hasMore) {
@@ -42,13 +49,29 @@ export const POST = async (
       hasMore = offset + limit < (result.metadata?.count ?? 0)
       offset += limit
       totalIndexed += result.indexed
+      syncedBrandIds.push(
+        ...((result.brands ?? []) as Array<{ id?: string }>)
+          .map((brand) => brand.id)
+          .filter((id): id is string => Boolean(id)),
+      )
     }
 
-    logger.info(`Meilisearch brand sync completed: ${totalIndexed} brands indexed`)
+    const totalDeleted = await deleteStaleIndexDocuments({
+      currentIds: syncedBrandIds,
+      label: "brand",
+      logger,
+      meilisearchService,
+      type: "brand",
+    })
+
+    logger.info(
+      `Meilisearch brand sync completed: ${totalIndexed} brands indexed, ${totalDeleted} stale brands deleted`,
+    )
 
     res.json({
       message: "Brands synced to Meilisearch successfully",
       indexed: totalIndexed,
+      deleted: totalDeleted,
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error"
@@ -79,6 +102,7 @@ export const GET = async (
       response: {
         message: "Brands synced to Meilisearch successfully",
         indexed: 50,
+        deleted: 0,
       },
     },
   })
