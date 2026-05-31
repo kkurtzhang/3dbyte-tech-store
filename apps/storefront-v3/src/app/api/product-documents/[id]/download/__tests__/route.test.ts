@@ -74,7 +74,7 @@ describe("GET /api/product-documents/:id/download", () => {
       "http://localhost:9100/store/product-documents/doc_1/download",
       expect.objectContaining({
         headers: { "x-publishable-api-key": "pk_test" },
-        redirect: "follow",
+        redirect: "manual",
       })
     )
     expect(response.status).toBe(200)
@@ -101,5 +101,30 @@ describe("GET /api/product-documents/:id/download", () => {
     expect(response.headers.get("content-disposition")).toBe(
       'attachment; filename="doc_1_.._bad.pdf"',
     )
+  })
+
+  it("preserves backend redirects for URL-only official source documents", async () => {
+    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 302,
+      body: null,
+      headers: new Headers({
+        location: "https://manufacturer.example.com/manual",
+      }),
+    })
+
+    const response = await GET({} as Request, {
+      params: Promise.resolve({ id: "doc_source_1" }),
+    })
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      "http://localhost:9100/store/product-documents/doc_source_1/download",
+      expect.objectContaining({ redirect: "manual" })
+    )
+    expect(response.status).toBe(302)
+    expect(response.headers.get("location")).toBe(
+      "https://manufacturer.example.com/manual",
+    )
+    expect(response.headers.get("content-disposition")).toBeNull()
   })
 })

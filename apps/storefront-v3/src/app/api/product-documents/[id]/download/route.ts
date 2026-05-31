@@ -88,6 +88,10 @@ function proxiedDownloadHeaders(response: Response, id: string): Headers {
   return headers;
 }
 
+function isRedirectStatus(status: number): boolean {
+  return [301, 302, 303, 307, 308].includes(status);
+}
+
 export async function GET(_request: Request, { params }: RouteContext) {
   const { id } = await params;
   const publishableKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY;
@@ -108,7 +112,7 @@ export async function GET(_request: Request, { params }: RouteContext) {
     headers: {
       "x-publishable-api-key": publishableKey,
     },
-    redirect: "follow",
+    redirect: "manual",
   });
 
   if (response.status === 404) {
@@ -116,6 +120,21 @@ export async function GET(_request: Request, { params }: RouteContext) {
       { error: "Product document was not found." },
       { status: 404 },
     );
+  }
+
+  if (isRedirectStatus(response.status)) {
+    const location = response.headers.get("location");
+
+    if (location) {
+      return new Response(null, {
+        status: response.status,
+        headers: {
+          location,
+          "cache-control": "private, no-store",
+          "x-robots-tag": "noindex, nofollow",
+        },
+      });
+    }
   }
 
   if (response.ok && response.body) {
