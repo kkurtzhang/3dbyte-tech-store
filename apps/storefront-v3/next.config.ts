@@ -5,11 +5,14 @@ import createMDX from "@next/mdx";
 import {
   getAiCatalogueRemotePatterns,
   getAssetImageHostnames,
+  getSourceBackedProductImageHostnames,
 } from "./src/lib/images/remote-image-config";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const imageHostnames = getAssetImageHostnames();
+const sourceBackedProductImageHostnames =
+  getSourceBackedProductImageHostnames();
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -65,6 +68,10 @@ const nextConfig: NextConfig = {
         hostname: "cdn.shopify.com",
       },
       ...imageHostnames.map((hostname) => ({
+        protocol: "https" as const,
+        hostname,
+      })),
+      ...sourceBackedProductImageHostnames.map((hostname) => ({
         protocol: "https" as const,
         hostname,
       })),

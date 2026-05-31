@@ -4,7 +4,7 @@ This pathway captures the staged plan for making 3D Byte Tech Store useful to AI
 
 ## Phases
 
-1. **Realistic Products**: complete on staging. The small AI-ready catalogue now runs through Medusa, Strapi, Meilisearch, product documents, storefront media, and assistant product guidance.
+1. **Realistic Products**: complete on staging. The small AI-ready catalogue now runs through Medusa, Strapi, Meilisearch, product documents, storefront media, and assistant product guidance. The next production-launch iteration replaces the synthetic `ai-*` catalogue with source-backed real-world products.
 2. **Expert Product Models**: add domain experts for print-process advice, RC model building, compatibility triage, and support handoff.
 3. **Operational Feedback**: add evals, observability, future change tracking, and admin workflows so incoming product changes stay safe.
 
@@ -18,6 +18,7 @@ This pathway captures the staged plan for making 3D Byte Tech Store useful to AI
 - Meilisearch keeps one product index in Phase 1; product metadata is flattened into existing product documents.
 - Product documents remain in `product_documents_public`.
 - No Medusa product module extension and no separate product metadata index in Phase 1.
+- Production launch seed data should use source-backed real-world brands/products, official product URLs, reviewed supplier imagery, and actual category/collection/tag/brand relations.
 
 ## Key Docs
 

@@ -7,7 +7,7 @@ Prove the whole AI-ready product pipeline on fresh staging:
 ```text
 fresh staging DB with 0 products
 -> deploy metadata/indexing code
--> seed 25-30 AI-ready products
+-> seed source-backed real-world AI-ready products
 -> sync Meilisearch
 -> add/sync product documents
 -> verify storefront/search/assistant
@@ -15,13 +15,13 @@ fresh staging DB with 0 products
 
 ## Data Placement
 
-| Data | Owner | Notes |
-| --- | --- | --- |
-| Title, handle, variants, prices, stock, shipping profile | Medusa product/variant fields | Commerce data stays in native commerce fields. |
-| Structured AI facts | Medusa `product.metadata` | Phase 1 uses namespaced metadata only. |
-| Rich product copy | Strapi product descriptions | Editorial descriptions stay outside metadata. |
-| Manuals, datasheets, SDS, install guides, warranty docs | Strapi product documents | Public search target remains `product_documents_public`. |
-| Product search and assistant retrieval facts | Existing Meilisearch product index | Metadata is flattened into allowlisted `tdp_*` and `rcb_*` fields. |
+| Data                                                     | Owner                              | Notes                                                              |
+| -------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------ |
+| Title, handle, variants, prices, stock, shipping profile | Medusa product/variant fields      | Commerce data stays in native commerce fields.                     |
+| Structured AI facts                                      | Medusa `product.metadata`          | Phase 1 uses namespaced metadata only.                             |
+| Rich product copy                                        | Strapi product descriptions        | Editorial descriptions stay outside metadata.                      |
+| Manuals, datasheets, SDS, install guides, warranty docs  | Strapi product documents           | Public search target remains `product_documents_public`.           |
+| Product search and assistant retrieval facts             | Existing Meilisearch product index | Metadata is flattened into allowlisted `tdp_*` and `rcb_*` fields. |
 
 ## Metadata Namespaces
 
@@ -74,7 +74,7 @@ Unknown or malformed metadata is intentionally dropped. The product still indexe
 
 ## Seed Catalogue
 
-The backend includes a deterministic catalogue of 29 AI-ready products with stable `ai-*` handles.
+The backend includes a deterministic source-backed catalogue of 35 real-world AI-ready products with stable production-style handles.
 
 Command:
 
@@ -87,12 +87,41 @@ The seed script:
 - upserts by stable handle;
 - creates a default shipping profile if needed;
 - creates/uses the default sales channel;
-- creates missing products with variants, AUD prices, storefront-hosted PNG images, shipping profile, sales channel, and metadata;
+- creates/reuses missing categories, collections, and brands needed by the catalogue;
+- creates missing products with variants, AUD prices, official/supplier product images, shipping profile, sales channel, and metadata;
 - updates existing seeded products at product level without creating duplicates.
+- attaches category, collection, tag, and custom brand relations after product upsert.
 
 Use `AI_CATALOGUE_CURRENCY_CODE` to override `aud`, and `AI_CATALOGUE_SALES_CHANNEL_NAME` to override `Default Sales Channel`.
 
-Use `AI_CATALOGUE_MEDIA_BASE_URL` to override the product media base URL. It defaults through `STOREFRONT_URL`, `NEXT_PUBLIC_SITE_URL`, and concrete `STORE_CORS` origins. Phase 1 product media lives under `/ai-catalogue/products/{handle}.png`.
+The source-backed catalogue uses official/supplier product image URLs. Storefront image optimization includes the current launch-source host allowlist, and production can extend it with `NEXT_PUBLIC_PRODUCT_IMAGE_HOSTS`.
+
+The original 29 synthetic `ai-*` products remain historical staging evidence only. They should not be treated as production seed data.
+
+Retire those legacy synthetic products after the source-backed code deploys:
+
+```bash
+pnpm --filter=@3dbyte-tech-store/backend exec medusa exec ./src/scripts/retire-legacy-ai-catalogue-products.ts
+```
+
+The cleanup script archives only products with all three old-seed markers: an `ai-*` handle, `metadata.ai_catalogue_seed = true`, and `metadata.source = "3dbyte-ai-ready-catalogue"`. Archive mode is the default and sets matching products to `draft` with retirement metadata so they drop out of product sync without destroying audit history. Hard delete is available only with `AI_CATALOGUE_LEGACY_CLEANUP_MODE=delete`.
+
+### Source-Backed Launch Coverage
+
+- Filaments: Polymaker, eSUN, and Bambu Lab PLA/PETG/ASA/TPU/support/specialty materials.
+- Drying/storage: PolyDryer, PrintDry PRO3, and SUNLU FilaDryer S4. PolyDryer is classified as `metadata.three_d_printing.product_kind = drying_storage`, not filament.
+- Build surfaces/adhesion: Bambu Textured PEI, BIQU Panda CryoGrip Pro, and Magigoo Original.
+- Nozzles/hotends: China-origin brands only for this slice: Phaetus, BIQU, Trianglelab, Creality, Bambu Lab, and Mellow3D.
+- 3DSets/RC build electronics and hardware: Hobbywing ESCs, FlySky/RadioMaster radio gear, RC Printer motor/ESC combo, AGFRC servo, Avid bearings, INJORA fasteners, and Amass XT60 connectors.
+
+Every source-backed product includes:
+
+- `brandName`, `brandHandle`, and `brandOriginCountry`;
+- `categoryHandle`, `collectionHandle`, and tags;
+- `source.official_product_url`;
+- `source.official_image_url`;
+- `source.source_checked_at`;
+- structured `metadata.three_d_printing` and/or `metadata.rc_model_building` where applicable.
 
 ## CMS Content and Documents Seed
 
@@ -106,7 +135,7 @@ pnpm --filter=@3dbyte-tech-store/backend seed:ai-ready-content
 
 The content seed:
 
-- upserts rich Strapi product descriptions for all 29 `ai-*` products by Medusa product id;
+- upserts rich Strapi product descriptions for every source-backed catalogue product by Medusa product id;
 - generates metadata-derived feature lists, specifications, SEO fields, and search keywords;
 - creates or updates public product documents for each product;
 - uploads generated Phase 1 PDF files to Strapi before linking them to `product-document` entries;
@@ -137,15 +166,16 @@ Status: complete on staging.
 
 Staging was brought up from the deployed `staging` branch with:
 
-1. AI catalogue reseed into the `Web Store` sales channel.
-2. AI content seed for 29 Strapi product descriptions and public product documents.
-3. Product Meilisearch sync.
-4. Product-document Meilisearch sync into `stg_product_documents_public`.
-5. Storefront, search, downloads, browser image, and assistant product-guidance verification.
+1. Legacy synthetic `ai-*` product retirement.
+2. AI catalogue reseed into the `Web Store` sales channel.
+3. AI content seed for Strapi product descriptions and public product documents.
+4. Product Meilisearch sync.
+5. Product-document Meilisearch sync into `stg_product_documents_public`.
+6. Storefront, search, downloads, browser image, and assistant product-guidance verification.
 
 ## Staging Acceptance Checks
 
-- Product listing/search finds `ai-*` products.
+- Product listing/search finds the source-backed product handles.
 - Product pages show prices, stock state, rich content, and downloads where available.
 - Product Meilisearch documents contain useful `tdp_*` and `rcb_*` fields.
 - Product documents remain in `product_documents_public`.
@@ -213,4 +243,4 @@ Remaining follow-ups after Phase 1:
 
 ## Local Testing Notes
 
-Local DREMC data is useful for reference and regression checks, but Phase 1 acceptance happens on fresh staging after deploy. The `ai-*` handles avoid collisions with DREMC imports and make local reruns idempotent.
+Local DREMC data is useful for reference and regression checks, but Phase 1 acceptance happens on fresh staging after deploy. Source-backed launch handles are production-style and still stable/idempotent, so local reruns do not create duplicates.

@@ -9,13 +9,25 @@ import {
 } from "../ai-ready-catalogue/content";
 
 describe("AI-ready realistic product catalogue", () => {
-  it("contains a deterministic small catalogue with unique ai-* handles", () => {
-    const handles = AI_READY_CATALOGUE_PRODUCTS.map((product) => product.handle);
+  it("contains a deterministic source-backed launch catalogue with unique real handles", () => {
+    const handles = AI_READY_CATALOGUE_PRODUCTS.map(
+      (product) => product.handle,
+    );
 
-    expect(AI_READY_CATALOGUE_PRODUCTS.length).toBeGreaterThanOrEqual(25);
-    expect(AI_READY_CATALOGUE_PRODUCTS.length).toBeLessThanOrEqual(30);
-    expect(handles.every((handle) => handle.startsWith("ai-"))).toBe(true);
+    expect(AI_READY_CATALOGUE_PRODUCTS.length).toBeGreaterThanOrEqual(35);
+    expect(AI_READY_CATALOGUE_PRODUCTS.length).toBeLessThanOrEqual(45);
+    expect(handles.every((handle) => !handle.startsWith("ai-"))).toBe(true);
     expect(new Set(handles).size).toBe(handles.length);
+    expect(
+      AI_READY_CATALOGUE_PRODUCTS.every(
+        (product) =>
+          product.brandName &&
+          product.categoryHandle &&
+          product.collectionHandle &&
+          product.source.official_product_url.startsWith("https://") &&
+          product.source.source_checked_at === "2026-05-31",
+      ),
+    ).toBe(true);
   });
 
   it("covers print-process and RC model building product roles", () => {
@@ -37,13 +49,54 @@ describe("AI-ready realistic product catalogue", () => {
         "servo",
         "bearing_set",
         "fastener_kit",
+        "connector_pack",
+        "receiver",
+        "transmitter",
       ]),
     );
   });
 
-  it("builds Medusa product input with metadata namespaces and AUD prices", () => {
+  it("keeps PolyDryer under drying/storage instead of filament", () => {
     const product = AI_READY_CATALOGUE_PRODUCTS.find(
-      (item) => item.handle === "ai-petg-black-175-1kg",
+      (item) => item.handle === "polymaker-polydryer",
+    );
+
+    expect(product).toBeDefined();
+    expect(product?.categoryHandle).toBe("tools");
+    expect(product?.collectionHandle).toBe("filament-drying-storage");
+    expect(product?.metadata.three_d_printing?.product_kind).toBe(
+      "drying_storage",
+    );
+  });
+
+  it("uses China-origin brands for nozzle and hotend products", () => {
+    const nozzleAndHotendProducts = AI_READY_CATALOGUE_PRODUCTS.filter(
+      (product) =>
+        product.metadata.three_d_printing?.product_kind === "nozzle" ||
+        product.metadata.three_d_printing?.product_kind === "hotend",
+    );
+
+    expect(nozzleAndHotendProducts.length).toBeGreaterThanOrEqual(6);
+    expect(nozzleAndHotendProducts.map((product) => product.brandName)).toEqual(
+      expect.arrayContaining([
+        "Phaetus",
+        "BIQU",
+        "Trianglelab",
+        "Creality",
+        "Bambu Lab",
+        "Mellow3D",
+      ]),
+    );
+    expect(
+      nozzleAndHotendProducts.every(
+        (product) => product.brandOriginCountry === "China",
+      ),
+    ).toBe(true);
+  });
+
+  it("builds Medusa product input with source metadata namespaces and AUD prices", () => {
+    const product = AI_READY_CATALOGUE_PRODUCTS.find(
+      (item) => item.handle === "polymaker-polylite-petg-black-175-1kg",
     );
 
     expect(product).toBeDefined();
@@ -52,12 +105,22 @@ describe("AI-ready realistic product catalogue", () => {
 
     expect(input).toEqual(
       expect.objectContaining({
-        handle: "ai-petg-black-175-1kg",
+        handle: "polymaker-polylite-petg-black-175-1kg",
         status: "published",
         is_giftcard: false,
         discountable: true,
         metadata: expect.objectContaining({
-          ai_catalogue_seed: true,
+          ai_catalogue_seed: false,
+          source_backed_catalogue_seed: true,
+          brand: "Polymaker",
+          category: "filament/petg",
+          collection: "premium-filaments",
+          tags: expect.arrayContaining(["filament", "petg", "polymaker"]),
+          source: expect.objectContaining({
+            kind: "official_product_page",
+            official_product_url:
+              "https://us.polymaker.com/products/polylite-petg?variant=41266031198265",
+          }),
           three_d_printing: expect.objectContaining({
             product_kind: "filament",
             material: "PETG",
@@ -72,18 +135,14 @@ describe("AI-ready realistic product catalogue", () => {
     expect(input.variants[0]?.prices).toEqual([
       { amount: 32.95, currency_code: "aud" },
     ]);
-    expect(input.images?.[0]?.url).toMatch(
-      /\/ai-catalogue\/products\/ai-petg-black-175-1kg\.png$/,
-    );
+    expect(input.images?.[0]?.url).toContain("shop.polymaker.com");
     expect(input.thumbnail).toBe(input.images?.[0]?.url);
   });
 
-  it("uses storefront-hosted raster product media", () => {
+  it("uses source-backed raster product media without generated placeholders", () => {
     expect(
       AI_READY_CATALOGUE_PRODUCTS.every((product) =>
-        product.imageUrl.endsWith(
-          `/ai-catalogue/products/${product.handle}.png`,
-        ),
+        /^https:\/\/.+\.(png|jpe?g|webp)(\?|$)/i.test(product.imageUrl),
       ),
     ).toBe(true);
     expect(
@@ -95,7 +154,7 @@ describe("AI-ready realistic product catalogue", () => {
 
   it("builds rich Strapi product descriptions from AI metadata", () => {
     const product = AI_READY_CATALOGUE_PRODUCTS.find(
-      (item) => item.handle === "ai-petg-black-175-1kg",
+      (item) => item.handle === "polymaker-polylite-petg-black-175-1kg",
     );
 
     expect(product).toBeDefined();
@@ -106,7 +165,7 @@ describe("AI-ready realistic product catalogue", () => {
     expect(description.rich_description).toContain("recommended print window");
     expect(description.features).toEqual(
       expect.arrayContaining([
-        "PETG material for functional parts and 3DSets body panels.",
+        "PETG material for functional parts and outdoor brackets.",
         "Drying is recommended before critical prints.",
       ]),
     );
@@ -114,14 +173,14 @@ describe("AI-ready realistic product catalogue", () => {
       expect.objectContaining({
         material: "PETG",
         diameter_mm: 1.75,
-        recommended_nozzle_temp_c: "230-250 C",
+        recommended_nozzle_temp_c: "230-260 C",
       }),
     );
   });
 
   it("builds public product document seeds with search keywords", () => {
     const product = AI_READY_CATALOGUE_PRODUCTS.find(
-      (item) => item.handle === "ai-petg-cf-black-175-1kg",
+      (item) => item.handle === "bambu-pla-cf-black-175-1kg",
     );
 
     expect(product).toBeDefined();
@@ -136,9 +195,9 @@ describe("AI-ready realistic product catalogue", () => {
         document.filename.startsWith(`${product!.handle}-`),
       ),
     ).toBe(true);
-    expect(
-      documents.flatMap((document) => document.search_keywords),
-    ).toEqual(expect.arrayContaining(["PETG-CF", "hardened nozzle"]));
+    expect(documents.flatMap((document) => document.search_keywords)).toEqual(
+      expect.arrayContaining(["PLA-CF", "hardened nozzle"]),
+    );
   });
 
   it("provides content and at least one document for every AI-ready product", () => {
