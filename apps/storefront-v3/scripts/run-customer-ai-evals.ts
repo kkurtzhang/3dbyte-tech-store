@@ -7,12 +7,29 @@ import { customerAiEvalCases } from "../src/app/api/ai-shopping-assistant/evals/
 import {
   buildCustomerAiEvalReport,
   evaluateCustomerAiCase,
+  publishLangfuseEvalScores,
 } from "../src/app/api/ai-shopping-assistant/evals/customer-eval-runner"
 
 function getEnvValue(key: string) {
   const value = process.env[key]?.trim()
 
   return value ? value : undefined
+}
+
+function getFirstEnvValue(...keys: string[]) {
+  for (const key of keys) {
+    const value = getEnvValue(key)
+
+    if (value) {
+      return value
+    }
+  }
+
+  return undefined
+}
+
+function isTruthyEnv(key: string) {
+  return ["1", "true", "yes"].includes(getEnvValue(key)?.toLowerCase() ?? "")
 }
 
 function resolveEndpointUrl() {
@@ -35,6 +52,55 @@ function resolveCases() {
   return Number.isFinite(limit) && limit > 0
     ? selectedCases.slice(0, limit)
     : selectedCases
+}
+
+function toTraceSafeId(value: string) {
+  const safeId = value
+    .replace(/[^a-zA-Z0-9._:-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 160)
+
+  return safeId || "customer-ai-evals"
+}
+
+function resolveRunName(generatedAt: string) {
+  return (
+    getEnvValue("AI_ASSISTANT_EVAL_RUN_NAME") ??
+    `customer-ai-evals-${generatedAt}`
+  )
+}
+
+function resolveTraceContext(runName: string) {
+  const sessionId =
+    getEnvValue("AI_ASSISTANT_EVAL_SESSION_ID") ?? toTraceSafeId(runName)
+
+  return {
+    chatbotId:
+      getEnvValue("AI_ASSISTANT_EVAL_CHATBOT_ID") ??
+      "storefront.customer-ai-evals",
+    sessionId,
+    surface:
+      getEnvValue("AI_ASSISTANT_EVAL_SURFACE") ?? "customer-eval-runner",
+  }
+}
+
+async function createLangfuseScoreClient() {
+  const publicKey = getEnvValue("LANGFUSE_PUBLIC_KEY")
+  const secretKey = getEnvValue("LANGFUSE_SECRET_KEY")
+
+  if (!publicKey || !secretKey) {
+    throw new Error(
+      "LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY are required when AI_ASSISTANT_EVAL_UPLOAD_LANGFUSE is enabled.",
+    )
+  }
+
+  const { LangfuseClient } = await import("@langfuse/client")
+
+  return new LangfuseClient({
+    baseUrl: getEnvValue("LANGFUSE_HOST"),
+    publicKey,
+    secretKey,
+  })
 }
 
 function formatResultLine(
@@ -62,8 +128,22 @@ async function writeReportFile(
 async function main() {
   const endpointUrl = resolveEndpointUrl()
   const evalCases = resolveCases()
+  const generatedAt = new Date().toISOString()
+  const runName = resolveRunName(generatedAt)
+  const traceContext = resolveTraceContext(runName)
   const outputJson = getEnvValue("AI_ASSISTANT_EVAL_OUTPUT") === "json"
   const outputFile = getEnvValue("AI_ASSISTANT_EVAL_OUTPUT_FILE")
+  const reportMetadata = {
+    promptLabel: getFirstEnvValue(
+      "AI_ASSISTANT_PROMPT_LABEL",
+      "LANGFUSE_ASSISTANT_PROMPT_LABEL",
+    ),
+    promptName: getFirstEnvValue(
+      "AI_ASSISTANT_PROMPT_NAME",
+      "LANGFUSE_ASSISTANT_PROMPT_NAME",
+    ),
+    runName,
+  }
 
   if (!evalCases.length) {
     throw new Error("No customer AI eval cases matched the requested filters.")
@@ -72,7 +152,10 @@ async function main() {
   const results = []
 
   for (const evalCase of evalCases) {
-    const result = await evaluateCustomerAiCase(evalCase, { endpointUrl })
+    const result = await evaluateCustomerAiCase(evalCase, {
+      endpointUrl,
+      traceContext,
+    })
 
     results.push(result)
 
@@ -89,7 +172,26 @@ async function main() {
     }
   }
 
-  const report = buildCustomerAiEvalReport(results, endpointUrl)
+  const report = buildCustomerAiEvalReport(
+    results,
+    endpointUrl,
+    generatedAt,
+    reportMetadata,
+  )
+
+  if (isTruthyEnv("AI_ASSISTANT_EVAL_UPLOAD_LANGFUSE")) {
+    const langfuse = await createLangfuseScoreClient()
+    const publishedCount = await publishLangfuseEvalScores(report, langfuse, {
+      environment:
+        getEnvValue("LANGFUSE_EVAL_ENVIRONMENT") ?? getEnvValue("APP_ENV"),
+    })
+
+    if (!outputJson) {
+      console.log(
+        `Published ${publishedCount} eval scores to Langfuse session ${traceContext.sessionId}`,
+      )
+    }
+  }
 
   if (outputFile) {
     await writeReportFile(outputFile, report)

@@ -25,6 +25,10 @@ Useful options:
 | `AI_ASSISTANT_EVAL_LIMIT` | Limits the number of cases for quick smoke runs. |
 | `AI_ASSISTANT_EVAL_OUTPUT=json` | Prints full JSON results for later tooling. |
 | `AI_ASSISTANT_EVAL_OUTPUT_FILE` | Writes the JSON eval report to a file, creating parent directories as needed. |
+| `AI_ASSISTANT_EVAL_RUN_NAME` | Names the eval run in JSON output and Langfuse score metadata. Defaults to a timestamped customer eval name. |
+| `AI_ASSISTANT_EVAL_SESSION_ID` | Overrides the Langfuse session id used to group all assistant traces and scores from one eval run. |
+| `AI_ASSISTANT_EVAL_CHATBOT_ID` | Overrides the eval trace `chatbotId`. Defaults to `storefront.customer-ai-evals`. |
+| `AI_ASSISTANT_EVAL_SURFACE` | Overrides the eval trace surface. Defaults to `customer-eval-runner`. |
 
 To keep a local or CI artifact:
 
@@ -60,6 +64,44 @@ The workflow uploads `customer-ai-evals-<run-number>` with:
 - `customer-ai-evals.json`: structured report used for comparison and review.
 - `customer-ai-evals.stdout.log`: exact command output, including package-manager warnings and runner stdout.
 
+## Phase 3C: Langfuse Prompt and Score Control Plane
+
+The assistant now supports Langfuse Prompt Management for dashboard-editable wording while preserving code-owned safety constraints.
+
+Runtime prompt env:
+
+| Env var | Purpose |
+| --- | --- |
+| `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` | Enables Langfuse prompt fetch and trace/score writes. |
+| `LANGFUSE_HOST` | Self-hosted Langfuse base URL. |
+| `LANGFUSE_ASSISTANT_PROMPT_NAME` | Prompt name. Defaults to `storefront.ai-shopping-assistant.system`. |
+| `LANGFUSE_ASSISTANT_PROMPT_LABEL` | Prompt label. If unset, uses `APP_ENV` when it is `staging` or `production`, otherwise `production`. |
+
+Safety rule: Langfuse owns editable tone/format wording only. The storefront route always appends the code-owned assistant guardrails after the dashboard prompt, including suggest-only behavior, exact `productUrl` copying, support-ticket confirmation, and no cart/order/customer mutation.
+
+The eval runner now adds Langfuse-friendly score objects to every JSON result:
+
+| Score | Data type | Meaning |
+| --- | --- | --- |
+| `deterministic_pass` | `BOOLEAN` as `1` or `0` | HTTP success plus required answer cues and no forbidden claims. |
+| `grounding_cue_match` | `NUMERIC` | Ratio of expected answer cues matched. |
+| `format_warning_count` | `NUMERIC` | Number of format-hint warnings. |
+| `forbidden_claim_count` | `NUMERIC` | Number of forbidden mutation/protected-content claims. |
+
+To publish these deterministic scores to Langfuse and group the related traces by session:
+
+```bash
+AI_ASSISTANT_EVAL_BASE_URL=https://store.staging.3dbytetech.com.au \
+AI_ASSISTANT_EVAL_LIMIT=3 \
+AI_ASSISTANT_EVAL_RUN_NAME=staging-customer-smoke \
+AI_ASSISTANT_EVAL_UPLOAD_LANGFUSE=1 \
+LANGFUSE_EVAL_ENVIRONMENT=staging \
+LANGFUSE_ASSISTANT_PROMPT_LABEL=staging \
+pnpm --filter=@3dbyte-tech-store/storefront-v3 eval:ai:customer
+```
+
+The next step for LLM-as-judge is to create a Langfuse dataset from the customer eval cases and add dashboard-managed evaluator prompts. Keep deterministic scores as the release gate; use judge scores for quality trends and review queues until the judge is calibrated.
+
 ## Current Scoring
 
 The runner is intentionally deterministic and conservative:
@@ -70,12 +112,10 @@ The runner is intentionally deterministic and conservative:
 - it fails obvious unsafe mutation or unsupported protected-content claims;
 - it records format-hint warnings without failing the run.
 
-This is not a model-graded quality eval yet. It is a deploy smoke tool for catching broken assistant routes, stream decoding issues, missing product grounding, and severe guardrail failures.
+This is not a model-graded quality eval yet. It is a deploy smoke tool for catching broken assistant routes, stream decoding issues, missing product grounding, and severe guardrail failures. Deterministic scores can now be stored in Langfuse for comparison across sessions and prompt labels.
 
 ## Future Work
 
-- Add model-graded quality scoring after the deterministic smoke runner is stable.
-- Store eval results in observability after artifact-based manual runs are stable.
+- Add Langfuse dataset-backed LLM-as-judge scoring after deterministic scores are visible and stable.
 - Add an admin-facing “last AI smoke status” workflow before production product-data changes.
 - Promote selected smoke cases to CI only when they can run without paid/provider dependencies.
-- Improve top-level Langfuse trace names so assistant runs are easy to identify in the Langfuse UI, not only through named observations/spans.

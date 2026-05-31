@@ -26,6 +26,7 @@
     "@ai-sdk/react": "^3.0.192",
     "@hookform/resolvers": "^3.4.2",
     "@icons-pack/react-simple-icons": "^13.8.0",
+    "@langfuse/client": "5.4.1",
     "@mdx-js/loader": "3.0.1",
     "@mdx-js/react": "3.0.1",
     "@medusajs/icons": "2.12.3",

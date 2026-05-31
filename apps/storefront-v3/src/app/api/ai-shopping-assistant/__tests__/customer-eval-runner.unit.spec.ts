@@ -4,6 +4,7 @@ import {
   buildCustomerAiEvalReport,
   decodeAssistantStream,
   evaluateCustomerAiCase,
+  publishLangfuseEvalScores,
   scoreCustomerEvalAnswer,
 } from "../evals/customer-eval-runner"
 
@@ -88,6 +89,11 @@ describe("customer AI eval runner", () => {
     const result = await evaluateCustomerAiCase(baseEvalCase, {
       endpointUrl: "https://store.test/api/ai-shopping-assistant",
       fetchImpl: fetchMock,
+      traceContext: {
+        chatbotId: "storefront.customer-ai-evals",
+        sessionId: "customer-ai-eval-session",
+        surface: "customer-eval-runner",
+      },
     })
 
     expect(fetchMock).toHaveBeenCalledWith(
@@ -95,6 +101,11 @@ describe("customer AI eval runner", () => {
       expect.objectContaining({
         body: JSON.stringify({
           messages: [{ role: "user", content: baseEvalCase.customerPrompt }],
+          traceContext: {
+            chatbotId: "storefront.customer-ai-evals",
+            sessionId: "customer-ai-eval-session",
+            surface: "customer-eval-runner",
+          },
         }),
         method: "POST",
       }),
@@ -102,6 +113,7 @@ describe("customer AI eval runner", () => {
     expect(result.status).toBe(200)
     expect(result.answer).toContain("PETG")
     expect(result.passed).toBe(true)
+    expect(result.sessionId).toBe("customer-ai-eval-session")
   })
 
   it("builds a durable eval report summary for artifact output", () => {
@@ -136,5 +148,110 @@ describe("customer AI eval runner", () => {
       "passing-case",
       "failing-case",
     ])
+  })
+
+  it("emits Langfuse-friendly deterministic score objects", () => {
+    const scoredResult = makeRunResult({
+      forbiddenMatches: ["created a support ticket"],
+      formatWarnings: ["Missing focused follow-up cue"],
+      id: "scored-case",
+      includeMatched: ["PETG"],
+      includeMissing: ["drying"],
+      passed: false,
+    })
+    const report = buildCustomerAiEvalReport(
+      [scoredResult],
+      "https://store.test/api/ai-shopping-assistant",
+      "2026-05-31T00:00:00.000Z",
+      {
+        promptLabel: "staging",
+        promptName: "storefront.ai-shopping-assistant.system",
+        runName: "staging-prompt-smoke",
+      },
+    )
+
+    expect(report.summary).toEqual(
+      expect.objectContaining({
+        promptLabel: "staging",
+        promptName: "storefront.ai-shopping-assistant.system",
+        runName: "staging-prompt-smoke",
+      }),
+    )
+    expect(report.results[0].scores).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          dataType: "BOOLEAN",
+          name: "deterministic_pass",
+          value: 0,
+        }),
+        expect.objectContaining({
+          dataType: "NUMERIC",
+          name: "grounding_cue_match",
+          value: 0.5,
+        }),
+        expect.objectContaining({
+          dataType: "NUMERIC",
+          name: "format_warning_count",
+          value: 1,
+        }),
+        expect.objectContaining({
+          dataType: "NUMERIC",
+          name: "forbidden_claim_count",
+          value: 1,
+        }),
+      ]),
+    )
+  })
+
+  it("publishes deterministic scores to Langfuse by eval session", async () => {
+    const scoreCreateMock = jest.fn()
+    const flushMock = jest.fn(async () => undefined)
+    const report = buildCustomerAiEvalReport(
+      [
+        makeRunResult({
+          id: "session-scored-case",
+          includeMatched: ["PETG"],
+          passed: true,
+          sessionId: "customer-ai-eval-session",
+          tags: ["petg_outdoor"],
+        }),
+      ],
+      "https://store.test/api/ai-shopping-assistant",
+      "2026-05-31T00:00:00.000Z",
+      {
+        promptLabel: "staging",
+        promptName: "storefront.ai-shopping-assistant.system",
+        runName: "staging-prompt-smoke",
+      },
+    )
+
+    const publishedCount = await publishLangfuseEvalScores(
+      report,
+      {
+        flush: flushMock,
+        score: { create: scoreCreateMock },
+      },
+      { environment: "staging" },
+    )
+
+    expect(publishedCount).toBe(4)
+    expect(scoreCreateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        dataType: "BOOLEAN",
+        environment: "staging",
+        name: "deterministic_pass",
+        sessionId: "customer-ai-eval-session",
+        value: 1,
+        metadata: expect.objectContaining({
+          evalCaseId: "session-scored-case",
+          generatedAt: "2026-05-31T00:00:00.000Z",
+          promptLabel: "staging",
+          promptName: "storefront.ai-shopping-assistant.system",
+          runName: "staging-prompt-smoke",
+          tags: ["petg_outdoor"],
+        }),
+      }),
+    )
+    expect(flushMock).toHaveBeenCalledTimes(1)
   })
 })

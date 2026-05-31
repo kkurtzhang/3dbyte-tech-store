@@ -5,6 +5,7 @@ const streamTextMock = jest.fn()
 const toolMock = jest.fn((config) => config)
 const createOpenAIMock = jest.fn()
 const setActiveLangfuseTraceAttributesMock = jest.fn()
+const resolveAssistantSystemPromptMock = jest.fn()
 const providerModelMock = jest.fn((model: string) => ({
   provider: "deepseek.responses",
   model,
@@ -45,6 +46,10 @@ jest.mock("@/lib/security/rate-limit", () => ({
     checkRateLimitMock(key, limit, windowMs),
 }))
 
+jest.mock("../prompt-management", () => ({
+  resolveAssistantSystemPrompt: () => resolveAssistantSystemPromptMock(),
+}))
+
 jest.mock("@3dbyte-tech-store/observability", () => ({
   createActiveLangfuseTraceAttributeWriter: () =>
     setActiveLangfuseTraceAttributesMock,
@@ -58,6 +63,32 @@ const originalResponse = global.Response
 const originalTextDecoder = global.TextDecoder
 const originalTransformStream = global.TransformStream
 const fetchMock = jest.fn()
+
+function createPromptResolutionMock() {
+  return {
+    metadata: {
+      langfuse_prompt_label: "staging",
+      langfuse_prompt_name: "storefront.ai-shopping-assistant.system",
+      langfuse_prompt_source: "langfuse",
+      langfuse_prompt_version: 3,
+    },
+    prompt: [
+      "Start product advice with a short recommendation.",
+      "Use clear sections when useful.",
+      "Ask one focused follow-up question when compatibility details are missing.",
+      "Use only provided product, search, Strapi, Medusa, order, tracking, shipping, and support-ticket context.",
+      "You are suggest-only for shopping.",
+      "Product guidance may include expertContext and per-product expertSignals.",
+      "Use print_process for material, nozzle, temperature, drying, enclosure, and build-surface advice.",
+      "Use rc_model_building for 3DSets-style RC electronics, hardware, voltage, connector, battery, bearing, fastener, and printed component advice.",
+      "Use compatibility_triage when a fit/compatibility answer needs missing printer, project, variant, voltage, connector, or use-case details.",
+      "You may create a support ticket only after explicit customer confirmation and after collecting name, email, subject, and message.",
+      "When recommending a product, use the provided productUrl as the product link. Never use image or thumbnail URLs as product links.",
+      "Copy productUrl values exactly, character for character.",
+    ].join(" "),
+    source: "langfuse",
+  }
+}
 
 class MockResponse {
   private readonly responseBody: unknown
@@ -197,6 +228,9 @@ describe("POST /api/ai-shopping-assistant", () => {
       ok: true,
       json: async () => ({ ok: true }),
     })
+    resolveAssistantSystemPromptMock.mockResolvedValue(
+      createPromptResolutionMock(),
+    )
     checkRateLimitMock.mockReturnValue({ allowed: true, retryAfterMs: 0 })
     createOpenAIMock.mockReturnValue(deepseekProviderMock)
     streamTextMock.mockReturnValue({
@@ -704,6 +738,7 @@ describe("POST /api/ai-shopping-assistant", () => {
     )
     expect(providerChatModelMock).toHaveBeenCalledWith("deepseek-v4-flash")
     expect(providerModelMock).not.toHaveBeenCalled()
+    expect(resolveAssistantSystemPromptMock).toHaveBeenCalledTimes(1)
 
     const streamConfig = streamTextMock.mock.calls[0]?.[0]
     expect(streamConfig.model).toEqual({
@@ -718,6 +753,10 @@ describe("POST /api/ai-shopping-assistant", () => {
         chatbot_surface: "storefront-floating-drawer",
         model: "deepseek-v4-flash",
         provider: "deepseek",
+        langfuse_prompt_label: "staging",
+        langfuse_prompt_name: "storefront.ai-shopping-assistant.system",
+        langfuse_prompt_source: "langfuse",
+        langfuse_prompt_version: 3,
         route: "/api/ai-shopping-assistant",
         service: "storefront-v3",
         sessionId: "assistant-session_01",
@@ -736,6 +775,10 @@ describe("POST /api/ai-shopping-assistant", () => {
           chatbot_surface: "storefront-floating-drawer",
           model: "deepseek-v4-flash",
           provider: "deepseek",
+          langfuse_prompt_label: "staging",
+          langfuse_prompt_name: "storefront.ai-shopping-assistant.system",
+          langfuse_prompt_source: "langfuse",
+          langfuse_prompt_version: 3,
           service: "storefront-v3",
         }),
         name: "storefront.ai-shopping-assistant",
