@@ -27,7 +27,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 - Observability tracing plumbing exists for backend, CMS, and storefront through `@3dbyte-tech-store/observability`.
 - AI-ready realistic product Chunk A exists on `feature/ai-ready-realistic-products`: metadata flattening, product index settings, `/ai/product-guidance` `aiContext`, deterministic `ai-*` seed catalogue, and pathway docs.
 - Phase 1 AI-ready realistic products are complete on staging: 29 `ai-*` products, 29 rich Strapi descriptions, 64 public product documents in `stg_product_documents_public`, product/document Meilisearch sync, generated product media, Download Center search, product-page downloads, browser image verification, and assistant product-guidance smoke checks.
-- Langfuse assistant tracing now groups browser chat turns by session, sets assistant trace metadata/name/tags, and records DeepSeek cache-aware token usage for cost tracking.
+- Langfuse assistant tracing now groups browser chat turns by session, sets assistant trace metadata/name/tags, records sanitized top-level trace input/output for debugging, and records DeepSeek cache-aware token usage for cost tracking.
 
 ## Remaining TODO (Priority Order)
 
@@ -116,19 +116,32 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 
 ### 7) Calibrate Langfuse prompt and judge workflows (Observability + AI)
 
-- Status: current branch adds Langfuse Prompt Management support and deterministic score publishing. LLM-as-judge remains a follow-up after deterministic eval scores are visible and trusted.
+- Status: Langfuse Prompt Management, deterministic score publishing, assistant session grouping, cache-aware usage, and sanitized trace input/output are implemented. LLM-as-judge remains a follow-up after deterministic eval scores and human feedback are visible and trusted.
 - Problem: dashboard-managed prompts and Langfuse judge scores are useful for prompt iteration, but they should not replace code-owned safety constraints or deterministic release gates.
 - Deliverable:
   - Keep assistant tone/format wording in Langfuse Prompt Management with `staging` and `production` labels.
   - Keep hard assistant guardrails in code and append them after any dashboard-managed prompt.
   - Publish deterministic eval scores to Langfuse sessions for prompt-label comparisons.
-  - Create a Langfuse dataset from customer-realistic eval cases.
-  - Add LLM-as-judge prompts for response quality trends after deterministic score publishing is stable.
+  - Next high-value improvement: add customer feedback capture from the storefront assistant and map thumbs/comment feedback to Langfuse scores on the same session/trace.
+  - Next high-value improvement: create an annotation queue for low-score, thumbs-down, or support-handoff conversations so human review creates trusted examples.
+  - Create a Langfuse dataset from customer-realistic eval cases and selected reviewed conversations.
+  - Add LLM-as-judge prompts for response quality trends after deterministic scores and human annotations are stable.
 - Acceptance:
   - A staging smoke run records prompt name, prompt label, prompt source, and prompt version in Langfuse metadata.
+  - Assistant traces show sanitized top-level input/output in Langfuse without exposing emails, order references, or commerce IDs.
+  - Customer feedback scores can be filtered by session, prompt label, and chatbot surface.
+  - Annotation queue items can be converted into eval cases or dataset items.
   - Deterministic score objects appear on the same Langfuse session as the eval traces.
   - LLM-as-judge scores are used for review/trend insight only until calibrated against human judgment.
   - Deterministic eval pass/fail remains the release gate.
+
+### 8) Parked Langfuse ideas after feedback loop (Observability + AI)
+
+- Prompt experiments in Langfuse: useful once datasets and scores have enough volume; avoid treating dashboard experiments as a release gate until deterministic evals stay green.
+- Release comparison dashboards: tag traces with git SHA/deploy id and compare latency, cost, cache hit rate, deterministic scores, and feedback by release.
+- Alerting: notify on sudden assistant 5xx rate, missing trace input/output, low feedback score, or cost spikes.
+- Synthetic replay: replay saved datasets against staging prompts/models before production rollout.
+- Long-term RAG evaluation: add retrieval-quality scores only after owned product/document retrieval becomes a larger part of assistant answers.
 
 ## Suggested Execution Order by Worktree
 
@@ -138,6 +151,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 - Implement TODO #5.
 - Implement TODO #6.
 - Implement TODO #7.
+- Implement TODO #8 after the feedback/annotation loop exists.
 - Smoke-test support-ticket and product-document flows after staging deploys.
 
 ### Backend worktree

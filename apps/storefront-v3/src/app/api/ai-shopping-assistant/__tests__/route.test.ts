@@ -946,6 +946,56 @@ describe("POST /api/ai-shopping-assistant", () => {
     )
   })
 
+  it("records sanitized Langfuse trace input and output for assistant debugging", async () => {
+    configureAiEnv()
+    const { POST } = await import("../route")
+
+    await POST(
+      createJsonRequest({
+        traceContext: { sessionId: "assistant-session_04" },
+        messages: [
+          {
+            role: "user",
+            content:
+              "Can you check order RMA-2026-000123 for ava.customer@example.com and suggest PETG?",
+          },
+        ],
+      }),
+    )
+
+    expect(setActiveLangfuseTraceAttributesMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.objectContaining({
+          latestUserMessage:
+            "Can you check order [reference] for [email] and suggest PETG?",
+          messageCount: 1,
+          promptLabel: "staging",
+          promptName: "storefront.ai-shopping-assistant.system",
+        }),
+      }),
+    )
+
+    const streamConfig = streamTextMock.mock.calls[0]?.[0]
+
+    streamConfig.onFinish({
+      text: "Use PETG, and I found ava.customer@example.com in the request.",
+      usage: {
+        inputTokens: 100,
+        outputTokens: 40,
+        totalTokens: 140,
+      },
+    })
+
+    expect(setActiveLangfuseTraceAttributesMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        output: expect.objectContaining({
+          assistantText: "Use PETG, and I found [email] in the request.",
+          finishReason: "unknown",
+        }),
+      }),
+    )
+  })
+
   it("prefers DeepSeek provider cache usage chunks over generic AI SDK usage", async () => {
     configureAiEnv()
     const { POST } = await import("../route")

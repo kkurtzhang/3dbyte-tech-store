@@ -30,7 +30,14 @@ const ASSISTANT_TRACE_TAGS = [
   ASSISTANT_CHATBOT_ID,
 ]
 const MAX_ASSISTANT_PART_BYTES = 25_000
+const MAX_TRACE_IO_TEXT_CHARS = 1_200
 const TRACE_CONTEXT_ID_PATTERN = /^[a-zA-Z0-9._:-]+$/
+const TRACE_EMAIL_PATTERN =
+  /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi
+const TRACE_REFERENCE_PATTERN =
+  /\b(?:CASE|INV|ORDER|ORD|REF|RMA|SUP|TICKET|TKT)-[A-Z0-9-]+\b/gi
+const TRACE_COMMERCE_ID_PATTERN =
+  /\b(?:cart|claim|cus|customer|doc|ful|order|payment|pay|pi|price|prod|product|region|ship|track|variant)_[a-zA-Z0-9_:-]{6,}\b/g
 
 const assistantPartSchema = z
   .object({
@@ -600,6 +607,107 @@ function buildAssistantTelemetryMetadata(
   }
 }
 
+function truncateTraceText(text: string) {
+  return text.length > MAX_TRACE_IO_TEXT_CHARS
+    ? `${text.slice(0, MAX_TRACE_IO_TEXT_CHARS)}...[truncated]`
+    : text
+}
+
+function sanitizeTraceText(text: string) {
+  const maskedText = text
+    .replace(TRACE_EMAIL_PATTERN, "[email]")
+    .replace(TRACE_REFERENCE_PATTERN, "[reference]")
+    .replace(TRACE_COMMERCE_ID_PATTERN, "[id]")
+
+  return truncateTraceText(maskedText)
+}
+
+function getLatestUserMessage(messages: AssistantMessage[]) {
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const message = messages[index]
+
+    if (message.role === "user") {
+      return getAssistantMessageContent(message)
+    }
+  }
+
+  return ""
+}
+
+function getPromptMetadataString(
+  metadata: Record<string, unknown>,
+  key: string,
+  fallback: string,
+) {
+  const value = metadata[key]
+
+  return typeof value === "string" && value.trim() ? value.trim() : fallback
+}
+
+function buildAssistantTraceInput({
+  messages,
+  promptMetadata,
+  traceContext,
+}: {
+  messages: AssistantMessage[]
+  promptMetadata: Record<string, unknown>
+  traceContext: AssistantTraceContext
+}) {
+  return {
+    chatbotId: getTraceContextValue(
+      traceContext,
+      "chatbotId",
+      ASSISTANT_CHATBOT_ID,
+    ),
+    latestUserMessage: sanitizeTraceText(getLatestUserMessage(messages)),
+    messageCount: messages.length,
+    promptLabel: getPromptMetadataString(
+      promptMetadata,
+      "langfuse_prompt_label",
+      "unknown",
+    ),
+    promptName: getPromptMetadataString(
+      promptMetadata,
+      "langfuse_prompt_name",
+      "unknown",
+    ),
+    surface: getTraceContextValue(traceContext, "surface", ASSISTANT_SURFACE),
+  }
+}
+
+function getFinishUsage(finish: unknown): UsageSnapshot {
+  if (!isJsonRecord(finish) || !isJsonRecord(finish.usage)) {
+    return {}
+  }
+
+  return finish.usage as UsageSnapshot
+}
+
+function getFinishText(finish: unknown) {
+  if (!isJsonRecord(finish)) {
+    return ""
+  }
+
+  return typeof finish.text === "string" ? finish.text : ""
+}
+
+function getFinishReason(finish: unknown) {
+  if (!isJsonRecord(finish)) {
+    return "unknown"
+  }
+
+  return typeof finish.finishReason === "string" && finish.finishReason.trim()
+    ? finish.finishReason.trim()
+    : "unknown"
+}
+
+function buildAssistantTraceOutput(finish: unknown) {
+  return {
+    assistantText: sanitizeTraceText(getFinishText(finish)),
+    finishReason: getFinishReason(finish),
+  }
+}
+
 function toFiniteNumber(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined
 }
@@ -746,6 +854,11 @@ export async function POST(req: Request): Promise<Response> {
   const setLangfuseTraceAttributes = createActiveLangfuseTraceAttributeWriter()
 
   setLangfuseTraceAttributes({
+    input: buildAssistantTraceInput({
+      messages: parsed.data.messages,
+      promptMetadata: assistantPrompt.metadata,
+      traceContext: parsed.data.traceContext,
+    }),
     metadata: traceMetadata,
     name: ASSISTANT_TRACE_NAME,
     sessionId: parsed.data.traceContext?.sessionId,
@@ -772,9 +885,9 @@ export async function POST(req: Request): Promise<Response> {
       isEnabled: isAiTelemetryEnabled(),
       metadata: telemetryMetadata,
     },
-    onFinish: ({ usage }) => {
+    onFinish: (finish) => {
       const usageDetails = buildDeepSeekUsageDetails(
-        usage as UsageSnapshot,
+        getFinishUsage(finish),
         deepSeekUsageRef.current,
       )
 
@@ -784,6 +897,7 @@ export async function POST(req: Request): Promise<Response> {
           deepseek_cache_hit_ratio: getCacheHitRatio(usageDetails),
         },
         model: config.model,
+        output: buildAssistantTraceOutput(finish),
         usageDetails,
       })
     },

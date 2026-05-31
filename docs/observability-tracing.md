@@ -58,7 +58,11 @@ The storefront AI drawer sends a browser-tab chat session id with every assistan
 - trace name: `storefront.ai-shopping-assistant`;
 - session id: one browser chat conversation;
 - tags: `ai-chatbot`, `storefront`, `shopping-assistant`, `storefront.shopping-assistant`;
-- metadata: `chatbot_id`, `chatbot_surface`, `service`, `route`, `provider`, and `model`.
+- metadata: `chatbot_id`, `chatbot_surface`, `service`, `route`, `provider`, and `model`;
+- input: a sanitized debug object with the latest user message, message count, prompt name, and prompt label;
+- output: a sanitized debug object with the final assistant text and finish reason.
+
+Trace input/output deliberately masks emails, order/support references, and common commerce IDs before writing to Langfuse. Keep full customer transcripts in application data only when the customer has explicitly consented.
 
 DeepSeek streaming requests include `stream_options.include_usage=true` so the final provider usage chunk can report cache-aware token counts. Configure the Langfuse `deepseek-v4-flash` model pricing with these usage detail keys:
 
