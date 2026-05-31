@@ -19,6 +19,10 @@ export interface PublicProductDocument {
   file_name: string;
   mime_type: string;
   file_size: number;
+  source_url?: string;
+  source_kind?: string;
+  source_label?: string;
+  source_checked_at?: string;
   version?: string;
   language?: string;
   search_keywords: string[];
@@ -95,9 +99,13 @@ export function normalizeStrapiProductDocument(
     title: asString(document.title) || asString(file.name) || "Product document",
     document_type: normalizeDocumentType(document.document_type),
     file_url: asString(file.url) || "",
-    file_name: asString(file.name) || "download",
+    file_name: asString(file.name) || asString(document.source_label) || "source",
     mime_type: asString(file.mime) || "application/octet-stream",
     file_size: asNumber(file.size) || 0,
+    source_url: asString(document.source_url),
+    source_kind: asString(document.source_kind),
+    source_label: asString(document.source_label),
+    source_checked_at: asString(document.source_checked_at),
     version: asString(document.version),
     language: asString(document.language),
     search_keywords: asStringArray(document.search_keywords),
@@ -125,6 +133,10 @@ export function toPublicProductDocumentSearchDocument(
     file_name: document.file_name,
     file_size: document.file_size,
     public_download_path: `/store/product-documents/${document.id}/download`,
+    source_url: document.source_url,
+    source_kind: document.source_kind,
+    source_label: document.source_label,
+    source_checked_at: document.source_checked_at,
     search_keywords: document.search_keywords,
     sort_order: document.sort_order,
     published_at_timestamp: Number.isFinite(publishedAt) ? publishedAt : 0,

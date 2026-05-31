@@ -17,6 +17,10 @@ export const RC_PRODUCTS: AiReadyCatalogueProductDefinition[] = [
     source: source(
       "https://www.hobbywing.com/en/products/quicrun-wp-1080-g2267",
       "https://www.hobbywing.com/en/uploads/image/20241122/55fbdaae2d5cea0e5f10f52d70c0ed14.png",
+      {
+        official_manual_url:
+          "https://www.hobbywing.com/en/uploads/file/20240229/e4c11442cc2101bb152102f6c72b20fa.pdf",
+      },
     ),
     rc_model_building: rcb({
       component_role: "esc",
@@ -43,6 +47,10 @@ export const RC_PRODUCTS: AiReadyCatalogueProductDefinition[] = [
     source: source(
       "https://www.hobbywing.com/en/products/quicrun-wp-16bl30-g2",
       "https://www.hobbywing.com/en/uploads/image/20250324/82dd233e05666c90bb8a8b34b3a7f0ba.png",
+      {
+        official_manual_url:
+          "https://www.hobbywing.com/en/uploads/file/20250320/5d20b383db8587f73b65d8fc17c9b42d.pdf",
+      },
     ),
     rc_model_building: rcb({
       component_role: "esc",
@@ -69,6 +77,9 @@ export const RC_PRODUCTS: AiReadyCatalogueProductDefinition[] = [
     source: source(
       "https://www.flyskytech.com/products_detail/33.html",
       "https://www.flyskytech.com/u_file/photo/20251011/be5fe9e9c8.png",
+      {
+        official_manual_url: "https://www.flysky-cn.com/gt5",
+      },
     ),
     rc_model_building: rcb({
       component_role: "transmitter",
@@ -118,6 +129,9 @@ export const RC_PRODUCTS: AiReadyCatalogueProductDefinition[] = [
     source: source(
       "https://www.radiomasterrc.com/products/mt12-surface-radio-controller",
       "https://radiomasterrc.com/cdn/shop/files/MT12-1000x1000-1.jpg?v=1750061352",
+      {
+        official_manual_url: "https://www.radiomasterrc.com/pages/user-manuals",
+      },
     ),
     rc_model_building: rcb({
       component_role: "transmitter",

@@ -138,10 +138,13 @@ The content seed:
 - upserts rich Strapi product descriptions for every source-backed catalogue product by Medusa product id;
 - generates metadata-derived feature lists, specifications, SEO fields, and search keywords;
 - creates or updates public product documents for each product;
-- uploads generated Phase 1 PDF files to Strapi before linking them to `product-document` entries;
-- leaves existing document entries idempotent by matching `medusa_product_id` plus document title.
+- creates an official product-page source document for each product;
+- caches official manufacturer PDF datasheets, safety sheets, and manuals in Strapi when a reviewed source URL is available and fetchable;
+- leaves URL-only source documents public when a manufacturer source is HTML or the PDF cache fetch is unavailable;
+- stores document provenance in `source_url`, `source_kind`, `source_label`, and `source_checked_at`;
+- leaves existing document entries idempotent by matching `medusa_product_id` plus document title;
 - repairs desired AI-ready document entries when the attached Strapi media is missing, not a PDF, or has the wrong filename;
-- retires legacy public AI document entries that are outside the deterministic seed set and still point at text/no-extension media.
+- retires legacy generated `phase-1` AI document entries and other stale public AI document entries that are outside the deterministic seed set.
 
 The command requires `STRAPI_API_TOKEN` with create/update/upload permissions and uses `STRAPI_API_URL` or `STRAPI_URL`, defaulting to `http://cms:1337` inside the deployed Compose network.
 
@@ -180,7 +183,8 @@ Manual product, brand, category, and product-document Meilisearch syncs now trea
 - Product listing/search finds the source-backed product handles.
 - Product pages show prices, stock state, rich content, and downloads where available.
 - Product Meilisearch documents contain useful `tdp_*` and `rcb_*` fields.
-- Product documents remain in `product_documents_public`.
+- Product documents remain in `product_documents_public` and expose official source provenance.
+- Download links use the guarded backend document endpoint, which serves cached official PDFs when available and redirects to validated official manufacturer URLs for URL-only source documents.
 - Assistant can answer:
   - Which PETG should I use for outdoor parts?
   - Do I need a hardened nozzle for carbon-fibre filament?

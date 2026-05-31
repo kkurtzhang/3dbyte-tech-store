@@ -107,6 +107,74 @@ describe("GET /store/product-documents/:id/download", () => {
     expect(global.fetch).not.toHaveBeenCalled();
   });
 
+  it("redirects URL-only official source documents without proxying them", async () => {
+    const getProductDocument = jest.fn().mockResolvedValue({
+      id: "doc_source_1",
+      title: "Official Product Page",
+      file_url: "",
+      source_url: "https://manufacturer.example.com/product",
+    });
+    const res = createResponse();
+
+    await GET(
+      {
+        params: { id: "doc_source_1" },
+        scope: {
+          resolve: jest.fn(() => ({ getProductDocument })),
+        },
+      } as never,
+      res as never,
+    );
+
+    expect(res.redirect).toHaveBeenCalledWith(
+      302,
+      "https://manufacturer.example.com/product",
+    );
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("rejects URL-only source documents with unsupported protocols", async () => {
+    const getProductDocument = jest.fn().mockResolvedValue({
+      id: "doc_source_1",
+      file_url: "",
+      source_url: "javascript:alert(1)",
+    });
+    const res = createResponse();
+
+    await expect(
+      GET(
+        {
+          params: { id: "doc_source_1" },
+          scope: {
+            resolve: jest.fn(() => ({ getProductDocument })),
+          },
+        } as never,
+        res as never,
+      ),
+    ).rejects.toThrow("Product document source URL is not allowed");
+  });
+
+  it("rejects URL-only source documents on private hosts", async () => {
+    const getProductDocument = jest.fn().mockResolvedValue({
+      id: "doc_source_1",
+      file_url: "",
+      source_url: "https://127.0.0.1/internal-manual.pdf",
+    });
+    const res = createResponse();
+
+    await expect(
+      GET(
+        {
+          params: { id: "doc_source_1" },
+          scope: {
+            resolve: jest.fn(() => ({ getProductDocument })),
+          },
+        } as never,
+        res as never,
+      ),
+    ).rejects.toThrow("Product document source URL is not allowed");
+  });
+
   it("fails closed when no document download origin allowlist is configured", async () => {
     delete process.env.S3_FILE_URL;
     delete process.env.STRAPI_API_URL;

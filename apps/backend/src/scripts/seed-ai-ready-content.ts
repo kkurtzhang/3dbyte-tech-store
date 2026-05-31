@@ -14,7 +14,7 @@ import {
   type AiReadyProductDocumentSeed,
 } from "./ai-ready-catalogue/content";
 
-type SeedLogger = {
+export type SeedLogger = {
   info(message: string): void;
   warn(message: string): void;
   error(message: string): void;
@@ -50,6 +50,9 @@ type SeedResult = {
 };
 
 const DEFAULT_STRAPI_API_URL = "http://cms:1337";
+const MAX_SOURCE_DOCUMENT_BYTES = 12 * 1024 * 1024;
+const SOURCE_DOCUMENT_FETCH_TIMEOUT_MS = 15_000;
+const MAX_SOURCE_DOCUMENT_REDIRECTS = 5;
 
 function trimTrailingSlash(value: string): string {
   return value.trim().replace(/\/$/, "");
@@ -75,15 +78,6 @@ function getStrapiToken(): string {
 
 function encodeFilter(field: string, value: string): string {
   return `filters[${field}][$eq]=${encodeURIComponent(value)}`;
-}
-
-function escapePdfText(value: string): string {
-  return value
-    .normalize("NFKD")
-    .replace(/[^\x20-\x7E]/g, "-")
-    .replace(/\\/g, "\\\\")
-    .replace(/\(/g, "\\(")
-    .replace(/\)/g, "\\)");
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -113,10 +107,133 @@ function hasFileExtension(filename: string): boolean {
   return /\.[a-z0-9]{2,8}$/i.test(filename);
 }
 
+function toSourceCheckedAtDatetime(value: string): string {
+  return `${value}T00:00:00.000Z`;
+}
+
+function isBlockedSourceHost(hostname: string): boolean {
+  const normalized = hostname.toLowerCase();
+
+  return (
+    normalized === "localhost" ||
+    normalized.endsWith(".local") ||
+    normalized === "0.0.0.0" ||
+    normalized === "127.0.0.1" ||
+    normalized.startsWith("127.") ||
+    normalized.startsWith("10.") ||
+    normalized.startsWith("192.168.") ||
+    /^172\.(1[6-9]|2\d|3[0-1])\./.test(normalized)
+  );
+}
+
+function parseSourceDocumentUrl(sourceUrl: string): URL {
+  const url = new URL(sourceUrl);
+
+  if (url.protocol !== "https:") {
+    throw new Error(`Unsupported source document protocol for ${sourceUrl}`);
+  }
+
+  if (isBlockedSourceHost(url.hostname)) {
+    throw new Error(`Blocked private source document host for ${sourceUrl}`);
+  }
+
+  return url;
+}
+
+function isRedirectResponse(response: Response): boolean {
+  return [301, 302, 303, 307, 308].includes(response.status);
+}
+
+function resolveRedirectUrl(currentUrl: URL, location: string): URL {
+  return parseSourceDocumentUrl(new URL(location, currentUrl).href);
+}
+
+export async function fetchSourceDocumentResponse(
+  sourceUrl: string,
+  documentTitle: string,
+  logger: Pick<SeedLogger, "warn">,
+): Promise<Response | undefined> {
+  let currentUrl: URL;
+
+  try {
+    currentUrl = parseSourceDocumentUrl(sourceUrl);
+  } catch (error) {
+    logger.warn(
+      `Skipping source file cache for ${documentTitle}: ${error instanceof Error ? error.message : "source URL is not allowed"}.`,
+    );
+    return undefined;
+  }
+
+  for (
+    let redirectCount = 0;
+    redirectCount <= MAX_SOURCE_DOCUMENT_REDIRECTS;
+    redirectCount += 1
+  ) {
+    const abortController = new AbortController();
+    const timeout = setTimeout(
+      () => abortController.abort(),
+      SOURCE_DOCUMENT_FETCH_TIMEOUT_MS,
+    );
+    let response: Response;
+
+    try {
+      response = await fetch(currentUrl, {
+        redirect: "manual",
+        signal: abortController.signal,
+      });
+    } catch (error) {
+      logger.warn(
+        `Skipping source file cache for ${documentTitle}: ${error instanceof Error ? error.message : "fetch failed"}.`,
+      );
+      return undefined;
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    if (!isRedirectResponse(response)) {
+      return response;
+    }
+
+    const location = response.headers.get("location");
+
+    if (!location) {
+      logger.warn(
+        `Skipping source file cache for ${documentTitle}: upstream redirect is missing a location.`,
+      );
+      return undefined;
+    }
+
+    try {
+      currentUrl = resolveRedirectUrl(currentUrl, location);
+    } catch (error) {
+      logger.warn(
+        `Skipping source file cache for ${documentTitle}: ${error instanceof Error ? error.message : "redirect target is not allowed"}.`,
+      );
+      return undefined;
+    }
+  }
+
+  logger.warn(
+    `Skipping source file cache for ${documentTitle}: too many redirects.`,
+  );
+  return undefined;
+}
+
+export function isPdfDocumentBody(body: ArrayBuffer): boolean {
+  const bytes = new Uint8Array(body.slice(0, 5));
+  const signature = String.fromCharCode(...bytes);
+
+  return signature === "%PDF-";
+}
+
 export function shouldReplaceAiReadyDocumentFile(
   existing: unknown,
   document: Pick<AiReadyProductDocumentSeed, "filename">,
 ): boolean {
+  if (!document.filename) {
+    return false;
+  }
+
   const file = getEntryFile(existing);
   const fileName = asString(file.name);
   const mime = asString(file.mime)?.toLowerCase();
@@ -135,6 +252,7 @@ export function shouldRetireLegacyAiReadyDocument(
 ): boolean {
   const entry = asRecord(existing);
   const title = asString(entry.title);
+  const version = asString(entry.version);
   const file = getEntryFile(existing);
   const fileName = asString(file.name) || "";
   const mime = asString(file.mime)?.toLowerCase();
@@ -144,68 +262,10 @@ export function shouldRetireLegacyAiReadyDocument(
     asBoolean(entry.is_public) &&
     Boolean(title) &&
     !desiredTitles.has(title as string) &&
-    (mime === "text/plain" || !hasFileExtension(fileName))
+    (mime === "text/plain" ||
+      !hasFileExtension(fileName) ||
+      version === "phase-1")
   );
-}
-
-function wrapText(value: string, maxLength = 86): string[] {
-  const words = value.split(/\s+/).filter(Boolean);
-  const lines: string[] = [];
-  let current = "";
-
-  for (const word of words) {
-    const next = current ? `${current} ${word}` : word;
-
-    if (next.length > maxLength && current) {
-      lines.push(current);
-      current = word;
-    } else {
-      current = next;
-    }
-  }
-
-  if (current) lines.push(current);
-
-  return lines;
-}
-
-function createPdfBody(title: string, lines: string[]): string {
-  const textLines = [title, "", ...lines].flatMap((line) =>
-    line ? wrapText(line) : [""],
-  );
-  const content = [
-    "BT",
-    "/F1 16 Tf",
-    "50 750 Td",
-    `(${escapePdfText(textLines[0] ?? title)}) Tj`,
-    "0 -26 Td",
-    "/F1 10 Tf",
-    ...textLines.slice(1, 47).map((line) => `(${escapePdfText(line)}) Tj T*`),
-    "ET",
-  ].join("\n");
-  const objects = [
-    "<< /Type /Catalog /Pages 2 0 R >>",
-    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
-    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
-    `<< /Length ${Buffer.byteLength(content, "utf8")} >>\nstream\n${content}\nendstream`,
-  ];
-  const offsets: number[] = [];
-  let pdf = "%PDF-1.4\n";
-
-  objects.forEach((object, index) => {
-    offsets.push(Buffer.byteLength(pdf, "utf8"));
-    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
-  });
-
-  const xrefOffset = Buffer.byteLength(pdf, "utf8");
-  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
-  offsets.forEach((offset) => {
-    pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
-  });
-  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF\n`;
-
-  return pdf;
 }
 
 async function strapiJson<T>(
@@ -230,13 +290,62 @@ async function strapiJson<T>(
   return response.json() as Promise<T>;
 }
 
-async function uploadPdf(
+async function uploadSourceDocumentFile(
   client: StrapiClient,
   document: AiReadyProductDocumentSeed,
+  logger: SeedLogger,
 ): Promise<StrapiUploadFile> {
+  if (!document.cache_file || !document.filename) {
+    return {};
+  }
+
+  const sourceResponse = await fetchSourceDocumentResponse(
+    document.source_url,
+    document.title,
+    logger,
+  );
+
+  if (!sourceResponse) {
+    return {};
+  }
+
+  if (!sourceResponse.ok) {
+    logger.warn(
+      `Skipping source file cache for ${document.title}: upstream returned ${sourceResponse.status}.`,
+    );
+    return {};
+  }
+
+  const contentLength = Number(sourceResponse.headers.get("content-length"));
+
+  if (
+    Number.isFinite(contentLength) &&
+    contentLength > MAX_SOURCE_DOCUMENT_BYTES
+  ) {
+    logger.warn(
+      `Skipping source file cache for ${document.title}: source file is too large.`,
+    );
+    return {};
+  }
+
+  const body = await sourceResponse.arrayBuffer();
+
+  if (body.byteLength > MAX_SOURCE_DOCUMENT_BYTES) {
+    logger.warn(
+      `Skipping source file cache for ${document.title}: downloaded file is too large.`,
+    );
+    return {};
+  }
+
+  if (!isPdfDocumentBody(body)) {
+    logger.warn(
+      `Skipping source file cache for ${document.title}: downloaded file is not a PDF.`,
+    );
+    return {};
+  }
+
   const formData = new FormData();
-  const pdfBody = createPdfBody(document.pdfTitle, document.pdfLines);
-  const blob = new Blob([pdfBody], { type: "application/pdf" });
+  const blob = new Blob([body], { type: "application/pdf" });
   formData.append("files", blob, document.filename);
 
   const response = await fetch(`${client.apiUrl}/api/upload`, {
@@ -347,6 +456,7 @@ async function upsertProductDocument(
   product: AiReadyCatalogueProduct,
   medusaProduct: MedusaProduct,
   document: AiReadyProductDocumentSeed,
+  logger: SeedLogger,
 ): Promise<"created" | "updated"> {
   const existing = await findStrapiEntry(
     client,
@@ -369,31 +479,50 @@ async function upsertProductDocument(
       is_public: document.is_public,
       search_keywords: document.search_keywords,
       sort_order: document.sort_order,
+      source_url: document.source_url,
+      source_kind: document.source_kind,
+      source_label: document.source_label,
+      source_checked_at: toSourceCheckedAtDatetime(
+        product.source.source_checked_at,
+      ),
     },
   };
 
   if (existing?.documentId) {
-    if (shouldReplaceAiReadyDocumentFile(existing, document)) {
-      const uploadedFile = await uploadPdf(client, document);
-      payload.data.file = uploadedFile.id;
+    if (
+      document.cache_file &&
+      shouldReplaceAiReadyDocumentFile(existing, document)
+    ) {
+      const uploadedFile = await uploadSourceDocumentFile(
+        client,
+        document,
+        logger,
+      );
+      payload.data.file = uploadedFile.id ?? null;
+    } else if (!document.cache_file) {
+      payload.data.file = null;
     }
 
-    await strapiJson(client, `product-documents/${existing.documentId}?status=published`, {
-      method: "PUT",
-      body: JSON.stringify(payload),
-    });
+    await strapiJson(
+      client,
+      `product-documents/${existing.documentId}?status=published`,
+      {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      },
+    );
 
     return "updated";
   }
 
-  const uploadedFile = await uploadPdf(client, document);
+  const uploadedFile = await uploadSourceDocumentFile(client, document, logger);
 
   await strapiJson(client, "product-documents?status=published", {
     method: "POST",
     body: JSON.stringify({
       data: {
         ...payload.data,
-        file: uploadedFile.id,
+        ...(uploadedFile.id ? { file: uploadedFile.id } : {}),
       },
     }),
   });
@@ -504,6 +633,7 @@ export default async function seedAiReadyContent({
         product,
         medusaProduct,
         document,
+        logger,
       );
 
       if (documentAction === "created") result.documentsCreated += 1;

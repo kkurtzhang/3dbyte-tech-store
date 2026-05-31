@@ -15,11 +15,9 @@ describe("getPublicDocumentDownloadUrl", () => {
     ).toBe("/api/product-documents/doc_1/download")
   })
 
-  it("does not expose arbitrary absolute CDN URLs", () => {
+  it("does not expose arbitrary absolute source URLs", () => {
     expect(
-      getPublicDocumentDownloadUrl("https://cdn.example.com/manual.pdf")
-    ).toBe(
-      "#"
-    )
+      getPublicDocumentDownloadUrl("https://manufacturer.example.com/manual.pdf")
+    ).toBe("#")
   })
 })

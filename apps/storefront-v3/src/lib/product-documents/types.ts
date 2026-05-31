@@ -18,6 +18,10 @@ export interface PublicProductDocument {
   file_name?: string;
   file_size?: number;
   public_download_path: string;
+  source_url?: string;
+  source_kind?: string;
+  source_label?: string;
+  source_checked_at?: string;
   search_keywords?: string[];
   sort_order?: number;
   published_at_timestamp?: number;

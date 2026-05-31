@@ -178,9 +178,9 @@ describe("AI-ready realistic product catalogue", () => {
     );
   });
 
-  it("builds public product document seeds with search keywords", () => {
+  it("builds official source-backed product document seeds with search keywords", () => {
     const product = AI_READY_CATALOGUE_PRODUCTS.find(
-      (item) => item.handle === "bambu-pla-cf-black-175-1kg",
+      (item) => item.handle === "polymaker-polylite-petg-black-175-1kg",
     );
 
     expect(product).toBeDefined();
@@ -188,15 +188,25 @@ describe("AI-ready realistic product catalogue", () => {
     const documents = buildAiReadyProductDocuments(product!);
 
     expect(documents.map((document) => document.document_type)).toEqual(
-      expect.arrayContaining(["datasheet", "safety_sheet"]),
+      expect.arrayContaining(["other", "datasheet", "safety_sheet"]),
     );
-    expect(
-      documents.every((document) =>
-        document.filename.startsWith(`${product!.handle}-`),
-      ),
-    ).toBe(true);
+    expect(documents).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          source_kind: "official_product_page",
+          source_url:
+            "https://us.polymaker.com/products/polylite-petg?variant=41266031198265",
+          cache_file: false,
+        }),
+        expect.objectContaining({
+          source_kind: "official_datasheet",
+          filename: `${product!.handle}-official-datasheet.pdf`,
+          cache_file: true,
+        }),
+      ]),
+    );
     expect(documents.flatMap((document) => document.search_keywords)).toEqual(
-      expect.arrayContaining(["PLA-CF", "hardened nozzle"]),
+      expect.arrayContaining(["PETG", "official manufacturer source"]),
     );
   });
 

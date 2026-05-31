@@ -121,6 +121,31 @@ function isAllowedDocumentFileUrl(fileUrl: string): boolean {
     : false;
 }
 
+function isBlockedSourceHost(hostname: string): boolean {
+  const normalized = hostname.toLowerCase();
+
+  return (
+    normalized === "localhost" ||
+    normalized.endsWith(".local") ||
+    normalized === "0.0.0.0" ||
+    normalized === "127.0.0.1" ||
+    normalized.startsWith("127.") ||
+    normalized.startsWith("10.") ||
+    normalized.startsWith("192.168.") ||
+    /^172\.(1[6-9]|2\d|3[0-1])\./.test(normalized)
+  );
+}
+
+function isAllowedExternalSourceUrl(sourceUrl: string): boolean {
+  try {
+    const url = new URL(sourceUrl);
+
+    return url.protocol === "https:" && !isBlockedSourceHost(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
 export async function GET(
   req: MedusaRequest,
   res: MedusaResponse,
@@ -128,11 +153,23 @@ export async function GET(
   const strapiService: StrapiModuleService = req.scope.resolve(STRAPI_MODULE);
   const document = await strapiService.getProductDocument(req.params.id as string);
 
-  if (!document?.file_url) {
+  if (!document?.file_url && !document?.source_url) {
     throw new MedusaError(
       MedusaError.Types.NOT_FOUND,
       "Product document was not found",
     );
+  }
+
+  if (!document.file_url && document.source_url) {
+    if (!isAllowedExternalSourceUrl(document.source_url)) {
+      throw new MedusaError(
+        MedusaError.Types.INVALID_DATA,
+        "Product document source URL is not allowed",
+      );
+    }
+
+    res.redirect(302, document.source_url);
+    return;
   }
 
   const downloadUrl = resolveDocumentFileUrl(document.file_url);
