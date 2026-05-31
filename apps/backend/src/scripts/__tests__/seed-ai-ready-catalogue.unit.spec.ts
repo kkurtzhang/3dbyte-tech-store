@@ -67,7 +67,7 @@ describe("seedAiReadyCatalogue", () => {
     mockLinkProductsToBrandRun.mockResolvedValue({ result: {} });
   });
 
-  it("updates existing source-backed products and attaches taxonomy relations", async () => {
+  it("updates existing source-backed products and attaches taxonomy relations without tag values", async () => {
     const logger = {
       info: jest.fn(),
       warn: jest.fn(),
@@ -174,11 +174,12 @@ describe("seedAiReadyCatalogue", () => {
       expect.objectContaining({
         categories: [{ id: "cat_petg" }],
         collection_id: "pc_premium",
-        tags: expect.arrayContaining([
-          { value: "filament" },
-          { value: "petg" },
-          { value: "polymaker" },
-        ]),
+      }),
+    );
+    expect(productModuleService.updateProducts).toHaveBeenCalledWith(
+      expect.stringContaining("polymaker-polylite-petg-black-175-1kg"),
+      expect.not.objectContaining({
+        tags: expect.anything(),
       }),
     );
   });
