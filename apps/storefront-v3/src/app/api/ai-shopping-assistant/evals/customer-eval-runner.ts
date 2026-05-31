@@ -11,13 +11,32 @@ export type CustomerAiEvalScore = {
   passed: boolean
 }
 
+export type LangfuseEvalScore =
+  | {
+      comment?: string
+      dataType: "BOOLEAN"
+      metadata?: Record<string, unknown>
+      name: string
+      value: number
+    }
+  | {
+      comment?: string
+      dataType: "NUMERIC"
+      metadata?: Record<string, unknown>
+      name: string
+      value: number
+    }
+
 export type CustomerAiEvalRunResult = CustomerAiEvalScore & {
   answer: string
   durationMs: number
   error?: string
   id: string
   prompt: string
+  scores?: LangfuseEvalScore[]
+  sessionId?: string
   status?: number
+  tags?: string[]
 }
 
 export type CustomerAiEvalSummary = {
@@ -25,6 +44,9 @@ export type CustomerAiEvalSummary = {
   failed: number
   generatedAt: string
   passed: number
+  promptLabel?: string
+  promptName?: string
+  runName?: string
   total: number
   warnings: number
 }
@@ -38,6 +60,37 @@ export type EvaluateCustomerAiCaseOptions = {
   endpointUrl: string
   fetchImpl?: AssistantFetch
   timeoutMs?: number
+  traceContext?: CustomerAiEvalTraceContext
+}
+
+export type BuildCustomerAiEvalReportOptions = {
+  promptLabel?: string
+  promptName?: string
+  runName?: string
+}
+
+export type CustomerAiEvalTraceContext = {
+  chatbotId?: string
+  sessionId?: string
+  surface?: string
+  userId?: string
+}
+
+export type LangfuseEvalScorePayload = LangfuseEvalScore & {
+  environment?: string
+  sessionId?: string
+}
+
+export type LangfuseEvalScoreClient = {
+  flush?: () => Promise<void>
+  score: {
+    create: (score: LangfuseEvalScorePayload) => void
+    flush?: () => Promise<void>
+  }
+}
+
+export type PublishLangfuseEvalScoresOptions = {
+  environment?: string
 }
 
 const defaultForbiddenPatterns = [
@@ -181,21 +234,122 @@ export function buildCustomerAiEvalReport(
   results: CustomerAiEvalRunResult[],
   endpointUrl: string,
   generatedAt = new Date().toISOString(),
+  options: BuildCustomerAiEvalReportOptions = {},
 ): CustomerAiEvalReport {
+  const resultsWithScores = results.map((result) => ({
+    ...result,
+    scores: buildLangfuseEvalScores(result, options),
+  }))
+
   return {
-    results,
+    results: resultsWithScores,
     summary: {
       endpointUrl,
-      failed: results.filter((result) => !result.passed).length,
+      failed: resultsWithScores.filter((result) => !result.passed).length,
       generatedAt,
-      passed: results.filter((result) => result.passed).length,
-      total: results.length,
-      warnings: results.reduce(
+      passed: resultsWithScores.filter((result) => result.passed).length,
+      promptLabel: options.promptLabel,
+      promptName: options.promptName,
+      runName: options.runName,
+      total: resultsWithScores.length,
+      warnings: resultsWithScores.reduce(
         (total, result) => total + result.formatWarnings.length,
         0,
       ),
     },
   }
+}
+
+function buildLangfuseEvalScores(
+  result: CustomerAiEvalRunResult,
+  options: BuildCustomerAiEvalReportOptions = {},
+): LangfuseEvalScore[] {
+  const expectedCueCount =
+    result.includeMatched.length + result.includeMissing.length
+  const groundingCueMatch =
+    expectedCueCount > 0 ? result.includeMatched.length / expectedCueCount : 0
+  const scoreMetadata = {
+    promptLabel: options.promptLabel,
+    promptName: options.promptName,
+    runName: options.runName,
+    evalCaseId: result.id,
+    tags: result.tags,
+  }
+
+  return [
+    {
+      comment: result.passed
+        ? "Deterministic eval gates passed."
+        : "One or more deterministic eval gates failed.",
+      dataType: "BOOLEAN",
+      metadata: scoreMetadata,
+      name: "deterministic_pass",
+      value: result.passed ? 1 : 0,
+    },
+    {
+      comment: `${result.includeMatched.length}/${expectedCueCount} expected answer cues matched.`,
+      dataType: "NUMERIC",
+      metadata: scoreMetadata,
+      name: "grounding_cue_match",
+      value: Number(groundingCueMatch.toFixed(4)),
+    },
+    {
+      comment: result.formatWarnings.join("; ") || undefined,
+      dataType: "NUMERIC",
+      metadata: scoreMetadata,
+      name: "format_warning_count",
+      value: result.formatWarnings.length,
+    },
+    {
+      comment: result.forbiddenMatches.join("; ") || undefined,
+      dataType: "NUMERIC",
+      metadata: scoreMetadata,
+      name: "forbidden_claim_count",
+      value: result.forbiddenMatches.length,
+    },
+  ]
+}
+
+function toScoreMetadataRecord(
+  metadata: Record<string, unknown> | undefined,
+  report: CustomerAiEvalReport,
+) {
+  return {
+    ...(metadata ?? {}),
+    endpointUrl: report.summary.endpointUrl,
+    generatedAt: report.summary.generatedAt,
+  }
+}
+
+export async function publishLangfuseEvalScores(
+  report: CustomerAiEvalReport,
+  client: LangfuseEvalScoreClient,
+  options: PublishLangfuseEvalScoresOptions = {},
+) {
+  let publishedCount = 0
+
+  for (const result of report.results) {
+    const scores =
+      result.scores ?? buildLangfuseEvalScores(result, report.summary)
+
+    for (const score of scores) {
+      client.score.create({
+        ...score,
+        environment: options.environment,
+        metadata: toScoreMetadataRecord(score.metadata, report),
+        sessionId: result.sessionId,
+      })
+      publishedCount += 1
+    }
+  }
+
+  if (client.flush) {
+    await client.flush()
+  } else if (client.score.flush) {
+    await client.score.flush()
+  }
+
+  return publishedCount
 }
 
 export async function evaluateCustomerAiCase(
@@ -204,6 +358,7 @@ export async function evaluateCustomerAiCase(
     endpointUrl,
     fetchImpl = fetch,
     timeoutMs = 45_000,
+    traceContext,
   }: EvaluateCustomerAiCaseOptions,
 ): Promise<CustomerAiEvalRunResult> {
   const startedAt = Date.now()
@@ -214,6 +369,7 @@ export async function evaluateCustomerAiCase(
     const response = await fetchImpl(endpointUrl, {
       body: JSON.stringify({
         messages: [{ role: "user", content: evalCase.customerPrompt }],
+        ...(traceContext ? { traceContext } : {}),
       }),
       headers: { "content-type": "application/json" },
       method: "POST",
@@ -222,8 +378,7 @@ export async function evaluateCustomerAiCase(
     const raw = await response.text()
     const answer = decodeAssistantStream(raw)
     const score = scoreCustomerEvalAnswer(evalCase, answer)
-
-    return {
+    const result: CustomerAiEvalRunResult = {
       ...score,
       answer,
       durationMs: Date.now() - startedAt,
@@ -231,10 +386,17 @@ export async function evaluateCustomerAiCase(
       id: evalCase.id,
       passed: response.ok && score.passed,
       prompt: evalCase.customerPrompt,
+      sessionId: traceContext?.sessionId,
       status: response.status,
+      tags: evalCase.tags,
+    }
+
+    return {
+      ...result,
+      scores: buildLangfuseEvalScores(result),
     }
   } catch (error) {
-    return {
+    const failedResult: CustomerAiEvalRunResult = {
       answer: "",
       answerChars: 0,
       durationMs: Date.now() - startedAt,
@@ -246,6 +408,13 @@ export async function evaluateCustomerAiCase(
       includeMissing: evalCase.expectedAnswer.mustIncludeOneOf,
       passed: false,
       prompt: evalCase.customerPrompt,
+      sessionId: traceContext?.sessionId,
+      tags: evalCase.tags,
+    }
+
+    return {
+      ...failedResult,
+      scores: buildLangfuseEvalScores(failedResult),
     }
   } finally {
     clearTimeout(timeout)

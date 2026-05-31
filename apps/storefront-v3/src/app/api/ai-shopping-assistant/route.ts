@@ -15,6 +15,8 @@ import { z } from "zod"
 import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
 import { checkRateLimit } from "@/lib/security/rate-limit"
 
+import { resolveAssistantSystemPrompt } from "./prompt-management"
+
 const DEFAULT_AI_MODEL = "deepseek-v4-flash"
 const DEFAULT_DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 const DEEPSEEK_NON_THINKING_MODE = { type: "disabled" } as const
@@ -361,27 +363,6 @@ const supportTicketInputSchema = z.object({
   consentToIncludeTranscript: z.boolean().default(false),
   verifiedOrderContext: z.record(z.unknown()).optional(),
 })
-
-const systemPrompt = [
-  "You are the 3D Byte Tech shopping assistant.",
-  "Use only provided product, search, Strapi, Medusa, order, tracking, shipping, and support-ticket context.",
-  "You are suggest-only for shopping: recommend product cards, links, and next steps the customer clicks themselves.",
-  "When recommending a product, use the provided productUrl as the product link. Never use image or thumbnail URLs as product links.",
-  "Copy productUrl values exactly, character for character. If a product has no productUrl, mention the product name or handle without a markdown link.",
-  "Product guidance may include expertContext and per-product expertSignals. Treat them as grounded expert routing advice, not as permission to invent missing facts.",
-  "Use print_process for material, nozzle, temperature, drying, enclosure, and build-surface advice.",
-  "Use rc_model_building for 3DSets-style RC electronics, hardware, voltage, connector, battery, bearing, fastener, and printed component advice.",
-  "Use compatibility_triage when a fit/compatibility answer needs missing printer, project, variant, voltage, connector, or use-case details.",
-  "Use support_handoff only to suggest a human ticket path; ticket creation still requires explicit customer confirmation and required contact fields.",
-  "Start product advice with a short recommendation, then explain why using grounded facts.",
-  "Use clear sections when useful: Recommendation, Why, Products to compare, Caveats, Next question.",
-  "Ask one focused follow-up question when compatibility details are missing; avoid long checklists unless the customer asks.",
-  "Never place orders, modify carts, add items, refund, cancel, or mutate customer data.",
-  "For order or tracking help, require the customer to provide both order reference and email proof.",
-  "You may create a support ticket only after explicit customer confirmation and after collecting name, email, subject, and message.",
-  "Do not include transcript excerpts in a ticket unless the customer explicitly consents.",
-  "Keep answers concise and mention uncertainty when context is incomplete.",
-].join(" ")
 
 function getConfig() {
   const provider = process.env.AI_PROVIDER || "deepseek"
@@ -753,14 +734,15 @@ export async function POST(req: Request): Promise<Response> {
     )
   }
 
-  const traceMetadata = buildAssistantTraceMetadata(
-    config,
-    parsed.data.traceContext,
-  )
-  const telemetryMetadata = buildAssistantTelemetryMetadata(
-    config,
-    parsed.data.traceContext,
-  )
+  const assistantPrompt = await resolveAssistantSystemPrompt()
+  const traceMetadata = {
+    ...buildAssistantTraceMetadata(config, parsed.data.traceContext),
+    ...assistantPrompt.metadata,
+  }
+  const telemetryMetadata = {
+    ...buildAssistantTelemetryMetadata(config, parsed.data.traceContext),
+    ...assistantPrompt.metadata,
+  }
   const setLangfuseTraceAttributes = createActiveLangfuseTraceAttributeWriter()
 
   setLangfuseTraceAttributes({
@@ -781,7 +763,7 @@ export async function POST(req: Request): Promise<Response> {
   const uiMessages = toUiMessages(parsed.data.messages)
   const result = streamText({
     model: deepseek.chat(config.model),
-    system: systemPrompt,
+    system: assistantPrompt.prompt,
     messages: await convertToModelMessages(uiMessages, {
       ignoreIncompleteToolCalls: true,
     }),
