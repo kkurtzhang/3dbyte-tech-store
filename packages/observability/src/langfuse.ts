@@ -5,9 +5,11 @@ type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
 
 export type LangfuseTraceAttributeInput = {
   costDetails?: Record<string, number | undefined>;
+  input?: JsonValue;
   metadata?: Record<string, JsonValue | undefined>;
   model?: string;
   name?: string;
+  output?: JsonValue;
   sessionId?: string;
   tags?: string[];
   usageDetails?: Record<string, number | undefined>;
@@ -72,6 +74,14 @@ function setLangfuseTraceAttributes(
       "langfuse.trace.metadata",
       compactMetadata(attributes.metadata),
     );
+  }
+
+  if (attributes.input !== undefined) {
+    setJsonAttribute(span, "langfuse.trace.input", attributes.input);
+  }
+
+  if (attributes.output !== undefined) {
+    setJsonAttribute(span, "langfuse.trace.output", attributes.output);
   }
 
   if (attributes.model) {

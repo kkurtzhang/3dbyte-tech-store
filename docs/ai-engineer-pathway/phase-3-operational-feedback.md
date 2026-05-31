@@ -102,6 +102,35 @@ pnpm --filter=@3dbyte-tech-store/storefront-v3 eval:ai:customer
 
 The next step for LLM-as-judge is to create a Langfuse dataset from the customer eval cases and add dashboard-managed evaluator prompts. Keep deterministic scores as the release gate; use judge scores for quality trends and review queues until the judge is calibrated.
 
+## Phase 3D: Trace I/O Debuggability
+
+Storefront assistant traces now set top-level Langfuse input and output so the dashboard no longer shows “trace did not receive an input or output” for the browser chat route.
+
+Trace input includes:
+
+- latest user message, sanitized;
+- message count;
+- prompt name and prompt label;
+- chatbot id and surface.
+
+Trace output includes:
+
+- final assistant text, sanitized;
+- finish reason when the provider reports one.
+
+Sanitization masks emails, order/support references, and common commerce IDs before the values are written to Langfuse. Full transcripts should only move into support tickets or review tooling when the customer explicitly consents.
+
+## Recommended Next Langfuse Feature
+
+Prioritize a human feedback and annotation loop before heavier judge automation:
+
+- Add storefront thumbs/comment feedback for assistant answers.
+- Publish feedback as Langfuse scores on the same trace/session.
+- Create an annotation queue for low-score, thumbs-down, support-handoff, and eval-failing conversations.
+- Convert reviewed examples into Langfuse dataset items or repo-owned eval cases.
+
+This gives future LLM-as-judge and prompt experiments trusted examples to calibrate against instead of asking a model to grade another model with no human anchor.
+
 ## Current Scoring
 
 The runner is intentionally deterministic and conservative:
@@ -117,5 +146,8 @@ This is not a model-graded quality eval yet. It is a deploy smoke tool for catch
 ## Future Work
 
 - Add Langfuse dataset-backed LLM-as-judge scoring after deterministic scores are visible and stable.
+- Add customer feedback scoring and annotation queues before relying on LLM-as-judge trends.
+- Tag assistant traces with git SHA/deploy id for release-over-release cost, cache, latency, and score comparison.
+- Add alerts for missing trace input/output, sudden assistant errors, cost spikes, and low feedback scores.
 - Add an admin-facing “last AI smoke status” workflow before production product-data changes.
 - Promote selected smoke cases to CI only when they can run without paid/provider dependencies.
