@@ -1,16 +1,29 @@
 import { render, screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
+import type { ReactNode } from "react"
 import type { MedusaProduct } from "@/lib/medusa/types"
 import { AvailableInBundles } from "../available-in-bundles"
 
+const addItem = jest.fn()
+const toast = jest.fn()
+
+jest.mock("@/context/cart-context", () => ({
+  useCart: () => ({ addItem }),
+}))
+
+jest.mock("@/lib/hooks/use-toast", () => ({
+  useToast: () => ({ toast }),
+}))
+
+jest.mock("lucide-react", () => ({
+  Check: () => null,
+}))
+
 jest.mock("next/link", () => ({
   __esModule: true,
-  default: ({
-    href,
-    children,
-  }: {
-    href: string
-    children: React.ReactNode
-  }) => <a href={href}>{children}</a>,
+  default: ({ href, children }: { href: string; children: ReactNode }) => (
+    <a href={href}>{children}</a>
+  ),
 }))
 
 const currentProduct = {
@@ -43,6 +56,11 @@ const currentProduct = {
 } as unknown as MedusaProduct
 
 describe("AvailableInBundles", () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    addItem.mockResolvedValue(undefined)
+  })
+
   it("renders nothing when no bundles are provided", () => {
     const { container } = render(
       <AvailableInBundles bundles={[]} product={currentProduct} />
@@ -86,7 +104,9 @@ describe("AvailableInBundles", () => {
                   id: "prod_filament",
                   title: "Filament Spool With A Longer Accessory Name",
                   handle: "filament-spool",
-                  variants: [{ prices: [{ amount: 40, currency_code: "AUD" }] }],
+                  variants: [
+                    { prices: [{ amount: 40, currency_code: "AUD" }] },
+                  ],
                 },
               },
             ] as never[],
@@ -96,10 +116,9 @@ describe("AvailableInBundles", () => {
     )
 
     expect(screen.getByText("Available in Bundles")).toBeInTheDocument()
-    expect(screen.getByRole("link", { name: /starter bundle/i })).toHaveAttribute(
-      "href",
-      "/bundles/starter-bundle"
-    )
+    expect(
+      screen.getByRole("link", { name: /starter bundle/i })
+    ).toHaveAttribute("href", "/bundles/starter-bundle")
     expect(screen.getByText("Save 17%")).toBeInTheDocument()
     expect(screen.getByText("From")).toBeInTheDocument()
     expect(screen.getByText(/\$149\.00/)).toBeInTheDocument()
@@ -108,10 +127,14 @@ describe("AvailableInBundles", () => {
     expect(screen.getByText("Also includes")).toBeInTheDocument()
     expect(screen.getByText("2 x")).toBeInTheDocument()
     expect(
-      screen.getByRole("link", { name: "Filament Spool With A Longer Accessory Name" })
+      screen.getByRole("link", {
+        name: "Filament Spool With A Longer Accessory Name",
+      })
     ).toHaveAttribute("href", "/products/filament-spool")
     expect(screen.queryByText(/1 x Printer/)).not.toBeInTheDocument()
-    expect(screen.queryByRole("link", { name: /view bundle/i })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("link", { name: /view bundle/i })
+    ).not.toBeInTheDocument()
   })
 
   it("updates bundle savings when the current product variant changes", () => {
@@ -149,7 +172,9 @@ describe("AvailableInBundles", () => {
                 product: {
                   id: "prod_part_b",
                   title: "Part B",
-                  variants: [{ prices: [{ amount: 40, currency_code: "AUD" }] }],
+                  variants: [
+                    { prices: [{ amount: 40, currency_code: "AUD" }] },
+                  ],
                 },
               },
             ] as never[],
@@ -188,7 +213,9 @@ describe("AvailableInBundles", () => {
                 product: {
                   id: "prod_part_b",
                   title: "Part B",
-                  variants: [{ prices: [{ amount: 40, currency_code: "AUD" }] }],
+                  variants: [
+                    { prices: [{ amount: 40, currency_code: "AUD" }] },
+                  ],
                 },
               },
             ] as never[],
@@ -228,7 +255,9 @@ describe("AvailableInBundles", () => {
                 product: {
                   id: "prod_part_b",
                   title: "Part B",
-                  variants: [{ prices: [{ amount: 100, currency_code: "AUD" }] }],
+                  variants: [
+                    { prices: [{ amount: 100, currency_code: "AUD" }] },
+                  ],
                 },
               },
             ] as never[],
@@ -253,7 +282,9 @@ describe("AvailableInBundles", () => {
                 product: {
                   id: "prod_part_b",
                   title: "Part B",
-                  variants: [{ prices: [{ amount: 100, currency_code: "AUD" }] }],
+                  variants: [
+                    { prices: [{ amount: 100, currency_code: "AUD" }] },
+                  ],
                 },
               },
             ] as never[],
@@ -264,5 +295,72 @@ describe("AvailableInBundles", () => {
 
     const links = screen.getAllByRole("link", { name: /bundle/i })
     expect(links[0]).toHaveTextContent("Higher Savings Bundle")
+  })
+
+  it("adds the current product and selected build add-ons as regular cart items", async () => {
+    const user = userEvent.setup()
+
+    render(
+      <AvailableInBundles
+        product={currentProduct}
+        selectedVariant={currentProduct.variants?.[1]}
+        bundles={[
+          {
+            id: "bundle_123",
+            title: "Starter Bundle",
+            product: {
+              handle: "starter-bundle",
+              title: "Starter Bundle",
+              variants: [{ prices: [{ amount: 149, currency_code: "AUD" }] }],
+            },
+            items: [
+              {
+                id: "item_1",
+                quantity: 1,
+                product: currentProduct,
+              },
+              {
+                id: "item_fasteners",
+                quantity: 2,
+                product: {
+                  id: "prod_fasteners",
+                  title: "Fastener Kit",
+                  handle: "fastener-kit",
+                  variants: [
+                    {
+                      id: "variant_fasteners",
+                      prices: [{ amount: 25, currency_code: "AUD" }],
+                    },
+                  ],
+                },
+              },
+            ] as never[],
+          },
+        ]}
+      />
+    )
+
+    expect(
+      screen.getByRole("heading", { name: /complete your build/i })
+    ).toBeInTheDocument()
+    expect(screen.getByRole("checkbox", { name: /printer/i })).toBeChecked()
+    expect(screen.getByRole("checkbox", { name: /printer/i })).toBeDisabled()
+
+    const fastenerOption = screen.getByRole("checkbox", {
+      name: /fastener kit/i,
+    })
+    expect(fastenerOption).not.toBeChecked()
+
+    await user.click(fastenerOption)
+    await user.click(
+      screen.getByRole("button", { name: /add selected build items/i })
+    )
+
+    expect(addItem).toHaveBeenNthCalledWith(1, "variant_premium", 1)
+    expect(addItem).toHaveBeenNthCalledWith(2, "variant_fasteners", 2)
+    expect(toast).toHaveBeenCalledWith({
+      title: "Build items added",
+      description: "2 build items have been added to your cart.",
+    })
   })
 })
