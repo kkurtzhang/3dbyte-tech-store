@@ -57,6 +57,8 @@ export type CatalogueSource = {
     | "supplier_product_page";
   official_product_url: string;
   official_manual_url?: string;
+  official_datasheet_url?: string;
+  official_safety_sheet_url?: string;
   official_image_url: string;
   source_checked_at: "2026-05-31";
   image_policy:

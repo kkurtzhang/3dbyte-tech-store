@@ -324,7 +324,8 @@ class StrapiModuleService {
       .map((document: unknown) => normalizeStrapiProductDocument(document))
       .filter(
         (document: PublicProductDocument) =>
-          Boolean(document.id) && Boolean(document.file_url)
+          Boolean(document.id) &&
+          (Boolean(document.file_url) || Boolean(document.source_url))
       );
   }
 
@@ -339,7 +340,9 @@ class StrapiModuleService {
       );
       const document = normalizeStrapiProductDocument(response.data?.[0]);
 
-      return document.id && document.file_url ? document : null;
+      return document.id && (document.file_url || document.source_url)
+        ? document
+        : null;
     } catch (error) {
       this.logger_.error(
         `Failed to get product document for ${documentId}`,

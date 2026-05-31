@@ -44,10 +44,30 @@
     "file": {
       "type": "media",
       "multiple": false,
-      "required": true,
+      "required": false,
       "allowedTypes": [
         "files"
       ]
+    },
+    "source_url": {
+      "type": "text"
+    },
+    "source_kind": {
+      "type": "enumeration",
+      "enum": [
+        "official_product_page",
+        "official_manual",
+        "official_datasheet",
+        "official_safety_sheet",
+        "supplier_product_page",
+        "generated_reference"
+      ]
+    },
+    "source_label": {
+      "type": "string"
+    },
+    "source_checked_at": {
+      "type": "datetime"
     },
     "version": {
       "type": "string"

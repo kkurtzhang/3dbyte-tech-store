@@ -8,6 +8,12 @@ type ProductDocumentType =
   | "warranty"
   | "other";
 
+type ProductDocumentSourceKind =
+  | "official_product_page"
+  | "official_manual"
+  | "official_datasheet"
+  | "official_safety_sheet";
+
 type MetadataRecord = Record<string, unknown>;
 
 export type AiReadyProductDescriptionSeed = {
@@ -22,14 +28,16 @@ export type AiReadyProductDescriptionSeed = {
 export type AiReadyProductDocumentSeed = {
   title: string;
   document_type: ProductDocumentType;
-  filename: string;
+  filename?: string;
   version: string;
   language: string;
   is_public: true;
   search_keywords: string[];
   sort_order: number;
-  pdfTitle: string;
-  pdfLines: string[];
+  source_url: string;
+  source_kind: ProductDocumentSourceKind;
+  source_label: string;
+  cache_file: boolean;
 };
 
 function asRecord(value: unknown): MetadataRecord {
@@ -253,160 +261,118 @@ export function buildAiReadyProductDescription(
   };
 }
 
-function createDocument(
+function getSourceHostname(sourceUrl: string): string {
+  try {
+    return new URL(sourceUrl).hostname.replace(/^www\./, "");
+  } catch {
+    return "";
+  }
+}
+
+function isPdfUrl(sourceUrl: string): boolean {
+  try {
+    return new URL(sourceUrl).pathname.toLowerCase().endsWith(".pdf");
+  } catch {
+    return false;
+  }
+}
+
+function createSourceDocument(
   product: AiReadyCatalogueProduct,
   document_type: ProductDocumentType,
   suffix: string,
   title: string,
   sort_order: number,
-  extraLines: string[],
+  source_url: string,
+  source_kind: ProductDocumentSourceKind,
+  source_label: string,
 ): AiReadyProductDocumentSeed {
   const keywords = buildKeywordList(product);
+  const hostname = getSourceHostname(source_url);
+  const cacheFile = isPdfUrl(source_url);
 
   return {
     title,
     document_type,
-    filename: `${product.handle}-${suffix}.pdf`,
-    version: "phase-1",
+    filename: cacheFile ? `${product.handle}-${suffix}.pdf` : undefined,
+    version: `official-${product.source.source_checked_at}`,
     language: "en",
     is_public: true,
     search_keywords: unique([
       ...keywords,
+      source_label,
+      hostname,
+      "official manufacturer source",
       document_type.replace(/_/g, " "),
       suffix.replace(/-/g, " "),
     ]),
     sort_order,
-    pdfTitle: title,
-    pdfLines: [
-      product.title,
-      `SKU: ${product.sku}`,
-      `Handle: ${product.handle}`,
-      `Document type: ${document_type.replace(/_/g, " ")}`,
-      "",
-      product.description,
-      "",
-      ...extraLines,
-      "",
-      "Phase 1 AI-ready catalogue document. Verify final fitment, ratings, and safety requirements before customer-facing production use.",
-    ],
+    source_url,
+    source_kind,
+    source_label,
+    cache_file: cacheFile,
   };
 }
 
 export function buildAiReadyProductDocuments(
   product: AiReadyCatalogueProduct,
 ): AiReadyProductDocumentSeed[] {
-  const tdp = getTdp(product);
-  const rcb = getRcb(product);
-  const productKind =
-    typeof tdp.product_kind === "string" ? tdp.product_kind : undefined;
-  const componentRole =
-    typeof rcb.component_role === "string" ? rcb.component_role : undefined;
-  const specifications = buildSpecifications(product);
-  const specLines = Object.entries(specifications).map(
-    ([key, value]) => `${key.replace(/_/g, " ")}: ${String(value)}`,
-  );
   const documents: AiReadyProductDocumentSeed[] = [];
 
   documents.push(
-    createDocument(
+    createSourceDocument(
       product,
-      productKind === "build_surface" ? "install_guide" : "datasheet",
-      productKind === "build_surface" ? "install-guide" : "datasheet",
-      `${product.title} ${
-        productKind === "build_surface" ? "Install Guide" : "Technical Datasheet"
-      }`,
+      "other",
+      "official-product-page",
+      `${product.title} Official Product Page`,
       10,
-      [
-        "Key specifications:",
-        ...specLines,
-        "AI search coverage includes compatibility, use case, and troubleshooting keywords.",
-      ],
+      product.source.official_product_url,
+      "official_product_page",
+      "Official product page",
     ),
   );
 
-  if (productKind === "filament") {
+  if (product.source.official_datasheet_url) {
     documents.push(
-      createDocument(
+      createSourceDocument(
+        product,
+        "datasheet",
+        "official-datasheet",
+        `${product.title} Official Technical Datasheet`,
+        20,
+        product.source.official_datasheet_url,
+        "official_datasheet",
+        "Official technical datasheet",
+      ),
+    );
+  }
+
+  if (product.source.official_safety_sheet_url) {
+    documents.push(
+      createSourceDocument(
         product,
         "safety_sheet",
-        "safety-sheet",
-        `${product.title} Safety and Handling Sheet`,
-        20,
-        [
-          "Store sealed with desiccant when not in use.",
-          "Dry moisture-sensitive materials before critical prints.",
-          "Use suitable ventilation for heated polymer processing.",
-          asBoolean(tdp.requires_hardened_nozzle)
-            ? "A hardened nozzle is required for abrasive-filled material."
-            : "A brass nozzle is suitable for non-abrasive material.",
-        ],
+        "official-safety-sheet",
+        `${product.title} Official Safety Sheet`,
+        30,
+        product.source.official_safety_sheet_url,
+        "official_safety_sheet",
+        "Official safety sheet",
       ),
     );
-  } else if (productKind === "nozzle") {
+  }
+
+  if (product.source.official_manual_url) {
     documents.push(
-      createDocument(
-        product,
-        "install_guide",
-        "install-guide",
-        `${product.title} Installation Guide`,
-        20,
-        [
-          "Heat the hotend before loosening or final-tightening the nozzle.",
-          "Confirm thread compatibility and avoid over-tightening.",
-          "Re-run first-layer calibration after nozzle replacement.",
-        ],
-      ),
-    );
-  } else if (productKind === "drying_storage" || productKind === "maintenance_tool") {
-    documents.push(
-      createDocument(
+      createSourceDocument(
         product,
         "manual",
-        "quick-start-manual",
-        `${product.title} Quick Start Manual`,
-        20,
-        [
-          "Inspect the tool before use and keep it clean between maintenance sessions.",
-          "Use the product only within the intended printer maintenance workflow.",
-          "Record maintenance outcomes so assistant guidance has accurate context.",
-        ],
-      ),
-    );
-  } else if (componentRole) {
-    documents.push(
-      createDocument(
-        product,
-        ["battery", "esc", "drive_motor", "servo"].includes(componentRole)
-          ? "safety_sheet"
-          : "warranty",
-        ["battery", "esc", "drive_motor", "servo"].includes(componentRole)
-          ? "safety-sheet"
-          : "warranty",
-        `${product.title} ${
-          ["battery", "esc", "drive_motor", "servo"].includes(componentRole)
-            ? "RC Safety Sheet"
-            : "Warranty Notes"
-        }`,
-        20,
-        [
-          "Match voltage, connector, and load ratings before installation.",
-          "Check fasteners, wiring, and moving clearances before powered testing.",
-          "Do not expose protected 3DSets model files or paid build instructions.",
-        ],
-      ),
-    );
-  } else {
-    documents.push(
-      createDocument(
-        product,
-        "warranty",
-        "warranty",
-        `${product.title} Warranty Notes`,
-        20,
-        [
-          "Keep proof of purchase and product packaging for support enquiries.",
-          "Warranty handling depends on correct installation and normal use.",
-        ],
+        "official-manual",
+        `${product.title} Official Manual or Support Guide`,
+        40,
+        product.source.official_manual_url,
+        "official_manual",
+        "Official manual or support guide",
       ),
     );
   }

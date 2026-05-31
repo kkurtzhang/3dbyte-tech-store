@@ -23,6 +23,12 @@ export const FILAMENT_PRODUCTS: AiReadyCatalogueProductDefinition[] = [
     source: source(
       "https://us.polymaker.com/products/polylite-petg?variant=41266031198265",
       "https://shop.polymaker.com/cdn/shop/files/PolyLite-PETG_1.75mm_1kg_Clear.png?crop=center&height=1200&v=1696920905&width=1200",
+      {
+        official_datasheet_url:
+          "https://polymaker.com/wp-content/uploads/lana-downloads/PolyLite_PETG_TDS_V5.3.pdf",
+        official_safety_sheet_url:
+          "https://polymaker.com/wp-content/tech-docs/PolyLite_%20PETG_SDS_US_EN_V1.pdf",
+      },
     ),
     three_d_printing: tdp({
       ...filamentDefaults,
@@ -59,6 +65,12 @@ export const FILAMENT_PRODUCTS: AiReadyCatalogueProductDefinition[] = [
     source: source(
       "https://us.polymaker.com/products/polymaker-pla-pro",
       "https://shop.polymaker.com/cdn/shop/files/pa13002_isometric_top_fb8ad3b7-22d3-4c39-b231-541c95612cdf.png?crop=center&height=1200&v=1773244075&width=1200",
+      {
+        official_datasheet_url:
+          "https://polymaker.com/wp-content/uploads/lana-downloads/TDS_Polymaker_PLA-Pro_v6.0_2026-01-30_EN.pdf",
+        official_safety_sheet_url:
+          "https://polymaker.com/wp-content/uploads/lana-downloads/Polymaker-PLA-Pro-USA-SDS_20260122.pdf",
+      },
     ),
     three_d_printing: tdp({
       ...filamentDefaults,
@@ -88,6 +100,10 @@ export const FILAMENT_PRODUCTS: AiReadyCatalogueProductDefinition[] = [
     source: source(
       "https://us.polymaker.com/products/polylite-asa",
       "https://shop.polymaker.com/cdn/shop/files/black.png?crop=center&height=1200&v=1731517489&width=1200",
+      {
+        official_datasheet_url:
+          "https://polymaker.com/wp-content/uploads/lana-downloads/PolyLite_ASA_TDS_V5.3.pdf",
+      },
     ),
     three_d_printing: tdp({
       ...filamentDefaults,
@@ -118,6 +134,10 @@ export const FILAMENT_PRODUCTS: AiReadyCatalogueProductDefinition[] = [
     source: source(
       "https://esun3dstore.com/products/pla-pro",
       "https://ueeshop.ly200-cdn.com/u_file/UPBB/UPBB609/2409/14/products/a4274f7c3c.jpg",
+      {
+        official_datasheet_url:
+          "https://www.esun3d.com/uploads/eSUN_PLA%2B-Filament_TDS_V4.0.pdf",
+      },
     ),
     three_d_printing: tdp({
       ...filamentDefaults,
@@ -147,6 +167,10 @@ export const FILAMENT_PRODUCTS: AiReadyCatalogueProductDefinition[] = [
     source: source(
       "https://www.esun3d.com/petg-product/",
       "https://cdnus.globalso.com/esun3d/Solid-Black1.jpg",
+      {
+        official_datasheet_url:
+          "https://www.esun3d.com/uploads/PETG-TDS1.pdf",
+      },
     ),
     three_d_printing: tdp({
       ...filamentDefaults,
@@ -175,6 +199,10 @@ export const FILAMENT_PRODUCTS: AiReadyCatalogueProductDefinition[] = [
     source: source(
       "https://www.esun3d.com/etpu-95a-product/",
       "https://cdnus.globalso.com/esun3d/TPU-95A-TRANSLUCENT-GREEN.jpg",
+      {
+        official_safety_sheet_url:
+          "https://www.esun3d.com/uploads/TPU-95A-MSDS_EN.pdf",
+      },
     ),
     three_d_printing: tdp({
       ...filamentDefaults,
@@ -210,6 +238,10 @@ export const FILAMENT_PRODUCTS: AiReadyCatalogueProductDefinition[] = [
     source: source(
       "https://www.esun3d.com/abs-pro-product/",
       "https://cdnus.globalso.com/esun3d/ABS+-PURPLE1.jpg",
+      {
+        official_datasheet_url:
+          "https://www.esun3d.com/uploads/ABS%2B-TDS.pdf",
+      },
     ),
     three_d_printing: tdp({
       ...filamentDefaults,

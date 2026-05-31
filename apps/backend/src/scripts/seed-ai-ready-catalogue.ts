@@ -404,7 +404,6 @@ async function applyProductRelations(
   await productModuleService.updateProducts(existingProduct.id, {
     ...(categoryId ? { categories: [{ id: categoryId }] } : {}),
     ...(collectionId ? { collection_id: collectionId } : {}),
-    tags: product.tags.map((value) => ({ value })),
   });
 
   if (!categoryId) {

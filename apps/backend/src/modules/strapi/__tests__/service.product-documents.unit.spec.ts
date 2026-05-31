@@ -84,4 +84,37 @@ describe("StrapiModuleService product documents", () => {
       "Content-Type": "application/json",
     });
   });
+
+  it("keeps public source URL documents even when no media file is attached", async () => {
+    (global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        data: [
+          {
+            documentId: "doc_source_1",
+            medusa_product_id: "prod_1",
+            product_handle: "printer-one",
+            product_title: "Printer One",
+            title: "Printer One Official Product Page",
+            document_type: "other",
+            is_public: true,
+            source_url: "https://manufacturer.example.com/printer-one",
+            source_kind: "official_product_page",
+            source_label: "Official product page",
+          },
+        ],
+      }),
+    });
+
+    const service = createService();
+
+    await expect(service.listProductDocuments("prod_1")).resolves.toEqual([
+      expect.objectContaining({
+        id: "doc_source_1",
+        file_url: "",
+        source_url: "https://manufacturer.example.com/printer-one",
+      }),
+    ]);
+  });
 });

@@ -230,6 +230,10 @@ export const EQUIPMENT_PRODUCTS: AiReadyCatalogueProductDefinition[] = [
     source: source(
       "https://biqu.equipment/collections/all-accessories/products/biqu-panda-hotend",
       "https://biqu.equipment/cdn/shop/files/X1C_P1_6.png?v=1765372133",
+      {
+        official_manual_url:
+          "https://global.bttwiki.com/Panda%20Revo%20X1%20Hotend.html",
+      },
     ),
     three_d_printing: tdp({
       product_kind: "hotend",
