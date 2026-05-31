@@ -24,11 +24,36 @@ export type SyncCategoriesWorkflowOutput = {
 	indexed: number
 	deleted: number
 	total: number
+	syncedIds: string[]
 	metadata?: {
 		count: number
 		skip: number
 		take: number
 	}
+}
+
+function normalizeCategoryIdFilter(value: unknown): string[] {
+	if (typeof value === "string" && value.trim()) {
+		return [value.trim()]
+	}
+
+	if (Array.isArray(value)) {
+		return value.filter(
+			(item): item is string => typeof item === "string" && Boolean(item)
+		)
+	}
+
+	return []
+}
+
+export function findMissingFilteredCategoryIds(
+	filters: Record<string, unknown> | undefined,
+	indexedCategories: Array<{ id: string }>
+): string[] {
+	const filteredIds = normalizeCategoryIdFilter(filters?.id)
+	const indexedIds = new Set(indexedCategories.map((category) => category.id))
+
+	return filteredIds.filter((id) => !indexedIds.has(id))
 }
 
 /**
@@ -43,7 +68,7 @@ export type SyncCategoriesWorkflowOutput = {
  * - Extract products from categories and compute product counts
  * - Transform to Meilisearch documents (breadcrumb generated internally from parent_category)
  * - Sync to Meilisearch
- * - Delete inactive categories from Meilisearch (currently none due to query filters)
+ * - Delete explicitly filtered categories when they no longer match active index rules
  *
  * Performance: O(n) for product count aggregation
  * Memory: O(n) for category map and product counts
@@ -273,18 +298,34 @@ export const syncCategoriesWorkflow = createWorkflow(
 			>,
 		})
 
-		// Step 4: Delete inactive categories from Meilisearch (currently none)
+		const missingFilteredCategoryIds = transform(
+			{ filters, categories: categoriesForSync.categories },
+			(data) =>
+				findMissingFilteredCategoryIds(
+					data.filters as Record<string, unknown> | undefined,
+					data.categories as Array<{ id: string }>
+				)
+		)
+
+		// Step 4: Delete filtered categories that no longer belong in the active index
 		deleteCategoriesFromMeilisearchStep({
-			ids: [],
+			ids: missingFilteredCategoryIds,
 		})
 
 		// Calculate result using transform (required by Medusa workflows)
 		const result = transform(
-			{ syncResult, totalCount: categoriesForSync.totalCount },
+			{
+				syncResult,
+				categories: categoriesForSync.categories,
+				missingFilteredCategoryIds,
+			},
 			(data) => ({
 				indexed: data.syncResult.indexed,
-				deleted: 0,
+				deleted: (data.missingFilteredCategoryIds as string[]).length,
 				total: data.syncResult.indexed,
+				syncedIds: (data.categories as Array<{ id: string }>).map(
+					(category) => category.id
+				),
 			})
 		)
 

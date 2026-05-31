@@ -1,6 +1,9 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { MedusaError } from "@medusajs/framework/utils"
+import { MEILISEARCH_MODULE } from "../../../../modules/meilisearch"
+import type MeilisearchModuleService from "../../../../modules/meilisearch/service"
 import { syncCategoriesWorkflow } from "../../../../workflows/meilisearch/categories/sync-categories"
+import { deleteStaleIndexDocuments } from "../utils/reconcile-index"
 import type { Logger } from "@medusajs/framework/types"
 
 /**
@@ -41,6 +44,9 @@ export const POST = async (
 		const limit = 50
 		let totalIndexed = 0
 		let totalDeleted = 0
+		const syncedCategoryIds: string[] = []
+		const meilisearchService =
+			req.scope.resolve<MeilisearchModuleService>(MEILISEARCH_MODULE)
 
 		// Paginated sync following official pattern
 		while (hasMore) {
@@ -57,7 +63,17 @@ export const POST = async (
 			offset += limit
 			totalIndexed += result.indexed
 			totalDeleted += result.deleted
+			syncedCategoryIds.push(...(result.syncedIds ?? []))
 		}
+
+		const staleDeleted = await deleteStaleIndexDocuments({
+			currentIds: syncedCategoryIds,
+			label: "category",
+			logger,
+			meilisearchService,
+			type: "category",
+		})
+		totalDeleted += staleDeleted
 
 		logger.info(
 			`Meilisearch category sync completed: ${totalIndexed} indexed, ${totalDeleted} deleted`

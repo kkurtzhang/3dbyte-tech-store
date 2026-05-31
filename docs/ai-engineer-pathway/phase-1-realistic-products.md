@@ -173,6 +173,8 @@ Staging was brought up from the deployed `staging` branch with:
 5. Product-document Meilisearch sync into `stg_product_documents_public`.
 6. Storefront, search, downloads, browser image, and assistant product-guidance verification.
 
+Manual product, brand, category, and product-document Meilisearch syncs now treat their source records as the full source of truth and delete stale indexed records after indexing the current set. Explicit category update syncs also delete category IDs that no longer match active index rules. This keeps retired `ai-*` products, unpublished Strapi product documents, removed brands, and inactive categories from lingering in search after a full sync or targeted category update.
+
 ## Staging Acceptance Checks
 
 - Product listing/search finds the source-backed product handles.
