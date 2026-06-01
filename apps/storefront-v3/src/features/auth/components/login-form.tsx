@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { loginAction } from "@/app/actions/auth"
 import { GoogleIcon } from "@/components/ui/google-icon"
 import { zodFormResolver } from "@/lib/forms/zod-form-resolver"
+import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -80,8 +81,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     setIsLoading(true)
     setError(null)
     try {
-      const backendUrl =
-        process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000"
+      const backendUrl = resolveMedusaBaseUrl({ isServer: false })
       // Get Google OAuth URL
       const response = await fetch(`${backendUrl}/store/auth`, {
         method: "GET",

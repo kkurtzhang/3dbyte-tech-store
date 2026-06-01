@@ -26,4 +26,45 @@ describe("resolveMedusaBaseUrl", () => {
       })
     ).toBe("https://api.example.com")
   })
+
+  it("derives the staging API URL for browser requests when the public env is missing", () => {
+    const options = {
+      isServer: false,
+      env: {},
+      location: {
+        protocol: "https:",
+        hostname: "store.staging.3dbytetech.com.au",
+      },
+    }
+
+    expect(resolveMedusaBaseUrl(options)).toBe(
+      "https://api.staging.3dbytetech.com.au"
+    )
+  })
+
+  it("keeps localhost for local browser requests when the public env is missing", () => {
+    const options = {
+      isServer: false,
+      env: {},
+      location: {
+        protocol: "http:",
+        hostname: "localhost",
+      },
+    }
+
+    expect(resolveMedusaBaseUrl(options)).toBe("http://localhost:9000")
+  })
+
+  it("does not infer API URLs for unknown hosted storefront domains", () => {
+    const options = {
+      isServer: false,
+      env: {},
+      location: {
+        protocol: "https:",
+        hostname: "store.example.com",
+      },
+    }
+
+    expect(resolveMedusaBaseUrl(options)).toBe("http://localhost:9000")
+  })
 })
