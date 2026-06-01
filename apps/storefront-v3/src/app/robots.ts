@@ -1,13 +1,25 @@
 import type { MetadataRoute } from "next";
+import { getSiteUrl, isIndexableSiteUrl } from "@/lib/seo/site-metadata";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3001";
+const privatePaths = ["/account", "/checkout", "/api"];
 
 export default function robots(): MetadataRoute.Robots {
+  const siteUrl = getSiteUrl();
+
+  if (!isIndexableSiteUrl(siteUrl)) {
+    return {
+      rules: {
+        userAgent: "*",
+        allow: "/",
+      },
+    };
+  }
+
   return {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/account", "/checkout", "/api"],
+      disallow: privatePaths,
     },
     sitemap: `${siteUrl}/sitemap.xml`,
   };

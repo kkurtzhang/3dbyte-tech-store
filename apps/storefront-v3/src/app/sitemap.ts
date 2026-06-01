@@ -1,8 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getProductHandles } from "@/lib/medusa/products";
 import { getCollections } from "@/lib/medusa/collections";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3001";
+import { getSiteUrl, isIndexableSiteUrl } from "@/lib/seo/site-metadata";
 
 const staticRoutes = [
   "/",
@@ -24,6 +23,12 @@ const staticRoutes = [
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const siteUrl = getSiteUrl();
+
+  if (!isIndexableSiteUrl(siteUrl)) {
+    return [];
+  }
+
   const now = new Date();
   const staticEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
     url: `${siteUrl}${route}`,

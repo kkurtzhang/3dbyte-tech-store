@@ -6,12 +6,36 @@ import {
   LockKeyhole,
   Search,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getPublicDocumentDownloadUrl } from "@/lib/product-documents/download-url";
 import { searchPublicProductDocuments } from "@/lib/product-documents/search";
+
+const downloadsTitle = "Download Center - Manuals & Product Files";
+const downloadsDescription =
+  "Access public product manuals, datasheets, safety sheets, warranty notes, and installation files for 3D printing hardware and materials.";
+
+export const metadata: Metadata = {
+  title: downloadsTitle,
+  description: downloadsDescription,
+  alternates: {
+    canonical: "/downloads",
+  },
+  openGraph: {
+    title: downloadsTitle,
+    description: downloadsDescription,
+    url: "/downloads",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: downloadsTitle,
+    description: downloadsDescription,
+  },
+};
 
 interface DownloadsPageProps {
   searchParams: Promise<{

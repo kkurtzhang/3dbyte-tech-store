@@ -6,6 +6,8 @@ import {
   Bot,
   LifeBuoy,
   Loader2,
+  Maximize2,
+  Minimize2,
   Send,
   ShoppingBag,
   Sparkles,
@@ -31,6 +33,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
 
 const ASSISTANT_SESSION_STORAGE_KEY = "3db:ai-assistant-session-id"
 const ASSISTANT_CHATBOT_ID = "storefront.shopping-assistant"
@@ -149,6 +152,7 @@ type AssistantContentBlock =
   | { text: string; type: "heading" }
   | { text: string; type: "paragraph" }
   | { items: string[]; ordered: boolean; type: "list" }
+  | { headers: string[]; rows: string[][]; type: "table" }
 
 type AssistantParseState = {
   blocks: AssistantContentBlock[]
@@ -183,6 +187,29 @@ function flushList(state: AssistantParseState): AssistantParseState {
   }
 }
 
+function parseTableRow(line: string) {
+  if (!line.includes("|")) return null
+
+  const cells = line
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split("|")
+    .map((cell) => cell.trim())
+
+  return cells.length > 1 ? cells : null
+}
+
+function isTableDivider(line: string | undefined, cellCount: number) {
+  if (!line) return false
+
+  const cells = parseTableRow(line.trim())
+
+  return (
+    cells?.length === cellCount &&
+    cells.every((cell) => /^:?-{3,}:?$/.test(cell.replace(/\s/g, "")))
+  )
+}
+
 function parseAssistantContent(content: string) {
   const initialState: AssistantParseState = {
     blocks: [],
@@ -191,11 +218,18 @@ function parseAssistantContent(content: string) {
     paragraphLines: [],
   }
 
-  const parsedState = content.split(/\r?\n/).reduce((state, line) => {
+  const lines = content.split(/\r?\n/)
+  let state = initialState
+  let index = 0
+
+  while (index < lines.length) {
+    const line = lines[index]
     const trimmedLine = line.trim()
 
     if (!trimmedLine) {
-      return flushList(flushParagraph(state))
+      state = flushList(flushParagraph(state))
+      index += 1
+      continue
     }
 
     const heading = trimmedLine.match(/^#{1,3}\s+(.+)$/)
@@ -203,13 +237,42 @@ function parseAssistantContent(content: string) {
     if (heading) {
       const flushedState = flushList(flushParagraph(state))
 
-      return {
+      state = {
         ...flushedState,
         blocks: [
           ...flushedState.blocks,
           { text: heading[1].trim(), type: "heading" as const },
         ],
       }
+      index += 1
+      continue
+    }
+
+    const tableHeader = parseTableRow(trimmedLine)
+
+    if (tableHeader && isTableDivider(lines[index + 1], tableHeader.length)) {
+      let rowIndex = index + 2
+      const rows: string[][] = []
+
+      while (rowIndex < lines.length) {
+        const row = parseTableRow(lines[rowIndex].trim())
+
+        if (!row || row.length !== tableHeader.length) break
+
+        rows.push(row)
+        rowIndex += 1
+      }
+
+      const flushedState = flushList(flushParagraph(state))
+      state = {
+        ...flushedState,
+        blocks: [
+          ...flushedState.blocks,
+          { headers: tableHeader, rows, type: "table" as const },
+        ],
+      }
+      index = rowIndex
+      continue
     }
 
     const listItem = trimmedLine.match(/^((?:[-*])|(?:\d+\.))\s+(.+)$/)
@@ -223,22 +286,25 @@ function parseAssistantContent(content: string) {
           ? flushList(flushedState)
           : flushedState
 
-      return {
+      state = {
         ...listState,
         listItems: [...listState.listItems, listItem[2].trim()],
         orderedList: ordered,
       }
+      index += 1
+      continue
     }
 
     const flushedState = flushList(state)
 
-    return {
+    state = {
       ...flushedState,
       paragraphLines: [...flushedState.paragraphLines, trimmedLine],
     }
-  }, initialState)
+    index += 1
+  }
 
-  return flushList(flushParagraph(parsedState)).blocks
+  return flushList(flushParagraph(state)).blocks
 }
 
 function renderInlineText(text: string): ReactNode[] {
@@ -261,6 +327,56 @@ function renderInlineText(text: string): ReactNode[] {
 
       return segment
     })
+}
+
+function AssistantTable({
+  headers,
+  rows,
+}: {
+  headers: string[]
+  rows: string[][]
+}) {
+  return (
+    <div className="space-y-2">
+      <div className="overflow-x-auto rounded-sm border border-border bg-background">
+        <table className="min-w-full border-collapse text-left text-xs">
+          <thead className="bg-muted/70 text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
+            <tr>
+              {headers.map((header) => (
+                <th
+                  className="whitespace-nowrap border-b border-border px-3 py-2 font-semibold"
+                  key={header}
+                  scope="col"
+                >
+                  {renderInlineText(header)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, rowIndex) => (
+              <tr
+                className="border-b border-border/70 last:border-0"
+                key={`${row.join("|")}-${rowIndex}`}
+              >
+                {row.map((cell, cellIndex) => (
+                  <td
+                    className="min-w-[120px] align-top px-3 py-2 leading-relaxed text-foreground"
+                    key={`${cell}-${cellIndex}`}
+                  >
+                    {renderInlineText(cell)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-[10px] font-mono uppercase tracking-[0.12em] text-muted-foreground">
+        Swipe horizontally to compare columns.
+      </p>
+    </div>
+  )
 }
 
 function FormattedAssistantMessage({ content }: { content: string }) {
@@ -297,6 +413,16 @@ function FormattedAssistantMessage({ content }: { content: string }) {
           )
         }
 
+        if (block.type === "table") {
+          return (
+            <AssistantTable
+              headers={block.headers}
+              key={`${block.headers.join("|")}-${index}`}
+              rows={block.rows}
+            />
+          )
+        }
+
         return (
           <p key={`${block.text}-${index}`}>{renderInlineText(block.text)}</p>
         )
@@ -308,6 +434,7 @@ function FormattedAssistantMessage({ content }: { content: string }) {
 export function ShoppingAssistantDrawer() {
   const pathname = usePathname()
   const [input, setInput] = useState("")
+  const [isExpanded, setIsExpanded] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const assistantSessionId = useMemo(() => getAssistantSessionId(), [])
   const transport = useMemo(
@@ -363,8 +490,26 @@ export function ShoppingAssistantDrawer() {
       </SheetTrigger>
       <SheetContent
         hideOverlay
-        className="flex w-full flex-col border-l border-border/80 dark:border-border/20 p-0 shadow-2xl sm:max-w-md rounded-none"
+        className={cn(
+          "flex w-full flex-col border-l border-border/80 p-0 shadow-2xl transition-[max-width] duration-300 dark:border-border/20 rounded-none",
+          isExpanded ? "sm:max-w-4xl" : "sm:max-w-lg"
+        )}
       >
+        <Button
+          aria-label={isExpanded ? "Collapse assistant" : "Expand assistant"}
+          aria-pressed={isExpanded}
+          className="absolute right-12 top-4 z-10 h-8 w-8 rounded-sm opacity-70 hover:opacity-100"
+          onClick={() => setIsExpanded((current) => !current)}
+          size="icon"
+          type="button"
+          variant="ghost"
+        >
+          {isExpanded ? (
+            <Minimize2 className="h-4 w-4" />
+          ) : (
+            <Maximize2 className="h-4 w-4" />
+          )}
+        </Button>
         <SheetHeader className="border-b border-primary/10 bg-muted/30 px-6 py-5 text-left">
           <SheetTitle className="flex items-center gap-2 text-lg font-mono font-bold tracking-tight text-foreground">
             <Bot className="h-5 w-5 text-primary" />
@@ -411,10 +556,10 @@ export function ShoppingAssistantDrawer() {
                 key={message.id}
               >
                 <div
-                  className={`max-w-[85%] px-4 py-3 text-sm shadow-sm ${
+                  className={`px-4 py-3 text-sm shadow-sm ${
                     message.role === "user"
-                      ? "rounded-sm border border-primary bg-primary/10 text-foreground"
-                      : "rounded-sm border border-border bg-muted/30"
+                      ? "max-w-[85%] rounded-sm border border-primary bg-primary/10 text-foreground"
+                      : "w-full max-w-full rounded-sm border border-border bg-muted/30 sm:max-w-[92%]"
                   }`}
                 >
                   {message.role === "assistant" ? (
