@@ -5,6 +5,17 @@ const streamTextMock = jest.fn()
 const toolMock = jest.fn((config) => config)
 const createOpenAIMock = jest.fn()
 const getActiveLangfuseTraceIdMock = jest.fn(() => "trace_01HQA")
+const propagateActiveLangfuseTraceAttributesMock = jest.fn(
+  async (_attributes: unknown, fn: () => Promise<Response>) => fn(),
+)
+const assistantTraceEndMock = jest.fn()
+const startActiveLangfuseTraceObservationMock = jest.fn(
+  async (_name: string, fn: (observation: unknown) => Promise<Response>) =>
+    fn({
+      end: assistantTraceEndMock,
+      traceId: "trace_01HQA",
+    }),
+)
 const setActiveLangfuseTraceAttributesMock = jest.fn()
 const resolveAssistantSystemPromptMock = jest.fn()
 const providerModelMock = jest.fn((model: string) => ({
@@ -56,8 +67,16 @@ jest.mock("@3dbyte-tech-store/observability", () => ({
     setActiveLangfuseTraceAttributesMock,
   getActiveLangfuseTraceId: () => getActiveLangfuseTraceIdMock(),
   isAiTelemetryEnabled: () => true,
+  propagateActiveLangfuseTraceAttributes: (
+    attributes: unknown,
+    fn: () => Promise<Response>,
+  ) => propagateActiveLangfuseTraceAttributesMock(attributes, fn),
   setActiveLangfuseTraceAttributes: (attributes: unknown) =>
     setActiveLangfuseTraceAttributesMock(attributes),
+  startActiveLangfuseTraceObservation: (
+    name: string,
+    fn: (observation: unknown) => Promise<Response>,
+  ) => startActiveLangfuseTraceObservationMock(name, fn),
 }))
 
 const originalEnv = process.env
@@ -780,6 +799,29 @@ describe("POST /api/ai-shopping-assistant", () => {
 
     expect(response.status).toBe(200)
     expect(response.headers.get("x-3db-langfuse-trace-id")).toBeNull()
+    expect(startActiveLangfuseTraceObservationMock).toHaveBeenCalledWith(
+      "storefront.ai-shopping-assistant",
+      expect.any(Function),
+    )
+    expect(propagateActiveLangfuseTraceAttributesMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata: expect.objectContaining({
+          chatbot_id: "storefront.shopping-assistant",
+          chatbot_surface: "storefront-floating-drawer",
+          langfuse_prompt_name: "storefront.ai-shopping-assistant.system",
+          provider: "deepseek",
+        }),
+        name: "storefront.ai-shopping-assistant",
+        sessionId: "assistant-session_01",
+        tags: [
+          "ai-chatbot",
+          "storefront",
+          "shopping-assistant",
+          "storefront.shopping-assistant",
+        ],
+      }),
+      expect.any(Function),
+    )
     expect(createOpenAIMock).toHaveBeenCalledWith(
       expect.objectContaining({
         apiKey: "test-deepseek-key",
@@ -996,6 +1038,7 @@ describe("POST /api/ai-shopping-assistant", () => {
         },
       }),
     )
+    expect(assistantTraceEndMock).toHaveBeenCalledTimes(1)
   })
 
   it("records sanitized Langfuse trace input and output for assistant debugging", async () => {
@@ -1046,6 +1089,7 @@ describe("POST /api/ai-shopping-assistant", () => {
         }),
       }),
     )
+    expect(assistantTraceEndMock).toHaveBeenCalledTimes(1)
   })
 
   it("exposes the active Langfuse trace id for eval score attachment", async () => {

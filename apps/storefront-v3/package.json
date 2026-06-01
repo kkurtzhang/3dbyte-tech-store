@@ -16,7 +16,8 @@
     "test:coverage": "jest --coverage",
     "test:coverage:critical": "jest --coverage --config=jest.critical.config.ts",
     "test:ci": "pnpm test && pnpm test:coverage:critical",
-    "eval:ai:customer": "TS_NODE_TRANSPILE_ONLY=true node --experimental-specifier-resolution=node --loader ts-node/esm scripts/run-customer-ai-evals.ts"
+    "eval:ai:customer": "TS_NODE_TRANSPILE_ONLY=true node --experimental-specifier-resolution=node --loader ts-node/esm scripts/run-customer-ai-evals.ts",
+    "eval:ai:customer:one": "AI_ASSISTANT_EVAL_LIMIT=1 TS_NODE_TRANSPILE_ONLY=true node --experimental-specifier-resolution=node --loader ts-node/esm scripts/run-customer-ai-evals.ts"
   },
   "dependencies": {
     "@3dbyte-tech-store/observability": "workspace:*",

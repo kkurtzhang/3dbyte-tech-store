@@ -331,6 +331,18 @@ function getResponseTraceId(response: Response) {
   return traceId || undefined
 }
 
+function getLangfuseScoreTarget(result: CustomerAiEvalRunResult) {
+  if (result.traceId) {
+    return { traceId: result.traceId }
+  }
+
+  if (result.sessionId) {
+    return { sessionId: result.sessionId }
+  }
+
+  return {}
+}
+
 export async function publishLangfuseEvalScores(
   report: CustomerAiEvalReport,
   client: LangfuseEvalScoreClient,
@@ -347,8 +359,7 @@ export async function publishLangfuseEvalScores(
         ...score,
         environment: options.environment,
         metadata: toScoreMetadataRecord(score.metadata, report),
-        sessionId: result.sessionId,
-        traceId: result.traceId,
+        ...getLangfuseScoreTarget(result),
       })
       publishedCount += 1
     }

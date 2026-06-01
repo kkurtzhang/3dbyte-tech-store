@@ -1,3 +1,10 @@
+import {
+  getActiveTraceId,
+  propagateAttributes,
+  setActiveTraceIO,
+  startActiveObservation,
+  type LangfuseSpan,
+} from "@langfuse/tracing";
 import { trace, type Span } from "@opentelemetry/api";
 
 type JsonPrimitive = string | number | boolean | null;
@@ -17,6 +24,16 @@ export type LangfuseTraceAttributeInput = {
   userId?: string;
 };
 
+export type LangfuseTracePropagationInput = Pick<
+  LangfuseTraceAttributeInput,
+  "metadata" | "name" | "sessionId" | "tags" | "userId"
+>;
+
+export type LangfuseTraceObservation = Pick<
+  LangfuseSpan,
+  "end" | "traceId"
+>;
+
 function compactNumberRecord(record: Record<string, number | undefined>) {
   return Object.fromEntries(
     Object.entries(record).filter(
@@ -30,6 +47,22 @@ function compactMetadata(record: Record<string, JsonValue | undefined>) {
   return Object.fromEntries(
     Object.entries(record).filter((entry): entry is [string, JsonValue] => {
       return entry[1] !== undefined;
+    }),
+  );
+}
+
+function compactStringMetadata(record: Record<string, JsonValue | undefined>) {
+  return Object.fromEntries(
+    Object.entries(record).flatMap(([key, value]) => {
+      if (
+        typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean"
+      ) {
+        return [[key, String(value)]];
+      }
+
+      return [];
     }),
   );
 }
@@ -79,10 +112,12 @@ function setLangfuseTopLevelTraceAttributes(
 
   if (attributes.input !== undefined) {
     setJsonAttribute(span, "langfuse.trace.input", attributes.input);
+    setActiveTraceIO({ input: attributes.input });
   }
 
   if (attributes.output !== undefined) {
     setJsonAttribute(span, "langfuse.trace.output", attributes.output);
+    setActiveTraceIO({ output: attributes.output });
   }
 
   return true;
@@ -165,8 +200,37 @@ export function setActiveLangfuseTraceAttributes(
   return setLangfuseTraceAttributes(trace.getActiveSpan(), attributes);
 }
 
+export function propagateActiveLangfuseTraceAttributes<T>(
+  attributes: LangfuseTracePropagationInput,
+  fn: () => T,
+) {
+  return propagateAttributes(
+    {
+      ...(attributes.metadata
+        ? { metadata: compactStringMetadata(attributes.metadata) }
+        : {}),
+      ...(attributes.sessionId ? { sessionId: attributes.sessionId } : {}),
+      ...(attributes.tags?.length ? { tags: attributes.tags } : {}),
+      ...(attributes.name ? { traceName: attributes.name } : {}),
+      ...(attributes.userId ? { userId: attributes.userId } : {}),
+    },
+    fn,
+  );
+}
+
+export function startActiveLangfuseTraceObservation<T>(
+  name: string,
+  fn: (observation: LangfuseTraceObservation) => T,
+) {
+  return startActiveObservation(name, fn, {
+    asType: "span",
+    endOnExit: false,
+  });
+}
+
 export function getActiveLangfuseTraceId() {
-  const traceId = trace.getActiveSpan()?.spanContext().traceId;
+  const traceId =
+    getActiveTraceId() ?? trace.getActiveSpan()?.spanContext().traceId;
 
   return traceId && traceId !== EMPTY_TRACE_ID ? traceId : undefined;
 }

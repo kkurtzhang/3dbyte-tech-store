@@ -3,6 +3,8 @@ import {
   createActiveLangfuseTraceAttributeWriter,
   getActiveLangfuseTraceId,
   isAiTelemetryEnabled,
+  propagateActiveLangfuseTraceAttributes,
+  startActiveLangfuseTraceObservation,
 } from "@3dbyte-tech-store/observability"
 import {
   convertToModelMessages,
@@ -873,103 +875,150 @@ export async function POST(req: Request): Promise<Response> {
     ...buildAssistantTelemetryMetadata(config, parsed.data.traceContext),
     ...assistantPrompt.metadata,
   }
-  const setLangfuseTraceAttributes = createActiveLangfuseTraceAttributeWriter()
 
-  setLangfuseTraceAttributes({
-    input: buildAssistantTraceInput({
-      messages: parsed.data.messages,
-      promptMetadata: assistantPrompt.metadata,
-      traceContext: parsed.data.traceContext,
-    }),
-    metadata: traceMetadata,
-    name: ASSISTANT_TRACE_NAME,
-    sessionId: parsed.data.traceContext?.sessionId,
-    tags: ASSISTANT_TRACE_TAGS,
-    userId: parsed.data.traceContext?.userId,
-  })
-
-  const deepSeekUsageRef: { current: DeepSeekUsage | null } = { current: null }
-  const deepseek = createOpenAI({
-    apiKey: config.apiKey,
-    baseURL: config.baseURL,
-    fetch: createDeepSeekFetch(fetch, deepSeekUsageRef),
-    name: "deepseek",
-  })
-  const uiMessages = toUiMessages(parsed.data.messages)
-  const result = streamText({
-    model: deepseek.chat(config.model),
-    system: assistantPrompt.prompt,
-    messages: await convertToModelMessages(uiMessages, {
-      ignoreIncompleteToolCalls: true,
-    }),
-    experimental_telemetry: {
-      functionId: "storefront.ai-shopping-assistant",
-      isEnabled: isAiTelemetryEnabled(),
-      metadata: telemetryMetadata,
-    },
-    onFinish: (finish) => {
-      const usageDetails = buildDeepSeekUsageDetails(
-        getFinishUsage(finish),
-        deepSeekUsageRef.current,
-      )
-
-      setLangfuseTraceAttributes({
-        metadata: {
-          ...traceMetadata,
-          deepseek_cache_hit_ratio: getCacheHitRatio(usageDetails),
+  return startActiveLangfuseTraceObservation(
+    ASSISTANT_TRACE_NAME,
+    async (assistantTrace) =>
+      propagateActiveLangfuseTraceAttributes(
+        {
+          metadata: traceMetadata,
+          name: ASSISTANT_TRACE_NAME,
+          sessionId: parsed.data.traceContext?.sessionId,
+          tags: ASSISTANT_TRACE_TAGS,
+          userId: parsed.data.traceContext?.userId,
         },
-        model: config.model,
-        output: buildAssistantTraceOutput(finish),
-        usageDetails,
-      })
-    },
-    stopWhen: stepCountIs(5),
-    tools: {
-      searchProducts: tool({
-        description:
-          "Search published products and retrieve authoritative Medusa, Meilisearch, and Strapi context.",
-        inputSchema: productSearchInputSchema,
-        execute: (input) =>
-          callInternalBackend("/ai/product-guidance", input, config),
-      }),
-      lookupOrder: tool({
-        description:
-          "Look up read-only order status after the customer provides order reference and email proof.",
-        inputSchema: orderProofInputSchema,
-        execute: (input) =>
-          callInternalBackend("/ai/order-lookup", input, config),
-      }),
-      getTracking: tool({
-        description:
-          "Retrieve read-only tracking details after the customer provides order reference and email proof.",
-        inputSchema: orderProofInputSchema,
-        execute: (input) => callInternalBackend("/ai/tracking", input, config),
-      }),
-      estimateShipping: tool({
-        description:
-          "Estimate shipping from chosen variants and destination fields without changing a cart.",
-        inputSchema: shippingEstimateInputSchema,
-        execute: (input) =>
-          callInternalBackend("/ai/shipping-estimate", input, config),
-      }),
-      createSupportTicket: tool({
-        description:
-          "Create a human support ticket only after the customer explicitly confirms the handoff and provides required contact fields.",
-        inputSchema: supportTicketInputSchema,
-        execute: (input) =>
-          callInternalBackend(
-            "/ai/support-ticket",
-            toSupportTicketPayload(input),
-            config,
-          ),
-      }),
-    },
-  })
+        async () => {
+          const setLangfuseTraceAttributes =
+            createActiveLangfuseTraceAttributeWriter()
+          let traceEnded = false
+          const endAssistantTrace = () => {
+            if (traceEnded) {
+              return
+            }
 
-  return withLangfuseTraceHeader(
-    result.toUIMessageStreamResponse(),
-    shouldExposeLangfuseTraceHeader(req)
-      ? getActiveLangfuseTraceId()
-      : undefined,
+            traceEnded = true
+            assistantTrace.end()
+          }
+          const recordAssistantTraceError = (error: unknown) => {
+            setLangfuseTraceAttributes({
+              output: {
+                error:
+                  error instanceof Error
+                    ? sanitizeTraceText(error.message)
+                    : "Assistant stream failed",
+              },
+            })
+            endAssistantTrace()
+          }
+
+          try {
+            setLangfuseTraceAttributes({
+              input: buildAssistantTraceInput({
+                messages: parsed.data.messages,
+                promptMetadata: assistantPrompt.metadata,
+                traceContext: parsed.data.traceContext,
+              }),
+              metadata: traceMetadata,
+              name: ASSISTANT_TRACE_NAME,
+              sessionId: parsed.data.traceContext?.sessionId,
+              tags: ASSISTANT_TRACE_TAGS,
+              userId: parsed.data.traceContext?.userId,
+            })
+
+            const deepSeekUsageRef: { current: DeepSeekUsage | null } = {
+              current: null,
+            }
+            const deepseek = createOpenAI({
+              apiKey: config.apiKey,
+              baseURL: config.baseURL,
+              fetch: createDeepSeekFetch(fetch, deepSeekUsageRef),
+              name: "deepseek",
+            })
+            const uiMessages = toUiMessages(parsed.data.messages)
+            const result = streamText({
+              model: deepseek.chat(config.model),
+              system: assistantPrompt.prompt,
+              messages: await convertToModelMessages(uiMessages, {
+                ignoreIncompleteToolCalls: true,
+              }),
+              experimental_telemetry: {
+                functionId: "storefront.ai-shopping-assistant",
+                isEnabled: isAiTelemetryEnabled(),
+                metadata: telemetryMetadata,
+              },
+              onFinish: (finish) => {
+                const usageDetails = buildDeepSeekUsageDetails(
+                  getFinishUsage(finish),
+                  deepSeekUsageRef.current,
+                )
+
+                setLangfuseTraceAttributes({
+                  metadata: {
+                    ...traceMetadata,
+                    deepseek_cache_hit_ratio: getCacheHitRatio(usageDetails),
+                  },
+                  model: config.model,
+                  output: buildAssistantTraceOutput(finish),
+                  usageDetails,
+                })
+                endAssistantTrace()
+              },
+              onError: recordAssistantTraceError,
+              stopWhen: stepCountIs(5),
+              tools: {
+                searchProducts: tool({
+                  description:
+                    "Search published products and retrieve authoritative Medusa, Meilisearch, and Strapi context.",
+                  inputSchema: productSearchInputSchema,
+                  execute: (input) =>
+                    callInternalBackend("/ai/product-guidance", input, config),
+                }),
+                lookupOrder: tool({
+                  description:
+                    "Look up read-only order status after the customer provides order reference and email proof.",
+                  inputSchema: orderProofInputSchema,
+                  execute: (input) =>
+                    callInternalBackend("/ai/order-lookup", input, config),
+                }),
+                getTracking: tool({
+                  description:
+                    "Retrieve read-only tracking details after the customer provides order reference and email proof.",
+                  inputSchema: orderProofInputSchema,
+                  execute: (input) =>
+                    callInternalBackend("/ai/tracking", input, config),
+                }),
+                estimateShipping: tool({
+                  description:
+                    "Estimate shipping from chosen variants and destination fields without changing a cart.",
+                  inputSchema: shippingEstimateInputSchema,
+                  execute: (input) =>
+                    callInternalBackend("/ai/shipping-estimate", input, config),
+                }),
+                createSupportTicket: tool({
+                  description:
+                    "Create a human support ticket only after the customer explicitly confirms the handoff and provides required contact fields.",
+                  inputSchema: supportTicketInputSchema,
+                  execute: (input) =>
+                    callInternalBackend(
+                      "/ai/support-ticket",
+                      toSupportTicketPayload(input),
+                      config,
+                    ),
+                }),
+              },
+            })
+
+            return withLangfuseTraceHeader(
+              result.toUIMessageStreamResponse(),
+              shouldExposeLangfuseTraceHeader(req)
+                ? assistantTrace.traceId || getActiveLangfuseTraceId()
+                : undefined,
+            )
+          } catch (error) {
+            recordAssistantTraceError(error)
+            throw error
+          }
+        },
+      ),
   )
 }
