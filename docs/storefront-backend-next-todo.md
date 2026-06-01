@@ -131,7 +131,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
   - Assistant traces show sanitized top-level input/output in Langfuse without exposing emails, order references, or commerce IDs.
   - Customer feedback scores can be filtered by session, prompt label, and chatbot surface.
   - Annotation queue items can be converted into eval cases or dataset items.
-  - Deterministic score objects appear on the same Langfuse session as the eval traces.
+  - Deterministic score objects appear on the same Langfuse session and individual trace pages as the eval traces.
   - LLM-as-judge scores are used for review/trend insight only until calibrated against human judgment.
   - Deterministic eval pass/fail remains the release gate.
 

@@ -64,6 +64,8 @@ The storefront AI drawer sends a browser-tab chat session id with every assistan
 
 Trace input/output deliberately masks emails, order/support references, and common commerce IDs before writing to Langfuse. Keep full customer transcripts in application data only when the customer has explicitly consented.
 
+Customer assistant eval runs use an internal request marker so the route can return the active Langfuse trace id to the eval runner. Deterministic eval score publishing should send both `sessionId` and `traceId`, which lets Langfuse show scores on the grouped eval session and on each matching trace. Normal browser chat responses do not expose this trace-id header.
+
 DeepSeek streaming requests include `stream_options.include_usage=true` so the final provider usage chunk can report cache-aware token counts. Configure the Langfuse `deepseek-v4-flash` model pricing with these usage detail keys:
 
 ```text

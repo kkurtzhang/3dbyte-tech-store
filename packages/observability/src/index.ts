@@ -8,6 +8,7 @@ export {
 } from "./config";
 export {
   createActiveLangfuseTraceAttributeWriter,
+  getActiveLangfuseTraceId,
   setActiveLangfuseTraceAttributes,
   type LangfuseTraceAttributeInput,
 } from "./langfuse";

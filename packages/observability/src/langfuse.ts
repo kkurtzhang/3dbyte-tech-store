@@ -2,6 +2,7 @@ import { trace, type Span } from "@opentelemetry/api";
 
 type JsonPrimitive = string | number | boolean | null;
 type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
+const EMPTY_TRACE_ID = "00000000000000000000000000000000";
 
 export type LangfuseTraceAttributeInput = {
   costDetails?: Record<string, number | undefined>;
@@ -42,7 +43,7 @@ function setJsonAttribute(span: Span, name: string, value: unknown) {
   return true;
 }
 
-function setLangfuseTraceAttributes(
+function setLangfuseTopLevelTraceAttributes(
   span: Span | undefined,
   attributes: LangfuseTraceAttributeInput,
 ) {
@@ -84,42 +85,88 @@ function setLangfuseTraceAttributes(
     setJsonAttribute(span, "langfuse.trace.output", attributes.output);
   }
 
+  return true;
+}
+
+function setLangfuseObservationAttributes(
+  span: Span | undefined,
+  attributes: LangfuseTraceAttributeInput,
+) {
+  if (!span) {
+    return false;
+  }
+
+  let wroteAttributes = false;
+
   if (attributes.model) {
     span.setAttribute("langfuse.observation.model.name", attributes.model);
     span.setAttribute("langfuse.observation.type", "generation");
+    wroteAttributes = true;
   }
 
   if (attributes.usageDetails) {
-    setJsonAttribute(
-      span,
-      "langfuse.observation.usage_details",
-      compactNumberRecord(attributes.usageDetails),
-    );
+    wroteAttributes =
+      setJsonAttribute(
+        span,
+        "langfuse.observation.usage_details",
+        compactNumberRecord(attributes.usageDetails),
+      ) || wroteAttributes;
   }
 
   if (attributes.costDetails) {
-    setJsonAttribute(
-      span,
-      "langfuse.observation.cost_details",
-      compactNumberRecord(attributes.costDetails),
-    );
+    wroteAttributes =
+      setJsonAttribute(
+        span,
+        "langfuse.observation.cost_details",
+        compactNumberRecord(attributes.costDetails),
+      ) || wroteAttributes;
   }
 
-  return true;
+  return wroteAttributes;
+}
+
+function setLangfuseTraceAttributes(
+  span: Span | undefined,
+  attributes: LangfuseTraceAttributeInput,
+) {
+  const wroteTraceAttributes = setLangfuseTopLevelTraceAttributes(
+    span,
+    attributes,
+  );
+  const wroteObservationAttributes = setLangfuseObservationAttributes(
+    span,
+    attributes,
+  );
+
+  return wroteTraceAttributes || wroteObservationAttributes;
 }
 
 export function createActiveLangfuseTraceAttributeWriter() {
   const fallbackSpan = trace.getActiveSpan();
 
-  return (attributes: LangfuseTraceAttributeInput) =>
-    setLangfuseTraceAttributes(
-      trace.getActiveSpan() ?? fallbackSpan,
+  return (attributes: LangfuseTraceAttributeInput) => {
+    const activeSpan = trace.getActiveSpan();
+    const wroteTraceAttributes = setLangfuseTopLevelTraceAttributes(
+      fallbackSpan ?? activeSpan,
       attributes,
     );
+    const wroteObservationAttributes = setLangfuseObservationAttributes(
+      activeSpan ?? fallbackSpan,
+      attributes,
+    );
+
+    return wroteTraceAttributes || wroteObservationAttributes;
+  };
 }
 
 export function setActiveLangfuseTraceAttributes(
   attributes: LangfuseTraceAttributeInput,
 ) {
   return setLangfuseTraceAttributes(trace.getActiveSpan(), attributes);
+}
+
+export function getActiveLangfuseTraceId() {
+  const traceId = trace.getActiveSpan()?.spanContext().traceId;
+
+  return traceId && traceId !== EMPTY_TRACE_ID ? traceId : undefined;
 }

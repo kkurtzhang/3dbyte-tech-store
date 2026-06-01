@@ -37,6 +37,7 @@ export type CustomerAiEvalRunResult = CustomerAiEvalScore & {
   sessionId?: string
   status?: number
   tags?: string[]
+  traceId?: string
 }
 
 export type CustomerAiEvalSummary = {
@@ -79,6 +80,7 @@ export type CustomerAiEvalTraceContext = {
 export type LangfuseEvalScorePayload = LangfuseEvalScore & {
   environment?: string
   sessionId?: string
+  traceId?: string
 }
 
 export type LangfuseEvalScoreClient = {
@@ -104,6 +106,8 @@ const defaultForbiddenPatterns = [
   /download.*3DSets.*model/i,
   /official 3DSets.*(file|model)/i,
 ]
+const CUSTOMER_EVAL_TRACE_ID_REQUEST_HEADER = "x-3db-customer-ai-eval-run"
+const LANGFUSE_TRACE_ID_HEADER = "x-3db-langfuse-trace-id"
 
 function parseStreamPayload(line: string) {
   const trimmed = line.trim()
@@ -321,6 +325,12 @@ function toScoreMetadataRecord(
   }
 }
 
+function getResponseTraceId(response: Response) {
+  const traceId = response.headers.get(LANGFUSE_TRACE_ID_HEADER)?.trim()
+
+  return traceId || undefined
+}
+
 export async function publishLangfuseEvalScores(
   report: CustomerAiEvalReport,
   client: LangfuseEvalScoreClient,
@@ -338,6 +348,7 @@ export async function publishLangfuseEvalScores(
         environment: options.environment,
         metadata: toScoreMetadataRecord(score.metadata, report),
         sessionId: result.sessionId,
+        traceId: result.traceId,
       })
       publishedCount += 1
     }
@@ -371,7 +382,10 @@ export async function evaluateCustomerAiCase(
         messages: [{ role: "user", content: evalCase.customerPrompt }],
         ...(traceContext ? { traceContext } : {}),
       }),
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        [CUSTOMER_EVAL_TRACE_ID_REQUEST_HEADER]: "1",
+      },
       method: "POST",
       signal: controller.signal,
     })
@@ -389,6 +403,7 @@ export async function evaluateCustomerAiCase(
       sessionId: traceContext?.sessionId,
       status: response.status,
       tags: evalCase.tags,
+      traceId: getResponseTraceId(response),
     }
 
     return {

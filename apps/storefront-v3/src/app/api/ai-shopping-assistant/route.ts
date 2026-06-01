@@ -1,6 +1,7 @@
 import { createOpenAI } from "@ai-sdk/openai"
 import {
   createActiveLangfuseTraceAttributeWriter,
+  getActiveLangfuseTraceId,
   isAiTelemetryEnabled,
 } from "@3dbyte-tech-store/observability"
 import {
@@ -29,6 +30,8 @@ const ASSISTANT_TRACE_TAGS = [
   "shopping-assistant",
   ASSISTANT_CHATBOT_ID,
 ]
+const CUSTOMER_EVAL_TRACE_ID_REQUEST_HEADER = "x-3db-customer-ai-eval-run"
+const LANGFUSE_TRACE_ID_HEADER = "x-3db-langfuse-trace-id"
 const MAX_ASSISTANT_PART_BYTES = 25_000
 const MAX_TRACE_IO_TEXT_CHARS = 1_200
 const TRACE_CONTEXT_ID_PATTERN = /^[a-zA-Z0-9._:-]+$/
@@ -805,6 +808,25 @@ function toSupportTicketPayload(
   }
 }
 
+function withLangfuseTraceHeader(response: Response, traceId?: string) {
+  if (!traceId) {
+    return response
+  }
+
+  const headers = new Headers(response.headers)
+  headers.set(LANGFUSE_TRACE_ID_HEADER, traceId)
+
+  return new Response(response.body, {
+    headers,
+    status: response.status,
+    statusText: response.statusText,
+  })
+}
+
+function shouldExposeLangfuseTraceHeader(req: Request) {
+  return req.headers.get(CUSTOMER_EVAL_TRACE_ID_REQUEST_HEADER) === "1"
+}
+
 export async function POST(req: Request): Promise<Response> {
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"
@@ -944,5 +966,10 @@ export async function POST(req: Request): Promise<Response> {
     },
   })
 
-  return result.toUIMessageStreamResponse()
+  return withLangfuseTraceHeader(
+    result.toUIMessageStreamResponse(),
+    shouldExposeLangfuseTraceHeader(req)
+      ? getActiveLangfuseTraceId()
+      : undefined,
+  )
 }
