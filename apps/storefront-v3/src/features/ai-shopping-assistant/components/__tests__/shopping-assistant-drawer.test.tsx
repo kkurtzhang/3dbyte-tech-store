@@ -39,6 +39,8 @@ jest.mock("lucide-react", () => ({
   Sparkles: () => <svg aria-hidden="true" />,
   Loader2: () => <svg aria-hidden="true" />,
   LifeBuoy: () => <svg aria-hidden="true" />,
+  Maximize2: () => <svg aria-hidden="true" />,
+  Minimize2: () => <svg aria-hidden="true" />,
   X: () => <svg aria-hidden="true" />,
 }))
 
@@ -210,6 +212,26 @@ describe("ShoppingAssistantDrawer", () => {
     expect(screen.getByText(/ai can make mistakes/i)).toBeInTheDocument()
   })
 
+  it("lets customers expand the assistant drawer for dense answers", async () => {
+    mockUsePathname.mockReturnValue("/shop")
+    const user = userEvent.setup()
+
+    render(<ShoppingAssistantDrawer />)
+
+    await user.click(
+      screen.getByRole("button", { name: /shopping assistant/i }),
+    )
+
+    expect(screen.getByRole("dialog")).toHaveClass("sm:max-w-lg")
+
+    await user.click(screen.getByRole("button", { name: /expand assistant/i }))
+
+    expect(screen.getByRole("dialog")).toHaveClass("sm:max-w-4xl")
+    expect(
+      screen.getByRole("button", { name: /collapse assistant/i }),
+    ).toHaveAttribute("aria-pressed", "true")
+  })
+
   it("formats assistant markdown-style recommendations for scanning", async () => {
     mockUsePathname.mockReturnValue("/shop")
     const user = userEvent.setup()
@@ -249,6 +271,47 @@ describe("ShoppingAssistantDrawer", () => {
       screen.getByText(/use petg when the part needs sunlight/i),
     ).toBeInTheDocument()
     expect(screen.getByText(/dry the spool/i)).toBeInTheDocument()
+  })
+
+  it("renders assistant markdown tables as scrollable customer-friendly tables", async () => {
+    mockUsePathname.mockReturnValue("/shop")
+    const user = userEvent.setup()
+    chatState = {
+      ...chatState,
+      messages: [
+        {
+          id: "msg-assistant-table",
+          role: "assistant",
+          parts: [
+            {
+              type: "text",
+              text: [
+                "### Quick comparison",
+                "| Product | Best for | Notes |",
+                "| --- | --- | --- |",
+                "| PETG-CF Black | Stiff outdoor brackets | Dry before printing |",
+                "| ASA Grey | UV-exposed printer parts | Enclosure recommended |",
+              ].join("\n"),
+            },
+          ],
+        },
+      ],
+    }
+
+    render(<ShoppingAssistantDrawer />)
+
+    await user.click(
+      screen.getByRole("button", { name: /shopping assistant/i }),
+    )
+
+    expect(screen.getByRole("table")).toBeInTheDocument()
+    expect(
+      screen.getByRole("columnheader", { name: /product/i }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole("cell", { name: /petg-cf black/i })).toBeInTheDocument()
+    expect(
+      screen.getByText(/swipe horizontally/i),
+    ).toBeInTheDocument()
   })
 
   it("renders product suggestions as customer-clicked links without cart mutation", () => {

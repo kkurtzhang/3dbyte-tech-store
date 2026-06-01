@@ -14,6 +14,7 @@ import { AnnouncementBarSlot } from "@/components/layout/announcement-bar-slot";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { ShoppingAssistantDrawer } from "@/features/ai-shopping-assistant/components/shopping-assistant-drawer";
+import { buildRootMetadata } from "@/lib/seo/site-metadata";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,14 +26,7 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
 });
 
-export const metadata: Metadata = {
-  title: {
-    template: "%s | 3D Byte Tech Store",
-    default: "3D Byte Tech Store - Premium 3D Printing Supplies",
-  },
-  description:
-    "High-performance filaments, Voron kits, and hardware for makers and engineers.",
-};
+export const metadata: Metadata = buildRootMetadata();
 
 export default function RootLayout({
   children,

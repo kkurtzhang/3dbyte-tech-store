@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react"
 
-import DownloadsPage from "../page"
+import DownloadsPage, { metadata } from "../page"
 
 import { searchPublicProductDocuments } from "@/lib/product-documents/search"
 
@@ -83,6 +83,22 @@ describe("Download Center page", () => {
     ).toHaveAttribute(
       "href",
       "/api/product-documents/doc_1/download"
+    )
+  })
+
+  it("defines dedicated SEO metadata for public downloads", () => {
+    expect(metadata.title).toBe(
+      "Download Center - Manuals & Product Files"
+    )
+    expect(metadata.description).toContain(
+      "manuals, datasheets, safety sheets"
+    )
+    expect(metadata.openGraph).toEqual(
+      expect.objectContaining({
+        title: "Download Center - Manuals & Product Files",
+        type: "website",
+        url: "/downloads",
+      })
     )
   })
 })
