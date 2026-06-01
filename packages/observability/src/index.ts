@@ -9,8 +9,12 @@ export {
 export {
   createActiveLangfuseTraceAttributeWriter,
   getActiveLangfuseTraceId,
+  propagateActiveLangfuseTraceAttributes,
   setActiveLangfuseTraceAttributes,
+  startActiveLangfuseTraceObservation,
+  type LangfuseTraceObservation,
   type LangfuseTraceAttributeInput,
+  type LangfuseTracePropagationInput,
 } from "./langfuse";
 export {
   buildSpanProcessors,

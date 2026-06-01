@@ -252,7 +252,6 @@ describe("customer AI eval runner", () => {
         dataType: "BOOLEAN",
         environment: "staging",
         name: "deterministic_pass",
-        sessionId: "customer-ai-eval-session",
         traceId: "trace_01HQA",
         value: 1,
         metadata: expect.objectContaining({
@@ -263,6 +262,12 @@ describe("customer AI eval runner", () => {
           runName: "staging-prompt-smoke",
           tags: ["petg_outdoor"],
         }),
+      }),
+    )
+    expect(scoreCreateMock).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        sessionId: "customer-ai-eval-session",
+        traceId: "trace_01HQA",
       }),
     )
     expect(flushMock).toHaveBeenCalledTimes(1)
