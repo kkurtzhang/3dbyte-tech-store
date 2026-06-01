@@ -4,6 +4,7 @@ import { TextDecoder } from "util"
 const streamTextMock = jest.fn()
 const toolMock = jest.fn((config) => config)
 const createOpenAIMock = jest.fn()
+const getActiveLangfuseTraceIdMock = jest.fn(() => "trace_01HQA")
 const setActiveLangfuseTraceAttributesMock = jest.fn()
 const resolveAssistantSystemPromptMock = jest.fn()
 const providerModelMock = jest.fn((model: string) => ({
@@ -53,6 +54,7 @@ jest.mock("../prompt-management", () => ({
 jest.mock("@3dbyte-tech-store/observability", () => ({
   createActiveLangfuseTraceAttributeWriter: () =>
     setActiveLangfuseTraceAttributesMock,
+  getActiveLangfuseTraceId: () => getActiveLangfuseTraceIdMock(),
   isAiTelemetryEnabled: () => true,
   setActiveLangfuseTraceAttributes: (attributes: unknown) =>
     setActiveLangfuseTraceAttributesMock(attributes),
@@ -91,12 +93,32 @@ function createPromptResolutionMock() {
 }
 
 class MockResponse {
+  readonly body: ReadableStream<Uint8Array> | null
+  readonly headers: { get: (name: string) => string | null }
   private readonly responseBody: unknown
   readonly status: number
+  readonly statusText: string
 
-  constructor(body?: unknown, init?: { status?: number }) {
+  constructor(
+    body?: unknown,
+    init?: {
+      headers?:
+        | Record<string, string>
+        | { get: (name: string) => string | null }
+      status?: number
+      statusText?: string
+    },
+  ) {
+    this.body =
+      typeof body === "string"
+        ? stringToReadableStream(body)
+        : body instanceof ReadableStream
+          ? body
+          : null
+    this.headers = toHeaders(init?.headers)
     this.responseBody = body
     this.status = init?.status ?? 200
+    this.statusText = init?.statusText ?? "OK"
   }
 
   async json() {
@@ -104,7 +126,30 @@ class MockResponse {
   }
 
   async text() {
-    return typeof this.responseBody === "string" ? this.responseBody : ""
+    if (typeof this.responseBody === "string") {
+      return this.responseBody
+    }
+
+    if (!this.body) {
+      return ""
+    }
+
+    const reader = this.body.getReader()
+    const chunks: Uint8Array[] = []
+
+    while (true) {
+      const read = await reader.read()
+
+      if (read.done) {
+        break
+      }
+
+      chunks.push(read.value)
+    }
+
+    return Buffer.concat(chunks.map((chunk) => Buffer.from(chunk))).toString(
+      "utf8",
+    )
   }
 
   static json(body: unknown, init?: { status?: number }) {
@@ -204,11 +249,16 @@ function configureAiEnv() {
   }
 }
 
-function createJsonRequest(body: unknown) {
+function createJsonRequest(body: unknown, headers: Record<string, string> = {}) {
+  const normalizedHeaders = Object.fromEntries(
+    Object.entries(headers).map(([key, value]) => [key.toLowerCase(), value]),
+  )
+
   return {
     headers: {
       get: (name: string) =>
-        name.toLowerCase() === "x-forwarded-for" ? "203.0.113.42" : null,
+        normalizedHeaders[name.toLowerCase()] ??
+        (name.toLowerCase() === "x-forwarded-for" ? "203.0.113.42" : null),
     },
     json: async () => body,
   } as Request
@@ -233,6 +283,7 @@ describe("POST /api/ai-shopping-assistant", () => {
     )
     checkRateLimitMock.mockReturnValue({ allowed: true, retryAfterMs: 0 })
     createOpenAIMock.mockReturnValue(deepseekProviderMock)
+    getActiveLangfuseTraceIdMock.mockReturnValue("trace_01HQA")
     streamTextMock.mockReturnValue({
       toUIMessageStreamResponse: jest.fn(
         () => new Response("assistant-stream", { status: 200 }),
@@ -728,6 +779,7 @@ describe("POST /api/ai-shopping-assistant", () => {
     )
 
     expect(response.status).toBe(200)
+    expect(response.headers.get("x-3db-langfuse-trace-id")).toBeNull()
     expect(createOpenAIMock).toHaveBeenCalledWith(
       expect.objectContaining({
         apiKey: "test-deepseek-key",
@@ -994,6 +1046,23 @@ describe("POST /api/ai-shopping-assistant", () => {
         }),
       }),
     )
+  })
+
+  it("exposes the active Langfuse trace id for eval score attachment", async () => {
+    configureAiEnv()
+    const { POST } = await import("../route")
+
+    const response = await POST(
+      createJsonRequest(
+        {
+          traceContext: { sessionId: "assistant-session_05" },
+          messages: [{ role: "user", content: "Which PETG should I buy?" }],
+        },
+        { "x-3db-customer-ai-eval-run": "1" },
+      ),
+    )
+
+    expect(response.headers.get("x-3db-langfuse-trace-id")).toBe("trace_01HQA")
   })
 
   it("prefers DeepSeek provider cache usage chunks over generic AI SDK usage", async () => {

@@ -77,6 +77,12 @@ describe("customer AI eval runner", () => {
 
   it("runs an eval case against a mocked assistant endpoint", async () => {
     const fetchMock = jest.fn(async () => ({
+      headers: {
+        get: (name: string) =>
+          name.toLowerCase() === "x-3db-langfuse-trace-id"
+            ? "trace_01HQA"
+            : null,
+      },
       ok: true,
       status: 200,
       text: async () =>
@@ -107,6 +113,10 @@ describe("customer AI eval runner", () => {
             surface: "customer-eval-runner",
           },
         }),
+        headers: expect.objectContaining({
+          "content-type": "application/json",
+          "x-3db-customer-ai-eval-run": "1",
+        }),
         method: "POST",
       }),
     )
@@ -114,6 +124,7 @@ describe("customer AI eval runner", () => {
     expect(result.answer).toContain("PETG")
     expect(result.passed).toBe(true)
     expect(result.sessionId).toBe("customer-ai-eval-session")
+    expect(result.traceId).toBe("trace_01HQA")
   })
 
   it("builds a durable eval report summary for artifact output", () => {
@@ -214,6 +225,7 @@ describe("customer AI eval runner", () => {
           passed: true,
           sessionId: "customer-ai-eval-session",
           tags: ["petg_outdoor"],
+          traceId: "trace_01HQA",
         }),
       ],
       "https://store.test/api/ai-shopping-assistant",
@@ -241,6 +253,7 @@ describe("customer AI eval runner", () => {
         environment: "staging",
         name: "deterministic_pass",
         sessionId: "customer-ai-eval-session",
+        traceId: "trace_01HQA",
         value: 1,
         metadata: expect.objectContaining({
           evalCaseId: "session-scored-case",

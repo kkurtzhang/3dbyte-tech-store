@@ -100,11 +100,15 @@ LANGFUSE_ASSISTANT_PROMPT_LABEL=staging \
 pnpm --filter=@3dbyte-tech-store/storefront-v3 eval:ai:customer
 ```
 
+When upload is enabled, the eval runner also marks its assistant requests with an internal QA header. The storefront route returns the active Langfuse trace id only for those marked eval requests, and the runner publishes each deterministic score with both `sessionId` and `traceId`. In Langfuse this should make the scores visible on the eval session and on the individual trace pages. Without upload, scores are intentionally local-only in the console/JSON artifact.
+
 The next step for LLM-as-judge is to create a Langfuse dataset from the customer eval cases and add dashboard-managed evaluator prompts. Keep deterministic scores as the release gate; use judge scores for quality trends and review queues until the judge is calibrated.
 
 ## Phase 3D: Trace I/O Debuggability
 
 Storefront assistant traces now set top-level Langfuse input and output so the dashboard no longer shows “trace did not receive an input or output” for the browser chat route.
+
+Trace input/output must be written to the top-level request trace even when the streaming finish callback runs inside a model generation span. Generation model and usage details remain on the active generation observation.
 
 Trace input includes:
 
