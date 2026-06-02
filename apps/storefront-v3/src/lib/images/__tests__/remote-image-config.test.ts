@@ -1,6 +1,7 @@
 import {
   getAiCatalogueRemotePatterns,
   getSourceBackedProductImageHostnames,
+  getStrapiMediaRemotePatterns,
 } from "../remote-image-config";
 
 describe("remote image configuration", () => {
@@ -46,5 +47,18 @@ describe("remote image configuration", () => {
         "cdn.production-assets.example",
       ]),
     );
+  });
+
+  it("allows CMS media from the configured Strapi origin", () => {
+    const patterns = getStrapiMediaRemotePatterns({
+      NEXT_PUBLIC_STRAPI_URL: "https://cms.staging.3dbytetech.com.au/api",
+    });
+
+    expect(patterns).toEqual([
+      {
+        protocol: "https",
+        hostname: "cms.staging.3dbytetech.com.au",
+      },
+    ]);
   });
 });

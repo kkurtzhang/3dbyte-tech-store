@@ -1,5 +1,5 @@
-import { Metadata } from "next";
-import Link from "next/link";
+import type { Metadata } from "next"
+import Link from "next/link"
 import {
   ArrowRight,
   BookOpen,
@@ -10,16 +10,55 @@ import {
   Search,
   ShoppingBag,
   User,
-} from "lucide-react";
-import { ContentSearchBox } from "@/features/search/components/content-search-box";
+} from "lucide-react"
+
+import { ContentSearchBox } from "@/features/search/components/content-search-box"
+import { getCmsIcon } from "@/features/cms/components/cms-icon-map"
+import { getHelpCenter } from "@/lib/strapi/content"
+
+import type { HelpCenterData } from "@/lib/strapi/types"
+import type { LucideIcon } from "lucide-react"
 
 export const metadata: Metadata = {
   title: "Help Center",
   description: "Find answers to common questions and contact 3DByte Tech support.",
-};
+}
 
-export default function HelpPage() {
-  const categories = [
+type HelpCategory = {
+  title: string
+  description: string
+  href: string
+  icon: LucideIcon
+  articles: string[]
+}
+
+type PopularResource = {
+  title: string
+  category: string
+  href: string
+}
+
+type ContactOption = {
+  icon: LucideIcon
+  title: string
+  description: string
+  value: string
+  action: string
+  href: string
+}
+
+type HelpCenterContent = {
+  heading: string
+  subheading: string
+  categories: HelpCategory[]
+  popularResources: PopularResource[]
+  contactOptions: ContactOption[]
+}
+
+const fallbackHelpCenter: HelpCenterContent = {
+  heading: "Help Center",
+  subheading: "Find fast answers for shipping, returns, account, and order support.",
+  categories: [
     {
       title: "Shipping",
       description: "Delivery windows, methods, and shipping restrictions.",
@@ -64,18 +103,16 @@ export default function HelpPage() {
         "Manage saved products",
       ],
     },
-  ];
-
-  const popularResources = [
+  ],
+  popularResources: [
     { title: "Track your order", category: "Orders", href: "/track-order" },
     { title: "Shipping policy", category: "Shipping", href: "/shipping" },
     { title: "Returns and refunds", category: "Returns", href: "/returns" },
     { title: "Frequently asked questions", category: "FAQ", href: "/faq" },
     { title: "Contact support", category: "Support", href: "/contact" },
     { title: "Manage account settings", category: "Account", href: "/account/settings" },
-  ];
-
-  const contactOptions = [
+  ],
+  contactOptions: [
     {
       icon: Mail,
       title: "Email Support",
@@ -100,14 +137,90 @@ export default function HelpPage() {
       action: "Track Order",
       href: "/track-order",
     },
-  ];
+  ],
+}
+
+function textOrFallback(value: string | null | undefined, fallback: string) {
+  const trimmed = value?.trim()
+
+  return trimmed || fallback
+}
+
+function safeHref(value: string | null | undefined, fallback: string) {
+  const trimmed = value?.trim()
+
+  if (!trimmed) {
+    return fallback
+  }
+
+  if (trimmed.startsWith("/") || trimmed.startsWith("mailto:")) {
+    return trimmed
+  }
+
+  return fallback
+}
+
+function mapHelpCenter(data?: HelpCenterData | null): HelpCenterContent {
+  if (!data) {
+    return fallbackHelpCenter
+  }
+
+  const categories =
+    data.Categories?.map((category): HelpCategory => ({
+      title: category.Title,
+      description: textOrFallback(category.Description, "Browse related support articles."),
+      href: safeHref(category.Href, "/help"),
+      icon: getCmsIcon(category.Icon, BookOpen),
+      articles:
+        category.Articles?.map((article) => article.Title).filter((title) => title.trim()) ?? [],
+    })).filter((category) => category.title.trim() && category.href) ?? []
+
+  const popularResources =
+    data.PopularResources?.map((resource): PopularResource => ({
+      title: resource.Title,
+      category: textOrFallback(resource.Category, "Resource"),
+      href: safeHref(resource.Href, "/help"),
+    })).filter((resource) => resource.title.trim() && resource.href) ?? []
+
+  const contactOptions =
+    data.ContactOptions?.map((option): ContactOption => ({
+      title: option.Title,
+      description: textOrFallback(option.Description, "Contact our support team."),
+      value: textOrFallback(option.Value, "Support request"),
+      action: textOrFallback(option.Action, "Contact Support"),
+      href: safeHref(option.Href, "/contact"),
+      icon: getCmsIcon(option.Icon, MessageCircle),
+    })).filter((option) => option.title.trim() && option.href) ?? []
+
+  return {
+    heading: textOrFallback(data.Heading, fallbackHelpCenter.heading),
+    subheading: textOrFallback(data.Subheading, fallbackHelpCenter.subheading),
+    categories: categories.length > 0 ? categories : fallbackHelpCenter.categories,
+    popularResources:
+      popularResources.length > 0 ? popularResources : fallbackHelpCenter.popularResources,
+    contactOptions: contactOptions.length > 0 ? contactOptions : fallbackHelpCenter.contactOptions,
+  }
+}
+
+async function loadHelpCenterContent() {
+  try {
+    const response = await getHelpCenter()
+
+    return mapHelpCenter(response.data)
+  } catch {
+    return fallbackHelpCenter
+  }
+}
+
+export default async function HelpPage() {
+  const content = await loadHelpCenterContent()
 
   return (
     <div className="container py-12 md:py-16">
       <div className="mb-12 text-center">
-        <h1 className="text-4xl font-bold tracking-tight mb-4">Help Center</h1>
+        <h1 className="text-4xl font-bold tracking-tight mb-4">{content.heading}</h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Find fast answers for shipping, returns, account, and order support.
+          {content.subheading}
         </p>
       </div>
 
@@ -147,7 +260,7 @@ export default function HelpPage() {
       <section className="mb-16">
         <h2 className="text-2xl font-semibold mb-8">Browse by Category</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {categories.map((category) => (
+          {content.categories.map((category) => (
             <Link
               key={category.title}
               href={category.href}
@@ -165,14 +278,19 @@ export default function HelpPage() {
                 </div>
               </div>
 
-              <ul className="space-y-2">
-                {category.articles.map((article) => (
-                  <li key={article} className="text-sm text-muted-foreground flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />
-                    {article}
-                  </li>
-                ))}
-              </ul>
+              {category.articles.length > 0 ? (
+                <ul className="space-y-2">
+                  {category.articles.map((article) => (
+                    <li
+                      key={article}
+                      className="text-sm text-muted-foreground flex items-center gap-2"
+                    >
+                      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />
+                      {article}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
 
               <div className="mt-4 text-sm text-primary font-medium inline-flex items-center gap-1">
                 Open {category.title}
@@ -186,9 +304,9 @@ export default function HelpPage() {
       <section className="mb-16">
         <h2 className="text-2xl font-semibold mb-8">Popular Resources</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {popularResources.map((resource) => (
+          {content.popularResources.map((resource) => (
             <Link
-              key={resource.title}
+              key={`${resource.title}-${resource.href}`}
               href={resource.href}
               className="group flex items-start gap-3 p-4 rounded-lg border hover:border-primary transition-colors hover:bg-accent/50"
             >
@@ -209,8 +327,11 @@ export default function HelpPage() {
       <section>
         <h2 className="text-2xl font-semibold mb-8">Contact Support</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {contactOptions.map((option) => (
-            <div key={option.title} className="rounded-lg border bg-card p-6 hover:border-primary transition-colors">
+          {content.contactOptions.map((option) => (
+            <div
+              key={`${option.title}-${option.href}`}
+              className="rounded-lg border bg-card p-6 hover:border-primary transition-colors"
+            >
               <div className="flex items-center gap-3 mb-4">
                 <div className="rounded-lg bg-primary/10 p-2">
                   <option.icon className="h-5 w-5 text-primary" />
@@ -265,5 +386,5 @@ export default function HelpPage() {
         </div>
       </section>
     </div>
-  );
+  )
 }

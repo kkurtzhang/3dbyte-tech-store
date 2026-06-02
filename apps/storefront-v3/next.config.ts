@@ -6,6 +6,7 @@ import {
   getAiCatalogueRemotePatterns,
   getAssetImageHostnames,
   getSourceBackedProductImageHostnames,
+  getStrapiMediaRemotePatterns,
 } from "./src/lib/images/remote-image-config";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -75,6 +76,7 @@ const nextConfig: NextConfig = {
         protocol: "https" as const,
         hostname,
       })),
+      ...getStrapiMediaRemotePatterns(),
       ...getAiCatalogueRemotePatterns(),
     ],
   },
