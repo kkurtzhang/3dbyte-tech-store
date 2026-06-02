@@ -17,7 +17,7 @@ describe("strapi single-type content helpers", () => {
     mockFetch.mockReset()
   })
 
-  it("fetches the homepage single type without persistent cache", async () => {
+  it("fetches the homepage single type with a revalidatable cache tag", async () => {
     mockFetch.mockResolvedValueOnce({
       data: {
         id: 1,
@@ -39,7 +39,7 @@ describe("strapi single-type content helpers", () => {
     expect(mockFetch).toHaveBeenCalledWith(
       expect.stringContaining("/homepage?"),
       expect.objectContaining({
-        cache: "no-store",
+        tags: ["homepage"],
       })
     )
     expect(mockFetch.mock.calls[0][0]).toContain(

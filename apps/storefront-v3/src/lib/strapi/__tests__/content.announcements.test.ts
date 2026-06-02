@@ -40,7 +40,6 @@ describe("strapi homepage announcement helpers", () => {
     expect(mockFetch).toHaveBeenCalledWith(
       expect.stringContaining("/homepage?"),
       expect.objectContaining({
-        cache: "no-store",
         tags: ["homepage-announcements"],
       })
     )

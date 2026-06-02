@@ -153,7 +153,7 @@ export async function getHomepage() {
   );
 
   return strapiClient.fetch<StrapiResponse<HomepageData>>(`/homepage?${query}`, {
-    cache: "no-store",
+    tags: ["homepage"],
   });
 }
 
@@ -170,7 +170,6 @@ export async function getHomepageAnnouncements() {
   const response = await strapiClient.fetch<StrapiResponse<HomepageData>>(
     `/homepage?${query}`,
     {
-      cache: "no-store",
       tags: ["homepage-announcements"],
     }
   );
