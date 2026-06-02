@@ -1,4 +1,5 @@
 import {
+  getHomepage,
   getGuidesPage,
   getHelpCenter,
 } from "../content"
@@ -14,6 +15,37 @@ const mockFetch = jest.requireMock("../client").strapiClient.fetch as jest.Mock
 describe("strapi single-type content helpers", () => {
   beforeEach(() => {
     mockFetch.mockReset()
+  })
+
+  it("fetches the homepage single type with a revalidatable cache tag", async () => {
+    mockFetch.mockResolvedValueOnce({
+      data: {
+        id: 1,
+        HeroBanner: {
+          Headline: "Fresh CMS headline",
+          Image: {
+            id: 1,
+            url: "/uploads/fresh-hero.png",
+            width: 1200,
+            height: 800,
+          },
+        },
+      },
+      meta: {},
+    })
+
+    const result = await getHomepage()
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining("/homepage?"),
+      expect.objectContaining({
+        tags: ["homepage"],
+      })
+    )
+    expect(mockFetch.mock.calls[0][0]).toContain(
+      "populate[HeroBanner][populate][Image]=true"
+    )
+    expect(result.data.HeroBanner?.Headline).toBe("Fresh CMS headline")
   })
 
   it("fetches the help-center single type with nested category articles", async () => {

@@ -136,8 +136,9 @@ This guide provides detailed documentation for all content types available in th
   - `homepage-announcements`
   - `/`
 - **Notes**:
-  - Local development uses uncached Strapi reads so homepage edits show up on reload
-  - Production should rely on this webhook for immediate cache invalidation after CMS changes
+  - Storefront homepage reads are cached with Next.js tags for performance
+  - The webhook invalidates those tags immediately after CMS changes
+  - If the webhook secret is missing or mismatched, homepage edits may remain cached until the normal revalidation window expires
 
 #### About Us
 - **Purpose**: Company information page

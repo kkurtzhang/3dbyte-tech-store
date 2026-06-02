@@ -152,7 +152,9 @@ export async function getHomepage() {
     { encodeValuesOnly: true }
   );
 
-  return strapiClient.fetch<StrapiResponse<HomepageData>>(`/homepage?${query}`);
+  return strapiClient.fetch<StrapiResponse<HomepageData>>(`/homepage?${query}`, {
+    tags: ["homepage"],
+  });
 }
 
 export async function getHomepageAnnouncements() {
