@@ -11,6 +11,22 @@ jest.mock("@/components/ui/payment-method-support", () => ({
 }))
 
 describe("Footer", () => {
+  it("surfaces the approved store brand in the footer", () => {
+    render(<Footer />)
+
+    const brandLink = screen.getByRole("link", { name: "3D Byte Tech" })
+
+    expect(brandLink).toHaveAttribute("href", "/")
+    expect(
+      brandLink.querySelector(
+        'img[src*="/brand/logos/logo-primary-horizontal-640w.png"]'
+      )
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/practical 3d printing tools/i)
+    ).toBeInTheDocument()
+  })
+
   it("surfaces customer resource and download destinations", () => {
     render(<Footer />)
 

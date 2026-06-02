@@ -18,6 +18,11 @@ describe("CheckoutLayout", () => {
       "href",
       "/"
     )
+    expect(
+      screen
+        .getByRole("link", { name: "3D Byte Tech" })
+        .querySelector('img[src*="/brand/logos/logo-primary-horizontal-640w.png"]')
+    ).toBeInTheDocument()
     expect(screen.getByText("Secure checkout")).toBeInTheDocument()
     expect(screen.queryByText("Secure_Channel_Active")).not.toBeInTheDocument()
   })
