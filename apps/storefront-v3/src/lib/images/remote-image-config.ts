@@ -1,8 +1,9 @@
 type EnvRecord = Partial<Record<string, string | undefined>>;
 
 type ImageRemotePattern = {
-  protocol: "https";
+  protocol: "http" | "https";
   hostname: string;
+  port?: string;
   pathname?: string;
 };
 
@@ -22,6 +23,8 @@ const aiCatalogueMediaHostnameEnvKeys = [
 const sourceBackedProductImageHostnameEnvKeys = [
   "NEXT_PUBLIC_PRODUCT_IMAGE_HOSTS",
 ] as const;
+
+const strapiMediaRemotePatternEnvKeys = ["NEXT_PUBLIC_STRAPI_URL"] as const;
 
 const defaultSourceBackedProductImageHostnames = [
   "shop.polymaker.com",
@@ -65,6 +68,43 @@ function toHostname(value: string | undefined): string | null {
   }
 }
 
+function toImageRemotePattern(
+  value: string | undefined,
+): ImageRemotePattern | null {
+  const trimmedValue = value?.trim();
+
+  if (!trimmedValue) {
+    return null;
+  }
+
+  try {
+    const url = new URL(
+      /^[a-z][a-z\d+.-]*:\/\//i.test(trimmedValue)
+        ? trimmedValue
+        : `https://${trimmedValue}`,
+    );
+    let protocol: ImageRemotePattern["protocol"] | null = null;
+
+    if (url.protocol === "http:") {
+      protocol = "http";
+    } else if (url.protocol === "https:") {
+      protocol = "https";
+    }
+
+    if (!protocol) {
+      return null;
+    }
+
+    return {
+      protocol,
+      hostname: url.hostname.toLowerCase(),
+      ...(url.port ? { port: url.port } : {}),
+    };
+  } catch {
+    return null;
+  }
+}
+
 function getUniqueHostnames(env: EnvRecord, keys: readonly string[]): string[] {
   return Array.from(
     new Set(
@@ -73,6 +113,27 @@ function getUniqueHostnames(env: EnvRecord, keys: readonly string[]): string[] {
         .filter((hostname): hostname is string => Boolean(hostname)),
     ),
   );
+}
+
+function getUniqueRemotePatterns(
+  env: EnvRecord,
+  keys: readonly string[],
+): ImageRemotePattern[] {
+  const seen = new Set<string>();
+
+  return keys
+    .map((key) => toImageRemotePattern(env[key]))
+    .filter((pattern): pattern is ImageRemotePattern => Boolean(pattern))
+    .filter((pattern) => {
+      const patternKey = `${pattern.protocol}://${pattern.hostname}:${pattern.port ?? ""}`;
+
+      if (seen.has(patternKey)) {
+        return false;
+      }
+
+      seen.add(patternKey);
+      return true;
+    });
 }
 
 export function getAssetImageHostnames(env: EnvRecord = process.env): string[] {
@@ -104,4 +165,10 @@ export function getAiCatalogueRemotePatterns(
       pathname: "/ai-catalogue/products/**",
     }),
   );
+}
+
+export function getStrapiMediaRemotePatterns(
+  env: EnvRecord = process.env,
+): ImageRemotePattern[] {
+  return getUniqueRemotePatterns(env, strapiMediaRemotePatternEnvKeys);
 }

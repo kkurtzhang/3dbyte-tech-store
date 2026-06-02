@@ -139,14 +139,136 @@ export interface HomepageHeroBanner {
   Image?: StrapiImage | null;
 }
 
+export interface HomepageSection {
+  id: number;
+  Enabled?: boolean | null;
+  Eyebrow?: string | null;
+  Heading?: string | null;
+  Text?: string | null;
+  CTA?: HomepageCta | null;
+}
+
+export interface HomepageGuidesHelpCard {
+  id: number;
+  Eyebrow?: string | null;
+  Icon?: string | null;
+  Link?: string | null;
+  LinkText?: string | null;
+  Text?: string | null;
+  Title: string;
+}
+
+export interface HomepageGuidesHelpSection {
+  id: number;
+  Enabled?: boolean | null;
+  Eyebrow?: string | null;
+  Heading?: string | null;
+  Text?: string | null;
+  Cards?: HomepageGuidesHelpCard[];
+}
+
+export interface HomepageSupportStrip {
+  id: number;
+  Enabled?: boolean | null;
+  Label?: string | null;
+  Text?: string | null;
+  CTA?: HomepageCta | null;
+}
+
 export interface HomepageData {
   id: number;
   HeroBanner?: HomepageHeroBanner | null;
   MidBanner?: HomepageHeroBanner | null;
+  CollectionsSection?: HomepageSection | null;
+  ProductsSection?: HomepageSection | null;
+  GuidesHelpSection?: HomepageGuidesHelpSection | null;
+  SupportStrip?: HomepageSupportStrip | null;
   QuickLinksHeading?: string | null;
   QuickLinks?: HomepageCta[];
   TrustStats?: HomepageStat[];
   AnnouncementBarItems?: AnnouncementBarItemData[];
+}
+
+export interface HelpArticleData {
+  id: number;
+  Title: string;
+}
+
+export interface HelpCategoryData {
+  id: number;
+  Title: string;
+  Description?: string | null;
+  Href: string;
+  Icon?: string | null;
+  Articles?: HelpArticleData[];
+}
+
+export interface HelpPopularResourceData {
+  id: number;
+  Title: string;
+  Category?: string | null;
+  Href: string;
+}
+
+export interface HelpContactOptionData {
+  id: number;
+  Title: string;
+  Description?: string | null;
+  Value?: string | null;
+  Action?: string | null;
+  Href: string;
+  Icon?: string | null;
+}
+
+export interface HelpCenterData {
+  id: number;
+  Heading?: string | null;
+  Subheading?: string | null;
+  Categories?: HelpCategoryData[];
+  PopularResources?: HelpPopularResourceData[];
+  ContactOptions?: HelpContactOptionData[];
+}
+
+export interface GuidesFeaturedGuideData {
+  id: number;
+  Title: string;
+  Category?: string | null;
+  ReadTime?: string | null;
+  Rating?: string | null;
+  Description?: string | null;
+  Href?: string | null;
+  Icon?: string | null;
+}
+
+export interface GuidesGuideLinkData {
+  id: number;
+  Title: string;
+  Href?: string | null;
+}
+
+export interface GuidesCategoryData {
+  id: number;
+  Title: string;
+  Description?: string | null;
+  Icon?: string | null;
+  Tone?: string | null;
+  Guides?: GuidesGuideLinkData[];
+}
+
+export interface GuidesQuickLinkData {
+  id: number;
+  Title: string;
+  Href: string;
+  Icon?: string | null;
+}
+
+export interface GuidesPageData {
+  id: number;
+  Heading?: string | null;
+  Subheading?: string | null;
+  FeaturedGuides?: GuidesFeaturedGuideData[];
+  Categories?: GuidesCategoryData[];
+  QuickLinks?: GuidesQuickLinkData[];
 }
 
 export interface BrandDescriptionData {

@@ -8,6 +8,8 @@ import {
   BlogListResponse,
   BlogCategoryListResponse,
   HomepageData,
+  HelpCenterData,
+  GuidesPageData,
   BrandDescriptionData,
   CollectionDescriptionData,
 } from "./types";
@@ -122,6 +124,26 @@ export async function getHomepage() {
             Image: true,
           },
         },
+        CollectionsSection: {
+          populate: {
+            CTA: true,
+          },
+        },
+        ProductsSection: {
+          populate: {
+            CTA: true,
+          },
+        },
+        GuidesHelpSection: {
+          populate: {
+            Cards: true,
+          },
+        },
+        SupportStrip: {
+          populate: {
+            CTA: true,
+          },
+        },
         QuickLinks: true,
         TrustStats: true,
         AnnouncementBarItems: true,
@@ -151,6 +173,48 @@ export async function getHomepageAnnouncements() {
   );
 
   return response.data?.AnnouncementBarItems ?? [];
+}
+
+export async function getHelpCenter() {
+  const query = qs.stringify(
+    {
+      populate: {
+        Categories: {
+          populate: {
+            Articles: true,
+          },
+        },
+        PopularResources: true,
+        ContactOptions: true,
+      },
+    },
+    { encodeValuesOnly: true }
+  );
+
+  return strapiClient.fetch<StrapiResponse<HelpCenterData>>(`/help-center?${query}`, {
+    tags: ["help-center"],
+  });
+}
+
+export async function getGuidesPage() {
+  const query = qs.stringify(
+    {
+      populate: {
+        FeaturedGuides: true,
+        Categories: {
+          populate: {
+            Guides: true,
+          },
+        },
+        QuickLinks: true,
+      },
+    },
+    { encodeValuesOnly: true }
+  );
+
+  return strapiClient.fetch<StrapiResponse<GuidesPageData>>(`/guides-page?${query}`, {
+    tags: ["guides-page"],
+  });
 }
 
 export async function getBrandDescriptions() {
