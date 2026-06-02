@@ -1,3 +1,15 @@
+function withoutRevalidate<T extends { revalidate?: unknown } | undefined>(
+  options: T
+) {
+  if (!options) {
+    return undefined
+  }
+
+  const { revalidate: _revalidate, ...optionsWithoutRevalidate } = options
+
+  return optionsWithoutRevalidate
+}
+
 export const strapiClient = {
   baseUrl: process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337",
   token: process.env.STRAPI_READ_TOKEN || process.env.NEXT_PUBLIC_STRAPI_READ_TOKEN,
@@ -17,14 +29,22 @@ export const strapiClient = {
       headers["Authorization"] = `Bearer ${this.token}`
     }
 
+    const nextOptions =
+      fetchOptions.cache === "no-store"
+        ? {
+            tags,
+            ...withoutRevalidate(fetchOptions.next),
+          }
+        : {
+            revalidate: 3600,
+            tags,
+            ...fetchOptions.next,
+          }
+
     const response = await fetch(url, {
       ...fetchOptions,
       headers,
-      next: {
-        revalidate: 3600, // Default 1 hour
-        tags: tags, // For on-demand revalidation
-        ...fetchOptions?.next,
-      },
+      next: nextOptions,
     })
 
     if (!response.ok) {
