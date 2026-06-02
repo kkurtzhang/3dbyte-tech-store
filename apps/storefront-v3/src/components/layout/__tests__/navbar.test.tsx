@@ -51,6 +51,23 @@ jest.mock("next/navigation", () => ({
 }))
 
 describe("Navbar", () => {
+  it("uses the approved brand logo as the home link", async () => {
+    render(<Navbar />)
+
+    const brandLink = screen.getByRole("link", { name: "3D Byte Tech" })
+
+    expect(brandLink).toHaveAttribute("href", "/")
+    expect(
+      brandLink.querySelector(
+        'img[src*="/brand/logos/logo-primary-horizontal-640w.png"]'
+      )
+    ).toBeInTheDocument()
+    expect(screen.queryByText("The Lab")).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /sign in/i })).toBeInTheDocument()
+    })
+  })
+
   it("includes a visible Download Center entry", async () => {
     render(<Navbar />)
 

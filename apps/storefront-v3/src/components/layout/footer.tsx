@@ -1,21 +1,30 @@
 import Link from "next/link";
 import { SiGithub, SiX, SiDiscord } from "@icons-pack/react-simple-icons";
 import { PaymentMethodSupport } from "@/components/ui/payment-method-support";
+import { BrandLogo } from "./brand-logo";
 import { NewsletterSignup } from "./newsletter-signup";
 
 /**
  * Footer component with 4-column grid layout.
  * Features:
- * - Shop, Support, The Lab, and Connect sections
+ * - Shop, Support, Resources, and Connect sections
  * - Social media links with icons
  * - Bottom bar with copyright and legal links
  * - Responsive: 4-column (desktop), 2-column (tablet), 1-column (mobile)
- * - "The Lab" aesthetic: minimalist, monospace headers, muted text
+ * - Minimalist support navigation with muted text
  */
 export function Footer() {
   return (
     <footer className="border-t bg-background">
       <div className="container py-12 md:py-16">
+        <div className="mb-10 flex flex-col gap-4 border-b border-border/60 pb-8 md:flex-row md:items-end md:justify-between">
+          <BrandLogo size="footer" />
+          <p className="max-w-xl text-sm leading-6 text-muted-foreground md:text-right">
+            High-performance filaments, precision hardware, and practical 3D
+            printing tools for reliable, repeatable builds.
+          </p>
+        </div>
+
         {/* 4-Column Grid */}
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {/* Column 1: Shop */}
@@ -108,10 +117,10 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Column 3: The Lab */}
+          {/* Column 3: Resources */}
           <div className="space-y-4">
             <h3 className="text-sm font-mono uppercase tracking-wider text-foreground">
-              The Lab
+              Resources
             </h3>
             <ul className="space-y-3">
               <li>

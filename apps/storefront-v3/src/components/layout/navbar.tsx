@@ -4,14 +4,15 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, User, Heart } from "lucide-react";
+import { logoutAction, getSessionAction } from "@/app/actions/auth";
+import { SearchCommandDialog } from "@/components/search/search-command-dialog";
 import { Button } from "@/components/ui/button";
+import { useWishlist } from "@/context/wishlist-context";
+import { AuthSheet } from "@/features/auth/components/auth-sheet";
 import { CartSheet } from "@/features/cart/components/cart-sheet";
+import { BrandLogo } from "./brand-logo";
 import { ThemeToggle } from "./theme-toggle";
 import { MobileMenu } from "./mobile-menu";
-import { SearchCommandDialog } from "@/components/search/search-command-dialog";
-import { AuthSheet } from "@/features/auth/components/auth-sheet";
-import { logoutAction, getSessionAction } from "@/app/actions/auth";
-import { useWishlist } from "@/context/wishlist-context";
 
 export function Navbar() {
   const [searchOpen, setSearchOpen] = React.useState(false);
@@ -51,12 +52,7 @@ export function Navbar() {
           <div className="flex items-center gap-2">
             <MobileMenu />
 
-            <Link href="/" className="flex items-center gap-2">
-              <span className="font-bold text-lg">3D Byte</span>
-              <span className="hidden sm:inline-flex items-center rounded-sm border border-border bg-muted px-2 py-0.5 text-xs font-mono uppercase tracking-wider">
-                The Lab
-              </span>
-            </Link>
+            <BrandLogo mobileMark priority />
           </div>
 
           {/* Center Section: Desktop Navigation */}

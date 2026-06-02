@@ -4,9 +4,8 @@ const DEFAULT_SITE_URL = "https://store.3dbytetech.com.au"
 const SITE_NAME = "3D Byte Tech Store"
 const DEFAULT_TITLE = "3D Byte Tech Store - Premium 3D Printing Supplies"
 const DEFAULT_DESCRIPTION =
-  "High-performance filaments, Voron kits, and hardware for makers and engineers."
-const DEFAULT_SOCIAL_IMAGE =
-  "/ai-catalogue/products/ai-filament-dryer-box.png"
+  "High-performance filaments, precision hardware, and practical 3D printing tools for makers and engineers."
+const DEFAULT_SOCIAL_IMAGE = "/brand/social/og-image-1200x630.png"
 const INDEXABLE_HOSTNAMES = new Set(["store.3dbytetech.com.au"])
 
 type SiteMetadataEnv = Record<string, string | undefined>
@@ -75,6 +74,26 @@ export function buildRootMetadata(
     alternates: {
       canonical: "/",
     },
+    icons: {
+      icon: [
+        { url: "/favicons/favicon.ico", sizes: "any" },
+        { url: "/favicons/favicon.svg", type: "image/svg+xml" },
+        {
+          url: "/favicons/favicon-32x32.png",
+          sizes: "32x32",
+          type: "image/png",
+        },
+      ],
+      apple: "/favicons/apple-touch-icon.png",
+      other: [
+        {
+          rel: "mask-icon",
+          url: "/favicons/safari-pinned-tab.svg",
+          color: "#0A6EFF",
+        },
+      ],
+    },
+    manifest: "/favicons/site.webmanifest",
     robots: buildRobotsDirective(siteUrl),
     openGraph: {
       title: DEFAULT_TITLE,
@@ -85,9 +104,9 @@ export function buildRootMetadata(
       images: [
         {
           url: DEFAULT_SOCIAL_IMAGE,
-          width: 900,
-          height: 900,
-          alt: "3D Byte Tech Store product catalogue",
+          width: 1200,
+          height: 630,
+          alt: "3D Byte Tech Store brand preview",
         },
       ],
     },

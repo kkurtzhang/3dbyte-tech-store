@@ -37,6 +37,14 @@ describe("site metadata", () => {
     )
     expect(metadata.openGraph).toEqual(
       expect.objectContaining({
+        images: [
+          {
+            alt: "3D Byte Tech Store brand preview",
+            height: 630,
+            url: "/brand/social/og-image-1200x630.png",
+            width: 1200,
+          },
+        ],
         siteName: "3D Byte Tech Store",
         type: "website",
         url: "/",
@@ -45,9 +53,25 @@ describe("site metadata", () => {
     expect(metadata.twitter).toEqual(
       expect.objectContaining({
         card: "summary_large_image",
+        images: ["/brand/social/og-image-1200x630.png"],
         title: "3D Byte Tech Store - Premium 3D Printing Supplies",
       })
     )
+    expect(metadata.icons).toEqual(
+      expect.objectContaining({
+        apple: "/favicons/apple-touch-icon.png",
+        icon: [
+          { url: "/favicons/favicon.ico", sizes: "any" },
+          { url: "/favicons/favicon.svg", type: "image/svg+xml" },
+          {
+            url: "/favicons/favicon-32x32.png",
+            sizes: "32x32",
+            type: "image/png",
+          },
+        ],
+      })
+    )
+    expect(metadata.manifest).toBe("/favicons/site.webmanifest")
     expect(metadata.robots).toEqual(buildRobotsDirective(getSiteUrl({
       NEXT_PUBLIC_SITE_URL: "https://store.staging.3dbytetech.com.au/",
     })))
