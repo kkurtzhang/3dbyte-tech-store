@@ -3,18 +3,13 @@
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
+
+import {
+  CUSTOMER_TOKEN_COOKIE,
+  SESSION_COOKIE,
+  getCustomerSessionCookieOptions,
+} from "@/lib/auth/session-cookies"
 import { sdk } from "@/lib/medusa/client"
-
-const SESSION_COOKIE = "_medusa_authenticated"
-const CUSTOMER_TOKEN_COOKIE = "_medusa_customer_token"
-const SESSION_MAX_AGE = 60 * 60 * 24 * 7
-
-const sessionCookieOptions = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax" as const,
-  maxAge: SESSION_MAX_AGE,
-}
 
 function getAuthHeaders(token: string) {
   return {
@@ -60,6 +55,7 @@ export async function loginAction(email: string, password: string) {
 
     if (customer) {
       const cookieStore = await cookies()
+      const sessionCookieOptions = getCustomerSessionCookieOptions()
       cookieStore.set(SESSION_COOKIE, "true", sessionCookieOptions)
       cookieStore.set(CUSTOMER_TOKEN_COOKIE, result, sessionCookieOptions)
 

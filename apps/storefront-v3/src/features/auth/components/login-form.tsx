@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label"
 import { loginAction } from "@/app/actions/auth"
 import { GoogleIcon } from "@/components/ui/google-icon"
 import { zodFormResolver } from "@/lib/forms/zod-form-resolver"
-import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -80,27 +79,14 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   const handleGoogleLogin = async () => {
     setIsLoading(true)
     setError(null)
-    try {
-      const backendUrl = resolveMedusaBaseUrl({ isServer: false })
-      // Get Google OAuth URL
-      const response = await fetch(`${backendUrl}/store/auth`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
+    const redirectTo = getSafeRedirectPath()
+    const startUrl = new URL("/auth/google/start", window.location.origin)
 
-      if (!response.ok) {
-        throw new Error("Failed to get Google auth URL")
-      }
-
-      const data = await response.json()
-      window.location.href = data.auth_url
-    } catch (error) {
-      console.error("Google login error:", error)
-      setError("Failed to initiate Google login")
-      setIsLoading(false)
+    if (redirectTo) {
+      startUrl.searchParams.set("redirect", redirectTo)
     }
+
+    window.location.href = startUrl.toString()
   }
 
   return (

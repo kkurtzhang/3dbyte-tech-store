@@ -1,0 +1,177 @@
+const mockFetch = jest.fn()
+const mockCookieSet = jest.fn()
+const mockCookieDelete = jest.fn()
+const mockRedirect = jest.fn((url: URL | string) => ({
+  status: 307,
+  headers: new Headers({ location: String(url) }),
+  cookies: {
+    set: mockCookieSet,
+    delete: mockCookieDelete,
+  },
+}))
+
+jest.mock("next/server", () => ({
+  NextResponse: {
+    redirect: (url: URL | string) => mockRedirect(url),
+  },
+}))
+
+const { GET: startGoogleAuth } = jest.requireActual("../start/route")
+const { GET: completeGoogleAuth } = jest.requireActual("../callback/route")
+
+function encodeJwtPayload(payload: Record<string, unknown>) {
+  return [
+    "header",
+    Buffer.from(JSON.stringify(payload)).toString("base64url"),
+    "signature",
+  ].join(".")
+}
+
+function createRequest(url: string, headers?: Record<string, string>) {
+  return {
+    url,
+    headers: new Headers(headers),
+  } as Request
+}
+
+describe("Google OAuth storefront routes", () => {
+  const originalEnv = process.env
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    global.fetch = mockFetch as unknown as typeof fetch
+    process.env = {
+      ...originalEnv,
+      MEDUSA_SERVER_BACKEND_URL: "http://medusa:9000",
+      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: "pk_test",
+    }
+  })
+
+  afterAll(() => {
+    process.env = originalEnv
+  })
+
+  it("starts Google OAuth through Medusa and stores a safe return path", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        location: "https://accounts.google.com/o/oauth2/v2/auth?client_id=test",
+      }),
+    })
+
+    const response = await startGoogleAuth(
+      createRequest("https://store.staging.example.com/auth/google/start?redirect=/account")
+    )
+
+    expect(response.headers.get("location")).toBe(
+      "https://accounts.google.com/o/oauth2/v2/auth?client_id=test"
+    )
+    expect(mockFetch).toHaveBeenCalledWith(
+      "http://medusa:9000/auth/customer/google",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          "content-type": "application/json",
+          "x-publishable-api-key": "pk_test",
+        }),
+      })
+    )
+    expect(JSON.parse(String(mockFetch.mock.calls[0][1].body))).toEqual({
+      callback_url: "https://store.staging.example.com/auth/google/callback",
+    })
+    expect(mockCookieSet).toHaveBeenCalledWith(
+      "google_oauth_redirect",
+      "/account",
+      expect.objectContaining({ httpOnly: true, path: "/" })
+    )
+  })
+
+  it("creates a first-time Google customer, refreshes the token, and sets customer cookies", async () => {
+    const initialToken = encodeJwtPayload({
+      actor_id: "",
+      user_metadata: { email: "ava@example.com" },
+    })
+    const refreshedToken = encodeJwtPayload({
+      actor_id: "cus_123",
+      user_metadata: { email: "ava@example.com" },
+    })
+
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ token: initialToken }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ customer: { id: "cus_123", email: "ava@example.com" } }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ token: refreshedToken }),
+      })
+
+    const response = await completeGoogleAuth(
+      createRequest(
+        "https://store.staging.example.com/auth/google/callback?code=abc&state=xyz",
+        {
+          cookie: "google_oauth_redirect=/checkout",
+        }
+      )
+    )
+
+    expect(response.headers.get("location")).toBe(
+      "https://store.staging.example.com/checkout"
+    )
+    expect(mockFetch.mock.calls[0][0]).toBe(
+      "http://medusa:9000/auth/customer/google/callback?code=abc&state=xyz"
+    )
+    expect(mockFetch.mock.calls[1][0]).toBe("http://medusa:9000/store/customers")
+    expect(mockFetch.mock.calls[1][1]).toEqual(
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          Authorization: `Bearer ${initialToken}`,
+          "x-publishable-api-key": "pk_test",
+        }),
+      })
+    )
+    expect(JSON.parse(String(mockFetch.mock.calls[1][1].body))).toEqual({
+      email: "ava@example.com",
+    })
+    expect(mockFetch.mock.calls[2][0]).toBe("http://medusa:9000/auth/token/refresh")
+    expect(mockCookieSet).toHaveBeenCalledWith(
+      "_medusa_customer_token",
+      refreshedToken,
+      expect.objectContaining({ httpOnly: true, path: "/" })
+    )
+    expect(mockCookieSet).toHaveBeenCalledWith(
+      "_medusa_authenticated",
+      "true",
+      expect.objectContaining({ httpOnly: true, path: "/" })
+    )
+    expect(mockCookieDelete).toHaveBeenCalledWith("google_oauth_redirect")
+  })
+
+  it("sets the callback token directly for an existing Google customer", async () => {
+    const token = encodeJwtPayload({
+      actor_id: "cus_existing",
+      user_metadata: { email: "existing@example.com" },
+    })
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ token }),
+    })
+
+    await completeGoogleAuth(
+      createRequest("https://store.staging.example.com/auth/google/callback?code=abc")
+    )
+
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+    expect(mockCookieSet).toHaveBeenCalledWith(
+      "_medusa_customer_token",
+      token,
+      expect.objectContaining({ httpOnly: true, path: "/" })
+    )
+  })
+})

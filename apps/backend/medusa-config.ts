@@ -1,5 +1,10 @@
 import type { Context, OrderTypes } from "@medusajs/framework/types";
-import { loadEnv, defineConfig, Modules } from "@medusajs/framework/utils";
+import {
+  ContainerRegistrationKeys,
+  loadEnv,
+  defineConfig,
+  Modules,
+} from "@medusajs/framework/utils";
 import { customSchema } from "./src/custom-index-schema";
 import { generateOrderCustomDisplayId } from "./src/lib/order-display-id";
 import { getMaildevNotificationProvider } from "./src/modules/maildev-notification/config";
@@ -10,6 +15,29 @@ loadEnv(process.env.NODE_ENV || "development", process.cwd());
 const maildevNotificationProvider = getMaildevNotificationProvider();
 const notificationProvider =
   getResendNotificationProvider() || maildevNotificationProvider;
+
+const googleAuthProvider =
+  process.env.GOOGLE_CLIENT_ID &&
+  process.env.GOOGLE_CLIENT_SECRET &&
+  process.env.GOOGLE_CALLBACK_URL
+    ? {
+        resolve: "@medusajs/medusa/auth-google",
+        id: "google",
+        options: {
+          clientId: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          callbackUrl: process.env.GOOGLE_CALLBACK_URL,
+        },
+      }
+    : null;
+
+const authProviders = [
+  {
+    resolve: "@medusajs/medusa/auth-emailpass",
+    id: "emailpass",
+  },
+  ...(googleAuthProvider ? [googleAuthProvider] : []),
+];
 
 const mergeCors = (value: string | undefined, defaults: string[]): string => {
   return Array.from(
@@ -125,6 +153,13 @@ module.exports = defineConfig({
     },
     {
       resolve: "./src/modules/email-settings",
+    },
+    {
+      resolve: "@medusajs/medusa/auth",
+      dependencies: [Modules.CACHE, ContainerRegistrationKeys.LOGGER],
+      options: {
+        providers: authProviders,
+      },
     },
     ...(notificationProvider
       ? [
