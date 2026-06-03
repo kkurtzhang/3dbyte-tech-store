@@ -5,6 +5,7 @@ import type { MedusaOrder } from "@/lib/medusa/types"
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: jest.fn() }),
+  useSearchParams: () => mockSearchParams,
 }))
 
 jest.mock("@/app/actions/track-order", () => ({
@@ -129,6 +130,12 @@ const order = {
   },
 } as MedusaOrder
 
+let mockSearchParams = new URLSearchParams()
+
+beforeEach(() => {
+  mockSearchParams = new URLSearchParams()
+})
+
 describe("Track order page order details", () => {
   it("prompts for the current customer order reference format", () => {
     render(<TrackOrderPage />)
@@ -139,6 +146,19 @@ describe("Track order page order details", () => {
     expect(
       screen.queryByPlaceholderText("3DB-1777978800123 or order_...")
     ).not.toBeInTheDocument()
+  })
+
+  it("prefills the order reference from the email tracking link", () => {
+    mockSearchParams = new URLSearchParams({
+      reference: "3DBO-AKK7-5KYYDE",
+    })
+
+    render(<TrackOrderPage />)
+
+    expect(screen.getByLabelText("Order number or reference")).toHaveValue(
+      "3DBO-AKK7-5KYYDE"
+    )
+    expect(screen.getByLabelText("Email Address")).toHaveValue("")
   })
 
   it("formats order prices as major units", () => {
