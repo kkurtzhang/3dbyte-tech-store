@@ -6,22 +6,18 @@ import type { FilterSidebarProps } from "../filter-sidebar"
 
 const pushMock = jest.fn()
 const filterSidebarMock = jest.fn()
+const mockUseFilterFacets = jest.fn()
 
 let mockFacets: FilterFacets | null = null
 let mockSearchParams = new URLSearchParams("inStock=true")
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({ push: pushMock }),
-  useSearchParams: () =>
-    mockSearchParams,
+  useSearchParams: () => mockSearchParams,
 }))
 
 jest.mock("../hooks/use-filter-facets", () => ({
-  useFilterFacets: () => ({
-    facets: mockFacets,
-    isLoading: false,
-    error: null,
-  }),
+  useFilterFacets: (options: unknown) => mockUseFilterFacets(options),
 }))
 
 jest.mock("../hooks/use-facet-labels", () => ({
@@ -40,7 +36,10 @@ jest.mock("../filter-sidebar", () => ({
     filterSidebarMock(props)
 
     return (
-      <div data-testid="filter-sidebar" data-in-stock={String(props.selectedInStock)}>
+      <div
+        data-testid="filter-sidebar"
+        data-in-stock={String(props.selectedInStock)}
+      >
         <a href={props.clearAllUrl}>Clear filters</a>
         <button type="button" onClick={() => props.onInStockChange?.(false)}>
           Disable stock filter
@@ -67,10 +66,18 @@ describe("filter wrappers", () => {
     mockSearchParams = new URLSearchParams("inStock=true")
     pushMock.mockReset()
     filterSidebarMock.mockReset()
+    mockUseFilterFacets.mockReset()
+    mockUseFilterFacets.mockImplementation(() => ({
+      facets: mockFacets,
+      isLoading: false,
+      error: null,
+    }))
   })
 
   it("rerenders ShopFilters cleanly when facets load", () => {
-    const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
+    const consoleErrorSpy = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => {})
 
     const { rerender } = render(<ShopFilters />)
 
@@ -84,7 +91,9 @@ describe("filter wrappers", () => {
   })
 
   it("rerenders SearchFilters cleanly when facets load", () => {
-    const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {})
+    const consoleErrorSpy = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => {})
 
     const { rerender } = render(<SearchFilters searchQuery="nozzle" />)
 
@@ -103,14 +112,43 @@ describe("filter wrappers", () => {
 
     render(<ShopFilters />)
 
-    expect(screen.getByTestId("filter-sidebar")).toHaveAttribute("data-in-stock", "true")
+    expect(screen.getByTestId("filter-sidebar")).toHaveAttribute(
+      "data-in-stock",
+      "true",
+    )
     expect(screen.getByRole("link", { name: "Clear filters" })).toHaveAttribute(
       "href",
-      "/shop"
+      "/shop",
     )
 
-    fireEvent.click(screen.getByRole("button", { name: "Disable stock filter" }))
+    fireEvent.click(
+      screen.getByRole("button", { name: "Disable stock filter" }),
+    )
 
     expect(pushMock).toHaveBeenCalledWith("/shop?inStock=false")
+  })
+
+  it("fetches search facets with the active search filters applied", () => {
+    mockSearchParams = new URLSearchParams(
+      "category=cat_filament&brand=brand_polymaker&collection=col_premium&bundle=true&onSale=true&minPrice=30&maxPrice=80&options_colour=Black,White",
+    )
+    mockFacets = FACETS_FIXTURE
+
+    render(<SearchFilters searchQuery="petg" />)
+
+    expect(mockUseFilterFacets).toHaveBeenCalledWith({
+      query: "petg",
+      filterOverrides: expect.arrayContaining([
+        'category_ids IN ["cat_filament"]',
+        'brand.id IN ["brand_polymaker"]',
+        'collection_ids IN ["col_premium"]',
+        "is_bundle = true",
+        "on_sale = true",
+        "in_stock = true",
+        "price_aud >= 30",
+        "price_aud <= 80",
+        'options_colour IN ["Black", "White"]',
+      ]),
+    })
   })
 })

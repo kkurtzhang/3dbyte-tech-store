@@ -1,7 +1,6 @@
 "use client"
 
 import { ProductCard } from "@/features/product/components/product-card"
-import { useSearch } from "@/lib/hooks/use-search"
 import { getProductPath } from "@/lib/medusa/bundles"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
@@ -11,12 +10,8 @@ interface SearchResultsProps {
   initialQuery?: string
 }
 
-export function SearchResults({ initialHits, initialQuery = "" }: SearchResultsProps) {
-  const { hits, isPending } = useSearch({
-    defaultValue: initialQuery,
-    initialHits
-  })
-
+export function SearchResults({ initialHits }: SearchResultsProps) {
+  const hits = initialHits
   const [focusedIndex, setFocusedIndex] = useState(-1)
   const cardRefs = useRef<(HTMLDivElement | null)[]>([])
   const containerRef = useRef<HTMLDivElement>(null)
@@ -40,63 +35,69 @@ export function SearchResults({ initialHits, initialQuery = "" }: SearchResultsP
     return () => window.removeEventListener("resize", updateColumns)
   }, [])
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (hits.length === 0) return
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (hits.length === 0) return
 
-    const gridCols = getGridColumns()
-    const totalItems = hits.length
-    let newIndex = focusedIndex
+      const gridCols = getGridColumns()
+      const totalItems = hits.length
+      let newIndex = focusedIndex
 
-    switch (e.key) {
-      case "ArrowRight":
-        e.preventDefault()
-        newIndex = focusedIndex < totalItems - 1 ? focusedIndex + 1 : 0
-        break
-      case "ArrowLeft":
-        e.preventDefault()
-        newIndex = focusedIndex > 0 ? focusedIndex - 1 : totalItems - 1
-        break
-      case "ArrowDown":
-        e.preventDefault()
-        newIndex = focusedIndex + gridCols < totalItems ? focusedIndex + gridCols : totalItems - 1
-        break
-      case "ArrowUp":
-        e.preventDefault()
-        newIndex = focusedIndex - gridCols >= 0 ? focusedIndex - gridCols : 0
-        break
-      case "Enter":
-        e.preventDefault()
-        if (focusedIndex >= 0 && hits[focusedIndex]) {
-          router.push(
-            `${getProductPath(
-              hits[focusedIndex].handle,
-              hits[focusedIndex].isBundle === true
-            )}?from=${encodeURIComponent("/search")}&fromLabel=${encodeURIComponent("Search")}`
-          )
-        }
-        break
-      case "Escape":
-        e.preventDefault()
-        containerRef.current?.focus()
-        setFocusedIndex(-1)
-        break
-      case "Home":
-        e.preventDefault()
-        newIndex = 0
-        break
-      case "End":
-        e.preventDefault()
-        newIndex = totalItems - 1
-        break
-      default:
-        return
-    }
+      switch (e.key) {
+        case "ArrowRight":
+          e.preventDefault()
+          newIndex = focusedIndex < totalItems - 1 ? focusedIndex + 1 : 0
+          break
+        case "ArrowLeft":
+          e.preventDefault()
+          newIndex = focusedIndex > 0 ? focusedIndex - 1 : totalItems - 1
+          break
+        case "ArrowDown":
+          e.preventDefault()
+          newIndex =
+            focusedIndex + gridCols < totalItems
+              ? focusedIndex + gridCols
+              : totalItems - 1
+          break
+        case "ArrowUp":
+          e.preventDefault()
+          newIndex = focusedIndex - gridCols >= 0 ? focusedIndex - gridCols : 0
+          break
+        case "Enter":
+          e.preventDefault()
+          if (focusedIndex >= 0 && hits[focusedIndex]) {
+            router.push(
+              `${getProductPath(
+                hits[focusedIndex].handle,
+                hits[focusedIndex].isBundle === true,
+              )}?from=${encodeURIComponent("/search")}&fromLabel=${encodeURIComponent("Search")}`,
+            )
+          }
+          break
+        case "Escape":
+          e.preventDefault()
+          containerRef.current?.focus()
+          setFocusedIndex(-1)
+          break
+        case "Home":
+          e.preventDefault()
+          newIndex = 0
+          break
+        case "End":
+          e.preventDefault()
+          newIndex = totalItems - 1
+          break
+        default:
+          return
+      }
 
-    if (newIndex !== focusedIndex) {
-      setFocusedIndex(newIndex)
-      cardRefs.current[newIndex]?.focus()
-    }
-  }, [hits.length, focusedIndex, router])
+      if (newIndex !== focusedIndex) {
+        setFocusedIndex(newIndex)
+        cardRefs.current[newIndex]?.focus()
+      }
+    },
+    [hits.length, focusedIndex, router],
+  )
 
   useEffect(() => {
     const container = containerRef.current
@@ -110,26 +111,18 @@ export function SearchResults({ initialHits, initialQuery = "" }: SearchResultsP
     setFocusedIndex(-1)
   }, [hits])
 
-  if (isPending) {
-    return (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {[...Array(8)].map((_, i) => (
-          <div key={i} className="aspect-square animate-pulse rounded-sm bg-muted/50" />
-        ))}
-      </div>
-    )
-  }
-
   if (hits.length === 0) {
     return (
-      <div 
-        role="status" 
+      <div
+        role="status"
         aria-live="polite"
         className="flex h-64 flex-col items-center justify-center gap-2 border border-dashed rounded-sm bg-secondary/10 text-muted-foreground font-mono"
       >
         <p>NO_RESULTS_FOUND</p>
         <p className="text-xs">TRY_ADJUSTING_SEARCH_TERMS</p>
-        <p className="text-[10px] text-muted-foreground/60">USE_ARROW_KEYS_TO_NAVIGATE</p>
+        <p className="text-[10px] text-muted-foreground/60">
+          USE_ARROW_KEYS_TO_NAVIGATE
+        </p>
       </div>
     )
   }
@@ -149,20 +142,22 @@ export function SearchResults({ initialHits, initialQuery = "" }: SearchResultsP
       {hits.map((hit: any, index: number) => (
         <div
           key={hit.id}
-          ref={(el) => { cardRefs.current[index] = el }}
+          ref={(el) => {
+            cardRefs.current[index] = el
+          }}
           role="option"
           aria-selected={focusedIndex === index}
           tabIndex={focusedIndex === index ? 0 : -1}
           onClick={() =>
             router.push(
-              `${getProductPath(hit.handle, hit.isBundle === true)}?from=${encodeURIComponent("/search")}&fromLabel=${encodeURIComponent("Search")}`
+              `${getProductPath(hit.handle, hit.isBundle === true)}?from=${encodeURIComponent("/search")}&fromLabel=${encodeURIComponent("Search")}`,
             )
           }
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault()
               router.push(
-                `${getProductPath(hit.handle, hit.isBundle === true)}?from=${encodeURIComponent("/search")}&fromLabel=${encodeURIComponent("Search")}`
+                `${getProductPath(hit.handle, hit.isBundle === true)}?from=${encodeURIComponent("/search")}&fromLabel=${encodeURIComponent("Search")}`,
               )
             }
           }}
