@@ -111,49 +111,101 @@ describe("seedAiReadyCatalogue", () => {
       ]),
     };
     const query = {
-      graph: jest.fn(async ({ entity }: { entity: string }) => {
-        if (entity === "product_category") {
-          return {
-            data: [
-              { id: "cat_filament", handle: "filament", parent_category_id: null },
-              { id: "cat_petg", handle: "petg", parent_category_id: "cat_filament" },
-              { id: "cat_petg_legacy", handle: "filament/petg", parent_category_id: "cat_filament" },
-              { id: "cat_tools", handle: "tools" },
-              { id: "cat_nozzles", handle: "spare-parts/nozzles" },
-              { id: "cat_hotends", handle: "spare-parts/hotends" },
-              { id: "cat_build", handle: "build-plates" },
-              { id: "cat_electronics", handle: "electronics" },
-              { id: "cat_motion", handle: "motion" },
-            ],
-          };
-        }
+      graph: jest.fn(
+        async ({
+          entity,
+          fields,
+          filters,
+        }: {
+          entity: string;
+          fields?: string[];
+          filters?: Record<string, unknown>;
+        }) => {
+          if (entity === "product_category") {
+            return {
+              data: [
+                {
+                  id: "cat_filament",
+                  handle: "filament",
+                  parent_category_id: null,
+                },
+                {
+                  id: "cat_petg",
+                  handle: "petg",
+                  parent_category_id: "cat_filament",
+                },
+                {
+                  id: "cat_petg_legacy",
+                  handle: "filament/petg",
+                  parent_category_id: "cat_filament",
+                },
+                { id: "cat_tools", handle: "tools" },
+                { id: "cat_nozzles", handle: "spare-parts/nozzles" },
+                { id: "cat_hotends", handle: "spare-parts/hotends" },
+                { id: "cat_build", handle: "build-plates" },
+                { id: "cat_electronics", handle: "electronics" },
+                { id: "cat_motion", handle: "motion" },
+              ],
+            };
+          }
 
-        if (entity === "product") {
-          return {
-            data: [
-              {
-                id: "prod_sample",
-                brand: null,
-                handle: "polymaker-polylite-petg-black-175-1kg",
-                variants: [
+          if (entity === "product") {
+            const handles = Array.isArray(filters?.handle)
+              ? filters.handle.filter(
+                  (handle): handle is string => typeof handle === "string",
+                )
+              : typeof filters?.handle === "string"
+                ? [filters.handle]
+                : [];
+
+            if (fields?.some((field) => field.includes("inventory_items"))) {
+              return {
+                data: [
                   {
-                    sku: "PM-PETG-BLK-175-1KG",
-                    inventory_items: [
-                      { inventory_item_id: "iitem_petg_black" },
+                    id: "prod_polymaker-polylite-petg-black-175-1kg",
+                    brand: null,
+                    handle: "polymaker-polylite-petg-black-175-1kg",
+                    variants: [
+                      {
+                        id: "variant_petg_black",
+                        sku: "PM-PETG-BLK-175-1KG",
+                        inventory_items: [
+                          { inventory_item_id: "iitem_petg_black" },
+                        ],
+                      },
                     ],
                   },
                 ],
-              },
-            ],
-          };
-        }
+              };
+            }
 
-        if (entity === "stock_location") {
-          return { data: [{ id: "sloc_au" }] };
-        }
+            return {
+              data: handles.map((handle) => ({
+                id: `prod_${handle}`,
+                handle,
+                metadata: {
+                  existing_metadata: true,
+                },
+                variants:
+                  handle === "polymaker-polylite-petg-black-175-1kg"
+                    ? [
+                        {
+                          id: "variant_petg_black",
+                          sku: "PM-PETG-BLK-175-1KG",
+                        },
+                      ]
+                    : [],
+              })),
+            };
+          }
 
-        return { data: [] };
-      }),
+          if (entity === "stock_location") {
+            return { data: [{ id: "sloc_au" }] };
+          }
+
+          return { data: [] };
+        },
+      ),
     };
     const container = {
       resolve: jest.fn((key: string) => {
@@ -183,6 +235,7 @@ describe("seedAiReadyCatalogue", () => {
           handle: string;
           images?: Array<{ url: string }>;
           thumbnail?: string;
+          variants?: Array<{ id?: string; sku?: string }>;
         }>;
       };
     };
@@ -192,6 +245,11 @@ describe("seedAiReadyCatalogue", () => {
     );
 
     expect(petgProduct).toBeDefined();
+    expect(
+      petgProduct?.variants?.find(
+        (variant) => variant.sku === "PM-PETG-BLK-175-1KG",
+      ),
+    ).toMatchObject({ id: "variant_petg_black" });
     expect(petgProduct?.thumbnail).toBe(petgProduct?.images?.[0]?.url);
     expect(petgProduct?.thumbnail).toContain("shop.polymaker.com");
     expect(petgProduct?.thumbnail).not.toContain("placehold.co");
