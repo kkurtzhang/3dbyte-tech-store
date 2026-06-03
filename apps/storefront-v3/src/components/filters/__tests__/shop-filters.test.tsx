@@ -128,6 +128,54 @@ describe("filter wrappers", () => {
     expect(pushMock).toHaveBeenCalledWith("/shop?inStock=false")
   })
 
+  it("fetches shop availability counts with active price filters while keeping slider bounds stable", () => {
+    const fullPriceFacets: FilterFacets = {
+      ...FACETS_FIXTURE,
+      inStock: [{ value: "true", count: 10 }],
+      priceRange: { min: 5, max: 100 },
+    }
+    const filteredPriceFacets: FilterFacets = {
+      ...FACETS_FIXTURE,
+      inStock: [{ value: "true", count: 4 }],
+      priceRange: { min: 30, max: 80 },
+    }
+
+    mockSearchParams = new URLSearchParams("minPrice=30&maxPrice=80")
+    mockUseFilterFacets.mockImplementation(
+      (options: { filterOverrides?: string[] }) => ({
+        facets: options.filterOverrides?.some((filter) =>
+          filter.startsWith("price_aud"),
+        )
+          ? filteredPriceFacets
+          : fullPriceFacets,
+        isLoading: false,
+        error: null,
+      }),
+    )
+
+    render(<ShopFilters />)
+
+    expect(mockUseFilterFacets).toHaveBeenCalledWith({
+      filterOverrides: expect.arrayContaining([
+        "in_stock = true",
+        "price_aud >= 30",
+        "price_aud <= 80",
+      ]),
+    })
+    expect(mockUseFilterFacets).toHaveBeenCalledWith({
+      filterOverrides: ["in_stock = true"],
+    })
+    expect(filterSidebarMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        facets: expect.objectContaining({
+          inStock: [{ value: "true", count: 4 }],
+          priceRange: { min: 5, max: 100 },
+        }),
+        priceRange: { min: 30, max: 80 },
+      }),
+    )
+  })
+
   it("fetches search facets with the active search filters applied", () => {
     mockSearchParams = new URLSearchParams(
       "category=cat_filament&brand=brand_polymaker&collection=col_premium&bundle=true&onSale=true&minPrice=30&maxPrice=80&options_colour=Black,White",

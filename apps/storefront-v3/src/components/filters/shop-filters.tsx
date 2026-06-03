@@ -25,22 +25,30 @@ function buildFilterOverrides(
   selectedBundleOnly: boolean,
   selectedOnSale: boolean,
   selectedInStock: boolean,
-  minPrice: number,
-  maxPrice: number,
-  selectedOptions: Record<string, string[]>
+  minPrice: number | undefined,
+  maxPrice: number | undefined,
+  selectedOptions: Record<string, string[]>,
+  options: { includePrice?: boolean } = {},
 ): string[] {
   const filters: string[] = []
+  const includePrice = options.includePrice ?? true
 
   if (selectedCategories.length > 0) {
-    filters.push(`category_ids IN [${selectedCategories.map((c) => `"${c}"`).join(", ")}]`)
+    filters.push(
+      `category_ids IN [${selectedCategories.map((c) => `"${c}"`).join(", ")}]`,
+    )
   }
 
   if (selectedBrands.length > 0) {
-    filters.push(`brand.id IN [${selectedBrands.map((b) => `"${b}"`).join(", ")}]`)
+    filters.push(
+      `brand.id IN [${selectedBrands.map((b) => `"${b}"`).join(", ")}]`,
+    )
   }
 
   if (selectedCollections.length > 0) {
-    filters.push(`collection_ids IN [${selectedCollections.map((c) => `"${c}"`).join(", ")}]`)
+    filters.push(
+      `collection_ids IN [${selectedCollections.map((c) => `"${c}"`).join(", ")}]`,
+    )
   }
 
   if (selectedBundleOnly) {
@@ -55,11 +63,11 @@ function buildFilterOverrides(
     filters.push("in_stock = true")
   }
 
-  if (minPrice > 0) {
+  if (includePrice && minPrice !== undefined) {
     filters.push(`price_aud >= ${minPrice}`)
   }
 
-  if (maxPrice < 10000) {
+  if (includePrice && maxPrice !== undefined) {
     filters.push(`price_aud <= ${maxPrice}`)
   }
 
@@ -71,6 +79,13 @@ function buildFilterOverrides(
   })
 
   return filters
+}
+
+function parseNumberParam(value: string | null): number | undefined {
+  if (!value) return undefined
+
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : undefined
 }
 
 /**
@@ -88,12 +103,19 @@ export function ShopFilters({ className }: ShopFiltersProps) {
   const searchParams = useSearchParams()
 
   // Parse current filter selections from URL
-  const selectedCategories = searchParams.get("category")?.split(",").filter(Boolean) || []
-  const selectedBrands = searchParams.get("brand")?.split(",").filter(Boolean) || []
-  const selectedCollections = searchParams.get("collection")?.split(",").filter(Boolean) || []
+  const selectedCategories =
+    searchParams.get("category")?.split(",").filter(Boolean) || []
+  const selectedBrands =
+    searchParams.get("brand")?.split(",").filter(Boolean) || []
+  const selectedCollections =
+    searchParams.get("collection")?.split(",").filter(Boolean) || []
   const selectedBundleOnly = searchParams.get("bundle") === "true"
   const selectedOnSale = searchParams.get("onSale") === "true"
   const selectedInStock = searchParams.get("inStock") !== "false"
+  const selectedMinPrice = parseNumberParam(searchParams.get("minPrice"))
+  const selectedMaxPrice = parseNumberParam(searchParams.get("maxPrice"))
+  const hasSelectedPriceFilter =
+    selectedMinPrice !== undefined || selectedMaxPrice !== undefined
 
   // Parse dynamic options from URL (e.g., options_colour=Black,White)
   const selectedOptions = useMemo(() => {
@@ -118,9 +140,9 @@ export function ShopFilters({ className }: ShopFiltersProps) {
       selectedBundleOnly,
       selectedOnSale,
       selectedInStock,
-      0, // Don't filter by price for facet calculation
-      10000, // Don't filter by price for facet calculation
-      selectedOptions
+      selectedMinPrice,
+      selectedMaxPrice,
+      selectedOptions,
     )
   }, [
     selectedCategories,
@@ -129,22 +151,68 @@ export function ShopFilters({ className }: ShopFiltersProps) {
     selectedBundleOnly,
     selectedOnSale,
     selectedInStock,
+    selectedMinPrice,
+    selectedMaxPrice,
+    selectedOptions,
+  ])
+
+  const priceBoundsFilterOverrides = useMemo(() => {
+    return buildFilterOverrides(
+      selectedCategories,
+      selectedBrands,
+      selectedCollections,
+      selectedBundleOnly,
+      selectedOnSale,
+      selectedInStock,
+      selectedMinPrice,
+      selectedMaxPrice,
+      selectedOptions,
+      { includePrice: false },
+    )
+  }, [
+    selectedCategories,
+    selectedBrands,
+    selectedCollections,
+    selectedBundleOnly,
+    selectedOnSale,
+    selectedInStock,
+    selectedMinPrice,
+    selectedMaxPrice,
     selectedOptions,
   ])
 
   // Fetch facets from Meilisearch with current filter selections for dynamic counts
-  const { facets: rawFacets, isLoading: _isLoading, error: _error } = useFilterFacets({
+  const {
+    facets: rawFacets,
+    isLoading: _isLoading,
+    error: _error,
+  } = useFilterFacets({
     filterOverrides,
   })
 
+  const { facets: priceBoundsFacets } = useFilterFacets(
+    hasSelectedPriceFilter
+      ? {
+          filterOverrides: priceBoundsFilterOverrides,
+        }
+      : {
+          filterOverrides: priceBoundsFilterOverrides,
+          enabled: false,
+        },
+  )
+
   // Fetch labels for facet IDs
   const { labels } = useFacetLabels()
+  const priceBounds = priceBoundsFacets?.priceRange ?? rawFacets?.priceRange
 
   // Transform facets to apply human-readable labels
   const facets = useMemo(() => {
     if (!rawFacets) return null
 
-    const applyLabels = (options: FilterOption[], labelMap: Record<string, string>) =>
+    const applyLabels = (
+      options: FilterOption[],
+      labelMap: Record<string, string>,
+    ) =>
       options.map((opt) => ({
         ...opt,
         label: labelMap[opt.value] || opt.label || opt.value,
@@ -152,14 +220,15 @@ export function ShopFilters({ className }: ShopFiltersProps) {
 
     return {
       ...rawFacets,
+      priceRange: priceBounds ?? rawFacets.priceRange,
       categories: applyLabels(rawFacets.categories, labels.categories),
       brands: applyLabels(rawFacets.brands, labels.brands), // Now apply brand name labels
       collections: applyLabels(rawFacets.collections, labels.collections),
     } as FilterFacets
-  }, [rawFacets, labels])
+  }, [rawFacets, labels, priceBounds])
 
-  const minPrice = Number(searchParams.get("minPrice")) || facets?.priceRange.min || 0
-  const maxPrice = Number(searchParams.get("maxPrice")) || facets?.priceRange.max || 1000
+  const minPrice = selectedMinPrice ?? priceBounds?.min ?? 0
+  const maxPrice = selectedMaxPrice ?? priceBounds?.max ?? 1000
 
   // Local state for price range (before apply)
   const [localMinPrice, setLocalMinPrice] = useState(minPrice)
@@ -189,7 +258,8 @@ export function ShopFilters({ className }: ShopFiltersProps) {
     // Add dynamic options
     searchParams.forEach((value, key) => {
       if (key.startsWith("options_")) {
-        (params as Record<string, string | undefined>)[key] = value || undefined
+        ;(params as Record<string, string | undefined>)[key] =
+          value || undefined
       }
     })
 
@@ -274,13 +344,16 @@ export function ShopFilters({ className }: ShopFiltersProps) {
     const params = getCurrentParams()
     updateFilters({
       ...params,
-      collection: newCollections.length > 0 ? newCollections.join(",") : undefined,
+      collection:
+        newCollections.length > 0 ? newCollections.join(",") : undefined,
     })
   }
 
   const selectAllCollections = () => {
     if (!facets) return
-    const allCollectionIds = facets.collections.map((opt) => opt.value).join(",")
+    const allCollectionIds = facets.collections
+      .map((opt) => opt.value)
+      .join(",")
     const params = getCurrentParams()
     updateFilters({
       ...params,
@@ -324,15 +397,22 @@ export function ShopFilters({ className }: ShopFiltersProps) {
   // Price range handlers
   const updatePrice = (min: number, max: number) => {
     const params = getCurrentParams()
+    const boundsMin = priceBounds?.min ?? 0
+    const boundsMax = priceBounds?.max ?? 1000
+
     updateFilters({
       ...params,
-      minPrice: min > (facets?.priceRange.min || 0) ? String(min) : undefined,
-      maxPrice: max < (facets?.priceRange.max || 1000) ? String(max) : undefined,
+      minPrice: min > boundsMin ? String(min) : undefined,
+      maxPrice: max < boundsMax ? String(max) : undefined,
     })
   }
 
   // Dynamic option handlers
-  const updateOption = (optionKey: string, optionValue: string, checked: boolean) => {
+  const updateOption = (
+    optionKey: string,
+    optionValue: string,
+    checked: boolean,
+  ) => {
     const currentValues = selectedOptions[optionKey] || []
     let newValues = currentValues.filter((v) => v !== optionValue)
     if (checked) {
@@ -343,7 +423,8 @@ export function ShopFilters({ className }: ShopFiltersProps) {
     const updatedParams = {
       ...params,
     } as Record<string, string | undefined>
-    updatedParams[optionKey] = newValues.length > 0 ? newValues.join(",") : undefined
+    updatedParams[optionKey] =
+      newValues.length > 0 ? newValues.join(",") : undefined
 
     updateFilters(updatedParams as ShopQueryParams)
   }
@@ -367,7 +448,8 @@ export function ShopFilters({ className }: ShopFiltersProps) {
           const newCategories = selectedCategories.filter((c) => c !== value)
           updateFilters({
             ...params,
-            category: newCategories.length > 0 ? newCategories.join(",") : undefined,
+            category:
+              newCategories.length > 0 ? newCategories.join(",") : undefined,
           })
         }
         break
@@ -385,7 +467,8 @@ export function ShopFilters({ className }: ShopFiltersProps) {
           const newCollections = selectedCollections.filter((c) => c !== value)
           updateFilters({
             ...params,
-            collection: newCollections.length > 0 ? newCollections.join(",") : undefined,
+            collection:
+              newCollections.length > 0 ? newCollections.join(",") : undefined,
           })
         }
         break
@@ -422,7 +505,8 @@ export function ShopFilters({ className }: ShopFiltersProps) {
           const updatedParams = {
             ...params,
           } as Record<string, string | undefined>
-          updatedParams[type] = newValues.length > 0 ? newValues.join(",") : undefined
+          updatedParams[type] =
+            newValues.length > 0 ? newValues.join(",") : undefined
           updateFilters(updatedParams as ShopQueryParams)
         } else if (type.startsWith("options_")) {
           const updatedParams = {
