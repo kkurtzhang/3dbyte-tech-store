@@ -34,7 +34,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 ### Launch-gate security: Public order lookup returned payment provider payloads (Backend)
 
 - Found: `2026-06-03` staging launch gate while verifying `3DBO-AKK7-5KYYDE` tracking lookup.
-- Status: fixed in branch `fix/order-lookup-payment-data-leak`; pending PR merge, Coolify redeploy, and staging lookup re-smoke.
+- Status: fixed on staging in merge commit `a332235`; staging lookup smoke passed with tracking labels present and payment provider payloads absent.
 - Problem: `/store/orders/lookup` requested and returned `payment_collections.payments.data`, which exposed provider-specific Stripe PaymentIntent details in a customer-facing order lookup response.
 - Acceptance:
   - Public order lookup does not request payment provider data from the Medusa graph query.
@@ -100,7 +100,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 ### Launch-gate bug: Customer order tracking does not reflect shipped fulfillment (Storefront + Backend)
 
 - Found: `2026-06-03` staging launch gate on order `3DBO-AKK7-5KYYDE` / `order_01KT6NYPSV6D65VVXZ4Z4XAVPP`.
-- Status: fixed in branch `fix/launch-account-order-gates`; pending PR merge, Coolify redeploy, and staging tracking re-smoke.
+- Status: account order detail shows shipped/tracking after `fix/launch-account-order-gates`; public lookup shipped-status normalization is fixed in branch `fix/order-lookup-shipped-status-normalization`, pending PR merge, Coolify redeploy, and staging tracking re-smoke.
 - Problem: after Medusa Admin marked the manual fulfillment as shipped with tracking number `STG-3DBO-AKK7-5KYYDE`, the customer `/track-order` result still showed `Pending`, `Processing`, and "waiting for fulfillment" with no tracking number.
 - Evidence:
   - Admin order showed fulfillment `Shipped`, provider `Manual`, tracking `STG-3DBO-AKK7-5KYYDE`, and activity `Items shipped`.
