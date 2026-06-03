@@ -12,6 +12,75 @@ export interface SearchFiltersProps {
   searchQuery: string
 }
 
+function buildFilterOverrides(
+  selectedCategories: string[],
+  selectedBrands: string[],
+  selectedCollections: string[],
+  selectedBundleOnly: boolean,
+  selectedOnSale: boolean,
+  selectedInStock: boolean,
+  minPrice: number | undefined,
+  maxPrice: number | undefined,
+  selectedOptions: Record<string, string[]>,
+): string[] {
+  const filters: string[] = []
+
+  if (selectedCategories.length > 0) {
+    filters.push(
+      `category_ids IN [${selectedCategories.map((id) => `"${id}"`).join(", ")}]`,
+    )
+  }
+
+  if (selectedBrands.length > 0) {
+    filters.push(
+      `brand.id IN [${selectedBrands.map((id) => `"${id}"`).join(", ")}]`,
+    )
+  }
+
+  if (selectedCollections.length > 0) {
+    filters.push(
+      `collection_ids IN [${selectedCollections.map((id) => `"${id}"`).join(", ")}]`,
+    )
+  }
+
+  if (selectedBundleOnly) {
+    filters.push("is_bundle = true")
+  }
+
+  if (selectedOnSale) {
+    filters.push("on_sale = true")
+  }
+
+  if (selectedInStock) {
+    filters.push("in_stock = true")
+  }
+
+  if (minPrice !== undefined) {
+    filters.push(`price_aud >= ${minPrice}`)
+  }
+
+  if (maxPrice !== undefined) {
+    filters.push(`price_aud <= ${maxPrice}`)
+  }
+
+  Object.entries(selectedOptions).forEach(([key, values]) => {
+    if (values.length > 0) {
+      filters.push(
+        `${key} IN [${values.map((value) => `"${value}"`).join(", ")}]`,
+      )
+    }
+  })
+
+  return filters
+}
+
+function parseNumberParam(value: string | null): number | undefined {
+  if (!value) return undefined
+
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : undefined
+}
+
 /**
  * SearchFilters - Wrapper component for Search page filtering
  *
@@ -23,21 +92,62 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Parse inStock filter early (needed for facet filtering)
+  // Parse current filter selections from URL
+  const selectedCategories =
+    searchParams.get("category")?.split(",").filter(Boolean) || []
+  const selectedBrands =
+    searchParams.get("brand")?.split(",").filter(Boolean) || []
+  const selectedCollections =
+    searchParams.get("collection")?.split(",").filter(Boolean) || []
+  const selectedBundleOnly = searchParams.get("bundle") === "true"
+  const selectedOnSale = searchParams.get("onSale") === "true"
   const selectedInStock = searchParams.get("inStock") !== "false"
+  const selectedMinPrice = parseNumberParam(searchParams.get("minPrice"))
+  const selectedMaxPrice = parseNumberParam(searchParams.get("maxPrice"))
+
+  // Parse dynamic options from URL (e.g., options_colour=Black,White)
+  const selectedOptions = useMemo(() => {
+    const options: Record<string, string[]> = {}
+    searchParams.forEach((value, key) => {
+      if (key.startsWith("options_")) {
+        options[key] = value.split(",").filter(Boolean)
+      }
+    })
+    return options
+  }, [searchParams])
 
   // Build filter overrides for facet fetching
-  // Include inStock filter so facet counts reflect only in-stock items when selected
   const filterOverrides = useMemo(() => {
-    const filters: string[] = []
-    if (selectedInStock) {
-      filters.push("in_stock = true")
-    }
+    const filters = buildFilterOverrides(
+      selectedCategories,
+      selectedBrands,
+      selectedCollections,
+      selectedBundleOnly,
+      selectedOnSale,
+      selectedInStock,
+      selectedMinPrice,
+      selectedMaxPrice,
+      selectedOptions,
+    )
     return filters.length > 0 ? filters : undefined
-  }, [selectedInStock])
+  }, [
+    selectedCategories,
+    selectedBrands,
+    selectedCollections,
+    selectedBundleOnly,
+    selectedOnSale,
+    selectedInStock,
+    selectedMinPrice,
+    selectedMaxPrice,
+    selectedOptions,
+  ])
 
   // Fetch facets from Meilisearch with search query and inStock filter
-  const { facets, isLoading: _isLoading, error: _error } = useFilterFacets({
+  const {
+    facets,
+    isLoading: _isLoading,
+    error: _error,
+  } = useFilterFacets({
     query: searchQuery,
     filterOverrides,
   })
@@ -66,26 +176,10 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
     }
   }, [facets, facetLabels])
 
-  // Parse current filter selections from URL
-  const selectedCategories = searchParams.get("category")?.split(",").filter(Boolean) || []
-  const selectedBrands = searchParams.get("brand")?.split(",").filter(Boolean) || []
-  const selectedCollections = searchParams.get("collection")?.split(",").filter(Boolean) || []
-  const selectedBundleOnly = searchParams.get("bundle") === "true"
-  const selectedOnSale = searchParams.get("onSale") === "true"
-  // selectedInStock is already parsed above for facet filtering
-  const minPrice = Number(searchParams.get("minPrice")) || facets?.priceRange.min || 0
-  const maxPrice = Number(searchParams.get("maxPrice")) || facets?.priceRange.max || 1000
-
-  // Parse dynamic options from URL (e.g., options_colour=Black,White)
-  const selectedOptions = useMemo(() => {
-    const options: Record<string, string[]> = {}
-    searchParams.forEach((value, key) => {
-      if (key.startsWith("options_")) {
-        options[key] = value.split(",").filter(Boolean)
-      }
-    })
-    return options
-  }, [searchParams])
+  const minPrice =
+    Number(searchParams.get("minPrice")) || facets?.priceRange.min || 0
+  const maxPrice =
+    Number(searchParams.get("maxPrice")) || facets?.priceRange.max || 1000
 
   // Local state for price range (before apply)
   const [localMinPrice, setLocalMinPrice] = useState(minPrice)
@@ -98,7 +192,9 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
   }, [minPrice, maxPrice])
 
   // Build a search URL with query string
-  const buildSearchUrl = (params: Record<string, string | number | undefined>): string => {
+  const buildSearchUrl = (
+    params: Record<string, string | number | undefined>,
+  ): string => {
     const queryParams = new URLSearchParams()
 
     // Always preserve the search query
@@ -142,7 +238,9 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
     return params
   }
 
-  const updateFilters = (params: Record<string, string | number | undefined>) => {
+  const updateFilters = (
+    params: Record<string, string | number | undefined>,
+  ) => {
     router.push(buildSearchUrl(params))
   }
 
@@ -220,13 +318,16 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
     const params = getCurrentParams()
     updateFilters({
       ...params,
-      collection: newCollections.length > 0 ? newCollections.join(",") : undefined,
+      collection:
+        newCollections.length > 0 ? newCollections.join(",") : undefined,
     })
   }
 
   const selectAllCollections = () => {
     if (!facets) return
-    const allCollectionIds = facets.collections.map((opt) => opt.value).join(",")
+    const allCollectionIds = facets.collections
+      .map((opt) => opt.value)
+      .join(",")
     const params = getCurrentParams()
     updateFilters({
       ...params,
@@ -273,12 +374,17 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
     updateFilters({
       ...params,
       minPrice: min > (facets?.priceRange.min || 0) ? String(min) : undefined,
-      maxPrice: max < (facets?.priceRange.max || 1000) ? String(max) : undefined,
+      maxPrice:
+        max < (facets?.priceRange.max || 1000) ? String(max) : undefined,
     })
   }
 
   // Dynamic option handlers
-  const updateOption = (optionKey: string, optionValue: string, checked: boolean) => {
+  const updateOption = (
+    optionKey: string,
+    optionValue: string,
+    checked: boolean,
+  ) => {
     const currentValues = selectedOptions[optionKey] || []
     let newValues = currentValues.filter((v) => v !== optionValue)
     if (checked) {
@@ -289,7 +395,8 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
     const updatedParams = {
       ...params,
     } as Record<string, string | undefined>
-    updatedParams[optionKey] = newValues.length > 0 ? newValues.join(",") : undefined
+    updatedParams[optionKey] =
+      newValues.length > 0 ? newValues.join(",") : undefined
 
     updateFilters(updatedParams)
   }
@@ -313,7 +420,8 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
           const newCategories = selectedCategories.filter((c) => c !== value)
           updateFilters({
             ...params,
-            category: newCategories.length > 0 ? newCategories.join(",") : undefined,
+            category:
+              newCategories.length > 0 ? newCategories.join(",") : undefined,
           })
         }
         break
@@ -331,7 +439,8 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
           const newCollections = selectedCollections.filter((c) => c !== value)
           updateFilters({
             ...params,
-            collection: newCollections.length > 0 ? newCollections.join(",") : undefined,
+            collection:
+              newCollections.length > 0 ? newCollections.join(",") : undefined,
           })
         }
         break
@@ -368,7 +477,8 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
           const updatedParams = {
             ...params,
           } as Record<string, string | undefined>
-          updatedParams[type] = newValues.length > 0 ? newValues.join(",") : undefined
+          updatedParams[type] =
+            newValues.length > 0 ? newValues.join(",") : undefined
           updateFilters(updatedParams)
         } else if (type.startsWith("options_")) {
           const updatedParams = {
