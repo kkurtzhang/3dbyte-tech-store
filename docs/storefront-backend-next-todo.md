@@ -31,6 +31,17 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 
 ## Remaining TODO (Priority Order)
 
+### Launch-gate security: Public order lookup returned payment provider payloads (Backend)
+
+- Found: `2026-06-03` staging launch gate while verifying `3DBO-AKK7-5KYYDE` tracking lookup.
+- Status: fixed in branch `fix/order-lookup-payment-data-leak`; pending PR merge, Coolify redeploy, and staging lookup re-smoke.
+- Problem: `/store/orders/lookup` requested and returned `payment_collections.payments.data`, which exposed provider-specific Stripe PaymentIntent details in a customer-facing order lookup response.
+- Acceptance:
+  - Public order lookup does not request payment provider data from the Medusa graph query.
+  - Public order lookup strips payment collection payloads even if upstream graph data unexpectedly includes them.
+  - Order tracking still shows order status, fulfillment status, items, addresses, totals, and tracking labels.
+  - Regression tests fail if payment provider data is requested or returned.
+
 ### Launch-gate follow-up: Account signup email confirmation/verification (Storefront + Backend + Email)
 
 - Found: `2026-06-03` staging launch gate during logged-in checkout smoke.
