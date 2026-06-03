@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { Suspense, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { getSafePaymentMethodDisplay } from "@3dbyte-tech-store/shared-utils"
 import { Package, CreditCard, ArrowRight, AlertCircle, Truck } from "lucide-react"
 import { lookupOrder } from "@/app/actions/track-order"
@@ -30,6 +30,10 @@ const statusLabels: Record<OrderStatus, string> = {
   cancelled: "Cancelled",
   canceled: "Cancelled",
   refunded: "Refunded",
+}
+
+function normalizeInitialOrderReference(reference: string | null | undefined) {
+  return reference?.trim() || ""
 }
 
 function OrderStatusBadge({ status }: { status: string }) {
@@ -182,9 +186,9 @@ export function OrderDetails({ order }: { order: MedusaOrder }) {
   )
 }
 
-function LookupForm() {
+function LookupForm({ initialReference = "" }: { initialReference?: string }) {
   const router = useRouter()
-  const [orderId, setOrderId] = useState("")
+  const [orderId, setOrderId] = useState(initialReference)
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -285,10 +289,24 @@ function LookupForm() {
   )
 }
 
+function LookupFormFromSearchParams() {
+  const searchParams = useSearchParams()
+
+  return (
+    <LookupForm
+      initialReference={normalizeInitialOrderReference(
+        searchParams?.get("reference")
+      )}
+    />
+  )
+}
+
 export default function TrackOrderPage() {
   return (
     <div className="container py-12 md:py-16">
-      <LookupForm />
+      <Suspense fallback={<LookupForm />}>
+        <LookupFormFromSearchParams />
+      </Suspense>
     </div>
   )
 }

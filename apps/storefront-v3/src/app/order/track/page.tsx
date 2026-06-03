@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { Suspense, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Package, MapPin, CreditCard, ArrowRight, AlertCircle, CheckCircle } from "lucide-react"
 import { lookupOrder } from "@/app/actions/track-order"
 import { Button } from "@/components/ui/button"
@@ -19,6 +19,10 @@ const statusLabels: Record<OrderStatus, string> = {
   completed: "Delivered",
   cancelled: "Cancelled",
   refunded: "Refunded",
+}
+
+function normalizeInitialOrderReference(reference: string | null | undefined) {
+  return reference?.trim() || ""
 }
 
 const statusSteps: Record<OrderStatus, string[]> = {
@@ -238,9 +242,9 @@ function OrderDetails({ order }: { order: MedusaOrder }) {
   )
 }
 
-function LookupForm() {
+function LookupForm({ initialReference = "" }: { initialReference?: string }) {
   const router = useRouter()
-  const [orderId, setOrderId] = useState("")
+  const [orderId, setOrderId] = useState(initialReference)
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -341,10 +345,24 @@ function LookupForm() {
   )
 }
 
+function LookupFormFromSearchParams() {
+  const searchParams = useSearchParams()
+
+  return (
+    <LookupForm
+      initialReference={normalizeInitialOrderReference(
+        searchParams?.get("reference")
+      )}
+    />
+  )
+}
+
 export default function TrackOrderPage() {
   return (
     <div className="container py-12 md:py-16">
-      <LookupForm />
+      <Suspense fallback={<LookupForm />}>
+        <LookupFormFromSearchParams />
+      </Suspense>
     </div>
   )
 }
