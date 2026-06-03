@@ -212,6 +212,7 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
           tracking_url: shipment.tracking_url,
           carrier_name: shipment.carrier_name,
           carrier_id: shipment.carrier_id,
+          selected_rate: shipment.selected_rate,
         },
         labels: shipment.label_url
           ? [

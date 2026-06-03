@@ -83,6 +83,7 @@ export interface KarrioShipmentRequest {
   label_type?: "PDF" | "PNG" | "ZPL";
   metadata?: Record<string, unknown>;
   selected_rate_id?: string;
+  references?: string[];
 }
 
 export interface KarrioShipment {

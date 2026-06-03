@@ -36,11 +36,16 @@ export class KarrioClient {
   async createShipment(
     request: KarrioShipmentRequest
   ): Promise<KarrioShipment> {
-    return this.request<KarrioShipment>(
-      "POST",
-      "/v1/shipments",
-      this.normalizeShipmentRequest(request)
-    );
+    const normalizedRequest = this.normalizeShipmentRequest(request);
+    if (normalizedRequest.selected_rate_id) {
+      return this.request<KarrioShipment>(
+        "POST",
+        "/v1/proxy/shipments",
+        this.normalizeSelectedRateShipmentRequest(normalizedRequest)
+      );
+    }
+
+    return this.request<KarrioShipment>("POST", "/v1/shipments", normalizedRequest);
   }
 
   async getTracking(trackerId: string): Promise<KarrioTracker> {
@@ -147,9 +152,22 @@ export class KarrioClient {
   ): KarrioShipmentRequest {
     return {
       ...request,
+      selected_rate_id: request.selected_rate_id?.trim() || undefined,
       shipper: this.normalizeAddress(request.shipper),
       recipient: this.normalizeAddress(request.recipient),
       parcels: request.parcels.map((parcel) => ({ ...parcel })),
+      references: request.references?.map((reference) => reference.trim()).filter(Boolean),
+    };
+  }
+
+  private normalizeSelectedRateShipmentRequest(
+    request: KarrioShipmentRequest
+  ): Record<string, unknown> {
+    return {
+      selected_rate_id: request.selected_rate_id,
+      ...(request.label_type ? { label_type: request.label_type } : {}),
+      ...(request.references?.length ? { references: [...request.references] } : {}),
+      ...(request.metadata ? { metadata: { ...request.metadata } } : {}),
     };
   }
 }

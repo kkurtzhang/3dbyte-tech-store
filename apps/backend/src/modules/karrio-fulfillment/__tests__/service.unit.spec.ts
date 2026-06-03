@@ -301,4 +301,77 @@ describe("KarrioFulfillmentService", () => {
       }),
     );
   });
+
+  it("stores selected-rate metadata when creating a Karrio fulfillment label", async () => {
+    const service = new KarrioFulfillmentService({ logger }, defaultOptions);
+    const selectedRate = {
+      id: "rat_live_aramex_priority",
+      carrier_id: "Aramex",
+      carrier_name: "aramex_aunz",
+      service: "aramex_aunz",
+      total_charge: 19.1,
+      currency: "AUD",
+    };
+    const createShipment = jest.fn().mockResolvedValue({
+      id: "shp_live_aramex_priority",
+      status: "purchased",
+      tracking_number: "ARX123456789",
+      tracking_url: "https://track.test/ARX123456789",
+      label_url: "https://karrio.test/labels/shp_live_aramex_priority.pdf",
+      carrier_name: "aramex_aunz",
+      carrier_id: "Aramex",
+      service: "aramex_aunz",
+      selected_rate: selectedRate,
+      created_at: "2026-06-04T00:00:00Z",
+    });
+    getClient(service).client.createShipment = createShipment;
+
+    const result = await service.createFulfillment(
+      {
+        selected_rate_id: "rat_live_aramex_priority",
+        service: "stale_aramex_economy",
+        carrier_id: "stale-aramex",
+        service_name: "Aramex Priority",
+      },
+      [{ quantity: 1, variant: { weight: 0.5 } }],
+      {
+        shipping_address: {
+          first_name: "Launch",
+          last_name: "Gate",
+          address_1: "32 Kiernan St",
+          city: "Gwynneville",
+          postal_code: "2500",
+          country_code: "AU",
+          province: "NSW",
+        },
+      } as never,
+      {},
+    );
+
+    expect(createShipment).toHaveBeenCalledWith(
+      expect.objectContaining({
+        selected_rate_id: "rat_live_aramex_priority",
+        service: "stale_aramex_economy",
+        carrier_ids: ["stale-aramex"],
+        label_type: "PDF",
+      }),
+    );
+    expect(result.data).toMatchObject({
+      selected_rate_id: "rat_live_aramex_priority",
+      selected_rate: selectedRate,
+      karrio_shipment_id: "shp_live_aramex_priority",
+      tracking_number: "ARX123456789",
+      label_url: "https://karrio.test/labels/shp_live_aramex_priority.pdf",
+      tracking_url: "https://track.test/ARX123456789",
+      carrier_name: "aramex_aunz",
+      carrier_id: "Aramex",
+    });
+    expect(result.labels).toEqual([
+      {
+        tracking_number: "ARX123456789",
+        tracking_url: "https://track.test/ARX123456789",
+        label_url: "https://karrio.test/labels/shp_live_aramex_priority.pdf",
+      },
+    ]);
+  });
 });

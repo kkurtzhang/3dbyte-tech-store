@@ -82,6 +82,8 @@ export const POST = async (
         label_url: shipment.label_url,
         tracking_url: shipment.tracking_url,
         carrier_name: shipment.carrier_name,
+        carrier_id: shipment.carrier_id,
+        selected_rate: shipment.selected_rate,
       },
     });
 
@@ -91,6 +93,8 @@ export const POST = async (
       label_url: shipment.label_url,
       tracking_url: shipment.tracking_url,
       carrier_name: shipment.carrier_name,
+      carrier_id: shipment.carrier_id,
+      selected_rate: shipment.selected_rate,
     });
   } catch (error) {
     if (error instanceof MedusaError) {

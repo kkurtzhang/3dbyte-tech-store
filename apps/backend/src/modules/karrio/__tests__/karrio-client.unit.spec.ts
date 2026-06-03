@@ -184,6 +184,46 @@ describe("KarrioClient", () => {
       expect(result.tracking_number).toBe("CP123456789AU");
       expect(result.label_url).toBe("https://karrio.test/labels/shp_123.pdf");
     });
+
+    it("purchases a shipment from a selected live rate through Karrio proxy shipments", async () => {
+      const mockShipment = {
+        id: "shp_selected_rate",
+        status: "purchased",
+        tracking_number: "ARX123456789",
+        label_url: "https://karrio.test/labels/shp_selected_rate.pdf",
+        carrier_name: "aramex_aunz",
+        carrier_id: "Aramex",
+        service: "aramex_aunz",
+        selected_rate: {
+          id: "rat_live_aramex_priority",
+          total_charge: 19.1,
+          currency: "AUD",
+        },
+        created_at: "2026-06-04T00:00:00Z",
+      };
+
+      fetchSpy.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockShipment,
+      });
+
+      await client.createShipment({
+        ...mockRateRequest,
+        service: "stale_aramex_economy",
+        carrier_ids: ["stale-aramex"],
+        label_type: "PDF",
+        selected_rate_id: "rat_live_aramex_priority",
+      });
+
+      expect(fetchSpy).toHaveBeenCalledWith(
+        "http://localhost:5002/v1/proxy/shipments",
+        expect.objectContaining({ method: "POST" })
+      );
+      expect(JSON.parse(fetchSpy.mock.calls[0][1]?.body as string)).toEqual({
+        selected_rate_id: "rat_live_aramex_priority",
+        label_type: "PDF",
+      });
+    });
   });
 
   describe("getTracking", () => {
