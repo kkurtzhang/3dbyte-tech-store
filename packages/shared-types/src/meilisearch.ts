@@ -331,11 +331,7 @@ export interface SyncProductsStepProduct {
   images?: Array<{
     url: string;
   }>;
-  categories?: Array<{
-    id: string;
-    name: string;
-    handle: string;
-  }>;
+  categories?: SyncProductsStepCategory[];
   tags?: Array<{
     id: string;
     value: string;
@@ -350,6 +346,14 @@ export interface SyncProductsStepProduct {
     handle: string;
   } | null;
   bundle?: SyncProductsStepBundle | SyncProductsStepBundle[] | null;
+}
+
+export interface SyncProductsStepCategory {
+  id: string;
+  name: string;
+  handle: string;
+  parent_category_id?: string | null;
+  parent_category?: SyncProductsStepCategory | null;
 }
 
 export interface SyncProductsStepBundle {

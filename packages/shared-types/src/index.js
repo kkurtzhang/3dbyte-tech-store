@@ -5,4 +5,6 @@
 export { default as MedusaSdkClient } from "@medusajs/js-sdk";
 // Meilisearch types
 export * from "./meilisearch";
+// Shipping types
+export * from "./shipping";
 //# sourceMappingURL=index.js.map

@@ -1,5 +1,6 @@
 export { default as MedusaSdkClient } from "@medusajs/js-sdk";
 export * from "./meilisearch";
+export * from "./shipping";
 export interface StoreConfig {
     name: string;
     description: string;

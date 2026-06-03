@@ -39,6 +39,7 @@ describe("buildProductIndexSettings", () => {
     );
     expect(settings.displayedAttributes).toEqual(
       expect.arrayContaining([
+        "category_ids",
         "price_aud",
         "tax_inclusive_price_aud",
         "options_colour",

@@ -77,6 +77,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     discountPercentage: p.discount_percentage,
     isBundle: p.is_bundle,
     availableInBundlesCount: p.available_in_bundles_count,
+    inventory_quantity: p.inventory_quantity,
+    in_stock: p.in_stock,
   }));
 
   return (

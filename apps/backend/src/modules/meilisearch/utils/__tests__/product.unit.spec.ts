@@ -143,6 +143,31 @@ describe("toMeilisearchDocument", () => {
     expect(document.tax_inclusive_price_aud).toBe(true);
   });
 
+  it("indexes ancestor category IDs so parent category filters include child products", () => {
+    const document = toMeilisearchDocument(
+      createProduct({
+        categories: [
+          {
+            id: "cat_petg",
+            name: "PETG",
+            handle: "petg",
+            parent_category: {
+              id: "cat_filament",
+              name: "Filament",
+              handle: "filament",
+              parent_category: null,
+            },
+          },
+        ],
+      } as Partial<SyncProductsStepProduct>),
+      regions,
+    );
+
+    expect(document.category_ids).toEqual(
+      expect.arrayContaining(["cat_filament", "cat_petg"]),
+    );
+  });
+
   it("flattens 3D printing metadata into searchable product facts", () => {
     const document = toMeilisearchDocument(
       createProduct({

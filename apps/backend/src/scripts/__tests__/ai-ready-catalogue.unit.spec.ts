@@ -139,6 +139,31 @@ describe("AI-ready realistic product catalogue", () => {
     expect(input.thumbnail).toBe(input.images?.[0]?.url);
   });
 
+  it("models filament colour as a variant option and enables managed stock", () => {
+    const product = AI_READY_CATALOGUE_PRODUCTS.find(
+      (item) => item.handle === "polymaker-pla-pro-175-1kg",
+    );
+
+    expect(product).toBeDefined();
+    expect(product?.title).toBe("Polymaker PLA Pro 1.75mm 1kg");
+    expect(product?.legacyHandles).toEqual([
+      "polymaker-pla-pro-black-175-1kg",
+    ]);
+
+    const input = buildAiCatalogueProductInput(product!, "aud");
+
+    expect(input.options).toEqual([{ title: "Colour", values: ["Black"] }]);
+    expect(input.variants).toEqual([
+      expect.objectContaining({
+        title: "Black",
+        sku: "PM-PLAPRO-BLK-175-1KG",
+        options: { Colour: "Black" },
+        manage_inventory: true,
+        allow_backorder: false,
+      }),
+    ]);
+  });
+
   it("uses source-backed raster product media without generated placeholders", () => {
     expect(
       AI_READY_CATALOGUE_PRODUCTS.every((product) =>

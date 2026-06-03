@@ -3,6 +3,7 @@ const mockCreateSalesChannelsRun = jest.fn();
 const mockCreateShippingProfilesRun = jest.fn();
 const mockCreateProductCategoriesRun = jest.fn();
 const mockUpdateProductsRun = jest.fn();
+const mockBatchInventoryItemLevelsRun = jest.fn();
 const mockCreateBrandRun = jest.fn();
 const mockLinkProductsToBrandRun = jest.fn();
 
@@ -37,6 +38,9 @@ jest.mock("@medusajs/medusa/core-flows", () => ({
   updateProductsWorkflow: jest.fn(() => ({
     run: mockUpdateProductsRun,
   })),
+  batchInventoryItemLevelsWorkflow: jest.fn(() => ({
+    run: mockBatchInventoryItemLevelsRun,
+  })),
 }));
 
 jest.mock("../../workflows/brand/create-brand", () => ({
@@ -61,6 +65,7 @@ describe("seedAiReadyCatalogue", () => {
     mockCreateSalesChannelsRun.mockResolvedValue({ result: [] });
     mockCreateShippingProfilesRun.mockResolvedValue({ result: [] });
     mockUpdateProductsRun.mockResolvedValue({ result: [] });
+    mockBatchInventoryItemLevelsRun.mockResolvedValue({ result: [] });
     mockCreateBrandRun.mockResolvedValue({
       result: { id: "brand_created", handle: "created-brand" },
     });
@@ -110,8 +115,9 @@ describe("seedAiReadyCatalogue", () => {
         if (entity === "product_category") {
           return {
             data: [
-              { id: "cat_filament", handle: "filament" },
-              { id: "cat_petg", handle: "filament/petg" },
+              { id: "cat_filament", handle: "filament", parent_category_id: null },
+              { id: "cat_petg", handle: "petg", parent_category_id: "cat_filament" },
+              { id: "cat_petg_legacy", handle: "filament/petg", parent_category_id: "cat_filament" },
               { id: "cat_tools", handle: "tools" },
               { id: "cat_nozzles", handle: "spare-parts/nozzles" },
               { id: "cat_hotends", handle: "spare-parts/hotends" },
@@ -123,7 +129,27 @@ describe("seedAiReadyCatalogue", () => {
         }
 
         if (entity === "product") {
-          return { data: [{ id: "prod_sample", brand: null }] };
+          return {
+            data: [
+              {
+                id: "prod_sample",
+                brand: null,
+                handle: "polymaker-polylite-petg-black-175-1kg",
+                variants: [
+                  {
+                    sku: "PM-PETG-BLK-175-1KG",
+                    inventory_items: [
+                      { inventory_item_id: "iitem_petg_black" },
+                    ],
+                  },
+                ],
+              },
+            ],
+          };
+        }
+
+        if (entity === "stock_location") {
+          return { data: [{ id: "sloc_au" }] };
         }
 
         return { data: [] };
@@ -182,5 +208,23 @@ describe("seedAiReadyCatalogue", () => {
         tags: expect.anything(),
       }),
     );
+    expect(mockBatchInventoryItemLevelsRun).toHaveBeenCalledWith({
+      input: {
+        create: [
+          {
+            inventory_item_id: "iitem_petg_black",
+            location_id: "sloc_au",
+            stocked_quantity: expect.any(Number),
+          },
+        ],
+        update: [
+          {
+            inventory_item_id: "iitem_petg_black",
+            location_id: "sloc_au",
+            stocked_quantity: expect.any(Number),
+          },
+        ],
+      },
+    });
   });
 });
