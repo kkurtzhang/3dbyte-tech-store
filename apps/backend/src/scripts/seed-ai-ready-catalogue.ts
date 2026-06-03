@@ -244,31 +244,45 @@ async function ensureSalesChannelId(
 }
 
 async function findExistingProductByHandle(
-  productModuleService: IProductModuleService,
+  query: QueryService,
   handle: string,
 ): Promise<ExistingSeedProduct | null> {
-  const products = await productModuleService.listProducts(
-    { handle },
-    {
-      select: ["id", "handle", "metadata", "variants.id", "variants.sku"],
-      take: 1,
-    },
-  );
+  const { data: products = [] } = await query.graph({
+    entity: "product",
+    fields: ["id", "handle", "metadata", "variants.id", "variants.sku"],
+    filters: { handle },
+    pagination: { take: 1 },
+  });
 
-  return products[0] ?? null;
+  const product = products.find((item) => typeof item.id === "string");
+
+  if (!product) {
+    return null;
+  }
+
+  const variants = Array.isArray(product.variants)
+    ? product.variants.filter(isRecord).map((variant) => ({
+        id: typeof variant.id === "string" ? variant.id : undefined,
+        sku: typeof variant.sku === "string" ? variant.sku : undefined,
+      }))
+    : undefined;
+
+  return {
+    id: product.id as string,
+    handle: typeof product.handle === "string" ? product.handle : undefined,
+    metadata: isRecord(product.metadata) ? product.metadata : undefined,
+    variants,
+  };
 }
 
 async function findExistingProductForSeed(
-  productModuleService: IProductModuleService,
+  query: QueryService,
   product: AiReadyCatalogueProduct,
 ): Promise<ExistingSeedProduct | null> {
   const handles = [product.handle, ...(product.legacyHandles ?? [])];
 
   for (const handle of handles) {
-    const existingProduct = await findExistingProductByHandle(
-      productModuleService,
-      handle,
-    );
+    const existingProduct = await findExistingProductByHandle(query, handle);
 
     if (existingProduct) {
       return existingProduct;
@@ -680,10 +694,7 @@ export default async function seedAiReadyCatalogue({
       sales_channels: [{ id: salesChannelId }],
       shipping_profile_id: shippingProfileId,
     };
-    const existingProduct = await findExistingProductForSeed(
-      productModuleService,
-      product,
-    );
+    const existingProduct = await findExistingProductForSeed(query, product);
 
     if (!existingProduct) {
       productsToCreate.push(productInput);
@@ -729,7 +740,7 @@ export default async function seedAiReadyCatalogue({
 
   for (const product of AI_READY_CATALOGUE_PRODUCTS) {
     const existingProduct = await findExistingProductByHandle(
-      productModuleService,
+      query,
       product.handle,
     );
 
