@@ -205,8 +205,9 @@ export function Footer() {
                 New drops, restocks, and practical 3D printing notes.
               </h3>
               <p className="max-w-xl text-sm leading-6 text-muted-foreground">
-                Join the list for product releases, shop updates, and useful build
-                guidance without turning the footer into a giant form block.
+                Join the list for product releases, shop updates, and useful
+                build guidance without turning the footer into a giant form
+                block.
               </p>
             </div>
 
@@ -229,7 +230,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t pt-8 sm:flex-row">
           <p className="text-sm text-muted-foreground">
-            © 2024 3D Byte Tech. All rights reserved.
+            © 2026 3D Byte Tech. All rights reserved.
           </p>
           <div className="flex gap-4">
             <Link

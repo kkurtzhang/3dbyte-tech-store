@@ -21,6 +21,7 @@ import {
   formatEmailDate,
   formatEmailMoney,
 } from "../formatters";
+import { EMAIL_BRAND_LOGO_ALT, getEmailBrandLogoUrl } from "../brand-assets";
 import {
   buildOrderPlacedEmailItemGroups,
   getCustomerOrderNumber,
@@ -85,6 +86,13 @@ export default function OrderPlacedEmail({ order, store }: Props) {
       </Preview>
       <Body style={bodyStyle}>
         <Container style={containerStyle}>
+          <Img
+            alt={EMAIL_BRAND_LOGO_ALT}
+            height="50"
+            src={getEmailBrandLogoUrl()}
+            style={brandLogoStyle}
+            width="180"
+          />
           <Text style={eyebrowStyle}>Order {orderNumber}</Text>
           <Heading style={headingStyle}>
             Thanks, we have received your order.
@@ -99,7 +107,9 @@ export default function OrderPlacedEmail({ order, store }: Props) {
           </Button>
 
           <Section style={sectionStyle}>
-            <Heading as="h2" style={sectionHeadingStyle}>Items</Heading>
+            <Heading as="h2" style={sectionHeadingStyle}>
+              Items
+            </Heading>
             {itemGroups.map((group) =>
               group.type === "bundle" ? (
                 <EmailBundleGroup
@@ -118,42 +128,73 @@ export default function OrderPlacedEmail({ order, store }: Props) {
           </Section>
 
           <Section style={sectionStyle}>
-            <Heading as="h2" style={sectionHeadingStyle}>Delivery</Heading>
+            <Heading as="h2" style={sectionHeadingStyle}>
+              Delivery
+            </Heading>
             {shippingMethodName ? (
-              <Text style={summaryTextStyle}>Shipping method: {shippingMethodName}</Text>
+              <Text style={summaryTextStyle}>
+                Shipping method: {shippingMethodName}
+              </Text>
             ) : null}
-            <Text style={summaryTextStyle}>Payment method: {paymentMethodDisplay}</Text>
+            <Text style={summaryTextStyle}>
+              Payment method: {paymentMethodDisplay}
+            </Text>
             <Row>
               <Column style={addressColumnStyle}>
                 <Text style={addressHeadingStyle}>Shipping address</Text>
                 {shippingAddressLines.map((line) => (
-                  <Text key={line} style={addressLineStyle}>{line}</Text>
+                  <Text key={line} style={addressLineStyle}>
+                    {line}
+                  </Text>
                 ))}
               </Column>
               <Column style={addressColumnStyle}>
                 <Text style={addressHeadingStyle}>Billing address</Text>
                 {billingAddressLines.map((line) => (
-                  <Text key={line} style={addressLineStyle}>{line}</Text>
+                  <Text key={line} style={addressLineStyle}>
+                    {line}
+                  </Text>
                 ))}
               </Column>
             </Row>
           </Section>
 
           <Section style={sectionStyle}>
-            <Heading as="h2" style={sectionHeadingStyle}>Order Summary</Heading>
-            <SummaryLine label="Subtotal" value={formatEmailMoney(getCustomerSummarySubtotal(order), order.currency_code)} />
+            <Heading as="h2" style={sectionHeadingStyle}>
+              Order Summary
+            </Heading>
+            <SummaryLine
+              label="Subtotal"
+              value={formatEmailMoney(
+                getCustomerSummarySubtotal(order),
+                order.currency_code,
+              )}
+            />
             {discountTotal !== 0 ? (
-              <SummaryLine label="Discount" value={formatDiscount(discountTotal, order.currency_code)} />
+              <SummaryLine
+                label="Discount"
+                value={formatDiscount(discountTotal, order.currency_code)}
+              />
             ) : null}
-            <SummaryLine label="Shipping" value={formatEmailMoney(getOrderShippingTotal(order), order.currency_code)} />
+            <SummaryLine
+              label="Shipping"
+              value={formatEmailMoney(
+                getOrderShippingTotal(order),
+                order.currency_code,
+              )}
+            />
             <Hr style={dividerStyle} />
             <SummaryLine
               label={`Total (${order.currency_code.toUpperCase()})`}
-              value={formatEmailMoney(getOrderTotal(order), order.currency_code)}
+              value={formatEmailMoney(
+                getOrderTotal(order),
+                order.currency_code,
+              )}
               strong
             />
             <Text style={includedGstStyle}>
-              (Includes GST: {formatEmailMoney(getOrderTaxTotal(order), order.currency_code)})
+              (Includes GST:{" "}
+              {formatEmailMoney(getOrderTaxTotal(order), order.currency_code)})
             </Text>
           </Section>
 
@@ -207,9 +248,7 @@ function EmailBundleGroup({
         return (
           <Text key={item.id} style={includesLineStyle}>
             {getItemQuantity(item)} x {getBundleItemTitle(item)}
-            {releaseDate
-              ? ` (releases ${formatEmailDate(releaseDate)})`
-              : ""}
+            {releaseDate ? ` (releases ${formatEmailDate(releaseDate)})` : ""}
           </Text>
         );
       })}
@@ -247,7 +286,8 @@ function EmailItemRow({
           <Text style={mutedTextStyle}>{getItemVariantText(item)}</Text>
         ) : null}
         <Text style={mutedTextStyle}>
-          Qty {getItemQuantity(item)} x {formatEmailMoney(unitPrice, currencyCode)}
+          Qty {getItemQuantity(item)} x{" "}
+          {formatEmailMoney(unitPrice, currencyCode)}
         </Text>
         {releaseDate ? (
           <Text style={releaseDateStyle}>
@@ -256,7 +296,9 @@ function EmailItemRow({
         ) : null}
       </Column>
       <Column style={moneyColumnStyle}>
-        <Text style={itemPriceStyle}>{formatEmailMoney(lineTotal, currencyCode)}</Text>
+        <Text style={itemPriceStyle}>
+          {formatEmailMoney(lineTotal, currencyCode)}
+        </Text>
       </Column>
     </Row>
   );
@@ -274,10 +316,14 @@ function SummaryLine({
   return (
     <Row style={summaryRowStyle}>
       <Column>
-        <Text style={strong ? summaryStrongTextStyle : summaryTextStyle}>{label}</Text>
+        <Text style={strong ? summaryStrongTextStyle : summaryTextStyle}>
+          {label}
+        </Text>
       </Column>
       <Column style={moneyColumnStyle}>
-        <Text style={strong ? summaryStrongTextStyle : summaryTextStyle}>{value}</Text>
+        <Text style={strong ? summaryStrongTextStyle : summaryTextStyle}>
+          {value}
+        </Text>
       </Column>
     </Row>
   );
@@ -295,6 +341,14 @@ const containerStyle = {
   margin: "24px auto",
   maxWidth: "680px",
   padding: "32px",
+};
+
+const brandLogoStyle = {
+  display: "block",
+  height: "auto",
+  margin: "0 0 24px",
+  maxWidth: "180px",
+  width: "180px",
 };
 
 const eyebrowStyle = {
