@@ -68,6 +68,28 @@ const order = {
 };
 
 describe("renderOrderPlacedEmail", () => {
+  it("keeps the order confirmation clear, reassuring, and actionable", async () => {
+    process.env.EMAIL_ASSET_BASE_URL = "https://store.3dbytetech.com.au";
+
+    const rendered = await renderOrderPlacedEmail({
+      order,
+      store: { name: "3D Byte Tech" },
+    });
+
+    expect(rendered.subject).toBe("Your 3D Byte Tech order #1001 is confirmed");
+    expect(rendered.html).toContain("Thanks, we have received your order.");
+    expect(rendered.html).toContain("Track your order");
+    expect(rendered.html).toContain("Order Summary");
+    expect(rendered.html).toContain("Need help with this order?");
+    expect(rendered.html).toContain(
+      "https://store.3dbytetech.com.au/brand/logos/logo-primary-horizontal-640w.png",
+    );
+    expect(rendered.html).toContain('alt="3D Byte Tech"');
+    expect(rendered.text).toContain("Track your order:");
+    expect(rendered.text).toContain("Shipping method: Australia Post Standard");
+    expect(rendered.text).toContain("Payment method: Visa ending in 4242");
+  });
+
   it("renders provider-neutral subject, html, and text", async () => {
     const rendered = await renderOrderPlacedEmail({
       order,
@@ -163,7 +185,8 @@ describe("renderOrderPlacedEmail", () => {
         items: [
           {
             id: "item_raw_payload",
-            product_title: "Polymaker™ High Temp HT-PLA-GF 1kg 1.75mm Filament",
+            product_title:
+              "Polymaker™ High Temp HT-PLA-GF 1kg 1.75mm Filament",
             quantity: undefined,
             detail: {
               quantity: 1,
