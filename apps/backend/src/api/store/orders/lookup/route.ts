@@ -189,7 +189,7 @@ const normalizeOrderForStoreDisplay = (order: LookupOrder): LookupOrder => {
   const subtotal = Math.max(0, graphSubtotal - includedTaxTotal)
 
   return {
-    ...order,
+    ...orderWithDerivedStatus,
     item_subtotal: itemSubtotal,
     item_total: itemTotal,
     shipping_subtotal: shippingSubtotal,

@@ -129,6 +129,70 @@ describe('GET /store/orders/lookup', () => {
     expect(payload.order.items[0].subtotal).toBeCloseTo(130.9909, 4)
   })
 
+  it('keeps derived shipped status when tax-inclusive totals are normalized', async () => {
+    mockGraph.mockResolvedValue({
+      data: [
+        {
+          id: 'order_123',
+          custom_display_id: '3DBO-AKK7-5KYYDE',
+          email: 'customer@example.com',
+          currency_code: 'aud',
+          fulfillment_status: 'not_fulfilled',
+          subtotal: amount(28.95),
+          item_subtotal: amount(18.95),
+          item_total: amount(20.845),
+          shipping_subtotal: amount(10),
+          shipping_total: amount(11),
+          tax_total: amount(2.895),
+          total: amount(31.845),
+          fulfillments: [
+            {
+              id: 'ful_1',
+              shipped_at: '2026-06-03T01:00:00.000Z',
+              labels: [
+                {
+                  tracking_number: 'STG-3DBO-AKK7-5KYYDE',
+                  tracking_url: '#',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    })
+
+    const req = {
+      query: {
+        email: 'customer@example.com',
+        reference: '3DBO-AKK7-5KYYDE',
+      },
+      scope: {
+        resolve: jest.fn().mockReturnValue({ graph: mockGraph }),
+      },
+    }
+    const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
+
+    await GET(req as never, res as never)
+
+    const payload = res.json.mock.calls[0]?.[0]
+
+    expect(payload.order).toEqual(
+      expect.objectContaining({
+        fulfillment_status: 'shipped',
+        total: 28.95,
+        fulfillments: expect.arrayContaining([
+          expect.objectContaining({
+            labels: expect.arrayContaining([
+              expect.objectContaining({
+                tracking_number: 'STG-3DBO-AKK7-5KYYDE',
+              }),
+            ]),
+          }),
+        ]),
+      })
+    )
+  })
+
   it('derives shipped status from returned fulfillments when lookup status is stale', async () => {
     mockGraph.mockResolvedValue({
       data: [
