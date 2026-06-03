@@ -44,7 +44,7 @@ export interface KarrioRate {
   id: string;
   carrier_id: string;
   carrier_name: string;
-  service: string;
+  service?: string;
   total_charge: number;
   currency: string;
   transit_days?: number;
