@@ -2,6 +2,7 @@ import type {
   MeilisearchCategoryDocument,
   MeilisearchProductDocument,
   StrapiProductDescription,
+  SyncProductsStepCategory,
   SyncProductsStepBundle,
   SyncProductsStepProduct,
 } from "@3dbyte-tech-store/shared-types";
@@ -71,6 +72,22 @@ function getProductBundle(
   }
 
   return product.bundle ?? null;
+}
+
+function collectCategoryHierarchy(
+  category: SyncProductsStepCategory,
+): SyncProductsStepCategory[] {
+  const hierarchy: SyncProductsStepCategory[] = [];
+  const seenIds = new Set<string>();
+  let current: SyncProductsStepCategory | null | undefined = category;
+
+  while (current && !seenIds.has(current.id)) {
+    hierarchy.push(current);
+    seenIds.add(current.id);
+    current = current.parent_category;
+  }
+
+  return hierarchy;
 }
 
 /**
@@ -212,8 +229,13 @@ export function toMeilisearchDocument(
   });
 
   // --- 6. NAVIGATION ---
-  const category_ids = product.categories?.map((c) => c.id) || [];
-  const categories = product.categories?.map((c) => c.name) || [];
+  const categoryHierarchy = product.categories?.flatMap(collectCategoryHierarchy) || [];
+  const category_ids = [
+    ...new Set(categoryHierarchy.map((category) => category.id)),
+  ];
+  const categories = [
+    ...new Set(categoryHierarchy.map((category) => category.name)),
+  ];
   const _tags = product.tags?.map((t) => t.value) || [];
   const collection_ids = product.collection_id ? [product.collection_id] : [];
 

@@ -6,6 +6,7 @@ import {
 } from "@medusajs/framework/types";
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
 import {
+  batchInventoryItemLevelsWorkflow,
   createProductCategoriesWorkflow,
   createProductsWorkflow,
   createSalesChannelsWorkflow,
@@ -31,6 +32,10 @@ type ExistingSeedProduct = {
   id: string;
   handle?: string;
   metadata?: MetadataRecord | null;
+  variants?: Array<{
+    id?: string;
+    sku?: string | null;
+  }>;
 };
 
 type SeedAiReadyCatalogueResult = {
@@ -46,15 +51,13 @@ type AiCatalogueProductSeedInput = ReturnType<
   shipping_profile_id: string;
 };
 
-type AiCatalogueProductUpdateInput = Omit<
-  AiCatalogueProductSeedInput,
-  "options" | "variants"
-> & {
+type AiCatalogueProductUpdateInput = AiCatalogueProductSeedInput & {
   id: string;
 };
 
 const DEFAULT_CURRENCY_CODE = "aud";
 const DEFAULT_SALES_CHANNEL_NAME = "Default Sales Channel";
+const DEFAULT_SEED_STOCK_QUANTITY = 12;
 const BRAND_MODULE = "brand";
 
 type QueryService = {
@@ -69,6 +72,7 @@ type QueryService = {
 type CategoryRecord = {
   id: string;
   handle: string;
+  parent_category_id?: string | null;
 };
 
 type CollectionRecord = {
@@ -122,13 +126,6 @@ function getSalesChannelName(): string {
   );
 }
 
-function createHandle(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
 function titleizeHandle(handle: string): string {
   const segments = handle.split("/");
   const lastSegment = segments[segments.length - 1] ?? handle;
@@ -138,6 +135,47 @@ function titleizeHandle(handle: string): string {
     .filter(Boolean)
     .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
     .join(" ");
+}
+
+function splitCategoryPath(handle: string): string[] {
+  return handle.split("/").map((segment) => segment.trim()).filter(Boolean);
+}
+
+function getCategoryLeafHandle(path: string): string {
+  const segments = splitCategoryPath(path);
+  return segments[segments.length - 1] ?? path;
+}
+
+function getVariantInventoryQuantity(
+  product: AiReadyCatalogueProduct,
+  sku?: string | null,
+): number {
+  const variant = product.variants?.find((item) => item.sku === sku);
+
+  return variant?.inventoryQuantity ?? DEFAULT_SEED_STOCK_QUANTITY;
+}
+
+function withExistingVariantIds(
+  productInput: AiCatalogueProductSeedInput,
+  existingProduct: ExistingSeedProduct,
+): AiCatalogueProductSeedInput["variants"] {
+  const existingVariantsBySku = new Map(
+    existingProduct.variants
+      ?.filter((variant) => variant.id && variant.sku)
+      .map((variant) => [variant.sku, variant.id]) ?? [],
+  );
+
+  return productInput.variants?.map((variant) => {
+    const existingVariantId =
+      variant.sku ? existingVariantsBySku.get(variant.sku) : undefined;
+
+    return existingVariantId
+      ? {
+          ...variant,
+          id: existingVariantId,
+        }
+      : variant;
+  });
 }
 
 async function ensureDefaultShippingProfileId(
@@ -212,7 +250,7 @@ async function findExistingProductByHandle(
   const products = await productModuleService.listProducts(
     { handle },
     {
-      select: ["id", "handle", "metadata"],
+      select: ["id", "handle", "metadata", "variants.id", "variants.sku"],
       take: 1,
     },
   );
@@ -220,24 +258,80 @@ async function findExistingProductByHandle(
   return products[0] ?? null;
 }
 
-async function fetchCategoryMap(
+async function findExistingProductForSeed(
+  productModuleService: IProductModuleService,
+  product: AiReadyCatalogueProduct,
+): Promise<ExistingSeedProduct | null> {
+  const handles = [product.handle, ...(product.legacyHandles ?? [])];
+
+  for (const handle of handles) {
+    const existingProduct = await findExistingProductByHandle(
+      productModuleService,
+      handle,
+    );
+
+    if (existingProduct) {
+      return existingProduct;
+    }
+  }
+
+  return null;
+}
+
+async function fetchCategoryRecords(
   query: QueryService,
-): Promise<Map<string, string>> {
+): Promise<CategoryRecord[]> {
   const { data = [] } = await query.graph({
     entity: "product_category",
-    fields: ["id", "handle"],
+    fields: ["id", "handle", "parent_category_id"],
     pagination: { take: 1000 },
   });
 
-  return new Map(
-    data
-      .filter(
-        (category): category is CategoryRecord =>
-          typeof category.id === "string" &&
-          typeof category.handle === "string",
-      )
-      .map((category) => [category.handle, category.id]),
+  return data.filter(
+    (category): category is CategoryRecord =>
+      typeof category.id === "string" && typeof category.handle === "string",
   );
+}
+
+function buildCategoryPathMap(categories: CategoryRecord[]): Map<string, string> {
+  const categoriesById = new Map(categories.map((category) => [category.id, category]));
+  const categoryMap = new Map<string, string>();
+  const pathCache = new Map<string, string>();
+
+  const resolvePath = (category: CategoryRecord): string => {
+    const cachedPath = pathCache.get(category.id);
+
+    if (cachedPath) {
+      return cachedPath;
+    }
+
+    const leafHandle = getCategoryLeafHandle(category.handle);
+    const parentCategory = category.parent_category_id
+      ? categoriesById.get(category.parent_category_id)
+      : undefined;
+    const path = parentCategory
+      ? `${resolvePath(parentCategory)}/${leafHandle}`
+      : leafHandle;
+
+    pathCache.set(category.id, path);
+    return path;
+  };
+
+  for (const category of categories) {
+    const path = resolvePath(category);
+    const isCanonicalChildHandle = !category.handle.includes("/");
+    const existingCategoryId = categoryMap.get(path);
+
+    if (!existingCategoryId || isCanonicalChildHandle) {
+      categoryMap.set(path, category.id);
+    }
+
+    if (!category.parent_category_id) {
+      categoryMap.set(category.handle, category.id);
+    }
+  }
+
+  return categoryMap;
 }
 
 async function ensureCategoryMap(
@@ -245,7 +339,7 @@ async function ensureCategoryMap(
   query: QueryService,
   products: AiReadyCatalogueProduct[],
 ): Promise<Map<string, string>> {
-  const categoryMap = await fetchCategoryMap(query);
+  const categoryMap = buildCategoryPathMap(await fetchCategoryRecords(query));
   const categoryHandles = [
     ...new Set(
       products.flatMap((product) => {
@@ -271,7 +365,7 @@ async function ensureCategoryMap(
         product_categories: [
           {
             name: titleizeHandle(handle),
-            handle,
+            handle: getCategoryLeafHandle(handle),
             is_active: true,
             ...(parentId ? { parent_category_id: parentId } : {}),
           },
@@ -286,6 +380,108 @@ async function ensureCategoryMap(
   }
 
   return categoryMap;
+}
+
+async function ensureInventoryLevels(
+  container: ExecArgs["container"],
+  query: QueryService,
+  products: AiReadyCatalogueProduct[],
+  logger: SeedLogger,
+): Promise<void> {
+  const { data: stockLocations = [] } = await query.graph({
+    entity: "stock_location",
+    fields: ["id"],
+    pagination: { take: 1 },
+  });
+  const stockLocationId = stockLocations.find(
+    (location) => typeof location.id === "string",
+  )?.id;
+
+  if (typeof stockLocationId !== "string") {
+    logger.warn("No stock location was found; AI catalogue inventory levels were skipped.");
+    return;
+  }
+
+  const productsByHandle = new Map<string, AiReadyCatalogueProduct>();
+
+  for (const product of products) {
+    productsByHandle.set(product.handle, product);
+    for (const legacyHandle of product.legacyHandles ?? []) {
+      productsByHandle.set(legacyHandle, product);
+    }
+  }
+
+  const { data: indexedProducts = [] } = await query.graph({
+    entity: "product",
+    fields: [
+      "id",
+      "handle",
+      "variants.sku",
+      "variants.inventory_items.inventory_item_id",
+    ],
+    filters: { handle: [...productsByHandle.keys()] },
+    pagination: { take: 1000 },
+  });
+
+  const levelMap = new Map<
+    string,
+    {
+      inventory_item_id: string;
+      location_id: string;
+      stocked_quantity: number;
+    }
+  >();
+
+  for (const indexedProduct of indexedProducts) {
+    const handle = indexedProduct.handle;
+    const seedProduct =
+      typeof handle === "string" ? productsByHandle.get(handle) : undefined;
+
+    if (!seedProduct || !Array.isArray(indexedProduct.variants)) {
+      continue;
+    }
+
+    for (const variant of indexedProduct.variants) {
+      if (!isRecord(variant) || !Array.isArray(variant.inventory_items)) {
+        continue;
+      }
+
+      for (const inventoryItem of variant.inventory_items) {
+        if (!isRecord(inventoryItem)) {
+          continue;
+        }
+
+        const inventoryItemId = inventoryItem.inventory_item_id;
+
+        if (typeof inventoryItemId !== "string") {
+          continue;
+        }
+
+        levelMap.set(inventoryItemId, {
+          inventory_item_id: inventoryItemId,
+          location_id: stockLocationId,
+          stocked_quantity: getVariantInventoryQuantity(
+            seedProduct,
+            typeof variant.sku === "string" ? variant.sku : undefined,
+          ),
+        });
+      }
+    }
+  }
+
+  const inventoryLevels = [...levelMap.values()];
+
+  if (inventoryLevels.length === 0) {
+    logger.warn("No AI catalogue inventory items were found; stock levels were skipped.");
+    return;
+  }
+
+  await batchInventoryItemLevelsWorkflow(container).run({
+    input: {
+      create: inventoryLevels,
+      update: inventoryLevels,
+    },
+  });
 }
 
 async function ensureCollectionMap(
@@ -484,9 +680,9 @@ export default async function seedAiReadyCatalogue({
       sales_channels: [{ id: salesChannelId }],
       shipping_profile_id: shippingProfileId,
     };
-    const existingProduct = await findExistingProductByHandle(
+    const existingProduct = await findExistingProductForSeed(
       productModuleService,
-      product.handle,
+      product,
     );
 
     if (!existingProduct) {
@@ -508,6 +704,8 @@ export default async function seedAiReadyCatalogue({
       is_giftcard: productInput.is_giftcard,
       discountable: productInput.discountable,
       images: productInput.images,
+      options: productInput.options,
+      variants: withExistingVariantIds(productInput, existingProduct),
       metadata: {
         ...existingMetadata,
         ...productInput.metadata,
@@ -555,6 +753,13 @@ export default async function seedAiReadyCatalogue({
     );
   }
 
+  await ensureInventoryLevels(
+    container,
+    query,
+    AI_READY_CATALOGUE_PRODUCTS,
+    logger,
+  );
+
   const result = {
     created: productsToCreate.length,
     updated: productsToUpdate.length,
@@ -566,8 +771,8 @@ export default async function seedAiReadyCatalogue({
   );
 
   if (productsToUpdate.length > 0) {
-    logger.warn(
-      "Existing AI catalogue products were updated at product level; variant/price migrations should be handled deliberately when seed pricing changes.",
+    logger.info(
+      "Existing AI catalogue products were updated with seed-managed taxonomy, variants, prices, and stock levels.",
     );
   }
 

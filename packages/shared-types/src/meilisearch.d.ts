@@ -6,7 +6,7 @@
  */
 import type { MeiliSearch } from "meilisearch" with { "resolution-mode": "import" };
 export type MeilisearchClient = MeiliSearch;
-export type MeilisearchIndexType = "product" | "category" | "brand" | "address" | "locality";
+export type MeilisearchIndexType = "product" | "category" | "brand" | "address" | "locality" | "product_document";
 export interface MeilisearchModuleConfig {
     host: string;
     apiKey: string;
@@ -15,6 +15,7 @@ export interface MeilisearchModuleConfig {
     brandIndexName: string;
     addressIndexName: string;
     localityIndexName: string;
+    productDocumentIndexName?: string;
     settings?: MeilisearchIndexSettings;
 }
 /**
@@ -57,7 +58,34 @@ export declare const BRAND_INDEX_SETTINGS: {
         readonly disableOnAttributes: readonly ["handle"];
     };
 };
-export interface MeilisearchProductDocument {
+export interface AiProductMetadataSearchFields {
+    tdp_schema_version?: number;
+    tdp_product_kind?: string;
+    tdp_material?: string;
+    tdp_diameter_mm?: number;
+    tdp_nozzle_temp_min_c?: number;
+    tdp_nozzle_temp_max_c?: number;
+    tdp_bed_temp_min_c?: number;
+    tdp_bed_temp_max_c?: number;
+    tdp_requires_enclosure?: boolean;
+    tdp_requires_hardened_nozzle?: boolean;
+    tdp_drying_recommended?: boolean;
+    tdp_compatible_printers?: string[];
+    tdp_compatible_build_surfaces?: string[];
+    tdp_best_for?: string[];
+    tdp_not_recommended_for?: string[];
+    tdp_common_issues?: string[];
+    tdp_ai_search_keywords?: string[];
+    rcb_schema_version?: number;
+    rcb_component_role?: string;
+    rcb_compatible_project_types?: string[];
+    rcb_voltage?: string;
+    rcb_connector_type?: string;
+    rcb_used_for?: string[];
+    rcb_best_for?: string[];
+    rcb_ai_search_keywords?: string[];
+}
+export interface MeilisearchProductDocument extends AiProductMetadataSearchFields {
     id: string;
     title: string;
     handle: string;
@@ -66,6 +94,7 @@ export interface MeilisearchProductDocument {
     type_id?: string;
     type_value?: string;
     [key: `price_${string}`]: number | undefined;
+    [key: `tax_inclusive_price_${string}`]: boolean | undefined;
     on_sale: boolean;
     inventory_quantity: number;
     in_stock: boolean;
@@ -158,6 +187,26 @@ export interface MeilisearchLocalityDocument {
     postcode: string;
     country: string;
 }
+export interface MeilisearchProductDocumentFile {
+    id: string;
+    medusa_product_id: string;
+    product_handle: string;
+    product_title: string;
+    title: string;
+    document_type: "manual" | "datasheet" | "install_guide" | "safety_sheet" | "warranty" | "other";
+    version?: string;
+    language?: string;
+    file_name: string;
+    file_size: number;
+    public_download_path: string;
+    source_url?: string;
+    source_kind?: string;
+    source_label?: string;
+    source_checked_at?: string;
+    search_keywords: string[];
+    sort_order: number;
+    published_at_timestamp: number;
+}
 export interface MeilisearchSearchOptions {
     limit?: number;
     offset?: number;
@@ -165,7 +214,7 @@ export interface MeilisearchSearchOptions {
     sort?: string[];
     facets?: string[];
 }
-export interface MeilisearchSearchResponse<T = MeilisearchProductDocument | MeilisearchCategoryDocument> {
+export interface MeilisearchSearchResponse<T = MeilisearchProductDocument | MeilisearchCategoryDocument | MeilisearchProductDocumentFile> {
     hits: T[];
     estimatedTotalHits: number;
     limit: number;
@@ -191,6 +240,7 @@ export interface SyncProductsStepProduct {
     status: string;
     created_at: string;
     updated_at: string;
+    metadata?: Record<string, unknown> | null;
     variants?: Array<{
         id: string;
         title?: string;
@@ -225,11 +275,7 @@ export interface SyncProductsStepProduct {
     images?: Array<{
         url: string;
     }>;
-    categories?: Array<{
-        id: string;
-        name: string;
-        handle: string;
-    }>;
+    categories?: SyncProductsStepCategory[];
     tags?: Array<{
         id: string;
         value: string;
@@ -244,6 +290,13 @@ export interface SyncProductsStepProduct {
         handle: string;
     } | null;
     bundle?: SyncProductsStepBundle | SyncProductsStepBundle[] | null;
+}
+export interface SyncProductsStepCategory {
+    id: string;
+    name: string;
+    handle: string;
+    parent_category_id?: string | null;
+    parent_category?: SyncProductsStepCategory | null;
 }
 export interface SyncProductsStepBundle {
     id: string;

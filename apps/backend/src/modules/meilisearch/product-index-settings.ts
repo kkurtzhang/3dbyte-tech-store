@@ -66,6 +66,7 @@ export const DEFAULT_PRODUCT_DISPLAYED_ATTRIBUTES = [
   "on_sale",
   "in_stock",
   "inventory_quantity",
+  "category_ids",
   "categories",
   "_tags",
   "collection_ids",

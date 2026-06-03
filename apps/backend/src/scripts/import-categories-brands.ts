@@ -122,7 +122,7 @@ export default async function importCategoriesAndBrands({ container }: ExecArgs)
   // Check which categories already exist
   const { data: existingCategories } = await query.graph({
     entity: "product_category",
-    fields: ["id", "name", "handle"],
+    fields: ["id", "name", "handle", "parent_category_id"],
   });
 
   const existingHandles = new Set(existingCategories.map((c) => c.handle));
@@ -153,16 +153,7 @@ export default async function importCategoriesAndBrands({ container }: ExecArgs)
   // Get all existing categories again (including the ones we just created)
   const { data: allCategoriesAfter } = await query.graph({
     entity: "product_category",
-    fields: ["id", "name", "handle"],
-  });
-
-  // Build a full handle map including parent paths
-  const allHandles = new Set<string>();
-  const handleToId = new Map<string, string>();
-
-  allCategoriesAfter.forEach((cat: any) => {
-    allHandles.add(cat.handle);
-    handleToId.set(cat.handle, cat.id);
+    fields: ["id", "name", "handle", "parent_category_id"],
   });
 
   // Step 2: Create subcategories
@@ -170,18 +161,24 @@ export default async function importCategoriesAndBrands({ container }: ExecArgs)
 
   const subcategoriesToCreate: any[] = [];
   for (const sub of SUBCATEGORIES) {
-    const fullHandle = `${sub.parent_handle}/${sub.handle}`;
+    const parentId = categoryMap.get(sub.parent_handle);
 
-    if (!allHandles.has(fullHandle)) {
-      const parentId = categoryMap.get(sub.parent_handle);
-      if (parentId) {
-        subcategoriesToCreate.push({
-          name: sub.name,
-          handle: fullHandle,
-          parent_category_id: parentId,
-          is_active: true,
-        });
-      }
+    if (!parentId) {
+      continue;
+    }
+
+    const existingChild = allCategoriesAfter.find(
+      (cat: any) =>
+        cat.handle === sub.handle && cat.parent_category_id === parentId,
+    );
+
+    if (!existingChild) {
+      subcategoriesToCreate.push({
+        name: sub.name,
+        handle: sub.handle,
+        parent_category_id: parentId,
+        is_active: true,
+      });
     }
   }
 

@@ -51,8 +51,9 @@ export const FILAMENT_PRODUCTS: AiReadyCatalogueProductDefinition[] = [
     }),
   }),
   product({
-    title: "Polymaker PLA Pro Black 1.75mm 1kg",
-    handle: "polymaker-pla-pro-black-175-1kg",
+    title: "Polymaker PLA Pro 1.75mm 1kg",
+    handle: "polymaker-pla-pro-175-1kg",
+    legacyHandles: ["polymaker-pla-pro-black-175-1kg"],
     sku: "PM-PLAPRO-BLK-175-1KG",
     description:
       "Tougher PLA-class filament for prototypes, jigs, fixtures, and easier everyday printing.",
@@ -62,6 +63,15 @@ export const FILAMENT_PRODUCTS: AiReadyCatalogueProductDefinition[] = [
     categoryHandle: "filament/pla",
     collectionHandle: "premium-filaments",
     tags: ["filament", "pla", "pla-pro", "polymaker", "beginner-friendly"],
+    options: [{ title: "Colour", values: ["Black"] }],
+    variants: [
+      {
+        title: "Black",
+        sku: "PM-PLAPRO-BLK-175-1KG",
+        options: { Colour: "Black" },
+        inventoryQuantity: 12,
+      },
+    ],
     source: source(
       "https://us.polymaker.com/products/polymaker-pla-pro",
       "https://shop.polymaker.com/cdn/shop/files/pa13002_isometric_top_fb8ad3b7-22d3-4c39-b231-541c95612cdf.png?crop=center&height=1200&v=1773244075&width=1200",

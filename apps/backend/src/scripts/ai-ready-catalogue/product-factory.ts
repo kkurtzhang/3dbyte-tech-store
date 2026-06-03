@@ -32,6 +32,7 @@ export function source(
 type ProductBase = {
   title: string;
   handle: string;
+  legacyHandles?: string[];
   sku: string;
   description: string;
   priceAud: number;
@@ -40,6 +41,8 @@ type ProductBase = {
   categoryHandle: string;
   collectionHandle: string;
   tags: string[];
+  options?: AiReadyCatalogueProductDefinition["options"];
+  variants?: AiReadyCatalogueProductDefinition["variants"];
   source: CatalogueSource;
   three_d_printing?: ThreeDPrintingMetadata;
   rc_model_building?: RcModelBuildingMetadata;

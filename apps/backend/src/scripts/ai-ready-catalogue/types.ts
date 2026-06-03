@@ -69,6 +69,7 @@ export type CatalogueSource = {
 export type AiReadyCatalogueProduct = {
   title: string;
   handle: string;
+  legacyHandles?: string[];
   sku: string;
   description: string;
   priceAud: number;
@@ -79,11 +80,28 @@ export type AiReadyCatalogueProduct = {
   categoryHandle: string;
   collectionHandle: string;
   tags: string[];
+  options?: AiReadyCatalogueOption[];
+  variants?: AiReadyCatalogueVariant[];
   source: CatalogueSource;
   metadata: {
     three_d_printing?: ThreeDPrintingMetadata;
     rc_model_building?: RcModelBuildingMetadata;
   };
+};
+
+export type AiReadyCatalogueOption = {
+  title: string;
+  values: string[];
+};
+
+export type AiReadyCatalogueVariant = {
+  title: string;
+  sku: string;
+  priceAud?: number;
+  options: Record<string, string>;
+  manageInventory?: boolean;
+  allowBackorder?: boolean;
+  inventoryQuantity?: number;
 };
 
 export type AiReadyCatalogueProductDefinition = Omit<
