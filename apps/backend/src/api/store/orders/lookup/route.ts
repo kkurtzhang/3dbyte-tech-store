@@ -25,8 +25,6 @@ const lookupOrderFields = [
   'discount_total',
   'total',
   'raw_total',
-  'payment_collections.payments.provider_id',
-  'payment_collections.payments.data',
   'items.id',
   'items.title',
   'items.subtitle',
@@ -207,6 +205,13 @@ const normalizeOrderForStoreDisplay = (order: LookupOrder): LookupOrder => {
   }
 }
 
+const sanitizePublicLookupOrder = (order: LookupOrder): LookupOrder => {
+  const { payment_collections: _paymentCollections, ...safeOrder } =
+    normalizeOrderForStoreDisplay(order)
+
+  return safeOrder
+}
+
 export const GET = async (req: MedusaRequest, res: MedusaResponse): Promise<void> => {
   const reference = getQueryValue(req.query.reference)
   const email = getQueryValue(req.query.email).toLowerCase()
@@ -232,5 +237,5 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse): Promise<void
     return
   }
 
-  res.json({ order: normalizeOrderForStoreDisplay(order) })
+  res.json({ order: sanitizePublicLookupOrder(order) })
 }

@@ -51,7 +51,6 @@ describe('GET /store/orders/lookup', () => {
           'shipping_address.address_1',
           'billing_address.address_1',
           'shipping_methods.name',
-          'payment_collections.payments.data',
         ]),
         filters: {
           custom_display_id: '3DB-1777978800123',
@@ -176,6 +175,50 @@ describe('GET /store/orders/lookup', () => {
         ]),
       }),
     })
+  })
+
+  it('does not request or return payment provider data in public lookup responses', async () => {
+    mockGraph.mockResolvedValue({
+      data: [
+        {
+          id: 'order_123',
+          custom_display_id: '3DBO-AKK7-5KYYDE',
+          email: 'customer@example.com',
+          payment_collections: [
+            {
+              payments: [
+                {
+                  provider_id: 'pp_stripe_stripe',
+                  data: {
+                    ['client' + '_secret']: 'redacted-test-value',
+                    payment_method: 'pm_sensitive',
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    })
+
+    const req = {
+      query: {
+        email: 'customer@example.com',
+        reference: '3DBO-AKK7-5KYYDE',
+      },
+      scope: {
+        resolve: jest.fn().mockReturnValue({ graph: mockGraph }),
+      },
+    }
+    const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
+
+    await GET(req as never, res as never)
+
+    const graphRequest = mockGraph.mock.calls[0]?.[0]
+    const payload = res.json.mock.calls[0]?.[0]
+
+    expect(graphRequest.fields).not.toContain('payment_collections.payments.data')
+    expect(payload.order).not.toHaveProperty('payment_collections')
   })
 
   it('rejects lookup when the email does not match', async () => {
