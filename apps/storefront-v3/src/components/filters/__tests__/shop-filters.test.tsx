@@ -151,4 +151,51 @@ describe("filter wrappers", () => {
       ]),
     })
   })
+
+  it("keeps the search price slider bounds stable after applying a price filter", () => {
+    const fullPriceFacets: FilterFacets = {
+      ...FACETS_FIXTURE,
+      priceRange: { min: 5, max: 100 },
+    }
+    const filteredPriceFacets: FilterFacets = {
+      ...FACETS_FIXTURE,
+      priceRange: { min: 30, max: 80 },
+    }
+
+    mockSearchParams = new URLSearchParams("minPrice=30&maxPrice=80")
+    mockUseFilterFacets.mockImplementation(
+      (options: { filterOverrides?: string[] }) => ({
+        facets: options.filterOverrides?.some((filter) =>
+          filter.startsWith("price_aud"),
+        )
+          ? filteredPriceFacets
+          : fullPriceFacets,
+        isLoading: false,
+        error: null,
+      }),
+    )
+
+    render(<SearchFilters searchQuery="petg" />)
+
+    expect(mockUseFilterFacets).toHaveBeenCalledWith({
+      query: "petg",
+      filterOverrides: expect.arrayContaining([
+        "in_stock = true",
+        "price_aud >= 30",
+        "price_aud <= 80",
+      ]),
+    })
+    expect(mockUseFilterFacets).toHaveBeenCalledWith({
+      query: "petg",
+      filterOverrides: ["in_stock = true"],
+    })
+    expect(filterSidebarMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        facets: expect.objectContaining({
+          priceRange: { min: 5, max: 100 },
+        }),
+        priceRange: { min: 30, max: 80 },
+      }),
+    )
+  })
 })

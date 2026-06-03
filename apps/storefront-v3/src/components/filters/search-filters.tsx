@@ -22,8 +22,10 @@ function buildFilterOverrides(
   minPrice: number | undefined,
   maxPrice: number | undefined,
   selectedOptions: Record<string, string[]>,
+  options: { includePrice?: boolean } = {},
 ): string[] {
   const filters: string[] = []
+  const includePrice = options.includePrice ?? true
 
   if (selectedCategories.length > 0) {
     filters.push(
@@ -55,11 +57,11 @@ function buildFilterOverrides(
     filters.push("in_stock = true")
   }
 
-  if (minPrice !== undefined) {
+  if (includePrice && minPrice !== undefined) {
     filters.push(`price_aud >= ${minPrice}`)
   }
 
-  if (maxPrice !== undefined) {
+  if (includePrice && maxPrice !== undefined) {
     filters.push(`price_aud <= ${maxPrice}`)
   }
 
@@ -104,6 +106,8 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
   const selectedInStock = searchParams.get("inStock") !== "false"
   const selectedMinPrice = parseNumberParam(searchParams.get("minPrice"))
   const selectedMaxPrice = parseNumberParam(searchParams.get("maxPrice"))
+  const hasSelectedPriceFilter =
+    selectedMinPrice !== undefined || selectedMaxPrice !== undefined
 
   // Parse dynamic options from URL (e.g., options_colour=Black,White)
   const selectedOptions = useMemo(() => {
@@ -142,6 +146,32 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
     selectedOptions,
   ])
 
+  const priceBoundsFilterOverrides = useMemo(() => {
+    const filters = buildFilterOverrides(
+      selectedCategories,
+      selectedBrands,
+      selectedCollections,
+      selectedBundleOnly,
+      selectedOnSale,
+      selectedInStock,
+      selectedMinPrice,
+      selectedMaxPrice,
+      selectedOptions,
+      { includePrice: false },
+    )
+    return filters.length > 0 ? filters : undefined
+  }, [
+    selectedCategories,
+    selectedBrands,
+    selectedCollections,
+    selectedBundleOnly,
+    selectedOnSale,
+    selectedInStock,
+    selectedMinPrice,
+    selectedMaxPrice,
+    selectedOptions,
+  ])
+
   // Fetch facets from Meilisearch with search query and inStock filter
   const {
     facets,
@@ -152,8 +182,22 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
     filterOverrides,
   })
 
+  const { facets: priceBoundsFacets } = useFilterFacets(
+    hasSelectedPriceFilter
+      ? {
+          query: searchQuery,
+          filterOverrides: priceBoundsFilterOverrides,
+        }
+      : {
+          query: searchQuery,
+          filterOverrides: priceBoundsFilterOverrides,
+          enabled: false,
+        },
+  )
+
   // Fetch human-readable labels for facet IDs
   const { labels: facetLabels } = useFacetLabels()
+  const priceBounds = priceBoundsFacets?.priceRange ?? facets?.priceRange
 
   // Map facets to use human-readable labels instead of IDs
   const facetsWithLabels: FilterFacets | null = useMemo(() => {
@@ -161,6 +205,7 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
 
     return {
       ...facets,
+      priceRange: priceBounds ?? facets.priceRange,
       categories: facets.categories.map((cat) => ({
         ...cat,
         label: facetLabels.categories[cat.value] || cat.label,
@@ -174,12 +219,10 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
         label: facetLabels.collections[col.value] || col.label,
       })),
     }
-  }, [facets, facetLabels])
+  }, [facets, facetLabels, priceBounds])
 
-  const minPrice =
-    Number(searchParams.get("minPrice")) || facets?.priceRange.min || 0
-  const maxPrice =
-    Number(searchParams.get("maxPrice")) || facets?.priceRange.max || 1000
+  const minPrice = selectedMinPrice ?? priceBounds?.min ?? 0
+  const maxPrice = selectedMaxPrice ?? priceBounds?.max ?? 1000
 
   // Local state for price range (before apply)
   const [localMinPrice, setLocalMinPrice] = useState(minPrice)
@@ -371,11 +414,13 @@ export function SearchFilters({ className, searchQuery }: SearchFiltersProps) {
   // Price range handlers
   const updatePrice = (min: number, max: number) => {
     const params = getCurrentParams()
+    const boundsMin = priceBounds?.min ?? 0
+    const boundsMax = priceBounds?.max ?? 1000
+
     updateFilters({
       ...params,
-      minPrice: min > (facets?.priceRange.min || 0) ? String(min) : undefined,
-      maxPrice:
-        max < (facets?.priceRange.max || 1000) ? String(max) : undefined,
+      minPrice: min > boundsMin ? String(min) : undefined,
+      maxPrice: max < boundsMax ? String(max) : undefined,
     })
   }
 

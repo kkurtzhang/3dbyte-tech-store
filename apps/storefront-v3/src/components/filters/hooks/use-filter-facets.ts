@@ -14,6 +14,7 @@ export interface UseFilterFacetsOptions {
   indexName?: string
   query?: string
   filterOverrides?: string[]
+  enabled?: boolean
 }
 
 export interface UseFilterFacetsResult {
@@ -32,23 +33,25 @@ function getPriceField() {
 
 function getFacetsToRequest(priceField: string) {
   return [
-  "brand.id",
-  "category_ids",
-  "collection_ids",
-  "is_bundle",
-  "on_sale",
-  "in_stock",
-  priceField,
-  "options_colour",
-  "options_size",
-  "options_nozzle_type",
-  "options_nozzle_size",
+    "brand.id",
+    "category_ids",
+    "collection_ids",
+    "is_bundle",
+    "on_sale",
+    "in_stock",
+    priceField,
+    "options_colour",
+    "options_size",
+    "options_nozzle_type",
+    "options_nozzle_size",
   ]
 }
 
 function getUnsupportedFacet(error: unknown): string | null {
   const message = error instanceof Error ? error.message : String(error)
-  const unsupportedFacetMatch = message.match(/attribute [`"]?([a-z0-9_.]+)[`"]? is not filterable/i)
+  const unsupportedFacetMatch = message.match(
+    /attribute [`"]?([a-z0-9_.]+)[`"]? is not filterable/i,
+  )
   return unsupportedFacetMatch?.[1] ?? null
 }
 
@@ -59,9 +62,14 @@ function getUnsupportedFacet(error: unknown): string | null {
  * @returns Facets data with loading and error states
  */
 export function useFilterFacets(
-  options: UseFilterFacetsOptions = {}
+  options: UseFilterFacetsOptions = {},
 ): UseFilterFacetsResult {
-  const { indexName = INDEX_PRODUCTS, query = "", filterOverrides } = options
+  const {
+    indexName = INDEX_PRODUCTS,
+    query = "",
+    filterOverrides,
+    enabled = true,
+  } = options
 
   const [facets, setFacets] = useState<FilterFacets | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -69,6 +77,16 @@ export function useFilterFacets(
 
   useEffect(() => {
     let isCancelled = false
+
+    if (!enabled) {
+      setIsLoading(false)
+      setError(null)
+      setFacets(null)
+
+      return () => {
+        isCancelled = true
+      }
+    }
 
     async function fetchFacets() {
       setIsLoading(true)
@@ -90,13 +108,18 @@ export function useFilterFacets(
         } catch (searchError) {
           const unsupportedFacet = getUnsupportedFacet(searchError)
 
-          if (!unsupportedFacet || !facetsToRequest.includes(unsupportedFacet)) {
+          if (
+            !unsupportedFacet ||
+            !facetsToRequest.includes(unsupportedFacet)
+          ) {
             throw searchError
           }
 
           result = await index.search(query, {
             limit: 0,
-            facets: facetsToRequest.filter((facet) => facet !== unsupportedFacet),
+            facets: facetsToRequest.filter(
+              (facet) => facet !== unsupportedFacet,
+            ),
             filter: filterOverrides,
           })
         }
@@ -107,7 +130,7 @@ export function useFilterFacets(
 
         // Transform raw facet distribution to FilterFacets format
         const categories: FilterOption[] = Object.entries(
-          facetDistribution["category_ids"] || {}
+          facetDistribution["category_ids"] || {},
         ).map(([id, count]) => ({
           value: id,
           label: id, // Will be mapped to human-readable name by parent
@@ -115,7 +138,7 @@ export function useFilterFacets(
         }))
 
         const brands: FilterOption[] = Object.entries(
-          facetDistribution["brand.id"] || {}
+          facetDistribution["brand.id"] || {},
         ).map(([id, count]) => ({
           value: id,
           label: id,
@@ -123,7 +146,7 @@ export function useFilterFacets(
         }))
 
         const collections: FilterOption[] = Object.entries(
-          facetDistribution["collection_ids"] || {}
+          facetDistribution["collection_ids"] || {},
         ).map(([id, count]) => ({
           value: id,
           label: id,
@@ -131,21 +154,21 @@ export function useFilterFacets(
         }))
 
         const bundles: FilterOption[] = Object.entries(
-          facetDistribution["is_bundle"] || {}
+          facetDistribution["is_bundle"] || {},
         ).map(([value, count]) => ({
           value,
           count,
         }))
 
         const onSale: FilterOption[] = Object.entries(
-          facetDistribution["on_sale"] || {}
+          facetDistribution["on_sale"] || {},
         ).map(([value, count]) => ({
           value,
           count,
         }))
 
         const inStock: FilterOption[] = Object.entries(
-          facetDistribution["in_stock"] || {}
+          facetDistribution["in_stock"] || {},
         ).map(([value, count]) => ({
           value,
           count,
@@ -153,7 +176,7 @@ export function useFilterFacets(
 
         // Calculate price range
         const priceKeys = Object.keys(facetDistribution[priceField] || {}).map(
-          Number
+          Number,
         )
         const priceRange = {
           min: priceKeys.length > 0 ? Math.min(...priceKeys) : 0,
@@ -188,7 +211,9 @@ export function useFilterFacets(
         })
       } catch (err) {
         if (isCancelled) return
-        setError(err instanceof Error ? err : new Error("Failed to fetch facets"))
+        setError(
+          err instanceof Error ? err : new Error("Failed to fetch facets"),
+        )
         setFacets(null)
       } finally {
         if (!isCancelled) {
@@ -202,7 +227,7 @@ export function useFilterFacets(
     return () => {
       isCancelled = true
     }
-  }, [indexName, query, filterOverrides?.join(",")])
+  }, [indexName, query, enabled, filterOverrides?.join(",")])
 
   // Memoize facets to prevent unnecessary re-renders
   const memoizedFacets = useMemo(() => facets, [facets])
