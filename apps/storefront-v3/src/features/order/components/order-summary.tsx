@@ -1,18 +1,18 @@
-import { CheckCircle2 } from "lucide-react"
-import { getSafePaymentMethodDisplay } from "@3dbyte-tech-store/shared-utils"
-import { Separator } from "@/components/ui/separator"
-import { formatCustomerPrice, toCustomerPriceAmount } from "@/lib/pricing/customer-pricing"
-import { buildCartDisplayGroups } from "@/features/cart/lib/bundle-groups"
-import { getCartItemVariantTitle } from "@/features/cart/lib/variant-display"
-import { analyzeCartContents } from "@/lib/util/cart-analysis"
-import type { MedusaOrderLineItemWithPreorder } from "@/lib/medusa/types"
-import { cn } from "@/lib/utils"
-import type { MedusaOrder } from "@/lib/medusa/types"
-import { isPreorder } from "@/lib/util/is-preorder"
-import { resolvePreorderPrice } from "@/lib/util/preorder-pricing"
-import { resolveCartLineRegularUnitPrice } from "@/features/cart/lib/cart-line-pricing"
-import { getOrderLifecycle } from "@/features/order/lib/order-lifecycle"
-import { OrderTotalsSummary } from "./order-totals-summary"
+import { CheckCircle2 } from 'lucide-react'
+import { getSafePaymentMethodDisplay } from '@3dbyte-tech-store/shared-utils'
+import { Separator } from '@/components/ui/separator'
+import { formatCustomerPrice, toCustomerPriceAmount } from '@/lib/pricing/customer-pricing'
+import { buildCartDisplayGroups } from '@/features/cart/lib/bundle-groups'
+import { getCartItemVariantTitle } from '@/features/cart/lib/variant-display'
+import { analyzeCartContents } from '@/lib/util/cart-analysis'
+import type { MedusaOrderLineItemWithPreorder } from '@/lib/medusa/types'
+import { cn } from '@/lib/utils'
+import type { MedusaOrder } from '@/lib/medusa/types'
+import { isPreorder } from '@/lib/util/is-preorder'
+import { resolvePreorderPrice } from '@/lib/util/preorder-pricing'
+import { resolveCartLineRegularUnitPrice } from '@/features/cart/lib/cart-line-pricing'
+import { getOrderLifecycle } from '@/features/order/lib/order-lifecycle'
+import { OrderTotalsSummary } from './order-totals-summary'
 
 export interface OrderSummaryProps {
   order: MedusaOrder
@@ -32,11 +32,11 @@ type OrderAddress = {
 }
 
 const countryNames = new Map([
-  ["au", "Australia"],
-  ["ca", "Canada"],
-  ["gb", "United Kingdom"],
-  ["nz", "New Zealand"],
-  ["us", "United States"],
+  ['au', 'Australia'],
+  ['ca', 'Canada'],
+  ['gb', 'United Kingdom'],
+  ['nz', 'New Zealand'],
+  ['us', 'United States'],
 ])
 
 export const getCustomerOrderNumber = (order: MedusaOrder): string => {
@@ -63,17 +63,14 @@ export const getOrderTrackingReference = (order: MedusaOrder): string => {
 const getAddressLines = (address?: OrderAddress | null): string[] => {
   if (!address) return []
 
-  const name = [address.first_name, address.last_name]
-    .filter(Boolean)
-    .join(" ")
-    .trim()
+  const name = [address.first_name, address.last_name].filter(Boolean).join(' ').trim()
   const cityLine = [address.city, address.province, address.postal_code]
     .filter(Boolean)
-    .join(" ")
+    .join(' ')
     .trim()
   const countryCode = address.country_code?.trim().toLowerCase()
   const countryLine = countryCode
-    ? countryNames.get(countryCode) ?? countryCode.toUpperCase()
+    ? (countryNames.get(countryCode) ?? countryCode.toUpperCase())
     : null
 
   return [
@@ -86,12 +83,9 @@ const getAddressLines = (address?: OrderAddress | null): string[] => {
   ].filter((line): line is string => Boolean(line))
 }
 
-const areOrderAddressesEqual = (
-  left?: OrderAddress | null,
-  right?: OrderAddress | null
-) => {
-  const leftLines = getAddressLines(left).map((line) => line.toLowerCase())
-  const rightLines = getAddressLines(right).map((line) => line.toLowerCase())
+const areOrderAddressesEqual = (left?: OrderAddress | null, right?: OrderAddress | null) => {
+  const leftLines = getAddressLines(left).map(line => line.toLowerCase())
+  const rightLines = getAddressLines(right).map(line => line.toLowerCase())
 
   return (
     leftLines.length > 0 &&
@@ -100,13 +94,58 @@ const areOrderAddressesEqual = (
   )
 }
 
-function AddressBlock({
-  address,
-  title,
-}: {
-  address?: OrderAddress | null
-  title: string
-}) {
+type OrderTrackingEntry = {
+  carrierName?: string | null
+  key: string
+  trackingNumber: string
+  trackingUrl?: string | null
+}
+
+const getStringValue = (value: unknown): string | null =>
+  typeof value === 'string' && value.trim() ? value.trim() : null
+
+const getOrderTrackingEntries = (order: MedusaOrder): OrderTrackingEntry[] => {
+  const fulfillments = order.fulfillments
+
+  if (!Array.isArray(fulfillments)) return []
+
+  const entries = new Map<string, OrderTrackingEntry>()
+
+  fulfillments.forEach((fulfillment, fulfillmentIndex) => {
+    const data = fulfillment.data ?? {}
+    const dataTrackingNumber = getStringValue(data.tracking_number)
+    const dataTrackingUrl = getStringValue(data.tracking_url)
+    const carrierName =
+      getStringValue(data.carrier_name) ||
+      getStringValue(data.carrier) ||
+      getStringValue(data.carrier_id)
+
+    if (dataTrackingNumber) {
+      entries.set(dataTrackingNumber, {
+        carrierName,
+        key: `${fulfillment.id || fulfillmentIndex}:data:${dataTrackingNumber}`,
+        trackingNumber: dataTrackingNumber,
+        trackingUrl: dataTrackingUrl,
+      })
+    }
+
+    fulfillment.labels?.forEach((label, labelIndex) => {
+      const labelTrackingNumber = getStringValue(label.tracking_number)
+      if (!labelTrackingNumber || entries.has(labelTrackingNumber)) return
+
+      entries.set(labelTrackingNumber, {
+        carrierName,
+        key: `${fulfillment.id || fulfillmentIndex}:label:${labelIndex}:${labelTrackingNumber}`,
+        trackingNumber: labelTrackingNumber,
+        trackingUrl: getStringValue(label.tracking_url),
+      })
+    })
+  })
+
+  return Array.from(entries.values())
+}
+
+function AddressBlock({ address, title }: { address?: OrderAddress | null; title: string }) {
   const lines = getAddressLines(address)
 
   if (!lines.length) return null
@@ -115,7 +154,7 @@ function AddressBlock({
     <div className="space-y-2">
       <h3 className="font-medium">{title}</h3>
       <div className="space-y-0.5 text-sm">
-        {lines.map((line) => (
+        {lines.map(line => (
           <p key={line}>{line}</p>
         ))}
       </div>
@@ -134,32 +173,32 @@ function SameAddressBlock({ title }: { title: string }) {
 
 export function OrderSummary({ order, className }: OrderSummaryProps) {
   const formatPrice = (amount: number, currency: string) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
       currency,
     }).format(amount)
   }
 
   const getOrderStatus = (order: MedusaOrder) => {
-    if (!order.status) return { label: "Unknown", variant: "secondary" as const }
+    if (!order.status) return { label: 'Unknown', variant: 'secondary' as const }
 
     switch (order.status) {
-      case "pending":
-        return { label: "Pending", variant: "secondary" as const }
-      case "completed":
-        return { label: "Completed", variant: "default" as const }
-      case "canceled":
-        return { label: "Canceled", variant: "destructive" as const }
-      case "requires_action":
-        return { label: "Requires Action", variant: "default" as const }
+      case 'pending':
+        return { label: 'Pending', variant: 'secondary' as const }
+      case 'completed':
+        return { label: 'Completed', variant: 'default' as const }
+      case 'canceled':
+        return { label: 'Canceled', variant: 'destructive' as const }
+      case 'requires_action':
+        return { label: 'Requires Action', variant: 'default' as const }
       default:
-        return { label: order.status, variant: "secondary" as const }
+        return { label: order.status, variant: 'secondary' as const }
     }
   }
 
   const status = getOrderStatus(order)
   const lifecycle = getOrderLifecycle(order)
-  const currencyCode = order.currency_code || "USD"
+  const currencyCode = order.currency_code || 'USD'
   const orderDisplayGroups = buildCartDisplayGroups(order.items)
   const orderAnalysis = analyzeCartContents(order.items, currencyCode)
   const orderTotals = order as MedusaOrder & {
@@ -169,82 +208,72 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
   }
   const shippingAddress = order.shipping_address as OrderAddress | null | undefined
   const billingAddress = orderTotals.billing_address
-  const billingMatchesShipping = areOrderAddressesEqual(
-    shippingAddress,
-    billingAddress
-  )
+  const billingMatchesShipping = areOrderAddressesEqual(shippingAddress, billingAddress)
   const orderNumber = getCustomerOrderNumber(order)
-  const discountTotal =
-    typeof order.discount_total === "number" ? order.discount_total : 0
+  const trackingEntries = getOrderTrackingEntries(order)
+  const discountTotal = typeof order.discount_total === 'number' ? order.discount_total : 0
   const shippingTotal =
-    typeof order.shipping_total === "number"
+    typeof order.shipping_total === 'number'
       ? order.shipping_total
-      : typeof orderTotals.shipping_subtotal === "number"
+      : typeof orderTotals.shipping_subtotal === 'number'
         ? orderTotals.shipping_subtotal
         : null
   const displayedSubtotal =
-    shippingTotal !== null && typeof order.total === "number"
+    shippingTotal !== null && typeof order.total === 'number'
       ? Math.max(0, order.total - shippingTotal + discountTotal)
-      : orderTotals.item_subtotal ?? order.subtotal ?? 0
+      : (orderTotals.item_subtotal ?? order.subtotal ?? 0)
 
   const formatAvailabilityDate = (date: Date) => {
-    return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     }).format(date)
   }
 
-  const renderItem = (
-    item: NonNullable<MedusaOrder["items"]>[number],
-    key: string
-  ) => {
+  const renderItem = (item: NonNullable<MedusaOrder['items']>[number], key: string) => {
     const preorderItem = item as MedusaOrderLineItemWithPreorder
     const preorderPrice = resolvePreorderPrice(preorderItem.variant, currencyCode)
     const displayCurrency = preorderPrice?.currency_code || currencyCode
     const quantity = item.quantity || 0
     const unitPrice = preorderPrice?.amount ?? item.unit_price ?? 0
     const totalPrice =
-      typeof item.total === "number"
+      typeof item.total === 'number'
         ? item.total
-        : typeof item.subtotal === "number"
+        : typeof item.subtotal === 'number'
           ? toCustomerPriceAmount(item.subtotal, displayCurrency)
           : toCustomerPriceAmount(unitPrice * quantity, displayCurrency)
     const regularUnitPrice = resolveCartLineRegularUnitPrice(item, currencyCode)
     const regularLineTotal =
-      typeof regularUnitPrice === "number" && regularUnitPrice > unitPrice
+      typeof regularUnitPrice === 'number' && regularUnitPrice > unitPrice
         ? regularUnitPrice * quantity
         : null
     const variantTitle = getCartItemVariantTitle(item)
 
     return (
-      <div
-        key={key}
-        className="flex items-start justify-between gap-4"
-      >
+      <div key={key} className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <p className="text-sm font-medium">{item.title}</p>
-          {variantTitle ? (
-            <p className="text-xs text-muted-foreground">{variantTitle}</p>
-          ) : null}
+          {variantTitle ? <p className="text-xs text-muted-foreground">{variantTitle}</p> : null}
           <p className="text-xs text-muted-foreground">
             Qty {quantity} x {formatCustomerPrice(unitPrice, displayCurrency)}
           </p>
           {isPreorder(preorderItem.variant?.preorder_variant) && (
             <p className="text-xs text-primary">
-              Pre-order available on{" "}
-              {new Date(preorderItem.variant!.preorder_variant!.available_date).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              })}
+              Pre-order available on{' '}
+              {new Date(preorderItem.variant!.preorder_variant!.available_date).toLocaleDateString(
+                'en-US',
+                {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                }
+              )}
             </p>
           )}
         </div>
         <div className="text-right">
-          <p className="font-mono text-sm">
-            {formatPrice(totalPrice, displayCurrency)}
-          </p>
+          <p className="font-mono text-sm">{formatPrice(totalPrice, displayCurrency)}</p>
           {regularLineTotal ? (
             <p className="font-mono text-xs text-muted-foreground line-through">
               {formatCustomerPrice(regularLineTotal, currencyCode)}
@@ -255,38 +284,31 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
     )
   }
 
-  const getBundleLineTotal = (
-    items: NonNullable<MedusaOrder["items"]>
-  ): number =>
+  const getBundleLineTotal = (items: NonNullable<MedusaOrder['items']>): number =>
     items.reduce((sum, item) => {
       const quantity = item.quantity || 0
       const unitPrice = item.unit_price ?? 0
       const lineTotal =
-        typeof item.total === "number"
+        typeof item.total === 'number'
           ? item.total
-          : typeof item.subtotal === "number"
+          : typeof item.subtotal === 'number'
             ? item.subtotal
             : unitPrice * quantity
 
       return sum + lineTotal
     }, 0)
 
-  const getBundleChildLabel = (
-    item: NonNullable<MedusaOrder["items"]>[number]
-  ) => {
+  const getBundleChildLabel = (item: NonNullable<MedusaOrder['items']>[number]) => {
     const variantTitle = getCartItemVariantTitle(item)
 
-    return `${item.quantity || 0} x ${item.title}${
-      variantTitle ? ` - ${variantTitle}` : ""
-    }`
+    return `${item.quantity || 0} x ${item.title}${variantTitle ? ` - ${variantTitle}` : ''}`
   }
 
   const renderBundleGroup = (
-    group: Extract<(typeof orderDisplayGroups)[number], { type: "bundle" }>
+    group: Extract<(typeof orderDisplayGroups)[number], { type: 'bundle' }>
   ) => {
     const lineTotal = getBundleLineTotal(group.items)
-    const bundleUnitPrice =
-      group.quantity > 0 ? lineTotal / group.quantity : lineTotal
+    const bundleUnitPrice = group.quantity > 0 ? lineTotal / group.quantity : lineTotal
 
     return (
       <details
@@ -295,22 +317,16 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
       >
         <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
           <div className="flex-1">
-            <p className="text-sm font-medium">
-              {group.bundleTitle ?? "Product Bundle"}
-            </p>
+            <p className="text-sm font-medium">{group.bundleTitle ?? 'Product Bundle'}</p>
             <p className="text-xs text-muted-foreground">
               Qty {group.quantity} x {formatCustomerPrice(bundleUnitPrice, currencyCode)}
             </p>
             <p className="mt-1 text-xs text-primary">View included items</p>
           </div>
-          <p className="font-mono text-sm">
-            {formatCustomerPrice(lineTotal, currencyCode)}
-          </p>
+          <p className="font-mono text-sm">{formatCustomerPrice(lineTotal, currencyCode)}</p>
         </summary>
         <div className="mt-3 border-t border-primary/20 pt-3">
-          <p className="mb-2 text-xs font-medium text-muted-foreground">
-            Includes
-          </p>
+          <p className="mb-2 text-xs font-medium text-muted-foreground">Includes</p>
           <ul className="space-y-1 text-xs text-muted-foreground">
             {group.items.map((item, groupIndex) => (
               <li key={`${group.bundleId}-${item.id || groupIndex}`}>
@@ -324,7 +340,7 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
   }
 
   return (
-    <div className={cn("space-y-6", className)}>
+    <div className={cn('space-y-6', className)}>
       {/* Order Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -335,12 +351,12 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
           <p className="text-sm text-muted-foreground">Date</p>
           <p className="text-sm">
             {order.created_at
-              ? new Date(order.created_at).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
+              ? new Date(order.created_at).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
                 })
-              : "N/A"}
+              : 'N/A'}
           </p>
         </div>
       </div>
@@ -351,13 +367,12 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
       <div className="flex flex-wrap gap-2">
         <div
           className={cn(
-            "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium",
-            status.variant === "default" &&
-              "border-primary/50 bg-primary/10 text-primary",
-            status.variant === "secondary" &&
-              "border-muted-foreground/50 bg-muted text-muted-foreground",
-            status.variant === "destructive" &&
-              "border-destructive/50 bg-destructive/10 text-destructive"
+            'inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium',
+            status.variant === 'default' && 'border-primary/50 bg-primary/10 text-primary',
+            status.variant === 'secondary' &&
+              'border-muted-foreground/50 bg-muted text-muted-foreground',
+            status.variant === 'destructive' &&
+              'border-destructive/50 bg-destructive/10 text-destructive'
           )}
         >
           <CheckCircle2 className="h-3 w-3" />
@@ -375,6 +390,40 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
 
       <Separator />
 
+      {trackingEntries.length > 0 ? (
+        <>
+          <div className="space-y-3">
+            <h3 className="font-medium">Tracking</h3>
+            <div className="space-y-2">
+              {trackingEntries.map(entry => (
+                <div
+                  key={entry.key}
+                  className="rounded-md border border-border bg-card p-3 text-sm"
+                >
+                  {entry.carrierName ? (
+                    <p className="text-xs text-muted-foreground">{entry.carrierName}</p>
+                  ) : null}
+                  {entry.trackingUrl ? (
+                    <a
+                      href={entry.trackingUrl}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                      className="font-mono text-primary underline-offset-4 hover:underline"
+                    >
+                      {entry.trackingNumber}
+                    </a>
+                  ) : (
+                    <p className="font-mono">{entry.trackingNumber}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <Separator />
+        </>
+      ) : null}
+
       {/* Order Items */}
       <div className="space-y-4">
         <h3 className="font-medium">Items</h3>
@@ -382,17 +431,19 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
           <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm text-primary">
             Some items in this order are pre-ordered and will ship when available.
             {orderAnalysis.earliestPreorderDate ? (
-              <> Earliest estimated availability: {formatAvailabilityDate(orderAnalysis.earliestPreorderDate)}.</>
+              <>
+                {' '}
+                Earliest estimated availability:{' '}
+                {formatAvailabilityDate(orderAnalysis.earliestPreorderDate)}.
+              </>
             ) : null}
           </div>
         ) : null}
         <div className="space-y-3">
           {orderDisplayGroups.map((group, index) =>
-            group.type === "bundle" ? (
-              renderBundleGroup(group)
-            ) : (
-              renderItem(group.item, group.item.id || String(index))
-            )
+            group.type === 'bundle'
+              ? renderBundleGroup(group)
+              : renderItem(group.item, group.item.id || String(index))
           )}
         </div>
       </div>
@@ -402,17 +453,11 @@ export function OrderSummary({ order, className }: OrderSummaryProps) {
       {/* Addresses */}
       {(shippingAddress || billingAddress) && (
         <div className="grid gap-6 md:grid-cols-2">
-          <AddressBlock
-            title="Shipping Address"
-            address={shippingAddress}
-          />
+          <AddressBlock title="Shipping Address" address={shippingAddress} />
           {billingMatchesShipping ? (
             <SameAddressBlock title="Billing Address" />
           ) : (
-            <AddressBlock
-              title="Billing Address"
-              address={billingAddress}
-            />
+            <AddressBlock title="Billing Address" address={billingAddress} />
           )}
         </div>
       )}

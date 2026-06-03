@@ -1,11 +1,12 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { Pencil } from "lucide-react"
+import type { FormEvent } from 'react'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { Pencil } from 'lucide-react'
 
 interface Address {
   id: string
@@ -28,40 +29,51 @@ interface AddressFormProps {
 export function AddressForm({ address, onSuccess }: AddressFormProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const inputId = (field: string) => address ? `${address.id}-${field}` : `new-${field}`
+  const inputId = (field: string) => (address ? `${address.id}-${field}` : `new-${field}`)
 
-  const handleSubmit = async (formData: FormData) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
     setIsLoading(true)
+    setErrorMessage(null)
     try {
+      const formData = new FormData(event.currentTarget)
       const data = {
-        first_name: formData.get("first_name") as string,
-        last_name: formData.get("last_name") as string,
-        address_1: formData.get("address_1") as string,
-        address_2: formData.get("address_2") as string || undefined,
-        city: formData.get("city") as string,
-        country_code: formData.get("country_code") as string,
-        postal_code: formData.get("postal_code") as string,
-        phone: formData.get("phone") as string || undefined,
+        first_name: formData.get('first_name') as string,
+        last_name: formData.get('last_name') as string,
+        address_1: formData.get('address_1') as string,
+        address_2: (formData.get('address_2') as string) || undefined,
+        city: formData.get('city') as string,
+        country_code: formData.get('country_code') as string,
+        postal_code: formData.get('postal_code') as string,
+        phone: (formData.get('phone') as string) || undefined,
       }
 
-      const url = address 
-        ? `/account/addresses?action=update&id=${address.id}`
-        : `/account/addresses?action=add`
-      
-      const response = await fetch(url, {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json" },
-      })
+      const url = address
+        ? `/api/addresses?action=update&id=${address.id}`
+        : `/api/addresses?action=add`
 
-      if (response.ok) {
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' },
+      })
+      const payload = await response
+        .json()
+        .catch(() => ({ success: false, error: 'Failed to save address' }))
+
+      if (response.ok && payload?.success) {
         setIsOpen(false)
         onSuccess?.()
         window.location.reload()
+        return
       }
+
+      setErrorMessage(payload?.error || 'Failed to save address')
     } catch (error) {
-      console.error("Error saving address:", error)
+      console.error('Error saving address:', error)
+      setErrorMessage('Failed to save address')
     } finally {
       setIsLoading(false)
     }
@@ -71,7 +83,11 @@ export function AddressForm({ address, onSuccess }: AddressFormProps) {
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         {address ? (
-          <Button variant="outline" size="sm" className="font-mono text-xs uppercase tracking-wider">
+          <Button
+            variant="outline"
+            size="sm"
+            className="font-mono text-xs uppercase tracking-wider"
+          >
             <Pencil className="h-4 w-4 mr-1" />
             Edit
           </Button>
@@ -85,89 +101,89 @@ export function AddressForm({ address, onSuccess }: AddressFormProps) {
       <SheetContent side="right" className="w-[400px] sm:w-[540px]">
         <SheetHeader>
           <SheetTitle className="font-mono uppercase tracking-wider">
-            {address ? "Edit Address" : "Add New Address"}
+            {address ? 'Edit Address' : 'Add New Address'}
           </SheetTitle>
         </SheetHeader>
-        <form action={handleSubmit} className="space-y-4 mt-6">
+        <form onSubmit={handleSubmit} className="space-y-4 mt-6">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor={inputId("first_name")}>First Name</Label>
-              <Input 
-                id={inputId("first_name")} 
-                name="first_name" 
+              <Label htmlFor={inputId('first_name')}>First Name</Label>
+              <Input
+                id={inputId('first_name')}
+                name="first_name"
                 defaultValue={address?.first_name}
-                required 
+                required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor={inputId("last_name")}>Last Name</Label>
-              <Input 
-                id={inputId("last_name")} 
-                name="last_name" 
+              <Label htmlFor={inputId('last_name')}>Last Name</Label>
+              <Input
+                id={inputId('last_name')}
+                name="last_name"
                 defaultValue={address?.last_name}
-                required 
+                required
               />
             </div>
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor={inputId("address_1")}>Address Line 1</Label>
-              <Input 
-                id={inputId("address_1")} 
-                name="address_1" 
+              <Label htmlFor={inputId('address_1')}>Address Line 1</Label>
+              <Input
+                id={inputId('address_1')}
+                name="address_1"
                 defaultValue={address?.address_1}
-                required 
+                required
               />
             </div>
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor={inputId("address_2")}>Address Line 2 (Optional)</Label>
-              <Input 
-                id={inputId("address_2")} 
-                name="address_2" 
-                defaultValue={address?.address_2}
-              />
+              <Label htmlFor={inputId('address_2')}>Address Line 2 (Optional)</Label>
+              <Input id={inputId('address_2')} name="address_2" defaultValue={address?.address_2} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor={inputId("city")}>City</Label>
-              <Input 
-                id={inputId("city")} 
-                name="city" 
-                defaultValue={address?.city}
-                required 
-              />
+              <Label htmlFor={inputId('city')}>City</Label>
+              <Input id={inputId('city')} name="city" defaultValue={address?.city} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor={inputId("postal_code")}>Postal Code</Label>
-              <Input 
-                id={inputId("postal_code")} 
-                name="postal_code" 
+              <Label htmlFor={inputId('postal_code')}>Postal Code</Label>
+              <Input
+                id={inputId('postal_code')}
+                name="postal_code"
                 defaultValue={address?.postal_code}
-                required 
+                required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor={inputId("country_code")}>Country Code</Label>
-              <Input 
-                id={inputId("country_code")} 
-                name="country_code" 
+              <Label htmlFor={inputId('country_code')}>Country Code</Label>
+              <Input
+                id={inputId('country_code')}
+                name="country_code"
                 defaultValue={address?.country_code}
                 placeholder="US"
-                required 
+                required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor={inputId("phone")}>Phone (Optional)</Label>
-              <Input 
-                id={inputId("phone")} 
-                name="phone" 
-                type="tel"
-                defaultValue={address?.phone}
-              />
+              <Label htmlFor={inputId('phone')}>Phone (Optional)</Label>
+              <Input id={inputId('phone')} name="phone" type="tel" defaultValue={address?.phone} />
             </div>
           </div>
+          {errorMessage ? (
+            <p className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {errorMessage}
+            </p>
+          ) : null}
           <div className="flex gap-2 mt-6">
-            <Button type="submit" disabled={isLoading} className="font-mono uppercase tracking-widest">
-              {isLoading ? "Saving..." : "Save Address"}
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="font-mono uppercase tracking-widest"
+            >
+              {isLoading ? 'Saving...' : 'Save Address'}
             </Button>
-            <Button type="button" variant="outline" onClick={() => setIsOpen(false)} className="font-mono uppercase tracking-wider">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsOpen(false)}
+              className="font-mono uppercase tracking-wider"
+            >
               Cancel
             </Button>
           </div>

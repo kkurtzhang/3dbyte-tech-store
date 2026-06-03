@@ -1,11 +1,12 @@
-import { Metadata } from "next"
-import { notFound } from "next/navigation"
-import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
+import { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 
-import { OrderDetails } from "@/app/track-order/page"
-import { Button } from "@/components/ui/button"
-import { getOrder, ORDER_TRACKING_FIELDS } from "@/lib/medusa/orders"
+import { getCustomerAuthHeaders } from '@/app/actions/auth'
+import { OrderDetails } from '@/app/track-order/page'
+import { Button } from '@/components/ui/button'
+import { getOrder, ORDER_TRACKING_FIELDS } from '@/lib/medusa/orders'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -21,7 +22,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function OrderDetailPage({ params }: Props) {
   const { id } = await params
-  const order = await getOrder(id, ORDER_TRACKING_FIELDS)
+  const authHeaders = await getCustomerAuthHeaders()
+  const order = authHeaders ? await getOrder(id, ORDER_TRACKING_FIELDS, authHeaders) : null
 
   if (!order) {
     notFound()

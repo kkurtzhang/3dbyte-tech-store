@@ -1,41 +1,53 @@
-import { sdk } from "./client"
-import type { MedusaOrder } from "./types"
+import { sdk } from './client'
+import type { MedusaOrder } from './types'
+
+export type MedusaClientHeaders = Record<string, string>
 
 export const ORDER_TRACKING_FIELDS = [
-  "id",
-  "email",
-  "display_id",
-  "custom_display_id",
-  "status",
-  "payment_status",
-  "fulfillment_status",
-  "currency_code",
-  "created_at",
-  "subtotal",
-  "item_subtotal",
-  "shipping_total",
-  "shipping_subtotal",
-  "tax_total",
-  "discount_total",
-  "total",
-  "*payment_collections.payments",
-  "*items",
-  "*items.metadata",
-  "*items.variant",
-  "*items.product",
-  "*items.variant.preorder_variant",
-  "*items.variant.preorder_variant.prices",
-  "*shipping_methods",
-  "*shipping_address",
-  "*billing_address",
+  'id',
+  'email',
+  'display_id',
+  'custom_display_id',
+  'status',
+  'payment_status',
+  'fulfillment_status',
+  'currency_code',
+  'created_at',
+  'subtotal',
+  'item_subtotal',
+  'shipping_total',
+  'shipping_subtotal',
+  'tax_total',
+  'discount_total',
+  'total',
+  '*payment_collections.payments',
+  '*items',
+  '*items.metadata',
+  '*items.variant',
+  '*items.product',
+  '*items.variant.preorder_variant',
+  '*items.variant.preorder_variant.prices',
+  '*shipping_methods',
+  '*shipping_address',
+  '*billing_address',
+  '*fulfillments',
+  '*fulfillments.items',
+  '*fulfillments.labels',
 ]
 
-export async function getOrder(id: string, fields?: string[]): Promise<MedusaOrder | null> {
+export async function getOrder(
+  id: string,
+  fields?: string[],
+  headers?: MedusaClientHeaders | null
+): Promise<MedusaOrder | null> {
   try {
-    const { order } = await sdk.store.order.retrieve(id, {
-      fields:
-        fields?.join(",") || ORDER_TRACKING_FIELDS.join(","),
-    })
+    const { order } = await sdk.store.order.retrieve(
+      id,
+      {
+        fields: fields?.join(',') || ORDER_TRACKING_FIELDS.join(','),
+      },
+      headers || undefined
+    )
 
     return order
   } catch (error) {
@@ -44,18 +56,24 @@ export async function getOrder(id: string, fields?: string[]): Promise<MedusaOrd
   }
 }
 
-export async function listOrders(params: {
-  limit?: number
-  offset?: number
-  fields?: string[]
-}): Promise<{ orders: MedusaOrder[]; count: number }> {
+export async function listOrders(
+  params: {
+    limit?: number
+    offset?: number
+    fields?: string[]
+  },
+  headers?: MedusaClientHeaders | null
+): Promise<{ orders: MedusaOrder[]; count: number }> {
   const { limit = 20, offset = 0, fields } = params
 
-  const response = await sdk.store.order.list({
-    limit,
-    offset,
-    fields: fields?.join(","),
-  })
+  const response = await sdk.store.order.list(
+    {
+      limit,
+      offset,
+      fields: fields?.join(','),
+    },
+    headers || undefined
+  )
 
   return {
     orders: response.orders || [],

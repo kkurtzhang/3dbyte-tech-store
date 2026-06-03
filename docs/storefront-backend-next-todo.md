@@ -31,6 +31,105 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 
 ## Remaining TODO (Priority Order)
 
+### Launch-gate follow-up: Account signup email confirmation/verification (Storefront + Backend + Email)
+
+- Found: `2026-06-03` staging launch gate during logged-in checkout smoke.
+- Problem: the test account was registered with a plus-address (`bucco.max.org+launchgate...@gmail.com`) instead of the intended base inbox address, so the gate did not clearly prove whether the customer signup flow sends or requires an email confirmation/verification message.
+- Product decision needed: decide whether new customer accounts should require email verification before checkout/account access, or whether signup should only send a welcome/acknowledgement email.
+- Acceptance:
+  - Staging signup smoke uses an inbox address that the gate operator can clearly identify and search.
+  - Expected signup email behavior is documented: verification required, welcome-only, or intentionally no email.
+  - If verification is required, unverified accounts cannot access protected account actions until verified.
+  - If verification is not required, the launch gate explicitly verifies the chosen welcome/acknowledgement behavior.
+
+### Launch-gate bug: Logged-in customer order history misses newly placed orders (Storefront + Backend)
+
+- Found: `2026-06-03` staging launch gate on logged-in order `3DBO-AKK7-5KYYDE` / `order_01KT6NYPSV6D65VVXZ4Z4XAVPP`.
+- Status: fixed in branch `fix/launch-account-order-gates`; pending PR merge, Coolify redeploy, and staging re-smoke.
+- Problem: the order confirmation page and Medusa Admin show the order was placed by the logged-in customer `bucco.max.org+launchgate...@gmail.com`, but `/account/orders` still renders "No Orders Yet" while the same browser session is logged in.
+- Evidence:
+  - Confirmation page showed `My Account` / `Sign Out` and order ref `3DBO-AKK7-5KYYDE`.
+  - Medusa Admin order `#14` linked the customer record `Launch Gate` / `bucco.max.org+launchgate...@gmail.com`.
+  - Storefront account order-history page remained authenticated but did not list the order.
+- Acceptance:
+  - A logged-in checkout order appears in `/account/orders` without manual admin intervention.
+  - The order detail link from account history opens the correct customer-visible order detail.
+  - Guest order tracking still works independently via `/track-order`.
+  - Regression tests cover the customer-order lookup path used by the account page.
+
+### Launch-gate bug: Account address add form silently fails (Storefront + Backend)
+
+- Found: `2026-06-03` staging launch gate on logged-in test account `bucco.max.org+launchgate...@gmail.com`.
+- Status: fixed in branch `fix/launch-account-order-gates`; pending PR merge, Coolify redeploy, and staging re-smoke.
+- Problem: `/account/addresses` opens the add-address form and accepts valid input values, but after `Save Address` the modal closes, no error is shown, and the page still shows "No saved addresses yet".
+- Evidence:
+  - Form values before save included `first_name: "LAUNCH"`, `last_name: "GATE"`, `address_1: "32 KIERNAN ST"`, `city: "GWYNNEVILLE"`, `postal_code: "2500"`, `country_code: "AU"`, and `phone: "0400000000"`.
+  - After save, the dialog closed, no browser console error was captured, and the empty-state remained visible.
+- Acceptance:
+  - Adding a valid address from `/account/addresses` persists it to the logged-in customer.
+  - The newly saved address appears immediately without requiring a full logout/login cycle.
+  - Invalid address saves keep the modal open and show a customer-visible error.
+  - Regression tests cover add-address success and validation failure states.
+
+### Launch-gate bug: Fulfillment shipment notification email is not sent (Backend + Email)
+
+- Found: `2026-06-03` staging launch gate on logged-in order `3DBO-AKK7-5KYYDE` / `order_01KT6NYPSV6D65VVXZ4Z4XAVPP`.
+- Status: fixed in branch `fix/launch-account-order-gates`; pending PR merge, Coolify redeploy, and staging shipment-email re-smoke.
+- Problem: Medusa Admin manual fulfillment was created and then marked shipped with `Send notification` enabled, but Gmail still showed only the original order-confirmation email after the shipment action.
+- Evidence:
+  - Admin order `#14` payment was captured, fulfillment provider was `Manual`, and shipment was saved with tracking number `STG-3DBO-AKK7-5KYYDE`.
+  - Admin activity showed `Items shipped`.
+  - Gmail search for `3DBO-AKK7-5KYYDE` still returned `1-1` result: only "Your 3D Byte Tech order 3DBO-AKK7-5KYYDE is confirmed".
+  - The original order confirmation email tells the customer "We will send another email when the order is on its way", so the current customer promise is not being met.
+- Acceptance:
+  - Marking a fulfillment as shipped with `Send notification` enabled sends a shipment/on-the-way email.
+  - The shipment email includes order reference, shipped item(s), carrier/provider where available, and tracking number/link when present.
+  - Staging email smoke verifies both the order confirmation and shipment notification paths.
+
+### Launch-gate bug: Customer order tracking does not reflect shipped fulfillment (Storefront + Backend)
+
+- Found: `2026-06-03` staging launch gate on order `3DBO-AKK7-5KYYDE` / `order_01KT6NYPSV6D65VVXZ4Z4XAVPP`.
+- Status: fixed in branch `fix/launch-account-order-gates`; pending PR merge, Coolify redeploy, and staging tracking re-smoke.
+- Problem: after Medusa Admin marked the manual fulfillment as shipped with tracking number `STG-3DBO-AKK7-5KYYDE`, the customer `/track-order` result still showed `Pending`, `Processing`, and "waiting for fulfillment" with no tracking number.
+- Evidence:
+  - Admin order showed fulfillment `Shipped`, provider `Manual`, tracking `STG-3DBO-AKK7-5KYYDE`, and activity `Items shipped`.
+  - Storefront tracking lookup for `3DBO-AKK7-5KYYDE` plus the checkout email returned the order, but displayed `Fulfillment: Processing` and no tracking data.
+- Acceptance:
+  - Customer order tracking reflects fulfilled/shipped states from Medusa.
+  - Tracking numbers/URLs are shown when present.
+  - Pending, fulfilled, shipped, and delivered states have distinct customer-facing copy.
+  - Regression tests cover order tracking after fulfillment shipment creation.
+
+### Launch-gate bug: Karrio selected-rate fulfillment mapping (Backend + Shipping)
+
+- Found: `2026-06-03` staging launch gate on order `3DBO-8U96-P49VDH` / `order_01KT6KGS5Q761NQ94XA6QXV52Z`.
+- Problem: checkout successfully quoted and charged the selected Aramex Economy live Karrio rate, but Medusa Admin fulfillment failed when creating the Karrio shipment with `service_unavailable`: "The service you selected is not available for this shipment."
+- Evidence:
+  - Staging runtime has `KARRIO_TEST_MODE=true`.
+  - `KARRIO_FULFILLMENT_OPTIONS` was unset, so the Karrio fulfillment provider used default option data.
+  - Stored order shipping method data included the selected live rate id, `service: "aramex_aunz"`, `carrier_id: "Aramex"`, and `service_name: "Aramex Economy"`.
+  - The shipping option fallback data still used generic defaults such as `service: "aramex_economy"` and `carrier_id: "aramex"`.
+- Likely cause to investigate: fulfillment label creation is not using Karrio's selected-rate purchase path/service metadata correctly for Aramex AU/NZ; compare direct `/v1/shipments` versus selected-rate `/v1/proxy/shipments` behavior before changing code.
+- Acceptance:
+  - Karrio test-mode fulfillment can create a test shipment/label from a checkout-selected Aramex Economy or Priority rate.
+  - The fulfillment record stores Karrio shipment id, tracking number, label URL, carrier, and selected-rate metadata.
+  - No real-label behavior is enabled in staging while `KARRIO_TEST_MODE=true`.
+  - Regression tests cover selected-rate fulfillment data, not only rate calculation.
+
+### Launch-gate bug: Assistant must not invent unavailable products or stale links (Storefront + AI)
+
+- Found: `2026-06-03` staging launch gate with prompt: "Which PETG should I use for outdoor parts?"
+- Problem: the assistant gave a nicely formatted answer but recommended products and links that are not current staging catalogue results, including a stale `3dbyte.shop` product URL and an unavailable FormFutura PETG recommendation.
+- Expected behavior:
+  - Recommend only products returned by current product search/product-guidance data, or explicitly say the store does not currently carry a suggested alternative.
+  - Use canonical current storefront product URLs for product links.
+  - If a better material such as ASA is relevant but unavailable, present it as general guidance, not as an in-store product recommendation.
+- Acceptance:
+  - Customer-style PETG, nozzle, drying/storage, and 3DSets/RC prompts produce current-catalogue recommendations only.
+  - Stale domains such as `3dbyte.shop` never appear in assistant product links.
+  - Existing support-ticket confirmation guardrails remain intact.
+  - Langfuse eval cases include this prompt and fail on unavailable products or stale product URLs.
+
 ### 0) Security dependency upgrade pass (All apps)
 
 - Problem: `pnpm audit` currently reports high/critical advisories across CMS, backend, storefront, and root tooling. The audit does not currently block builds or CI because CI runs it with `continue-on-error`, but the advisories should be handled before wider staging/product-data work.

@@ -3,7 +3,7 @@ const mockFetch = jest.fn()
 
 global.fetch = mockFetch as unknown as typeof fetch
 
-jest.mock("@/lib/medusa/client", () => ({
+jest.mock('@/lib/medusa/client', () => ({
   sdk: {
     store: {
       order: {
@@ -13,17 +13,17 @@ jest.mock("@/lib/medusa/client", () => ({
   },
 }))
 
-import { lookupOrder } from "../track-order"
+import { lookupOrder } from '../track-order'
 
-describe("track order action", () => {
+describe('track order action', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL = "http://localhost:9000"
-    process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY = "pk_test"
+    process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL = 'http://localhost:9000'
+    process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY = 'pk_test'
     mockRetrieveOrder.mockResolvedValue({
       order: {
-        id: "order_1",
-        email: "customer@example.com",
+        id: 'order_1',
+        email: 'customer@example.com',
       },
     })
     mockFetch.mockResolvedValue({
@@ -32,78 +32,80 @@ describe("track order action", () => {
     })
   })
 
-  it("requests the payment, fulfillment, shipping, and rich line item fields needed by tracking", async () => {
-    await expect(
-      lookupOrder(" order_1 ", " CUSTOMER@example.com ")
-    ).resolves.toMatchObject({
+  it('requests the payment, fulfillment, shipping, and rich line item fields needed by tracking', async () => {
+    await expect(lookupOrder(' order_1 ', ' CUSTOMER@example.com ')).resolves.toMatchObject({
       success: true,
       order: {
-        id: "order_1",
+        id: 'order_1',
       },
     })
 
-    expect(mockRetrieveOrder).toHaveBeenCalledWith("order_1", {
-      fields: expect.stringContaining("*payment_collections.payments"),
+    expect(mockRetrieveOrder).toHaveBeenCalledWith('order_1', {
+      fields: expect.stringContaining('*payment_collections.payments'),
     })
-    expect(mockRetrieveOrder).toHaveBeenCalledWith("order_1", {
-      fields: expect.stringContaining("*items.variant.preorder_variant.prices"),
+    expect(mockRetrieveOrder).toHaveBeenCalledWith('order_1', {
+      fields: expect.stringContaining('*items.variant.preorder_variant.prices'),
     })
-    expect(mockRetrieveOrder).toHaveBeenCalledWith("order_1", {
-      fields: expect.stringContaining("*shipping_methods"),
+    expect(mockRetrieveOrder).toHaveBeenCalledWith('order_1', {
+      fields: expect.stringContaining('*shipping_methods'),
     })
-    expect(mockRetrieveOrder).toHaveBeenCalledWith("order_1", {
-      fields: expect.stringContaining("fulfillment_status"),
+    expect(mockRetrieveOrder).toHaveBeenCalledWith('order_1', {
+      fields: expect.stringContaining('fulfillment_status'),
+    })
+    expect(mockRetrieveOrder).toHaveBeenCalledWith('order_1', {
+      fields: expect.stringContaining('*fulfillments'),
+    })
+    expect(mockRetrieveOrder).toHaveBeenCalledWith('order_1', {
+      fields: expect.stringContaining('*fulfillments.labels'),
     })
   })
 
-  it("adds the verified safe card payment method to the tracked order", async () => {
+  it('adds the verified safe card payment method to the tracked order', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({
         payment_method: {
-          type: "card",
-          brand: "visa",
-          last4: "4242",
+          type: 'card',
+          brand: 'visa',
+          last4: '4242',
         },
       }),
     })
 
-    await expect(
-      lookupOrder("order_1", "customer@example.com")
-    ).resolves.toMatchObject({
+    await expect(lookupOrder('order_1', 'customer@example.com')).resolves.toMatchObject({
       success: true,
       order: {
         tracking_payment_method: {
-          type: "card",
-          brand: "visa",
-          last4: "4242",
+          type: 'card',
+          brand: 'visa',
+          last4: '4242',
         },
       },
     })
 
     expect(mockFetch).toHaveBeenCalledWith(
       new URL(
-        "http://localhost:9000/store/orders/order_1/payment-method?email=customer%40example.com"
+        'http://localhost:9000/store/orders/order_1/payment-method?email=customer%40example.com'
       ),
       expect.objectContaining({
-        cache: "no-store",
+        cache: 'no-store',
         headers: {
-          "x-publishable-api-key": "pk_test",
+          'x-publishable-api-key': 'pk_test',
         },
       })
     )
   })
 
-  it("looks up custom display ids through the backend lookup endpoint", async () => {
+  it('looks up custom display ids through the backend lookup endpoint', async () => {
     mockRetrieveOrder.mockRejectedValue({ status: 404 })
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           order: {
-            id: "order_123",
-            custom_display_id: "3DB-1777978800123",
-            email: "customer@example.com",
+            id: 'order_123',
+            custom_display_id: '3DB-1777978800123',
+            email: 'customer@example.com',
           },
         }),
       })
@@ -113,31 +115,31 @@ describe("track order action", () => {
       })
 
     await expect(
-      lookupOrder(" 3DB-1777978800123 ", " CUSTOMER@example.com ")
+      lookupOrder(' 3DB-1777978800123 ', ' CUSTOMER@example.com ')
     ).resolves.toMatchObject({
       success: true,
       order: {
-        id: "order_123",
-        custom_display_id: "3DB-1777978800123",
+        id: 'order_123',
+        custom_display_id: '3DB-1777978800123',
       },
     })
 
     expect(mockFetch).toHaveBeenNthCalledWith(
       1,
       new URL(
-        "http://localhost:9000/store/orders/lookup?reference=3DB-1777978800123&email=customer%40example.com"
+        'http://localhost:9000/store/orders/lookup?reference=3DB-1777978800123&email=customer%40example.com'
       ),
       expect.objectContaining({
-        cache: "no-store",
+        cache: 'no-store',
         headers: {
-          "x-publishable-api-key": "pk_test",
+          'x-publishable-api-key': 'pk_test',
         },
       })
     )
     expect(mockFetch).toHaveBeenNthCalledWith(
       2,
       new URL(
-        "http://localhost:9000/store/orders/order_123/payment-method?email=customer%40example.com"
+        'http://localhost:9000/store/orders/order_123/payment-method?email=customer%40example.com'
       ),
       expect.any(Object)
     )
