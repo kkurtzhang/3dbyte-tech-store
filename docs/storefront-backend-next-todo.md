@@ -28,6 +28,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 - AI-ready realistic product Chunk A exists on `feature/ai-ready-realistic-products`: metadata flattening, product index settings, `/ai/product-guidance` `aiContext`, deterministic `ai-*` seed catalogue, and pathway docs.
 - Phase 1 AI-ready realistic products are complete on staging: 29 `ai-*` products, 29 rich Strapi descriptions, 64 public product documents in `stg_product_documents_public`, product/document Meilisearch sync, generated product media, Download Center search, product-page downloads, browser image verification, and assistant product-guidance smoke checks.
 - Langfuse assistant tracing now groups browser chat turns by session, sets assistant trace metadata/name/tags, records sanitized top-level trace input/output for debugging, and records DeepSeek cache-aware token usage for cost tracking.
+- Launch-gate order/account/tracking fixes verified on staging: logged-in order history/detail show order `3DBO-AKK7-5KYYDE` as shipped, public order lookup returns `fulfillment_status: shipped` with tracking label `STG-3DBO-AKK7-5KYYDE`, payment provider payloads are absent from public lookup responses, and Gmail received the shipment notification email.
 
 ## Remaining TODO (Priority Order)
 
@@ -56,7 +57,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 ### Launch-gate bug: Logged-in customer order history misses newly placed orders (Storefront + Backend)
 
 - Found: `2026-06-03` staging launch gate on logged-in order `3DBO-AKK7-5KYYDE` / `order_01KT6NYPSV6D65VVXZ4Z4XAVPP`.
-- Status: fixed in branch `fix/launch-account-order-gates`; pending PR merge, Coolify redeploy, and staging re-smoke.
+- Status: fixed on staging in merge commit `c82fb52`; staging re-smoke passed. `/account/orders` lists the logged-in order as shipped and `/account/orders/order_01KT6NYPSV6D65VVXZ4Z4XAVPP` shows `3DBO-AKK7-5KYYDE`, `Shipped`, and tracking `STG-3DBO-AKK7-5KYYDE`.
 - Problem: the order confirmation page and Medusa Admin show the order was placed by the logged-in customer `bucco.max.org+launchgate...@gmail.com`, but `/account/orders` still renders "No Orders Yet" while the same browser session is logged in.
 - Evidence:
   - Confirmation page showed `My Account` / `Sign Out` and order ref `3DBO-AKK7-5KYYDE`.
@@ -71,7 +72,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 ### Launch-gate bug: Account address add form silently fails (Storefront + Backend)
 
 - Found: `2026-06-03` staging launch gate on logged-in test account `bucco.max.org+launchgate...@gmail.com`.
-- Status: fixed in branch `fix/launch-account-order-gates`; pending PR merge, Coolify redeploy, and staging re-smoke.
+- Status: fixed in branch `fix/launch-account-order-gates`; page-level staging smoke confirmed `/account/addresses` opens while authenticated and the add-address dialog opens. Full address save/delete re-smoke still needs a manual browser check because the current Codex browser driver could not type reliably into the modal fields.
 - Problem: `/account/addresses` opens the add-address form and accepts valid input values, but after `Save Address` the modal closes, no error is shown, and the page still shows "No saved addresses yet".
 - Evidence:
   - Form values before save included `first_name: "LAUNCH"`, `last_name: "GATE"`, `address_1: "32 KIERNAN ST"`, `city: "GWYNNEVILLE"`, `postal_code: "2500"`, `country_code: "AU"`, and `phone: "0400000000"`.
@@ -85,7 +86,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 ### Launch-gate bug: Fulfillment shipment notification email is not sent (Backend + Email)
 
 - Found: `2026-06-03` staging launch gate on logged-in order `3DBO-AKK7-5KYYDE` / `order_01KT6NYPSV6D65VVXZ4Z4XAVPP`.
-- Status: fixed in branch `fix/launch-account-order-gates`; pending PR merge, Coolify redeploy, and staging shipment-email re-smoke.
+- Status: fixed on staging in merge commit `c82fb52`; staging shipment-email smoke passed. Re-emitting `shipment.created` for fulfillment `ful_01KT6P4EWRZXKTQ5AJWTZNBQ9M` processed one subscriber and Gmail received "Your 3D Byte Tech order 3DBO-AKK7-5KYYDE has shipped" at 23:55 on `2026-06-03`.
 - Problem: Medusa Admin manual fulfillment was created and then marked shipped with `Send notification` enabled, but Gmail still showed only the original order-confirmation email after the shipment action.
 - Evidence:
   - Admin order `#14` payment was captured, fulfillment provider was `Manual`, and shipment was saved with tracking number `STG-3DBO-AKK7-5KYYDE`.
@@ -100,7 +101,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 ### Launch-gate bug: Customer order tracking does not reflect shipped fulfillment (Storefront + Backend)
 
 - Found: `2026-06-03` staging launch gate on order `3DBO-AKK7-5KYYDE` / `order_01KT6NYPSV6D65VVXZ4Z4XAVPP`.
-- Status: account order detail shows shipped/tracking after `fix/launch-account-order-gates`; public lookup shipped-status normalization is fixed in branch `fix/order-lookup-shipped-status-normalization`, pending PR merge, Coolify redeploy, and staging tracking re-smoke.
+- Status: fixed on staging in merge commits `c82fb52`, `a332235`, and `d82104c`; staging lookup smoke passed. Public lookup for `3DBO-AKK7-5KYYDE` returns `fulfillment_status: shipped`, tracking label `STG-3DBO-AKK7-5KYYDE`, and no payment provider payloads.
 - Problem: after Medusa Admin marked the manual fulfillment as shipped with tracking number `STG-3DBO-AKK7-5KYYDE`, the customer `/track-order` result still showed `Pending`, `Processing`, and "waiting for fulfillment" with no tracking number.
 - Evidence:
   - Admin order showed fulfillment `Shipped`, provider `Manual`, tracking `STG-3DBO-AKK7-5KYYDE`, and activity `Items shipped`.
