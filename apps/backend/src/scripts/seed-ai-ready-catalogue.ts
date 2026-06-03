@@ -3,10 +3,12 @@ import {
   IFulfillmentModuleService,
   IProductModuleService,
   ISalesChannelModuleService,
+  LinkDefinition,
 } from "@medusajs/framework/types";
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
 import {
   batchInventoryItemLevelsWorkflow,
+  createInventoryItemsWorkflow,
   createProductCategoriesWorkflow,
   createProductsWorkflow,
   createSalesChannelsWorkflow,
@@ -108,6 +110,10 @@ type ProductModuleWithTaxonomy = IProductModuleService & {
   ) => Promise<unknown>;
 };
 
+type LinkService = {
+  create(links: LinkDefinition[]): Promise<unknown>;
+};
+
 function isRecord(value: unknown): value is MetadataRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -138,7 +144,10 @@ function titleizeHandle(handle: string): string {
 }
 
 function splitCategoryPath(handle: string): string[] {
-  return handle.split("/").map((segment) => segment.trim()).filter(Boolean);
+  return handle
+    .split("/")
+    .map((segment) => segment.trim())
+    .filter(Boolean);
 }
 
 function getCategoryLeafHandle(path: string): string {
@@ -166,8 +175,9 @@ function withExistingVariantIds(
   );
 
   return productInput.variants?.map((variant) => {
-    const existingVariantId =
-      variant.sku ? existingVariantsBySku.get(variant.sku) : undefined;
+    const existingVariantId = variant.sku
+      ? existingVariantsBySku.get(variant.sku)
+      : undefined;
 
     return existingVariantId
       ? {
@@ -307,8 +317,12 @@ async function fetchCategoryRecords(
   );
 }
 
-function buildCategoryPathMap(categories: CategoryRecord[]): Map<string, string> {
-  const categoriesById = new Map(categories.map((category) => [category.id, category]));
+function buildCategoryPathMap(
+  categories: CategoryRecord[],
+): Map<string, string> {
+  const categoriesById = new Map(
+    categories.map((category) => [category.id, category]),
+  );
   const categoryMap = new Map<string, string>();
   const pathCache = new Map<string, string>();
 
@@ -412,7 +426,9 @@ async function ensureInventoryLevels(
   )?.id;
 
   if (typeof stockLocationId !== "string") {
-    logger.warn("No stock location was found; AI catalogue inventory levels were skipped.");
+    logger.warn(
+      "No stock location was found; AI catalogue inventory levels were skipped.",
+    );
     return;
   }
 
@@ -430,21 +446,63 @@ async function ensureInventoryLevels(
     fields: [
       "id",
       "handle",
+      "title",
+      "variants.id",
+      "variants.title",
       "variants.sku",
       "variants.inventory_items.inventory_item_id",
+      "variants.inventory_items.inventory.location_levels.*",
     ],
     filters: { handle: [...productsByHandle.keys()] },
     pagination: { take: 1000 },
   });
 
-  const levelMap = new Map<
-    string,
-    {
-      inventory_item_id: string;
-      location_id: string;
-      stocked_quantity: number;
-    }
-  >();
+  type InventoryLevelSeedInput = {
+    inventory_item_id: string;
+    location_id: string;
+    stocked_quantity: number;
+  };
+  const createLevelMap = new Map<string, InventoryLevelSeedInput>();
+  const updateLevelMap = new Map<string, InventoryLevelSeedInput>();
+  const buildInventoryLevel = (
+    inventoryItemId: string,
+    stockedQuantity: number,
+  ): InventoryLevelSeedInput => ({
+    inventory_item_id: inventoryItemId,
+    location_id: stockLocationId,
+    stocked_quantity: stockedQuantity,
+  });
+  const setInventoryLevel = (
+    map: Map<string, InventoryLevelSeedInput>,
+    inventoryItemId: string,
+    stockedQuantity: number,
+  ) => {
+    map.set(
+      inventoryItemId,
+      buildInventoryLevel(inventoryItemId, stockedQuantity),
+    );
+  };
+  const missingInventoryLinks: Array<{
+    variant_id: string;
+    sku: string;
+    title: string;
+    stocked_quantity: number;
+  }> = [];
+
+  const hasStockLocationLevel = (
+    inventoryItem: Record<string, unknown>,
+  ): boolean => {
+    const inventory = isRecord(inventoryItem.inventory)
+      ? inventoryItem.inventory
+      : undefined;
+    const locationLevels = Array.isArray(inventory?.location_levels)
+      ? inventory.location_levels
+      : [];
+
+    return locationLevels
+      .filter(isRecord)
+      .some((level) => level.location_id === stockLocationId);
+  };
 
   for (const indexedProduct of indexedProducts) {
     const handle = indexedProduct.handle;
@@ -456,44 +514,125 @@ async function ensureInventoryLevels(
     }
 
     for (const variant of indexedProduct.variants) {
-      if (!isRecord(variant) || !Array.isArray(variant.inventory_items)) {
+      if (!isRecord(variant)) {
         continue;
       }
 
-      for (const inventoryItem of variant.inventory_items) {
-        if (!isRecord(inventoryItem)) {
+      const variantSku =
+        typeof variant.sku === "string" ? variant.sku : undefined;
+      const stockedQuantity = getVariantInventoryQuantity(
+        seedProduct,
+        variantSku,
+      );
+      const inventoryItems = Array.isArray(variant.inventory_items)
+        ? variant.inventory_items.filter(isRecord)
+        : [];
+
+      if (inventoryItems.length === 0) {
+        if (typeof variant.id !== "string" || !variantSku) {
+          logger.warn(
+            `Inventory item was not created for product "${handle}" because a variant ID or SKU was missing.`,
+          );
           continue;
         }
 
+        const productTitle =
+          typeof indexedProduct.title === "string"
+            ? indexedProduct.title
+            : seedProduct.title;
+        const variantTitle =
+          typeof variant.title === "string" && variant.title.trim()
+            ? variant.title.trim()
+            : variantSku;
+
+        missingInventoryLinks.push({
+          variant_id: variant.id,
+          sku: variantSku,
+          title: `${productTitle} - ${variantTitle}`,
+          stocked_quantity: stockedQuantity,
+        });
+        continue;
+      }
+
+      for (const inventoryItem of inventoryItems) {
         const inventoryItemId = inventoryItem.inventory_item_id;
 
         if (typeof inventoryItemId !== "string") {
           continue;
         }
 
-        levelMap.set(inventoryItemId, {
-          inventory_item_id: inventoryItemId,
-          location_id: stockLocationId,
-          stocked_quantity: getVariantInventoryQuantity(
-            seedProduct,
-            typeof variant.sku === "string" ? variant.sku : undefined,
-          ),
-        });
+        const targetMap = hasStockLocationLevel(inventoryItem)
+          ? updateLevelMap
+          : createLevelMap;
+
+        setInventoryLevel(targetMap, inventoryItemId, stockedQuantity);
       }
     }
   }
 
-  const inventoryLevels = [...levelMap.values()];
+  if (missingInventoryLinks.length > 0) {
+    const { result: inventoryItems } = await createInventoryItemsWorkflow(
+      container,
+    ).run({
+      input: {
+        items: missingInventoryLinks.map((link) => ({
+          sku: link.sku,
+          title: link.title,
+          location_levels: [
+            {
+              location_id: stockLocationId,
+              stocked_quantity: link.stocked_quantity,
+            },
+          ],
+        })),
+      },
+    });
+    const link = container.resolve(
+      ContainerRegistrationKeys.LINK,
+    ) as LinkService;
+    const linkDefinitions = inventoryItems.map((inventoryItem, index) => {
+      const missingLink = missingInventoryLinks[index];
 
-  if (inventoryLevels.length === 0) {
-    logger.warn("No AI catalogue inventory items were found; stock levels were skipped.");
+      return {
+        [Modules.PRODUCT]: {
+          variant_id: missingLink.variant_id,
+        },
+        [Modules.INVENTORY]: {
+          inventory_item_id: inventoryItem.id,
+        },
+      };
+    });
+
+    await link.create(linkDefinitions);
+
+    inventoryItems.forEach((inventoryItem, index) => {
+      const missingLink = missingInventoryLinks[index];
+
+      setInventoryLevel(
+        updateLevelMap,
+        inventoryItem.id,
+        missingLink.stocked_quantity,
+      );
+    });
+  }
+
+  const inventoryLevelsToCreate = [...createLevelMap.values()];
+  const inventoryLevelsToUpdate = [...updateLevelMap.values()];
+
+  if (
+    inventoryLevelsToCreate.length === 0 &&
+    inventoryLevelsToUpdate.length === 0
+  ) {
+    logger.warn(
+      "No AI catalogue inventory items were found; stock levels were skipped.",
+    );
     return;
   }
 
   await batchInventoryItemLevelsWorkflow(container).run({
     input: {
-      create: inventoryLevels,
-      update: inventoryLevels,
+      create: inventoryLevelsToCreate,
+      update: inventoryLevelsToUpdate,
     },
   });
 }

@@ -3,17 +3,20 @@ const mockCreateSalesChannelsRun = jest.fn();
 const mockCreateShippingProfilesRun = jest.fn();
 const mockCreateProductCategoriesRun = jest.fn();
 const mockUpdateProductsRun = jest.fn();
+const mockCreateInventoryItemsRun = jest.fn();
 const mockBatchInventoryItemLevelsRun = jest.fn();
 const mockCreateBrandRun = jest.fn();
 const mockLinkProductsToBrandRun = jest.fn();
 
 jest.mock("@medusajs/framework/utils", () => ({
   ContainerRegistrationKeys: {
+    LINK: "link",
     LOGGER: "logger",
     QUERY: "query",
   },
   Modules: {
     FULFILLMENT: "fulfillment",
+    INVENTORY: "inventory",
     PRODUCT: "product",
     SALES_CHANNEL: "sales_channel",
   },
@@ -41,6 +44,9 @@ jest.mock("@medusajs/medusa/core-flows", () => ({
   batchInventoryItemLevelsWorkflow: jest.fn(() => ({
     run: mockBatchInventoryItemLevelsRun,
   })),
+  createInventoryItemsWorkflow: jest.fn(() => ({
+    run: mockCreateInventoryItemsRun,
+  })),
 }));
 
 jest.mock("../../workflows/brand/create-brand", () => ({
@@ -65,6 +71,14 @@ describe("seedAiReadyCatalogue", () => {
     mockCreateSalesChannelsRun.mockResolvedValue({ result: [] });
     mockCreateShippingProfilesRun.mockResolvedValue({ result: [] });
     mockUpdateProductsRun.mockResolvedValue({ result: [] });
+    mockCreateInventoryItemsRun.mockResolvedValue({
+      result: [
+        {
+          id: "iitem_petg_black",
+          sku: "PM-PETG-BLK-175-1KG",
+        },
+      ],
+    });
     mockBatchInventoryItemLevelsRun.mockResolvedValue({ result: [] });
     mockCreateBrandRun.mockResolvedValue({
       result: { id: "brand_created", handle: "created-brand" },
@@ -163,15 +177,14 @@ describe("seedAiReadyCatalogue", () => {
                 data: [
                   {
                     id: "prod_polymaker-polylite-petg-black-175-1kg",
+                    title: "Polymaker PolyLite PETG Black 1.75mm 1kg",
                     brand: null,
                     handle: "polymaker-polylite-petg-black-175-1kg",
                     variants: [
                       {
                         id: "variant_petg_black",
+                        title: "Default",
                         sku: "PM-PETG-BLK-175-1KG",
-                        inventory_items: [
-                          { inventory_item_id: "iitem_petg_black" },
-                        ],
                       },
                     ],
                   },
@@ -207,11 +220,15 @@ describe("seedAiReadyCatalogue", () => {
         },
       ),
     };
+    const link = {
+      create: jest.fn(async () => []),
+    };
     const container = {
       resolve: jest.fn((key: string) => {
         const services: Record<string, unknown> = {
           brand: brandModuleService,
           fulfillment: fulfillmentModuleService,
+          link,
           logger,
           product: productModuleService,
           query,
@@ -266,22 +283,42 @@ describe("seedAiReadyCatalogue", () => {
         tags: expect.anything(),
       }),
     );
+    expect(mockCreateInventoryItemsRun).toHaveBeenCalledWith({
+      input: {
+        items: [
+          {
+            sku: "PM-PETG-BLK-175-1KG",
+            title: "Polymaker PolyLite PETG Black 1.75mm 1kg - Default",
+            location_levels: [
+              {
+                location_id: "sloc_au",
+                stocked_quantity: expect.any(Number),
+              },
+            ],
+          },
+        ],
+      },
+    });
+    expect(link.create).toHaveBeenCalledWith([
+      {
+        product: {
+          variant_id: "variant_petg_black",
+        },
+        inventory: {
+          inventory_item_id: "iitem_petg_black",
+        },
+      },
+    ]);
     expect(mockBatchInventoryItemLevelsRun).toHaveBeenCalledWith({
       input: {
-        create: [
-          {
+        create: [],
+        update: expect.arrayContaining([
+          expect.objectContaining({
             inventory_item_id: "iitem_petg_black",
             location_id: "sloc_au",
             stocked_quantity: expect.any(Number),
-          },
-        ],
-        update: [
-          {
-            inventory_item_id: "iitem_petg_black",
-            location_id: "sloc_au",
-            stocked_quantity: expect.any(Number),
-          },
-        ],
+          }),
+        ]),
       },
     });
   });
