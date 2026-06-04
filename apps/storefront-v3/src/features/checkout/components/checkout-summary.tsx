@@ -91,13 +91,18 @@ export function CheckoutSummary({ cart: ssrCart }: CheckoutSummaryProps) {
           ? toCustomerPriceAmount(item.subtotal, currencyCode)
           : toCustomerPriceAmount(displayUnitPrice * item.quantity, currencyCode)
     const variantTitle = getCartItemVariantTitle(item)
+    const itemThumbnail = (item as { thumbnail?: string | null }).thumbnail
+    const variantThumbnail = (item.variant as { thumbnail?: string | null } | undefined)
+      ?.thumbnail
+    const thumbnail =
+      itemThumbnail ?? variantThumbnail ?? item.variant?.product?.thumbnail
 
     return (
       <div key={keyPrefix ?? item.id} className="flex gap-4">
         <div className="relative aspect-square h-16 w-16 overflow-hidden rounded-sm border bg-secondary/20">
-          {item.variant?.product?.thumbnail ? (
+          {thumbnail ? (
             <Image
-              src={item.variant.product.thumbnail}
+              src={thumbnail}
               alt={item.title}
               fill
               className="object-cover"

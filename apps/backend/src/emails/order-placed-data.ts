@@ -236,9 +236,22 @@ export const getOrderDiscountTotal = (
 export const getItemTitle = (item: OrderPlacedEmailItem): string =>
   item.product_title || item.title || "Product";
 
+const isDefaultVariantText = (value: string): boolean => {
+  const normalizedValue = value.replace(/\s+/g, " ").trim().toLowerCase();
+
+  return (
+    !normalizedValue ||
+    normalizedValue === "default" ||
+    normalizedValue === "default title" ||
+    normalizedValue === "default variant" ||
+    normalizedValue === "standard" ||
+    normalizedValue.startsWith("default ")
+  );
+};
+
 export const getItemVariantText = (item: OrderPlacedEmailItem): string | null =>
-  item.variant_title && item.variant_title !== "Default Title"
-    ? item.variant_title
+  item.variant_title && !isDefaultVariantText(item.variant_title)
+    ? item.variant_title.trim()
     : null;
 
 export const getItemQuantity = (item: OrderPlacedEmailItem): number => {

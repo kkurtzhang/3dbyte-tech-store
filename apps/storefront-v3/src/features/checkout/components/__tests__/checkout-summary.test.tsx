@@ -84,6 +84,37 @@ describe("CheckoutSummary", () => {
     expect(image).toHaveAttribute("src", "/test-image.jpg")
   })
 
+  it("uses the line item thumbnail when the product relation has no thumbnail", () => {
+    const cart = createMockCart({
+      items: [
+        {
+          id: "item_1",
+          title: "Line Item Image Product",
+          thumbnail: "/line-item-image.jpg",
+          quantity: 1,
+          unit_price: 500,
+          variant: {
+            id: "variant_1",
+            title: "Default Variant",
+            product: {
+              id: "prod_1",
+              title: "Line Item Image Product",
+              thumbnail: null,
+            },
+          },
+        },
+      ],
+    })
+
+    render(<CheckoutSummary cart={cart} />)
+
+    expect(screen.getByAltText("Line Item Image Product")).toHaveAttribute(
+      "src",
+      "/line-item-image.jpg"
+    )
+    expect(screen.queryByText("No image")).not.toBeInTheDocument()
+  })
+
   it("shows placeholder when no thumbnail", () => {
     const cart = createMockCart({
       items: [
