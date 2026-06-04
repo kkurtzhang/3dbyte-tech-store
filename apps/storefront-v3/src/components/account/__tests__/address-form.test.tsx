@@ -147,6 +147,55 @@ describe("AddressForm", () => {
     expect(screen.getByRole("form", { name: /add address/i })).toBeInTheDocument()
   })
 
+  it("closes and clears the add-address panel after a successful save", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ success: true }),
+    })
+
+    render(<AddressFormPanel defaultOpen />)
+
+    fireEvent.change(screen.getByLabelText("Address Name (Optional)"), {
+      target: { value: "Workshop" },
+    })
+    fireEvent.change(screen.getByLabelText("First Name"), {
+      target: { value: "Launch" },
+    })
+    fireEvent.change(screen.getByLabelText("Last Name"), {
+      target: { value: "Gate" },
+    })
+    fireEvent.change(screen.getByRole("combobox", { name: /address/i }), {
+      target: { value: "32 Kiernan St" },
+    })
+    fireEvent.change(screen.getByLabelText("City"), {
+      target: { value: "Gwynneville" },
+    })
+    fireEvent.change(screen.getByLabelText("Postal Code"), {
+      target: { value: "2500" },
+    })
+    fireEvent.change(screen.getByLabelText("State"), {
+      target: { value: "NSW" },
+    })
+    fireEvent.change(screen.getByLabelText("Country Code"), {
+      target: { value: "AU" },
+    })
+
+    fireEvent.submit(screen.getByRole("button", { name: /save address/i }))
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("form", { name: /add address/i }),
+      ).not.toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole("button", { name: /add address/i }))
+
+    expect(screen.getByLabelText("Address Name (Optional)")).toHaveValue("")
+    expect(screen.getByLabelText("First Name")).toHaveValue("")
+    expect(screen.getByRole("combobox", { name: /address/i })).toHaveValue("")
+    expect(screen.getByLabelText("Country Code")).toHaveValue("AU")
+  })
+
   it("submits new addresses to the authenticated JSON API route and refreshes the page", async () => {
     mockFetch.mockResolvedValue({
       ok: true,
