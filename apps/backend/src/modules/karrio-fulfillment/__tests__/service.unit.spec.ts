@@ -80,17 +80,21 @@ describe("KarrioFulfillmentService", () => {
     ]);
   });
 
-  it("passes selected carrier and service to Karrio when calculating prices", async () => {
+  it("rate-shops all active Karrio connections instead of sending stale option filters", async () => {
     const service = new KarrioFulfillmentService({ logger }, defaultOptions);
     const fetchRates = jest.fn().mockResolvedValue({
       rates: [
         {
-          id: "rate_1",
-          carrier_id: "australiapost",
-          carrier_name: "Australia Post",
-          service: "australiapost_express_post",
-          total_charge: 18.5,
+          id: "rate_priority",
+          carrier_id: "Aramex",
+          carrier_name: "aramex_aunz",
+          service: "aramex_aunz_priority",
+          total_charge: 19.1,
           currency: "AUD",
+          meta: {
+            carrier_connection_id: "car_live_aramex",
+            service_name: "PRIORITY",
+          },
         },
       ],
     });
@@ -98,8 +102,9 @@ describe("KarrioFulfillmentService", () => {
 
     const result = await service.calculatePrice(
       {
-        carrier_id: "australiapost",
-        service: "australiapost_express_post",
+        carrier_id: "aramex",
+        service: "aramex_priority",
+        service_name: "Aramex Priority",
       },
       {},
       {
@@ -117,13 +122,13 @@ describe("KarrioFulfillmentService", () => {
 
     expect(fetchRates).toHaveBeenCalledWith(
       expect.objectContaining({
-        carrier_ids: ["australiapost"],
-        services: ["australiapost_express_post"],
         payment: { paid_by: "sender" },
       }),
     );
+    expect(fetchRates.mock.calls[0][0]).not.toHaveProperty("carrier_ids");
+    expect(fetchRates.mock.calls[0][0]).not.toHaveProperty("services");
     expect(result).toMatchObject({
-      calculated_amount: 18.5,
+      calculated_amount: 19.1,
       is_calculated_price_tax_inclusive: true,
     });
   });
@@ -296,10 +301,11 @@ describe("KarrioFulfillmentService", () => {
 
     expect(fetchRates).toHaveBeenCalledWith(
       expect.objectContaining({
-        carrier_ids: ["aramex-au"],
-        services: ["aramex_aunz_priority"],
+        payment: { paid_by: "sender" },
       }),
     );
+    expect(fetchRates.mock.calls[0][0]).not.toHaveProperty("carrier_ids");
+    expect(fetchRates.mock.calls[0][0]).not.toHaveProperty("services");
   });
 
   it("stores selected-rate metadata when creating a Karrio fulfillment label", async () => {
