@@ -14,6 +14,18 @@ jest.mock("next/navigation", () => ({
   redirect: (...args: unknown[]) => mockRedirect(...args),
 }))
 
+jest.mock("lucide-react", () =>
+  new Proxy(
+    {},
+    {
+      get: (_target, prop) => {
+        if (prop === "__esModule") return true
+        return (props: Record<string, unknown>) => <svg {...props} />
+      },
+    },
+  ),
+)
+
 const mockGetSessionAction = getSessionAction as jest.MockedFunction<
   typeof getSessionAction
 >

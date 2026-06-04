@@ -21,7 +21,7 @@ interface AccountNavItem {
 }
 
 const accountNavItems: AccountNavItem[] = [
-  { label: "Profile", href: "/account" },
+  { label: "Overview", href: "/account" },
   { label: "Settings", href: "/account/settings" },
   { label: "Orders", href: "/account/orders" },
   { label: "Product Files", href: "/account/product-files" },
