@@ -16,6 +16,8 @@ const CART_COOKIE = "_medusa_cart_id"
 const EMAIL_CONFIRMATION_REQUIRED_MESSAGE =
   "Please confirm your email before signing in. We sent a new confirmation link."
 const EXISTING_IDENTITY_MESSAGE = "Identity with email already exists"
+const EXISTING_CUSTOMER_ACCOUNT_MESSAGE =
+  "An account already exists for this email. Please sign in instead."
 const emailSchema = z
   .string()
   .trim()
@@ -26,6 +28,13 @@ type CustomerMetadata = Record<string, unknown> | null | undefined
 
 type CustomerWithMetadata = AuthUser & {
   metadata?: CustomerMetadata
+}
+
+type CustomerAccountClaimResponse = {
+  claimed?: boolean
+  linked?: boolean
+  already_registered?: boolean
+  customer?: CustomerWithMetadata
 }
 
 function getAuthHeaders(token: string) {
@@ -118,6 +127,76 @@ async function sendCustomerEmailVerification(token: string) {
     method: "POST",
     headers: getAuthHeaders(token),
   })
+}
+
+function getErrorStatus(error: unknown) {
+  const maybeError = error as {
+    status?: unknown
+    statusCode?: unknown
+    response?: { status?: unknown }
+  }
+  const status =
+    maybeError.status || maybeError.statusCode || maybeError.response?.status
+
+  return typeof status === "number" ? status : null
+}
+
+function isNoClaimableCustomerError(error: unknown) {
+  return (
+    getErrorStatus(error) === 404 ||
+    (error instanceof Error &&
+      error.message.includes("No existing customer is available to claim"))
+  )
+}
+
+async function refreshCustomerToken(token: string) {
+  const response = await sdk.client.fetch<{ token?: string }>(
+    "/auth/token/refresh",
+    {
+      method: "POST",
+      headers: getAuthHeaders(token),
+    }
+  )
+
+  if (typeof response.token !== "string") {
+    throw new Error("Failed to refresh customer token")
+  }
+
+  return response.token
+}
+
+async function claimCustomerAccount({
+  email,
+  firstName,
+  lastName,
+  token,
+}: {
+  email: string
+  firstName?: string
+  lastName?: string
+  token: string
+}) {
+  try {
+    return await sdk.client.fetch<CustomerAccountClaimResponse>(
+      "/store/customers/claim-account",
+      {
+        method: "POST",
+        headers: getAuthHeaders(token),
+        body: {
+          email,
+          first_name: firstName || "",
+          last_name: lastName || "",
+          source: "emailpass",
+        },
+      }
+    )
+  } catch (error) {
+    if (isNoClaimableCustomerError(error)) {
+      return null
+    }
+
+    throw error
+  }
 }
 
 async function linkCustomerContextAfterLogin(token: string) {
@@ -242,29 +321,52 @@ export async function registerAction(
       }
     }
 
-    // Create customer profile with explicit type
-    const { customer } = await sdk.store.customer.create(
-      {
-        email,
-        first_name: firstName || "",
-        last_name: lastName || "",
-      } as any,
-      {},
-      {
-        Authorization: `Bearer ${registrationToken}`,
-      }
-    )
+    const claimedAccount = await claimCustomerAccount({
+      email,
+      firstName,
+      lastName,
+      token: registrationToken,
+    })
 
-    if (customer) {
-      await sendCustomerEmailVerification(registrationToken)
-
+    if (claimedAccount?.already_registered) {
       return {
-        success: true,
-        requiresEmailVerification: true,
+        success: false,
+        error: EXISTING_CUSTOMER_ACCOUNT_MESSAGE,
       }
     }
 
-    return { success: false, error: "Registration failed" }
+    let verificationToken = registrationToken
+    let customer = claimedAccount?.customer
+
+    if (claimedAccount?.linked) {
+      verificationToken = await refreshCustomerToken(registrationToken)
+    }
+
+    if (!customer) {
+      const response = await sdk.store.customer.create(
+        {
+          email,
+          first_name: firstName || "",
+          last_name: lastName || "",
+        } as any,
+        {},
+        {
+          Authorization: `Bearer ${registrationToken}`,
+        }
+      )
+      customer = response.customer as unknown as CustomerWithMetadata
+    }
+
+    if (!customer) {
+      return { success: false, error: "Registration failed" }
+    }
+
+    await sendCustomerEmailVerification(verificationToken)
+
+    return {
+      success: true,
+      requiresEmailVerification: true,
+    }
   } catch (error: any) {
     console.error("Registration error:", error)
     return { success: false, error: error.message || "Registration failed" }

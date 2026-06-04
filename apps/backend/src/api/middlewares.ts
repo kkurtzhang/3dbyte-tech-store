@@ -30,6 +30,7 @@ import {
 import { PostStoreProductRegistrationSchema } from "./store/customers/me/product-registrations/route";
 import { PostAdminProductRegistrationSchema } from "./admin/product-registrations/route";
 import { PostAdminProductEntitlementFileSchema } from "./admin/product-entitlement-files/route";
+import { PostStoreClaimCustomerAccountSchema } from "./store/customers/claim-account/route";
 
 export const GetBrandsSchema = createFindParams();
 
@@ -255,6 +256,14 @@ export default defineMiddlewares({
       matcher: "/store/customers/email-verifications",
       methods: ["POST"],
       middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
+      matcher: "/store/customers/claim-account",
+      methods: ["POST"],
+      middlewares: [
+        authenticate("customer", ["session", "bearer"]),
+        validateAndTransformBody(PostStoreClaimCustomerAccountSchema),
+      ],
     },
     {
       matcher: "/store/customers/me/link-guest-orders",

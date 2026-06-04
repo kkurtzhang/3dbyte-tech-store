@@ -61,6 +61,7 @@ import {
 describe("auth actions", () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockClientFetch.mockReset()
     mockAuthRegister.mockResolvedValue("registration-token")
     mockAuthResetPassword.mockResolvedValue(undefined)
     mockAuthUpdateProvider.mockResolvedValue(undefined)
@@ -130,7 +131,13 @@ describe("auth actions", () => {
     )
   })
 
-  it("uses the registration token to create the customer profile and sends verification", async () => {
+  it("uses the registration token to create a brand-new customer profile and sends verification", async () => {
+    const noClaimableCustomer = new Error("No existing customer is available to claim")
+    Object.assign(noClaimableCustomer, { status: 404 })
+    mockClientFetch
+      .mockRejectedValueOnce(noClaimableCustomer)
+      .mockResolvedValueOnce({})
+
     await expect(
       registerAction("test@example.com", "Password123!", "E2E", "Customer")
     ).resolves.toEqual({
@@ -162,10 +169,75 @@ describe("auth actions", () => {
     expect(mockCookieSet).not.toHaveBeenCalled()
   })
 
-  it("uses an existing identity login token when registering a customer email that already has an auth identity", async () => {
+  it("claims an existing same-email guest customer instead of creating a duplicate profile", async () => {
+    mockClientFetch
+      .mockResolvedValueOnce({
+        claimed: true,
+        linked: true,
+        customer: {
+          id: "cus_guest",
+          email: "guest@example.com",
+        },
+      })
+      .mockResolvedValueOnce({ token: "claimed-token" })
+      .mockResolvedValueOnce({})
+
+    await expect(
+      registerAction("guest@example.com", "Password123!", "Guest", "Customer")
+    ).resolves.toEqual({
+      success: true,
+      requiresEmailVerification: true,
+    })
+
+    expect(mockClientFetch).toHaveBeenNthCalledWith(
+      1,
+      "/store/customers/claim-account",
+      expect.objectContaining({
+        method: "POST",
+        headers: {
+          Authorization: "Bearer registration-token",
+        },
+        body: {
+          email: "guest@example.com",
+          first_name: "Guest",
+          last_name: "Customer",
+          source: "emailpass",
+        },
+      })
+    )
+    expect(mockClientFetch).toHaveBeenNthCalledWith(
+      2,
+      "/auth/token/refresh",
+      expect.objectContaining({
+        method: "POST",
+        headers: {
+          Authorization: "Bearer registration-token",
+        },
+      })
+    )
+    expect(mockClientFetch).toHaveBeenNthCalledWith(
+      3,
+      "/store/customers/email-verifications",
+      expect.objectContaining({
+        method: "POST",
+        headers: {
+          Authorization: "Bearer claimed-token",
+        },
+      })
+    )
+    expect(mockCustomerCreate).not.toHaveBeenCalled()
+    expect(mockCookieSet).not.toHaveBeenCalled()
+  })
+
+  it("reuses an existing auth identity without a customer account before creating the customer profile", async () => {
     const existingIdentityError = new Error("Identity with email already exists")
     Object.assign(existingIdentityError, { statusText: "Unauthorized" })
+    const noClaimableCustomer = new Error("No existing customer is available to claim")
+    Object.assign(noClaimableCustomer, { status: 404 })
     mockAuthRegister.mockRejectedValueOnce(existingIdentityError)
+    mockClientFetch
+      .mockRejectedValueOnce(noClaimableCustomer)
+      .mockResolvedValueOnce({})
 
     await expect(
       registerAction("guest@example.com", "Password123!", "Guest", "Customer")
@@ -178,6 +250,22 @@ describe("auth actions", () => {
       email: "guest@example.com",
       password: "Password123!",
     })
+    expect(mockClientFetch).toHaveBeenNthCalledWith(
+      1,
+      "/store/customers/claim-account",
+      expect.objectContaining({
+        method: "POST",
+        headers: {
+          Authorization: "Bearer login-token",
+        },
+        body: {
+          email: "guest@example.com",
+          first_name: "Guest",
+          last_name: "Customer",
+          source: "emailpass",
+        },
+      })
+    )
     expect(mockCustomerCreate).toHaveBeenCalledWith(
       {
         email: "guest@example.com",
@@ -198,6 +286,29 @@ describe("auth actions", () => {
         },
       })
     )
+    expect(mockCookieSet).not.toHaveBeenCalled()
+  })
+
+  it("directs existing registered customers to sign in instead of creating another account", async () => {
+    const existingIdentityError = new Error("Identity with email already exists")
+    Object.assign(existingIdentityError, { statusText: "Unauthorized" })
+    mockAuthRegister.mockRejectedValueOnce(existingIdentityError)
+    mockClientFetch.mockResolvedValueOnce({
+      already_registered: true,
+      customer: {
+        id: "cus_registered",
+        email: "registered@example.com",
+      },
+    })
+
+    await expect(
+      registerAction("registered@example.com", "Password123!", "Ava", "Customer")
+    ).resolves.toEqual({
+      success: false,
+      error: "An account already exists for this email. Please sign in instead.",
+    })
+
+    expect(mockCustomerCreate).not.toHaveBeenCalled()
     expect(mockCookieSet).not.toHaveBeenCalled()
   })
 

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { loginAction } from "@/app/actions/auth"
 import { GoogleIcon } from "@/components/ui/google-icon"
+import { navigateTo } from "@/lib/browser/navigation"
 import { zodFormResolver } from "@/lib/forms/zod-form-resolver"
 
 const loginSchema = z.object({
@@ -63,11 +64,11 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         router.refresh()
         onSuccess?.()
         if (redirectTo) {
-          router.replace(redirectTo)
+          navigateTo(redirectTo)
           return
         }
         if (!onSuccess) {
-          router.replace("/account")
+          navigateTo("/account")
         }
       } else {
         setError(result.error || "Login failed")
