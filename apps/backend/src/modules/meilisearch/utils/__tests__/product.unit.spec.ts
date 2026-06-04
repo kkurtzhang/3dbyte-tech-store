@@ -95,6 +95,71 @@ describe("toMeilisearchDocument", () => {
     expect(document.bundle_item_titles).toEqual(["Printer", "Filament"]);
   });
 
+  it("uses the first product image when a bundle product has no thumbnail", () => {
+    const document = toMeilisearchDocument(
+      createProduct({
+        thumbnail: null,
+        images: [
+          {
+            url: "https://example.com/bundle-gallery.jpg",
+          },
+        ],
+        bundle: {
+          id: "bundle_123",
+          title: "Starter Bundle",
+          items: [],
+        },
+      }),
+      regions,
+    );
+
+    expect(document.thumbnail).toBe("https://example.com/bundle-gallery.jpg");
+  });
+
+  it("indexes active preorder variants for listing badges", () => {
+    const document = toMeilisearchDocument(
+      createProduct({
+        variants: [
+          {
+            id: "variant_preorder",
+            title: "Default",
+            sku: "PRE-001",
+            prices: [
+              {
+                amount: 149,
+                currency_code: "aud",
+              },
+            ],
+            options: [],
+            preorder_variant: {
+              id: "pre_123",
+              status: "enabled",
+              available_date: "2999-01-01T00:00:00.000Z",
+              prices: [
+                {
+                  amount: 129,
+                  currency_code: "aud",
+                },
+              ],
+            },
+          },
+        ],
+      } as Partial<SyncProductsStepProduct>),
+      regions,
+    );
+
+    expect(document.is_preorder).toBe(true);
+    expect(document.preorder_available_date).toBe("2999-01-01T00:00:00.000Z");
+    expect(document.variants[0]).toEqual(
+      expect.objectContaining({
+        preorder_variant: expect.objectContaining({
+          status: "enabled",
+          available_date: "2999-01-01T00:00:00.000Z",
+        }),
+      }),
+    );
+  });
+
   it("defaults non-bundles to searchable empty bundle metadata", () => {
     const document = toMeilisearchDocument(createProduct(), regions);
 

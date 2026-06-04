@@ -273,6 +273,52 @@ describe("searchProducts", () => {
         "bundle_2",
       ])
     })
+
+    it("carries preorder and bundle item metadata from Meilisearch hits", async () => {
+      const mockHits = [
+        createMockProductHit({
+          id: "bundle_preorder",
+          handle: "starter-bundle",
+          is_bundle: true,
+          is_preorder: true,
+          preorder_available_date: "2999-01-01T00:00:00.000Z",
+          bundle_item_count: 2,
+          bundle_item_titles: ["Hardened Nozzle", "PETG Filament"],
+          variants: [
+            {
+              id: "variant_preorder",
+              sku: "BUN-PRE",
+              title: "Default",
+              preorder_variant: {
+                id: "pre_123",
+                status: "enabled",
+                available_date: "2999-01-01T00:00:00.000Z",
+              },
+            },
+          ],
+        } as unknown as Partial<ProductHit>),
+      ]
+      mockClient.__mockSearch.mockResolvedValueOnce(createMockMeilisearchResponse(mockHits))
+
+      const result = await searchProducts()
+
+      expect(result.products[0]).toEqual(
+        expect.objectContaining({
+          is_bundle: true,
+          is_preorder: true,
+          preorder_available_date: "2999-01-01T00:00:00.000Z",
+          bundle_item_count: 2,
+          bundle_item_titles: ["Hardened Nozzle", "PETG Filament"],
+          variants: [
+            expect.objectContaining({
+              preorder_variant: expect.objectContaining({
+                status: "enabled",
+              }),
+            }),
+          ],
+        })
+      )
+    })
   })
 
   // -------------------------------------------------------------------------
