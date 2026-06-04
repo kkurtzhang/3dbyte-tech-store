@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { ChevronDown, Plus } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -16,13 +16,18 @@ interface AddressFormPanelProps {
 export function AddressFormPanel({
   defaultOpen = false,
 }: AddressFormPanelProps) {
+  const panelRef = useRef<HTMLElement>(null)
   const [isOpen, setIsOpen] = useState(defaultOpen)
   const handleSuccess = () => {
     setIsOpen(false)
+    panelRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    })
   }
 
   return (
-    <section className="space-y-3">
+    <section ref={panelRef} className="space-y-3">
       <Button
         aria-controls="address-form"
         aria-expanded={isOpen}

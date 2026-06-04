@@ -59,11 +59,15 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       const result = await loginAction(data.email, data.password)
 
       if (result.success) {
+        const redirectTo = getSafeRedirectPath()
         router.refresh()
         onSuccess?.()
-        const redirectTo = getSafeRedirectPath()
         if (redirectTo) {
-          router.push(redirectTo)
+          router.replace(redirectTo)
+          return
+        }
+        if (!onSuccess) {
+          router.replace("/account")
         }
       } else {
         setError(result.error || "Login failed")

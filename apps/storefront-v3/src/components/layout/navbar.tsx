@@ -3,8 +3,21 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, User, Heart } from "lucide-react";
-import { logoutAction, getSessionAction } from "@/app/actions/auth";
+import {
+  ChevronDown,
+  Heart,
+  LogOut,
+  MapPin,
+  Package,
+  Search,
+  Settings,
+  User,
+} from "lucide-react";
+import {
+  logoutAction,
+  getSessionAction,
+  type AuthUser,
+} from "@/app/actions/auth";
 import { SearchCommandDialog } from "@/components/search/search-command-dialog";
 import { Button } from "@/components/ui/button";
 import { useWishlist } from "@/context/wishlist-context";
@@ -14,13 +27,29 @@ import { BrandLogo } from "./brand-logo";
 import { ThemeToggle } from "./theme-toggle";
 import { MobileMenu } from "./mobile-menu";
 
+function getCustomerDisplayName(user: AuthUser | null) {
+  const fullName = [user?.first_name, user?.last_name]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+
+  if (fullName) {
+    return fullName;
+  }
+
+  return user?.email?.split("@")[0] || "Account";
+}
+
 export function Navbar() {
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [authOpen, setAuthOpen] = React.useState(false);
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [accountMenuOpen, setAccountMenuOpen] = React.useState(false);
+  const [sessionUser, setSessionUser] = React.useState<AuthUser | null>(null);
   const router = useRouter();
   const { wishlist } = useWishlist();
+  const accountLabel = getCustomerDisplayName(sessionUser);
 
   React.useEffect(() => {
     checkSession();
@@ -30,8 +59,10 @@ export function Navbar() {
     try {
       const result = await getSessionAction();
       setIsLoggedIn(result.success);
+      setSessionUser(result.success ? result.user || null : null);
     } catch (error) {
       setIsLoggedIn(false);
+      setSessionUser(null);
     } finally {
       setIsLoading(false);
     }
@@ -40,6 +71,8 @@ export function Navbar() {
   async function handleLogout() {
     await logoutAction();
     setIsLoggedIn(false);
+    setSessionUser(null);
+    setAccountMenuOpen(false);
     router.push("/");
     router.refresh();
   }
@@ -118,21 +151,80 @@ export function Navbar() {
                 <User className="h-5 w-5 animate-pulse" />
               </Button>
             ) : isLoggedIn ? (
-              <div className="flex items-center gap-1 sm:gap-2">
-                <Link href="/account">
-                  <Button variant="ghost" size="icon" className="sm:h-9 sm:w-auto sm:px-3">
-                    <User className="h-5 w-5 sm:mr-2" />
-                    <span className="hidden sm:inline-block">My Account</span>
-                  </Button>
-                </Link>
+              <div className="relative">
                 <Button
                   variant="ghost"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="text-muted-foreground hidden sm:inline-flex"
+                  size="icon"
+                  aria-expanded={accountMenuOpen}
+                  aria-haspopup="menu"
+                  onClick={() => setAccountMenuOpen((current) => !current)}
+                  className="sm:h-9 sm:w-auto sm:px-3"
                 >
-                  Sign Out
+                  <User className="h-5 w-5 sm:mr-2" />
+                  <span className="hidden max-w-[9rem] truncate sm:inline-block">
+                    {accountLabel}
+                  </span>
+                  <ChevronDown
+                    aria-hidden="true"
+                    className={`ml-2 hidden h-4 w-4 transition-transform sm:block ${
+                      accountMenuOpen ? "rotate-180" : ""
+                    }`}
+                  />
                 </Button>
+                {accountMenuOpen ? (
+                  <div
+                    role="menu"
+                    aria-label="Account menu"
+                    className="absolute right-0 top-full mt-2 w-64 rounded-md border bg-popover p-2 text-popover-foreground shadow-lg"
+                  >
+                    <div className="border-b px-3 py-2 text-xs text-muted-foreground">
+                      Signed in as
+                      <span className="mt-1 block truncate font-medium text-foreground">
+                        {sessionUser?.email}
+                      </span>
+                    </div>
+                    <Link
+                      href="/account"
+                      className="mt-2 flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                      onClick={() => setAccountMenuOpen(false)}
+                    >
+                      <User className="h-4 w-4" />
+                      My Account
+                    </Link>
+                    <Link
+                      href="/account/orders"
+                      className="flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                      onClick={() => setAccountMenuOpen(false)}
+                    >
+                      <Package className="h-4 w-4" />
+                      Orders
+                    </Link>
+                    <Link
+                      href="/account/addresses"
+                      className="flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                      onClick={() => setAccountMenuOpen(false)}
+                    >
+                      <MapPin className="h-4 w-4" />
+                      Addresses
+                    </Link>
+                    <Link
+                      href="/account/settings"
+                      className="flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                      onClick={() => setAccountMenuOpen(false)}
+                    >
+                      <Settings className="h-4 w-4" />
+                      Settings
+                    </Link>
+                    <button
+                      type="button"
+                      className="mt-2 flex w-full items-center gap-2 rounded-sm border-t px-3 py-2 pt-3 text-left text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                ) : null}
               </div>
             ) : (
               <Button
@@ -172,7 +264,11 @@ export function Navbar() {
       <SearchCommandDialog open={searchOpen} onOpenChange={setSearchOpen} />
 
       {/* Auth Sheet */}
-      <AuthSheet open={authOpen} onOpenChange={setAuthOpen} />
+      <AuthSheet
+        open={authOpen}
+        onOpenChange={setAuthOpen}
+        onSuccess={checkSession}
+      />
     </>
   );
 }
