@@ -17,6 +17,9 @@ export function AddressFormPanel({
   defaultOpen = false,
 }: AddressFormPanelProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
+  const handleSuccess = () => {
+    setIsOpen(false)
+  }
 
   return (
     <section className="space-y-3">
@@ -42,7 +45,7 @@ export function AddressFormPanel({
       {isOpen ? (
         <Card id="address-form">
           <CardContent className="p-6">
-            <AddressForm title="Add new address" />
+            <AddressForm title="Add new address" onSuccess={handleSuccess} />
           </CardContent>
         </Card>
       ) : null}
