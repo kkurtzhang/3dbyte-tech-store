@@ -41,8 +41,10 @@ type AddressesPageProps = {
 function addressToFormAddress(address: CustomerAddress) {
   return {
     id: address.id,
+    address_name: address.address_name,
     first_name: address.first_name,
     last_name: address.last_name,
+    company: address.company,
     address_1: address.address_1,
     address_2: address.address_2,
     city: address.city,
@@ -51,7 +53,25 @@ function addressToFormAddress(address: CustomerAddress) {
     postal_code: address.postal_code,
     phone: address.phone,
     is_default: address.is_default,
+    is_default_shipping: address.is_default_shipping,
+    is_default_billing: address.is_default_billing,
   }
+}
+
+function getRecipientName(address: CustomerAddress) {
+  return `${address.first_name || ""} ${address.last_name || ""}`.trim()
+}
+
+function getAddressLabel(address: CustomerAddress) {
+  return address.address_name || getRecipientName(address) || "Saved Address"
+}
+
+function isDefaultAddress(address: CustomerAddress) {
+  return Boolean(
+    address.is_default ||
+      address.is_default_shipping ||
+      address.is_default_billing,
+  )
 }
 
 export default async function AddressesPage({
@@ -91,6 +111,8 @@ export default async function AddressesPage({
         <div className="grid gap-4 md:grid-cols-2">
           {addresses.map((address) => {
             const isEditing = editingAddress?.id === address.id
+            const addressLabel = getAddressLabel(address)
+            const recipientName = getRecipientName(address)
 
             return (
               <Card
@@ -101,7 +123,7 @@ export default async function AddressesPage({
                   <CardContent className="p-6">
                     <AddressForm
                       address={addressToFormAddress(address)}
-                      title={`Edit ${address.first_name} ${address.last_name}`}
+                      title={`Edit ${addressLabel}`}
                     />
                   </CardContent>
                 ) : (
@@ -110,20 +132,52 @@ export default async function AddressesPage({
                       <div className="flex items-start justify-between gap-3">
                         <CardTitle className="font-mono uppercase tracking-wider text-sm flex items-center gap-2">
                           <Home className="h-4 w-4" />
-                          {address.first_name} {address.last_name}
+                          {addressLabel}
                         </CardTitle>
-                        {address.is_default && (
-                          <Badge
-                            variant="secondary"
-                            className="font-mono text-xs uppercase"
-                          >
-                            Default
-                          </Badge>
-                        )}
+                        <div className="flex flex-wrap justify-end gap-2">
+                          {address.is_default_shipping ? (
+                            <Badge
+                              variant="secondary"
+                              className="font-mono text-xs uppercase"
+                            >
+                              Default Shipping
+                            </Badge>
+                          ) : null}
+                          {address.is_default_billing ? (
+                            <Badge
+                              variant="secondary"
+                              className="font-mono text-xs uppercase"
+                            >
+                              Default Billing
+                            </Badge>
+                          ) : null}
+                          {address.is_default &&
+                          !address.is_default_shipping &&
+                          !address.is_default_billing ? (
+                            <Badge
+                              variant="secondary"
+                              className="font-mono text-xs uppercase"
+                            >
+                              Default
+                            </Badge>
+                          ) : null}
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent>
                       <address className="text-sm text-muted-foreground not-italic space-y-1">
+                        {recipientName && addressLabel !== recipientName ? (
+                          <>
+                            {recipientName}
+                            <br />
+                          </>
+                        ) : null}
+                        {address.company ? (
+                          <>
+                            {address.company}
+                            <br />
+                          </>
+                        ) : null}
                         {address.address_1}
                         {address.address_2 && (
                           <>
@@ -161,7 +215,7 @@ export default async function AddressesPage({
                             Edit
                           </Link>
                         </Button>
-                        {!address.is_default && (
+                        {!isDefaultAddress(address) && (
                           <form
                             action={async () => {
                               "use server"

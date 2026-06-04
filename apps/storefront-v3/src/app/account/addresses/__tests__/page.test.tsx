@@ -131,7 +131,7 @@ describe("account addresses page", () => {
     )
     expect(screen.getByText("Edit Workshop")).toBeInTheDocument()
     expect(screen.getByText(/12 Homestead Pl/i)).toBeInTheDocument()
-    expect(screen.getByText(/Gwynneville, NSW 2500/i)).toBeInTheDocument()
+    expect(screen.getByText(/Kingston, TAS 7050/i)).toBeInTheDocument()
   })
 
   it("keeps the address list read-only until add or edit is selected", async () => {

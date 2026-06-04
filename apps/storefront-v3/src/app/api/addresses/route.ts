@@ -7,8 +7,10 @@ import { getCustomerAuthHeaders } from '@/app/actions/auth'
 const actionSchema = z.enum(['add', 'update', 'delete'])
 const addressIdSchema = z.string().trim().min(1)
 const addressPayloadSchema = z.object({
+  address_name: z.string().trim().max(100).optional(),
   first_name: z.string().trim().min(1).max(100),
   last_name: z.string().trim().min(1).max(100),
+  company: z.string().trim().max(100).optional(),
   address_1: z.string().trim().min(1).max(200),
   address_2: z.string().trim().max(200).optional(),
   city: z.string().trim().min(1).max(100),
@@ -16,6 +18,8 @@ const addressPayloadSchema = z.object({
   country_code: z.string().trim().length(2),
   postal_code: z.string().trim().min(1).max(20),
   phone: z.string().trim().max(30).optional(),
+  is_default_shipping: z.boolean().optional(),
+  is_default_billing: z.boolean().optional(),
 })
 
 export async function POST(request: NextRequest) {

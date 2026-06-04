@@ -56,6 +56,22 @@ interface AddressStepProps {
   onComplete: (data: AddressFormData) => Promise<void> | void
 }
 
+function isDefaultCustomerAddress(address: CustomerAddress) {
+  return Boolean(
+    address.is_default ||
+      address.is_default_shipping ||
+      address.is_default_billing,
+  )
+}
+
+function getAddressLabel(address: CustomerAddress) {
+  const recipientName = `${address.first_name || ""} ${
+    address.last_name || ""
+  }`.trim()
+
+  return address.address_name || recipientName || "Saved Address"
+}
+
 export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(true)
@@ -115,7 +131,7 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
       if (result.success) {
         setSavedAddresses(result.addresses)
         // Auto-select default address if available
-        const defaultAddress = result.addresses.find((addr: CustomerAddress) => addr.is_default)
+        const defaultAddress = result.addresses.find(isDefaultCustomerAddress)
         if (defaultAddress) {
           setSelectedAddressId(defaultAddress.id)
           setUseSavedAddress(true)
@@ -426,9 +442,9 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
                               <div className="flex items-center gap-2 mb-2">
                                 <Home className="h-4 w-4" />
                                 <span className="font-medium">
-                                  {address.first_name} {address.last_name}
+                                  {getAddressLabel(address)}
                                 </span>
-                                {address.is_default && (
+                                {isDefaultCustomerAddress(address) && (
                                   <Badge variant="secondary" className="text-xs">
                                     Default
                                   </Badge>

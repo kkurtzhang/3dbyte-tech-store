@@ -13,8 +13,10 @@ import { AddressAutocomplete } from "@/features/checkout/components/address-auto
 
 interface Address {
   id: string
+  address_name?: string | null
   first_name: string
   last_name: string
+  company?: string | null
   address_1: string
   address_2?: string
   city: string
@@ -23,11 +25,15 @@ interface Address {
   postal_code: string
   phone?: string
   is_default?: boolean
+  is_default_shipping?: boolean
+  is_default_billing?: boolean
 }
 
 type AddressFormValues = {
+  address_name: string
   first_name: string
   last_name: string
+  company: string
   address_1: string
   address_2: string
   city: string
@@ -52,8 +58,10 @@ export function AddressForm({
 }: AddressFormProps) {
   const router = useRouter()
   const [formValues, setFormValues] = useState<AddressFormValues>(() => ({
+    address_name: address?.address_name || "",
     first_name: address?.first_name || "",
     last_name: address?.last_name || "",
+    company: address?.company || "",
     address_1: address?.address_1 || "",
     address_2: address?.address_2 || "",
     city: address?.city || "",
@@ -101,8 +109,10 @@ export function AddressForm({
     setErrorMessage(null)
     try {
       const data = {
+        address_name: formValues.address_name || undefined,
         first_name: formValues.first_name,
         last_name: formValues.last_name,
+        company: formValues.company || undefined,
         address_1: formValues.address_1,
         address_2: formValues.address_2 || undefined,
         city: formValues.city,
@@ -159,6 +169,18 @@ export function AddressForm({
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-2 md:col-span-2">
+          <Label htmlFor={inputId("address_name")}>
+            Address Name (Optional)
+          </Label>
+          <Input
+            id={inputId("address_name")}
+            name="address_name"
+            value={formValues.address_name}
+            onChange={handleInputChange("address_name")}
+            placeholder="Home"
+          />
+        </div>
         <div className="space-y-2">
           <Label htmlFor={inputId("first_name")}>First Name</Label>
           <Input
@@ -177,6 +199,15 @@ export function AddressForm({
             value={formValues.last_name}
             onChange={handleInputChange("last_name")}
             required
+          />
+        </div>
+        <div className="space-y-2 md:col-span-2">
+          <Label htmlFor={inputId("company")}>Company (Optional)</Label>
+          <Input
+            id={inputId("company")}
+            name="company"
+            value={formValues.company}
+            onChange={handleInputChange("company")}
           />
         </div>
         <div className="space-y-2 md:col-span-2">
