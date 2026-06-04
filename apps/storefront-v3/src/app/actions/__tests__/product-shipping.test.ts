@@ -163,4 +163,56 @@ describe("estimateProductShippingAction", () => {
       }),
     })
   })
+
+  it("keeps fixed PDP postage estimates when Karrio carrier messages block calculated rates", async () => {
+    mockGetLiveShippingRates.mockResolvedValue({
+      rates: [],
+      messages: [
+        {
+          carrier_id: "Aramex",
+          carrier_name: "aramex_aunz",
+          code: "SHIPPING_SDK_INTERNAL_ERROR",
+          message: "'NoneType' object has no attribute 'sLACode'",
+        },
+      ],
+    })
+    mockGetShippingOptions.mockResolvedValue([
+      {
+        id: "ship_karrio",
+        name: "Karrio Calculated Shipping",
+        description: "Live carrier rate",
+        amount: null,
+        price_type: "calculated",
+      },
+      {
+        id: "ship_manual",
+        name: "Manual Fulfillment",
+        description: "Fallback manual postage",
+        amount: 12.5,
+        price_type: "flat",
+      },
+    ])
+    mockCalculate.mockRejectedValue(
+      new Error("No Karrio rates are available for this address")
+    )
+
+    await expect(
+      estimateProductShippingAction({
+        variantId: "variant_123",
+        city: "Bickley",
+        postalCode: "6076",
+        province: "WA",
+        countryCode: "au",
+      })
+    ).resolves.toMatchObject({
+      success: true,
+      options: [
+        {
+          id: "ship_manual",
+          amount: 12.5,
+          name: "Manual Fulfillment",
+        },
+      ],
+    })
+  })
 })

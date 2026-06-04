@@ -117,6 +117,11 @@ describe("store shipping-rates route helpers", () => {
 
     await POST(req as never, res as never);
 
+    expect(fetchRates).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payment: { paid_by: "sender" },
+      })
+    );
     expect(res.json).toHaveBeenCalledWith({
       rates: [
         expect.objectContaining({
@@ -133,5 +138,76 @@ describe("store shipping-rates route helpers", () => {
         }),
       ],
     });
+  });
+
+  it("returns Karrio carrier messages without failing the live-rate endpoint", async () => {
+    const graph = jest.fn().mockResolvedValue({
+      data: [
+        {
+          id: "cart_1",
+          items: [{ quantity: 1, variant: { weight: 0.5 } }],
+          shipping_address: null,
+        },
+      ],
+    });
+    const fetchRates = jest.fn().mockResolvedValue({
+      rates: [],
+      messages: [
+        {
+          carrier_id: "Aramex",
+          carrier_name: "aramex_aunz",
+          code: "SHIPPING_SDK_INTERNAL_ERROR",
+          message: "'NoneType' object has no attribute 'sLACode'",
+        },
+      ],
+    });
+    const req = {
+      body: {
+        cart_id: "cart_1",
+        shipping_address: {
+          city: "Bickley",
+          country_code: "AU",
+          postal_code: "6076",
+          province: "WA",
+        },
+      },
+      scope: {
+        resolve: jest.fn((key: string) => {
+          if (key === "query") {
+            return { graph };
+          }
+
+          if (key === KARRIO_MODULE) {
+            return { fetchRates };
+          }
+
+          throw new Error(`Unexpected dependency: ${key}`);
+        }),
+      },
+    };
+    const res = {
+      json: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    };
+
+    await POST(req as never, res as never);
+
+    expect(fetchRates).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payment: { paid_by: "sender" },
+      })
+    );
+    expect(res.json).toHaveBeenCalledWith({
+      rates: [],
+      messages: [
+        {
+          carrier_id: "Aramex",
+          carrier_name: "aramex_aunz",
+          code: "SHIPPING_SDK_INTERNAL_ERROR",
+          message: "'NoneType' object has no attribute 'sLACode'",
+        },
+      ],
+    });
+    expect(res.status).not.toHaveBeenCalled();
   });
 });

@@ -3,6 +3,7 @@ import type {
   KarrioAddress,
   KarrioCarrier,
   KarrioModuleOptions,
+  KarrioMessage,
   KarrioRateRequest,
   KarrioRateResponse,
   KarrioShipment,
@@ -13,6 +14,22 @@ import type {
 import { normalizeAddressCode } from "./utils";
 
 const REQUEST_TIMEOUT_MS = 15_000;
+
+function parseKarrioRateMessages(errorBody: string): KarrioRateResponse | undefined {
+  try {
+    const parsed = JSON.parse(errorBody) as {
+      messages?: KarrioMessage[];
+      errors?: KarrioMessage[];
+    };
+    const messages = parsed.messages || parsed.errors;
+
+    return Array.isArray(messages) && messages.length > 0
+      ? { rates: [], messages }
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 export class KarrioClient {
   private readonly baseUrl: string;
@@ -29,7 +46,8 @@ export class KarrioClient {
     return this.request<KarrioRateResponse>(
       "POST",
       "/v1/proxy/rates",
-      this.normalizeRateRequest(request)
+      this.normalizeRateRequest(request),
+      { allowRateMessages: true }
     );
   }
 
@@ -80,7 +98,8 @@ export class KarrioClient {
   private async request<T>(
     method: string,
     path: string,
-    body?: unknown
+    body?: unknown,
+    options: { allowRateMessages?: boolean } = {}
   ): Promise<T> {
     const controller = new AbortController();
     const timeoutId = setTimeout(
@@ -102,6 +121,13 @@ export class KarrioClient {
 
       if (!response.ok) {
         const errorBody = await response.text();
+        if (options.allowRateMessages) {
+          const rateMessageResponse = parseKarrioRateMessages(errorBody);
+          if (rateMessageResponse) {
+            return rateMessageResponse as T;
+          }
+        }
+
         throw new MedusaError(
           MedusaError.Types.INVALID_DATA,
           `Karrio API error (${response.status}): ${errorBody}`

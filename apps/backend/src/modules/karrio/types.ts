@@ -70,6 +70,7 @@ export interface KarrioMessage {
   carrier_id?: string;
   message: string;
   code?: string;
+  level?: string;
 }
 
 export interface KarrioShipmentRequest {

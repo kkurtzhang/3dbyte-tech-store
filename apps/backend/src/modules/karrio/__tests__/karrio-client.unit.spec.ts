@@ -143,6 +143,36 @@ describe("KarrioClient", () => {
       );
     });
 
+    it("returns carrier messages as empty rates for proxy rate carrier failures", async () => {
+      fetchSpy.mockResolvedValueOnce({
+        ok: false,
+        status: 424,
+        text: async () =>
+          JSON.stringify({
+            messages: [
+              {
+                carrier_id: "Aramex",
+                carrier_name: "aramex_aunz",
+                code: "SHIPPING_SDK_INTERNAL_ERROR",
+                message: "'NoneType' object has no attribute 'sLACode'",
+              },
+            ],
+          }),
+      });
+
+      await expect(client.fetchRates(mockRateRequest)).resolves.toEqual({
+        rates: [],
+        messages: [
+          {
+            carrier_id: "Aramex",
+            carrier_name: "aramex_aunz",
+            code: "SHIPPING_SDK_INTERNAL_ERROR",
+            message: "'NoneType' object has no attribute 'sLACode'",
+          },
+        ],
+      });
+    });
+
     it("throws on timeout", async () => {
       fetchSpy.mockImplementationOnce(
         () =>

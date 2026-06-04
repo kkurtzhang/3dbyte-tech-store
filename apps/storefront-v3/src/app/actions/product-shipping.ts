@@ -173,47 +173,55 @@ export async function estimateProductShippingAction(input: unknown):
 
     const options = await Promise.all(
       shippingOptions.map(async (option) => {
-        let amount = option.amount ?? 0
-        const priceType = option.price_type || "flat"
+        try {
+          let amount = option.amount ?? 0
+          const priceType = option.price_type || "flat"
 
-        if (priceType === "calculated") {
-          const result = (await sdk.store.fulfillment.calculate(option.id, {
-            cart_id: cart.id,
-            data: {
-              city,
-              code: option.id,
+          if (priceType === "calculated") {
+            const result = (await sdk.store.fulfillment.calculate(option.id, {
+              cart_id: cart.id,
+              data: {
+                city,
+                code: option.id,
+                description: option.description,
+                name: option.name,
+                postal_code: postalCode,
+                country_code: countryCode,
+                province,
+              },
+            })) as CalculatedShippingResponse
+
+            const calculatedAmount =
+              result.shipping_option?.calculated_price?.calculated_amount ??
+              result.shipping_option?.amount
+
+            if (typeof calculatedAmount === "number") {
+              amount = calculatedAmount
+            }
+          }
+
+          return {
+            id: option.id,
+            name: getShippingServiceDisplayName({
               description: option.description,
               name: option.name,
-              postal_code: postalCode,
-              country_code: countryCode,
-              province,
-            },
-          })) as CalculatedShippingResponse
-
-          const calculatedAmount =
-            result.shipping_option?.calculated_price?.calculated_amount ??
-            result.shipping_option?.amount
-
-          if (typeof calculatedAmount === "number") {
-            amount = calculatedAmount
-          }
+            }),
+            description: option.description?.trim() || "Calculated at checkout",
+            amount,
+            currencyCode,
+            priceType,
+          } satisfies ProductShippingEstimateOption
+        } catch {
+          return null
         }
-
-        return {
-          id: option.id,
-          name: getShippingServiceDisplayName({
-            description: option.description,
-            name: option.name,
-          }),
-          description: option.description?.trim() || "Calculated at checkout",
-          amount,
-          currencyCode,
-          priceType,
-        } satisfies ProductShippingEstimateOption
       })
     )
 
-    const sortedOptions = sortShippingEstimateOptions(options)
+    const sortedOptions = sortShippingEstimateOptions(
+      options.filter(
+        (option): option is ProductShippingEstimateOption => option !== null
+      )
+    )
 
     if (!sortedOptions.length) {
       return {

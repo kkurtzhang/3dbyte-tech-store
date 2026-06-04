@@ -18,6 +18,13 @@ export interface ShippingRate {
 
 export interface LiveRateResponse {
   rates: ShippingRate[];
+  messages?: {
+    carrier_id?: string;
+    carrier_name?: string;
+    code?: string;
+    level?: string;
+    message: string;
+  }[];
 }
 
 export interface LiveRateShippingAddress {

@@ -170,24 +170,32 @@ export async function getShippingOptionsAction() {
       .catch(() => [])
     const resolvedOptions = await Promise.all(
       options.map(async (option) => {
-        const amount = await resolveShippingOptionAmount(cartId, option, liveRates)
+        try {
+          const amount = await resolveShippingOptionAmount(
+            cartId,
+            option,
+            liveRates
+          )
 
-        if (typeof amount !== "number") {
+          if (typeof amount !== "number") {
+            return null
+          }
+
+          const liveRate = findLiveRateForOption(option, liveRates)
+
+          return {
+            ...option,
+            amount,
+            name: liveRate
+              ? getShippingServiceDisplayName({
+                  carrierName: liveRate.carrier.name,
+                  service: liveRate.service,
+                  serviceName: liveRate.serviceName,
+                })
+              : option.name,
+          }
+        } catch {
           return null
-        }
-
-        const liveRate = findLiveRateForOption(option, liveRates)
-
-        return {
-          ...option,
-          amount,
-          name: liveRate
-            ? getShippingServiceDisplayName({
-                carrierName: liveRate.carrier.name,
-                service: liveRate.service,
-                serviceName: liveRate.serviceName,
-              })
-            : option.name,
         }
       })
     )
