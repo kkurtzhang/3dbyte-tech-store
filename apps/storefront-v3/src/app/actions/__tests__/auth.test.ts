@@ -51,6 +51,7 @@ jest.mock("next/navigation", () => ({
 
 import {
   deleteAccountAction,
+  getLoginMethodsAction,
   getSessionAction,
   loginAction,
   registerAction,
@@ -364,6 +365,34 @@ describe("auth actions", () => {
       {
         Authorization: "Bearer stored-token",
       }
+    )
+  })
+
+  it("retrieves linked customer login methods from the backend", async () => {
+    mockClientFetch.mockResolvedValueOnce({
+      login_methods: {
+        emailpass: true,
+        google: true,
+        providers: ["emailpass", "google"],
+      },
+    })
+
+    await expect(getLoginMethodsAction()).resolves.toEqual({
+      success: true,
+      loginMethods: {
+        emailpass: true,
+        google: true,
+        providers: ["emailpass", "google"],
+      },
+    })
+
+    expect(mockClientFetch).toHaveBeenCalledWith(
+      "/store/customers/me/login-methods",
+      expect.objectContaining({
+        headers: {
+          Authorization: "Bearer stored-token",
+        },
+      })
     )
   })
 

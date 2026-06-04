@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
 
-import { GOOGLE_OAUTH_REDIRECT_COOKIE } from "@/lib/auth/session-cookies"
+import {
+  GOOGLE_OAUTH_MODE_COOKIE,
+  GOOGLE_OAUTH_REDIRECT_COOKIE,
+} from "@/lib/auth/session-cookies"
 import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
 
 import {
@@ -16,6 +19,47 @@ import {
 export const dynamic = "force-dynamic"
 
 const CART_COOKIE = "_medusa_cart_id"
+
+function getStoredRedirectPath(cookieHeader: string | null) {
+  return (
+    getSafeRedirectPath(
+      getCookieValue(cookieHeader, GOOGLE_OAUTH_REDIRECT_COOKIE)
+    ) || "/account"
+  )
+}
+
+function getLinkMode(cookieHeader: string | null) {
+  return getCookieValue(cookieHeader, GOOGLE_OAUTH_MODE_COOKIE) === "link"
+}
+
+function buildGoogleStatusRedirect(
+  requestUrl: URL,
+  redirectPath: string,
+  status: "connected" | "connect_failed"
+) {
+  const redirectUrl = buildStorefrontRedirect(requestUrl, redirectPath)
+  redirectUrl.searchParams.set("google", status)
+  return redirectUrl
+}
+
+function redirectGoogleLinkStatus({
+  requestUrl,
+  redirectPath,
+  status,
+}: {
+  requestUrl: URL
+  redirectPath: string
+  status: "connected" | "connect_failed"
+}) {
+  const response = NextResponse.redirect(
+    buildGoogleStatusRedirect(requestUrl, redirectPath, status)
+  )
+
+  response.cookies.delete(GOOGLE_OAUTH_MODE_COOKIE)
+  response.cookies.delete(GOOGLE_OAUTH_REDIRECT_COOKIE)
+
+  return response
+}
 
 async function createGoogleCustomer({
   medusaBaseUrl,
@@ -143,9 +187,14 @@ async function linkGoogleCustomerContext({
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
+  const cookieHeader = request.headers.get("cookie")
+  const isLinkMode = getLinkMode(cookieHeader)
+  const redirectPath = getStoredRedirectPath(cookieHeader)
   const failureRedirect = buildStorefrontRedirect(
     requestUrl,
-    "/sign-in?error=google_oauth_failed"
+    isLinkMode
+      ? "/account/settings?google=connect_failed"
+      : "/sign-in?error=google_oauth_failed"
   )
 
   if (
@@ -195,6 +244,14 @@ export async function GET(request: Request) {
       })
 
       if (!claimedAccount) {
+        if (isLinkMode) {
+          return redirectGoogleLinkStatus({
+            requestUrl,
+            redirectPath,
+            status: "connect_failed",
+          })
+        }
+
         await createGoogleCustomer({
           medusaBaseUrl,
           token: callbackToken,
@@ -208,26 +265,28 @@ export async function GET(request: Request) {
       })
     }
 
-    const redirectPath =
-      getSafeRedirectPath(
-        getCookieValue(
-          request.headers.get("cookie"),
-          GOOGLE_OAUTH_REDIRECT_COOKIE
-        )
-      ) || "/account"
     await linkGoogleCustomerContext({
       medusaBaseUrl,
       token: sessionToken,
-      cookieHeader: request.headers.get("cookie"),
+      cookieHeader,
     })
     const response = NextResponse.redirect(
-      buildStorefrontRedirect(requestUrl, redirectPath)
+      isLinkMode
+        ? buildGoogleStatusRedirect(requestUrl, redirectPath, "connected")
+        : buildStorefrontRedirect(requestUrl, redirectPath)
     )
     setCustomerSessionCookies(response, sessionToken)
 
     return response
   } catch (error) {
     console.error("Google OAuth callback error:", error)
-    return NextResponse.redirect(failureRedirect)
+    const response = NextResponse.redirect(failureRedirect)
+
+    if (isLinkMode) {
+      response.cookies.delete(GOOGLE_OAUTH_MODE_COOKIE)
+      response.cookies.delete(GOOGLE_OAUTH_REDIRECT_COOKIE)
+    }
+
+    return response
   }
 }

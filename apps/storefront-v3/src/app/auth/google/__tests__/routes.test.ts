@@ -89,6 +89,32 @@ describe("Google OAuth storefront routes", () => {
     )
   })
 
+  it("stores link mode when Google OAuth starts from account settings", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        location: "https://accounts.google.com/o/oauth2/v2/auth?client_id=test",
+      }),
+    })
+
+    await startGoogleAuth(
+      createRequest(
+        "https://store.staging.example.com/auth/google/start?mode=link&redirect=/account/settings"
+      )
+    )
+
+    expect(mockCookieSet).toHaveBeenCalledWith(
+      "google_oauth_mode",
+      "link",
+      expect.objectContaining({ httpOnly: true, path: "/" })
+    )
+    expect(mockCookieSet).toHaveBeenCalledWith(
+      "google_oauth_redirect",
+      "/account/settings",
+      expect.objectContaining({ httpOnly: true, path: "/" })
+    )
+  })
+
   it("uses the configured public site URL for the Google callback", async () => {
     process.env.NEXT_PUBLIC_SITE_URL = "https://store.staging.3dbytetech.com.au"
     mockFetch.mockResolvedValueOnce({
@@ -347,6 +373,108 @@ describe("Google OAuth storefront routes", () => {
       "_medusa_customer_token",
       refreshedToken,
       expect.objectContaining({ httpOnly: true, path: "/" })
+    )
+  })
+
+  it("links Google from account settings without creating a new customer", async () => {
+    const initialToken = encodeJwtPayload({
+      actor_id: "",
+      user_metadata: { email: "ava@example.com" },
+    })
+    const refreshedToken = encodeJwtPayload({
+      actor_id: "cus_registered",
+      user_metadata: { email: "ava@example.com" },
+    })
+
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ token: initialToken }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          claimed: false,
+          linked: true,
+          already_registered: true,
+          customer: { id: "cus_registered", email: "ava@example.com" },
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ token: refreshedToken }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ linked: 2 }),
+      })
+
+    const response = await completeGoogleAuth(
+      createRequest(
+        "https://store.staging.example.com/auth/google/callback?code=abc",
+        {
+          cookie:
+            "google_oauth_mode=link; google_oauth_redirect=/account/settings",
+        }
+      )
+    )
+
+    expect(response.headers.get("location")).toBe(
+      "https://store.staging.example.com/account/settings?google=connected"
+    )
+    expect(mockFetch.mock.calls[1][0]).toBe(
+      "http://medusa:9000/store/customers/claim-account"
+    )
+    expect(mockFetch).not.toHaveBeenCalledWith(
+      "http://medusa:9000/store/customers",
+      expect.anything()
+    )
+    expect(mockCookieSet).toHaveBeenCalledWith(
+      "_medusa_customer_token",
+      refreshedToken,
+      expect.objectContaining({ httpOnly: true, path: "/" })
+    )
+    expect(mockCookieDelete).toHaveBeenCalledWith("google_oauth_mode")
+  })
+
+  it("does not create a customer when account-settings Google linking cannot find a same-email customer", async () => {
+    const initialToken = encodeJwtPayload({
+      actor_id: "",
+      user_metadata: { email: "ava@example.com" },
+    })
+
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ token: initialToken }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        json: async () => ({ message: "No existing customer is available to claim" }),
+      })
+
+    const response = await completeGoogleAuth(
+      createRequest(
+        "https://store.staging.example.com/auth/google/callback?code=abc",
+        {
+          cookie:
+            "google_oauth_mode=link; google_oauth_redirect=/account/settings",
+        }
+      )
+    )
+
+    expect(response.headers.get("location")).toBe(
+      "https://store.staging.example.com/account/settings?google=connect_failed"
+    )
+    expect(mockFetch).not.toHaveBeenCalledWith(
+      "http://medusa:9000/store/customers",
+      expect.anything()
+    )
+    expect(mockCookieSet).not.toHaveBeenCalledWith(
+      "_medusa_customer_token",
+      expect.any(String),
+      expect.any(Object)
     )
   })
 

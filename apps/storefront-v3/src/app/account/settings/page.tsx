@@ -1,4 +1,4 @@
-import { getSessionAction } from "@/app/actions/auth"
+import { getLoginMethodsAction, getSessionAction } from "@/app/actions/auth"
 import { redirect } from "next/navigation"
 import { SettingsContent } from "./settings-client"
 
@@ -9,5 +9,7 @@ export default async function SettingsPage() {
     redirect("/sign-in")
   }
 
-  return <SettingsContent customer={user} />
+  const { loginMethods } = await getLoginMethodsAction()
+
+  return <SettingsContent customer={user} loginMethods={loginMethods} />
 }

@@ -8,14 +8,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff, AlertTriangle, Loader2, CheckCircle } from "lucide-react"
-import { updateProfileAction, changePasswordAction, deleteAccountAction, AuthUser } from "@/app/actions/auth"
+import { updateProfileAction, changePasswordAction, deleteAccountAction, AuthUser, CustomerLoginMethods } from "@/app/actions/auth"
 import { useRouter } from "next/navigation"
+import { LoginMethodsCard } from "./login-methods-card"
 
 interface SettingsPageProps {
   customer: AuthUser | null
+  loginMethods?: CustomerLoginMethods
 }
 
-export function SettingsContent({ customer }: SettingsPageProps) {
+export function SettingsContent({ customer, loginMethods }: SettingsPageProps) {
   const router = useRouter()
   const [profileMessage, setProfileMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
   const [passwordMessage, setPasswordMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
@@ -160,6 +162,8 @@ export function SettingsContent({ customer }: SettingsPageProps) {
           </form>
         </CardContent>
       </Card>
+
+      <LoginMethodsCard loginMethods={loginMethods} />
 
       {/* Password Settings */}
       <Card>

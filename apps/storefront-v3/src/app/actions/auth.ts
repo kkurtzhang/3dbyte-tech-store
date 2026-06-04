@@ -241,6 +241,48 @@ export interface AuthUser {
   phone?: string
 }
 
+export interface CustomerLoginMethods {
+  emailpass: boolean
+  google: boolean
+  providers: string[]
+}
+
+type CustomerLoginMethodsResponse = {
+  login_methods?: Partial<CustomerLoginMethods>
+}
+
+const DEFAULT_LOGIN_METHODS: CustomerLoginMethods = {
+  emailpass: true,
+  google: false,
+  providers: ["emailpass"],
+}
+
+function normalizeLoginMethods(
+  loginMethods: CustomerLoginMethodsResponse["login_methods"]
+): CustomerLoginMethods {
+  if (!loginMethods || typeof loginMethods !== "object") {
+    return DEFAULT_LOGIN_METHODS
+  }
+
+  const providers = Array.isArray(loginMethods.providers)
+    ? loginMethods.providers.filter(
+        (provider): provider is string => typeof provider === "string"
+      )
+    : []
+
+  return {
+    emailpass:
+      typeof loginMethods.emailpass === "boolean"
+        ? loginMethods.emailpass
+        : providers.includes("emailpass"),
+    google:
+      typeof loginMethods.google === "boolean"
+        ? loginMethods.google
+        : providers.includes("google"),
+    providers,
+  }
+}
+
 export async function loginAction(email: string, password: string) {
   try {
     // Attempt to authenticate with Medusa using emailpass provider
@@ -478,6 +520,42 @@ export async function getSessionAction() {
     return { success: false, error: "No session" }
   } catch (error: any) {
     return { success: false, error: error.message || "Session check failed" }
+  }
+}
+
+export async function getLoginMethodsAction(): Promise<{
+  success: boolean
+  loginMethods: CustomerLoginMethods
+  error?: string
+}> {
+  try {
+    const authHeaders = await getCustomerAuthHeaders()
+    if (!authHeaders) {
+      return {
+        success: false,
+        error: "No session",
+        loginMethods: DEFAULT_LOGIN_METHODS,
+      }
+    }
+
+    const response = await sdk.client.fetch<CustomerLoginMethodsResponse>(
+      "/store/customers/me/login-methods",
+      {
+        headers: authHeaders,
+      }
+    )
+
+    return {
+      success: true,
+      loginMethods: normalizeLoginMethods(response.login_methods),
+    }
+  } catch (error: any) {
+    console.error("Login methods error:", error)
+    return {
+      success: false,
+      error: error.message || "Failed to retrieve login methods",
+      loginMethods: DEFAULT_LOGIN_METHODS,
+    }
   }
 }
 

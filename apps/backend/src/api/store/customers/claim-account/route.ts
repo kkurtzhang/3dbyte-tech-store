@@ -88,6 +88,28 @@ const getAuthenticatedEmails = (
   return emails;
 };
 
+const buildGoogleVerifiedMetadata = (customer: CustomerRecord) => {
+  const metadata = getMetadata(customer);
+  const verifiedAt =
+    typeof metadata.email_verified_at === "string"
+      ? metadata.email_verified_at
+      : new Date().toISOString();
+
+  return {
+    email_verification_status: "verified",
+    email_verification_source: "google",
+    email_verified_at: verifiedAt,
+  };
+};
+
+const buildGoogleVerifiedCustomerUpdate = (customer: CustomerRecord) => ({
+  id: customer.id,
+  metadata: {
+    ...getMetadata(customer),
+    ...buildGoogleVerifiedMetadata(customer),
+  },
+});
+
 const buildClaimedCustomerUpdate = (
   customer: CustomerRecord,
   input: ClaimCustomerAccountInput,
@@ -96,6 +118,9 @@ const buildClaimedCustomerUpdate = (
     ...getMetadata(customer),
     account_claimed_at: new Date().toISOString(),
     account_claim_source: input.source,
+    ...(input.source === "google"
+      ? buildGoogleVerifiedMetadata(customer)
+      : {}),
   };
   const firstName =
     isNonEmptyString(input.first_name) && !isNonEmptyString(customer.first_name)
@@ -193,6 +218,13 @@ export async function POST(
   );
 
   if (registeredCustomer) {
+    const customer =
+      input.source === "google"
+        ? await customerModule.updateCustomers(
+            buildGoogleVerifiedCustomerUpdate(registeredCustomer),
+          )
+        : registeredCustomer;
+
     await linkAuthIdentityToCustomer({
       req,
       authIdentityId,
@@ -203,7 +235,7 @@ export async function POST(
       claimed: false,
       linked: true,
       already_registered: true,
-      customer: registeredCustomer,
+      customer,
     });
     return;
   }

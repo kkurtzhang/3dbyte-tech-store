@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 import {
+  GOOGLE_OAUTH_MODE_COOKIE,
   GOOGLE_OAUTH_REDIRECT_COOKIE,
   getGoogleOAuthRedirectCookieOptions,
 } from "@/lib/auth/session-cookies"
@@ -65,11 +66,20 @@ export async function GET(request: Request) {
     const redirectPath = getSafeRedirectPath(
       requestUrl.searchParams.get("redirect")
     )
+    const isLinkMode = requestUrl.searchParams.get("mode") === "link"
 
     if (redirectPath) {
       response.cookies.set(
         GOOGLE_OAUTH_REDIRECT_COOKIE,
         redirectPath,
+        getGoogleOAuthRedirectCookieOptions()
+      )
+    }
+
+    if (isLinkMode) {
+      response.cookies.set(
+        GOOGLE_OAUTH_MODE_COOKIE,
+        "link",
         getGoogleOAuthRedirectCookieOptions()
       )
     }

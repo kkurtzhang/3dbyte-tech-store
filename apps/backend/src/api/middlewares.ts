@@ -271,6 +271,11 @@ export default defineMiddlewares({
       middlewares: [authenticate("customer", ["session", "bearer"])],
     },
     {
+      matcher: "/store/customers/me/login-methods",
+      methods: ["GET"],
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
       matcher: "/store/customers/me",
       methods: ["DELETE"],
       middlewares: [authenticate("customer", ["session", "bearer"])],
