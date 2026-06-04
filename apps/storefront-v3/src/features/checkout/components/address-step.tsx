@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, type KeyboardEvent } from "react"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import type { MeilisearchAddressDocument } from "@3dbyte-tech-store/shared-types"
@@ -8,9 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { Home, MapPin, Plus, User, UserPlus } from "lucide-react"
@@ -49,6 +47,7 @@ type AddressFormData = z.infer<typeof addressSchema>
 const addressResolver = zodFormResolver<AddressFormData>(addressSchema)
 type CheckoutIdentityMode = "guest" | "account"
 type AuthSheetMode = "login" | "register"
+const NEW_ADDRESS_SELECTION = "__new_address__"
 
 interface AddressStepProps {
   defaultValues?: Partial<AddressFormData>
@@ -83,6 +82,25 @@ function customerAddressToCheckoutFields(address: CustomerAddress) {
     country_code: address.country_code || "au",
     postal_code: address.postal_code || "",
     phone: address.phone || "",
+  }
+}
+
+function newAddressFormDefaults(
+  authUser: AuthUser | null,
+  defaultValues?: Partial<AddressFormData>
+): Partial<AddressFormData> {
+  return {
+    email: authUser?.email || defaultValues?.email || "",
+    first_name: authUser?.first_name || "",
+    last_name: authUser?.last_name || "",
+    address_1: "",
+    address_2: "",
+    city: "",
+    province: "",
+    country_code: "au",
+    postal_code: "",
+    phone: authUser?.phone || "",
+    billing_address: undefined,
   }
 }
 
@@ -165,11 +183,33 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
   const handleAddressSelect = (addressId: string) => {
     setSelectedAddressId(addressId)
     setUseSavedAddress(true)
+    setBillingSameAsShipping(true)
     const selectedAddress = savedAddresses.find((address) => address.id === addressId)
 
     if (selectedAddress) {
       applySavedAddressToForm(selectedAddress)
     }
+  }
+
+  const handleAddressSelectionChange = (value: string) => {
+    if (value === NEW_ADDRESS_SELECTION) {
+      handleUseNewAddress()
+      return
+    }
+
+    handleAddressSelect(value)
+  }
+
+  const handleAddressSelectionKeyDown = (
+    value: string,
+    event: KeyboardEvent<HTMLDivElement>
+  ) => {
+    if (event.key !== "Enter" && event.key !== " ") {
+      return
+    }
+
+    event.preventDefault()
+    handleAddressSelectionChange(value)
   }
 
   const applySavedAddressToForm = (
@@ -251,13 +291,8 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
   const handleUseNewAddress = () => {
     setSelectedAddressId(null)
     setUseSavedAddress(false)
-    reset({
-      email: authUser?.email || "",
-      first_name: authUser?.first_name || "",
-      last_name: authUser?.last_name || "",
-      country_code: "au",
-      ...defaultValues,
-    })
+    setBillingSameAsShipping(true)
+    reset(newAddressFormDefaults(authUser, defaultValues))
   }
 
   const handleGuestCheckout = () => {
@@ -454,68 +489,113 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
                 <MapPin className="h-4 w-4" />
                 Saved Addresses
               </h3>
-              <RadioGroup value={selectedAddressId || ""} onValueChange={handleAddressSelect}>
-                <div className="grid gap-3">
-                  {savedAddresses.map((address) => (
-                    <Card
+              <div
+                role="radiogroup"
+                aria-label="Saved addresses"
+                className="grid gap-3"
+              >
+                {savedAddresses.map((address) => {
+                  const isSelected = selectedAddressId === address.id
+
+                  return (
+                    <div
                       key={address.id}
+                      role="radio"
+                      tabIndex={0}
+                      aria-checked={isSelected}
                       className={cn(
-                        "cursor-pointer transition-colors hover:bg-muted/50",
-                        selectedAddressId === address.id && "border-primary bg-primary/5"
+                        "w-full rounded-lg border bg-card p-4 text-left text-card-foreground shadow-sm transition-colors hover:bg-muted/50",
+                        isSelected && "border-primary bg-primary/5"
                       )}
-                      onClick={() => handleAddressSelect(address.id)}
+                      onClick={() => handleAddressSelectionChange(address.id)}
+                      onKeyDown={(event) =>
+                        handleAddressSelectionKeyDown(address.id, event)
+                      }
                     >
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex items-start gap-3">
-                            <RadioGroupItem value={address.id} id={address.id} className="mt-1" />
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Home className="h-4 w-4" />
-                                <span className="font-medium">
-                                  {getAddressLabel(address)}
-                                </span>
-                                {isDefaultCustomerAddress(address) && (
-                                  <Badge variant="secondary" className="text-xs">
-                                    Default
-                                  </Badge>
-                                )}
-                              </div>
-                              <address className="text-sm text-muted-foreground not-italic space-y-0.5">
-                                {address.address_1}
-                                {address.address_2 && (
-                                  <>
-                                    <br />
-                                    {address.address_2}
-                                  </>
-                                )}
-                                <br />
-                                {address.city}
-                                {address.province ? `, ${address.province}` : ""}{" "}
-                                {address.postal_code}
-                                <br />
-                                {address.country_code.toUpperCase()}
-                              </address>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-3">
+                          <span
+                            aria-hidden="true"
+                            className={cn(
+                              "mt-1 flex h-4 w-4 items-center justify-center rounded-full border border-primary text-primary",
+                              isSelected && "bg-primary"
+                            )}
+                          >
+                            {isSelected && (
+                              <span className="h-2 w-2 rounded-full bg-primary-foreground" />
+                            )}
+                          </span>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Home className="h-4 w-4" />
+                              <span className="font-medium">
+                                {getAddressLabel(address)}
+                              </span>
+                              {isDefaultCustomerAddress(address) && (
+                                <Badge variant="secondary" className="text-xs">
+                                  Default
+                                </Badge>
+                              )}
                             </div>
+                            <address className="text-sm text-muted-foreground not-italic space-y-0.5">
+                              {address.address_1}
+                              {address.address_2 && (
+                                <>
+                                  <br />
+                                  {address.address_2}
+                                </>
+                              )}
+                              <br />
+                              {address.city}
+                              {address.province ? `, ${address.province}` : ""}{" "}
+                              {address.postal_code}
+                              <br />
+                              {address.country_code.toUpperCase()}
+                            </address>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                      </div>
+                    </div>
+                  )
+                })}
+                <div
+                  role="radio"
+                  tabIndex={0}
+                  aria-checked={selectedAddressId === null}
+                  className={cn(
+                    "w-full rounded-lg border bg-card p-4 text-left text-card-foreground shadow-sm transition-colors hover:bg-muted/50",
+                    selectedAddressId === null && "border-primary bg-primary/5"
+                  )}
+                  onClick={() => handleAddressSelectionChange(NEW_ADDRESS_SELECTION)}
+                  onKeyDown={(event) =>
+                    handleAddressSelectionKeyDown(NEW_ADDRESS_SELECTION, event)
+                  }
+                >
+                  <div className="flex items-start gap-3">
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "mt-1 flex h-4 w-4 items-center justify-center rounded-full border border-primary text-primary",
+                        selectedAddressId === null && "bg-primary"
+                      )}
+                    >
+                      {selectedAddressId === null && (
+                        <span className="h-2 w-2 rounded-full bg-primary-foreground" />
+                      )}
+                    </span>
+                    <div className="grid gap-1">
+                      <div className="flex items-center gap-2 font-medium">
+                        <Plus className="h-4 w-4" />
+                        <span>Use a New Address</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Enter a delivery address just for this checkout.
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </RadioGroup>
+              </div>
             </div>
-
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleUseNewAddress}
-              className="font-mono text-xs uppercase tracking-wider"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Use a New Address
-            </Button>
           </div>
         )}
 

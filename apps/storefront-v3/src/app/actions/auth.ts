@@ -474,14 +474,22 @@ export async function setDefaultAddressAction(addressId: string) {
 
 export async function deleteAccountAction() {
   try {
-    // await sdk.store.customer.delete()
-    throw new Error("Delete account not implemented yet")
-    /*
+    const authHeaders = await getCustomerAuthHeaders()
+    if (!authHeaders) {
+      return { success: false, error: "No session" }
+    }
+
+    await sdk.client.fetch("/store/customers/me", {
+      method: "DELETE",
+      headers: authHeaders,
+    })
+
     const cookieStore = await cookies()
     cookieStore.delete(SESSION_COOKIE)
+    cookieStore.delete(CUSTOMER_TOKEN_COOKIE)
     revalidatePath("/", "layout")
-    redirect("/")
-    */
+
+    return { success: true }
   } catch (error: any) {
     console.error("Delete account error:", error)
     return {

@@ -415,4 +415,133 @@ describe("AddressStep address autocomplete", () => {
       )
     })
   })
+
+  it("lets signed-in customers switch between saved addresses and a new address", async () => {
+    const onComplete = jest.fn()
+    mockGetSessionAction.mockResolvedValue({
+      success: true,
+      user: {
+        id: "cus_123",
+        email: "ava@example.com",
+        first_name: "Ava",
+        last_name: "Maker",
+      },
+    })
+    mockGetAddressesAction.mockResolvedValue({
+      success: true,
+      addresses: [
+        {
+          id: "addr_default",
+          address_name: "Workshop",
+          first_name: "Ava",
+          last_name: "Maker",
+          address_1: "42 Print Farm Lane",
+          address_2: "Unit 5",
+          city: "Hobart",
+          province: "TAS",
+          country_code: "au",
+          postal_code: "7000",
+          phone: "0400000000",
+          is_default_shipping: true,
+        },
+        {
+          id: "addr_office",
+          address_name: "Office",
+          first_name: "Ava",
+          last_name: "Maker",
+          address_1: "9 Prototype Street",
+          city: "Launceston",
+          province: "TAS",
+          country_code: "au",
+          postal_code: "7250",
+          phone: "0400000001",
+        },
+      ],
+    })
+
+    render(
+      <AddressStep
+        defaultValues={{
+          email: "ava@example.com",
+          first_name: "Ava",
+          last_name: "Maker",
+          address_1: "42 Print Farm Lane",
+          city: "Hobart",
+          province: "TAS",
+          country_code: "au",
+          postal_code: "7000",
+        }}
+        onComplete={onComplete}
+      />
+    )
+
+    expect(await screen.findByText("Workshop")).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText("Office"))
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /continue to delivery/i }))
+      await Promise.resolve()
+    })
+
+    await waitFor(() => {
+      expect(onComplete).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          address_1: "9 Prototype Street",
+          city: "Launceston",
+          postal_code: "7250",
+        })
+      )
+    })
+
+    fireEvent.click(screen.getByText("Workshop"))
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /continue to delivery/i }))
+      await Promise.resolve()
+    })
+
+    await waitFor(() => {
+      expect(onComplete).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          address_1: "42 Print Farm Lane",
+          city: "Hobart",
+          postal_code: "7000",
+        })
+      )
+    })
+
+    fireEvent.click(screen.getByText("Use a New Address"))
+
+    expect(screen.getByLabelText("Address")).toHaveValue("")
+
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText("Address"), {
+        target: { value: "123 Fresh Start Road" },
+      })
+      fireEvent.change(screen.getByLabelText("City"), {
+        target: { value: "Devonport" },
+      })
+      fireEvent.change(screen.getByLabelText("State"), {
+        target: { value: "TAS" },
+      })
+      fireEvent.change(screen.getByLabelText("Postal Code"), {
+        target: { value: "7310" },
+      })
+      fireEvent.change(screen.getByLabelText("Country"), {
+        target: { value: "au" },
+      })
+      fireEvent.click(screen.getByRole("button", { name: /continue to delivery/i }))
+      await Promise.resolve()
+    })
+
+    await waitFor(() => {
+      expect(onComplete).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          email: "ava@example.com",
+          address_1: "123 Fresh Start Road",
+          city: "Devonport",
+          postal_code: "7310",
+        })
+      )
+    })
+  })
 })
