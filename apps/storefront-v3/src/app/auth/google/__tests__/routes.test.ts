@@ -86,6 +86,24 @@ describe("Google OAuth storefront routes", () => {
     )
   })
 
+  it("uses the configured public site URL for the Google callback", async () => {
+    process.env.NEXT_PUBLIC_SITE_URL = "https://store.staging.3dbytetech.com.au"
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        location: "https://accounts.google.com/o/oauth2/v2/auth?client_id=test",
+      }),
+    })
+
+    await startGoogleAuth(
+      createRequest("https://0.0.0.0:3000/auth/google/start?redirect=/account")
+    )
+
+    expect(JSON.parse(String(mockFetch.mock.calls[0][1].body))).toEqual({
+      callback_url: "https://store.staging.3dbytetech.com.au/auth/google/callback",
+    })
+  })
+
   it("creates a first-time Google customer, refreshes the token, and sets customer cookies", async () => {
     const initialToken = encodeJwtPayload({
       actor_id: "",

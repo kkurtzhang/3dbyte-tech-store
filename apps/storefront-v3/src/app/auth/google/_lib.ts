@@ -26,8 +26,22 @@ export function getSafeRedirectPath(value: string | null | undefined) {
   return value
 }
 
+function getConfiguredStorefrontOrigin() {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim()
+
+  if (!siteUrl) {
+    return null
+  }
+
+  try {
+    return new URL(siteUrl).origin
+  } catch {
+    return null
+  }
+}
+
 export function buildStorefrontRedirect(requestUrl: URL, path: string) {
-  return new URL(path, requestUrl.origin)
+  return new URL(path, getConfiguredStorefrontOrigin() ?? requestUrl.origin)
 }
 
 export function getPublishableApiHeaders(): Record<string, string> {
