@@ -26,6 +26,7 @@ const mockSearchAddresses = searchAddresses as jest.MockedFunction<typeof search
 
 jest.mock("lucide-react", () => ({
   Check: () => <span data-testid="check-icon" />,
+  Circle: () => <span data-testid="circle-icon" />,
   Home: () => <span data-testid="home-icon" />,
   MapPin: () => <span data-testid="map-pin-icon" />,
   Plus: () => <span data-testid="plus-icon" />,
@@ -355,5 +356,63 @@ describe("AddressStep address autocomplete", () => {
     expect(
       screen.getByRole("checkbox", { name: /join us for product updates/i })
     ).toBeInTheDocument()
+  })
+
+  it("lets signed-in customers continue checkout with a saved address", async () => {
+    const onComplete = jest.fn()
+    mockGetSessionAction.mockResolvedValue({
+      success: true,
+      user: {
+        id: "cus_123",
+        email: "ava@example.com",
+        first_name: "Ava",
+        last_name: "Maker",
+      },
+    })
+    mockGetAddressesAction.mockResolvedValue({
+      success: true,
+      addresses: [
+        {
+          id: "addr_saved",
+          address_name: "Workshop",
+          first_name: "Ava",
+          last_name: "Maker",
+          address_1: "42 Print Farm Lane",
+          address_2: "Unit 5",
+          city: "Hobart",
+          province: "TAS",
+          country_code: "au",
+          postal_code: "7000",
+          phone: "0400000000",
+          is_default_shipping: true,
+        },
+      ],
+    })
+
+    render(<AddressStep onComplete={onComplete} />)
+
+    expect(await screen.findByText("Workshop")).toBeInTheDocument()
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /continue to delivery/i }))
+      await Promise.resolve()
+    })
+
+    await waitFor(() => {
+      expect(onComplete).toHaveBeenCalledWith(
+        expect.objectContaining({
+          email: "ava@example.com",
+          first_name: "Ava",
+          last_name: "Maker",
+          address_1: "42 Print Farm Lane",
+          address_2: "Unit 5",
+          city: "Hobart",
+          province: "TAS",
+          country_code: "au",
+          postal_code: "7000",
+          phone: "0400000000",
+        })
+      )
+    })
   })
 })

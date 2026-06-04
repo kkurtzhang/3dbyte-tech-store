@@ -1,0 +1,61 @@
+const mockFetch = jest.fn()
+const mockRedirect = jest.fn((url: string) => {
+  throw new Error(`redirect:${url}`)
+})
+
+jest.mock("next/navigation", () => ({
+  redirect: (url: string) => mockRedirect(url),
+}))
+
+jest.mock("@/lib/medusa/base-url", () => ({
+  resolveMedusaBaseUrl: () => "https://api.example.com",
+}))
+
+import VerifyEmailPage from "../page"
+
+describe("VerifyEmailPage", () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    global.fetch = mockFetch as unknown as typeof fetch
+  })
+
+  it("redirects to the verified sign-in state when the backend confirms the token", async () => {
+    mockFetch.mockResolvedValueOnce({
+      headers: new Headers({
+        location: "https://store.example.com/sign-in?verified=1",
+      }),
+      status: 307,
+    })
+
+    await expect(
+      VerifyEmailPage({
+        searchParams: Promise.resolve({ token: "valid-token" }),
+      })
+    ).rejects.toThrow("redirect:/sign-in?verified=1")
+
+    expect(String(mockFetch.mock.calls[0][0])).toBe(
+      "https://api.example.com/store/customers/email-verifications?token=valid-token"
+    )
+    expect(mockFetch.mock.calls[0][1]).toEqual(
+      expect.objectContaining({
+        cache: "no-store",
+        redirect: "manual",
+      })
+    )
+  })
+
+  it("redirects to the unverified sign-in state when the backend rejects the token", async () => {
+    mockFetch.mockResolvedValueOnce({
+      headers: new Headers({
+        location: "https://store.example.com/sign-in?verified=0",
+      }),
+      status: 307,
+    })
+
+    await expect(
+      VerifyEmailPage({
+        searchParams: Promise.resolve({ token: "bad-token" }),
+      })
+    ).rejects.toThrow("redirect:/sign-in?verified=0")
+  })
+})

@@ -177,6 +177,10 @@ export function SearchResults({ initialHits }: SearchResultsProps) {
             originalPrice={hit.originalPrice}
             discountPercentage={hit.discountPercentage}
             isBundle={hit.isBundle}
+            isPreorder={hit.isPreorder}
+            preorderAvailableDate={hit.preorderAvailableDate}
+            bundleItemCount={hit.bundleItemCount}
+            bundleItemTitles={hit.bundleItemTitles}
             availableInBundlesCount={hit.availableInBundlesCount}
             specs={hit.specs}
             sourceHref="/search"

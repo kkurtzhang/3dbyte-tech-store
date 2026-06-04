@@ -10,6 +10,7 @@ import { QuickViewGallery } from "./quick-view-gallery"
 import { StockStatusBadge, getStockStatus } from "@/components/ui/stock-status-badge"
 import { PriceDisplay } from "@/components/ui/price-display"
 import { formatCustomerPrice } from "@/lib/pricing/customer-pricing"
+import { getProductPath } from "@/lib/medusa/bundles"
 import { NotifyMeButton } from "./notify-me-button"
 import { ExternalLink, ShoppingCart, Loader2, Plus, Minus } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -22,6 +23,7 @@ import {
   getVariantOptionsMap,
 } from "../lib/product-variants"
 import {
+  buildQuickViewBundleItems,
   buildQuickViewDetailChips,
   buildQuickViewPreviewProduct,
   buildQuickViewSummary,
@@ -114,10 +116,6 @@ export function QuickViewDialog({
     () => (productPreview ? buildQuickViewPreviewProduct(productPreview) : null),
     [productPreview]
   )
-  const detailHref =
-    sourceHref && sourceLabel
-      ? `/products/${handle}?from=${encodeURIComponent(sourceHref)}&fromLabel=${encodeURIComponent(sourceLabel)}`
-      : `/products/${handle}`
 
   // State management (like ProductTemplate)
   const [product, setProduct] = useState<MedusaProduct | null>(previewProduct)
@@ -224,6 +222,31 @@ export function QuickViewDialog({
     () => (product ? buildQuickViewDetailChips(product, selectedVariant) : []),
     [product, selectedVariant]
   )
+  const bundleItems = useMemo(
+    () =>
+      product
+        ? buildQuickViewBundleItems(
+            product as unknown as Parameters<typeof buildQuickViewBundleItems>[0]
+          )
+        : [],
+    [product]
+  )
+  const productBundleState = product as
+    | {
+        bundle?: unknown
+        is_bundle?: boolean
+      }
+    | null
+  const detailPath = getProductPath(
+    handle,
+    productPreview?.isBundle === true ||
+      productBundleState?.is_bundle === true ||
+      Boolean(productBundleState?.bundle)
+  )
+  const detailHref =
+    sourceHref && sourceLabel
+      ? `${detailPath}?from=${encodeURIComponent(sourceHref)}&fromLabel=${encodeURIComponent(sourceLabel)}`
+      : detailPath
 
   // Update option handler (reuse ProductActions logic)
   const updateOption = (optionId: string, value: string) => {
@@ -409,6 +432,39 @@ export function QuickViewDialog({
                       {detail}
                     </span>
                   ))}
+                </div>
+              )}
+
+              {bundleItems.length > 0 && (
+                <div className="mb-5 rounded-sm border bg-secondary/20 p-4">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                      Included products
+                    </p>
+                    <span className="font-mono text-[11px] text-muted-foreground">
+                      {bundleItems.length}
+                    </span>
+                  </div>
+                  <ul className="space-y-2">
+                    {bundleItems.slice(0, 4).map((item) => (
+                      <li
+                        key={`${item.title}-${item.quantity ?? 1}`}
+                        className="flex items-center justify-between gap-3 text-sm"
+                      >
+                        <span className="line-clamp-1">{item.title}</span>
+                        {item.quantity ? (
+                          <span className="font-mono text-xs text-muted-foreground">
+                            x{item.quantity}
+                          </span>
+                        ) : null}
+                      </li>
+                    ))}
+                    {bundleItems.length > 4 ? (
+                      <li className="text-xs text-muted-foreground">
+                        +{bundleItems.length - 4} more included products
+                      </li>
+                    ) : null}
+                  </ul>
                 </div>
               )}
 

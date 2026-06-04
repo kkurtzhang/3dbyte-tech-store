@@ -74,6 +74,59 @@ function getProductBundle(
   return product.bundle ?? null;
 }
 
+function normalizePriceAmount(value: unknown): number | null {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  return null;
+}
+
+function getVariantPriceAmount(
+  variant: NonNullable<SyncProductsStepProduct["variants"]>[number],
+  region: RegionForPricing,
+): number | null {
+  const regionPrice = variant.prices?.find(
+    (p) => p.rules?.region_id === region.id && p.amount !== undefined,
+  );
+  const currencyPrice = variant.prices?.find(
+    (p) =>
+      !p.rules?.region_id &&
+      p.currency_code === region.currency_code &&
+      p.amount !== undefined,
+  );
+  const priceObj = regionPrice ?? currencyPrice;
+  const listedAmount = normalizePriceAmount(priceObj?.amount);
+
+  if (listedAmount !== null) {
+    return listedAmount;
+  }
+
+  return normalizePriceAmount(variant.calculated_price?.calculated_amount);
+}
+
+function isActivePreorderVariant(
+  variant: NonNullable<SyncProductsStepProduct["variants"]>[number],
+): boolean {
+  const preorderVariant = variant.preorder_variant;
+  if (
+    !preorderVariant ||
+    preorderVariant.status !== "enabled" ||
+    !preorderVariant.available_date
+  ) {
+    return false;
+  }
+
+  const availableDate = new Date(preorderVariant.available_date);
+
+  return !Number.isNaN(availableDate.getTime()) && availableDate > new Date();
+}
+
 function collectCategoryHierarchy(
   category: SyncProductsStepCategory,
 ): SyncProductsStepCategory[] {
@@ -125,22 +178,10 @@ export function toMeilisearchDocument(
     let found = false;
 
     product.variants?.forEach((variant) => {
-      // Prefer region-scoped price records over generic currency prices.
-      // This lets Meilisearch mirror the same customer-facing price scope that
-      // Medusa uses for the Australia region and its GST-inclusive setting.
-      const regionPrice = variant.prices?.find(
-        (p) => p.rules?.region_id === region.id && p.amount !== undefined,
-      );
-      const currencyPrice = variant.prices?.find(
-        (p) =>
-          !p.rules?.region_id &&
-          p.currency_code === region.currency_code &&
-          p.amount !== undefined,
-      );
-      const priceObj = regionPrice ?? currencyPrice;
+      const amount = getVariantPriceAmount(variant, region);
 
-      if (priceObj && priceObj.amount < minPrice) {
-        minPrice = priceObj.amount;
+      if (amount !== null && amount < minPrice) {
+        minPrice = amount;
         found = true;
       }
 
@@ -258,7 +299,22 @@ export function toMeilisearchDocument(
     id: v.id,
     sku: v.sku,
     title: v.title || v.options?.map((o) => o.value).join(" / ") || "",
+    ...(v.preorder_variant
+      ? {
+          preorder_variant: {
+            id: v.preorder_variant.id,
+            available_date: v.preorder_variant.available_date,
+            status: v.preorder_variant.status,
+            prices: v.preorder_variant.prices,
+          },
+        }
+      : {}),
   }));
+  const preorderVariants = product.variants?.filter(isActivePreorderVariant) ?? [];
+  const preorderDates = preorderVariants
+    .map((variant) => variant.preorder_variant?.available_date)
+    .filter((date): date is string => Boolean(date))
+    .sort((left, right) => new Date(left).getTime() - new Date(right).getTime());
   const bundle = getProductBundle(product);
   const bundle_item_titles =
     bundle?.items
@@ -272,7 +328,7 @@ export function toMeilisearchDocument(
     id: product.id,
     title: product.title,
     handle: product.handle,
-    thumbnail: product.thumbnail || undefined,
+    thumbnail: product.thumbnail || product.images?.find((image) => image.url)?.url || undefined,
     created_at_timestamp,
     is_bundle: Boolean(bundle),
     bundle_id: bundle?.id,
@@ -290,6 +346,8 @@ export function toMeilisearchDocument(
     // 4. INVENTORY & AVAILABILITY
     inventory_quantity,
     in_stock,
+    is_preorder: preorderVariants.length > 0,
+    preorder_available_date: preorderDates[0],
 
     // 5. FACETS (Flattened options via spread)
     ...flattenedOptions,

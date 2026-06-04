@@ -180,6 +180,12 @@ describe("ProductCard", () => {
     expect(screen.getByText("Bundle")).toBeInTheDocument()
   })
 
+  it("renders a pre-order badge for pre-order products", () => {
+    render(<ProductCard {...defaultProps} isPreorder />)
+
+    expect(screen.getByText("Pre-order")).toBeInTheDocument()
+  })
+
   it("links bundle products to the dedicated bundle page", () => {
     render(<ProductCard {...defaultProps} isBundle />)
 

@@ -98,6 +98,8 @@ export interface MeilisearchProductDocument extends AiProductMetadataSearchField
     on_sale: boolean;
     inventory_quantity: number;
     in_stock: boolean;
+    is_preorder?: boolean;
+    preorder_available_date?: string;
     materials?: string[];
     [key: `options_${string}`]: string[] | undefined;
     category_ids: string[];
@@ -126,6 +128,15 @@ export interface MeilisearchProductDocument extends AiProductMetadataSearchField
         id: string;
         sku?: string;
         title: string;
+        preorder_variant?: {
+            id?: string;
+            available_date: string;
+            status: "enabled" | "disabled";
+            prices?: Array<{
+                amount: number;
+                currency_code: string;
+            }>;
+        };
     }>;
 }
 /**
@@ -269,8 +280,22 @@ export interface SyncProductsStepProduct {
                 region_id?: string;
             };
         }>;
+        calculated_price?: {
+            calculated_amount?: number;
+            original_amount?: number;
+            currency_code?: string;
+        };
         original_price?: number;
         original_price_calculated?: number;
+        preorder_variant?: {
+            id?: string;
+            available_date: string;
+            status: "enabled" | "disabled";
+            prices?: Array<{
+                amount: number;
+                currency_code: string;
+            }>;
+        };
     }>;
     images?: Array<{
         url: string;

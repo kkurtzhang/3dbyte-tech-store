@@ -1,4 +1,5 @@
 import {
+  buildQuickViewBundleItems,
   buildQuickViewDetailChips,
   buildQuickViewPreviewProduct,
   buildQuickViewSummary,
@@ -98,5 +99,17 @@ describe("quick-view-product helpers", () => {
         } as never
       )
     ).toEqual(["Type Nozzle", "Size 0.4mm"])
+  })
+
+  it("builds a customer-facing included products list for bundle quick view", () => {
+    expect(
+      buildQuickViewBundleItems({
+        bundle_item_titles: ["Hardened Nozzle", "PETG Filament"],
+        bundle_item_count: 2,
+      } as never)
+    ).toEqual([
+      { title: "Hardened Nozzle" },
+      { title: "PETG Filament" },
+    ])
   })
 })

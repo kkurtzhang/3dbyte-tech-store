@@ -25,6 +25,10 @@ export interface ProductCardProps {
   originalPrice?: number
   discountPercentage?: number
   isBundle?: boolean
+  isPreorder?: boolean
+  preorderAvailableDate?: string
+  bundleItemCount?: number
+  bundleItemTitles?: string[]
   availableInBundlesCount?: number
   specs?: {
     label: string
@@ -45,6 +49,10 @@ export function ProductCard({
   originalPrice,
   discountPercentage,
   isBundle = false,
+  isPreorder = false,
+  preorderAvailableDate,
+  bundleItemCount = 0,
+  bundleItemTitles = [],
   availableInBundlesCount = 0,
   specs,
   sourceHref,
@@ -68,6 +76,11 @@ export function ProductCard({
     originalPrice,
     inventoryQuantity,
     inStock,
+    isBundle,
+    isPreorder,
+    preorderAvailableDate,
+    bundleItemCount,
+    bundleItemTitles,
   }
 
   const formatPrice = (amount: number, currency: string) => {
@@ -117,8 +130,16 @@ export function ProductCard({
           </div>
         )}
 
-        {(isBundle || availableInBundlesCount > 0) && (
+        {(isPreorder || isBundle || availableInBundlesCount > 0) && (
           <div className="absolute right-2 top-2 flex flex-col items-end gap-1">
+            {isPreorder && (
+              <Badge
+                variant="secondary"
+                className="border-primary/30 bg-primary/90 font-mono text-[10px] uppercase tracking-wider text-primary-foreground"
+              >
+                Pre-order
+              </Badge>
+            )}
             {isBundle && (
               <Badge
                 variant="secondary"

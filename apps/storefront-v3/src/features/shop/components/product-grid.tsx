@@ -25,6 +25,10 @@ export interface ProductLike {
   originalPrice?: number;
   salePrice?: number;
   isBundle?: boolean;
+  isPreorder?: boolean;
+  preorderAvailableDate?: string;
+  bundleItemCount?: number;
+  bundleItemTitles?: string[];
   availableInBundlesCount?: number;
 }
 
@@ -136,6 +140,10 @@ export function ProductGrid({
             originalPrice={originalPrice}
             discountPercentage={discountPercentage}
             isBundle={product.isBundle}
+            isPreorder={product.isPreorder}
+            preorderAvailableDate={product.preorderAvailableDate}
+            bundleItemCount={product.bundleItemCount}
+            bundleItemTitles={product.bundleItemTitles}
             availableInBundlesCount={product.availableInBundlesCount}
             sourceHref={sourceHref}
             sourceLabel={sourceLabel}
