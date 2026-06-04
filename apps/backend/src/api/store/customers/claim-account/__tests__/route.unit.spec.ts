@@ -117,18 +117,26 @@ describe("POST /store/customers/claim-account", () => {
     });
   });
 
-  it("links Google auth to an existing same-email registered customer", async () => {
+  it("links Google auth to an existing same-email registered customer and marks the email verified", async () => {
     const registeredCustomer = {
       id: "cus_registered",
       email: "ava@example.com",
       first_name: "Ava",
       last_name: null,
       has_account: true,
-      metadata: {},
+      metadata: { email_verification_status: "pending" },
+    };
+    const verifiedCustomer = {
+      ...registeredCustomer,
+      metadata: {
+        email_verification_status: "verified",
+        email_verification_source: "google",
+        email_verified_at: "2026-06-04T00:00:00.000Z",
+      },
     };
     const customerModule = {
       listCustomers: jest.fn().mockResolvedValue([registeredCustomer]),
-      updateCustomers: jest.fn().mockResolvedValue(registeredCustomer),
+      updateCustomers: jest.fn().mockResolvedValue(verifiedCustomer),
       retrieveCustomer: jest.fn(),
     };
     const authModule = {
@@ -164,7 +172,16 @@ describe("POST /store/customers/claim-account", () => {
 
     await POST(req as never, res as never);
 
-    expect(customerModule.updateCustomers).not.toHaveBeenCalled();
+    expect(customerModule.updateCustomers).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "cus_registered",
+        metadata: expect.objectContaining({
+          email_verification_status: "verified",
+          email_verification_source: "google",
+          email_verified_at: expect.any(String),
+        }),
+      }),
+    );
     expect(
       (mockSetAuthAppMetadataWorkflow.mock.results[0]?.value as {
         run: jest.Mock;
@@ -180,7 +197,7 @@ describe("POST /store/customers/claim-account", () => {
       claimed: false,
       linked: true,
       already_registered: true,
-      customer: registeredCustomer,
+      customer: verifiedCustomer,
     });
   });
 

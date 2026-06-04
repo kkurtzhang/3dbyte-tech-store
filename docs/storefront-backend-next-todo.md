@@ -31,7 +31,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 - Launch-gate order/account/tracking fixes verified on staging: logged-in order history/detail show order `3DBO-AKK7-5KYYDE` as shipped, public order lookup returns `fulfillment_status: shipped` with tracking label `STG-3DBO-AKK7-5KYYDE`, payment provider payloads are absent from public lookup responses, and Gmail received the shipment notification email.
 - Launch-gate account-address fixes are on staging: the slide-over form was replaced with URL-driven inline add/edit panels, Medusa v2 address fields are represented, Australian address autocomplete/state fields are wired, saves reset and hide the form, and account nav/auth refresh behavior was polished.
 - Launch-gate shipping-rate fixes are on staging: Karrio checkout rate shopping no longer sends stale hardcoded carrier/service filters, carrier-message failures fall back to fixed/manual delivery options instead of raw checkout errors, and known regional Aramex/Karrio `sLACode` lanes are documented for future carrier coverage work.
-- Customer auth launch-gate behavior is decided and covered by the auth follow-up work: email/password signup requires email verification before account access, signup sends a verification email rather than a separate welcome email, same-email guest customer records are claimed/upgraded during signup instead of creating duplicate accounts, Google OAuth links or claims same-email customer records before creating a new customer, and storefront forgot/reset password entry points plus a customer password-reset email subscriber exist.
+- Customer auth launch-gate behavior is decided and covered by the auth follow-up work: email/password signup requires email verification before account access, signup sends a verification email rather than a separate welcome email, same-email guest customer records are claimed/upgraded during signup instead of creating duplicate accounts, Google OAuth links or claims same-email customer records before creating a new customer, storefront forgot/reset password entry points plus a customer password-reset email subscriber exist, and account settings expose login methods with a Connect Google flow for existing accounts.
 
 ## Remaining TODO (Priority Order)
 
@@ -64,6 +64,14 @@ These items are no longer open TODOs and should be treated as shipped baseline u
   - Stale domains such as `3dbyte.shop` never appear in assistant product links.
   - Existing support-ticket confirmation guardrails remain intact.
   - Langfuse eval cases include this prompt and fail on unavailable products or stale product URLs.
+
+### Customer auth follow-up: safe login-method unlinking and audit trail (Backend + Storefront)
+
+- Status: linking Google to an existing email/password account is implemented through account settings.
+- Deferred:
+  - Add safe disconnect/unlink controls only after backend can confirm at least one other usable sign-in method remains.
+  - Record login-method link/unlink audit events for support diagnostics.
+  - Add customer-visible copy for what happens if Google is disconnected while email verification is still pending.
 
 ### 0) Security dependency upgrade pass (All apps)
 

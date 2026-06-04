@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 
 import {
   CUSTOMER_TOKEN_COOKIE,
+  GOOGLE_OAUTH_MODE_COOKIE,
   GOOGLE_OAUTH_REDIRECT_COOKIE,
   SESSION_COOKIE,
   getCustomerSessionCookieOptions,
@@ -63,6 +64,7 @@ export function setCustomerSessionCookies(
 
   response.cookies.set(SESSION_COOKIE, "true", sessionCookieOptions)
   response.cookies.set(CUSTOMER_TOKEN_COOKIE, token, sessionCookieOptions)
+  response.cookies.delete(GOOGLE_OAUTH_MODE_COOKIE)
   response.cookies.delete(GOOGLE_OAUTH_REDIRECT_COOKIE)
 }
 
