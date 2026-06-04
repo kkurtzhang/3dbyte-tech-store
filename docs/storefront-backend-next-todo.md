@@ -72,7 +72,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 ### Launch-gate bug: Account address add form silently fails (Storefront + Backend)
 
 - Found: `2026-06-03` staging launch gate on logged-in test account `bucco.max.org+launchgate...@gmail.com`.
-- Status: fixed in branch `fix/launch-account-order-gates`; page-level staging smoke confirmed `/account/addresses` opens while authenticated and the add-address dialog opens. Full address save/delete re-smoke still needs a manual browser check because the current Codex browser driver could not type reliably into the modal fields.
+- Status: follow-up in branch `fix/account-address-page-form` replaces the slide-over sheet with URL-driven inline add/edit panels, keeps API errors visible in the form, refreshes the account page after successful saves, and adds focused address form/page regression tests. Full address save/delete re-smoke still needs staging browser confirmation after this branch deploys.
 - Problem: `/account/addresses` opens the add-address form and accepts valid input values, but after `Save Address` the modal closes, no error is shown, and the page still shows "No saved addresses yet".
 - Evidence:
   - Form values before save included `first_name: "LAUNCH"`, `last_name: "GATE"`, `address_1: "32 KIERNAN ST"`, `city: "GWYNNEVILLE"`, `postal_code: "2500"`, `country_code: "AU"`, and `phone: "0400000000"`.
