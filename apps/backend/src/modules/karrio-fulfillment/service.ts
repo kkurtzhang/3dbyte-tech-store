@@ -111,21 +111,10 @@ class KarrioFulfillmentService extends AbstractFulfillmentProviderService {
         >,
       );
 
-      const selectedCarrierId = data.carrier_id || optionData.carrier_id;
-      const selectedService = data.service || optionData.service;
-      const carrierIds = selectedCarrierId
-        ? [selectedCarrierId as string]
-        : undefined;
-      const services = selectedService
-        ? [selectedService as string]
-        : undefined;
-
       const rateResponse = await this.client.fetchRates({
         shipper,
         recipient,
         parcels,
-        carrier_ids: carrierIds,
-        services,
         payment: { paid_by: "sender" },
       });
 

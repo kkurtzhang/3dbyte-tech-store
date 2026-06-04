@@ -112,6 +112,25 @@ These items are no longer open TODOs and should be treated as shipped baseline u
   - Pending, fulfilled, shipped, and delivered states have distinct customer-facing copy.
   - Regression tests cover order tracking after fulfillment shipment creation.
 
+### Launch-gate bug: Karrio checkout delivery options send stale service filters (Backend + Shipping)
+
+- Found: `2026-06-04` staging checkout gate on the delivery-method step.
+- Status: being fixed in branch `fix/karrio-checkout-rate-options`.
+- Problem: Medusa calculated shipping option pricing called Karrio `/v1/proxy/rates` with stale default option filters such as `carrier_ids: ["aramex"]` and `services: ["aramex_priority"]`. Karrio returned `404 not_found`: "No active carrier connection found to process the request" even though live unfiltered rate shopping could return active Aramex AU/NZ rates.
+- Evidence:
+  - Karrio request body included `carrier_ids: ["aramex"]`, `services: ["aramex_priority"]`, parcels, sender, and recipient.
+  - Karrio response body returned `errors[0].code: "not_found"` and `message: "No active carrier connection found to process the request"`.
+  - Existing storefront live-rate route already requests `/v1/proxy/rates` without carrier/service filters and maps the returned live rates to customer-facing delivery options.
+- Real-world practice:
+  - Rate-shop active carrier connections first and select among the returned rates instead of treating Medusa shipping-option defaults as authoritative Karrio service ids.
+  - Use Karrio's selected-rate purchase flow (`/v1/proxy/shipments` with `selected_rate_id`) when creating labels for a rate chosen during checkout.
+  - Treat Karrio carrier/service discovery as configuration/admin tooling: query active Karrio carrier connections/services where possible, then seed or refresh Medusa shipping options from that data instead of relying on long-lived hardcoded service names.
+- Acceptance:
+  - Checkout delivery options do not fail when static Medusa option data has stale `carrier_id` or `service` values.
+  - Karrio rate calculation requests omit stale `carrier_ids` and `services` filters unless they are known-current Karrio connection/service identifiers.
+  - The selected returned rate still controls customer-facing price, service label, and later label purchase metadata.
+  - Regression tests fail if calculated shipping option pricing sends stale option `carrier_id` or `service` filters to Karrio.
+
 ### Launch-gate bug: Karrio selected-rate fulfillment mapping (Backend + Shipping)
 
 - Found: `2026-06-03` staging launch gate on order `3DBO-8U96-P49VDH` / `order_01KT6KGS5Q761NQ94XA6QXV52Z`.
