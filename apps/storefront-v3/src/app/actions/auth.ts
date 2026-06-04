@@ -190,8 +190,10 @@ export async function changePasswordAction(token: string, newPassword: string) {
 
 export interface CustomerAddress {
   id: string
+  address_name?: string | null
   first_name: string
   last_name: string
+  company?: string | null
   address_1: string
   address_2?: string
   city: string
@@ -200,6 +202,8 @@ export interface CustomerAddress {
   postal_code: string
   phone?: string
   is_default?: boolean
+  is_default_shipping?: boolean
+  is_default_billing?: boolean
 }
 
 export async function getAddressesAction(): Promise<{
@@ -232,8 +236,10 @@ export async function getAddressesAction(): Promise<{
 }
 
 export async function addAddressAction(data: {
+  address_name?: string
   first_name: string
   last_name: string
+  company?: string
   address_1: string
   address_2?: string
   city: string
@@ -264,8 +270,10 @@ export async function addAddressAction(data: {
 export async function updateAddressAction(
   addressId: string,
   data: Partial<{
+    address_name: string
     first_name: string
     last_name: string
+    company: string
     address_1: string
     address_2: string
     city: string
@@ -273,6 +281,8 @@ export async function updateAddressAction(
     country_code: string
     postal_code: string
     phone: string
+    is_default_shipping: boolean
+    is_default_billing: boolean
   }>
 ) {
   try {
@@ -327,7 +337,8 @@ export async function setDefaultAddressAction(addressId: string) {
     const { customer } = await sdk.store.customer.updateAddress(
       addressId,
       {
-        is_default: true,
+        is_default_shipping: true,
+        is_default_billing: true,
       } as any,
       {},
       authHeaders

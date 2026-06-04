@@ -125,6 +125,8 @@ describe("AddressForm", () => {
       "/account/addresses",
     )
     expect(screen.getByRole("combobox", { name: /address/i })).toHaveValue("")
+    expect(screen.getByLabelText("Address Name (Optional)")).toBeInTheDocument()
+    expect(screen.getByLabelText("Company (Optional)")).toBeInTheDocument()
     expect(screen.getByLabelText("State")).toBeInTheDocument()
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
   })
@@ -153,11 +155,17 @@ describe("AddressForm", () => {
 
     render(<AddressForm />)
 
+    fireEvent.change(screen.getByLabelText("Address Name (Optional)"), {
+      target: { value: "Workshop" },
+    })
     fireEvent.change(screen.getByLabelText("First Name"), {
       target: { value: "Launch" },
     })
     fireEvent.change(screen.getByLabelText("Last Name"), {
       target: { value: "Gate" },
+    })
+    fireEvent.change(screen.getByLabelText("Company (Optional)"), {
+      target: { value: "3D Byte Tech" },
     })
     fireEvent.change(screen.getByRole("combobox", { name: /address/i }), {
       target: { value: "32 Kiernan St" },
@@ -182,6 +190,18 @@ describe("AddressForm", () => {
         "/api/addresses?action=add",
         expect.objectContaining({
           method: "POST",
+          body: expect.stringContaining('"address_name":"Workshop"'),
+        }),
+      )
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/api/addresses?action=add",
+        expect.objectContaining({
+          body: expect.stringContaining('"company":"3D Byte Tech"'),
+        }),
+      )
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/api/addresses?action=add",
+        expect.objectContaining({
           body: expect.stringContaining('"province":"NSW"'),
         }),
       )
@@ -214,8 +234,10 @@ describe("AddressForm", () => {
       <AddressForm
         address={{
           id: "addr_123",
+          address_name: "Workshop",
           first_name: "Launch",
           last_name: "Gate",
+          company: "3D Byte Tech",
           address_1: "32 Kiernan St",
           city: "Gwynneville",
           province: "NSW",
@@ -223,6 +245,13 @@ describe("AddressForm", () => {
           postal_code: "2500",
         }}
       />,
+    )
+
+    expect(screen.getByLabelText("Address Name (Optional)")).toHaveValue(
+      "Workshop",
+    )
+    expect(screen.getByLabelText("Company (Optional)")).toHaveValue(
+      "3D Byte Tech",
     )
 
     fireEvent.submit(screen.getByRole("button", { name: /save address/i }))
