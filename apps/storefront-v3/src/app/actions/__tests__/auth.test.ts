@@ -1,5 +1,7 @@
 const mockAuthRegister = jest.fn()
 const mockAuthLogin = jest.fn()
+const mockAuthResetPassword = jest.fn()
+const mockAuthUpdateProvider = jest.fn()
 const mockClientFetch = jest.fn()
 const mockCustomerCreate = jest.fn()
 const mockCustomerRetrieve = jest.fn()
@@ -7,12 +9,17 @@ const mockCookieGet = jest.fn()
 const mockCookieSet = jest.fn()
 const mockCookieDelete = jest.fn()
 const mockRevalidatePath = jest.fn()
+const mockConsoleError = jest
+  .spyOn(console, "error")
+  .mockImplementation(() => undefined)
 
 jest.mock("@/lib/medusa/client", () => ({
   sdk: {
     auth: {
       register: (...args: unknown[]) => mockAuthRegister(...args),
       login: (...args: unknown[]) => mockAuthLogin(...args),
+      resetPassword: (...args: unknown[]) => mockAuthResetPassword(...args),
+      updateProvider: (...args: unknown[]) => mockAuthUpdateProvider(...args),
     },
     client: {
       fetch: (...args: unknown[]) => mockClientFetch(...args),
@@ -47,12 +54,16 @@ import {
   getSessionAction,
   loginAction,
   registerAction,
+  requestPasswordResetAction,
+  resetPasswordAction,
 } from "../auth"
 
 describe("auth actions", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockAuthRegister.mockResolvedValue("registration-token")
+    mockAuthResetPassword.mockResolvedValue(undefined)
+    mockAuthUpdateProvider.mockResolvedValue(undefined)
     mockCustomerCreate.mockResolvedValue({
       customer: { id: "cus_123", email: "test@example.com" },
     })
@@ -76,6 +87,10 @@ describe("auth actions", () => {
       }
       return undefined
     })
+  })
+
+  afterAll(() => {
+    mockConsoleError.mockRestore()
   })
 
   it("uses the login token to retrieve and persist the customer session", async () => {
@@ -256,5 +271,77 @@ describe("auth actions", () => {
     expect(mockCookieDelete).toHaveBeenCalledWith("_medusa_authenticated")
     expect(mockCookieDelete).toHaveBeenCalledWith("_medusa_customer_token")
     expect(mockRevalidatePath).toHaveBeenCalledWith("/", "layout")
+  })
+
+  it("requests a customer password reset without exposing account existence", async () => {
+    await expect(
+      requestPasswordResetAction(" Customer@Example.COM ")
+    ).resolves.toEqual({
+      success: true,
+    })
+
+    expect(mockAuthResetPassword).toHaveBeenCalledWith(
+      "customer",
+      "emailpass",
+      {
+        identifier: "customer@example.com",
+      }
+    )
+  })
+
+  it("rejects invalid password reset request emails before calling Medusa", async () => {
+    await expect(requestPasswordResetAction("not-an-email")).resolves.toEqual({
+      success: false,
+      error: "Please enter a valid email address.",
+    })
+
+    expect(mockAuthResetPassword).not.toHaveBeenCalled()
+  })
+
+  it("keeps password reset request failures account-enumeration safe", async () => {
+    mockAuthResetPassword.mockRejectedValueOnce(new Error("not found"))
+
+    await expect(
+      requestPasswordResetAction("customer@example.com")
+    ).resolves.toEqual({
+      success: true,
+    })
+
+    expect(mockAuthResetPassword).toHaveBeenCalledWith(
+      "customer",
+      "emailpass",
+      {
+        identifier: "customer@example.com",
+      }
+    )
+  })
+
+  it("updates the customer password with the reset token and normalized email", async () => {
+    await expect(
+      resetPasswordAction(" Customer@Example.COM ", "reset-token", "Password123!")
+    ).resolves.toEqual({
+      success: true,
+    })
+
+    expect(mockAuthUpdateProvider).toHaveBeenCalledWith(
+      "customer",
+      "emailpass",
+      {
+        email: "customer@example.com",
+        password: "Password123!",
+      },
+      "reset-token"
+    )
+  })
+
+  it("rejects weak reset passwords before calling Medusa", async () => {
+    await expect(
+      resetPasswordAction("customer@example.com", "reset-token", "password")
+    ).resolves.toMatchObject({
+      success: false,
+      error: expect.stringContaining("uppercase"),
+    })
+
+    expect(mockAuthUpdateProvider).not.toHaveBeenCalled()
   })
 })

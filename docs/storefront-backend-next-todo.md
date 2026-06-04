@@ -29,120 +29,13 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 - Phase 1 AI-ready realistic products are complete on staging: 29 `ai-*` products, 29 rich Strapi descriptions, 64 public product documents in `stg_product_documents_public`, product/document Meilisearch sync, generated product media, Download Center search, product-page downloads, browser image verification, and assistant product-guidance smoke checks.
 - Langfuse assistant tracing now groups browser chat turns by session, sets assistant trace metadata/name/tags, records sanitized top-level trace input/output for debugging, and records DeepSeek cache-aware token usage for cost tracking.
 - Launch-gate order/account/tracking fixes verified on staging: logged-in order history/detail show order `3DBO-AKK7-5KYYDE` as shipped, public order lookup returns `fulfillment_status: shipped` with tracking label `STG-3DBO-AKK7-5KYYDE`, payment provider payloads are absent from public lookup responses, and Gmail received the shipment notification email.
+- Launch-gate account-address fixes are on staging: the slide-over form was replaced with URL-driven inline add/edit panels, Medusa v2 address fields are represented, Australian address autocomplete/state fields are wired, saves reset and hide the form, and account nav/auth refresh behavior was polished.
+- Launch-gate shipping-rate fixes are on staging: Karrio checkout rate shopping no longer sends stale hardcoded carrier/service filters, carrier-message failures fall back to fixed/manual delivery options instead of raw checkout errors, and known regional Aramex/Karrio `sLACode` lanes are documented for future carrier coverage work.
+- Customer auth launch-gate behavior is decided and covered by the auth follow-up work: email/password signup requires email verification before account access, signup sends a verification email rather than a separate welcome email, same-email guest orders link after first verified email/password login, Google OAuth links same-email guest orders immediately after successful OAuth login, and storefront forgot/reset password entry points plus a customer password-reset email subscriber exist.
 
 ## Remaining TODO (Priority Order)
 
-### Launch-gate security: Public order lookup returned payment provider payloads (Backend)
-
-- Found: `2026-06-03` staging launch gate while verifying `3DBO-AKK7-5KYYDE` tracking lookup.
-- Status: fixed on staging in merge commit `a332235`; staging lookup smoke passed with tracking labels present and payment provider payloads absent.
-- Problem: `/store/orders/lookup` requested and returned `payment_collections.payments.data`, which exposed provider-specific Stripe PaymentIntent details in a customer-facing order lookup response.
-- Acceptance:
-  - Public order lookup does not request payment provider data from the Medusa graph query.
-  - Public order lookup strips payment collection payloads even if upstream graph data unexpectedly includes them.
-  - Order tracking still shows order status, fulfillment status, items, addresses, totals, and tracking labels.
-  - Regression tests fail if payment provider data is requested or returned.
-
-### Launch-gate follow-up: Account signup email confirmation/verification (Storefront + Backend + Email)
-
-- Found: `2026-06-03` staging launch gate during logged-in checkout smoke.
-- Problem: the test account was registered with a plus-address (`bucco.max.org+launchgate...@gmail.com`) instead of the intended base inbox address, so the gate did not clearly prove whether the customer signup flow sends or requires an email confirmation/verification message.
-- Product decision needed: decide whether new customer accounts should require email verification before checkout/account access, or whether signup should only send a welcome/acknowledgement email.
-- Acceptance:
-  - Staging signup smoke uses an inbox address that the gate operator can clearly identify and search.
-  - Expected signup email behavior is documented: verification required, welcome-only, or intentionally no email.
-  - If verification is required, unverified accounts cannot access protected account actions until verified.
-  - If verification is not required, the launch gate explicitly verifies the chosen welcome/acknowledgement behavior.
-
-### Launch-gate bug: Logged-in customer order history misses newly placed orders (Storefront + Backend)
-
-- Found: `2026-06-03` staging launch gate on logged-in order `3DBO-AKK7-5KYYDE` / `order_01KT6NYPSV6D65VVXZ4Z4XAVPP`.
-- Status: fixed on staging in merge commit `c82fb52`; staging re-smoke passed. `/account/orders` lists the logged-in order as shipped and `/account/orders/order_01KT6NYPSV6D65VVXZ4Z4XAVPP` shows `3DBO-AKK7-5KYYDE`, `Shipped`, and tracking `STG-3DBO-AKK7-5KYYDE`.
-- Problem: the order confirmation page and Medusa Admin show the order was placed by the logged-in customer `bucco.max.org+launchgate...@gmail.com`, but `/account/orders` still renders "No Orders Yet" while the same browser session is logged in.
-- Evidence:
-  - Confirmation page showed `My Account` / `Sign Out` and order ref `3DBO-AKK7-5KYYDE`.
-  - Medusa Admin order `#14` linked the customer record `Launch Gate` / `bucco.max.org+launchgate...@gmail.com`.
-  - Storefront account order-history page remained authenticated but did not list the order.
-- Acceptance:
-  - A logged-in checkout order appears in `/account/orders` without manual admin intervention.
-  - The order detail link from account history opens the correct customer-visible order detail.
-  - Guest order tracking still works independently via `/track-order`.
-  - Regression tests cover the customer-order lookup path used by the account page.
-
-### Launch-gate bug: Account address add form silently fails (Storefront + Backend)
-
-- Found: `2026-06-03` staging launch gate on logged-in test account `bucco.max.org+launchgate...@gmail.com`.
-- Status: follow-up in branch `fix/account-address-page-form` replaces the slide-over sheet with URL-driven inline add/edit panels, keeps API errors visible in the form, refreshes the account page after successful saves, and adds focused address form/page regression tests. Full address save/delete re-smoke still needs staging browser confirmation after this branch deploys.
-- Problem: `/account/addresses` opens the add-address form and accepts valid input values, but after `Save Address` the modal closes, no error is shown, and the page still shows "No saved addresses yet".
-- Evidence:
-  - Form values before save included `first_name: "LAUNCH"`, `last_name: "GATE"`, `address_1: "32 KIERNAN ST"`, `city: "GWYNNEVILLE"`, `postal_code: "2500"`, `country_code: "AU"`, and `phone: "0400000000"`.
-  - After save, the dialog closed, no browser console error was captured, and the empty-state remained visible.
-- Acceptance:
-  - Adding a valid address from `/account/addresses` persists it to the logged-in customer.
-  - The newly saved address appears immediately without requiring a full logout/login cycle.
-  - Invalid address saves keep the modal open and show a customer-visible error.
-  - Regression tests cover add-address success and validation failure states.
-
-### Launch-gate bug: Fulfillment shipment notification email is not sent (Backend + Email)
-
-- Found: `2026-06-03` staging launch gate on logged-in order `3DBO-AKK7-5KYYDE` / `order_01KT6NYPSV6D65VVXZ4Z4XAVPP`.
-- Status: fixed on staging in merge commit `c82fb52`; staging shipment-email smoke passed. Re-emitting `shipment.created` for fulfillment `ful_01KT6P4EWRZXKTQ5AJWTZNBQ9M` processed one subscriber and Gmail received "Your 3D Byte Tech order 3DBO-AKK7-5KYYDE has shipped" at 23:55 on `2026-06-03`.
-- Problem: Medusa Admin manual fulfillment was created and then marked shipped with `Send notification` enabled, but Gmail still showed only the original order-confirmation email after the shipment action.
-- Evidence:
-  - Admin order `#14` payment was captured, fulfillment provider was `Manual`, and shipment was saved with tracking number `STG-3DBO-AKK7-5KYYDE`.
-  - Admin activity showed `Items shipped`.
-  - Gmail search for `3DBO-AKK7-5KYYDE` still returned `1-1` result: only "Your 3D Byte Tech order 3DBO-AKK7-5KYYDE is confirmed".
-  - The original order confirmation email tells the customer "We will send another email when the order is on its way", so the current customer promise is not being met.
-- Acceptance:
-  - Marking a fulfillment as shipped with `Send notification` enabled sends a shipment/on-the-way email.
-  - The shipment email includes order reference, shipped item(s), carrier/provider where available, and tracking number/link when present.
-  - Staging email smoke verifies both the order confirmation and shipment notification paths.
-
-### Launch-gate bug: Customer order tracking does not reflect shipped fulfillment (Storefront + Backend)
-
-- Found: `2026-06-03` staging launch gate on order `3DBO-AKK7-5KYYDE` / `order_01KT6NYPSV6D65VVXZ4Z4XAVPP`.
-- Status: fixed on staging in merge commits `c82fb52`, `a332235`, and `d82104c`; staging lookup smoke passed. Public lookup for `3DBO-AKK7-5KYYDE` returns `fulfillment_status: shipped`, tracking label `STG-3DBO-AKK7-5KYYDE`, and no payment provider payloads.
-- Problem: after Medusa Admin marked the manual fulfillment as shipped with tracking number `STG-3DBO-AKK7-5KYYDE`, the customer `/track-order` result still showed `Pending`, `Processing`, and "waiting for fulfillment" with no tracking number.
-- Evidence:
-  - Admin order showed fulfillment `Shipped`, provider `Manual`, tracking `STG-3DBO-AKK7-5KYYDE`, and activity `Items shipped`.
-  - Storefront tracking lookup for `3DBO-AKK7-5KYYDE` plus the checkout email returned the order, but displayed `Fulfillment: Processing` and no tracking data.
-- Acceptance:
-  - Customer order tracking reflects fulfilled/shipped states from Medusa.
-  - Tracking numbers/URLs are shown when present.
-  - Pending, fulfilled, shipped, and delivered states have distinct customer-facing copy.
-  - Regression tests cover order tracking after fulfillment shipment creation.
-
-### Launch-gate bug: Karrio checkout delivery options send stale service filters (Backend + Shipping)
-
-- Found: `2026-06-04` staging checkout gate on the delivery-method step.
-- Status: stale filter bug fixed in PR #147; Karrio carrier-message fallback being fixed in branch `fix/karrio-live-rate-message-fallback`.
-- Problem: Medusa calculated shipping option pricing called Karrio `/v1/proxy/rates` with stale default option filters such as `carrier_ids: ["aramex"]` and `services: ["aramex_priority"]`. Karrio returned `404 not_found`: "No active carrier connection found to process the request" even though live unfiltered rate shopping could return active Aramex AU/NZ rates.
-- Evidence:
-  - Karrio request body included `carrier_ids: ["aramex"]`, `services: ["aramex_priority"]`, parcels, sender, and recipient.
-  - Karrio response body returned `errors[0].code: "not_found"` and `message: "No active carrier connection found to process the request"`.
-  - On `2026-06-04`, Karrio also returned `424` carrier messages for Aramex AU/NZ on a WA lane with `code: "SHIPPING_SDK_INTERNAL_ERROR"` and `message: "'NoneType' object has no attribute 'sLACode'"`.
-  - Direct probe from `oci-app` using the staging Medusa container env confirmed:
-    - NSW unfiltered `/v1/proxy/rates` returns two Aramex rates.
-    - WA unfiltered `/v1/proxy/rates` and WA draft `/v1/shipments` both return the Aramex `sLACode` carrier message.
-    - WA filtered `/v1/proxy/rates` returns the stale-filter `404 not_found`.
-  - Aramex public Fastlabel tooling recognizes `BICKLEY 6076 WA` under the Perth regional franchise and can quote a `PER -> Bickley 6076` sample parcel, so the current WA failure appears to be a Karrio/Aramex connector or account mapping issue rather than obvious Aramex public-network non-coverage.
-  - Follow-up probe on `2026-06-04` confirmed `Kingston TAS 7050`, `Barangaroo NSW 2000`, and `Gnangara WA 6077` return Karrio Aramex rates from the staging server, while `Armidale NSW 2350` returns the same `sLACode` carrier message.
-  - Public Aramex Fastlabel data recognizes `ARMIDALE 2350 NSW`, but the `TAS -> Armidale 2350` quote differs from working lanes: delivery franchise is `Aramex Regional Network`, delivery time is blank, and options are satchel-only national options rather than parcel label options. This likely explains why Karrio's Aramex connector is missing `sLACode` for that lane.
-  - AramexConnect reference repo/wiki (`mindfulsoftware/myFastway.ApiClient`) documents direct OAuth client-credentials auth plus coverage/SLA endpoints such as `/api/addresses/serviced-by` and `/api/location`; those are good candidates for a future direct Aramex coverage probe once AramexConnect API credentials are available.
-  - Existing storefront live-rate route already requests `/v1/proxy/rates` without carrier/service filters and maps the returned live rates to customer-facing delivery options.
-- Real-world practice:
-  - Rate-shop active carrier connections first and select among the returned rates instead of treating Medusa shipping-option defaults as authoritative Karrio service ids.
-  - Use Karrio's selected-rate purchase flow (`/v1/proxy/shipments` with `selected_rate_id`) when creating labels for a rate chosen during checkout.
-  - Treat Karrio carrier/service discovery as configuration/admin tooling: query active Karrio carrier connections/services where possible, then seed or refresh Medusa shipping options from that data instead of relying on long-lived hardcoded service names.
-  - If Karrio continues to hide Aramex-specific diagnostics, add a direct AramexConnect health/coverage adapter for admin diagnostics only, using `/api/addresses/serviced-by` for network coverage and `/api/location` for delivery SLA metadata before relying on rate or label purchase flows.
-- Acceptance:
-  - Checkout delivery options do not fail when static Medusa option data has stale `carrier_id` or `service` values.
-  - Karrio rate calculation requests omit stale `carrier_ids` and `services` filters unless they are known-current Karrio connection/service identifiers.
-  - The selected returned rate still controls customer-facing price, service label, and later label purchase metadata.
-  - Regression tests fail if calculated shipping option pricing sends stale option `carrier_id` or `service` filters to Karrio.
-  - Karrio carrier messages from `/v1/proxy/rates` do not surface as raw checkout errors; checkout falls back to fixed/manual delivery options when available.
-
-### Launch-gate bug: Karrio selected-rate fulfillment mapping (Backend + Shipping)
+### Launch-gate follow-up: Karrio selected-rate fulfillment and carrier coverage (Backend + Shipping)
 
 - Found: `2026-06-03` staging launch gate on order `3DBO-8U96-P49VDH` / `order_01KT6KGS5Q761NQ94XA6QXV52Z`.
 - Problem: checkout successfully quoted and charged the selected Aramex Economy live Karrio rate, but Medusa Admin fulfillment failed when creating the Karrio shipment with `service_unavailable`: "The service you selected is not available for this shipment."
@@ -288,6 +181,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 
 ### Storefront worktree
 
+- Fix the assistant unavailable-product/stale-link launch-gate issue before deeper AI capability work.
 - Implement TODO #4.
 - Implement TODO #5.
 - Implement TODO #6.
@@ -297,6 +191,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 
 ### Backend worktree
 
+- Re-smoke and harden Karrio selected-rate label purchase only when Karrio carrier labels are enabled for launch; manual fulfillment remains the safe fallback.
 - Handle TODO #0 backend/CMS dependency upgrades in a dedicated security PR.
 - Add any indexing/sync hooks needed for TODO #2.
 

@@ -15,6 +15,8 @@ import {
 
 export const dynamic = "force-dynamic"
 
+const CART_COOKIE = "_medusa_cart_id"
+
 async function createGoogleCustomer({
   medusaBaseUrl,
   token,
@@ -62,6 +64,50 @@ async function refreshCustomerToken({
   }
 
   return data.token as string
+}
+
+async function linkGoogleCustomerContext({
+  medusaBaseUrl,
+  token,
+  cookieHeader,
+}: {
+  medusaBaseUrl: string
+  token: string
+  cookieHeader: string | null
+}) {
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    ...getPublishableApiHeaders(),
+  }
+
+  try {
+    await fetch(`${medusaBaseUrl}/store/customers/me/link-guest-orders`, {
+      method: "POST",
+      headers,
+      cache: "no-store",
+    })
+  } catch (error) {
+    console.warn("Failed to link Google customer guest orders:", error)
+  }
+
+  const cartId = getCookieValue(cookieHeader, CART_COOKIE)
+
+  if (!cartId) {
+    return
+  }
+
+  try {
+    await fetch(
+      `${medusaBaseUrl}/store/carts/${encodeURIComponent(cartId)}/customer`,
+      {
+        method: "POST",
+        headers,
+        cache: "no-store",
+      }
+    )
+  } catch (error) {
+    console.warn("Failed to attach cart after Google login:", error)
+  }
 }
 
 export async function GET(request: Request) {
@@ -129,6 +175,11 @@ export async function GET(request: Request) {
           GOOGLE_OAUTH_REDIRECT_COOKIE
         )
       ) || "/account"
+    await linkGoogleCustomerContext({
+      medusaBaseUrl,
+      token: sessionToken,
+      cookieHeader: request.headers.get("cookie"),
+    })
     const response = NextResponse.redirect(
       buildStorefrontRedirect(requestUrl, redirectPath)
     )
