@@ -139,7 +139,7 @@ export function SettingsContent({ customer }: SettingsPageProps) {
                 name="phone"
                 type="tel"
                 defaultValue={customer?.phone || ""}
-                placeholder="+1 (555) 000-0000"
+                placeholder="0400 000 000"
               />
             </div>
 

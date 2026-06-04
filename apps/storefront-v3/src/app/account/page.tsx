@@ -1,16 +1,11 @@
 import { Metadata } from "next"
-import { getSessionAction, updateProfileAction } from "@/app/actions/auth"
+import { getSessionAction } from "@/app/actions/auth"
 import { redirect } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AccountContent } from "./account-content"
 
 export const metadata: Metadata = {
-  title: "Profile",
-  description: "Manage your account profile and settings",
+  title: "Account Overview",
+  description: "View your account overview and manage account activity",
 }
 
 async function getCustomerData() {
@@ -26,7 +21,7 @@ async function getCustomerData() {
   }
 }
 
-export default async function ProfilePage() {
+export default async function AccountPage() {
   const customer = await getCustomerData()
 
   if (!customer) {
@@ -37,10 +32,10 @@ export default async function ProfilePage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">
-          Profile
+          Account Overview
         </h1>
         <p className="text-sm text-muted-foreground mt-2">
-          Manage your account information and preferences
+          Review your account details and jump into common account tasks.
         </p>
       </div>
 
