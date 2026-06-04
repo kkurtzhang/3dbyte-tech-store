@@ -74,7 +74,7 @@ describe("quick-view-product helpers", () => {
     ).toBe("Technical upgrade part for cleaner extrusion and more consistent first layers.")
   })
 
-  it("builds compact detail chips from product and selected variant", () => {
+  it("builds customer-facing detail chips from product type and meaningful variant options", () => {
     expect(
       buildQuickViewDetailChips(
         {
@@ -89,14 +89,14 @@ describe("quick-view-product helpers", () => {
               value: "0.4mm",
               option: { title: "Size" },
             },
+            {
+              option_id: "default",
+              value: "Default",
+              option: { title: "Default" },
+            },
           ],
         } as never
       )
-    ).toEqual([
-      "SKU NOZ-04-BR",
-      "Collection Voron Compatible",
-      "Type Nozzle",
-      "Size 0.4mm",
-    ])
+    ).toEqual(["Type Nozzle", "Size 0.4mm"])
   })
 })

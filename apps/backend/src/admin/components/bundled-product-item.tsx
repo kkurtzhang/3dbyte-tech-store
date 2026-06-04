@@ -3,11 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Button, Input, Label, Select, Text } from "@medusajs/ui";
 import { useEffect, useMemo, useState } from "react";
 import { sdk } from "../lib/sdk";
-
-export type BundledProductDraftItem = {
-  product_id?: string;
-  quantity: number;
-};
+import type {
+  BundledProductDraftItem,
+  BundledProductDraftSelectedProduct,
+} from "../lib/bundled-product-drafts";
 
 type BundledProductItemProps = {
   index: number;
@@ -45,16 +44,29 @@ const BundledProductItem = ({
   });
 
   const availableProducts = useMemo(() => {
-    const mergedProducts = [...products];
+    const mergedProducts: BundledProductDraftSelectedProduct[] =
+      item.selected_product ? [item.selected_product] : [];
+
+    products.forEach((product) => {
+      if (!mergedProducts.some((currentProduct) => currentProduct.id === product.id)) {
+        mergedProducts.push({
+          id: product.id,
+          title: product.title,
+        });
+      }
+    });
 
     (data?.products ?? []).forEach((product) => {
       if (!mergedProducts.some((currentProduct) => currentProduct.id === product.id)) {
-        mergedProducts.push(product);
+        mergedProducts.push({
+          id: product.id,
+          title: product.title,
+        });
       }
     });
 
     return mergedProducts;
-  }, [data?.products, products]);
+  }, [data?.products, item.selected_product, products]);
 
   const hasNextPage = data ? searchPage * searchLimit + data.products.length < data.count : false;
   const selectedProduct = availableProducts.find((product) => product.id === item.product_id);
@@ -95,12 +107,17 @@ const BundledProductItem = ({
           <Label htmlFor={`bundle-product-${index}`}>Product</Label>
           <Select
             value={item.product_id}
-            onValueChange={(value) =>
+            onValueChange={(value) => {
+              const nextSelectedProduct = availableProducts.find(
+                (product) => product.id === value,
+              );
+
               onChange(index, {
                 ...item,
                 product_id: value,
-              })
-            }
+                selected_product: nextSelectedProduct,
+              });
+            }}
           >
             <Select.Trigger id={`bundle-product-${index}`}>
               <Select.Value placeholder="Select a product" />

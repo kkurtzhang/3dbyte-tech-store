@@ -216,6 +216,42 @@ describe("renderOrderPlacedEmail", () => {
     expect(rendered.text).toContain("Total (AUD): A$33.96");
   });
 
+  it("hides Medusa default variant labels from customer-facing email item text", async () => {
+    const rendered = await renderOrderPlacedEmail({
+      order: {
+        ...order,
+        items: [
+          {
+            id: "item_default_variant",
+            product_title: "Polymaker PLA Pro 1.75mm 1kg",
+            quantity: 1,
+            subtotal: 29,
+            unit_price: 29,
+            variant_title: "Default Variant",
+          },
+          {
+            id: "item_real_variant",
+            product_title: "Polymaker PETG 1.75mm 1kg",
+            quantity: 1,
+            subtotal: 31,
+            unit_price: 31,
+            variant_title: "Black",
+          },
+        ],
+      },
+      store: { name: "3D Byte Tech" },
+    });
+
+    expect(rendered.text).toContain(
+      "1 x Polymaker PLA Pro 1.75mm 1kg - A$29.00",
+    );
+    expect(rendered.text).toContain(
+      "1 x Polymaker PETG 1.75mm 1kg (Black) - A$31.00",
+    );
+    expect(rendered.text).not.toContain("(Default Variant)");
+    expect(rendered.html).not.toContain("Default Variant");
+  });
+
   it("renders Medusa BigNumber-like totals with compact quantity and price text", async () => {
     const rendered = await renderOrderPlacedEmail({
       order: {

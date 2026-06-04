@@ -9,21 +9,26 @@ import {
   Text,
   toast,
 } from "@medusajs/ui";
-import { useState } from "react";
-import BundledProductItem, {
-  BundledProductDraftItem,
-} from "./bundled-product-item";
+import { useRef, useState } from "react";
+import BundledProductItem from "./bundled-product-item";
+import {
+  createBundledProductDraftItem,
+  getBundledProductDraftItemKey,
+  type BundledProductDraftItem,
+} from "../lib/bundled-product-drafts";
 import { useCreateBundledProduct } from "../hooks/bundled-products";
 
-const INITIAL_ITEM: BundledProductDraftItem = {
-  product_id: undefined,
-  quantity: 1,
-};
-
 const CreateBundledProduct = () => {
+  const nextDraftItemSequence = useRef(0);
+  const createDraftItem = () =>
+    createBundledProductDraftItem(
+      `bundle-item-${nextDraftItemSequence.current++}`,
+    );
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
-  const [items, setItems] = useState<BundledProductDraftItem[]>([INITIAL_ITEM]);
+  const [items, setItems] = useState<BundledProductDraftItem[]>(() => [
+    createDraftItem(),
+  ]);
 
   const queryClient = useQueryClient();
 
@@ -50,7 +55,7 @@ const CreateBundledProduct = () => {
   const resetForm = () => {
     setOpen(false);
     setTitle("");
-    setItems([INITIAL_ITEM]);
+    setItems([createDraftItem()]);
     queryClient.removeQueries({
       queryKey: ["bundled-products", "products"],
     });
@@ -134,9 +139,9 @@ const CreateBundledProduct = () => {
             </div>
           </div>
         </FocusModal.Header>
-        <FocusModal.Body>
-          <div className="flex flex-1 flex-col items-center overflow-y-auto">
-            <div className="mx-auto flex w-full max-w-[720px] flex-col gap-y-8 px-2 py-16">
+        <FocusModal.Body className="flex min-h-0 flex-1 overflow-hidden">
+          <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto">
+            <div className="mx-auto flex w-full max-w-[720px] flex-col gap-y-8 px-2 py-12 pb-24">
               <div className="flex flex-col gap-2">
                 <Label htmlFor="bundle-title">Bundle Title</Label>
                 <Input
@@ -160,7 +165,7 @@ const CreateBundledProduct = () => {
                     onClick={() =>
                       setItems((currentItems) => [
                         ...currentItems,
-                        { ...INITIAL_ITEM },
+                        createDraftItem(),
                       ])
                     }
                   >
@@ -170,7 +175,7 @@ const CreateBundledProduct = () => {
 
                 {items.map((item, index) => (
                   <BundledProductItem
-                    key={`${index}-${item.product_id ?? "empty"}`}
+                    key={getBundledProductDraftItemKey(item, index)}
                     index={index}
                     item={item}
                     products={[] as HttpTypes.AdminProduct[]}

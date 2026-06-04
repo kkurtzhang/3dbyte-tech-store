@@ -144,6 +144,19 @@ function normalizeText(value: string | null | undefined) {
   return value?.replace(/\s+/g, " ").trim() ?? ""
 }
 
+function isDefaultLikeText(value: string | null | undefined) {
+  const normalizedValue = normalizeText(value).toLowerCase()
+
+  return (
+    !normalizedValue ||
+    normalizedValue === "default" ||
+    normalizedValue === "default title" ||
+    normalizedValue === "default variant" ||
+    normalizedValue === "standard" ||
+    normalizedValue.startsWith("default ")
+  )
+}
+
 export function buildQuickViewSummary(
   product: Pick<MedusaProduct, "description">
 ) {
@@ -161,13 +174,18 @@ export function buildQuickViewDetailChips(
   selectedVariant?: Pick<MedusaProductVariant, "sku" | "options"> | null
 ) {
   const details = [
-    selectedVariant?.sku ? `SKU ${selectedVariant.sku}` : undefined,
-    product.collection?.title ? `Collection ${product.collection.title}` : undefined,
-    product.type?.value ? `Type ${product.type.value}` : undefined,
+    product.type?.value && !isDefaultLikeText(product.type.value)
+      ? `Type ${product.type.value}`
+      : undefined,
     ...(selectedVariant?.options?.map((option) => {
       const title = normalizeText(option.option?.title ?? option.option_id ?? "")
       const value = normalizeText(option.value)
-      return title && value ? `${title} ${value}` : value || undefined
+
+      if (isDefaultLikeText(value)) {
+        return undefined
+      }
+
+      return title && !isDefaultLikeText(title) ? `${title} ${value}` : value
     }) ?? []),
   ].filter((value): value is string => Boolean(value))
 
