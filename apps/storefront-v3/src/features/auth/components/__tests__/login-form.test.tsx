@@ -37,6 +37,11 @@ describe("LoginForm", () => {
   it("refreshes server-rendered UI and leaves the sign-in page after standalone login", async () => {
     render(<LoginForm />)
 
+    expect(screen.getByRole("link", { name: /forgot password/i })).toHaveAttribute(
+      "href",
+      "/forgot-password"
+    )
+
     fireEvent.change(screen.getByLabelText("Email"), {
       target: { value: "customer@example.com" },
     })

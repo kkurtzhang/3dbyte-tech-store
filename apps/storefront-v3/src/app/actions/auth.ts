@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
+import { z } from "zod"
 
 import {
   CUSTOMER_TOKEN_COOKIE,
@@ -15,6 +16,11 @@ const CART_COOKIE = "_medusa_cart_id"
 const EMAIL_CONFIRMATION_REQUIRED_MESSAGE =
   "Please confirm your email before signing in. We sent a new confirmation link."
 const EXISTING_IDENTITY_MESSAGE = "Identity with email already exists"
+const emailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .email("Please enter a valid email address.")
 
 type CustomerMetadata = Record<string, unknown> | null | undefined
 
@@ -25,6 +31,24 @@ type CustomerWithMetadata = AuthUser & {
 function getAuthHeaders(token: string) {
   return {
     Authorization: `Bearer ${token}`,
+  }
+}
+
+function parseEmail(value: string) {
+  const parsed = emailSchema.safeParse(value)
+
+  if (!parsed.success) {
+    return {
+      success: false as const,
+      error:
+        parsed.error.issues[0]?.message ||
+        "Please enter a valid email address.",
+    }
+  }
+
+  return {
+    success: true as const,
+    email: parsed.data,
   }
 }
 
@@ -244,6 +268,81 @@ export async function registerAction(
   } catch (error: any) {
     console.error("Registration error:", error)
     return { success: false, error: error.message || "Registration failed" }
+  }
+}
+
+export async function requestPasswordResetAction(email: string) {
+  const parsedEmail = parseEmail(email)
+
+  if (!parsedEmail.success) {
+    return {
+      success: false,
+      error: parsedEmail.error,
+    }
+  }
+
+  try {
+    await sdk.auth.resetPassword("customer", "emailpass", {
+      identifier: parsedEmail.email,
+    })
+
+    return { success: true }
+  } catch (error: unknown) {
+    console.error("Password reset request error:", error)
+    return { success: true }
+  }
+}
+
+export async function resetPasswordAction(
+  email: string,
+  token: string,
+  password: string
+) {
+  const parsedEmail = parseEmail(email)
+
+  if (!parsedEmail.success) {
+    return {
+      success: false,
+      error: parsedEmail.error,
+    }
+  }
+
+  const resetToken = token.trim()
+
+  if (!resetToken) {
+    return {
+      success: false,
+      error: "Reset link is missing a token.",
+    }
+  }
+
+  const passwordError = validatePasswordStrength(password)
+
+  if (passwordError) {
+    return {
+      success: false,
+      error: passwordError,
+    }
+  }
+
+  try {
+    await sdk.auth.updateProvider(
+      "customer",
+      "emailpass",
+      {
+        email: parsedEmail.email,
+        password,
+      },
+      resetToken
+    )
+
+    return { success: true }
+  } catch (error: unknown) {
+    console.error("Password reset error:", error)
+    return {
+      success: false,
+      error: "Unable to reset password. Request a new reset link and try again.",
+    }
   }
 }
 
