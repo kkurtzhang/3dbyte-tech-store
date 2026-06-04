@@ -147,6 +147,45 @@ describe("auth actions", () => {
     expect(mockCookieSet).not.toHaveBeenCalled()
   })
 
+  it("uses an existing identity login token when registering a customer email that already has an auth identity", async () => {
+    const existingIdentityError = new Error("Identity with email already exists")
+    Object.assign(existingIdentityError, { statusText: "Unauthorized" })
+    mockAuthRegister.mockRejectedValueOnce(existingIdentityError)
+
+    await expect(
+      registerAction("guest@example.com", "Password123!", "Guest", "Customer")
+    ).resolves.toEqual({
+      success: true,
+      requiresEmailVerification: true,
+    })
+
+    expect(mockAuthLogin).toHaveBeenCalledWith("customer", "emailpass", {
+      email: "guest@example.com",
+      password: "Password123!",
+    })
+    expect(mockCustomerCreate).toHaveBeenCalledWith(
+      {
+        email: "guest@example.com",
+        first_name: "Guest",
+        last_name: "Customer",
+      },
+      {},
+      {
+        Authorization: "Bearer login-token",
+      }
+    )
+    expect(mockClientFetch).toHaveBeenCalledWith(
+      "/store/customers/email-verifications",
+      expect.objectContaining({
+        method: "POST",
+        headers: {
+          Authorization: "Bearer login-token",
+        },
+      })
+    )
+    expect(mockCookieSet).not.toHaveBeenCalled()
+  })
+
   it("rejects weak registration passwords before calling Medusa", async () => {
     await expect(
       registerAction("test@example.com", "password", "E2E", "Customer")

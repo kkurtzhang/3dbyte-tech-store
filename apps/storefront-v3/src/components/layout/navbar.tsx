@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   ChevronDown,
   Heart,
@@ -48,12 +48,13 @@ export function Navbar() {
   const [accountMenuOpen, setAccountMenuOpen] = React.useState(false);
   const [sessionUser, setSessionUser] = React.useState<AuthUser | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
   const { wishlist } = useWishlist();
   const accountLabel = getCustomerDisplayName(sessionUser);
 
   React.useEffect(() => {
     checkSession();
-  }, []);
+  }, [pathname]);
 
   async function checkSession() {
     try {

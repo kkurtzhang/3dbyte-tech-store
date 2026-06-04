@@ -299,6 +299,7 @@ function DeleteAccountButton() {
       if (result.success) {
         setDeleteMessage({ type: "success", text: "Account deleted successfully" })
         router.push("/")
+        router.refresh()
       } else {
         setDeleteMessage({ type: "error", text: result.error || "Failed to delete account" })
         setIsDeleting(false)
