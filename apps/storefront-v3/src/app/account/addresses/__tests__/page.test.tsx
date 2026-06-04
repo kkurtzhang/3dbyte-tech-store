@@ -33,11 +33,12 @@ jest.mock("@/components/account/address-form", () => ({
     address,
     title,
   }: {
-    address?: { id: string }
+    address?: { address_name?: string; id: string }
     title?: string
   }) => (
     <div
       aria-label={address ? "Edit address" : "Add address"}
+      data-address-name={address?.address_name || ""}
       data-address-id={address?.id || ""}
       role="form"
     >
@@ -72,15 +73,17 @@ jest.mock("lucide-react", () => ({
 const addresses = [
   {
     id: "addr_1",
+    address_name: "Workshop",
     first_name: "Launch",
     last_name: "Gate",
+    company: "3D Byte Tech",
     address_1: "32 Kiernan St",
     city: "Gwynneville",
     province: "NSW",
     country_code: "au",
     postal_code: "2500",
     phone: "0400000000",
-    is_default: true,
+    is_default_shipping: true,
   },
   {
     id: "addr_2",
@@ -116,14 +119,18 @@ describe("account addresses page", () => {
   })
 
   it("opens edit in place for the selected address", async () => {
-    render(await AddressesPage({ searchParams: { edit: "addr_2" } }))
+    render(await AddressesPage({ searchParams: { edit: "addr_1" } }))
 
     expect(screen.getByRole("form", { name: /edit address/i })).toHaveAttribute(
       "data-address-id",
-      "addr_2",
+      "addr_1",
     )
-    expect(screen.getByText("Edit Backup Address")).toBeInTheDocument()
-    expect(screen.getByText(/32 Kiernan St/i)).toBeInTheDocument()
+    expect(screen.getByRole("form", { name: /edit address/i })).toHaveAttribute(
+      "data-address-name",
+      "Workshop",
+    )
+    expect(screen.getByText("Edit Workshop")).toBeInTheDocument()
+    expect(screen.getByText(/12 Homestead Pl/i)).toBeInTheDocument()
     expect(screen.getByText(/Gwynneville, NSW 2500/i)).toBeInTheDocument()
   })
 
@@ -135,6 +142,10 @@ describe("account addresses page", () => {
       "data-default-open",
       "false",
     )
+    expect(screen.getByText("Workshop")).toBeInTheDocument()
+    expect(screen.getByText(/Launch Gate/i)).toBeInTheDocument()
+    expect(screen.getByText(/3D Byte Tech/i)).toBeInTheDocument()
+    expect(screen.getByText("Default Shipping")).toBeInTheDocument()
     expect(screen.getByText(/32 Kiernan St/i)).toBeInTheDocument()
     expect(screen.getByText(/12 Homestead Pl/i)).toBeInTheDocument()
     expect(screen.getAllByRole("link", { name: /edit/i })[0]).toHaveAttribute(

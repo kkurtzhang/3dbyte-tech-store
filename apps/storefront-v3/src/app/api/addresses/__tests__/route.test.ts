@@ -45,8 +45,10 @@ const createRequest = (url: string, body: Record<string, unknown>) =>
   }) as never
 
 const addressPayload = {
+  address_name: 'Workshop',
   first_name: 'Launch',
   last_name: 'Gate',
+  company: '3D Byte Tech',
   address_1: '32 Kiernan St',
   city: 'Gwynneville',
   province: 'NSW',
