@@ -2,12 +2,25 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import React from "react"
 
 import { AddressForm } from "../address-form"
+import { AddressFormPanel } from "../address-form-panel"
 
 const mockFetch = jest.fn()
 const mockRefresh = jest.fn()
 const mockPush = jest.fn()
 
 global.fetch = mockFetch as unknown as typeof fetch
+
+const autocompleteAddress = {
+  id: "addr_auto_1",
+  full_address: "12 Homestead Place, Kingston, TAS, 7050",
+  unit: "",
+  number: "12",
+  street: "Homestead Place",
+  suburb: "Kingston",
+  state: "TAS",
+  postcode: "7050",
+  country: "AU",
+}
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -25,6 +38,33 @@ jest.mock("next/link", () => ({
     children: React.ReactNode
     href: string
   }) => <a href={href}>{children}</a>,
+}))
+
+jest.mock("@/features/checkout/components/address-autocomplete", () => ({
+  AddressAutocomplete: ({
+    defaultValue,
+    id,
+    onSelect,
+    onValueChange,
+  }: {
+    defaultValue?: string
+    id?: string
+    onSelect: (address: typeof autocompleteAddress) => void
+    onValueChange?: (value: string) => void
+  }) => (
+    <div>
+      <input
+        aria-label="Address"
+        id={id}
+        onChange={(event) => onValueChange?.(event.target.value)}
+        role="combobox"
+        defaultValue={defaultValue}
+      />
+      <button type="button" onClick={() => onSelect(autocompleteAddress)}>
+        Use Homestead suggestion
+      </button>
+    </div>
+  ),
 }))
 
 jest.mock("@/components/ui/button", () => ({
@@ -77,7 +117,25 @@ describe("AddressForm", () => {
       "href",
       "/account/addresses",
     )
+    expect(screen.getByRole("combobox", { name: /address/i })).toHaveValue("")
+    expect(screen.getByLabelText("State")).toBeInTheDocument()
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+  })
+
+  it("keeps the add-address panel collapsed until the customer expands it", () => {
+    render(<AddressFormPanel />)
+
+    expect(screen.queryByRole("form", { name: /add address/i })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole("button", { name: /add address/i }))
+
+    expect(screen.getByRole("form", { name: /add address/i })).toBeInTheDocument()
+  })
+
+  it("can render the add-address panel expanded from a route state", () => {
+    render(<AddressFormPanel defaultOpen />)
+
+    expect(screen.getByRole("form", { name: /add address/i })).toBeInTheDocument()
   })
 
   it("submits new addresses to the authenticated JSON API route and refreshes the page", async () => {
@@ -94,7 +152,7 @@ describe("AddressForm", () => {
     fireEvent.change(screen.getByLabelText("Last Name"), {
       target: { value: "Gate" },
     })
-    fireEvent.change(screen.getByLabelText("Address Line 1"), {
+    fireEvent.change(screen.getByRole("combobox", { name: /address/i }), {
       target: { value: "32 Kiernan St" },
     })
     fireEvent.change(screen.getByLabelText("City"), {
@@ -102,6 +160,9 @@ describe("AddressForm", () => {
     })
     fireEvent.change(screen.getByLabelText("Postal Code"), {
       target: { value: "2500" },
+    })
+    fireEvent.change(screen.getByLabelText("State"), {
+      target: { value: "NSW" },
     })
     fireEvent.change(screen.getByLabelText("Country Code"), {
       target: { value: "AU" },
@@ -114,11 +175,26 @@ describe("AddressForm", () => {
         "/api/addresses?action=add",
         expect.objectContaining({
           method: "POST",
+          body: expect.stringContaining('"province":"NSW"'),
         }),
       )
     })
     expect(mockRefresh).toHaveBeenCalled()
     expect(mockPush).toHaveBeenCalledWith("/account/addresses")
+  })
+
+  it("fills city, state, postcode, and country from checkout-style address autocomplete", () => {
+    render(<AddressForm />)
+
+    fireEvent.click(screen.getByRole("button", { name: /use homestead suggestion/i }))
+
+    expect(screen.getByRole("combobox", { name: /address/i })).toHaveValue(
+      "12 Homestead Place",
+    )
+    expect(screen.getByLabelText("City")).toHaveValue("Kingston")
+    expect(screen.getByLabelText("State")).toHaveValue("TAS")
+    expect(screen.getByLabelText("Postal Code")).toHaveValue("7050")
+    expect(screen.getByLabelText("Country Code")).toHaveValue("AU")
   })
 
   it("submits edited addresses to the update route", async () => {
@@ -135,6 +211,7 @@ describe("AddressForm", () => {
           last_name: "Gate",
           address_1: "32 Kiernan St",
           city: "Gwynneville",
+          province: "NSW",
           country_code: "au",
           postal_code: "2500",
         }}

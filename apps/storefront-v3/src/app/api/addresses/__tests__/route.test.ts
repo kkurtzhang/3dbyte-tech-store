@@ -49,6 +49,7 @@ const addressPayload = {
   last_name: 'Gate',
   address_1: '32 Kiernan St',
   city: 'Gwynneville',
+  province: 'NSW',
   country_code: 'AU',
   postal_code: '2500',
 }
