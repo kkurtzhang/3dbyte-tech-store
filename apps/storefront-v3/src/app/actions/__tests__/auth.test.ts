@@ -42,7 +42,12 @@ jest.mock("next/navigation", () => ({
   redirect: jest.fn(),
 }))
 
-import { getSessionAction, loginAction, registerAction } from "../auth"
+import {
+  deleteAccountAction,
+  getSessionAction,
+  loginAction,
+  registerAction,
+} from "../auth"
 
 describe("auth actions", () => {
   beforeEach(() => {
@@ -195,5 +200,22 @@ describe("auth actions", () => {
         Authorization: "Bearer stored-token",
       }
     )
+  })
+
+  it("deletes the current customer account through the backend and clears session cookies", async () => {
+    await expect(deleteAccountAction()).resolves.toEqual({ success: true })
+
+    expect(mockClientFetch).toHaveBeenCalledWith(
+      "/store/customers/me",
+      expect.objectContaining({
+        method: "DELETE",
+        headers: {
+          Authorization: "Bearer stored-token",
+        },
+      })
+    )
+    expect(mockCookieDelete).toHaveBeenCalledWith("_medusa_authenticated")
+    expect(mockCookieDelete).toHaveBeenCalledWith("_medusa_customer_token")
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/", "layout")
   })
 })
