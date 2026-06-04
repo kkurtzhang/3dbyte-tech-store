@@ -1,0 +1,122 @@
+import { render, screen } from "@testing-library/react"
+import React from "react"
+
+import AddressesPage from "../page"
+
+const mockGetSessionAction = jest.fn()
+const mockGetAddressesAction = jest.fn()
+
+jest.mock("@/app/actions/auth", () => ({
+  deleteAddressAction: jest.fn(),
+  getAddressesAction: () => mockGetAddressesAction(),
+  getSessionAction: () => mockGetSessionAction(),
+  setDefaultAddressAction: jest.fn(),
+}))
+
+jest.mock("next/navigation", () => ({
+  redirect: jest.fn(),
+}))
+
+jest.mock("next/link", () => ({
+  __esModule: true,
+  default: ({
+    children,
+    href,
+  }: {
+    children: React.ReactNode
+    href: string
+  }) => <a href={href}>{children}</a>,
+}))
+
+jest.mock("@/components/account/address-form", () => ({
+  AddressForm: ({
+    address,
+    title,
+  }: {
+    address?: { id: string }
+    title?: string
+  }) => (
+    <div
+      aria-label={address ? "Edit address" : "Add address"}
+      data-address-id={address?.id || ""}
+      role="form"
+    >
+      {title}
+    </div>
+  ),
+}))
+
+jest.mock("lucide-react", () => ({
+  Home: () => <span />,
+  Pencil: () => <span />,
+  Plus: () => <span />,
+  Trash2: () => <span />,
+}))
+
+const addresses = [
+  {
+    id: "addr_1",
+    first_name: "Launch",
+    last_name: "Gate",
+    address_1: "32 Kiernan St",
+    city: "Gwynneville",
+    country_code: "au",
+    postal_code: "2500",
+    phone: "0400000000",
+    is_default: true,
+  },
+  {
+    id: "addr_2",
+    first_name: "Backup",
+    last_name: "Address",
+    address_1: "12 Homestead Pl",
+    city: "Kingston",
+    country_code: "au",
+    postal_code: "7050",
+    is_default: false,
+  },
+]
+
+describe("account addresses page", () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockGetSessionAction.mockResolvedValue({ success: true })
+    mockGetAddressesAction.mockResolvedValue({ success: true, addresses })
+  })
+
+  it("opens a normal inline add form from the mode query", async () => {
+    render(await AddressesPage({ searchParams: { mode: "add" } }))
+
+    expect(
+      screen.getByRole("form", { name: /add address/i }),
+    ).toBeInTheDocument()
+    expect(screen.getByText("Add new address")).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: /add address/i })).toHaveAttribute(
+      "href",
+      "/account/addresses?mode=add#address-form",
+    )
+  })
+
+  it("opens edit in place for the selected address", async () => {
+    render(await AddressesPage({ searchParams: { edit: "addr_2" } }))
+
+    expect(screen.getByRole("form", { name: /edit address/i })).toHaveAttribute(
+      "data-address-id",
+      "addr_2",
+    )
+    expect(screen.getByText("Edit Backup Address")).toBeInTheDocument()
+    expect(screen.getByText(/32 Kiernan St/i)).toBeInTheDocument()
+  })
+
+  it("keeps the address list read-only until add or edit is selected", async () => {
+    render(await AddressesPage())
+
+    expect(screen.queryByRole("form")).not.toBeInTheDocument()
+    expect(screen.getByText(/32 Kiernan St/i)).toBeInTheDocument()
+    expect(screen.getByText(/12 Homestead Pl/i)).toBeInTheDocument()
+    expect(screen.getAllByRole("link", { name: /edit/i })[0]).toHaveAttribute(
+      "href",
+      "/account/addresses?edit=addr_1#address-form",
+    )
+  })
+})
