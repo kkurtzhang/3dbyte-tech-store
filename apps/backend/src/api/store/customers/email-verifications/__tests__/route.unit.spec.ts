@@ -96,6 +96,34 @@ describe("store customer email verification route", () => {
     expect(res.json).toHaveBeenCalledWith({ sent: true });
   });
 
+  it("does not downgrade an already verified customer when resend is requested", async () => {
+    const customerModule = {
+      retrieveCustomer: jest.fn().mockResolvedValue({
+        id: "cus_123",
+        email: "ava@example.com",
+        metadata: {
+          email_verification_status: "verified",
+          email_verified_at: "2026-06-04T00:00:00.000Z",
+        },
+      }),
+      updateCustomers: jest.fn(),
+    };
+    const notificationModule = {
+      createNotifications: jest.fn(),
+    };
+    const req = createRequest({ customerModule, notificationModule });
+    const res = createResponse();
+
+    await POST(req as never, res as never);
+
+    expect(customerModule.updateCustomers).not.toHaveBeenCalled();
+    expect(notificationModule.createNotifications).not.toHaveBeenCalled();
+    expect(res.json).toHaveBeenCalledWith({
+      sent: false,
+      already_verified: true,
+    });
+  });
+
   it("confirms a valid token and redirects customers to sign in", async () => {
     const {
       createCustomerEmailVerificationToken,

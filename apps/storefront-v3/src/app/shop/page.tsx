@@ -195,6 +195,10 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     originalPrice: product.original_price,
     salePrice: product.on_sale ? product.price : undefined,
     isBundle: product.is_bundle,
+    isPreorder: product.is_preorder,
+    preorderAvailableDate: product.preorder_available_date,
+    bundleItemCount: product.bundle_item_count,
+    bundleItemTitles: product.bundle_item_titles,
     availableInBundlesCount: product.available_in_bundles_count,
     discountPercentage:
       product.discount_percentage,

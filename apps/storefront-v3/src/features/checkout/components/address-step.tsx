@@ -72,6 +72,20 @@ function getAddressLabel(address: CustomerAddress) {
   return address.address_name || recipientName || "Saved Address"
 }
 
+function customerAddressToCheckoutFields(address: CustomerAddress) {
+  return {
+    first_name: address.first_name || "",
+    last_name: address.last_name || "",
+    address_1: address.address_1 || "",
+    address_2: address.address_2 || "",
+    city: address.city || "",
+    province: address.province || "",
+    country_code: address.country_code || "au",
+    postal_code: address.postal_code || "",
+    phone: address.phone || "",
+  }
+}
+
 export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(true)
@@ -135,6 +149,10 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
         if (defaultAddress) {
           setSelectedAddressId(defaultAddress.id)
           setUseSavedAddress(true)
+          applySavedAddressToForm(
+            defaultAddress,
+            session.user.email || defaultValues?.email || ""
+          )
         }
       }
     } catch (error) {
@@ -147,6 +165,22 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
   const handleAddressSelect = (addressId: string) => {
     setSelectedAddressId(addressId)
     setUseSavedAddress(true)
+    const selectedAddress = savedAddresses.find((address) => address.id === addressId)
+
+    if (selectedAddress) {
+      applySavedAddressToForm(selectedAddress)
+    }
+  }
+
+  const applySavedAddressToForm = (
+    address: CustomerAddress,
+    email = watch("email") || authUser?.email || defaultValues?.email || ""
+  ) => {
+    reset({
+      email,
+      ...customerAddressToCheckoutFields(address),
+      billing_address: undefined,
+    })
   }
 
   const handleAutocompleteValueChange = (value: string) => {
@@ -286,26 +320,23 @@ export function AddressStep({ defaultValues, onComplete }: AddressStepProps) {
   const onSubmit = async (data: AddressFormData) => {
     setIsSubmitting(true)
     try {
-      // If using a saved address, populate form data from it
-      if (useSavedAddress && selectedAddressId) {
-        const selectedAddress = savedAddresses.find((addr) => addr.id === selectedAddressId)
-        if (selectedAddress) {
-          data.first_name = selectedAddress.first_name
-          data.last_name = selectedAddress.last_name
-          data.address_1 = selectedAddress.address_1
-          data.address_2 = selectedAddress.address_2 || ""
-          data.city = selectedAddress.city
-          data.province = selectedAddress.province || ""
-          data.country_code = selectedAddress.country_code
-          data.postal_code = selectedAddress.postal_code
-          data.phone = selectedAddress.phone || ""
-        }
-      }
-      await onComplete({
-        ...data,
+      const selectedAddress =
+        useSavedAddress && selectedAddressId
+          ? savedAddresses.find((addr) => addr.id === selectedAddressId)
+          : null
+      const shippingAddressData = selectedAddress
+        ? {
+            ...data,
+            ...customerAddressToCheckoutFields(selectedAddress),
+          }
+        : data
+      const checkoutAddressData = {
+        ...shippingAddressData,
         billing_address: billingSameAsShipping ? undefined : data.billing_address,
-      })
-      await joinEmailListIfRequested(data.email)
+      }
+
+      await onComplete(checkoutAddressData)
+      await joinEmailListIfRequested(checkoutAddressData.email)
     } catch (error) {
       console.error(error)
     } finally {

@@ -38,6 +38,12 @@ interface Product {
   currency_code: string
   original_price?: number
   on_sale: boolean
+  is_bundle?: boolean
+  is_preorder?: boolean
+  preorder_available_date?: string
+  bundle_item_count?: number
+  bundle_item_titles?: string[]
+  available_in_bundles_count?: number
   variants?: Array<{
     id: string
     sku?: string
@@ -140,6 +146,12 @@ function ProductGrid({ products, error }: { products: Product[]; error?: boolean
             thumbnail={product.thumbnail || ""}
             price={displayPrice}
             originalPrice={product.original_price}
+            isBundle={product.is_bundle}
+            isPreorder={product.is_preorder}
+            preorderAvailableDate={product.preorder_available_date}
+            bundleItemCount={product.bundle_item_count}
+            bundleItemTitles={product.bundle_item_titles}
+            availableInBundlesCount={product.available_in_bundles_count}
           />
         )
       })}

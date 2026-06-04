@@ -83,6 +83,8 @@ export interface ProductHit {
   on_sale: boolean
   in_stock: boolean
   inventory_quantity: number
+  is_preorder?: boolean
+  preorder_available_date?: string
   category_ids: string[]
   categories: string[]
   brand?: {
@@ -92,12 +94,23 @@ export interface ProductHit {
     logo?: string
   }
   is_bundle?: boolean
+  bundle_item_count?: number
+  bundle_item_titles?: string[]
   available_in_bundles_count?: number
   available_in_bundles?: BundleLink[]
   variants: Array<{
     id: string
     sku?: string
     title: string
+    preorder_variant?: {
+      id?: string
+      available_date: string
+      status: "enabled" | "disabled"
+      prices?: Array<{
+        amount: number
+        currency_code: string
+      }>
+    }
   }>
   // Dynamic option keys (options_colour, options_size, etc.)
   [key: `options_${string}`]: string[] | undefined
@@ -392,6 +405,10 @@ export async function searchProducts(
           original_price_aud?: number
           original_price_nzd?: number
           is_bundle?: boolean
+          is_preorder?: boolean
+          preorder_available_date?: string
+          bundle_item_count?: number
+          bundle_item_titles?: string[]
           available_in_bundles_count?: number
         }
       const originalPriceAud = hitWithOriginalPrice.original_price_aud
@@ -428,10 +445,24 @@ export async function searchProducts(
         on_sale: hit.on_sale,
         in_stock: hit.in_stock,
         inventory_quantity: hit.inventory_quantity,
+        is_preorder: hitWithOriginalPrice.is_preorder === true,
+        preorder_available_date:
+          typeof hitWithOriginalPrice.preorder_available_date === "string"
+            ? hitWithOriginalPrice.preorder_available_date
+            : undefined,
         category_ids: hit.category_ids,
         categories: hit.categories,
         brand: hit.brand,
         is_bundle: hitWithOriginalPrice.is_bundle === true,
+        bundle_item_count:
+          typeof hitWithOriginalPrice.bundle_item_count === "number"
+            ? hitWithOriginalPrice.bundle_item_count
+            : 0,
+        bundle_item_titles: Array.isArray(hitWithOriginalPrice.bundle_item_titles)
+          ? hitWithOriginalPrice.bundle_item_titles.filter(
+              (title): title is string => typeof title === "string" && Boolean(title.trim())
+            )
+          : [],
         available_in_bundles_count:
           typeof hitWithOriginalPrice.available_in_bundles_count === "number"
             ? hitWithOriginalPrice.available_in_bundles_count
@@ -512,10 +543,17 @@ async function searchWithDiscountFilter(
             (variant?.inventory_quantity ?? 0) > 0 ||
             !variant?.manage_inventory,
           inventory_quantity: variant?.inventory_quantity ?? 0,
+          is_preorder: Boolean(variant?.preorder_variant),
+          preorder_available_date: variant?.preorder_variant?.available_date,
           category_ids: p.categories?.map((c: any) => c.id) ?? [],
           categories: p.categories?.map((c: any) => c.name) ?? [],
           brand: p.brand,
           is_bundle: isBundledProduct(p),
+          bundle_item_count: p.bundle?.items?.length ?? 0,
+          bundle_item_titles:
+            p.bundle?.items
+              ?.map((item: any) => item.product?.title)
+              .filter((title: unknown): title is string => typeof title === "string" && Boolean(title.trim())) ?? [],
           available_in_bundles_count: getAvailableInBundleLinks(p).length,
           available_in_bundles: getAvailableInBundleLinks(p),
           variants:

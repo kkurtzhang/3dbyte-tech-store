@@ -8,11 +8,90 @@ import {
   SESSION_COOKIE,
   getCustomerSessionCookieOptions,
 } from "@/lib/auth/session-cookies"
+import { validatePasswordStrength } from "@/lib/auth/password"
 import { sdk } from "@/lib/medusa/client"
+
+const CART_COOKIE = "_medusa_cart_id"
+const EMAIL_CONFIRMATION_REQUIRED_MESSAGE =
+  "Please confirm your email before signing in. We sent a new confirmation link."
+
+type CustomerMetadata = Record<string, unknown> | null | undefined
+
+type CustomerWithMetadata = AuthUser & {
+  metadata?: CustomerMetadata
+}
 
 function getAuthHeaders(token: string) {
   return {
     Authorization: `Bearer ${token}`,
+  }
+}
+
+function toAuthUser(customer: CustomerWithMetadata): AuthUser {
+  const user: AuthUser = {
+    id: customer.id,
+    email: customer.email,
+  }
+
+  if (customer.first_name) {
+    user.first_name = customer.first_name
+  }
+
+  if (customer.last_name) {
+    user.last_name = customer.last_name
+  }
+
+  if (customer.phone) {
+    user.phone = customer.phone
+  }
+
+  return user
+}
+
+function requiresEmailConfirmation(customer: CustomerWithMetadata) {
+  const metadata = customer.metadata
+
+  if (!metadata || typeof metadata !== "object") {
+    return false
+  }
+
+  return (
+    metadata.email_verification_status === "pending" &&
+    typeof metadata.email_verified_at !== "string"
+  )
+}
+
+async function sendCustomerEmailVerification(token: string) {
+  await sdk.client.fetch("/store/customers/email-verifications", {
+    method: "POST",
+    headers: getAuthHeaders(token),
+  })
+}
+
+async function linkCustomerContextAfterLogin(token: string) {
+  try {
+    await sdk.client.fetch("/store/customers/me/link-guest-orders", {
+      method: "POST",
+      headers: getAuthHeaders(token),
+    })
+  } catch (error) {
+    console.warn("Failed to link guest orders after login:", error)
+  }
+
+  try {
+    const cookieStore = await cookies()
+    const cartId = cookieStore.get(CART_COOKIE)?.value
+
+    if (!cartId) {
+      return
+    }
+
+    await sdk.client.fetch(`/store/carts/${cartId}/customer`, {
+      method: "POST",
+      headers: getAuthHeaders(token),
+    })
+  } catch (error) {
+    console.warn("Failed to attach cart to customer after login:", error)
   }
 }
 
@@ -53,13 +132,25 @@ export async function loginAction(email: string, password: string) {
     )
 
     if (customer) {
+      const authCustomer = customer as unknown as CustomerWithMetadata
+
+      if (requiresEmailConfirmation(authCustomer)) {
+        await sendCustomerEmailVerification(result)
+        return {
+          success: false,
+          error: EMAIL_CONFIRMATION_REQUIRED_MESSAGE,
+          requiresEmailVerification: true,
+        }
+      }
+
       const cookieStore = await cookies()
       const sessionCookieOptions = getCustomerSessionCookieOptions()
       cookieStore.set(SESSION_COOKIE, "true", sessionCookieOptions)
       cookieStore.set(CUSTOMER_TOKEN_COOKIE, result, sessionCookieOptions)
 
+      await linkCustomerContextAfterLogin(result)
       revalidatePath("/")
-      return { success: true, user: customer as unknown as AuthUser }
+      return { success: true, user: toAuthUser(authCustomer) }
     }
 
     return { success: false, error: "Failed to retrieve customer data" }
@@ -76,6 +167,15 @@ export async function registerAction(
   lastName?: string
 ) {
   try {
+    const passwordError = validatePasswordStrength(password)
+
+    if (passwordError) {
+      return {
+        success: false,
+        error: passwordError,
+      }
+    }
+
     // Register with Medusa auth
     const registrationToken = await sdk.auth.register("customer", "emailpass", {
       email,
@@ -103,8 +203,12 @@ export async function registerAction(
     )
 
     if (customer) {
-      // Auto-login after registration
-      return await loginAction(email, password)
+      await sendCustomerEmailVerification(registrationToken)
+
+      return {
+        success: true,
+        requiresEmailVerification: true,
+      }
     }
 
     return { success: false, error: "Registration failed" }
@@ -124,7 +228,21 @@ export async function getSessionAction() {
     const { customer } = await sdk.store.customer.retrieve({}, authHeaders)
 
     if (customer) {
-      return { success: true, user: customer as unknown as AuthUser }
+      const authCustomer = customer as unknown as CustomerWithMetadata
+
+      if (requiresEmailConfirmation(authCustomer)) {
+        const cookieStore = await cookies()
+        cookieStore.delete(SESSION_COOKIE)
+        cookieStore.delete(CUSTOMER_TOKEN_COOKIE)
+
+        return {
+          success: false,
+          error: "Email confirmation required",
+          requiresEmailVerification: true,
+        }
+      }
+
+      return { success: true, user: toAuthUser(authCustomer) }
     }
 
     return { success: false, error: "No session" }

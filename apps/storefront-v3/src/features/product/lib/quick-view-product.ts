@@ -24,6 +24,11 @@ export interface QuickViewProductPreview {
   originalPrice?: number
   inventoryQuantity?: number
   inStock?: boolean
+  isBundle?: boolean
+  isPreorder?: boolean
+  preorderAvailableDate?: string
+  bundleItemCount?: number
+  bundleItemTitles?: string[]
 }
 
 function buildPreviewVariant(
@@ -76,6 +81,11 @@ export function buildQuickViewPreviewProduct(
       : [],
     options: [],
     variants: [variant],
+    is_bundle: preview.isBundle,
+    is_preorder: preview.isPreorder,
+    preorder_available_date: preview.preorderAvailableDate,
+    bundle_item_count: preview.bundleItemCount ?? 0,
+    bundle_item_titles: preview.bundleItemTitles ?? [],
   } as unknown as MedusaProduct
 }
 
@@ -167,6 +177,56 @@ export function buildQuickViewSummary(
   }
 
   return summary.length > 160 ? `${summary.slice(0, 157).trimEnd()}...` : summary
+}
+
+export type QuickViewBundleItem = {
+  quantity?: number
+  title: string
+}
+
+export function buildQuickViewBundleItems(
+  product: {
+    bundle?: {
+      items?: Array<{
+        product?: {
+          title?: string | null
+        } | null
+        quantity?: number | null
+      }> | null
+    } | null
+    bundle_item_count?: number
+    bundle_item_titles?: string[]
+  }
+): QuickViewBundleItem[] {
+  const bundleItems: QuickViewBundleItem[] = Array.isArray(product.bundle?.items)
+    ? product.bundle.items
+        .reduce<QuickViewBundleItem[]>((items, item) => {
+          const title = normalizeText(item.product?.title)
+
+          return title
+            ? [
+                ...items,
+                {
+                  quantity:
+                    typeof item.quantity === "number" && item.quantity > 0
+                      ? item.quantity
+                      : undefined,
+                  title,
+                },
+              ]
+            : items
+        }, [])
+    : []
+
+  if (bundleItems.length > 0) {
+    return bundleItems
+  }
+
+  return (product.bundle_item_titles ?? [])
+    .map((title) => normalizeText(title))
+    .filter((title) => title.length > 0)
+    .slice(0, product.bundle_item_count ?? undefined)
+    .map((title) => ({ title }))
 }
 
 export function buildQuickViewDetailChips(

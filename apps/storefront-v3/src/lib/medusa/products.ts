@@ -49,7 +49,7 @@ export async function getProducts(params: {
           collection_id,
           q,
           fields:
-            `${PRODUCT_PRICE_FIELDS},*variants.preorder_variant,*variants.preorder_variant.prices,*bundle`,
+            `${PRODUCT_PRICE_FIELDS},*variants.preorder_variant,*variants.preorder_variant.prices,*bundle,*bundle.items,*bundle.items.product`,
         },
         params
       )
@@ -160,7 +160,7 @@ export async function getProductByHandle(
           handle,
           limit: 1,
           fields:
-            `${PRODUCT_PRICE_FIELDS},*variants.preorder_variant,*variants.preorder_variant.prices,*variants.images,*options,*options.values,*images,*type,*collection,*tags,*bundle`,
+            `${PRODUCT_PRICE_FIELDS},*variants.preorder_variant,*variants.preorder_variant.prices,*variants.images,*options,*options.values,*images,*type,*collection,*tags,*bundle,*bundle.items,*bundle.items.product`,
         },
         pricing
       )
@@ -238,6 +238,12 @@ export async function getProductByHandle(
         type: hit.type ? { id: "", value: hit.type } : undefined,
         collection: hit.collection,
         tags: hit.tags,
+        is_bundle: hit.is_bundle === true,
+        bundle_item_count: hit.bundle_item_count ?? 0,
+        bundle_item_titles: Array.isArray(hit.bundle_item_titles)
+          ? hit.bundle_item_titles
+          : [],
+        preorder_available_date: hit.preorder_available_date,
         created_at: hit.created_at,
         updated_at: hit.updated_at,
       } as unknown as MedusaProduct

@@ -252,6 +252,21 @@ export default defineMiddlewares({
       middlewares: [authenticate("customer", ["session", "bearer"])],
     },
     {
+      matcher: "/store/customers/email-verifications",
+      methods: ["POST"],
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
+      matcher: "/store/customers/me/link-guest-orders",
+      methods: ["POST"],
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
+      matcher: "/store/carts/:id/customer",
+      methods: ["POST"],
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
       matcher: "/store/waitlist/:id",
       methods: ["DELETE"],
       middlewares: [authenticate("customer", ["session", "bearer"])],

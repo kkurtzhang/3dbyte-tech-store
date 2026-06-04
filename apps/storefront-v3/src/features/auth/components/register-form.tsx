@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { registerAction } from "@/app/actions/auth"
+import { strongPasswordSchema } from "@/lib/auth/password"
 import { zodFormResolver } from "@/lib/forms/zod-form-resolver"
 
 const registerSchema = z
@@ -15,8 +16,8 @@ const registerSchema = z
     firstName: z.string().min(1, "First name is required"),
     lastName: z.string().min(1, "Last name is required"),
     email: z.string().email("Please enter a valid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    confirmPassword: z.string().min(8, "Please confirm your password"),
+    password: strongPasswordSchema,
+    confirmPassword: z.string().min(1, "Please confirm your password"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
@@ -50,6 +51,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = React.useState<string | null>(null)
 
   const {
     register,
@@ -62,6 +64,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true)
     setError(null)
+    setSuccessMessage(null)
     try {
       const result = await registerAction(
         data.email,
@@ -70,7 +73,11 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         data.lastName
       )
 
-      if (result.success) {
+      if (result.success && result.requiresEmailVerification) {
+        setSuccessMessage(
+          "Check your email to confirm your account before signing in."
+        )
+      } else if (result.success) {
         onSuccess?.()
         const redirectTo = getSafeRedirectPath()
         if (redirectTo) {
@@ -166,6 +173,12 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       {error && (
         <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
           {error}
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="rounded-md bg-emerald-500/10 p-3 text-sm text-emerald-700">
+          {successMessage}
         </div>
       )}
 
