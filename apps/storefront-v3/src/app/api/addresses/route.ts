@@ -12,6 +12,7 @@ const addressPayloadSchema = z.object({
   address_1: z.string().trim().min(1).max(200),
   address_2: z.string().trim().max(200).optional(),
   city: z.string().trim().min(1).max(100),
+  province: z.string().trim().min(1).max(100),
   country_code: z.string().trim().length(2),
   postal_code: z.string().trim().min(1).max(20),
   phone: z.string().trim().max(30).optional(),

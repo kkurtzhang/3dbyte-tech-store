@@ -13,7 +13,8 @@ import { Separator } from "@/components/ui/separator"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { AddressForm } from "@/components/account/address-form"
-import { Trash2, Home, Pencil, Plus } from "lucide-react"
+import { AddressFormPanel } from "@/components/account/address-form-panel"
+import { Trash2, Home, Pencil } from "lucide-react"
 
 export const metadata: Metadata = {
   title: "Addresses",
@@ -45,6 +46,7 @@ function addressToFormAddress(address: CustomerAddress) {
     address_1: address.address_1,
     address_2: address.address_2,
     city: address.city,
+    province: address.province,
     country_code: address.country_code,
     postal_code: address.postal_code,
     phone: address.phone,
@@ -81,24 +83,9 @@ export default async function AddressesPage({
             Manage your saved shipping and billing addresses
           </p>
         </div>
-        <Button
-          asChild
-          className="w-full font-mono uppercase tracking-widest sm:w-auto"
-        >
-          <Link href="/account/addresses?mode=add#address-form">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Address
-          </Link>
-        </Button>
       </div>
 
-      {isAdding ? (
-        <Card id="address-form">
-          <CardContent className="p-6">
-            <AddressForm title="Add new address" />
-          </CardContent>
-        </Card>
-      ) : null}
+      <AddressFormPanel defaultOpen={isAdding} />
 
       {addresses.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2">
@@ -145,7 +132,9 @@ export default async function AddressesPage({
                           </>
                         )}
                         <br />
-                        {address.city}, {address.postal_code}
+                        {address.city}
+                        {address.province ? `, ${address.province}` : ""}{" "}
+                        {address.postal_code}
                         <br />
                         {address.country_code.toUpperCase()}
                         {address.phone && (
@@ -222,18 +211,6 @@ export default async function AddressesPage({
             <p className="text-sm text-muted-foreground mt-2">
               Add your first address to get started
             </p>
-            {!isAdding ? (
-              <Button
-                asChild
-                variant="outline"
-                className="mt-6 font-mono uppercase tracking-wider"
-              >
-                <Link href="/account/addresses?mode=add#address-form">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Address
-                </Link>
-              </Button>
-            ) : null}
           </CardContent>
         </Card>
       )}

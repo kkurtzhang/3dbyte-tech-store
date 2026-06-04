@@ -46,6 +46,22 @@ jest.mock("@/components/account/address-form", () => ({
   ),
 }))
 
+jest.mock("@/components/account/address-form-panel", () => ({
+  AddressFormPanel: ({ defaultOpen = false }: { defaultOpen?: boolean }) => (
+    <section
+      data-default-open={String(defaultOpen)}
+      data-testid="add-address-panel"
+    >
+      <button type="button">Add Address</button>
+      {defaultOpen ? (
+        <div aria-label="Add address" role="form">
+          Add new address
+        </div>
+      ) : null}
+    </section>
+  ),
+}))
+
 jest.mock("lucide-react", () => ({
   Home: () => <span />,
   Pencil: () => <span />,
@@ -60,6 +76,7 @@ const addresses = [
     last_name: "Gate",
     address_1: "32 Kiernan St",
     city: "Gwynneville",
+    province: "NSW",
     country_code: "au",
     postal_code: "2500",
     phone: "0400000000",
@@ -71,6 +88,7 @@ const addresses = [
     last_name: "Address",
     address_1: "12 Homestead Pl",
     city: "Kingston",
+    province: "TAS",
     country_code: "au",
     postal_code: "7050",
     is_default: false,
@@ -84,17 +102,17 @@ describe("account addresses page", () => {
     mockGetAddressesAction.mockResolvedValue({ success: true, addresses })
   })
 
-  it("opens a normal inline add form from the mode query", async () => {
+  it("opens the expandable add form from the mode query", async () => {
     render(await AddressesPage({ searchParams: { mode: "add" } }))
 
+    expect(screen.getByTestId("add-address-panel")).toHaveAttribute(
+      "data-default-open",
+      "true",
+    )
     expect(
       screen.getByRole("form", { name: /add address/i }),
     ).toBeInTheDocument()
     expect(screen.getByText("Add new address")).toBeInTheDocument()
-    expect(screen.getByRole("link", { name: /add address/i })).toHaveAttribute(
-      "href",
-      "/account/addresses?mode=add#address-form",
-    )
   })
 
   it("opens edit in place for the selected address", async () => {
@@ -106,12 +124,17 @@ describe("account addresses page", () => {
     )
     expect(screen.getByText("Edit Backup Address")).toBeInTheDocument()
     expect(screen.getByText(/32 Kiernan St/i)).toBeInTheDocument()
+    expect(screen.getByText(/Gwynneville, NSW 2500/i)).toBeInTheDocument()
   })
 
   it("keeps the address list read-only until add or edit is selected", async () => {
     render(await AddressesPage())
 
     expect(screen.queryByRole("form")).not.toBeInTheDocument()
+    expect(screen.getByTestId("add-address-panel")).toHaveAttribute(
+      "data-default-open",
+      "false",
+    )
     expect(screen.getByText(/32 Kiernan St/i)).toBeInTheDocument()
     expect(screen.getByText(/12 Homestead Pl/i)).toBeInTheDocument()
     expect(screen.getAllByRole("link", { name: /edit/i })[0]).toHaveAttribute(
