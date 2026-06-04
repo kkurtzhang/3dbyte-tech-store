@@ -1,6 +1,10 @@
-import { render, screen, waitFor } from "@testing-library/react"
+import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 
+import { getSessionAction, logoutAction } from "@/app/actions/auth"
 import { Navbar } from "../navbar"
+
+const mockPush = jest.fn()
+const mockRefresh = jest.fn()
 
 jest.mock("lucide-react", () =>
   new Proxy(
@@ -15,7 +19,7 @@ jest.mock("lucide-react", () =>
 )
 
 jest.mock("@/app/actions/auth", () => ({
-  getSessionAction: jest.fn().mockResolvedValue({ success: false }),
+  getSessionAction: jest.fn(),
   logoutAction: jest.fn(),
 }))
 
@@ -45,12 +49,23 @@ jest.mock("@/features/auth/components/auth-sheet", () => ({
 
 jest.mock("next/navigation", () => ({
   useRouter: () => ({
-    push: jest.fn(),
-    refresh: jest.fn(),
+    push: mockPush,
+    refresh: mockRefresh,
   }),
 }))
 
+const mockGetSessionAction = getSessionAction as jest.MockedFunction<
+  typeof getSessionAction
+>
+const mockLogoutAction = logoutAction as jest.MockedFunction<typeof logoutAction>
+
 describe("Navbar", () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockGetSessionAction.mockResolvedValue({ success: false, error: "No session" })
+    mockLogoutAction.mockResolvedValue({ success: true })
+  })
+
   it("uses the approved brand logo as the home link", async () => {
     render(<Navbar />)
 
@@ -76,6 +91,67 @@ describe("Navbar", () => {
         "href",
         "/downloads"
       )
+    })
+  })
+
+  it("shows the signed-in customer's name as a profile menu trigger", async () => {
+    mockGetSessionAction.mockResolvedValue({
+      success: true,
+      user: {
+        id: "cus_123",
+        email: "kurt@example.com",
+        first_name: "Kurt",
+      },
+    })
+
+    render(<Navbar />)
+
+    const accountButton = await screen.findByRole("button", { name: /kurt/i })
+
+    expect(accountButton).toHaveAttribute("aria-haspopup", "menu")
+    expect(screen.queryByRole("button", { name: /sign out/i })).not.toBeInTheDocument()
+
+    fireEvent.click(accountButton)
+
+    expect(screen.getByRole("menu", { name: /account menu/i })).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: /my account/i })).toHaveAttribute(
+      "href",
+      "/account",
+    )
+    expect(screen.getByRole("link", { name: /orders/i })).toHaveAttribute(
+      "href",
+      "/account/orders",
+    )
+    expect(screen.getByRole("link", { name: /addresses/i })).toHaveAttribute(
+      "href",
+      "/account/addresses",
+    )
+    expect(screen.getByRole("link", { name: /settings/i })).toHaveAttribute(
+      "href",
+      "/account/settings",
+    )
+    expect(screen.getByRole("button", { name: /sign out/i })).toBeInTheDocument()
+  })
+
+  it("signs out from the profile menu and refreshes account state", async () => {
+    mockGetSessionAction.mockResolvedValue({
+      success: true,
+      user: {
+        id: "cus_123",
+        email: "kurt@example.com",
+        first_name: "Kurt",
+      },
+    })
+
+    render(<Navbar />)
+
+    fireEvent.click(await screen.findByRole("button", { name: /kurt/i }))
+    fireEvent.click(screen.getByRole("button", { name: /sign out/i }))
+
+    await waitFor(() => {
+      expect(mockLogoutAction).toHaveBeenCalled()
+      expect(mockPush).toHaveBeenCalledWith("/")
+      expect(mockRefresh).toHaveBeenCalled()
     })
   })
 })
