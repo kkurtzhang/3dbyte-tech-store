@@ -2,7 +2,6 @@
 
 import { cookies } from "next/headers"
 import { revalidatePath } from "next/cache"
-import { redirect } from "next/navigation"
 
 import {
   CUSTOMER_TOKEN_COOKIE,
@@ -270,6 +269,7 @@ export async function updateAddressAction(
     address_1: string
     address_2: string
     city: string
+    province: string
     country_code: string
     postal_code: string
     phone: string
