@@ -4,12 +4,14 @@ import {
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk";
 import { useQueryGraphStep } from "@medusajs/medusa/core-flows";
+import type { SyncProductsStepProduct } from "@3dbyte-tech-store/shared-types";
+
 import { fetchProductOptionsStep } from "./steps/fetch-product-options";
 import { syncIndexSettingsStep } from "./steps/sync-index-settings";
-import { syncProductsStep, SyncProductsStepInput } from "./steps/sync-products";
+import { syncProductsStep, type SyncProductsStepInput } from "./steps/sync-products";
 import { deleteProductsFromMeilisearchStep } from "./steps/delete-products-from-meilisearch";
 import { fetchStrapiContentStep } from "./steps/fetch-strapi-content";
-import type { SyncProductsStepProduct } from "@3dbyte-tech-store/shared-types";
+import { getMeilisearchProductSyncFields } from "./product-sync-fields";
 
 export type SyncProductsWithSettingsWorkflowInput = {
   filters?: Record<string, unknown>;
@@ -46,65 +48,7 @@ export const syncProductsWithSettingsWorkflow = createWorkflow(
     // Step 3: Fetch products from Medusa using useQueryGraphStep
     const { data: products, metadata } = useQueryGraphStep({
       entity: "product",
-      fields: [
-        "id",
-        "title",
-        "handle",
-        "subtitle",
-        "description",
-        "thumbnail",
-        "status",
-        "metadata",
-        "created_at",
-        "updated_at",
-        "collection_id",
-        "type_id",
-        "material_id",
-        "currency_code",
-        // Variants with inventory items relation
-        "variants.id",
-        "variants.title",
-        "variants.sku",
-        "variants.manage_inventory",
-        "variants.options.option_id",
-        "variants.options.title",
-        "variants.options.value",
-        "variants.prices.*",
-        "variants.calculated_price.*",
-        "variants.original_price",
-        "variants.original_price_calculated",
-        "variants.preorder_variant.*",
-        "variants.preorder_variant.prices.*",
-        // Inventory items for quantity calculation
-        "variants.inventory_items.inventory_item_id",
-        "variants.inventory_items.required_quantity",
-        "variants.inventory_items.inventory.location_levels.*",
-        "images.url",
-        "categories.id",
-        "categories.name",
-        "categories.handle",
-        "categories.parent_category_id",
-        "categories.parent_category.id",
-        "categories.parent_category.name",
-        "categories.parent_category.handle",
-        "categories.parent_category.parent_category_id",
-        "categories.parent_category.parent_category.id",
-        "categories.parent_category.parent_category.name",
-        "categories.parent_category.parent_category.handle",
-        "categories.parent_category.parent_category.parent_category_id",
-        "tags.id",
-        "tags.value",
-        "brand.id",
-        "brand.name",
-        "brand.handle",
-        "bundle.id",
-        "bundle.title",
-        "bundle.items.id",
-        "bundle.items.quantity",
-        "bundle.items.product.id",
-        "bundle.items.product.title",
-        "bundle.items.product.handle",
-      ],
+      fields: getMeilisearchProductSyncFields(),
       pagination: {
         take: limit,
         skip: offset,
