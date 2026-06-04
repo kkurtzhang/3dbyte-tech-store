@@ -115,21 +115,32 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 ### Launch-gate bug: Karrio checkout delivery options send stale service filters (Backend + Shipping)
 
 - Found: `2026-06-04` staging checkout gate on the delivery-method step.
-- Status: being fixed in branch `fix/karrio-checkout-rate-options`.
+- Status: stale filter bug fixed in PR #147; Karrio carrier-message fallback being fixed in branch `fix/karrio-live-rate-message-fallback`.
 - Problem: Medusa calculated shipping option pricing called Karrio `/v1/proxy/rates` with stale default option filters such as `carrier_ids: ["aramex"]` and `services: ["aramex_priority"]`. Karrio returned `404 not_found`: "No active carrier connection found to process the request" even though live unfiltered rate shopping could return active Aramex AU/NZ rates.
 - Evidence:
   - Karrio request body included `carrier_ids: ["aramex"]`, `services: ["aramex_priority"]`, parcels, sender, and recipient.
   - Karrio response body returned `errors[0].code: "not_found"` and `message: "No active carrier connection found to process the request"`.
+  - On `2026-06-04`, Karrio also returned `424` carrier messages for Aramex AU/NZ on a WA lane with `code: "SHIPPING_SDK_INTERNAL_ERROR"` and `message: "'NoneType' object has no attribute 'sLACode'"`.
+  - Direct probe from `oci-app` using the staging Medusa container env confirmed:
+    - NSW unfiltered `/v1/proxy/rates` returns two Aramex rates.
+    - WA unfiltered `/v1/proxy/rates` and WA draft `/v1/shipments` both return the Aramex `sLACode` carrier message.
+    - WA filtered `/v1/proxy/rates` returns the stale-filter `404 not_found`.
+  - Aramex public Fastlabel tooling recognizes `BICKLEY 6076 WA` under the Perth regional franchise and can quote a `PER -> Bickley 6076` sample parcel, so the current WA failure appears to be a Karrio/Aramex connector or account mapping issue rather than obvious Aramex public-network non-coverage.
+  - Follow-up probe on `2026-06-04` confirmed `Kingston TAS 7050`, `Barangaroo NSW 2000`, and `Gnangara WA 6077` return Karrio Aramex rates from the staging server, while `Armidale NSW 2350` returns the same `sLACode` carrier message.
+  - Public Aramex Fastlabel data recognizes `ARMIDALE 2350 NSW`, but the `TAS -> Armidale 2350` quote differs from working lanes: delivery franchise is `Aramex Regional Network`, delivery time is blank, and options are satchel-only national options rather than parcel label options. This likely explains why Karrio's Aramex connector is missing `sLACode` for that lane.
+  - AramexConnect reference repo/wiki (`mindfulsoftware/myFastway.ApiClient`) documents direct OAuth client-credentials auth plus coverage/SLA endpoints such as `/api/addresses/serviced-by` and `/api/location`; those are good candidates for a future direct Aramex coverage probe once AramexConnect API credentials are available.
   - Existing storefront live-rate route already requests `/v1/proxy/rates` without carrier/service filters and maps the returned live rates to customer-facing delivery options.
 - Real-world practice:
   - Rate-shop active carrier connections first and select among the returned rates instead of treating Medusa shipping-option defaults as authoritative Karrio service ids.
   - Use Karrio's selected-rate purchase flow (`/v1/proxy/shipments` with `selected_rate_id`) when creating labels for a rate chosen during checkout.
   - Treat Karrio carrier/service discovery as configuration/admin tooling: query active Karrio carrier connections/services where possible, then seed or refresh Medusa shipping options from that data instead of relying on long-lived hardcoded service names.
+  - If Karrio continues to hide Aramex-specific diagnostics, add a direct AramexConnect health/coverage adapter for admin diagnostics only, using `/api/addresses/serviced-by` for network coverage and `/api/location` for delivery SLA metadata before relying on rate or label purchase flows.
 - Acceptance:
   - Checkout delivery options do not fail when static Medusa option data has stale `carrier_id` or `service` values.
   - Karrio rate calculation requests omit stale `carrier_ids` and `services` filters unless they are known-current Karrio connection/service identifiers.
   - The selected returned rate still controls customer-facing price, service label, and later label purchase metadata.
   - Regression tests fail if calculated shipping option pricing sends stale option `carrier_id` or `service` filters to Karrio.
+  - Karrio carrier messages from `/v1/proxy/rates` do not surface as raw checkout errors; checkout falls back to fixed/manual delivery options when available.
 
 ### Launch-gate bug: Karrio selected-rate fulfillment mapping (Backend + Shipping)
 

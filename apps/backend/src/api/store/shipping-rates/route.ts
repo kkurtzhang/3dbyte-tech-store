@@ -197,6 +197,7 @@ export const POST = async (
       shipper,
       recipient,
       parcels,
+      payment: { paid_by: "sender" },
     });
 
     const rates = rateResponse.rates.map((rate) => ({
@@ -216,7 +217,12 @@ export const POST = async (
       metadata: rate.meta,
     }));
 
-    res.json({ rates });
+    res.json({
+      rates,
+      ...(rateResponse.messages?.length
+        ? { messages: rateResponse.messages }
+        : {}),
+    });
   } catch (error) {
     if (error instanceof MedusaError) {
       throw error;

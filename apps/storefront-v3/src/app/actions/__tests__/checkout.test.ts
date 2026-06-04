@@ -6,6 +6,7 @@ const mockInitiatePaymentSession = jest.fn()
 const mockGetShippingOptions = jest.fn()
 const mockGetLiveShippingRates = jest.fn()
 const mockAddShippingMethod = jest.fn()
+const mockCalculateShippingOption = jest.fn()
 
 jest.mock("next/headers", () => ({
   cookies: (...args: unknown[]) => mockCookies(...args)
@@ -23,7 +24,8 @@ jest.mock("@/lib/medusa/cart", () => ({
   addShippingMethod: (...args: unknown[]) => mockAddShippingMethod(...args),
   completePreorderCart: jest.fn(),
   getShippingOptions: (...args: unknown[]) => mockGetShippingOptions(...args),
-  calculateShippingOption: jest.fn()
+  calculateShippingOption: (...args: unknown[]) =>
+    mockCalculateShippingOption(...args)
 }))
 
 jest.mock("@/lib/medusa/shipping", () => ({
@@ -49,6 +51,7 @@ describe("checkout actions", () => {
     mockGetCart.mockResolvedValue({ id: "cart_123" })
     mockUpdateCart.mockResolvedValue({ id: "cart_123" })
     mockGetLiveShippingRates.mockResolvedValue({ rates: [] })
+    mockCalculateShippingOption.mockResolvedValue(9.95)
     mockInitiatePaymentSession.mockResolvedValue({
       payment_collection: {
         payment_sessions: [
@@ -195,6 +198,52 @@ describe("checkout actions", () => {
           id: "ship_standard",
           amount: 15.91,
           name: "Aramex Economy",
+        },
+      ],
+    })
+  })
+
+  it("keeps fixed delivery options when Karrio calculated rates return carrier errors", async () => {
+    mockGetShippingOptions.mockResolvedValue([
+      {
+        id: "ship_karrio",
+        name: "Karrio Calculated Shipping",
+        description: "Live carrier rate",
+        amount: null,
+        price_type: "calculated",
+      },
+      {
+        id: "ship_manual",
+        name: "Manual Fulfillment",
+        description: "Fallback manual postage",
+        amount: 12.5,
+        price_type: "flat",
+      },
+    ])
+    mockGetLiveShippingRates.mockResolvedValue({
+      rates: [],
+      messages: [
+        {
+          carrier_id: "Aramex",
+          carrier_name: "aramex_aunz",
+          code: "SHIPPING_SDK_INTERNAL_ERROR",
+          message: "'NoneType' object has no attribute 'sLACode'",
+        },
+      ],
+    })
+    mockCalculateShippingOption.mockRejectedValue(
+      new Error("No Karrio rates are available for this address")
+    )
+
+    await expect(getShippingOptionsAction()).resolves.toEqual({
+      success: true,
+      options: [
+        {
+          id: "ship_manual",
+          name: "Manual Fulfillment",
+          description: "Fallback manual postage",
+          amount: 12.5,
+          price_type: "flat",
         },
       ],
     })
