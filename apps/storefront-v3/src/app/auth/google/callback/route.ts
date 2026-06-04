@@ -42,6 +42,37 @@ async function createGoogleCustomer({
   }
 }
 
+async function claimGoogleCustomerAccount({
+  medusaBaseUrl,
+  token,
+  email,
+}: {
+  medusaBaseUrl: string
+  token: string
+  email: string
+}) {
+  const response = await fetch(`${medusaBaseUrl}/store/customers/claim-account`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      Authorization: `Bearer ${token}`,
+      ...getPublishableApiHeaders(),
+    },
+    body: JSON.stringify({ email, source: "google" }),
+    cache: "no-store",
+  })
+
+  if (response.status === 404) {
+    return false
+  }
+
+  if (!response.ok) {
+    throw new Error("Failed to claim Google customer account")
+  }
+
+  return true
+}
+
 async function refreshCustomerToken({
   medusaBaseUrl,
   token,
@@ -157,11 +188,20 @@ export async function GET(request: Request) {
         throw new Error("Google OAuth callback did not include an email")
       }
 
-      await createGoogleCustomer({
+      const claimedAccount = await claimGoogleCustomerAccount({
         medusaBaseUrl,
         token: callbackToken,
         email,
       })
+
+      if (!claimedAccount) {
+        await createGoogleCustomer({
+          medusaBaseUrl,
+          token: callbackToken,
+          email,
+        })
+      }
+
       sessionToken = await refreshCustomerToken({
         medusaBaseUrl,
         token: callbackToken,
