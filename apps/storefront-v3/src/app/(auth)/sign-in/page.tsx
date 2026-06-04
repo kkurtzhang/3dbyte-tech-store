@@ -1,7 +1,9 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+
+import { getSessionAction } from "@/app/actions/auth";
 import { LoginForm } from "@/features/auth/components/login-form";
-import { Separator } from "@/components/ui/separator";
 
 export const metadata: Metadata = {
   title: "Sign In",
@@ -9,7 +11,36 @@ export const metadata: Metadata = {
     "Sign in to your account to access order history and saved items.",
 };
 
-export default function SignInPage() {
+interface SignInPageProps {
+  searchParams?: Promise<{
+    redirect?: string | string[];
+  }>;
+}
+
+function getSafeRedirectPath(value?: string | string[]) {
+  const redirectPath = Array.isArray(value) ? value[0] : value;
+
+  if (
+    redirectPath?.startsWith("/") &&
+    !redirectPath.startsWith("//") &&
+    redirectPath !== "/sign-in"
+  ) {
+    return redirectPath;
+  }
+
+  return "/account";
+}
+
+export default async function SignInPage({
+  searchParams,
+}: SignInPageProps = {}) {
+  const session = await getSessionAction();
+
+  if (session.success) {
+    const params = await searchParams;
+    redirect(getSafeRedirectPath(params?.redirect));
+  }
+
   return (
     <div className="space-y-6">
       <div className="space-y-2 text-center">

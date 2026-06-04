@@ -7,6 +7,7 @@ import { AddressFormPanel } from "../address-form-panel"
 const mockFetch = jest.fn()
 const mockRefresh = jest.fn()
 const mockPush = jest.fn()
+const mockScrollIntoView = jest.fn()
 
 global.fetch = mockFetch as unknown as typeof fetch
 
@@ -105,6 +106,7 @@ jest.mock("@/components/ui/label", () => ({
 describe("AddressForm", () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    Element.prototype.scrollIntoView = mockScrollIntoView
     mockFetch.mockResolvedValue({
       ok: false,
       json: async () => ({ success: false }),
@@ -194,6 +196,46 @@ describe("AddressForm", () => {
     expect(screen.getByLabelText("First Name")).toHaveValue("")
     expect(screen.getByRole("combobox", { name: /address/i })).toHaveValue("")
     expect(screen.getByLabelText("Country Code")).toHaveValue("AU")
+  })
+
+  it("scrolls back to the add-address control after a successful save", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ success: true }),
+    })
+
+    render(<AddressFormPanel defaultOpen />)
+
+    fireEvent.change(screen.getByLabelText("First Name"), {
+      target: { value: "Launch" },
+    })
+    fireEvent.change(screen.getByLabelText("Last Name"), {
+      target: { value: "Gate" },
+    })
+    fireEvent.change(screen.getByRole("combobox", { name: /address/i }), {
+      target: { value: "32 Kiernan St" },
+    })
+    fireEvent.change(screen.getByLabelText("City"), {
+      target: { value: "Gwynneville" },
+    })
+    fireEvent.change(screen.getByLabelText("Postal Code"), {
+      target: { value: "2500" },
+    })
+    fireEvent.change(screen.getByLabelText("State"), {
+      target: { value: "NSW" },
+    })
+    fireEvent.change(screen.getByLabelText("Country Code"), {
+      target: { value: "AU" },
+    })
+
+    fireEvent.submit(screen.getByRole("button", { name: /save address/i }))
+
+    await waitFor(() => {
+      expect(mockScrollIntoView).toHaveBeenCalledWith({
+        behavior: "smooth",
+        block: "start",
+      })
+    })
   })
 
   it("submits new addresses to the authenticated JSON API route and refreshes the page", async () => {
