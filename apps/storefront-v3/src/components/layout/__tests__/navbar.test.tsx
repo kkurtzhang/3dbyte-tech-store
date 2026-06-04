@@ -5,6 +5,7 @@ import { Navbar } from "../navbar"
 
 const mockPush = jest.fn()
 const mockRefresh = jest.fn()
+let mockPathname = "/"
 
 jest.mock("lucide-react", () =>
   new Proxy(
@@ -48,6 +49,7 @@ jest.mock("@/features/auth/components/auth-sheet", () => ({
 }))
 
 jest.mock("next/navigation", () => ({
+  usePathname: () => mockPathname,
   useRouter: () => ({
     push: mockPush,
     refresh: mockRefresh,
@@ -62,6 +64,7 @@ const mockLogoutAction = logoutAction as jest.MockedFunction<typeof logoutAction
 describe("Navbar", () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockPathname = "/"
     mockGetSessionAction.mockResolvedValue({ success: false, error: "No session" })
     mockLogoutAction.mockResolvedValue({ success: true })
   })
@@ -153,5 +156,31 @@ describe("Navbar", () => {
       expect(mockPush).toHaveBeenCalledWith("/")
       expect(mockRefresh).toHaveBeenCalled()
     })
+  })
+
+  it("rechecks session state after navigation so external account deletion updates the menu", async () => {
+    mockPathname = "/account/settings"
+    mockGetSessionAction
+      .mockResolvedValueOnce({
+        success: true,
+        user: {
+          id: "cus_123",
+          email: "kurt@example.com",
+          first_name: "Kurt",
+        },
+      })
+      .mockResolvedValueOnce({ success: false, error: "No session" })
+
+    const { rerender } = render(<Navbar />)
+
+    expect(await screen.findByRole("button", { name: /kurt/i })).toBeInTheDocument()
+
+    mockPathname = "/"
+    rerender(<Navbar />)
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /sign in/i })).toBeInTheDocument()
+    })
+    expect(mockGetSessionAction).toHaveBeenCalledTimes(2)
   })
 })

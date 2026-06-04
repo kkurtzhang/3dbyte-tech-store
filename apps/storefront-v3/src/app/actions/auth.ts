@@ -14,6 +14,7 @@ import { sdk } from "@/lib/medusa/client"
 const CART_COOKIE = "_medusa_cart_id"
 const EMAIL_CONFIRMATION_REQUIRED_MESSAGE =
   "Please confirm your email before signing in. We sent a new confirmation link."
+const EXISTING_IDENTITY_MESSAGE = "Identity with email already exists"
 
 type CustomerMetadata = Record<string, unknown> | null | undefined
 
@@ -59,6 +60,33 @@ function requiresEmailConfirmation(customer: CustomerWithMetadata) {
     metadata.email_verification_status === "pending" &&
     typeof metadata.email_verified_at !== "string"
   )
+}
+
+function isExistingIdentityError(error: unknown) {
+  const authError = error as { message?: string; statusText?: string }
+
+  return (
+    authError.statusText === "Unauthorized" &&
+    authError.message === EXISTING_IDENTITY_MESSAGE
+  )
+}
+
+async function getCustomerRegistrationToken(email: string, password: string) {
+  try {
+    return await sdk.auth.register("customer", "emailpass", {
+      email,
+      password,
+    })
+  } catch (error) {
+    if (!isExistingIdentityError(error)) {
+      throw error
+    }
+
+    return await sdk.auth.login("customer", "emailpass", {
+      email,
+      password,
+    })
+  }
 }
 
 async function sendCustomerEmailVerification(token: string) {
@@ -176,11 +204,12 @@ export async function registerAction(
       }
     }
 
-    // Register with Medusa auth
-    const registrationToken = await sdk.auth.register("customer", "emailpass", {
+    // Register with Medusa auth, or reuse an existing identity token per Medusa's
+    // documented customer-registration flow.
+    const registrationToken = await getCustomerRegistrationToken(
       email,
-      password,
-    })
+      password
+    )
 
     if (typeof registrationToken !== "string") {
       return {
