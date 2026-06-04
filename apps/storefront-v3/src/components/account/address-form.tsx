@@ -1,12 +1,15 @@
 "use client"
 
-import type { FormEvent } from "react"
+import type { ChangeEvent, FormEvent } from "react"
 import { useState } from "react"
+import type { MeilisearchAddressDocument } from "@3dbyte-tech-store/shared-types"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { AddressAutocomplete } from "@/features/checkout/components/address-autocomplete"
 
 interface Address {
   id: string
@@ -15,10 +18,23 @@ interface Address {
   address_1: string
   address_2?: string
   city: string
+  province?: string
   country_code: string
   postal_code: string
   phone?: string
   is_default?: boolean
+}
+
+type AddressFormValues = {
+  first_name: string
+  last_name: string
+  address_1: string
+  address_2: string
+  city: string
+  province: string
+  country_code: string
+  postal_code: string
+  phone: string
 }
 
 interface AddressFormProps {
@@ -35,27 +51,65 @@ export function AddressForm({
   title,
 }: AddressFormProps) {
   const router = useRouter()
+  const [formValues, setFormValues] = useState<AddressFormValues>(() => ({
+    first_name: address?.first_name || "",
+    last_name: address?.last_name || "",
+    address_1: address?.address_1 || "",
+    address_2: address?.address_2 || "",
+    city: address?.city || "",
+    province: address?.province || "",
+    country_code: address?.country_code?.toUpperCase() || "AU",
+    postal_code: address?.postal_code || "",
+    phone: address?.phone || "",
+  }))
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const inputId = (field: string) =>
     address ? `${address.id}-${field}` : `new-${field}`
 
+  const updateField = (field: keyof AddressFormValues, value: string) => {
+    setFormValues((current) => ({
+      ...current,
+      [field]: value,
+    }))
+  }
+
+  const handleInputChange =
+    (field: keyof AddressFormValues) =>
+    (event: ChangeEvent<HTMLInputElement>) => {
+      updateField(field, event.target.value)
+    }
+
+  const handleAutocompleteSelect = (selectedAddress: MeilisearchAddressDocument) => {
+    setFormValues((current) => ({
+      ...current,
+      address_1:
+        `${selectedAddress.number} ${selectedAddress.street}`.trim() ||
+        selectedAddress.full_address,
+      address_2: selectedAddress.unit || "",
+      city: selectedAddress.suburb,
+      province: selectedAddress.state,
+      postal_code: selectedAddress.postcode,
+      country_code: selectedAddress.country.toUpperCase(),
+    }))
+  }
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setIsLoading(true)
     setErrorMessage(null)
     try {
-      const formData = new FormData(event.currentTarget)
       const data = {
-        first_name: formData.get("first_name") as string,
-        last_name: formData.get("last_name") as string,
-        address_1: formData.get("address_1") as string,
-        address_2: (formData.get("address_2") as string) || undefined,
-        city: formData.get("city") as string,
-        country_code: formData.get("country_code") as string,
-        postal_code: formData.get("postal_code") as string,
-        phone: (formData.get("phone") as string) || undefined,
+        first_name: formValues.first_name,
+        last_name: formValues.last_name,
+        address_1: formValues.address_1,
+        address_2: formValues.address_2 || undefined,
+        city: formValues.city,
+        province: formValues.province,
+        country_code: formValues.country_code,
+        postal_code: formValues.postal_code,
+        phone: formValues.phone || undefined,
       }
 
       const url = address
@@ -110,7 +164,8 @@ export function AddressForm({
           <Input
             id={inputId("first_name")}
             name="first_name"
-            defaultValue={address?.first_name}
+            value={formValues.first_name}
+            onChange={handleInputChange("first_name")}
             required
           />
         </div>
@@ -119,16 +174,24 @@ export function AddressForm({
           <Input
             id={inputId("last_name")}
             name="last_name"
-            defaultValue={address?.last_name}
+            value={formValues.last_name}
+            onChange={handleInputChange("last_name")}
             required
           />
         </div>
         <div className="space-y-2 md:col-span-2">
-          <Label htmlFor={inputId("address_1")}>Address Line 1</Label>
-          <Input
+          <Label htmlFor={inputId("address_1")}>Address</Label>
+          <AddressAutocomplete
             id={inputId("address_1")}
+            defaultValue={formValues.address_1}
+            onValueChange={(value) => updateField("address_1", value)}
+            onSelect={handleAutocompleteSelect}
+          />
+          <input
+            type="hidden"
             name="address_1"
-            defaultValue={address?.address_1}
+            value={formValues.address_1}
+            readOnly
             required
           />
         </div>
@@ -139,7 +202,8 @@ export function AddressForm({
           <Input
             id={inputId("address_2")}
             name="address_2"
-            defaultValue={address?.address_2}
+            value={formValues.address_2}
+            onChange={handleInputChange("address_2")}
           />
         </div>
         <div className="space-y-2">
@@ -147,7 +211,19 @@ export function AddressForm({
           <Input
             id={inputId("city")}
             name="city"
-            defaultValue={address?.city}
+            value={formValues.city}
+            onChange={handleInputChange("city")}
+            required
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor={inputId("province")}>State</Label>
+          <Input
+            id={inputId("province")}
+            name="province"
+            value={formValues.province}
+            onChange={handleInputChange("province")}
+            placeholder="TAS"
             required
           />
         </div>
@@ -156,7 +232,8 @@ export function AddressForm({
           <Input
             id={inputId("postal_code")}
             name="postal_code"
-            defaultValue={address?.postal_code}
+            value={formValues.postal_code}
+            onChange={handleInputChange("postal_code")}
             required
           />
         </div>
@@ -165,7 +242,8 @@ export function AddressForm({
           <Input
             id={inputId("country_code")}
             name="country_code"
-            defaultValue={address?.country_code || "AU"}
+            value={formValues.country_code}
+            onChange={handleInputChange("country_code")}
             placeholder="AU"
             required
           />
@@ -176,7 +254,8 @@ export function AddressForm({
             id={inputId("phone")}
             name="phone"
             type="tel"
-            defaultValue={address?.phone}
+            value={formValues.phone}
+            onChange={handleInputChange("phone")}
           />
         </div>
       </div>

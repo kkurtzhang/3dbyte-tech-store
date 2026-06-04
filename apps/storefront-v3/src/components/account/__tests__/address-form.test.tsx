@@ -40,6 +40,11 @@ jest.mock("next/link", () => ({
   }) => <a href={href}>{children}</a>,
 }))
 
+jest.mock("lucide-react", () => ({
+  ChevronDown: () => <span />,
+  Plus: () => <span />,
+}))
+
 jest.mock("@/features/checkout/components/address-autocomplete", () => ({
   AddressAutocomplete: ({
     defaultValue,
@@ -49,7 +54,9 @@ jest.mock("@/features/checkout/components/address-autocomplete", () => ({
   }: {
     defaultValue?: string
     id?: string
+    // eslint-disable-next-line no-unused-vars
     onSelect: (address: typeof autocompleteAddress) => void
+    // eslint-disable-next-line no-unused-vars
     onValueChange?: (value: string) => void
   }) => (
     <div>
@@ -58,7 +65,7 @@ jest.mock("@/features/checkout/components/address-autocomplete", () => ({
         id={id}
         onChange={(event) => onValueChange?.(event.target.value)}
         role="combobox"
-        defaultValue={defaultValue}
+        value={defaultValue}
       />
       <button type="button" onClick={() => onSelect(autocompleteAddress)}>
         Use Homestead suggestion
