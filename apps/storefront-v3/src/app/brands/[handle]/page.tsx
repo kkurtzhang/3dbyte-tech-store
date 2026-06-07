@@ -120,16 +120,12 @@ function BrandHeaderContent({
   description,
   displayName,
   logo,
-  productCount,
   richDescription,
-  showProductCount,
 }: {
   description: string
   displayName: string
   logo?: { alternativeText?: string | null; url?: string | null } | null
-  productCount?: number
   richDescription?: string | null
-  showProductCount?: boolean
 }) {
   const logoUrl = resolveStrapiMediaUrl(logo?.url)
   const logoAlt = logo?.alternativeText?.trim() || `${displayName} logo`
@@ -148,11 +144,6 @@ function BrandHeaderContent({
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{displayName}</h1>
         <p className="font-mono text-sm text-muted-foreground">{description}</p>
-        {showProductCount && typeof productCount === "number" && (
-          <p className="font-mono text-sm text-muted-foreground">
-            {productCount} {productCount === 1 ? "product" : "products"}
-          </p>
-        )}
         {richDescription && (
           <div
             className="prose prose-sm mt-3 max-w-none text-muted-foreground dark:prose-invert"
@@ -300,9 +291,7 @@ export default async function BrandPage({
             description={summary}
             displayName={displayName}
             logo={logo}
-            productCount={result.totalCount}
             richDescription={richDescription}
-            showProductCount
           />
           {result.degradedMode && (
             <span className="font-mono text-sm text-amber-500">

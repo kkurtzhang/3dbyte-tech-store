@@ -140,4 +140,17 @@ describe("BrandPage", () => {
       "http://localhost:1337/uploads/polymaker-logo.png"
     )
   })
+
+  it("keeps the product count off the brand story header", async () => {
+    mockGetBrandDescriptionByHandle.mockResolvedValue(null)
+
+    render(
+      await BrandPage({
+        params: Promise.resolve({ handle: "polymaker" }),
+        searchParams: Promise.resolve({}),
+      })
+    )
+
+    expect(screen.queryByText("1 product")).not.toBeInTheDocument()
+  })
 })
