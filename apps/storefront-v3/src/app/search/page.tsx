@@ -1,6 +1,7 @@
 import { SearchInput } from "@/features/search/components/search-input";
 import { SearchResults } from "@/features/search/components/search-results";
 import { searchProducts, type ProductSearchParams } from "@/lib/search/products";
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ListingLayout } from "@/components/layout/listing-layout";
 import { SearchFilters } from "@/components/filters";
@@ -25,9 +26,32 @@ interface SearchPageProps {
   }>;
 }
 
+function normalizeSearchQuery(query?: string) {
+  return query?.trim().replace(/\s+/g, " ").slice(0, 80) || ""
+}
+
+export async function generateMetadata({
+  searchParams,
+}: Pick<SearchPageProps, "searchParams">): Promise<Metadata> {
+  const params = await searchParams
+  const query = normalizeSearchQuery(params.q)
+
+  if (!query) {
+    return {
+      title: "Search products",
+      description: "Search 3D printing products, brands, materials, and parts.",
+    }
+  }
+
+  return {
+    title: `Search results for "${query}"`,
+    description: `Search results for ${query} at 3D Byte Tech Store.`,
+  }
+}
+
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const params = await searchParams;
-  const query = params.q || "";
+  const query = normalizeSearchQuery(params.q);
   const sort = params.sort || "newest";
   const effectiveInStock = params.inStock !== "false";
   const pricing = await getPricingContext();

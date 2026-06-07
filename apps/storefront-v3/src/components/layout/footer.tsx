@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SiGithub, SiX, SiDiscord } from "@icons-pack/react-simple-icons";
+import { SiGithub, SiX } from "@icons-pack/react-simple-icons";
 import { PaymentMethodSupport } from "@/components/ui/payment-method-support";
 import { BrandLogo } from "./brand-logo";
 import { NewsletterSignup } from "./newsletter-signup";
@@ -35,34 +35,42 @@ export function Footer() {
             <ul className="space-y-3">
               <li>
                 <Link
-                  href="/shop?category=Filament"
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Filaments
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/shop?category=Printers"
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Printers
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/shop?category=Components"
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Components
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="/shop"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   All Products
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/collections"
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Collections
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/brands"
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Brands
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/deals"
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Deals
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/bundles"
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Bundles
                 </Link>
               </li>
             </ul>
@@ -84,10 +92,10 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/downloads"
+                  href="/shipping"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  Download Center
+                  Shipping
                 </Link>
               </li>
               <li>
@@ -100,10 +108,10 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/contact"
+                  href="/track-order"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  Contact Us
+                  Track Order
                 </Link>
               </li>
               <li>
@@ -112,6 +120,14 @@ export function Footer() {
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   FAQs
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/contact"
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Contact Us
                 </Link>
               </li>
             </ul>
@@ -141,10 +157,10 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/community"
+                  href="/downloads"
                   className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  Community
+                  Download Center
                 </Link>
               </li>
               <li>
@@ -180,15 +196,6 @@ export function Footer() {
                   aria-label="Twitter"
                 >
                   <SiX className="h-5 w-5" />
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="https://discord.gg/3dbyte"
-                  className="text-muted-foreground transition-colors hover:text-foreground"
-                  aria-label="Discord"
-                >
-                  <SiDiscord className="h-5 w-5" />
                 </Link>
               </li>
             </ul>

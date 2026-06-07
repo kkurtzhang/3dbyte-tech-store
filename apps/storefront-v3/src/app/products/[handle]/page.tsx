@@ -33,7 +33,7 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${product.title} | 3D Byte Tech Store`,
+    title: product.title,
     description: product.description,
     openGraph: {
       title: product.title,

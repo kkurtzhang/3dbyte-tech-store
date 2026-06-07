@@ -37,11 +37,21 @@ export async function POST(request: NextRequest) {
     const { email, firstName, lastName } = parsed.data
 
     const backendUrl = resolveMedusaBaseUrl({ isServer: true })
+    const publishableKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+
+    if (!publishableKey) {
+      return NextResponse.json(
+        { message: "Newsletter configuration is missing." },
+        { status: 500 }
+      )
+    }
 
     const response = await fetch(`${backendUrl}/store/newsletter/subscribe`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "x-publishable-api-key": publishableKey,
+        "x-forwarded-for": ip,
       },
       body: JSON.stringify({
         email,

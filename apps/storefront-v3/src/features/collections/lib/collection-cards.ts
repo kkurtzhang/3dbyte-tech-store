@@ -1,4 +1,5 @@
 import type { CollectionDescriptionData } from "@/lib/strapi/types"
+import { resolveStrapiMediaUrl } from "@/lib/strapi/media"
 
 export interface CollectionCardSource {
   id: string
@@ -42,14 +43,6 @@ function getMetadataImage(metadata: unknown): string | undefined {
 
   const image = (metadata as Record<string, unknown>).image
   return typeof image === "string" && image.trim() ? image : undefined
-}
-
-export function resolveStrapiMediaUrl(url?: string | null): string | undefined {
-  if (!url) return undefined
-  if (url.startsWith("http://") || url.startsWith("https://")) return url
-
-  const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337"
-  return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`
 }
 
 export function buildCollectionContentByHandle(

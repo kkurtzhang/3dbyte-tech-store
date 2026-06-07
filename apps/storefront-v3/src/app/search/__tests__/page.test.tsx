@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react"
 
-import SearchPage from "../page"
+import SearchPage, { generateMetadata } from "../page"
 
 import { getPricingContext } from "@/lib/medusa/regions.server"
 import { searchProducts } from "@/lib/search/products"
@@ -97,6 +97,31 @@ describe("SearchPage", () => {
       expect.objectContaining({
         in_stock: false,
         inventory_quantity: 0,
+      })
+    )
+  })
+
+  it("uses the search term in page metadata", async () => {
+    await expect(
+      generateMetadata({
+        searchParams: Promise.resolve({ q: "petg filament" }),
+      })
+    ).resolves.toEqual(
+      expect.objectContaining({
+        title: 'Search results for "petg filament"',
+        description: expect.stringContaining("petg filament"),
+      })
+    )
+  })
+
+  it("uses browse metadata when no query is present", async () => {
+    await expect(
+      generateMetadata({
+        searchParams: Promise.resolve({}),
+      })
+    ).resolves.toEqual(
+      expect.objectContaining({
+        title: "Search products",
       })
     )
   })
