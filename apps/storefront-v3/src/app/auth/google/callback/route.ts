@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server"
 
 import {
+  CUSTOMER_ACCOUNT_REAUTH_COOKIE,
+  GOOGLE_OAUTH_LINK_INTENT_COOKIE,
+  GOOGLE_OAUTH_LINK_NONCE_COOKIE,
   GOOGLE_OAUTH_MODE_COOKIE,
   GOOGLE_OAUTH_REDIRECT_COOKIE,
+  getCustomerAccountReauthCookieOptions,
 } from "@/lib/auth/session-cookies"
 import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
 
@@ -32,6 +36,13 @@ function getLinkMode(cookieHeader: string | null) {
   return getCookieValue(cookieHeader, GOOGLE_OAUTH_MODE_COOKIE) === "link"
 }
 
+function getGoogleLinkProof(cookieHeader: string | null) {
+  const intentId = getCookieValue(cookieHeader, GOOGLE_OAUTH_LINK_INTENT_COOKIE)
+  const nonce = getCookieValue(cookieHeader, GOOGLE_OAUTH_LINK_NONCE_COOKIE)
+
+  return intentId && nonce ? { intentId, nonce } : null
+}
+
 function buildGoogleStatusRedirect(
   requestUrl: URL,
   redirectPath: string,
@@ -57,6 +68,8 @@ function redirectGoogleLinkStatus({
 
   response.cookies.delete(GOOGLE_OAUTH_MODE_COOKIE)
   response.cookies.delete(GOOGLE_OAUTH_REDIRECT_COOKIE)
+  response.cookies.delete(GOOGLE_OAUTH_LINK_INTENT_COOKIE)
+  response.cookies.delete(GOOGLE_OAUTH_LINK_NONCE_COOKIE)
 
   return response
 }
@@ -90,31 +103,49 @@ async function claimGoogleCustomerAccount({
   medusaBaseUrl,
   token,
   email,
+  linkProof,
 }: {
   medusaBaseUrl: string
   token: string
   email: string
+  linkProof?: { intentId: string; nonce: string } | null
 }) {
-  const response = await fetch(`${medusaBaseUrl}/store/customers/claim-account`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      Authorization: `Bearer ${token}`,
-      ...getPublishableApiHeaders(),
-    },
-    body: JSON.stringify({ email, source: "google" }),
-    cache: "no-store",
-  })
+  const response = await fetch(
+    `${medusaBaseUrl}/store/customers/claim-account`,
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        Authorization: `Bearer ${token}`,
+        ...getPublishableApiHeaders(),
+      },
+      body: JSON.stringify({
+        email,
+        source: "google",
+        ...(linkProof
+          ? {
+              link_intent_id: linkProof.intentId,
+              link_nonce: linkProof.nonce,
+            }
+          : {}),
+      }),
+      cache: "no-store",
+    }
+  )
+  const data = await readJsonResponse(response)
 
   if (response.status === 404) {
-    return false
+    return null
   }
 
   if (!response.ok) {
     throw new Error("Failed to claim Google customer account")
   }
 
-  return true
+  return {
+    reauthToken:
+      typeof data.reauth_token === "string" ? data.reauth_token : null,
+  }
 }
 
 async function refreshCustomerToken({
@@ -189,6 +220,7 @@ export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const cookieHeader = request.headers.get("cookie")
   const isLinkMode = getLinkMode(cookieHeader)
+  const linkProof = getGoogleLinkProof(cookieHeader)
   const redirectPath = getStoredRedirectPath(cookieHeader)
   const failureRedirect = buildStorefrontRedirect(
     requestUrl,
@@ -204,12 +236,17 @@ export async function GET(request: Request) {
     return NextResponse.redirect(failureRedirect)
   }
 
+  if (isLinkMode && !linkProof) {
+    return redirectGoogleLinkStatus({
+      requestUrl,
+      redirectPath,
+      status: "connect_failed",
+    })
+  }
+
   try {
     const medusaBaseUrl = resolveMedusaBaseUrl({ isServer: true })
-    const callbackUrl = new URL(
-      "/auth/customer/google/callback",
-      medusaBaseUrl
-    )
+    const callbackUrl = new URL("/auth/customer/google/callback", medusaBaseUrl)
     callbackUrl.search = requestUrl.search
 
     const callbackResponse = await fetch(callbackUrl.toString(), {
@@ -227,23 +264,25 @@ export async function GET(request: Request) {
 
     const callbackToken = callbackData.token as string
     const decoded = decodeJwtPayload(callbackToken)
-    const shouldCreateCustomer = !decoded?.actor_id
+    const shouldResolveCustomer = isLinkMode || !decoded?.actor_id
     let sessionToken = callbackToken
+    let reauthToken: string | null = null
 
-    if (shouldCreateCustomer) {
+    if (shouldResolveCustomer) {
       const email = decoded?.user_metadata?.email
 
       if (typeof email !== "string" || !email.includes("@")) {
         throw new Error("Google OAuth callback did not include an email")
       }
 
-      const claimedAccount = await claimGoogleCustomerAccount({
+      const claimResult = await claimGoogleCustomerAccount({
         medusaBaseUrl,
         token: callbackToken,
         email,
+        linkProof,
       })
 
-      if (!claimedAccount) {
+      if (!claimResult) {
         if (isLinkMode) {
           return redirectGoogleLinkStatus({
             requestUrl,
@@ -257,6 +296,8 @@ export async function GET(request: Request) {
           token: callbackToken,
           email,
         })
+      } else {
+        reauthToken = claimResult.reauthToken
       }
 
       sessionToken = await refreshCustomerToken({
@@ -276,6 +317,13 @@ export async function GET(request: Request) {
         : buildStorefrontRedirect(requestUrl, redirectPath)
     )
     setCustomerSessionCookies(response, sessionToken)
+    if (reauthToken) {
+      response.cookies.set(
+        CUSTOMER_ACCOUNT_REAUTH_COOKIE,
+        reauthToken,
+        getCustomerAccountReauthCookieOptions()
+      )
+    }
 
     return response
   } catch (error) {
@@ -285,6 +333,8 @@ export async function GET(request: Request) {
     if (isLinkMode) {
       response.cookies.delete(GOOGLE_OAUTH_MODE_COOKIE)
       response.cookies.delete(GOOGLE_OAUTH_REDIRECT_COOKIE)
+      response.cookies.delete(GOOGLE_OAUTH_LINK_INTENT_COOKIE)
+      response.cookies.delete(GOOGLE_OAUTH_LINK_NONCE_COOKIE)
     }
 
     return response

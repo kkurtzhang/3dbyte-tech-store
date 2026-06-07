@@ -1,6 +1,17 @@
-import { Modules } from "@medusajs/framework/utils";
-
+import { consolidateGuestHistory } from "../../../../../../modules/account-coordination/consolidate-guest-history";
 import { POST } from "../route";
+
+jest.mock(
+  "../../../../../../modules/account-coordination/consolidate-guest-history",
+  () => ({
+    consolidateGuestHistory: jest.fn(),
+  }),
+);
+
+const mockConsolidateGuestHistory =
+  consolidateGuestHistory as jest.MockedFunction<
+    typeof consolidateGuestHistory
+  >;
 
 function createResponse() {
   return {
@@ -10,59 +21,50 @@ function createResponse() {
 }
 
 describe("POST /store/customers/me/link-guest-orders", () => {
-  it("links same-email guest orders to the authenticated customer", async () => {
-    const customerModule = {
-      retrieveCustomer: jest.fn().mockResolvedValue({
-        id: "cus_123",
-        email: "Ava@Example.COM",
-      }),
-    };
-    const orderModule = {
-      updateOrders: jest.fn().mockResolvedValue([{ id: "order_guest" }]),
-    };
-    const query = {
-      graph: jest.fn().mockResolvedValue({
-        data: [
-          {
-            id: "order_guest",
-            email: "ava@example.com",
-            customer_id: null,
-          },
-          {
-            id: "order_existing",
-            email: "ava@example.com",
-            customer_id: "cus_123",
-          },
-        ],
-      }),
-    };
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("requires an authenticated registered customer", async () => {
+    const res = createResponse();
+
+    await POST({ auth_context: undefined } as never, res as never);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({ message: "Unauthorized" });
+  });
+
+  it("delegates to the rollout-controlled guest-history coordinator", async () => {
+    mockConsolidateGuestHistory.mockResolvedValue({
+      mode: "dry_run",
+      status: "completed",
+      run_id: "gcr_123",
+      transferred_order_ids: ["order_guest"],
+      attached_cart_ids: ["cart_guest"],
+      attached_support_ticket_ids: [],
+      skipped_items: [],
+      profile_fields_filled: ["first_name"],
+    });
+    const scope = { resolve: jest.fn() };
     const req = {
       auth_context: { actor_id: "cus_123" },
-      scope: {
-        resolve: jest.fn((key: string) => {
-          if (key === Modules.CUSTOMER) return customerModule;
-          if (key === Modules.ORDER) return orderModule;
-          if (key === "query") return query;
-          throw new Error(`Unexpected module ${key}`);
-        }),
-      },
+      scope,
     };
     const res = createResponse();
 
     await POST(req as never, res as never);
 
-    expect(query.graph).toHaveBeenCalledWith(
-      expect.objectContaining({
-        entity: "order",
-        filters: { email: "ava@example.com" },
+    expect(mockConsolidateGuestHistory).toHaveBeenCalledWith({
+      container: scope,
+      customerId: "cus_123",
+    });
+    expect(res.json).toHaveBeenCalledWith({
+      consolidation: expect.objectContaining({
+        mode: "dry_run",
+        status: "completed",
+        transferred_order_ids: ["order_guest"],
       }),
-    );
-    expect(orderModule.updateOrders).toHaveBeenCalledWith([
-      {
-        id: "order_guest",
-        customer_id: "cus_123",
-      },
-    ]);
-    expect(res.json).toHaveBeenCalledWith({ linked: 1 });
+      linked: 1,
+    });
   });
 });
