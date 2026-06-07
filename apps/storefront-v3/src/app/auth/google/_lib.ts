@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 
 import {
   CUSTOMER_TOKEN_COOKIE,
+  GOOGLE_OAUTH_LINK_INTENT_COOKIE,
+  GOOGLE_OAUTH_LINK_NONCE_COOKIE,
   GOOGLE_OAUTH_MODE_COOKIE,
   GOOGLE_OAUTH_REDIRECT_COOKIE,
   SESSION_COOKIE,
@@ -66,6 +68,8 @@ export function setCustomerSessionCookies(
   response.cookies.set(CUSTOMER_TOKEN_COOKIE, token, sessionCookieOptions)
   response.cookies.delete(GOOGLE_OAUTH_MODE_COOKIE)
   response.cookies.delete(GOOGLE_OAUTH_REDIRECT_COOKIE)
+  response.cookies.delete(GOOGLE_OAUTH_LINK_INTENT_COOKIE)
+  response.cookies.delete(GOOGLE_OAUTH_LINK_NONCE_COOKIE)
 }
 
 export function decodeJwtPayload(token: string): JwtPayload | null {

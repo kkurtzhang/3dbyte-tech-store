@@ -15,19 +15,27 @@ import { EMAIL_BRAND_LOGO_ALT, getEmailBrandLogoUrl } from "../brand-assets";
 
 type CustomerEmailVerificationEmailProps = {
   customerEmail: string;
+  purpose?: "email_change" | "registration";
   storeName: string;
   verificationUrl: string;
 };
 
 export default function CustomerEmailVerificationEmail({
   customerEmail,
+  purpose = "registration",
   storeName,
   verificationUrl,
 }: CustomerEmailVerificationEmailProps) {
+  const isEmailChange = purpose === "email_change";
+
   return (
     <Html>
       <Head />
-      <Preview>Confirm your {storeName} account email.</Preview>
+      <Preview>
+        {isEmailChange
+          ? `Confirm your new ${storeName} email.`
+          : `Confirm your ${storeName} account email.`}
+      </Preview>
       <Body style={bodyStyle}>
         <Container style={containerStyle}>
           <Img
@@ -38,24 +46,33 @@ export default function CustomerEmailVerificationEmail({
             width="180"
           />
 
-          <Text style={eyebrowStyle}>Account confirmation</Text>
-          <Heading style={headingStyle}>Confirm your email address.</Heading>
+          <Text style={eyebrowStyle}>
+            {isEmailChange ? "Account security" : "Account confirmation"}
+          </Text>
+          <Heading style={headingStyle}>
+            {isEmailChange
+              ? "Confirm your new email address."
+              : "Confirm your email address."}
+          </Heading>
 
           <Text style={textStyle}>Hi there,</Text>
           <Text style={textStyle}>
-            Please confirm that {customerEmail} is the email address for your{" "}
-            {storeName} account.
+            Please confirm that {customerEmail}{" "}
+            {isEmailChange
+              ? `should replace the current email for your ${storeName} account.`
+              : `is the email address for your ${storeName} account.`}
           </Text>
 
           <Section style={buttonSectionStyle}>
             <a href={verificationUrl} style={buttonStyle}>
-              Confirm email
+              {isEmailChange ? "Confirm new email" : "Confirm email"}
             </a>
           </Section>
 
           <Text style={mutedTextStyle}>
-            This link expires soon. If you did not create this account, you can
-            ignore this email.
+            This link expires soon. If you did not request this{" "}
+            {isEmailChange ? "email change" : "account"}, you can ignore this
+            email.
           </Text>
 
           <Hr style={dividerStyle} />

@@ -5,18 +5,25 @@ import type { RenderedEmail } from "../types";
 
 type RenderCustomerEmailVerificationEmailInput = {
   customerEmail: string;
+  purpose?: "email_change" | "registration";
   storeName?: string;
   verificationUrl: string;
 };
 
 export const renderCustomerEmailVerificationEmail = async ({
   customerEmail,
+  purpose = "registration",
   storeName = "3D Byte Tech",
   verificationUrl,
 }: RenderCustomerEmailVerificationEmailInput): Promise<RenderedEmail> => {
-  const subject = `Confirm your ${storeName} account`;
+  const isEmailChange = purpose === "email_change";
+  const subject = isEmailChange
+    ? `Confirm your new ${storeName} email`
+    : `Confirm your ${storeName} account`;
   const text = [
-    `Confirm your ${storeName} account email.`,
+    isEmailChange
+      ? `Confirm this new email for your ${storeName} account.`
+      : `Confirm your ${storeName} account email.`,
     "",
     `Email: ${customerEmail}`,
     `Confirm email: ${verificationUrl}`,
@@ -27,6 +34,7 @@ export const renderCustomerEmailVerificationEmail = async ({
     await render(
       <CustomerEmailVerificationEmail
         customerEmail={customerEmail}
+        purpose={purpose}
         storeName={storeName}
         verificationUrl={verificationUrl}
       />,

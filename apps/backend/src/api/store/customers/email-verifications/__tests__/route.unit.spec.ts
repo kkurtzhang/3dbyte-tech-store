@@ -1,14 +1,30 @@
 import { Modules } from "@medusajs/framework/utils";
 
+import { consolidateGuestHistory } from "../../../../../modules/account-coordination/consolidate-guest-history";
 import { GET, POST } from "../route";
 
-jest.mock("../../../../../emails/renderers/customer-email-verification", () => ({
-  renderCustomerEmailVerificationEmail: jest.fn(async ({ verificationUrl }) => ({
-    html: `<a href="${verificationUrl}">Confirm email</a>`,
-    subject: "Confirm your 3D Byte Tech account",
-    text: `Confirm email: ${verificationUrl}`,
-  })),
-}))
+jest.mock(
+  "../../../../../modules/account-coordination/consolidate-guest-history",
+  () => ({
+    consolidateGuestHistory: jest.fn().mockResolvedValue({
+      mode: "dry_run",
+      status: "completed",
+      transferred_order_ids: [],
+    }),
+  }),
+);
+jest.mock(
+  "../../../../../emails/renderers/customer-email-verification",
+  () => ({
+    renderCustomerEmailVerificationEmail: jest.fn(
+      async ({ verificationUrl }) => ({
+        html: `<a href="${verificationUrl}">Confirm email</a>`,
+        subject: "Confirm your 3D Byte Tech account",
+        text: `Confirm email: ${verificationUrl}`,
+      }),
+    ),
+  }),
+);
 
 function createResponse() {
   return {
@@ -20,11 +36,15 @@ function createResponse() {
 
 function createRequest({
   actorId = "cus_123",
+  authModule,
+  coordinationModule,
   customerModule,
   notificationModule,
   query = {},
 }: {
   actorId?: string | null;
+  authModule?: Record<string, jest.Mock>;
+  coordinationModule?: Record<string, jest.Mock>;
   customerModule: Record<string, jest.Mock>;
   notificationModule?: Record<string, jest.Mock>;
   query?: Record<string, unknown>;
@@ -36,6 +56,14 @@ function createRequest({
       resolve: jest.fn((key: string) => {
         if (key === Modules.CUSTOMER) {
           return customerModule;
+        }
+
+        if (key === Modules.AUTH) {
+          return authModule;
+        }
+
+        if (key === "accountCoordination") {
+          return coordinationModule;
         }
 
         if (key === "notification") {
@@ -125,9 +153,9 @@ describe("store customer email verification route", () => {
   });
 
   it("confirms a valid token and redirects customers to sign in", async () => {
-    const {
-      createCustomerEmailVerificationToken,
-    } = await import("../../../../../lib/customer-verification/tokens");
+    const { createCustomerEmailVerificationToken } = await import(
+      "../../../../../lib/customer-verification/tokens"
+    );
     const token = createCustomerEmailVerificationToken({
       customerId: "cus_123",
       email: "ava@example.com",
@@ -161,8 +189,94 @@ describe("store customer email verification route", () => {
         email_verified_at: expect.any(String),
       }),
     });
+    expect(consolidateGuestHistory).toHaveBeenCalledWith({
+      container: req.scope,
+      customerId: "cus_123",
+    });
     expect(res.redirect).toHaveBeenCalledWith(
       "https://store.example.com/sign-in?verified=1",
+    );
+  });
+
+  it("applies a verified pending email change without claiming historical orders", async () => {
+    const { createCustomerEmailVerificationToken } = await import(
+      "../../../../../lib/customer-verification/tokens"
+    );
+    const token = createCustomerEmailVerificationToken({
+      customerId: "cus_123",
+      email: "new@example.com",
+      expiresInSeconds: 60,
+      issuedAt: new Date(),
+      secret: "test-secret",
+    });
+    const customerModule = {
+      retrieveCustomer: jest.fn().mockResolvedValue({
+        id: "cus_123",
+        email: "old@example.com",
+        metadata: {
+          email_verification_status: "verified",
+          email_verified_at: "2026-06-04T00:00:00.000Z",
+          pending_email_change: {
+            email: "new@example.com",
+            requested_at: "2026-06-07T00:00:00.000Z",
+          },
+        },
+      }),
+      listCustomers: jest.fn().mockResolvedValue([]),
+      updateCustomers: jest.fn().mockResolvedValue({ id: "cus_123" }),
+    };
+    const authModule = {
+      listAuthIdentities: jest.fn().mockResolvedValue([
+        {
+          id: "auth_123",
+          app_metadata: { customer_id: "cus_123" },
+          provider_identities: [
+            {
+              id: "pi_email",
+              provider: "emailpass",
+              entity_id: "old@example.com",
+            },
+          ],
+        },
+      ]),
+      listProviderIdentities: jest.fn().mockResolvedValue([]),
+      updateProviderIdentities: jest.fn().mockResolvedValue({
+        id: "pi_email",
+        entity_id: "new@example.com",
+      }),
+    };
+    const coordinationModule = {
+      createAccountSecurityEvents: jest.fn().mockResolvedValue({ id: "ase_1" }),
+    };
+    const notificationModule = {
+      createNotifications: jest.fn().mockResolvedValue([]),
+    };
+    const req = createRequest({
+      actorId: null,
+      authModule,
+      coordinationModule,
+      customerModule,
+      notificationModule,
+      query: { token },
+    });
+    const res = createResponse();
+
+    await GET(req as never, res as never);
+
+    expect(authModule.updateProviderIdentities).toHaveBeenCalledWith({
+      id: "pi_email",
+      entity_id: "new@example.com",
+    });
+    expect(customerModule.updateCustomers).toHaveBeenCalledWith({
+      id: "cus_123",
+      email: "new@example.com",
+      metadata: expect.not.objectContaining({
+        pending_email_change: expect.anything(),
+      }),
+    });
+    expect(consolidateGuestHistory).not.toHaveBeenCalled();
+    expect(res.redirect).toHaveBeenCalledWith(
+      "https://store.example.com/account/settings?email=changed",
     );
   });
 });

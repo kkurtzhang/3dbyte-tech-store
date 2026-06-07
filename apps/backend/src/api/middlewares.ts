@@ -31,6 +31,10 @@ import { PostStoreProductRegistrationSchema } from "./store/customers/me/product
 import { PostAdminProductRegistrationSchema } from "./admin/product-registrations/route";
 import { PostAdminProductEntitlementFileSchema } from "./admin/product-entitlement-files/route";
 import { PostStoreClaimCustomerAccountSchema } from "./store/customers/claim-account/route";
+import { PostStoreGoogleLinkIntentSchema } from "./store/customers/me/google-link-intents/route";
+import { PostStoreEmailpassLoginMethodSchema } from "./store/customers/me/login-methods/emailpass/route";
+import { PostStoreCustomerEmailChangeSchema } from "./store/customers/me/email-change-requests/route";
+import { GetAdminIdentityIssuesSchema } from "./admin/identity-issues/route";
 
 export const GetBrandsSchema = createFindParams();
 
@@ -221,8 +225,21 @@ export default defineMiddlewares({
     },
     {
       matcher: "/admin/support-tickets*",
+      middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
+    },
+    {
+      matcher: "/admin/customers/:id/account-security",
+      methods: ["GET"],
+      middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
+    },
+    {
+      matcher: "/admin/identity-issues",
+      methods: ["GET"],
       middlewares: [
         authenticate("user", ["session", "bearer", "api-key"]),
+        validateAndTransformQuery(GetAdminIdentityIssuesSchema, {
+          isList: false,
+        }),
       ],
     },
     {
@@ -273,6 +290,40 @@ export default defineMiddlewares({
     {
       matcher: "/store/customers/me/login-methods",
       methods: ["GET"],
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
+      matcher: "/store/customers/me/account-security",
+      methods: ["GET"],
+      middlewares: [authenticate("customer", ["session", "bearer"])],
+    },
+    {
+      matcher: "/store/customers/me/email-change-requests",
+      methods: ["POST"],
+      middlewares: [
+        authenticate("customer", ["session", "bearer"]),
+        validateAndTransformBody(PostStoreCustomerEmailChangeSchema),
+      ],
+    },
+    {
+      matcher: "/store/customers/me/google-link-intents",
+      methods: ["POST"],
+      middlewares: [
+        authenticate("customer", ["session", "bearer"]),
+        validateAndTransformBody(PostStoreGoogleLinkIntentSchema),
+      ],
+    },
+    {
+      matcher: "/store/customers/me/login-methods/emailpass",
+      methods: ["POST"],
+      middlewares: [
+        authenticate("customer", ["session", "bearer"]),
+        validateAndTransformBody(PostStoreEmailpassLoginMethodSchema),
+      ],
+    },
+    {
+      matcher: "/store/customers/me/login-methods/google",
+      methods: ["DELETE"],
       middlewares: [authenticate("customer", ["session", "bearer"])],
     },
     {

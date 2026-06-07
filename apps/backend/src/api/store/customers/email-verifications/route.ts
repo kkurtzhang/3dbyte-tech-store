@@ -8,12 +8,14 @@ import {
   verifyCustomerEmailVerificationToken,
 } from "../../../../lib/customer-verification/tokens";
 import { resolveSenderProfileFromContainer } from "../../../../lib/email-settings/sender-profiles";
+import { consolidateGuestHistory } from "../../../../modules/account-coordination/consolidate-guest-history";
+import {
+  applyPendingEmailChange,
+  getPendingEmailChange,
+  type EmailChangeCustomer,
+} from "../../../../modules/account-coordination/email-change";
 
-type CustomerRecord = {
-  id: string;
-  email?: string | null;
-  metadata?: Record<string, unknown> | null;
-};
+type CustomerRecord = EmailChangeCustomer;
 
 const DEFAULT_TOKEN_EXPIRES_IN_SECONDS = 60 * 60 * 24;
 
@@ -86,8 +88,13 @@ export async function POST(
 
   const customerModule = req.scope.resolve<{
     retrieveCustomer: (id: string) => Promise<CustomerRecord>;
+    listCustomers: (
+      filters: Record<string, unknown>,
+      config?: Record<string, unknown>,
+    ) => Promise<CustomerRecord[]>;
     updateCustomers: (input: {
       id: string;
+      email?: string;
       metadata: Record<string, unknown>;
     }) => Promise<unknown>;
   }>(Modules.CUSTOMER);
@@ -181,13 +188,39 @@ export async function GET(
   const customer = await customerModule.retrieveCustomer(
     verification.payload.customer_id,
   );
+  const normalizedCurrentEmail = customer?.email
+    ? normalizeEmail(customer.email)
+    : null;
+  const pendingEmailChange = customer ? getPendingEmailChange(customer) : null;
 
   if (
     !customer ||
     !customer.email ||
-    customer.id !== verification.payload.customer_id ||
-    normalizeEmail(customer.email) !== verification.payload.email
+    customer.id !== verification.payload.customer_id
   ) {
+    res.redirect(`${getStorefrontUrl()}/sign-in?verified=0`);
+    return;
+  }
+
+  if (
+    normalizedCurrentEmail !== verification.payload.email &&
+    pendingEmailChange?.email === verification.payload.email
+  ) {
+    const applied = await applyPendingEmailChange({
+      container: req.scope,
+      customer,
+      email: verification.payload.email,
+    });
+
+    res.redirect(
+      applied
+        ? `${getStorefrontUrl()}/account/settings?email=changed`
+        : `${getStorefrontUrl()}/account/settings?email=change_failed`,
+    );
+    return;
+  }
+
+  if (normalizedCurrentEmail !== verification.payload.email) {
     res.redirect(`${getStorefrontUrl()}/sign-in?verified=0`);
     return;
   }
@@ -196,6 +229,18 @@ export async function GET(
     id: customer.id,
     metadata: buildVerifiedMetadata(customer),
   });
+
+  try {
+    await consolidateGuestHistory({
+      container: req.scope,
+      customerId: customer.id,
+    });
+  } catch (error) {
+    console.error("Guest-history consolidation after verification failed:", {
+      customer_id: customer.id,
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
 
   res.redirect(`${getStorefrontUrl()}/sign-in?verified=1`);
 }

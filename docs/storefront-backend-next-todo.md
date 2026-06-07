@@ -32,6 +32,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 - Launch-gate account-address fixes are on staging: the slide-over form was replaced with URL-driven inline add/edit panels, Medusa v2 address fields are represented, Australian address autocomplete/state fields are wired, saves reset and hide the form, and account nav/auth refresh behavior was polished.
 - Launch-gate shipping-rate fixes are on staging: Karrio checkout rate shopping no longer sends stale hardcoded carrier/service filters, carrier-message failures fall back to fixed/manual delivery options instead of raw checkout errors, and known regional Aramex/Karrio `sLACode` lanes are documented for future carrier coverage work.
 - Customer auth launch-gate behavior is decided and covered by the auth follow-up work: email/password signup requires email verification before account access, signup sends a verification email rather than a separate welcome email, same-email guest customer records are claimed/upgraded during signup instead of creating duplicate accounts, Google OAuth links or claims same-email customer records before creating a new customer, storefront forgot/reset password entry points plus a customer password-reset email subscriber exist, and account settings expose login methods with a Connect Google flow for existing accounts.
+- Customer account coordination is implemented on `feature/customer-auth-consolidation` as a Medusa-aligned hybrid: verified exact-email ownership can consolidate separate guest history into a canonical registered customer, Google and email/password identities can share that customer, sensitive provider and email changes require reauthentication, and Medusa Admin exposes provider status plus a read-only Identity Issues queue. It becomes staging baseline only after the protected PR deploy; rollout remains controlled by `off`, `dry_run`, and `live`.
 
 ## Remaining TODO (Priority Order)
 
@@ -65,18 +66,10 @@ These items are no longer open TODOs and should be treated as shipped baseline u
   - Existing support-ticket confirmation guardrails remain intact.
   - Langfuse eval cases include this prompt and fail on unavailable products or stale product URLs.
 
-### Customer auth follow-up: safe login-method unlinking and audit trail (Backend + Storefront)
-
-- Status: linking Google to an existing email/password account is implemented through account settings.
-- Deferred:
-  - Add safe disconnect/unlink controls only after backend can confirm at least one other usable sign-in method remains.
-  - Record login-method link/unlink audit events for support diagnostics.
-  - Add customer-visible copy for what happens if Google is disconnected while email verification is still pending.
-
 ### 0) Security dependency upgrade pass (All apps)
 
 - Problem: `pnpm audit` currently reports high/critical advisories across CMS, backend, storefront, and root tooling. The audit does not currently block builds or CI because CI runs it with `continue-on-error`, but the advisories should be handled before wider staging/product-data work.
-- Last checked: `2026-05-31` on `feature/langfuse-assistant-tracing`; `pnpm audit --audit-level high` reported 228 total advisories, including 9 critical and 96 high, so this remains a dedicated security-upgrade PR rather than part of assistant tracing.
+- Last checked: `2026-06-07` on `feature/customer-auth-consolidation`; `pnpm audit --audit-level=high` reported 239 total advisories, including 9 critical and 104 high, so this remains a dedicated security-upgrade PR rather than part of account coordination.
 - Current audit targets:
   - Upgrade Strapi packages from `5.33.0` toward the latest compatible `5.46.x` line.
   - Upgrade Next.js from `16.1.0` toward `16.2.6+`.
@@ -88,6 +81,16 @@ These items are no longer open TODOs and should be treated as shipped baseline u
   - CMS, backend, and storefront builds pass after upgrades.
   - Strapi admin/content APIs, Medusa backend, storefront core routes, and Meilisearch sync paths are smoke-tested.
   - Lockfile changes are reviewed separately from feature work.
+
+### Future scaling: distributed account-security rate limiting (Backend)
+
+- Current scope: sensitive customer account mutations are throttled per customer and operation in each backend process.
+- Trigger: before scaling Medusa to multiple backend replicas.
+- Deliverable: move account-security rate-limit buckets to shared Redis or another atomic shared store.
+- Acceptance:
+  - Limits are enforced consistently across all backend replicas.
+  - Retry windows and `Retry-After` behavior remain unchanged.
+  - Auth and account-security routes retain focused rate-limit tests.
 
 ### 1) Expand Strapi collection content coverage (CMS Content)
 
