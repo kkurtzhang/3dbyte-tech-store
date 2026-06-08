@@ -18,6 +18,8 @@ const EMAIL_CONFIRMATION_REQUIRED_MESSAGE =
 const EXISTING_IDENTITY_MESSAGE = "Identity with email already exists";
 const EXISTING_CUSTOMER_ACCOUNT_MESSAGE =
   "An account already exists for this email. Please sign in instead.";
+const EXISTING_EMAILPASS_SIGNIN_MESSAGE =
+  "A sign-in already exists for this email. Please sign in or reset your password.";
 const emailSchema = z
   .string()
   .trim()
@@ -104,6 +106,22 @@ function isExistingIdentityError(error: unknown) {
   );
 }
 
+function isUnauthorizedError(error: unknown) {
+  const authError = error as {
+    status?: unknown;
+    statusCode?: unknown;
+    statusText?: unknown;
+    response?: { status?: unknown };
+  };
+
+  return (
+    authError.status === 401 ||
+    authError.statusCode === 401 ||
+    authError.response?.status === 401 ||
+    authError.statusText === "Unauthorized"
+  );
+}
+
 async function getCustomerRegistrationToken(email: string, password: string) {
   try {
     return await sdk.auth.register("customer", "emailpass", {
@@ -115,10 +133,18 @@ async function getCustomerRegistrationToken(email: string, password: string) {
       throw error;
     }
 
-    return await sdk.auth.login("customer", "emailpass", {
-      email,
-      password,
-    });
+    try {
+      return await sdk.auth.login("customer", "emailpass", {
+        email,
+        password,
+      });
+    } catch (loginError) {
+      if (isUnauthorizedError(loginError)) {
+        throw new Error(EXISTING_EMAILPASS_SIGNIN_MESSAGE);
+      }
+
+      throw loginError;
+    }
   }
 }
 

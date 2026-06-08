@@ -117,12 +117,82 @@ type RequestWithAuthContext = MedusaRequest & {
   validatedBody?: ClaimCustomerAccountInput;
 };
 
+type AuthTokenPayload = {
+  actor_type?: unknown;
+  auth_identity_id?: unknown;
+};
+
 const getRequestBody = (req: MedusaRequest): ClaimCustomerAccountInput =>
   ((req as RequestWithAuthContext).validatedBody ||
     req.body) as ClaimCustomerAccountInput;
 
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === "string" && value.trim().length > 0;
+
+const getAuthorizationHeader = (req: MedusaRequest): string | null => {
+  const headers = req.headers as
+    | Headers
+    | Record<string, string | string[] | undefined>
+    | undefined;
+
+  if (!headers) {
+    return null;
+  }
+
+  if (typeof (headers as Headers).get === "function") {
+    return (headers as Headers).get("authorization");
+  }
+
+  const value =
+    (headers as Record<string, string | string[] | undefined>).authorization ||
+    (headers as Record<string, string | string[] | undefined>).Authorization;
+
+  if (Array.isArray(value)) {
+    return value[0] || null;
+  }
+
+  return value || null;
+};
+
+const decodeAuthTokenPayload = (token: string): AuthTokenPayload | null => {
+  const payload = token.split(".")[1];
+
+  if (!payload) {
+    return null;
+  }
+
+  try {
+    const decoded = JSON.parse(
+      Buffer.from(payload, "base64url").toString("utf8"),
+    ) as unknown;
+
+    return decoded && typeof decoded === "object"
+      ? (decoded as AuthTokenPayload)
+      : null;
+  } catch {
+    return null;
+  }
+};
+
+const getBearerAuthIdentityId = (req: MedusaRequest): string | null => {
+  const authorization = getAuthorizationHeader(req);
+  const [scheme, token, extra] = authorization?.trim().split(/\s+/) || [];
+
+  if (scheme?.toLowerCase() !== "bearer" || !token || extra !== undefined) {
+    return null;
+  }
+
+  const payload = decodeAuthTokenPayload(token);
+
+  if (
+    payload?.actor_type !== "customer" ||
+    !isNonEmptyString(payload.auth_identity_id)
+  ) {
+    return null;
+  }
+
+  return payload.auth_identity_id;
+};
 
 const getMetadata = (customer: CustomerRecord): Record<string, unknown> =>
   customer.metadata && typeof customer.metadata === "object"
@@ -371,7 +441,9 @@ export async function POST(
 ): Promise<void> {
   const input = getRequestBody(req);
   const authContext = (req as RequestWithAuthContext).auth_context;
-  const authIdentityId = authContext?.auth_identity_id;
+  const authIdentityId =
+    authContext?.auth_identity_id ||
+    (authContext ? getBearerAuthIdentityId(req) : null);
 
   if (!authIdentityId) {
     res.status(401).json({ message: "Unauthorized" });

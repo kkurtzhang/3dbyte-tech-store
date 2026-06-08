@@ -36,12 +36,16 @@ function createRequest({
   authIdentity,
   coordinationModule = createCoordinationModule(),
   actorId = "",
+  authIdentityId,
+  authorizationToken,
 }: {
   body: Record<string, unknown>;
   customerModule: Record<string, jest.Mock>;
   authIdentity: Record<string, unknown>;
   coordinationModule?: ReturnType<typeof createCoordinationModule>;
   actorId?: string;
+  authIdentityId?: string | null;
+  authorizationToken?: string;
 }) {
   const authModule = {
     retrieveAuthIdentity: jest.fn().mockResolvedValue(authIdentity),
@@ -49,9 +53,14 @@ function createRequest({
 
   return {
     auth_context: {
-      auth_identity_id: String(authIdentity.id),
+      ...(authIdentityId === null
+        ? {}
+        : { auth_identity_id: authIdentityId || String(authIdentity.id) }),
       actor_id: actorId,
       user_metadata: authIdentity.user_metadata,
+    },
+    headers: {
+      authorization: authorizationToken ? `Bearer ${authorizationToken}` : "",
     },
     validatedBody: body,
     scope: {
@@ -63,6 +72,14 @@ function createRequest({
       }),
     },
   };
+}
+
+function encodeJwtPayload(payload: Record<string, unknown>) {
+  return [
+    "header",
+    Buffer.from(JSON.stringify(payload)).toString("base64url"),
+    "signature",
+  ].join(".");
 }
 
 describe("POST /store/customers/claim-account", () => {
@@ -120,6 +137,54 @@ describe("POST /store/customers/claim-account", () => {
 
     expect(customerModule.updateCustomers).not.toHaveBeenCalled();
     expect(mockSetAuthAppMetadataWorkflow).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({
+      message: "No registered customer is available to link",
+      guest_available: true,
+    });
+  });
+
+  it("reads the auth identity id from an already-authenticated bearer token when Medusa auth context omits it", async () => {
+    const guestCustomer = {
+      id: "cus_guest",
+      email: "Guest@Example.COM",
+      has_account: false,
+    };
+    const customerModule = {
+      listCustomers: jest.fn().mockResolvedValue([guestCustomer]),
+      updateCustomers: jest.fn(),
+      retrieveCustomer: jest.fn(),
+    };
+    const req = createRequest({
+      body: {
+        email: "guest@example.com",
+        source: "emailpass",
+      },
+      customerModule,
+      authIdentityId: null,
+      authorizationToken: encodeJwtPayload({
+        actor_type: "customer",
+        auth_identity_id: "auth_emailpass",
+      }),
+      authIdentity: {
+        id: "auth_emailpass",
+        app_metadata: {},
+        user_metadata: { email: "guest@example.com" },
+        provider_identities: [
+          {
+            provider: "emailpass",
+            entity_id: "guest@example.com",
+          },
+        ],
+      },
+    });
+    const res = createResponse();
+
+    await POST(req as never, res as never);
+
+    expect(customerModule.listCustomers).toHaveBeenCalledWith({
+      email: "guest@example.com",
+    });
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.json).toHaveBeenCalledWith({
       message: "No registered customer is available to link",

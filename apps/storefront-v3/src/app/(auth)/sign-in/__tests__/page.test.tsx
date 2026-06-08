@@ -54,6 +54,23 @@ describe("SignInPage", () => {
     expect(mockRedirect).not.toHaveBeenCalled()
   })
 
+  it("shows a visible Google sign-in error when OAuth redirects back with an error code", async () => {
+    mockGetSessionAction.mockResolvedValue({
+      success: false,
+      error: "No session",
+    })
+
+    render(
+      await SignInPage({
+        searchParams: Promise.resolve({ error: "google_oauth_failed" }),
+      })
+    )
+
+    expect(
+      screen.getByText(/Google sign-in could not be completed/i)
+    ).toBeInTheDocument()
+  })
+
   it("redirects signed-in customers to a safe redirect query when present", async () => {
     mockGetSessionAction.mockResolvedValue({
       success: true,
