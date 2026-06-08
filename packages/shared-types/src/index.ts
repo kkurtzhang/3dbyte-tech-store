@@ -67,6 +67,7 @@ export interface Brand {
   handle: string;
   description?: string;
   logo?: string;
+  product_count?: number;
   is_active?: boolean;
   created_at?: string;
   updated_at?: string;

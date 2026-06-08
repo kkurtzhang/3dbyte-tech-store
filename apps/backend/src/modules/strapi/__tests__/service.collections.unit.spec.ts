@@ -57,12 +57,60 @@ describe("StrapiModuleService collection sync", () => {
     )
   })
 
+  it("falls back to a draft collection description when no published entry exists", async () => {
+    ;(global.fetch as jest.Mock)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ data: [] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          data: [
+            {
+              id: 2,
+              documentId: "doc_draft",
+              medusa_collection_id: "pcol_123",
+              publishedAt: null,
+            },
+          ],
+        }),
+      })
+
+    const service = createService()
+    const result = await service.findCollectionDescription("pcol_123")
+
+    expect(result).toEqual({
+      id: 2,
+      documentId: "doc_draft",
+      medusa_collection_id: "pcol_123",
+      publishedAt: null,
+    })
+    expect(global.fetch).toHaveBeenNthCalledWith(
+      1,
+      expect.stringContaining("/api/collections?status=published"),
+      expect.any(Object)
+    )
+    expect(global.fetch).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining("/api/collections?status=draft"),
+      expect.any(Object)
+    )
+  })
+
   it("creates a collection description keyed by medusa_collection_id", async () => {
     const nowSpy = jest
       .spyOn(Date.prototype, "toISOString")
       .mockReturnValue("2026-03-27T00:00:00.000Z")
 
     ;(global.fetch as jest.Mock)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ data: [] }),
+      })
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -78,7 +126,7 @@ describe("StrapiModuleService collection sync", () => {
     await service.createCollectionDescription(collection)
 
     expect(global.fetch).toHaveBeenNthCalledWith(
-      2,
+      3,
       "http://localhost:1337/api/collections",
       expect.objectContaining({
         method: "POST",
@@ -255,6 +303,11 @@ describe("StrapiModuleService collection sync", () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
+        json: async () => ({ data: [] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
         json: async () => ({ data: { documentId: "doc_2" } }),
       })
 
@@ -266,7 +319,7 @@ describe("StrapiModuleService collection sync", () => {
     await service.createCollectionDescription(collection)
 
     expect(global.fetch).toHaveBeenNthCalledWith(
-      2,
+      3,
       "http://localhost:1337/api/collections",
       expect.objectContaining({
         method: "POST",

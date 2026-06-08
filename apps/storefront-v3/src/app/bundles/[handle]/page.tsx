@@ -24,7 +24,7 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${product.title} Bundle | 3D Byte Tech Store`,
+    title: `${product.title} Bundle`,
     description: product.description,
     openGraph: {
       title: `${product.title} Bundle`,

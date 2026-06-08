@@ -560,9 +560,18 @@ class StrapiModuleService {
 
   async findCollectionDescription(medusaCollectionId: string): Promise<any> {
     try {
-      return await this.findCollectionDescriptionByStatus(
+      const published = await this.findCollectionDescriptionByStatus(
         medusaCollectionId,
         "published"
+      );
+
+      if (published) {
+        return published;
+      }
+
+      return await this.findCollectionDescriptionByStatus(
+        medusaCollectionId,
+        "draft"
       );
     } catch (error) {
       this.logger_.error(

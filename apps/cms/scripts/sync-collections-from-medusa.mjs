@@ -1,6 +1,7 @@
 const STRAPI_URL = (process.env.STRAPI_URL || "http://localhost:1337").replace(/\/$/, "")
 const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN
 const MEDUSA_URL = (process.env.MEDUSA_URL || "http://localhost:9000").replace(/\/$/, "")
+const MEDUSA_PUBLISHABLE_KEY = process.env.MEDUSA_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
 const MEDUSA_DB_URL = process.env.MEDUSA_DB_URL || ""
 const DEFAULT_COLLECTION_IMAGE_ID = Number(process.env.STRAPI_DEFAULT_COLLECTION_IMAGE_ID || 0) || null
 const DRY_RUN = process.env.DRY_RUN === "1"
@@ -38,7 +39,7 @@ async function fetchJson(url, options = {}) {
   return body
 }
 
-async function fetchAllStrapiCollections() {
+async function fetchAllStrapiCollectionsByStatus(status) {
   const pageSize = 200
   let page = 1
   const all = []
@@ -50,6 +51,8 @@ async function fetchAllStrapiCollections() {
       "fields[0]": "Title",
       "fields[1]": "Handle",
       "fields[2]": "Description",
+      "fields[3]": "medusa_collection_id",
+      status,
       "populate[Image][fields][0]": "id",
       "populate[Image][fields][1]": "documentId",
     })
@@ -74,9 +77,28 @@ async function fetchAllStrapiCollections() {
   return all
 }
 
+async function fetchAllStrapiCollections() {
+  const [published, draft] = await Promise.all([
+    fetchAllStrapiCollectionsByStatus("published"),
+    fetchAllStrapiCollectionsByStatus("draft"),
+  ])
+  const byDocumentId = new Map()
+
+  for (const entry of [...published, ...draft]) {
+    byDocumentId.set(entry.documentId || entry.id, entry)
+  }
+
+  return [...byDocumentId.values()]
+}
+
 async function fetchMedusaCollections() {
   const query = new URLSearchParams({ limit: "200" })
-  const body = await fetchJson(`${MEDUSA_URL}/store/collections?${query.toString()}`)
+  const headers = MEDUSA_PUBLISHABLE_KEY
+    ? { "x-publishable-api-key": MEDUSA_PUBLISHABLE_KEY }
+    : {}
+  const body = await fetchJson(`${MEDUSA_URL}/store/collections?${query.toString()}`, {
+    headers,
+  })
   return Array.isArray(body.collections) ? body.collections : []
 }
 
@@ -165,7 +187,6 @@ async function main() {
 
   let updated = 0
   let created = 0
-  let skippedNoImage = 0
   let alreadyInSync = 0
 
   for (const medusaCollection of medusaCollections) {
@@ -177,6 +198,7 @@ async function main() {
     }
 
     const desired = {
+      medusa_collection_id: medusaCollection.id,
       Title: title,
       Handle: handle,
       Description: toDescription(medusaCollection),
@@ -186,13 +208,7 @@ async function main() {
 
     if (!existing) {
       const imageId = DEFAULT_COLLECTION_IMAGE_ID
-      if (!imageId) {
-        skippedNoImage += 1
-        console.warn(`Skipping create for ${handle}: no STRAPI_DEFAULT_COLLECTION_IMAGE_ID`) 
-        continue
-      }
-
-      await createCollection({ ...desired, Image: imageId })
+      await createCollection(imageId ? { ...desired, Image: imageId } : desired)
       created += 1
       console.log(`Created collection ${handle}`)
       continue
@@ -207,17 +223,12 @@ async function main() {
     }
 
     const existingImageId = existing?.Image?.id || DEFAULT_COLLECTION_IMAGE_ID
-    if (!existingImageId) {
-      skippedNoImage += 1
-      console.warn(`Skipping update for ${handle}: existing row has no image and no default image id set`)
-      continue
-    }
 
     const identifier = existing.documentId || existing.id
-    await updateCollection(identifier, {
-      ...desired,
-      Image: existingImageId,
-    })
+    await updateCollection(
+      identifier,
+      existingImageId ? { ...desired, Image: existingImageId } : desired,
+    )
 
     updated += 1
     console.log(`Updated collection ${handle}`)
@@ -229,7 +240,6 @@ async function main() {
   console.log(`- Created: ${created}`)
   console.log(`- Updated: ${updated}`)
   console.log(`- Already in sync: ${alreadyInSync}`)
-  console.log(`- Skipped (missing image): ${skippedNoImage}`)
 }
 
 main().catch((error) => {

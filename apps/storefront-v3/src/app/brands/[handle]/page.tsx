@@ -14,6 +14,7 @@ import { ShopErrorState } from "@/features/shop/components/shop-error-state";
 import { ShopEmptyState } from "@/features/shop/components/shop-empty-state";
 import { BrandFilters } from "@/components/filters/brand-filters";
 import { getPricingContext } from "@/lib/medusa/regions.server";
+import { resolveStrapiMediaUrl } from "@/lib/strapi/media";
 import {
   copyDynamicOptionParams,
   hasDynamicOptionParams,
@@ -115,6 +116,45 @@ function buildPaginationUrl(
   return buildShopUrl(queryParams, `/brands/${brandHandle}`);
 }
 
+function BrandHeaderContent({
+  description,
+  displayName,
+  logo,
+  richDescription,
+}: {
+  description: string
+  displayName: string
+  logo?: { alternativeText?: string | null; url?: string | null } | null
+  richDescription?: string | null
+}) {
+  const logoUrl = resolveStrapiMediaUrl(logo?.url)
+  const logoAlt = logo?.alternativeText?.trim() || `${displayName} logo`
+
+  return (
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+      {logoUrl && (
+        <div className="flex h-20 w-32 shrink-0 items-center justify-center rounded-md border border-border bg-background p-3">
+          <img
+            src={logoUrl}
+            alt={logoAlt}
+            className="max-h-full max-w-full object-contain"
+          />
+        </div>
+      )}
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">{displayName}</h1>
+        <p className="font-mono text-sm text-muted-foreground">{description}</p>
+        {richDescription && (
+          <div
+            className="prose prose-sm mt-3 max-w-none text-muted-foreground dark:prose-invert"
+            dangerouslySetInnerHTML={{ __html: richDescription }}
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default async function BrandPage({
   params,
   searchParams,
@@ -134,6 +174,8 @@ export default async function BrandPage({
     brandDescription?.seo_description ||
     brand.description ||
     "Explore products from this brand.";
+  const richDescription = brandDescription?.rich_description || null;
+  const logo = brandDescription?.brand_logo || null;
 
   const params_cache = await searchParams;
   const page = Number(params_cache.page) || 1;
@@ -185,23 +227,12 @@ export default async function BrandPage({
       <ListingLayout
         header={
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">{displayName}</h1>
-              <p className="font-mono text-sm text-muted-foreground">
-                {summary}
-              </p>
-              {brandDescription?.rich_description && (
-                <div
-                  className="prose prose-sm mt-3 max-w-none text-muted-foreground dark:prose-invert"
-                  dangerouslySetInnerHTML={{ __html: brandDescription.rich_description }}
-                />
-              )}
-              {!brandDescription?.rich_description && brand.description && (
-                <p className="font-mono text-sm text-muted-foreground">
-                  {brand.description}
-                </p>
-              )}
-            </div>
+            <BrandHeaderContent
+              description={summary}
+              displayName={displayName}
+              logo={logo}
+              richDescription={richDescription}
+            />
           </div>
         }
         sidebar={null}
@@ -223,12 +254,11 @@ export default async function BrandPage({
       <ListingLayout
         header={
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">{displayName}</h1>
-              <p className="font-mono text-sm text-muted-foreground">
-                {summary}
-              </p>
-            </div>
+            <BrandHeaderContent
+              description={summary}
+              displayName={displayName}
+              logo={logo}
+            />
             <ShopSort basePath={`/brands/${handle}`} />
           </div>
         }
@@ -257,17 +287,17 @@ export default async function BrandPage({
     <ListingLayout
       header={
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">{displayName}</h1>
-            <p className="font-mono text-sm text-muted-foreground">{summary}</p>
-            <p className="font-mono text-sm text-muted-foreground">
-              {result.totalCount}{" "}
-              {result.totalCount === 1 ? "product" : "products"}
-              {result.degradedMode && (
-                <span className="ml-2 text-amber-500">(limited results)</span>
-              )}
-            </p>
-          </div>
+          <BrandHeaderContent
+            description={summary}
+            displayName={displayName}
+            logo={logo}
+            richDescription={richDescription}
+          />
+          {result.degradedMode && (
+            <span className="font-mono text-sm text-amber-500">
+              Limited results
+            </span>
+          )}
           <ShopSort basePath={`/brands/${handle}`} />
         </div>
       }

@@ -39,6 +39,9 @@ describe("Footer", () => {
     expect(
       screen.queryByRole("link", { name: /documentation/i }),
     ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /community/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("shows the current copyright year", () => {

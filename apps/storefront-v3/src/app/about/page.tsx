@@ -25,7 +25,7 @@ const fallbackValues: Tile[] = [
   },
   {
     id: 2,
-    Title: "Community",
+    Title: "Practical Support",
     Text: "Practical help for makers, engineers, and teams building real printers.",
   },
   {
@@ -36,7 +36,7 @@ const fallbackValues: Tile[] = [
   {
     id: 4,
     Title: "Curiosity",
-    Text: "We keep learning with the 3D printing community and improve as the craft evolves.",
+    Text: "We keep learning from real build problems and improve as the craft evolves.",
   },
 ]
 

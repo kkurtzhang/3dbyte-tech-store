@@ -268,7 +268,7 @@ export default async function BundlesPage({ searchParams }: BundlesPageProps) {
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "Product Bundles | 3D Byte Tech Store",
+    title: "Product Bundles",
     description:
       "Browse Medusa-backed product bundles with grouped cart handling and per-item variant selection.",
   }
