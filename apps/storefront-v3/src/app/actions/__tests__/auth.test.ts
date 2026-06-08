@@ -331,6 +331,36 @@ describe("auth actions", () => {
     expect(mockCookieSet).not.toHaveBeenCalled();
   });
 
+  it("returns a helpful registration message when an existing emailpass identity rejects the submitted password", async () => {
+    const existingIdentityError = new Error(
+      "Identity with email already exists",
+    );
+    Object.assign(existingIdentityError, { statusText: "Unauthorized" });
+    const loginRejected = new Error("Unauthorized");
+    Object.assign(loginRejected, { status: 401, statusText: "Unauthorized" });
+    mockAuthRegister.mockRejectedValueOnce(existingIdentityError);
+    mockAuthLogin.mockRejectedValueOnce(loginRejected);
+
+    await expect(
+      registerAction(
+        "registered@example.com",
+        "DifferentPassword123!",
+        "Ava",
+        "Customer",
+      ),
+    ).resolves.toEqual({
+      success: false,
+      error:
+        "A sign-in already exists for this email. Please sign in or reset your password.",
+    });
+
+    expect(mockClientFetch).not.toHaveBeenCalledWith(
+      "/store/customers/claim-account",
+      expect.anything(),
+    );
+    expect(mockCustomerCreate).not.toHaveBeenCalled();
+  });
+
   it("rejects weak registration passwords before calling Medusa", async () => {
     await expect(
       registerAction("test@example.com", "password", "E2E", "Customer"),
