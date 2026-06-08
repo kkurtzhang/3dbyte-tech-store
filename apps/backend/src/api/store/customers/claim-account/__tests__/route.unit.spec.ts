@@ -144,6 +144,87 @@ describe("POST /store/customers/claim-account", () => {
     });
   });
 
+  it("accepts Medusa Google callback email metadata without requiring email_verified", async () => {
+    const guestCustomer = {
+      id: "cus_guest",
+      email: "Guest@Example.COM",
+      has_account: false,
+    };
+    const customerModule = {
+      listCustomers: jest.fn().mockResolvedValue([guestCustomer]),
+      updateCustomers: jest.fn(),
+      retrieveCustomer: jest.fn(),
+    };
+    const req = createRequest({
+      body: {
+        email: "guest@example.com",
+        source: "google",
+      },
+      customerModule,
+      authIdentity: {
+        id: "auth_google",
+        app_metadata: {},
+        user_metadata: { email: "guest@example.com" },
+        provider_identities: [
+          {
+            provider: "google",
+            entity_id: "google-subject-opaque-123",
+            user_metadata: { email: "guest@example.com" },
+          },
+        ],
+      },
+    });
+    const res = createResponse();
+
+    await POST(req as never, res as never);
+
+    expect(customerModule.listCustomers).toHaveBeenCalledWith({
+      email: "guest@example.com",
+    });
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({
+      message: "No registered customer is available to link",
+      guest_available: true,
+    });
+  });
+
+  it("does not accept emailpass-only auth metadata as Google proof", async () => {
+    const customerModule = {
+      listCustomers: jest.fn(),
+      updateCustomers: jest.fn(),
+      retrieveCustomer: jest.fn(),
+    };
+    const req = createRequest({
+      body: {
+        email: "guest@example.com",
+        source: "google",
+      },
+      customerModule,
+      authIdentity: {
+        id: "auth_emailpass",
+        app_metadata: {},
+        user_metadata: { email: "guest@example.com" },
+        provider_identities: [
+          {
+            provider: "emailpass",
+            entity_id: "guest@example.com",
+          },
+        ],
+      },
+    });
+    const res = createResponse();
+
+    await POST(req as never, res as never);
+
+    expect(customerModule.listCustomers).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({
+      message:
+        "Authenticated email does not match the requested customer email",
+      code: "google_email_unverified",
+    });
+  });
+
   it("reads the auth identity id from an already-authenticated bearer token when Medusa auth context omits it", async () => {
     const guestCustomer = {
       id: "cus_guest",

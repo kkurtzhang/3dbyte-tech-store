@@ -214,27 +214,46 @@ const hasVerifiedGoogleEmail = (
   metadata: Record<string, unknown> | null | undefined,
 ): boolean => metadata?.email_verified === true;
 
+const hasEmailMetadata = (
+  metadata: Record<string, unknown> | null | undefined,
+): boolean => isNonEmptyString(metadata?.email) && metadata.email.includes("@");
+
+const hasGoogleProviderIdentity = (
+  authIdentity: AuthIdentityRecord,
+): boolean =>
+  (authIdentity.provider_identities || []).some(
+    (providerIdentity) => getProvider(providerIdentity) === "google",
+  );
+
+const hasGoogleEmailAssertion = (
+  providerIdentity: ProviderIdentityRecord,
+): boolean =>
+  getProvider(providerIdentity) === "google" &&
+  (hasVerifiedGoogleEmail(providerIdentity.user_metadata) ||
+    hasVerifiedGoogleEmail(providerIdentity.provider_metadata) ||
+    hasEmailMetadata(providerIdentity.user_metadata) ||
+    hasEmailMetadata(providerIdentity.provider_metadata));
+
 const getAuthenticatedEmails = (
   authIdentity: AuthIdentityRecord,
   authContext: RequestWithAuthContext["auth_context"],
   source: ClaimCustomerAccountInput["source"],
 ): Set<string> => {
   const emails = new Set<string>();
+  const isGoogleAuthIdentity = hasGoogleProviderIdentity(authIdentity);
 
   if (
     source === "emailpass" ||
-    hasVerifiedGoogleEmail(authContext?.user_metadata)
+    hasVerifiedGoogleEmail(authContext?.user_metadata) ||
+    (source === "google" &&
+      isGoogleAuthIdentity &&
+      hasEmailMetadata(authContext?.user_metadata))
   ) {
     addEmail(emails, authContext?.user_metadata?.email);
   }
 
   for (const providerIdentity of authIdentity.provider_identities || []) {
-    const isVerifiedGoogle =
-      getProvider(providerIdentity) === "google" &&
-      (hasVerifiedGoogleEmail(providerIdentity.user_metadata) ||
-        hasVerifiedGoogleEmail(providerIdentity.provider_metadata));
-
-    if (source === "emailpass" || isVerifiedGoogle) {
+    if (source === "emailpass" || hasGoogleEmailAssertion(providerIdentity)) {
       addEmail(emails, providerIdentity.entity_id);
       addEmail(emails, providerIdentity.user_metadata?.email);
       addEmail(emails, providerIdentity.provider_metadata?.email);
