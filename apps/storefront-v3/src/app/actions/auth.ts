@@ -381,6 +381,7 @@ export async function registerAction(
         },
       );
       customer = response.customer as unknown as CustomerWithMetadata;
+      verificationToken = await refreshCustomerToken(registrationToken);
     }
 
     if (!customer) {

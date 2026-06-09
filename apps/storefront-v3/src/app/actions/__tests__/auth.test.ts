@@ -147,6 +147,7 @@ describe("auth actions", () => {
     Object.assign(noClaimableCustomer, { status: 404 });
     mockClientFetch
       .mockRejectedValueOnce(noClaimableCustomer)
+      .mockResolvedValueOnce({ token: "refreshed-token" })
       .mockResolvedValueOnce({});
 
     await expect(
@@ -167,12 +168,23 @@ describe("auth actions", () => {
         Authorization: "Bearer registration-token",
       },
     );
-    expect(mockClientFetch).toHaveBeenCalledWith(
-      "/store/customers/email-verifications",
+    expect(mockClientFetch).toHaveBeenNthCalledWith(
+      2,
+      "/auth/token/refresh",
       expect.objectContaining({
         method: "POST",
         headers: {
           Authorization: "Bearer registration-token",
+        },
+      }),
+    );
+    expect(mockClientFetch).toHaveBeenNthCalledWith(
+      3,
+      "/store/customers/email-verifications",
+      expect.objectContaining({
+        method: "POST",
+        headers: {
+          Authorization: "Bearer refreshed-token",
         },
       }),
     );
@@ -187,6 +199,7 @@ describe("auth actions", () => {
     Object.assign(noRegisteredCustomer, { status: 404 });
     mockClientFetch
       .mockRejectedValueOnce(noRegisteredCustomer)
+      .mockResolvedValueOnce({ token: "refreshed-token" })
       .mockResolvedValueOnce({});
 
     await expect(
@@ -214,11 +227,21 @@ describe("auth actions", () => {
     );
     expect(mockClientFetch).toHaveBeenNthCalledWith(
       2,
-      "/store/customers/email-verifications",
+      "/auth/token/refresh",
       expect.objectContaining({
         method: "POST",
         headers: {
           Authorization: "Bearer registration-token",
+        },
+      }),
+    );
+    expect(mockClientFetch).toHaveBeenNthCalledWith(
+      3,
+      "/store/customers/email-verifications",
+      expect.objectContaining({
+        method: "POST",
+        headers: {
+          Authorization: "Bearer refreshed-token",
         },
       }),
     );
@@ -248,6 +271,7 @@ describe("auth actions", () => {
     mockAuthRegister.mockRejectedValueOnce(existingIdentityError);
     mockClientFetch
       .mockRejectedValueOnce(noClaimableCustomer)
+      .mockResolvedValueOnce({ token: "refreshed-login-token" })
       .mockResolvedValueOnce({});
 
     await expect(
@@ -288,12 +312,23 @@ describe("auth actions", () => {
         Authorization: "Bearer login-token",
       },
     );
-    expect(mockClientFetch).toHaveBeenCalledWith(
-      "/store/customers/email-verifications",
+    expect(mockClientFetch).toHaveBeenNthCalledWith(
+      2,
+      "/auth/token/refresh",
       expect.objectContaining({
         method: "POST",
         headers: {
           Authorization: "Bearer login-token",
+        },
+      }),
+    );
+    expect(mockClientFetch).toHaveBeenNthCalledWith(
+      3,
+      "/store/customers/email-verifications",
+      expect.objectContaining({
+        method: "POST",
+        headers: {
+          Authorization: "Bearer refreshed-login-token",
         },
       }),
     );

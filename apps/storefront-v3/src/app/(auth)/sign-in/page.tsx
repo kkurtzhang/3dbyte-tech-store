@@ -57,6 +57,14 @@ function getStatusMessage(params?: Awaited<SignInPageProps["searchParams"]>) {
     };
   }
 
+  if (error === "google_link_required") {
+    return {
+      tone: "error" as const,
+      message:
+        "An account with this email already exists. Please sign in with email and password, then connect Google from account settings.",
+    };
+  }
+
   if (verified === "1") {
     return {
       tone: "success" as const,
