@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react"
 
-import AccountLayout from "../layout"
+import { AccountNav } from "../account-nav"
 
 const mockPush = jest.fn()
 const mockRefresh = jest.fn()
@@ -21,17 +21,13 @@ jest.mock("lucide-react", () => ({
   LogOut: () => <span />,
 }))
 
-describe("AccountLayout", () => {
+describe("AccountNav", () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
   it("labels the root account route as Overview rather than a duplicate Profile form", () => {
-    render(
-      <AccountLayout>
-        <div>Account content</div>
-      </AccountLayout>,
-    )
+    render(<AccountNav />)
 
     expect(screen.getByRole("link", { name: /overview/i })).toHaveAttribute(
       "href",

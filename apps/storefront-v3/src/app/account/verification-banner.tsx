@@ -5,9 +5,13 @@ import { useEffect } from "react"
 
 interface VerificationBannerProps {
   verified?: string
+  checkoutBlocked?: string
 }
 
-export function VerificationBanner({ verified }: VerificationBannerProps) {
+export function VerificationBanner({
+  verified,
+  checkoutBlocked,
+}: VerificationBannerProps) {
   const router = useRouter()
 
   useEffect(() => {
@@ -18,6 +22,18 @@ export function VerificationBanner({ verified }: VerificationBannerProps) {
       return () => clearTimeout(timer)
     }
   }, [verified, router])
+
+  if (checkoutBlocked === "unverified") {
+    return (
+      <div
+        className="rounded-sm border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-800 dark:text-amber-200"
+        role="alert"
+      >
+        Please verify your email before checking out. Check your inbox for the
+        verification link or use the resend button below.
+      </div>
+    )
+  }
 
   if (verified === "1") {
     return (
