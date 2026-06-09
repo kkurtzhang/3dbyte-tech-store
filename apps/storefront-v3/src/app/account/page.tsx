@@ -2,10 +2,17 @@ import { Metadata } from "next"
 import { getSessionAction } from "@/app/actions/auth"
 import { redirect } from "next/navigation"
 import { AccountContent } from "./account-content"
+import { VerificationBanner } from "./verification-banner"
 
 export const metadata: Metadata = {
   title: "Account Overview",
   description: "View your account overview and manage account activity",
+}
+
+interface AccountPageProps {
+  searchParams?: Promise<{
+    verified?: string | string[]
+  }>
 }
 
 async function getCustomerData() {
@@ -21,15 +28,22 @@ async function getCustomerData() {
   }
 }
 
-export default async function AccountPage() {
+export default async function AccountPage({ searchParams }: AccountPageProps) {
   const customer = await getCustomerData()
 
   if (!customer) {
     redirect("/sign-in")
   }
 
+  const params = await searchParams
+  const verified = Array.isArray(params?.verified)
+    ? params.verified[0]
+    : params?.verified
+
   return (
     <div className="space-y-6">
+      <VerificationBanner verified={verified} />
+
       <div>
         <h1 className="text-2xl font-semibold">
           Account Overview

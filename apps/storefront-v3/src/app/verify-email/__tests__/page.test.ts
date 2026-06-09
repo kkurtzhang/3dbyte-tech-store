@@ -3,8 +3,16 @@ const mockRedirect = jest.fn((url: string) => {
   throw new Error(`redirect:${url}`)
 })
 
+const mockCookieStore = {
+  get: jest.fn(),
+}
+
 jest.mock("next/navigation", () => ({
   redirect: (url: string) => mockRedirect(url),
+}))
+
+jest.mock("next/headers", () => ({
+  cookies: () => Promise.resolve(mockCookieStore),
 }))
 
 jest.mock("@/lib/medusa/base-url", () => ({
@@ -17,6 +25,7 @@ describe("VerifyEmailPage", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     global.fetch = mockFetch as unknown as typeof fetch
+    mockCookieStore.get.mockReturnValue(undefined)
   })
 
   it("redirects to the verified sign-in state when the backend confirms the token", async () => {
@@ -57,5 +66,21 @@ describe("VerifyEmailPage", () => {
         searchParams: Promise.resolve({ token: "bad-token" }),
       })
     ).rejects.toThrow("redirect:/sign-in?verified=0")
+  })
+
+  it("redirects logged-in users to /account instead of /sign-in", async () => {
+    mockCookieStore.get.mockReturnValue({ value: "some-token" })
+    mockFetch.mockResolvedValueOnce({
+      headers: new Headers({
+        location: "https://store.example.com/sign-in?verified=1",
+      }),
+      status: 307,
+    })
+
+    await expect(
+      VerifyEmailPage({
+        searchParams: Promise.resolve({ token: "valid-token" }),
+      })
+    ).rejects.toThrow("redirect:/account?verified=1")
   })
 })

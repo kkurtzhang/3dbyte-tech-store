@@ -69,10 +69,14 @@ const buildPendingMetadata = (customer: CustomerRecord) => ({
   email_verification_sent_at: new Date().toISOString(),
 });
 
-const buildVerifiedMetadata = (customer: CustomerRecord) => ({
+const buildVerifiedMetadata = (
+  customer: CustomerRecord,
+  tokenIat: number,
+) => ({
   ...getMetadata(customer),
   email_verification_status: "verified",
   email_verified_at: new Date().toISOString(),
+  email_verification_token_iat: tokenIat,
 });
 
 export async function POST(
@@ -225,9 +229,23 @@ export async function GET(
     return;
   }
 
+  const existingMetadata = getMetadata(customer);
+  const lastTokenIat = existingMetadata.email_verification_token_iat;
+  if (
+    typeof lastTokenIat === "number" &&
+    verification.payload.iat <= lastTokenIat
+  ) {
+    if (existingMetadata.email_verification_status === "verified") {
+      res.redirect(`${getStorefrontUrl()}/sign-in?verified=1`);
+    } else {
+      res.redirect(`${getStorefrontUrl()}/sign-in?verified=0`);
+    }
+    return;
+  }
+
   await customerModule.updateCustomers({
     id: customer.id,
-    metadata: buildVerifiedMetadata(customer),
+    metadata: buildVerifiedMetadata(customer, verification.payload.iat),
   });
 
   try {
