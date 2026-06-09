@@ -99,6 +99,31 @@ async function createGoogleCustomer({
   }
 }
 
+async function markGoogleCustomerVerified({
+  medusaBaseUrl,
+  token,
+}: {
+  medusaBaseUrl: string
+  token: string
+}) {
+  await fetch(`${medusaBaseUrl}/store/customers/me`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      Authorization: `Bearer ${token}`,
+      ...getPublishableApiHeaders(),
+    },
+    body: JSON.stringify({
+      metadata: {
+        email_verification_status: "verified",
+        email_verification_source: "google",
+        email_verified_at: new Date().toISOString(),
+      },
+    }),
+    cache: "no-store",
+  })
+}
+
 async function claimGoogleCustomerAccount({
   medusaBaseUrl,
   token,
@@ -135,7 +160,14 @@ async function claimGoogleCustomerAccount({
   const data = await readJsonResponse(response)
 
   if (response.status === 404) {
-    return null
+    return { status: "no_customer" as const }
+  }
+
+  if (
+    response.status === 409 &&
+    (data as Record<string, unknown>)?.code === "google_link_required"
+  ) {
+    return { status: "link_required" as const }
   }
 
   if (!response.ok) {
@@ -143,6 +175,7 @@ async function claimGoogleCustomerAccount({
   }
 
   return {
+    status: "claimed" as const,
     reauthToken:
       typeof data.reauth_token === "string" ? data.reauth_token : null,
   }
@@ -282,7 +315,15 @@ export async function GET(request: Request) {
         linkProof,
       })
 
-      if (!claimResult) {
+      if (claimResult.status === "link_required") {
+        const linkRequiredUrl = buildStorefrontRedirect(
+          requestUrl,
+          "/sign-in?error=google_link_required"
+        )
+        return NextResponse.redirect(linkRequiredUrl)
+      }
+
+      if (claimResult.status === "no_customer") {
         if (isLinkMode) {
           return redirectGoogleLinkStatus({
             requestUrl,
@@ -296,7 +337,7 @@ export async function GET(request: Request) {
           token: callbackToken,
           email,
         })
-      } else {
+      } else if (claimResult.status === "claimed") {
         reauthToken = claimResult.reauthToken
       }
 
@@ -304,6 +345,10 @@ export async function GET(request: Request) {
         medusaBaseUrl,
         token: callbackToken,
       })
+
+      if (claimResult.status === "no_customer") {
+        await markGoogleCustomerVerified({ medusaBaseUrl, token: sessionToken })
+      }
     }
 
     await linkGoogleCustomerContext({

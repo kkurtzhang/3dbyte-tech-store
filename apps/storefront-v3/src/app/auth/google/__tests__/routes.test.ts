@@ -210,6 +210,10 @@ describe("Google OAuth storefront routes", () => {
       })
       .mockResolvedValueOnce({
         ok: true,
+        json: async () => ({ customer: { id: "cus_123" } }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
         json: async () => ({ linked: 1 }),
       })
       .mockResolvedValueOnce({
@@ -255,9 +259,12 @@ describe("Google OAuth storefront routes", () => {
       "http://medusa:9000/auth/token/refresh"
     )
     expect(mockFetch.mock.calls[4][0]).toBe(
-      "http://medusa:9000/store/customers/me/link-guest-orders"
+      "http://medusa:9000/store/customers/me"
     )
     expect(mockFetch.mock.calls[5][0]).toBe(
+      "http://medusa:9000/store/customers/me/link-guest-orders"
+    )
+    expect(mockFetch.mock.calls[6][0]).toBe(
       "http://medusa:9000/store/carts/cart_123/customer"
     )
     expect(mockCookieSet).toHaveBeenCalledWith(
@@ -298,6 +305,10 @@ describe("Google OAuth storefront routes", () => {
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({ token: refreshedToken }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ customer: { id: "cus_123" } }),
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -345,9 +356,12 @@ describe("Google OAuth storefront routes", () => {
       "http://medusa:9000/auth/token/refresh"
     )
     expect(mockFetch.mock.calls[4][0]).toBe(
+      "http://medusa:9000/store/customers/me"
+    )
+    expect(mockFetch.mock.calls[5][0]).toBe(
       "http://medusa:9000/store/customers/me/link-guest-orders"
     )
-    expect(mockFetch.mock.calls[4][1]).toEqual(
+    expect(mockFetch.mock.calls[5][1]).toEqual(
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({
@@ -356,10 +370,10 @@ describe("Google OAuth storefront routes", () => {
         }),
       })
     )
-    expect(mockFetch.mock.calls[5][0]).toBe(
+    expect(mockFetch.mock.calls[6][0]).toBe(
       "http://medusa:9000/store/carts/cart_123/customer"
     )
-    expect(mockFetch.mock.calls[5][1]).toEqual(
+    expect(mockFetch.mock.calls[6][1]).toEqual(
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({
@@ -379,6 +393,42 @@ describe("Google OAuth storefront routes", () => {
       expect.objectContaining({ httpOnly: true, path: "/" })
     )
     expect(mockCookieDelete).toHaveBeenCalledWith("google_oauth_redirect")
+  })
+
+  it("redirects to sign-in with google_link_required when existing account needs linking", async () => {
+    const initialToken = encodeJwtPayload({
+      actor_id: "",
+      user_metadata: { email: "existing@example.com" },
+    })
+
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ token: initialToken }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 409,
+        json: async () => ({
+          message: "Google sign-in is not linked to this customer account",
+          code: "google_link_required",
+        }),
+      })
+
+    const response = await completeGoogleAuth(
+      createRequest(
+        "https://store.staging.example.com/auth/google/callback?code=abc"
+      )
+    )
+
+    expect(response.headers.get("location")).toBe(
+      "https://store.staging.example.com/sign-in?error=google_link_required"
+    )
+    expect(mockCookieSet).not.toHaveBeenCalledWith(
+      "_medusa_customer_token",
+      expect.any(String),
+      expect.any(Object)
+    )
   })
 
   it("links first-time Google auth to an existing same-email registered customer", async () => {
