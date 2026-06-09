@@ -278,7 +278,9 @@ export default defineMiddlewares({
       matcher: "/store/customers/claim-account",
       methods: ["POST"],
       middlewares: [
-        authenticate("customer", ["session", "bearer"]),
+        authenticate("customer", ["session", "bearer"], {
+          allowUnregistered: true,
+        }),
         validateAndTransformBody(PostStoreClaimCustomerAccountSchema),
       ],
     },
