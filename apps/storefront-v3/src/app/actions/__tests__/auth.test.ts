@@ -106,7 +106,7 @@ describe("auth actions", () => {
       loginAction("test@example.com", "Password123!"),
     ).resolves.toEqual({
       success: true,
-      user: { id: "cus_123", email: "test@example.com" },
+      user: { id: "cus_123", email: "test@example.com", email_verified: true },
     });
 
     expect(mockCustomerRetrieve).toHaveBeenCalledWith(
@@ -155,6 +155,7 @@ describe("auth actions", () => {
     ).resolves.toEqual({
       success: true,
       requiresEmailVerification: true,
+      user: { id: "cus_123", email: "test@example.com", email_verified: true },
     });
 
     expect(mockCustomerCreate).toHaveBeenCalledWith(
@@ -189,7 +190,7 @@ describe("auth actions", () => {
       }),
     );
     expect(mockAuthLogin).not.toHaveBeenCalled();
-    expect(mockCookieSet).not.toHaveBeenCalled();
+    expect(mockCookieSet).toHaveBeenCalled();
   });
 
   it("creates a registered profile while leaving same-email guest history separate", async () => {
@@ -207,6 +208,7 @@ describe("auth actions", () => {
     ).resolves.toEqual({
       success: true,
       requiresEmailVerification: true,
+      user: { id: "cus_123", email: "test@example.com", email_verified: true },
     });
 
     expect(mockClientFetch).toHaveBeenNthCalledWith(
@@ -256,7 +258,7 @@ describe("auth actions", () => {
         Authorization: "Bearer registration-token",
       },
     );
-    expect(mockCookieSet).not.toHaveBeenCalled();
+    expect(mockCookieSet).toHaveBeenCalled();
   });
 
   it("reuses an existing auth identity without a customer account before creating the customer profile", async () => {
@@ -279,6 +281,7 @@ describe("auth actions", () => {
     ).resolves.toEqual({
       success: true,
       requiresEmailVerification: true,
+      user: { id: "cus_123", email: "test@example.com", email_verified: true },
     });
 
     expect(mockAuthLogin).toHaveBeenCalledWith("customer", "emailpass", {
@@ -332,7 +335,7 @@ describe("auth actions", () => {
         },
       }),
     );
-    expect(mockCookieSet).not.toHaveBeenCalled();
+    expect(mockCookieSet).toHaveBeenCalled();
   });
 
   it("directs existing registered customers to sign in instead of creating another account", async () => {
@@ -408,7 +411,7 @@ describe("auth actions", () => {
     expect(mockCustomerCreate).not.toHaveBeenCalled();
   });
 
-  it("refuses login for customers who have not confirmed their email", async () => {
+  it("allows login for unverified customers but flags email_verified as false and resends verification", async () => {
     mockCustomerRetrieve.mockResolvedValueOnce({
       customer: {
         id: "cus_pending",
@@ -422,10 +425,8 @@ describe("auth actions", () => {
     await expect(
       loginAction("pending@example.com", "Password123!"),
     ).resolves.toEqual({
-      success: false,
-      error:
-        "Please confirm your email before signing in. We sent a new confirmation link.",
-      requiresEmailVerification: true,
+      success: true,
+      user: { id: "cus_pending", email: "pending@example.com", email_verified: false },
     });
 
     expect(mockClientFetch).toHaveBeenCalledWith(
@@ -437,13 +438,13 @@ describe("auth actions", () => {
         },
       }),
     );
-    expect(mockCookieSet).not.toHaveBeenCalled();
+    expect(mockCookieSet).toHaveBeenCalled();
   });
 
   it("retrieves the current session from the stored customer token", async () => {
     await expect(getSessionAction()).resolves.toEqual({
       success: true,
-      user: { id: "cus_123", email: "test@example.com" },
+      user: { id: "cus_123", email: "test@example.com", email_verified: true },
     });
 
     expect(mockCustomerRetrieve).toHaveBeenCalledWith(

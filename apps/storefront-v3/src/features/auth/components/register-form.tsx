@@ -73,16 +73,16 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         data.lastName
       )
 
-      if (result.success && result.requiresEmailVerification) {
-        setSuccessMessage(
-          "Check your email to confirm your account before signing in."
-        )
-      } else if (result.success) {
+      if (result.success) {
         onSuccess?.()
-        const redirectTo = getSafeRedirectPath()
-        if (redirectTo) {
-          router.push(redirectTo)
-        }
+        setSuccessMessage(
+          "Account created! We sent a verification email — check your inbox. Redirecting to your account..."
+        )
+        setTimeout(() => {
+          const redirectTo = getSafeRedirectPath()
+          router.push(redirectTo || "/account")
+          router.refresh()
+        }, 2000)
       } else {
         setError(result.error || "Registration failed")
       }
@@ -182,7 +182,11 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         </div>
       )}
 
-      <Button type="submit" className="w-full" disabled={isLoading}>
+      <Button
+        type="submit"
+        className="w-full"
+        disabled={isLoading || Boolean(successMessage)}
+      >
         {isLoading ? "Creating account..." : "Create Account"}
       </Button>
     </form>

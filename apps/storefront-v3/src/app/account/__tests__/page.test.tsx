@@ -12,6 +12,8 @@ jest.mock("@/app/actions/auth", () => ({
 
 jest.mock("next/navigation", () => ({
   redirect: (...args: unknown[]) => mockRedirect(...args),
+  useRouter: () => ({ replace: jest.fn(), refresh: jest.fn(), push: jest.fn() }),
+  useSearchParams: () => new URLSearchParams(),
 }))
 
 jest.mock("lucide-react", () =>
@@ -41,7 +43,7 @@ describe("AccountPage", () => {
       error: "No session",
     })
 
-    await AccountPage()
+    await AccountPage({ searchParams: Promise.resolve({}) })
 
     expect(mockRedirect).toHaveBeenCalledWith("/sign-in")
   })
@@ -58,7 +60,7 @@ describe("AccountPage", () => {
       },
     })
 
-    render(await AccountPage())
+    render(await AccountPage({ searchParams: Promise.resolve({}) }))
 
     expect(
       screen.getByRole("heading", { name: /account overview/i }),

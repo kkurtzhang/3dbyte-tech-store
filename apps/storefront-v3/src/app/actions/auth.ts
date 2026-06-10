@@ -13,8 +13,6 @@ import { validatePasswordStrength } from "@/lib/auth/password";
 import { sdk } from "@/lib/medusa/client";
 
 const CART_COOKIE = "_medusa_cart_id";
-const EMAIL_CONFIRMATION_REQUIRED_MESSAGE =
-  "Please confirm your email before signing in. We sent a new confirmation link.";
 const EXISTING_IDENTITY_MESSAGE = "Identity with email already exists";
 const EXISTING_CUSTOMER_ACCOUNT_MESSAGE =
   "An account already exists for this email. Please sign in instead.";
@@ -63,10 +61,25 @@ function parseEmail(value: string) {
   };
 }
 
+function isEmailVerified(customer: CustomerWithMetadata): boolean {
+  const metadata = customer.metadata;
+  if (!metadata || typeof metadata !== "object") {
+    return true;
+  }
+  if (metadata.email_verification_status === "verified") {
+    return true;
+  }
+  if (metadata.email_verification_status === "pending") {
+    return false;
+  }
+  return true;
+}
+
 function toAuthUser(customer: CustomerWithMetadata): AuthUser {
   const user: AuthUser = {
     id: customer.id,
     email: customer.email,
+    email_verified: isEmailVerified(customer),
   };
 
   if (customer.first_name) {
@@ -82,19 +95,6 @@ function toAuthUser(customer: CustomerWithMetadata): AuthUser {
   }
 
   return user;
-}
-
-function requiresEmailConfirmation(customer: CustomerWithMetadata) {
-  const metadata = customer.metadata;
-
-  if (!metadata || typeof metadata !== "object") {
-    return false;
-  }
-
-  return (
-    metadata.email_verification_status === "pending" &&
-    typeof metadata.email_verified_at !== "string"
-  );
 }
 
 function isExistingIdentityError(error: unknown) {
@@ -265,6 +265,7 @@ export interface AuthUser {
   first_name?: string;
   last_name?: string;
   phone?: string;
+  email_verified?: boolean;
 }
 
 export async function loginAction(email: string, password: string) {
@@ -290,16 +291,6 @@ export async function loginAction(email: string, password: string) {
 
     if (customer) {
       const authCustomer = customer as unknown as CustomerWithMetadata;
-
-      if (requiresEmailConfirmation(authCustomer)) {
-        await sendCustomerEmailVerification(result);
-        return {
-          success: false,
-          error: EMAIL_CONFIRMATION_REQUIRED_MESSAGE,
-          requiresEmailVerification: true,
-        };
-      }
-
       const cookieStore = await cookies();
       const sessionCookieOptions = getCustomerSessionCookieOptions();
       cookieStore.set(SESSION_COOKIE, "true", sessionCookieOptions);
@@ -307,7 +298,17 @@ export async function loginAction(email: string, password: string) {
 
       await linkCustomerContextAfterLogin(result);
       revalidatePath("/");
-      return { success: true, user: toAuthUser(authCustomer) };
+
+      const user = toAuthUser(authCustomer);
+      if (!user.email_verified) {
+        try {
+          await sendCustomerEmailVerification(result);
+        } catch {
+          // Verification email send failure is non-blocking
+        }
+      }
+
+      return { success: true, user };
     }
 
     return { success: false, error: "Failed to retrieve customer data" };
@@ -390,9 +391,17 @@ export async function registerAction(
 
     await sendCustomerEmailVerification(verificationToken);
 
+    const cookieStore = await cookies();
+    const sessionCookieOptions = getCustomerSessionCookieOptions();
+    cookieStore.set(SESSION_COOKIE, "true", sessionCookieOptions);
+    cookieStore.set(CUSTOMER_TOKEN_COOKIE, verificationToken, sessionCookieOptions);
+
+    revalidatePath("/");
+
     return {
       success: true,
       requiresEmailVerification: true,
+      user: toAuthUser(customer),
     };
   } catch (error: any) {
     console.error("Registration error:", error);
@@ -487,19 +496,6 @@ export async function getSessionAction() {
 
     if (customer) {
       const authCustomer = customer as unknown as CustomerWithMetadata;
-
-      if (requiresEmailConfirmation(authCustomer)) {
-        const cookieStore = await cookies();
-        cookieStore.delete(SESSION_COOKIE);
-        cookieStore.delete(CUSTOMER_TOKEN_COOKIE);
-
-        return {
-          success: false,
-          error: "Email confirmation required",
-          requiresEmailVerification: true,
-        };
-      }
-
       return { success: true, user: toAuthUser(authCustomer) };
     }
 
@@ -520,6 +516,25 @@ export async function logoutAction() {
   } catch (error: any) {
     console.error("Logout error:", error);
     return { success: false, error: error.message || "Logout failed" };
+  }
+}
+
+export async function resendVerificationEmailAction() {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(CUSTOMER_TOKEN_COOKIE)?.value;
+
+    if (!token) {
+      return { success: false, error: "No session" };
+    }
+
+    await sendCustomerEmailVerification(token);
+    return { success: true };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      error: "Could not send verification email. Try again later.",
+    };
   }
 }
 

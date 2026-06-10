@@ -95,6 +95,12 @@ async function createGoogleCustomer({
   })
 
   if (!response.ok) {
+    const data = await readJsonResponse(response)
+    const message =
+      typeof data?.message === "string" ? data.message : ""
+    if (message.includes("already exists in app metadata")) {
+      return
+    }
     throw new Error("Failed to create Google customer")
   }
 }

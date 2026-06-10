@@ -305,13 +305,28 @@ const linkAuthIdentityToCustomer = async ({
   authIdentityId: string;
   customerId: string;
 }) => {
-  await setAuthAppMetadataWorkflow(req.scope).run({
-    input: {
-      authIdentityId,
-      actorType: "customer",
-      value: customerId,
-    },
-  });
+  try {
+    await setAuthAppMetadataWorkflow(req.scope).run({
+      input: {
+        authIdentityId,
+        actorType: "customer",
+        value: customerId,
+      },
+    });
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : String(error ?? "");
+    if (!message.includes("already exists in app metadata")) {
+      throw error;
+    }
+    const authModule = req.scope.resolve<AuthModule>(Modules.AUTH);
+    const identity = await authModule.retrieveAuthIdentity(authIdentityId);
+    const existingCustomerId = identity.app_metadata?.customer_id;
+    if (existingCustomerId === customerId) {
+      return;
+    }
+    throw error;
+  }
 };
 
 const recordIdentityConflict = async ({
