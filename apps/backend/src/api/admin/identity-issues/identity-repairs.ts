@@ -92,6 +92,15 @@ const hasAnotherActor = (identity: AuthIdentityRecord): boolean =>
       Boolean(value.trim()),
   );
 
+const countDistinctProviders = (identities: AuthIdentityRecord[]): number =>
+  new Set(
+    identities.flatMap((identity) =>
+      (identity.provider_identities || [])
+        .map((providerIdentity) => providerIdentity.provider?.trim())
+        .filter((provider): provider is string => Boolean(provider)),
+    ),
+  ).size;
+
 export const assertAuthIdentityCanMoveToCustomer = (
   identity: AuthIdentityRecord,
 ): void => {
@@ -237,13 +246,11 @@ const buildCandidates = ({
     last_name: customer.last_name,
     phone: customer.phone,
     created_at: customer.created_at,
-    provider_count: authIdentities
-      .filter((identity) => getIdentityCustomerId(identity) === customer.id)
-      .reduce(
-        (count, identity) =>
-          count + (identity.provider_identities || []).length,
-        0,
+    provider_count: countDistinctProviders(
+      authIdentities.filter(
+        (identity) => getIdentityCustomerId(identity) === customer.id,
       ),
+    ),
     activity_count:
       orders.filter((order) => order.customer_id === customer.id).length +
       carts.filter((cart) => cart.customer_id === customer.id).length +

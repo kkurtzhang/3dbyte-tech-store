@@ -3,7 +3,10 @@ import { Modules } from "@medusajs/framework/utils";
 
 import { ACCOUNT_COORDINATION_MODULE } from "../../../modules/account-coordination";
 import { consolidateGuestHistory } from "../../../modules/account-coordination/consolidate-guest-history";
-import { normalizeCustomerEmail } from "../../../modules/account-coordination/security";
+import {
+  getCustomerAccountConsolidationMode,
+  normalizeCustomerEmail,
+} from "../../../modules/account-coordination/security";
 import { toPublicIssueId } from "./identity-issues";
 import {
   deleteOrphanAuthIdentity,
@@ -170,6 +173,12 @@ const retryConsolidation = async ({
   container: MedusaContainer;
   issueId: string;
 }) => {
+  if (getCustomerAccountConsolidationMode() !== "live") {
+    throw new Error(
+      "Consolidation retry requires CUSTOMER_ACCOUNT_CONSOLIDATION_MODE=live",
+    );
+  }
+
   const coordinationModule =
     container.resolve<CoordinationModule>(ACCOUNT_COORDINATION_MODULE);
   const runs = await coordinationModule.listGuestConsolidationRuns(

@@ -375,7 +375,7 @@ export async function listAdminIdentityIssues({
       continue;
     }
 
-    if (!customerId && belongsToAnotherActor(identity)) {
+    if (belongsToAnotherActor(identity)) {
       continue;
     }
 
@@ -534,7 +534,7 @@ export async function listAdminIdentityIssues({
       });
     }
 
-    if ((intent.failure_count || 0) >= 3) {
+    if (intent.status === "pending" && (intent.failure_count || 0) >= 3) {
       issues.push({
         id: toPublicIssueId("oauth_intent_failures", intent.id),
         issue_type: "oauth_intent_repeated_failures",

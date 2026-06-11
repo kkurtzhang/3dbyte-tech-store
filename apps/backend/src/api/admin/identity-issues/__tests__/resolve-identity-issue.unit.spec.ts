@@ -24,6 +24,7 @@ const mockDeleteOrphan = deleteOrphanAuthIdentity as jest.MockedFunction<
 describe("resolveAdminIdentityIssue", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    delete process.env.CUSTOMER_ACCOUNT_CONSOLIDATION_MODE;
   });
 
   it("re-resolves an orphan public ID before deleting it", async () => {
@@ -114,6 +115,30 @@ describe("resolveAdminIdentityIssue", () => {
         },
       }),
     );
+  });
+
+  it("rejects consolidation retry when live mode is disabled", async () => {
+    process.env.CUSTOMER_ACCOUNT_CONSOLIDATION_MODE = "dry_run";
+    const coordinationModule = {
+      listGuestConsolidationRuns: jest.fn(),
+      createAccountSecurityEvents: jest.fn(),
+    };
+    const container = {
+      resolve: jest.fn((key: string) => {
+        if (key === ACCOUNT_COORDINATION_MODULE) return coordinationModule;
+        throw new Error(`Unexpected dependency: ${key}`);
+      }),
+    };
+
+    await expect(
+      resolveAdminIdentityIssue({
+        adminId: "user_admin",
+        container: container as never,
+        issueId: "consolidation:0123456789abcdef",
+      }),
+    ).rejects.toThrow("requires CUSTOMER_ACCOUNT_CONSOLIDATION_MODE=live");
+    expect(mockConsolidate).not.toHaveBeenCalled();
+    expect(coordinationModule.listGuestConsolidationRuns).not.toHaveBeenCalled();
   });
 
   it("rejects an issue ID that no longer maps to current data", async () => {

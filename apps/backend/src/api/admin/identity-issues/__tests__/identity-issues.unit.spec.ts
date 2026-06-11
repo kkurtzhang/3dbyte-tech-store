@@ -100,6 +100,16 @@ const authIdentities = [
       },
     ],
   },
+  {
+    id: "auth_mixed_actor",
+    app_metadata: { customer_id: "cus_missing", user_id: "user_admin" },
+    provider_identities: [
+      {
+        provider: "emailpass",
+        entity_id: "mixed@example.com",
+      },
+    ],
+  },
 ];
 
 function createContainer() {
@@ -167,6 +177,16 @@ function createContainer() {
         last_failure_reason: "must-not-leak",
         created_at: "2026-06-07T03:15:00.000Z",
       },
+      {
+        id: "oli_cancelled_failed",
+        customer_id: "cus_google",
+        expected_email: "google@example.com",
+        status: "cancelled",
+        expires_at: "2026-06-07T05:00:00.000Z",
+        failure_count: 3,
+        last_failure_reason: "must-not-leak",
+        created_at: "2026-06-07T03:20:00.000Z",
+      },
     ]),
   };
   const query = {
@@ -230,6 +250,11 @@ describe("listAdminIdentityIssues", () => {
       ),
     ).toHaveLength(1);
     expect(
+      result.issues.filter(
+        (issue) => issue.issue_type === "oauth_intent_repeated_failures",
+      ),
+    ).toHaveLength(1);
+    expect(
       result.issues.find(
         (issue) => issue.issue_type === "orphan_auth_identity",
       ),
@@ -259,9 +284,11 @@ describe("listAdminIdentityIssues", () => {
     expect(serialized).not.toContain("must-not-leak");
     expect(serialized).not.toContain("order_secret");
     expect(serialized).not.toContain("auth_orphan");
+    expect(serialized).not.toContain("auth_mixed_actor");
     expect(serialized).not.toContain("icf_1");
     expect(serialized).not.toContain("gcr_failed");
     expect(serialized).not.toContain("oli_stale");
+    expect(serialized).not.toContain("oli_cancelled_failed");
 
     const duplicate = result.issues.find(
       (issue) => issue.issue_type === "duplicate_registered_customers",

@@ -205,7 +205,7 @@ describe("identity issue repairs", () => {
           app_metadata: { customer_id: "cus_login" },
           provider_identities: [
             { id: "pi_google", provider: "google" },
-            { id: "pi_google_2", provider: "google" },
+            { id: "pi_email", provider: "emailpass" },
           ],
         },
       ]),
@@ -337,6 +337,106 @@ describe("identity issue repairs", () => {
         }),
       }),
     );
+  });
+
+  it("selects the same canonical customer when duplicate provider identities exist", async () => {
+    process.env.CUSTOMER_ACCOUNT_CONSOLIDATION_MODE = "live";
+    const customerModule = {
+      listCustomers: jest.fn().mockResolvedValue([
+        {
+          id: "cus_old",
+          email: "owner@example.com",
+          has_account: true,
+          created_at: "2026-06-01T00:00:00.000Z",
+          metadata: {},
+        },
+        {
+          id: "cus_duplicate_google",
+          email: "owner@example.com",
+          has_account: true,
+          created_at: "2026-06-02T00:00:00.000Z",
+          metadata: {},
+        },
+      ]),
+      updateCustomers: jest.fn().mockResolvedValue({}),
+    };
+    const authModule = {
+      listAuthIdentities: jest.fn().mockResolvedValue([
+        {
+          id: "auth_old",
+          app_metadata: { customer_id: "cus_old" },
+          provider_identities: [{ id: "pi_email", provider: "emailpass" }],
+        },
+        {
+          id: "auth_duplicate_google",
+          app_metadata: { customer_id: "cus_duplicate_google" },
+          provider_identities: [
+            { id: "pi_google_1", provider: "google" },
+            { id: "pi_google_2", provider: "google" },
+          ],
+        },
+      ]),
+    };
+    const supportTicketModule = {
+      listSupportTickets: jest.fn().mockResolvedValue([]),
+      updateSupportTickets: jest.fn(),
+    };
+    const cartModule = { updateCarts: jest.fn() };
+    const coordinationModule = {
+      createAccountSecurityEvents: jest.fn().mockResolvedValue({}),
+      listIdentityConflicts: jest.fn().mockResolvedValue([]),
+      updateIdentityConflicts: jest.fn(),
+    };
+    const query = {
+      graph: jest.fn(async ({ entity, fields }: Record<string, unknown>) => {
+        if (entity === "order" && Array.isArray(fields)) {
+          return {
+            data: [
+              {
+                id: "order_1",
+                customer_id: "cus_duplicate_google",
+                email: "owner@example.com",
+                status: "completed",
+              },
+            ],
+          };
+        }
+        if (entity === "cart") return { data: [] };
+        if (entity === "order_change") {
+          const isTokenLookup =
+            Array.isArray(fields) && fields.includes("actions.details");
+          return {
+            data: isTokenLookup
+              ? [{ actions: [{ details: { token: "transfer-token" } }] }]
+              : [],
+          };
+        }
+        throw new Error(`Unexpected graph entity: ${String(entity)}`);
+      }),
+    };
+    const container = {
+      resolve: jest.fn((key: string) => {
+        if (key === Modules.CUSTOMER) return customerModule;
+        if (key === Modules.AUTH) return authModule;
+        if (key === Modules.CART) return cartModule;
+        if (key === ACCOUNT_COORDINATION_MODULE) return coordinationModule;
+        if (key === SUPPORT_TICKET_MODULE) return supportTicketModule;
+        if (key === "query") return query;
+        throw new Error(`Unexpected dependency: ${key}`);
+      }),
+    };
+    mockRequestTransfer.mockReturnValue({ run: jest.fn().mockResolvedValue({}) });
+    mockAcceptTransfer.mockReturnValue({ run: jest.fn().mockResolvedValue({}) });
+    mockSetAuthMetadata.mockReturnValue({ run: jest.fn().mockResolvedValue({}) });
+
+    const result = await mergeDuplicateRegisteredCustomers({
+      adminId: "user_admin",
+      container: container as never,
+      email: "owner@example.com",
+      publicIssueId: "duplicate_registered_customers:public",
+    });
+
+    expect(result.canonical_customer_id).toBe("cus_duplicate_google");
   });
 
   it("aborts duplicate merge before mutations when a source auth identity has another actor", async () => {
