@@ -28,7 +28,17 @@ const customers = [
     id: "cus_google",
     email: "google@example.com",
     has_account: true,
+    first_name: "Grace",
+    last_name: "Google",
     created_at: "2026-06-04T00:00:00.000Z",
+  },
+  {
+    id: "cus_guest_orphan",
+    email: "orphan@example.com",
+    has_account: false,
+    first_name: "Olivia",
+    last_name: "Guest",
+    created_at: "2026-06-05T00:00:00.000Z",
   },
 ];
 
@@ -56,14 +66,29 @@ const authIdentities = [
     ],
   },
   {
+    id: "auth_owner_2",
+    app_metadata: { customer_id: "cus_registered_2" },
+    provider_identities: [
+      {
+        provider: "google",
+        entity_id: "second-owner-google-subject",
+      },
+    ],
+  },
+  {
     id: "auth_orphan",
     app_metadata: { customer_id: "cus_missing" },
     provider_identities: [
       {
         provider: "google",
         entity_id: "orphan-google-subject",
+        user_metadata: {
+          email: "orphan@example.com",
+          email_verified: true,
+        },
       },
     ],
+    created_at: "2026-06-06T00:00:00.000Z",
   },
   {
     id: "auth_admin_user",
@@ -72,6 +97,16 @@ const authIdentities = [
       {
         provider: "emailpass",
         entity_id: "admin@example.com",
+      },
+    ],
+  },
+  {
+    id: "auth_mixed_actor",
+    app_metadata: { customer_id: "cus_missing", user_id: "user_admin" },
+    provider_identities: [
+      {
+        provider: "emailpass",
+        entity_id: "mixed@example.com",
       },
     ],
   },
@@ -142,7 +177,34 @@ function createContainer() {
         last_failure_reason: "must-not-leak",
         created_at: "2026-06-07T03:15:00.000Z",
       },
+      {
+        id: "oli_cancelled_failed",
+        customer_id: "cus_google",
+        expected_email: "google@example.com",
+        status: "cancelled",
+        expires_at: "2026-06-07T05:00:00.000Z",
+        failure_count: 3,
+        last_failure_reason: "must-not-leak",
+        created_at: "2026-06-07T03:20:00.000Z",
+      },
     ]),
+  };
+  const query = {
+    graph: jest.fn(async ({ entity }: { entity: string }) => {
+      if (entity === "order") {
+        return {
+          data: [
+            { id: "order_1", customer_id: "cus_registered_2" },
+            { id: "order_2", customer_id: "cus_registered_2" },
+          ],
+        };
+      }
+      if (entity === "cart") return { data: [] };
+      throw new Error(`Unexpected entity: ${entity}`);
+    }),
+  };
+  const supportTicketModule = {
+    listSupportTickets: jest.fn().mockResolvedValue([]),
   };
 
   return {
@@ -152,6 +214,8 @@ function createContainer() {
         if (key === Modules.CUSTOMER) return customerModule;
         if (key === Modules.AUTH) return authModule;
         if (key === ACCOUNT_COORDINATION_MODULE) return coordinationModule;
+        if (key === "query") return query;
+        if (key === "supportTicket") return supportTicketModule;
         throw new Error(`Unexpected dependency: ${key}`);
       }),
     },
@@ -185,16 +249,68 @@ describe("listAdminIdentityIssues", () => {
         (issue) => issue.issue_type === "orphan_auth_identity",
       ),
     ).toHaveLength(1);
+    expect(
+      result.issues.filter(
+        (issue) => issue.issue_type === "oauth_intent_repeated_failures",
+      ),
+    ).toHaveLength(1);
+    expect(
+      result.issues.find(
+        (issue) => issue.issue_type === "orphan_auth_identity",
+      ),
+    ).toMatchObject({
+      id: expect.stringMatching(/^orphan_auth_identity:[a-f0-9]{16}$/),
+      provider: "google",
+      email: "orphan@example.com",
+      customer_id: "cus_guest_orphan",
+      customer: {
+        id: "cus_guest_orphan",
+        email: "orphan@example.com",
+        name: "Olivia Guest",
+        account_type: "guest",
+      },
+      resolution: {
+        action: "delete_orphan_identity",
+        allowed: true,
+      },
+      summary:
+        "Google login for orphan@example.com points to a missing customer. A matching guest customer exists, so the stale login identity can be removed safely.",
+    });
 
     const serialized = JSON.stringify(result);
     expect(serialized).not.toContain("google-subject-id");
+    expect(serialized).not.toContain("second-owner-google-subject");
     expect(serialized).not.toContain("orphan-google-subject");
     expect(serialized).not.toContain("must-not-leak");
     expect(serialized).not.toContain("order_secret");
     expect(serialized).not.toContain("auth_orphan");
+    expect(serialized).not.toContain("auth_mixed_actor");
     expect(serialized).not.toContain("icf_1");
     expect(serialized).not.toContain("gcr_failed");
     expect(serialized).not.toContain("oli_stale");
+    expect(serialized).not.toContain("oli_cancelled_failed");
+
+    const duplicate = result.issues.find(
+      (issue) => issue.issue_type === "duplicate_registered_customers",
+    );
+    expect(duplicate).toMatchObject({
+      customer_id: "cus_registered_2",
+      resolution: {
+        action: "merge_duplicate_customers",
+        canonical_customer_id: "cus_registered_2",
+      },
+      summary:
+        "2 registered customer records share owner@example.com. Recommended canonical account: owner@example.com (1 login method, 2 linked records).",
+    });
+
+    const ownershipConflict = result.issues.find(
+      (issue) =>
+        issue.issue_type === "provider_identity_owned_by_other_customer",
+    );
+    expect(ownershipConflict?.resolution).toMatchObject({
+      action: null,
+      allowed: false,
+    });
   });
 
   it("filters issues by type, status, provider, email, and date before paginating", async () => {

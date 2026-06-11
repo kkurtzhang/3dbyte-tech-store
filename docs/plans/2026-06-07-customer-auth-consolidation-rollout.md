@@ -46,6 +46,9 @@ staging value in production.
 6. Enable Google auto-linking only after exact-email and conflict behavior is
    confirmed on staging.
 
+The full repeatable browser and Admin matrix is maintained in
+`docs/runbooks/customer-auth-manual-test.md`.
+
 ## Acceptance Matrix
 
 - Guest records remain separate until verified ownership.

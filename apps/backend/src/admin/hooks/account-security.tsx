@@ -1,6 +1,8 @@
 import type { FetchError } from "@medusajs/js-sdk";
 import {
+  useMutation,
   useQuery,
+  useQueryClient,
   type QueryKey,
   type UseQueryOptions,
 } from "@tanstack/react-query";
@@ -9,6 +11,7 @@ import { type AccountSecurityResponse } from "../lib/account-security";
 import {
   type AdminIdentityIssuesResponse,
   type IdentityIssueFilters,
+  type ResolveIdentityIssueResponse,
   buildIdentityIssuesQuery,
 } from "../lib/identity-issues";
 import { sdk } from "../lib/sdk";
@@ -62,4 +65,24 @@ export const useIdentityIssues = (
     issues: data?.identity_issues || [],
     ...rest,
   };
+};
+
+export const useResolveIdentityIssue = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (issueId: string) =>
+      sdk.client.fetch<ResolveIdentityIssueResponse>(
+        "/admin/identity-issues/resolve",
+        {
+          method: "POST",
+          body: { issue_id: issueId },
+        },
+      ),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["account-security"],
+      });
+    },
+  });
 };
