@@ -10,8 +10,34 @@ export type AdminIdentityIssue = {
   provider: string | null;
   email: string | null;
   customer_id: string | null;
+  customer: AdminIdentityIssueCustomer | null;
+  related_customers: AdminIdentityIssueCustomer[];
   occurred_at: string;
   summary: string;
+  resolution: AdminIdentityIssueResolution;
+};
+
+export type AdminIdentityIssueCustomer = {
+  id: string;
+  email: string;
+  name: string | null;
+  account_type: "guest" | "registered";
+  providers: string[];
+  created_at: string | null;
+};
+
+export type AdminIdentityIssueResolution = {
+  action:
+    | "delete_orphan_identity"
+    | "merge_duplicate_customers"
+    | "retry_consolidation"
+    | "close_oauth_intent"
+    | null;
+  allowed: boolean;
+  label: string;
+  description: string;
+  canonical_customer_id?: string;
+  affected_customer_ids?: string[];
 };
 
 export type AdminIdentityIssuesResponse = {
@@ -19,6 +45,16 @@ export type AdminIdentityIssuesResponse = {
   count: number;
   limit: number;
   offset: number;
+};
+
+export type ResolveIdentityIssueResponse = {
+  resolution: {
+    action: Exclude<AdminIdentityIssueResolution["action"], null>;
+    canonical_customer_id?: string;
+    affected_customer_count?: number;
+    transferred_order_count?: number;
+    removed_provider_count?: number;
+  };
 };
 
 export type IdentityIssueFilters = {
@@ -63,6 +99,49 @@ export const getIdentityIssueStatusColor = (status: string): BadgeColor => {
 export const getIdentityIssueCustomerPath = (
   customerId?: string | null,
 ): string | null => (customerId ? `/customers/${customerId}` : null);
+
+const providerLabel = (provider: string): string =>
+  provider === "emailpass"
+    ? "Email/password"
+    : provider === "google"
+      ? "Google"
+      : labelizeIdentityIssueValue(provider);
+
+export const getIdentityIssueCustomerDisplay = (
+  issue: AdminIdentityIssue,
+): { primary: string; secondary: string } => {
+  if (issue.customer) {
+    const providerText = issue.customer.providers.length
+      ? ` · ${issue.customer.providers.map(providerLabel).join(" + ")}`
+      : "";
+    return {
+      primary: issue.customer.name || issue.customer.email,
+      secondary: `${issue.customer.email} · ${labelizeIdentityIssueValue(issue.customer.account_type)}${providerText}`,
+    };
+  }
+
+  return {
+    primary: issue.email || "Unlinked login identity",
+    secondary: issue.provider
+      ? `${providerLabel(issue.provider)} · No customer record linked`
+      : "No customer record linked",
+  };
+};
+
+export const getIdentityIssueResolutionConfirmation = (
+  issue: AdminIdentityIssue,
+): { title: string; description: string } => {
+  const affectedCount = issue.resolution.affected_customer_ids?.length || 0;
+  const affectedText =
+    issue.resolution.action === "merge_duplicate_customers" && affectedCount
+      ? ` This affects ${affectedCount} customer records and retains the non-canonical records as history.`
+      : "";
+
+  return {
+    title: `${issue.resolution.label}?`,
+    description: `${issue.resolution.description}${affectedText}`,
+  };
+};
 
 export const formatIdentityIssueDate = (value?: string | null): string => {
   if (!value) return "-";

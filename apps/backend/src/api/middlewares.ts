@@ -35,6 +35,7 @@ import { PostStoreGoogleLinkIntentSchema } from "./store/customers/me/google-lin
 import { PostStoreEmailpassLoginMethodSchema } from "./store/customers/me/login-methods/emailpass/route";
 import { PostStoreCustomerEmailChangeSchema } from "./store/customers/me/email-change-requests/route";
 import { GetAdminIdentityIssuesSchema } from "./admin/identity-issues/route";
+import { PostAdminResolveIdentityIssueSchema } from "./admin/identity-issues/resolve/route";
 
 export const GetBrandsSchema = createFindParams();
 
@@ -240,6 +241,14 @@ export default defineMiddlewares({
         validateAndTransformQuery(GetAdminIdentityIssuesSchema, {
           isList: false,
         }),
+      ],
+    },
+    {
+      matcher: "/admin/identity-issues/resolve",
+      methods: ["POST"],
+      middlewares: [
+        authenticate("user", ["session", "bearer", "api-key"]),
+        validateAndTransformBody(PostAdminResolveIdentityIssueSchema),
       ],
     },
     {

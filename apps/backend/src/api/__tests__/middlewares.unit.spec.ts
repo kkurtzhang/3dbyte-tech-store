@@ -34,4 +34,23 @@ describe("API middleware configuration", () => {
       },
     });
   });
+
+  it("protects and validates the admin identity issue resolution route", async () => {
+    const { default: configuration } = await import("../middlewares");
+    const resolutionRoute = configuration.routes.find(
+      (route: { matcher: string }) =>
+        route.matcher === "/admin/identity-issues/resolve",
+    );
+
+    expect(resolutionRoute).toBeDefined();
+    expect(resolutionRoute.methods).toEqual(["POST"]);
+    expect(resolutionRoute.middlewares[0]).toEqual({
+      actorType: "user",
+      authTypes: ["session", "bearer", "api-key"],
+      options: undefined,
+    });
+    expect(resolutionRoute.middlewares[1]).toEqual({
+      type: "body-validation",
+    });
+  });
 });
