@@ -12,20 +12,26 @@ jest.mock("@/app/actions/auth", () => ({
 
 jest.mock("next/navigation", () => ({
   redirect: (...args: unknown[]) => mockRedirect(...args),
-  useRouter: () => ({ replace: jest.fn(), refresh: jest.fn(), push: jest.fn() }),
+  useRouter: () => ({
+    replace: jest.fn(),
+    refresh: jest.fn(),
+    push: jest.fn(),
+  }),
   useSearchParams: () => new URLSearchParams(),
 }))
 
-jest.mock("lucide-react", () =>
-  new Proxy(
-    {},
-    {
-      get: (_target, prop) => {
-        if (prop === "__esModule") return true
-        return (props: Record<string, unknown>) => <svg {...props} />
+jest.mock(
+  "lucide-react",
+  () =>
+    new Proxy(
+      {},
+      {
+        get: (_target, prop) => {
+          if (prop === "__esModule") return true
+          return (props: Record<string, unknown>) => <svg {...props} />
+        },
       },
-    },
-  ),
+    ),
 )
 
 const mockGetSessionAction = getSessionAction as jest.MockedFunction<
@@ -68,17 +74,42 @@ describe("AccountPage", () => {
     expect(screen.getByText("Kurt Zhang")).toBeInTheDocument()
     expect(screen.getByText("kurt@example.com")).toBeInTheDocument()
     expect(screen.getByText("0400000000")).toBeInTheDocument()
-    expect(screen.getByRole("link", { name: /manage profile and password/i }))
-      .toHaveAttribute("href", "/account/settings")
+    expect(
+      screen.getByRole("link", { name: /manage profile and password/i }),
+    ).toHaveAttribute("href", "/account/settings")
     expect(screen.getByRole("link", { name: /view orders/i })).toHaveAttribute(
       "href",
       "/account/orders",
     )
-    expect(screen.getByRole("link", { name: /manage addresses/i }))
-      .toHaveAttribute("href", "/account/addresses")
+    expect(
+      screen.getByRole("link", { name: /manage addresses/i }),
+    ).toHaveAttribute("href", "/account/addresses")
     expect(
       screen.queryByRole("button", { name: /save changes/i }),
     ).not.toBeInTheDocument()
     expect(screen.queryByLabelText("First Name")).not.toBeInTheDocument()
+  })
+
+  it("shows a registration follow-up banner after creating an email/password account", async () => {
+    mockGetSessionAction.mockResolvedValue({
+      success: true,
+      user: {
+        id: "cus_123",
+        email: "kurt@example.com",
+        first_name: "Kurt",
+        last_name: "Zhang",
+        email_verified: false,
+      },
+    })
+
+    render(
+      await AccountPage({
+        searchParams: Promise.resolve({ registered: "1" }),
+      }),
+    )
+
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Account created. Check your inbox to verify your email and activate checkout.",
+    )
   })
 })

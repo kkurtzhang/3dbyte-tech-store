@@ -1,4 +1,5 @@
 import { cookies } from "next/headers"
+import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
 import { CUSTOMER_TOKEN_COOKIE } from "@/lib/auth/session-cookies"
@@ -37,7 +38,7 @@ export default async function VerifyEmailPage({
   try {
     const url = new URL(
       "/store/customers/email-verifications",
-      resolveMedusaBaseUrl({ isServer: true })
+      resolveMedusaBaseUrl({ isServer: true }),
     )
     url.searchParams.set("token", token)
 
@@ -59,6 +60,8 @@ export default async function VerifyEmailPage({
   }
 
   if (verified) {
+    revalidatePath("/account", "layout")
+    revalidatePath("/account/settings")
     redirect(isLoggedIn ? "/account?verified=1" : "/sign-in?verified=1")
   }
 

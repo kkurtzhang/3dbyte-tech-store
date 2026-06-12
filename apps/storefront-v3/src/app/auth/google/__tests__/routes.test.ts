@@ -66,12 +66,12 @@ describe("Google OAuth storefront routes", () => {
 
     const response = await startGoogleAuth(
       createRequest(
-        "https://store.staging.example.com/auth/google/start?redirect=/account"
-      )
+        "https://store.staging.example.com/auth/google/start?redirect=/account",
+      ),
     )
 
     expect(response.headers.get("location")).toBe(
-      "https://accounts.google.com/o/oauth2/v2/auth?client_id=test"
+      "https://accounts.google.com/o/oauth2/v2/auth?client_id=test",
     )
     expect(mockFetch).toHaveBeenCalledWith(
       "http://medusa:9000/auth/customer/google",
@@ -81,7 +81,7 @@ describe("Google OAuth storefront routes", () => {
           "content-type": "application/json",
           "x-publishable-api-key": "pk_test",
         }),
-      })
+      }),
     )
     expect(JSON.parse(String(mockFetch.mock.calls[0][1].body))).toEqual({
       callback_url: "https://store.staging.example.com/auth/google/callback",
@@ -89,7 +89,7 @@ describe("Google OAuth storefront routes", () => {
     expect(mockCookieSet).toHaveBeenCalledWith(
       "google_oauth_redirect",
       "/account",
-      expect.objectContaining({ httpOnly: true, path: "/" })
+      expect.objectContaining({ httpOnly: true, path: "/" }),
     )
   })
 
@@ -113,12 +113,12 @@ describe("Google OAuth storefront routes", () => {
     await startGoogleAuth(
       createRequest(
         "https://store.staging.example.com/auth/google/start?mode=link&redirect=/account/settings",
-        { cookie: "_medusa_customer_token=customer-session-token" }
-      )
+        { cookie: "_medusa_customer_token=customer-session-token" },
+      ),
     )
 
     expect(mockFetch.mock.calls[0][0]).toBe(
-      "http://medusa:9000/store/customers/me/google-link-intents"
+      "http://medusa:9000/store/customers/me/google-link-intents",
     )
     expect(mockFetch.mock.calls[0][1]).toEqual(
       expect.objectContaining({
@@ -126,33 +126,33 @@ describe("Google OAuth storefront routes", () => {
         headers: expect.objectContaining({
           Authorization: "Bearer customer-session-token",
         }),
-      })
+      }),
     )
     const intentBody = JSON.parse(String(mockFetch.mock.calls[0][1].body))
     expect(intentBody.nonce).toEqual(expect.any(String))
     expect(intentBody.nonce.length).toBeGreaterThanOrEqual(32)
     expect(mockFetch.mock.calls[1][0]).toBe(
-      "http://medusa:9000/auth/customer/google"
+      "http://medusa:9000/auth/customer/google",
     )
     expect(mockCookieSet).toHaveBeenCalledWith(
       "google_oauth_mode",
       "link",
-      expect.objectContaining({ httpOnly: true, path: "/" })
+      expect.objectContaining({ httpOnly: true, path: "/" }),
     )
     expect(mockCookieSet).toHaveBeenCalledWith(
       "google_oauth_redirect",
       "/account/settings",
-      expect.objectContaining({ httpOnly: true, path: "/" })
+      expect.objectContaining({ httpOnly: true, path: "/" }),
     )
     expect(mockCookieSet).toHaveBeenCalledWith(
       "google_oauth_link_intent",
       "oli_123",
-      expect.objectContaining({ httpOnly: true, path: "/" })
+      expect.objectContaining({ httpOnly: true, path: "/" }),
     )
     expect(mockCookieSet).toHaveBeenCalledWith(
       "google_oauth_link_nonce",
       intentBody.nonce,
-      expect.objectContaining({ httpOnly: true, path: "/" })
+      expect.objectContaining({ httpOnly: true, path: "/" }),
     )
   })
 
@@ -166,7 +166,7 @@ describe("Google OAuth storefront routes", () => {
     })
 
     await startGoogleAuth(
-      createRequest("https://0.0.0.0:3000/auth/google/start?redirect=/account")
+      createRequest("https://0.0.0.0:3000/auth/google/start?redirect=/account"),
     )
 
     expect(JSON.parse(String(mockFetch.mock.calls[0][1].body))).toEqual({
@@ -226,18 +226,18 @@ describe("Google OAuth storefront routes", () => {
         "https://store.staging.example.com/auth/google/callback?code=abc&state=xyz",
         {
           cookie: "google_oauth_redirect=/checkout; _medusa_cart_id=cart_123",
-        }
-      )
+        },
+      ),
     )
 
     expect(response.headers.get("location")).toBe(
-      "https://store.staging.example.com/checkout"
+      "https://store.staging.example.com/checkout",
     )
     expect(mockFetch.mock.calls[0][0]).toBe(
-      "http://medusa:9000/auth/customer/google/callback?code=abc&state=xyz"
+      "http://medusa:9000/auth/customer/google/callback?code=abc&state=xyz",
     )
     expect(mockFetch.mock.calls[1][0]).toBe(
-      "http://medusa:9000/store/customers/claim-account"
+      "http://medusa:9000/store/customers/claim-account",
     )
     expect(mockFetch.mock.calls[1][1]).toEqual(
       expect.objectContaining({
@@ -246,31 +246,31 @@ describe("Google OAuth storefront routes", () => {
           Authorization: `Bearer ${initialToken}`,
           "x-publishable-api-key": "pk_test",
         }),
-      })
+      }),
     )
     expect(JSON.parse(String(mockFetch.mock.calls[1][1].body))).toEqual({
       email: "ava@example.com",
       source: "google",
     })
     expect(mockFetch.mock.calls[2][0]).toBe(
-      "http://medusa:9000/store/customers"
+      "http://medusa:9000/store/customers",
     )
     expect(mockFetch.mock.calls[3][0]).toBe(
-      "http://medusa:9000/auth/token/refresh"
+      "http://medusa:9000/auth/token/refresh",
     )
     expect(mockFetch.mock.calls[4][0]).toBe(
-      "http://medusa:9000/store/customers/me"
+      "http://medusa:9000/store/customers/me",
     )
     expect(mockFetch.mock.calls[5][0]).toBe(
-      "http://medusa:9000/store/customers/me/link-guest-orders"
+      "http://medusa:9000/store/customers/me/link-guest-orders",
     )
     expect(mockFetch.mock.calls[6][0]).toBe(
-      "http://medusa:9000/store/carts/cart_123/customer"
+      "http://medusa:9000/store/carts/cart_123/customer",
     )
     expect(mockCookieSet).toHaveBeenCalledWith(
       "_medusa_customer_token",
       refreshedToken,
-      expect.objectContaining({ httpOnly: true, path: "/" })
+      expect.objectContaining({ httpOnly: true, path: "/" }),
     )
   })
 
@@ -324,21 +324,21 @@ describe("Google OAuth storefront routes", () => {
         "https://store.staging.example.com/auth/google/callback?code=abc&state=xyz",
         {
           cookie: "google_oauth_redirect=/checkout; _medusa_cart_id=cart_123",
-        }
-      )
+        },
+      ),
     )
 
     expect(response.headers.get("location")).toBe(
-      "https://store.staging.example.com/checkout"
+      "https://store.staging.example.com/checkout",
     )
     expect(mockFetch.mock.calls[0][0]).toBe(
-      "http://medusa:9000/auth/customer/google/callback?code=abc&state=xyz"
+      "http://medusa:9000/auth/customer/google/callback?code=abc&state=xyz",
     )
     expect(mockFetch.mock.calls[1][0]).toBe(
-      "http://medusa:9000/store/customers/claim-account"
+      "http://medusa:9000/store/customers/claim-account",
     )
     expect(mockFetch.mock.calls[2][0]).toBe(
-      "http://medusa:9000/store/customers"
+      "http://medusa:9000/store/customers",
     )
     expect(mockFetch.mock.calls[2][1]).toEqual(
       expect.objectContaining({
@@ -347,19 +347,19 @@ describe("Google OAuth storefront routes", () => {
           Authorization: `Bearer ${initialToken}`,
           "x-publishable-api-key": "pk_test",
         }),
-      })
+      }),
     )
     expect(JSON.parse(String(mockFetch.mock.calls[2][1].body))).toEqual({
       email: "ava@example.com",
     })
     expect(mockFetch.mock.calls[3][0]).toBe(
-      "http://medusa:9000/auth/token/refresh"
+      "http://medusa:9000/auth/token/refresh",
     )
     expect(mockFetch.mock.calls[4][0]).toBe(
-      "http://medusa:9000/store/customers/me"
+      "http://medusa:9000/store/customers/me",
     )
     expect(mockFetch.mock.calls[5][0]).toBe(
-      "http://medusa:9000/store/customers/me/link-guest-orders"
+      "http://medusa:9000/store/customers/me/link-guest-orders",
     )
     expect(mockFetch.mock.calls[5][1]).toEqual(
       expect.objectContaining({
@@ -368,10 +368,10 @@ describe("Google OAuth storefront routes", () => {
           Authorization: `Bearer ${refreshedToken}`,
           "x-publishable-api-key": "pk_test",
         }),
-      })
+      }),
     )
     expect(mockFetch.mock.calls[6][0]).toBe(
-      "http://medusa:9000/store/carts/cart_123/customer"
+      "http://medusa:9000/store/carts/cart_123/customer",
     )
     expect(mockFetch.mock.calls[6][1]).toEqual(
       expect.objectContaining({
@@ -380,17 +380,17 @@ describe("Google OAuth storefront routes", () => {
           Authorization: `Bearer ${refreshedToken}`,
           "x-publishable-api-key": "pk_test",
         }),
-      })
+      }),
     )
     expect(mockCookieSet).toHaveBeenCalledWith(
       "_medusa_customer_token",
       refreshedToken,
-      expect.objectContaining({ httpOnly: true, path: "/" })
+      expect.objectContaining({ httpOnly: true, path: "/" }),
     )
     expect(mockCookieSet).toHaveBeenCalledWith(
       "_medusa_authenticated",
       "true",
-      expect.objectContaining({ httpOnly: true, path: "/" })
+      expect.objectContaining({ httpOnly: true, path: "/" }),
     )
     expect(mockCookieDelete).toHaveBeenCalledWith("google_oauth_redirect")
   })
@@ -417,17 +417,17 @@ describe("Google OAuth storefront routes", () => {
 
     const response = await completeGoogleAuth(
       createRequest(
-        "https://store.staging.example.com/auth/google/callback?code=abc"
-      )
+        "https://store.staging.example.com/auth/google/callback?code=abc",
+      ),
     )
 
     expect(response.headers.get("location")).toBe(
-      "https://store.staging.example.com/sign-in?error=google_link_required"
+      "https://store.staging.example.com/sign-in?error=google_link_required",
     )
     expect(mockCookieSet).not.toHaveBeenCalledWith(
       "_medusa_customer_token",
       expect.any(String),
-      expect.any(Object)
+      expect.any(Object),
     )
   })
 
@@ -466,24 +466,24 @@ describe("Google OAuth storefront routes", () => {
 
     await completeGoogleAuth(
       createRequest(
-        "https://store.staging.example.com/auth/google/callback?code=abc"
-      )
+        "https://store.staging.example.com/auth/google/callback?code=abc",
+      ),
     )
 
     expect(mockFetch.mock.calls[1][0]).toBe(
-      "http://medusa:9000/store/customers/claim-account"
+      "http://medusa:9000/store/customers/claim-account",
     )
     expect(mockFetch.mock.calls[2][0]).toBe(
-      "http://medusa:9000/auth/token/refresh"
+      "http://medusa:9000/auth/token/refresh",
     )
     expect(mockFetch).not.toHaveBeenCalledWith(
       "http://medusa:9000/store/customers",
-      expect.anything()
+      expect.anything(),
     )
     expect(mockCookieSet).toHaveBeenCalledWith(
       "_medusa_customer_token",
       refreshedToken,
-      expect.objectContaining({ httpOnly: true, path: "/" })
+      expect.objectContaining({ httpOnly: true, path: "/" }),
     )
   })
 
@@ -527,15 +527,15 @@ describe("Google OAuth storefront routes", () => {
         {
           cookie:
             "google_oauth_mode=link; google_oauth_redirect=/account/settings; google_oauth_link_intent=oli_123; google_oauth_link_nonce=secure-link-nonce-value-with-32-chars",
-        }
-      )
+        },
+      ),
     )
 
     expect(response.headers.get("location")).toBe(
-      "https://store.staging.example.com/account/settings?google=connected"
+      "https://store.staging.example.com/account/settings?google=connected",
     )
     expect(mockFetch.mock.calls[1][0]).toBe(
-      "http://medusa:9000/store/customers/claim-account"
+      "http://medusa:9000/store/customers/claim-account",
     )
     expect(JSON.parse(String(mockFetch.mock.calls[1][1].body))).toEqual({
       email: "ava@example.com",
@@ -545,18 +545,93 @@ describe("Google OAuth storefront routes", () => {
     })
     expect(mockFetch).not.toHaveBeenCalledWith(
       "http://medusa:9000/store/customers",
-      expect.anything()
+      expect.anything(),
     )
     expect(mockCookieSet).toHaveBeenCalledWith(
       "_medusa_customer_token",
       refreshedToken,
-      expect.objectContaining({ httpOnly: true, path: "/" })
+      expect.objectContaining({ httpOnly: true, path: "/" }),
     )
     expect(mockCookieDelete).toHaveBeenCalledWith("google_oauth_mode")
     expect(mockCookieSet).toHaveBeenCalledWith(
       "customer_account_reauth",
       "recent-google-reauth-token",
-      expect.objectContaining({ httpOnly: true, maxAge: 300, path: "/" })
+      expect.objectContaining({ httpOnly: true, maxAge: 300, path: "/" }),
+    )
+  })
+
+  it("links Google from account settings when the callback actor token omits email metadata", async () => {
+    const callbackToken = encodeJwtPayload({
+      actor_id: "cus_registered",
+    })
+    const refreshedToken = encodeJwtPayload({
+      actor_id: "cus_registered",
+      user_metadata: { email: "ava@example.com" },
+    })
+
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ token: callbackToken }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          customer: { id: "cus_registered", email: "ava@example.com" },
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          claimed: false,
+          linked: true,
+          already_registered: true,
+          customer: { id: "cus_registered", email: "ava@example.com" },
+          reauth_token: "recent-google-reauth-token",
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ token: refreshedToken }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ linked: 2 }),
+      })
+
+    const response = await completeGoogleAuth(
+      createRequest(
+        "https://store.staging.example.com/auth/google/callback?code=abc",
+        {
+          cookie:
+            "google_oauth_mode=link; google_oauth_redirect=/account/settings; google_oauth_link_intent=oli_123; google_oauth_link_nonce=secure-link-nonce-value-with-32-chars",
+        },
+      ),
+    )
+
+    expect(response.headers.get("location")).toBe(
+      "https://store.staging.example.com/account/settings?google=connected",
+    )
+    expect(mockFetch.mock.calls[1][0]).toBe(
+      "http://medusa:9000/store/customers/me",
+    )
+    expect(mockFetch.mock.calls[1][1]).toEqual(
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: `Bearer ${callbackToken}`,
+        }),
+      }),
+    )
+    expect(JSON.parse(String(mockFetch.mock.calls[2][1].body))).toEqual({
+      email: "ava@example.com",
+      source: "google",
+      link_intent_id: "oli_123",
+      link_nonce: "secure-link-nonce-value-with-32-chars",
+    })
+    expect(mockCookieSet).toHaveBeenCalledWith(
+      "customer_account_reauth",
+      "recent-google-reauth-token",
+      expect.objectContaining({ httpOnly: true, maxAge: 300, path: "/" }),
     )
   })
 
@@ -585,21 +660,21 @@ describe("Google OAuth storefront routes", () => {
         {
           cookie:
             "google_oauth_mode=link; google_oauth_redirect=/account/settings; google_oauth_link_intent=oli_123; google_oauth_link_nonce=secure-link-nonce-value-with-32-chars",
-        }
-      )
+        },
+      ),
     )
 
     expect(response.headers.get("location")).toBe(
-      "https://store.staging.example.com/account/settings?google=connect_failed"
+      "https://store.staging.example.com/account/settings?google=connect_failed",
     )
     expect(mockFetch).not.toHaveBeenCalledWith(
       "http://medusa:9000/store/customers",
-      expect.anything()
+      expect.anything(),
     )
     expect(mockCookieSet).not.toHaveBeenCalledWith(
       "_medusa_customer_token",
       expect.any(String),
-      expect.any(Object)
+      expect.any(Object),
     )
   })
 
@@ -621,18 +696,18 @@ describe("Google OAuth storefront routes", () => {
 
     await completeGoogleAuth(
       createRequest(
-        "https://store.staging.example.com/auth/google/callback?code=abc"
-      )
+        "https://store.staging.example.com/auth/google/callback?code=abc",
+      ),
     )
 
     expect(mockFetch).toHaveBeenCalledTimes(2)
     expect(mockFetch.mock.calls[1][0]).toBe(
-      "http://medusa:9000/store/customers/me/link-guest-orders"
+      "http://medusa:9000/store/customers/me/link-guest-orders",
     )
     expect(mockCookieSet).toHaveBeenCalledWith(
       "_medusa_customer_token",
       token,
-      expect.objectContaining({ httpOnly: true, path: "/" })
+      expect.objectContaining({ httpOnly: true, path: "/" }),
     )
   })
 
@@ -651,17 +726,17 @@ describe("Google OAuth storefront routes", () => {
 
     const response = await completeGoogleAuth(
       createRequest(
-        "https://store.staging.example.com/auth/google/callback?code=abc"
-      )
+        "https://store.staging.example.com/auth/google/callback?code=abc",
+      ),
     )
 
     expect(response.headers.get("location")).toBe(
-      "https://store.staging.example.com/account"
+      "https://store.staging.example.com/account",
     )
     expect(mockCookieSet).toHaveBeenCalledWith(
       "_medusa_customer_token",
       token,
-      expect.objectContaining({ httpOnly: true, path: "/" })
+      expect.objectContaining({ httpOnly: true, path: "/" }),
     )
   })
 })

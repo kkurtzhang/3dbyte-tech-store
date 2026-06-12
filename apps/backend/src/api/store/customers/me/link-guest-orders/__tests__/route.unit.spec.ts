@@ -1,3 +1,5 @@
+import { Modules } from "@medusajs/framework/utils";
+
 import { consolidateGuestHistory } from "../../../../../../modules/account-coordination/consolidate-guest-history";
 import { POST } from "../route";
 
@@ -45,7 +47,24 @@ describe("POST /store/customers/me/link-guest-orders", () => {
       skipped_items: [],
       profile_fields_filled: ["first_name"],
     });
-    const scope = { resolve: jest.fn() };
+    const customerModule = {
+      retrieveCustomer: jest.fn().mockResolvedValue({
+        id: "cus_123",
+        email: "verified@example.com",
+        metadata: {
+          email_verification_status: "verified",
+          email_verified_at: "2026-06-12T00:00:00.000Z",
+        },
+      }),
+    };
+    const scope = {
+      resolve: jest.fn((key: string) => {
+        if (key === Modules.CUSTOMER) {
+          return customerModule;
+        }
+        return undefined;
+      }),
+    };
     const req = {
       auth_context: { actor_id: "cus_123" },
       scope,
@@ -65,6 +84,44 @@ describe("POST /store/customers/me/link-guest-orders", () => {
         transferred_order_ids: ["order_guest"],
       }),
       linked: 1,
+    });
+  });
+
+  it("requires verified email ownership before linking guest history", async () => {
+    const customerModule = {
+      retrieveCustomer: jest.fn().mockResolvedValue({
+        id: "cus_123",
+        email: "pending@example.com",
+        metadata: {
+          email_verification_status: "pending",
+        },
+      }),
+    };
+    const scope = {
+      resolve: jest.fn((key: string) => {
+        if (key === Modules.CUSTOMER) {
+          return customerModule;
+        }
+        return undefined;
+      }),
+    };
+    const req = {
+      auth_context: { actor_id: "cus_123" },
+      scope,
+    };
+    const res = createResponse();
+
+    await POST(req as never, res as never);
+
+    expect(customerModule.retrieveCustomer).toHaveBeenCalledWith("cus_123", {
+      select: ["id", "email", "metadata"],
+    });
+    expect(mockConsolidateGuestHistory).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(409);
+    expect(res.json).toHaveBeenCalledWith({
+      code: "email_not_verified",
+      message:
+        "Email verification is required before linking guest order history.",
     });
   });
 });

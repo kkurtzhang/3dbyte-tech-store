@@ -64,15 +64,15 @@ function parseEmail(value: string) {
 function isEmailVerified(customer: CustomerWithMetadata): boolean {
   const metadata = customer.metadata;
   if (!metadata || typeof metadata !== "object") {
-    return true;
+    return false;
   }
   if (metadata.email_verification_status === "verified") {
     return true;
   }
-  if (metadata.email_verification_status === "pending") {
-    return false;
+  if (typeof metadata.email_verified_at === "string") {
+    return true;
   }
-  return true;
+  return false;
 }
 
 function toAuthUser(customer: CustomerWithMetadata): AuthUser {
@@ -235,6 +235,10 @@ async function linkCustomerContextAfterLogin(token: string) {
     console.warn("Failed to link guest orders after login:", error);
   }
 
+  await attachCartToCustomer(token);
+}
+
+async function attachCartToCustomer(token: string) {
   try {
     const cookieStore = await cookies();
     const cartId = cookieStore.get(CART_COOKIE)?.value;
@@ -296,10 +300,14 @@ export async function loginAction(email: string, password: string) {
       cookieStore.set(SESSION_COOKIE, "true", sessionCookieOptions);
       cookieStore.set(CUSTOMER_TOKEN_COOKIE, result, sessionCookieOptions);
 
-      await linkCustomerContextAfterLogin(result);
+      const user = toAuthUser(authCustomer);
+      if (user.email_verified) {
+        await linkCustomerContextAfterLogin(result);
+      } else {
+        await attachCartToCustomer(result);
+      }
       revalidatePath("/");
 
-      const user = toAuthUser(authCustomer);
       if (!user.email_verified) {
         try {
           await sendCustomerEmailVerification(result);
@@ -394,14 +402,22 @@ export async function registerAction(
     const cookieStore = await cookies();
     const sessionCookieOptions = getCustomerSessionCookieOptions();
     cookieStore.set(SESSION_COOKIE, "true", sessionCookieOptions);
-    cookieStore.set(CUSTOMER_TOKEN_COOKIE, verificationToken, sessionCookieOptions);
+    cookieStore.set(
+      CUSTOMER_TOKEN_COOKIE,
+      verificationToken,
+      sessionCookieOptions,
+    );
 
     revalidatePath("/");
+    revalidatePath("/account", "layout");
 
     return {
       success: true,
       requiresEmailVerification: true,
-      user: toAuthUser(customer),
+      user: {
+        ...toAuthUser(customer),
+        email_verified: false,
+      },
     };
   } catch (error: any) {
     console.error("Registration error:", error);

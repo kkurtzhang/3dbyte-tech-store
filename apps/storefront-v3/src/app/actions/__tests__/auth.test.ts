@@ -155,7 +155,7 @@ describe("auth actions", () => {
     ).resolves.toEqual({
       success: true,
       requiresEmailVerification: true,
-      user: { id: "cus_123", email: "test@example.com", email_verified: true },
+      user: { id: "cus_123", email: "test@example.com", email_verified: false },
     });
 
     expect(mockCustomerCreate).toHaveBeenCalledWith(
@@ -208,7 +208,7 @@ describe("auth actions", () => {
     ).resolves.toEqual({
       success: true,
       requiresEmailVerification: true,
-      user: { id: "cus_123", email: "test@example.com", email_verified: true },
+      user: { id: "cus_123", email: "test@example.com", email_verified: false },
     });
 
     expect(mockClientFetch).toHaveBeenNthCalledWith(
@@ -281,7 +281,7 @@ describe("auth actions", () => {
     ).resolves.toEqual({
       success: true,
       requiresEmailVerification: true,
-      user: { id: "cus_123", email: "test@example.com", email_verified: true },
+      user: { id: "cus_123", email: "test@example.com", email_verified: false },
     });
 
     expect(mockAuthLogin).toHaveBeenCalledWith("customer", "emailpass", {
@@ -426,7 +426,11 @@ describe("auth actions", () => {
       loginAction("pending@example.com", "Password123!"),
     ).resolves.toEqual({
       success: true,
-      user: { id: "cus_pending", email: "pending@example.com", email_verified: false },
+      user: {
+        id: "cus_pending",
+        email: "pending@example.com",
+        email_verified: false,
+      },
     });
 
     expect(mockClientFetch).toHaveBeenCalledWith(
@@ -439,6 +443,19 @@ describe("auth actions", () => {
       }),
     );
     expect(mockCookieSet).toHaveBeenCalled();
+    expect(mockClientFetch).not.toHaveBeenCalledWith(
+      "/store/customers/me/link-guest-orders",
+      expect.anything(),
+    );
+    expect(mockClientFetch).toHaveBeenCalledWith(
+      "/store/carts/cart_123/customer",
+      expect.objectContaining({
+        method: "POST",
+        headers: {
+          Authorization: "Bearer login-token",
+        },
+      }),
+    );
   });
 
   it("retrieves the current session from the stored customer token", async () => {
@@ -453,6 +470,25 @@ describe("auth actions", () => {
         Authorization: "Bearer stored-token",
       },
     );
+  });
+
+  it("treats missing verification metadata as an unverified customer session", async () => {
+    mockCustomerRetrieve.mockResolvedValueOnce({
+      customer: {
+        id: "cus_unknown",
+        email: "unknown@example.com",
+        metadata: null,
+      },
+    });
+
+    await expect(getSessionAction()).resolves.toEqual({
+      success: true,
+      user: {
+        id: "cus_unknown",
+        email: "unknown@example.com",
+        email_verified: false,
+      },
+    });
   });
 
   it("retrieves linked customer login methods from the backend", async () => {

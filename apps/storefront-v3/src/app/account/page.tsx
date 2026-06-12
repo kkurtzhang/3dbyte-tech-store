@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 
 interface AccountPageProps {
   searchParams?: Promise<{
+    registered?: string | string[]
     verified?: string | string[]
     checkout_blocked?: string | string[]
   }>
@@ -37,6 +38,9 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
   }
 
   const params = await searchParams
+  const registered = Array.isArray(params?.registered)
+    ? params.registered[0]
+    : params?.registered
   const verified = Array.isArray(params?.verified)
     ? params.verified[0]
     : params?.verified
@@ -47,14 +51,13 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
   return (
     <div className="space-y-6">
       <VerificationBanner
+        registered={registered}
         verified={verified}
         checkoutBlocked={checkoutBlocked}
       />
 
       <div>
-        <h1 className="text-2xl font-semibold">
-          Account Overview
-        </h1>
+        <h1 className="text-2xl font-semibold">Account Overview</h1>
         <p className="text-sm text-muted-foreground mt-2">
           Review your account details and jump into common account tasks.
         </p>
