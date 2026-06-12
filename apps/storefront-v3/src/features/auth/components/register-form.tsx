@@ -51,7 +51,9 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = React.useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = React.useState<string | null>(
+    null,
+  )
 
   const {
     register,
@@ -70,17 +72,17 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         data.email,
         data.password,
         data.firstName,
-        data.lastName
+        data.lastName,
       )
 
       if (result.success) {
         onSuccess?.()
         setSuccessMessage(
-          "Account created! We sent a verification email — check your inbox. Redirecting to your account..."
+          "Account created! We sent a verification email — check your inbox. Redirecting to your account...",
         )
         setTimeout(() => {
           const redirectTo = getSafeRedirectPath()
-          router.push(redirectTo || "/account")
+          router.push(redirectTo || "/account?registered=1")
           router.refresh()
         }, 2000)
       } else {
@@ -107,7 +109,9 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             disabled={isLoading}
           />
           {errors.firstName && (
-            <p className="text-sm text-destructive">{errors.firstName.message}</p>
+            <p className="text-sm text-destructive">
+              {errors.firstName.message}
+            </p>
           )}
         </div>
 
@@ -121,7 +125,9 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
             disabled={isLoading}
           />
           {errors.lastName && (
-            <p className="text-sm text-destructive">{errors.lastName.message}</p>
+            <p className="text-sm text-destructive">
+              {errors.lastName.message}
+            </p>
           )}
         </div>
       </div>

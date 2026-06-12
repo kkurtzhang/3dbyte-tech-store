@@ -64,7 +64,7 @@ export function LoginMethodsCard({
   const [message, setMessage] = useState<Message | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const verifyWithGoogle = () => {
+  const startGoogleReauthentication = () => {
     const params = new URLSearchParams({
       mode: "link",
       redirect: "/account/settings",
@@ -157,8 +157,8 @@ export function LoginMethodsCard({
           <Alert>
             <CheckCircle className="h-4 w-4" />
             <AlertDescription>
-              Google verification is complete. Sensitive account controls are
-              available briefly.
+              Google reauthentication is complete. Sensitive account controls
+              are available briefly.
             </AlertDescription>
           </Alert>
         )}
@@ -227,7 +227,7 @@ export function LoginMethodsCard({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={verifyWithGoogle}
+                  onClick={startGoogleReauthentication}
                 >
                   <LinkIcon className="mr-2 h-4 w-4" />
                   Connect Google
@@ -236,10 +236,10 @@ export function LoginMethodsCard({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={verifyWithGoogle}
+                  onClick={startGoogleReauthentication}
                 >
                   <GoogleIcon className="mr-2 h-4 w-4" />
-                  Verify with Google
+                  Reauthenticate with Google
                 </Button>
               )}
               {loginMethods.google &&

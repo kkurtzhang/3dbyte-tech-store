@@ -217,7 +217,7 @@ describe("SettingsContent", () => {
     );
 
     expect(
-      screen.getByRole("button", { name: /verify with google/i }),
+      screen.getByRole("button", { name: /reauthenticate with google/i }),
     ).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /disconnect google/i }),
@@ -285,7 +285,7 @@ describe("SettingsContent", () => {
     );
 
     fireEvent.click(
-      screen.getByRole("button", { name: /verify with google/i }),
+      screen.getByRole("button", { name: /reauthenticate with google/i }),
     );
 
     expect(mockNavigateTo).toHaveBeenCalledWith(

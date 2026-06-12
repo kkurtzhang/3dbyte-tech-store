@@ -2,6 +2,7 @@ const mockFetch = jest.fn()
 const mockRedirect = jest.fn((url: string) => {
   throw new Error(`redirect:${url}`)
 })
+const mockRevalidatePath = jest.fn()
 
 const mockCookieStore = {
   get: jest.fn(),
@@ -13,6 +14,10 @@ jest.mock("next/navigation", () => ({
 
 jest.mock("next/headers", () => ({
   cookies: () => Promise.resolve(mockCookieStore),
+}))
+
+jest.mock("next/cache", () => ({
+  revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),
 }))
 
 jest.mock("@/lib/medusa/base-url", () => ({
@@ -39,18 +44,20 @@ describe("VerifyEmailPage", () => {
     await expect(
       VerifyEmailPage({
         searchParams: Promise.resolve({ token: "valid-token" }),
-      })
+      }),
     ).rejects.toThrow("redirect:/sign-in?verified=1")
 
     expect(String(mockFetch.mock.calls[0][0])).toBe(
-      "https://api.example.com/store/customers/email-verifications?token=valid-token"
+      "https://api.example.com/store/customers/email-verifications?token=valid-token",
     )
     expect(mockFetch.mock.calls[0][1]).toEqual(
       expect.objectContaining({
         cache: "no-store",
         redirect: "manual",
-      })
+      }),
     )
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/account", "layout")
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/account/settings")
   })
 
   it("redirects to the unverified sign-in state when the backend rejects the token", async () => {
@@ -64,7 +71,7 @@ describe("VerifyEmailPage", () => {
     await expect(
       VerifyEmailPage({
         searchParams: Promise.resolve({ token: "bad-token" }),
-      })
+      }),
     ).rejects.toThrow("redirect:/sign-in?verified=0")
   })
 
@@ -80,7 +87,9 @@ describe("VerifyEmailPage", () => {
     await expect(
       VerifyEmailPage({
         searchParams: Promise.resolve({ token: "valid-token" }),
-      })
+      }),
     ).rejects.toThrow("redirect:/account?verified=1")
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/account", "layout")
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/account/settings")
   })
 })

@@ -4,24 +4,38 @@ import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 
 interface VerificationBannerProps {
+  registered?: string
   verified?: string
   checkoutBlocked?: string
 }
 
 export function VerificationBanner({
+  registered,
   verified,
   checkoutBlocked,
 }: VerificationBannerProps) {
   const router = useRouter()
 
   useEffect(() => {
-    if (verified === "1" || verified === "0") {
+    if (registered === "1" || verified === "1" || verified === "0") {
       const timer = setTimeout(() => {
         router.replace("/account", { scroll: false })
       }, 6000)
       return () => clearTimeout(timer)
     }
-  }, [verified, router])
+  }, [registered, verified, router])
+
+  if (registered === "1") {
+    return (
+      <div
+        className="rounded-sm border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-700"
+        role="status"
+      >
+        Account created. Check your inbox to verify your email and activate
+        checkout.
+      </div>
+    )
+  }
 
   if (checkoutBlocked === "unverified") {
     return (
@@ -52,8 +66,8 @@ export function VerificationBanner({
         className="rounded-sm border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive"
         role="alert"
       >
-        Email verification failed or the link has expired. Go to account settings
-        to request a new verification email.
+        Email verification failed or the link has expired. Go to account
+        settings to request a new verification email.
       </div>
     )
   }
