@@ -490,6 +490,43 @@ describe("auth actions", () => {
     );
   });
 
+  it("uses the account-security endpoint when Medusa hides customer metadata from the store API", async () => {
+    mockClientFetch
+      .mockResolvedValueOnce({
+        customer: {
+          id: "cus_verified",
+          email: "verified@example.com",
+        },
+      })
+      .mockResolvedValueOnce({
+        account_security: {
+          email: {
+            verification_status: "verified",
+          },
+        },
+      });
+
+    await expect(getSessionAction()).resolves.toEqual({
+      success: true,
+      user: {
+        id: "cus_verified",
+        email: "verified@example.com",
+        email_verified: true,
+      },
+    });
+
+    expect(mockClientFetch).toHaveBeenNthCalledWith(
+      2,
+      "/store/customers/me/account-security",
+      expect.objectContaining({
+        cache: "no-store",
+        headers: {
+          Authorization: "Bearer stored-token",
+        },
+      }),
+    );
+  });
+
   it("retrieves the current session from the stored customer token", async () => {
     mockClientFetch.mockResolvedValueOnce({
       customer: {

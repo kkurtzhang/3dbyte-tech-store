@@ -30,6 +30,14 @@ type CustomerWithMetadata = AuthUser & {
   metadata?: CustomerMetadata;
 };
 
+type CustomerAccountSecurityResponse = {
+  account_security?: {
+    email?: {
+      verification_status?: string | null;
+    };
+  };
+};
+
 type CustomerAccountClaimResponse = {
   claimed?: boolean;
   linked?: boolean;
@@ -75,11 +83,14 @@ function isEmailVerified(customer: CustomerWithMetadata): boolean {
   return false;
 }
 
-function toAuthUser(customer: CustomerWithMetadata): AuthUser {
+function toAuthUser(
+  customer: CustomerWithMetadata,
+  options: { emailVerified?: boolean } = {},
+): AuthUser {
   const user: AuthUser = {
     id: customer.id,
     email: customer.email,
-    email_verified: isEmailVerified(customer),
+    email_verified: options.emailVerified ?? isEmailVerified(customer),
   };
 
   if (customer.first_name) {
@@ -517,7 +528,22 @@ export async function getSessionAction() {
     });
 
     if (customer) {
-      return { success: true, user: toAuthUser(customer) };
+      const accountSecurity =
+        await sdk.client.fetch<CustomerAccountSecurityResponse>(
+          "/store/customers/me/account-security",
+          {
+            cache: "no-store",
+            headers: authHeaders,
+          },
+        );
+      const verificationStatus =
+        accountSecurity.account_security?.email?.verification_status;
+      const emailVerified =
+        typeof verificationStatus === "string"
+          ? verificationStatus === "verified"
+          : undefined;
+
+      return { success: true, user: toAuthUser(customer, { emailVerified }) };
     }
 
     return { success: false, error: "No session" };
