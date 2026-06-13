@@ -70,7 +70,8 @@ export default function CustomerEmailVerificationEmail({
           </Section>
 
           <Text style={mutedTextStyle}>
-            This link expires soon. If you did not request this{" "}
+            This verification link expires in 24 hours. If you did not request
+            this{" "}
             {isEmailChange ? "email change" : "account"}, you can ignore this
             email.
           </Text>

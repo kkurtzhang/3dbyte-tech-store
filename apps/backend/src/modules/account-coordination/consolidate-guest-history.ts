@@ -94,7 +94,8 @@ type CustomerModule = {
     filters: Record<string, unknown>,
   ) => Promise<CustomerRecord[]>;
   updateCustomers: (
-    input: Partial<CustomerRecord> & { id: string },
+    id: string,
+    data: Partial<CustomerRecord>,
   ) => Promise<unknown>;
 };
 
@@ -420,14 +421,10 @@ export async function consolidateGuestHistory({
         });
       }
       if (profileFieldsFilled.length) {
-        await customerModule.updateCustomers({
-          id: customerId,
-          ...profileUpdate,
-        });
+        await customerModule.updateCustomers(customerId, profileUpdate);
       }
       for (const guest of guestCustomersToMark) {
-        await customerModule.updateCustomers({
-          id: guest.id,
+        await customerModule.updateCustomers(guest.id, {
           metadata: {
             ...getMetadata(guest),
             consolidated_into_customer_id: customerId,

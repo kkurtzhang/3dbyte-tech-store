@@ -125,14 +125,16 @@ describe("POST /store/customers/me/email-change-requests", () => {
         },
       }),
     );
-    expect(customerModule.updateCustomers).toHaveBeenCalledWith({
-      id: "cus_123",
-      metadata: expect.objectContaining({
-        pending_email_change: expect.objectContaining({
-          email: "new@example.com",
+    expect(customerModule.updateCustomers).toHaveBeenCalledWith(
+      "cus_123",
+      {
+        metadata: expect.objectContaining({
+          pending_email_change: expect.objectContaining({
+            email: "new@example.com",
+          }),
         }),
-      }),
-    });
+      },
+    );
     expect(notificationModule.createNotifications).toHaveBeenCalledWith(
       expect.objectContaining({
         to: "new@example.com",
