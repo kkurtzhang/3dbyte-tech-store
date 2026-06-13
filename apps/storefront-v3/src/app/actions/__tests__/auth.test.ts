@@ -459,7 +459,7 @@ describe("auth actions", () => {
   });
 
   it("requests customer metadata when checking the current session verification state", async () => {
-    mockCustomerRetrieve.mockResolvedValueOnce({
+    mockClientFetch.mockResolvedValueOnce({
       customer: {
         id: "cus_verified",
         email: "verified@example.com",
@@ -478,28 +478,48 @@ describe("auth actions", () => {
       },
     });
 
-    expect(mockCustomerRetrieve).toHaveBeenCalledWith(
-      { fields: "*metadata" },
-      expect.any(Object),
+    expect(mockClientFetch).toHaveBeenCalledWith(
+      "/store/customers/me",
+      expect.objectContaining({
+        cache: "no-store",
+        query: { fields: "*metadata" },
+        headers: {
+          Authorization: "Bearer stored-token",
+        },
+      }),
     );
   });
 
   it("retrieves the current session from the stored customer token", async () => {
+    mockClientFetch.mockResolvedValueOnce({
+      customer: {
+        id: "cus_123",
+        email: "test@example.com",
+        metadata: {
+          email_verified_at: "2026-06-04T00:00:00.000Z",
+        },
+      },
+    });
+
     await expect(getSessionAction()).resolves.toEqual({
       success: true,
       user: { id: "cus_123", email: "test@example.com", email_verified: true },
     });
 
-    expect(mockCustomerRetrieve).toHaveBeenCalledWith(
-      { fields: "*metadata" },
-      {
-        Authorization: "Bearer stored-token",
-      },
+    expect(mockClientFetch).toHaveBeenCalledWith(
+      "/store/customers/me",
+      expect.objectContaining({
+        cache: "no-store",
+        query: { fields: "*metadata" },
+        headers: {
+          Authorization: "Bearer stored-token",
+        },
+      }),
     );
   });
 
   it("treats missing verification metadata as an unverified customer session", async () => {
-    mockCustomerRetrieve.mockResolvedValueOnce({
+    mockClientFetch.mockResolvedValueOnce({
       customer: {
         id: "cus_unknown",
         email: "unknown@example.com",
