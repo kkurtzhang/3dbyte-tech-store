@@ -35,10 +35,9 @@ describe("VerifyEmailPage", () => {
 
   it("redirects to the verified sign-in state when the backend confirms the token", async () => {
     mockFetch.mockResolvedValueOnce({
-      headers: new Headers({
-        location: "https://store.example.com/sign-in?verified=1",
-      }),
-      status: 307,
+      json: async () => ({ verified: true }),
+      ok: true,
+      status: 200,
     })
 
     await expect(
@@ -48,12 +47,14 @@ describe("VerifyEmailPage", () => {
     ).rejects.toThrow("redirect:/sign-in?verified=1")
 
     expect(String(mockFetch.mock.calls[0][0])).toBe(
-      "https://api.example.com/store/customers/email-verifications?token=valid-token",
+      "https://api.example.com/store/customers/email-verifications?token=valid-token&response=json",
     )
     expect(mockFetch.mock.calls[0][1]).toEqual(
       expect.objectContaining({
         cache: "no-store",
-        redirect: "manual",
+        headers: expect.objectContaining({
+          accept: "application/json",
+        }),
       }),
     )
     expect(mockRevalidatePath).toHaveBeenCalledWith("/account", "layout")
@@ -62,10 +63,9 @@ describe("VerifyEmailPage", () => {
 
   it("redirects to the unverified sign-in state when the backend rejects the token", async () => {
     mockFetch.mockResolvedValueOnce({
-      headers: new Headers({
-        location: "https://store.example.com/sign-in?verified=0",
-      }),
-      status: 307,
+      json: async () => ({ verified: false }),
+      ok: true,
+      status: 200,
     })
 
     await expect(
@@ -78,10 +78,9 @@ describe("VerifyEmailPage", () => {
   it("redirects logged-in users to /account instead of /sign-in", async () => {
     mockCookieStore.get.mockReturnValue({ value: "some-token" })
     mockFetch.mockResolvedValueOnce({
-      headers: new Headers({
-        location: "https://store.example.com/sign-in?verified=1",
-      }),
-      status: 307,
+      json: async () => ({ verified: true }),
+      ok: true,
+      status: 200,
     })
 
     await expect(
@@ -91,5 +90,38 @@ describe("VerifyEmailPage", () => {
     ).rejects.toThrow("redirect:/account?verified=1")
     expect(mockRevalidatePath).toHaveBeenCalledWith("/account", "layout")
     expect(mockRevalidatePath).toHaveBeenCalledWith("/account/settings")
+  })
+
+  it("redirects logged-in users back to the verification-required page when verification fails", async () => {
+    mockCookieStore.get.mockReturnValue({ value: "some-token" })
+    mockFetch.mockResolvedValueOnce({
+      json: async () => ({ verified: false }),
+      ok: true,
+      status: 200,
+    })
+
+    await expect(
+      VerifyEmailPage({
+        searchParams: Promise.resolve({ token: "bad-token" }),
+      }),
+    ).rejects.toThrow("redirect:/verify-required?verified=0")
+  })
+
+  it("honors backend account-settings redirects for verified email-change links", async () => {
+    mockCookieStore.get.mockReturnValue({ value: "some-token" })
+    mockFetch.mockResolvedValueOnce({
+      json: async () => ({
+        verified: true,
+        redirect_to: "https://store.example.com/account/settings?email=changed",
+      }),
+      ok: true,
+      status: 200,
+    })
+
+    await expect(
+      VerifyEmailPage({
+        searchParams: Promise.resolve({ token: "email-change-token" }),
+      }),
+    ).rejects.toThrow("redirect:/account/settings?email=changed")
   })
 })

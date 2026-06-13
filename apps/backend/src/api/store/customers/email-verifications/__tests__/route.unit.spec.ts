@@ -198,6 +198,65 @@ describe("store customer email verification route", () => {
     );
   });
 
+  it("confirms a valid token with a JSON response for storefront verification pages", async () => {
+    const { createCustomerEmailVerificationToken } = await import(
+      "../../../../../lib/customer-verification/tokens"
+    );
+    const token = createCustomerEmailVerificationToken({
+      customerId: "cus_123",
+      email: "ava@example.com",
+      expiresInSeconds: 60,
+      issuedAt: new Date(),
+      secret: "test-secret",
+    });
+    const customerModule = {
+      retrieveCustomer: jest.fn().mockResolvedValue({
+        id: "cus_123",
+        email: "ava@example.com",
+        metadata: {
+          email_verification_status: "pending",
+        },
+      }),
+      updateCustomers: jest.fn().mockResolvedValue({ id: "cus_123" }),
+    };
+    const req = createRequest({
+      actorId: null,
+      customerModule,
+      query: { token, response: "json" },
+    });
+    const res = createResponse();
+
+    await GET(req as never, res as never);
+
+    expect(res.redirect).not.toHaveBeenCalled();
+    expect(res.json).toHaveBeenCalledWith({
+      verified: true,
+      redirect_to: "https://store.example.com/sign-in?verified=1",
+    });
+  });
+
+  it("returns a failed JSON response when the verification token is invalid", async () => {
+    const customerModule = {
+      retrieveCustomer: jest.fn(),
+      updateCustomers: jest.fn(),
+    };
+    const req = createRequest({
+      actorId: null,
+      customerModule,
+      query: { token: "not-a-token", response: "json" },
+    });
+    const res = createResponse();
+
+    await GET(req as never, res as never);
+
+    expect(customerModule.retrieveCustomer).not.toHaveBeenCalled();
+    expect(res.redirect).not.toHaveBeenCalled();
+    expect(res.json).toHaveBeenCalledWith({
+      verified: false,
+      redirect_to: "https://store.example.com/sign-in?verified=0",
+    });
+  });
+
   it("applies a verified pending email change without claiming historical orders", async () => {
     const { createCustomerEmailVerificationToken } = await import(
       "../../../../../lib/customer-verification/tokens"
@@ -278,5 +337,77 @@ describe("store customer email verification route", () => {
     expect(res.redirect).toHaveBeenCalledWith(
       "https://store.example.com/account/settings?email=changed",
     );
+  });
+
+  it("returns account-settings redirect details for JSON email-change verification", async () => {
+    const { createCustomerEmailVerificationToken } = await import(
+      "../../../../../lib/customer-verification/tokens"
+    );
+    const token = createCustomerEmailVerificationToken({
+      customerId: "cus_123",
+      email: "new@example.com",
+      expiresInSeconds: 60,
+      issuedAt: new Date(),
+      secret: "test-secret",
+    });
+    const customerModule = {
+      retrieveCustomer: jest.fn().mockResolvedValue({
+        id: "cus_123",
+        email: "old@example.com",
+        metadata: {
+          email_verification_status: "verified",
+          email_verified_at: "2026-06-04T00:00:00.000Z",
+          pending_email_change: {
+            email: "new@example.com",
+            requested_at: "2026-06-07T00:00:00.000Z",
+          },
+        },
+      }),
+      listCustomers: jest.fn().mockResolvedValue([]),
+      updateCustomers: jest.fn().mockResolvedValue({ id: "cus_123" }),
+    };
+    const authModule = {
+      listAuthIdentities: jest.fn().mockResolvedValue([
+        {
+          id: "auth_123",
+          app_metadata: { customer_id: "cus_123" },
+          provider_identities: [
+            {
+              id: "pi_email",
+              provider: "emailpass",
+              entity_id: "old@example.com",
+            },
+          ],
+        },
+      ]),
+      listProviderIdentities: jest.fn().mockResolvedValue([]),
+      updateProviderIdentities: jest.fn().mockResolvedValue({
+        id: "pi_email",
+        entity_id: "new@example.com",
+      }),
+    };
+    const coordinationModule = {
+      createAccountSecurityEvents: jest.fn().mockResolvedValue({ id: "ase_1" }),
+    };
+    const notificationModule = {
+      createNotifications: jest.fn().mockResolvedValue([]),
+    };
+    const req = createRequest({
+      actorId: null,
+      authModule,
+      coordinationModule,
+      customerModule,
+      notificationModule,
+      query: { token, response: "json" },
+    });
+    const res = createResponse();
+
+    await GET(req as never, res as never);
+
+    expect(res.redirect).not.toHaveBeenCalled();
+    expect(res.json).toHaveBeenCalledWith({
+      verified: true,
+      redirect_to: "https://store.example.com/account/settings?email=changed",
+    });
   });
 });

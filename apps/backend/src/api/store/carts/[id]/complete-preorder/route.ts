@@ -15,7 +15,7 @@ type CartLineItemForShippingProfile = {
 
 async function ensureCartProductsHaveShippingProfiles(
   req: MedusaRequest,
-  cartId: string
+  cartId: string,
 ): Promise<void> {
   const query = req.scope.resolve("query");
   const fulfillmentModuleService = req.scope.resolve(Modules.FULFILLMENT);
@@ -37,7 +37,7 @@ async function ensureCartProductsHaveShippingProfiles(
       .filter((item) => item.requires_shipping)
       .filter((item) => !item.variant?.product?.shipping_profile?.id)
       .map((item) => item.variant?.product?.id)
-      .filter((productId): productId is string => Boolean(productId))
+      .filter((productId): productId is string => Boolean(productId)),
   );
 
   if (missingProfileProductIds.size === 0) {
@@ -52,7 +52,7 @@ async function ensureCartProductsHaveShippingProfiles(
   if (!defaultProfile?.id) {
     throw new MedusaError(
       MedusaError.Types.INVALID_DATA,
-      "No default shipping profile is available for cart completion"
+      "No default shipping profile is available for cart completion",
     );
   }
 
@@ -76,9 +76,14 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       cart_id: id,
     },
   });
+  const order =
+    result.order ??
+    ((result as { order_id?: string }).order_id
+      ? { id: (result as { order_id: string }).order_id }
+      : null);
 
   res.json({
     type: "order",
-    order: result.order,
+    order,
   });
 };

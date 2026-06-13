@@ -1,11 +1,16 @@
 import { render, screen } from "@testing-library/react"
 
+import { getSessionAction } from "@/app/actions/auth"
+
+import AccountLayout from "../layout"
 import { AccountNav } from "../account-nav"
 
 const mockPush = jest.fn()
 const mockRefresh = jest.fn()
+const mockRedirect = jest.fn()
 
 jest.mock("next/navigation", () => ({
+  redirect: (...args: unknown[]) => mockRedirect(...args),
   usePathname: () => "/account",
   useRouter: () => ({
     push: mockPush,
@@ -14,6 +19,7 @@ jest.mock("next/navigation", () => ({
 }))
 
 jest.mock("@/app/actions/auth", () => ({
+  getSessionAction: jest.fn(),
   logoutAction: jest.fn(),
 }))
 
@@ -21,9 +27,21 @@ jest.mock("lucide-react", () => ({
   LogOut: () => <span />,
 }))
 
+const mockGetSessionAction = getSessionAction as jest.MockedFunction<
+  typeof getSessionAction
+>
+
 describe("AccountNav", () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockGetSessionAction.mockResolvedValue({
+      success: true,
+      user: {
+        id: "cus_123",
+        email: "customer@example.com",
+        email_verified: true,
+      },
+    })
   })
 
   it("labels the root account route as Overview rather than a duplicate Profile form", () => {
@@ -37,6 +55,23 @@ describe("AccountNav", () => {
       "href",
       "/account/settings",
     )
-    expect(screen.queryByRole("link", { name: /^profile$/i })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("link", { name: /^profile$/i }),
+    ).not.toBeInTheDocument()
+  })
+
+  it("gates account pages for signed-in customers who have not verified email ownership", async () => {
+    mockGetSessionAction.mockResolvedValueOnce({
+      success: true,
+      user: {
+        id: "cus_pending",
+        email: "pending@example.com",
+        email_verified: false,
+      },
+    })
+
+    await AccountLayout({ children: <div>Account content</div> })
+
+    expect(mockRedirect).toHaveBeenCalledWith("/verify-required?source=account")
   })
 })

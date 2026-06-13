@@ -4,7 +4,11 @@ import {
   releaseLockStep,
   useQueryGraphStep,
 } from "@medusajs/medusa/core-flows";
-import { createWorkflow, when, WorkflowResponse } from "@medusajs/framework/workflows-sdk";
+import {
+  createWorkflow,
+  when,
+  WorkflowResponse,
+} from "@medusajs/framework/workflows-sdk";
 import { createPreordersStep } from "./steps/create-preorders";
 import {
   retrievePreorderItemIdsStep,
@@ -52,7 +56,7 @@ export const completeCartPreorderWorkflow = createWorkflow(
 
     when(
       { preorders, preorderItemIds },
-      (data) => data.preorders.length === 0 && data.preorderItemIds.length > 0
+      (data) => data.preorders.length === 0 && data.preorderItemIds.length > 0,
     ).then(() => {
       createPreordersStep({
         preorder_variant_ids: preorderItemIds,
@@ -82,7 +86,8 @@ export const completeCartPreorderWorkflow = createWorkflow(
     });
 
     return new WorkflowResponse({
-      order: orders[0],
+      order: orders[0] ?? { id },
+      order_id: id,
     });
-  }
+  },
 );

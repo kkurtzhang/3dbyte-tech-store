@@ -39,7 +39,7 @@ export async function addToCart({
         variant_id: variantId,
         quantity,
       },
-    }
+    },
   )
 
   return getCart(cartId)
@@ -112,7 +112,7 @@ export async function addBundleToCart({
         quantity,
         items,
       },
-    }
+    },
   )
 
   return getCart(cartId)
@@ -129,7 +129,7 @@ export async function removeBundleFromCart({
     `/store/carts/${cartId}/line-item-bundles/${bundleId}`,
     {
       method: "DELETE",
-    }
+    },
   )
 
   return getCart(cartId)
@@ -151,7 +151,7 @@ export async function updateBundleInCart({
       body: {
         quantity,
       },
-    }
+    },
   )
 
   return getCart(cartId)
@@ -212,15 +212,26 @@ export async function addShippingMethod({
   return getCart(cartId)
 }
 
-export async function completePreorderCart(cartId: string): Promise<MedusaOrder> {
-  const response = await sdk.client.fetch<{ type: "order"; order: MedusaOrder }>(
-    `/store/carts/${cartId}/complete-preorder`,
-    {
-      method: "POST",
-    }
-  )
+export async function completePreorderCart(
+  cartId: string,
+): Promise<MedusaOrder> {
+  const response = await sdk.client.fetch<{
+    type: "order"
+    order?: MedusaOrder | null
+    order_id?: string
+  }>(`/store/carts/${cartId}/complete-preorder`, {
+    method: "POST",
+  })
 
-  return response.order
+  if (response.order?.id) {
+    return response.order
+  }
+
+  if (response.order_id) {
+    return { id: response.order_id } as MedusaOrder
+  }
+
+  throw new Error("Cart completion did not return an order")
 }
 
 export async function completeCart(cartId: string): Promise<MedusaOrder> {

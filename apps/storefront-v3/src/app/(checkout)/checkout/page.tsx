@@ -1,6 +1,7 @@
 import { getCartAction } from "@/app/actions/cart"
 import { getSessionAction } from "@/app/actions/auth"
 import { redirect } from "next/navigation"
+import { buildVerifyRequiredPath } from "@/lib/auth/verification-required"
 import { CheckoutForm } from "@/features/checkout/components/checkout-form"
 import { CheckoutSummary } from "@/features/checkout/components/checkout-summary"
 import { CheckoutSummaryEstimateProvider } from "@/features/checkout/components/checkout-summary-estimate-context"
@@ -16,7 +17,12 @@ export default async function CheckoutPage() {
   }
 
   if (session.success && session.user?.email_verified === false) {
-    redirect("/account?checkout_blocked=unverified")
+    redirect(
+      buildVerifyRequiredPath({
+        redirectTo: "/checkout",
+        source: "checkout",
+      }),
+    )
   }
 
   return (

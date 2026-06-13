@@ -90,7 +90,7 @@ describe("AccountPage", () => {
     expect(screen.queryByLabelText("First Name")).not.toBeInTheDocument()
   })
 
-  it("shows a registration follow-up banner after creating an email/password account", async () => {
+  it("redirects unverified customers to the verification-required page", async () => {
     mockGetSessionAction.mockResolvedValue({
       success: true,
       user: {
@@ -102,14 +102,10 @@ describe("AccountPage", () => {
       },
     })
 
-    render(
-      await AccountPage({
-        searchParams: Promise.resolve({ registered: "1" }),
-      }),
-    )
+    await AccountPage({
+      searchParams: Promise.resolve({ registered: "1" }),
+    })
 
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "Account created. Check your inbox to verify your email and activate checkout.",
-    )
+    expect(mockRedirect).toHaveBeenCalledWith("/verify-required?source=account")
   })
 })

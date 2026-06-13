@@ -1,6 +1,7 @@
 import { Metadata } from "next"
 import { getSessionAction } from "@/app/actions/auth"
 import { redirect } from "next/navigation"
+import { buildVerifyRequiredPath } from "@/lib/auth/verification-required"
 import { AccountContent } from "./account-content"
 import { VerificationBanner } from "./verification-banner"
 
@@ -35,6 +36,12 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
 
   if (!customer) {
     redirect("/sign-in")
+    return null
+  }
+
+  if (customer.email_verified === false) {
+    redirect(buildVerifyRequiredPath({ source: "account" }))
+    return null
   }
 
   const params = await searchParams

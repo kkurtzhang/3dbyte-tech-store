@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { getSessionAction } from "@/app/actions/auth";
 import { LoginForm } from "@/features/auth/components/login-form";
+import { buildVerifyRequiredPath } from "@/lib/auth/verification-required";
 
 export const metadata: Metadata = {
   title: "Sign In",
@@ -30,7 +31,11 @@ function getSafeRedirectPath(value?: string | string[]) {
     return redirectPath;
   }
 
-  return "/account";
+  return null;
+}
+
+function getSignedInRedirectPath(value?: string | string[]) {
+  return getSafeRedirectPath(value) || "/account";
 }
 
 function getFirstParam(value?: string | string[]) {
@@ -90,7 +95,18 @@ export default async function SignInPage({
   const params = await searchParams;
 
   if (session.success) {
-    redirect(getSafeRedirectPath(params?.redirect));
+    if (session.user?.email_verified === false) {
+      redirect(
+        buildVerifyRequiredPath({
+          redirectTo: getSafeRedirectPath(params?.redirect),
+          source: "signin",
+        }),
+      );
+      return null;
+    }
+
+    redirect(getSignedInRedirectPath(params?.redirect));
+    return null;
   }
 
   const statusMessage = getStatusMessage(params);
