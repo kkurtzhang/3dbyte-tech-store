@@ -1,5 +1,4 @@
 import { cookies } from "next/headers"
-import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
 import { CUSTOMER_TOKEN_COOKIE } from "@/lib/auth/session-cookies"
@@ -81,9 +80,6 @@ export default async function VerifyEmailPage({
   }
 
   if (verified) {
-    revalidatePath("/account", "layout")
-    revalidatePath("/account/settings")
-
     if (
       isLoggedIn &&
       backendRedirectPath?.startsWith("/account/settings?email=")

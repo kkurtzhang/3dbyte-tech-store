@@ -284,11 +284,6 @@ export async function GET(
     return;
   }
 
-  await customerModule.updateCustomers({
-    id: customer.id,
-    metadata: buildVerifiedMetadata(customer, verification.payload.iat),
-  });
-
   try {
     await consolidateGuestHistory({
       container: req.scope,
@@ -300,6 +295,24 @@ export async function GET(
       error: error instanceof Error ? error.message : "Unknown error",
     });
   }
+
+  let customerForMetadata = customer;
+  try {
+    customerForMetadata = await customerModule.retrieveCustomer(customer.id);
+  } catch (error) {
+    console.error("Failed to reload customer after verification:", {
+      customer_id: customer.id,
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
+
+  await customerModule.updateCustomers({
+    id: customer.id,
+    metadata: buildVerifiedMetadata(
+      customerForMetadata,
+      verification.payload.iat,
+    ),
+  });
 
   respondVerificationResult(req, res, {
     redirectTo: `${getStorefrontUrl()}/sign-in?verified=1`,

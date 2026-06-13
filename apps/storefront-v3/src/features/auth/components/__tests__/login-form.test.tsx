@@ -27,7 +27,21 @@ jest.mock("@/components/ui/google-icon", () => ({
   GoogleIcon: () => <span />,
 }))
 
+jest.mock("lucide-react", () => ({
+  Loader2: () => <span data-testid="loader-icon" />,
+}))
+
 const mockLoginAction = loginAction as jest.MockedFunction<typeof loginAction>
+type LoginActionResult = Awaited<ReturnType<typeof loginAction>>
+
+function createDeferred<T>() {
+  let resolve!: (value: T) => void
+  const promise = new Promise<T>((promiseResolve) => {
+    resolve = promiseResolve
+  })
+
+  return { promise, resolve }
+}
 
 describe("LoginForm", () => {
   beforeEach(() => {
@@ -159,5 +173,40 @@ describe("LoginForm", () => {
     })
     expect(mockReplace).not.toHaveBeenCalled()
     expect(mockNavigateTo).not.toHaveBeenCalled()
+  })
+
+  it("blocks the whole screen while email/password login is processing", async () => {
+    const pendingLogin = createDeferred<LoginActionResult>()
+    mockLoginAction.mockReturnValueOnce(pendingLogin.promise)
+
+    render(<LoginForm />)
+
+    fireEvent.change(screen.getByLabelText("Email"), {
+      target: { value: "customer@example.com" },
+    })
+    fireEvent.change(screen.getByLabelText("Password"), {
+      target: { value: "Password123!" },
+    })
+
+    fireEvent.submit(screen.getByRole("button", { name: /sign in/i }))
+
+    expect(await screen.findByTestId("auth-loading-overlay")).toHaveTextContent(
+      /signing you in/i,
+    )
+    expect(screen.getByTestId("auth-loading-overlay")).toHaveAttribute(
+      "aria-busy",
+      "true",
+    )
+
+    pendingLogin.resolve({
+      success: false,
+      error: "Invalid email or password",
+    })
+
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId("auth-loading-overlay"),
+      ).not.toBeInTheDocument()
+    })
   })
 })

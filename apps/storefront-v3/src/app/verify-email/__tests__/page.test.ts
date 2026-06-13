@@ -57,8 +57,7 @@ describe("VerifyEmailPage", () => {
         }),
       }),
     )
-    expect(mockRevalidatePath).toHaveBeenCalledWith("/account", "layout")
-    expect(mockRevalidatePath).toHaveBeenCalledWith("/account/settings")
+    expect(mockRevalidatePath).not.toHaveBeenCalled()
   })
 
   it("redirects to the unverified sign-in state when the backend rejects the token", async () => {
@@ -88,8 +87,7 @@ describe("VerifyEmailPage", () => {
         searchParams: Promise.resolve({ token: "valid-token" }),
       }),
     ).rejects.toThrow("redirect:/account?verified=1")
-    expect(mockRevalidatePath).toHaveBeenCalledWith("/account", "layout")
-    expect(mockRevalidatePath).toHaveBeenCalledWith("/account/settings")
+    expect(mockRevalidatePath).not.toHaveBeenCalled()
   })
 
   it("redirects logged-in users back to the verification-required page when verification fails", async () => {
