@@ -193,6 +193,9 @@ describe("store customer email verification route", () => {
       container: req.scope,
       customerId: "cus_123",
     });
+    expect(
+      (consolidateGuestHistory as jest.Mock).mock.invocationCallOrder[0],
+    ).toBeLessThan(customerModule.updateCustomers.mock.invocationCallOrder[0]);
     expect(res.redirect).toHaveBeenCalledWith(
       "https://store.example.com/sign-in?verified=1",
     );

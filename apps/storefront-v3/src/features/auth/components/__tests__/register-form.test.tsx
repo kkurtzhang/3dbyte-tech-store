@@ -18,6 +18,19 @@ jest.mock("@/app/actions/auth", () => ({
   registerAction: (...args: unknown[]) => mockRegisterAction(...args),
 }))
 
+jest.mock("lucide-react", () => ({
+  Loader2: () => <span data-testid="loader-icon" />,
+}))
+
+function createDeferred<T>() {
+  let resolve!: (value: T) => void
+  const promise = new Promise<T>((promiseResolve) => {
+    resolve = promiseResolve
+  })
+
+  return { promise, resolve }
+}
+
 describe("RegisterForm", () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -109,5 +122,42 @@ describe("RegisterForm", () => {
     expect(mockPush).toHaveBeenCalledWith(
       "/verify-required?source=registered&redirect=%2Fcheckout",
     )
+  })
+
+  it("blocks the whole screen while registration is processing", async () => {
+    const user = userEvent.setup()
+    const pendingRegistration = createDeferred<{
+      success: boolean
+      error?: string
+    }>()
+    mockRegisterAction.mockReturnValueOnce(pendingRegistration.promise)
+
+    render(<RegisterForm />)
+
+    await user.type(screen.getByLabelText(/first name/i), "Ava")
+    await user.type(screen.getByLabelText(/last name/i), "Maker")
+    await user.type(screen.getByLabelText(/^email$/i), "ava@example.com")
+    await user.type(screen.getByLabelText(/^password$/i), "Password123!")
+    await user.type(screen.getByLabelText(/confirm password/i), "Password123!")
+    await user.click(screen.getByRole("button", { name: /create account/i }))
+
+    expect(await screen.findByTestId("auth-loading-overlay")).toHaveTextContent(
+      /creating your account/i,
+    )
+    expect(screen.getByTestId("auth-loading-overlay")).toHaveAttribute(
+      "aria-busy",
+      "true",
+    )
+
+    pendingRegistration.resolve({
+      success: false,
+      error: "Registration failed",
+    })
+
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId("auth-loading-overlay"),
+      ).not.toBeInTheDocument()
+    })
   })
 })

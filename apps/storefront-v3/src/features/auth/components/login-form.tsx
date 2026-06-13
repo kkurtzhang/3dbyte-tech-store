@@ -14,6 +14,8 @@ import { buildVerifyRequiredPath } from "@/lib/auth/verification-required"
 import { navigateTo } from "@/lib/browser/navigation"
 import { zodFormResolver } from "@/lib/forms/zod-form-resolver"
 
+import { AuthLoadingOverlay } from "./auth-loading-overlay"
+
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(1, "Password is required"),
@@ -107,6 +109,8 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {isLoading && <AuthLoadingOverlay message="Signing you in..." />}
+
       <Button
         type="button"
         variant="outline"

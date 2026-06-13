@@ -12,6 +12,8 @@ import { strongPasswordSchema } from "@/lib/auth/password"
 import { buildVerifyRequiredPath } from "@/lib/auth/verification-required"
 import { zodFormResolver } from "@/lib/forms/zod-form-resolver"
 
+import { AuthLoadingOverlay } from "./auth-loading-overlay"
+
 const registerSchema = z
   .object({
     firstName: z.string().min(1, "First name is required"),
@@ -104,6 +106,8 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {isLoading && <AuthLoadingOverlay message="Creating your account..." />}
+
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="register-firstName">First name</Label>

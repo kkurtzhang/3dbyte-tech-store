@@ -11,7 +11,10 @@
 | **Backend** (Medusa) | `medusa`, `meilisearch`, `context7` |
 | **CMS** (Strapi) | `context7` (for Strapi docs) |
 | **Storefront-v3** (Next.js) | `next-devtools`, `context7` |
-| **All apps** | `serena` (semantic code analysis) |
+
+Serena MCP is intentionally disabled in the project Codex config because the
+repo has not benefited enough from its startup cost. Re-enable it only when a
+task specifically needs semantic symbol tooling.
 
 **Chrome DevTools MCP**: When using `take_snapshot` or `take_screenshot`, set `filePath` to `mcp-files/chrome-devtools`.
 
