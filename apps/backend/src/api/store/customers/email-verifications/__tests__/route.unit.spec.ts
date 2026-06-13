@@ -105,12 +105,14 @@ describe("store customer email verification route", () => {
 
     await POST(req as never, res as never);
 
-    expect(customerModule.updateCustomers).toHaveBeenCalledWith({
-      id: "cus_123",
-      metadata: expect.objectContaining({
-        email_verification_status: "pending",
-      }),
-    });
+    expect(customerModule.updateCustomers).toHaveBeenCalledWith(
+      "cus_123",
+      {
+        metadata: expect.objectContaining({
+          email_verification_status: "pending",
+        }),
+      },
+    );
     expect(notificationModule.createNotifications).toHaveBeenCalledWith(
       expect.objectContaining({
         channel: "email",
@@ -121,6 +123,18 @@ describe("store customer email verification route", () => {
         }),
       }),
     );
+    const content = notificationModule.createNotifications.mock.calls[0][0]
+      .content as { text: string };
+    const verificationUrl = content.text.match(/Confirm email: (.+)/)?.[1];
+    const verificationToken = new URL(verificationUrl as string).searchParams.get(
+      "token",
+    ) as string;
+    const payload = JSON.parse(
+      Buffer.from(verificationToken.split(".")[0], "base64url").toString(
+        "utf8",
+      ),
+    ) as { exp: number; iat: number };
+    expect(payload.exp - payload.iat).toBe(60 * 60 * 24);
     expect(res.json).toHaveBeenCalledWith({ sent: true });
   });
 
@@ -182,13 +196,15 @@ describe("store customer email verification route", () => {
 
     await GET(req as never, res as never);
 
-    expect(customerModule.updateCustomers).toHaveBeenCalledWith({
-      id: "cus_123",
-      metadata: expect.objectContaining({
-        email_verification_status: "verified",
-        email_verified_at: expect.any(String),
-      }),
-    });
+    expect(customerModule.updateCustomers).toHaveBeenCalledWith(
+      "cus_123",
+      {
+        metadata: expect.objectContaining({
+          email_verification_status: "verified",
+          email_verified_at: expect.any(String),
+        }),
+      },
+    );
     expect(consolidateGuestHistory).toHaveBeenCalledWith({
       container: req.scope,
       customerId: "cus_123",
@@ -235,6 +251,50 @@ describe("store customer email verification route", () => {
     expect(res.json).toHaveBeenCalledWith({
       verified: true,
       redirect_to: "https://store.example.com/sign-in?verified=1",
+    });
+  });
+
+  it("does not re-run verification side effects when a token has already been used", async () => {
+    const { createCustomerEmailVerificationToken } = await import(
+      "../../../../../lib/customer-verification/tokens"
+    );
+    const issuedAt = new Date("2026-06-13T08:00:00.000Z");
+    const token = createCustomerEmailVerificationToken({
+      customerId: "cus_123",
+      email: "ava@example.com",
+      expiresInSeconds: 60 * 60 * 24,
+      issuedAt,
+      secret: "test-secret",
+    });
+    const usedTokenIat = JSON.parse(
+      Buffer.from(token.split(".")[0], "base64url").toString("utf8"),
+    ).iat as number;
+    const customerModule = {
+      retrieveCustomer: jest.fn().mockResolvedValue({
+        id: "cus_123",
+        email: "ava@example.com",
+        metadata: {
+          email_verification_status: "verified",
+          email_verified_at: "2026-06-13T08:01:00.000Z",
+          email_verification_token_iat: usedTokenIat,
+        },
+      }),
+      updateCustomers: jest.fn().mockResolvedValue({ id: "cus_123" }),
+    };
+    const req = createRequest({
+      actorId: null,
+      customerModule,
+      query: { token, response: "json" },
+    });
+    const res = createResponse();
+
+    await GET(req as never, res as never);
+
+    expect(consolidateGuestHistory).not.toHaveBeenCalled();
+    expect(customerModule.updateCustomers).not.toHaveBeenCalled();
+    expect(res.json).toHaveBeenCalledWith({
+      verified: false,
+      redirect_to: "https://store.example.com/sign-in?verified=used",
     });
   });
 
@@ -329,13 +389,15 @@ describe("store customer email verification route", () => {
       id: "pi_email",
       entity_id: "new@example.com",
     });
-    expect(customerModule.updateCustomers).toHaveBeenCalledWith({
-      id: "cus_123",
-      email: "new@example.com",
-      metadata: expect.not.objectContaining({
-        pending_email_change: expect.anything(),
-      }),
-    });
+    expect(customerModule.updateCustomers).toHaveBeenCalledWith(
+      "cus_123",
+      {
+        email: "new@example.com",
+        metadata: expect.not.objectContaining({
+          pending_email_change: expect.anything(),
+        }),
+      },
+    );
     expect(consolidateGuestHistory).not.toHaveBeenCalled();
     expect(res.redirect).toHaveBeenCalledWith(
       "https://store.example.com/account/settings?email=changed",

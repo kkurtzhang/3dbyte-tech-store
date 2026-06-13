@@ -287,16 +287,16 @@ describe("consolidateGuestHistory", () => {
       }),
     );
     expect(dependencies.customerModule.updateCustomers).toHaveBeenCalledWith(
+      "cus_registered",
       expect.objectContaining({
-        id: "cus_registered",
         first_name: "Ava",
         last_name: "Guest",
         phone: "0412345678",
       }),
     );
     expect(dependencies.customerModule.updateCustomers).toHaveBeenCalledWith(
+      "cus_guest",
       expect.objectContaining({
-        id: "cus_guest",
         metadata: expect.objectContaining({
           consolidated_into_customer_id: "cus_registered",
         }),
@@ -305,8 +305,8 @@ describe("consolidateGuestHistory", () => {
     expect(
       dependencies.customerModule.updateCustomers,
     ).not.toHaveBeenCalledWith(
+      "cus_registered",
       expect.objectContaining({
-        id: "cus_registered",
         metadata: expect.objectContaining({
           consolidated_into_customer_id: "cus_registered",
         }),

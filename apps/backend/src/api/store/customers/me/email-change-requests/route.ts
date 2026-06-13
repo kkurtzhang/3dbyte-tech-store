@@ -163,10 +163,12 @@ export async function POST(
       filters: Record<string, unknown>,
       config?: Record<string, unknown>,
     ) => Promise<CustomerRecord[]>;
-    updateCustomers: (input: {
-      id: string;
-      metadata: Record<string, unknown>;
-    }) => Promise<unknown>;
+    updateCustomers: (
+      id: string,
+      data: {
+        metadata: Record<string, unknown>;
+      },
+    ) => Promise<unknown>;
   }>(Modules.CUSTOMER);
   const customer = await customerModule.retrieveCustomer(customerId);
   const currentEmail = customer.email
@@ -271,8 +273,7 @@ export async function POST(
     createNotifications: (input: Record<string, unknown>) => Promise<unknown>;
   }>("notification");
 
-  await customerModule.updateCustomers({
-    id: customerId,
+  await customerModule.updateCustomers(customerId, {
     metadata: {
       ...getMetadata(customer),
       pending_email_change: {

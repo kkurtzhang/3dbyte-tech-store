@@ -28,6 +28,8 @@ export const renderCustomerEmailVerificationEmail = async ({
     `Email: ${customerEmail}`,
     `Confirm email: ${verificationUrl}`,
     "",
+    "This verification link expires in 24 hours.",
+    "",
     "If you did not create this account, you can ignore this email.",
   ].join("\n");
   const html = await pretty(

@@ -147,11 +147,13 @@ export async function applyPendingEmailChange({
       filters: Record<string, unknown>,
       config?: Record<string, unknown>,
     ) => Promise<EmailChangeCustomer[]>;
-    updateCustomers: (input: {
-      id: string;
-      email: string;
-      metadata: Record<string, unknown>;
-    }) => Promise<unknown>;
+    updateCustomers: (
+      id: string,
+      data: {
+        email: string;
+        metadata: Record<string, unknown>;
+      },
+    ) => Promise<unknown>;
   }>(Modules.CUSTOMER);
   const authModule = container.resolve<AuthModule>(Modules.AUTH);
   const identities = await listCustomerIdentities(authModule, customer.id);
@@ -187,8 +189,7 @@ export async function applyPendingEmailChange({
   });
 
   try {
-    await customerModule.updateCustomers({
-      id: customer.id,
+    await customerModule.updateCustomers(customer.id, {
       email,
       metadata: buildVerifiedMetadata(customer),
     });

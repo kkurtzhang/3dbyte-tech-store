@@ -289,7 +289,7 @@ export async function loginAction(email: string, password: string) {
     }
 
     const { customer } = await sdk.store.customer.retrieve(
-      {},
+      { fields: "*metadata" },
       getAuthHeaders(result),
     );
 
@@ -508,7 +508,10 @@ export async function getSessionAction() {
       return { success: false, error: "No session" };
     }
 
-    const { customer } = await sdk.store.customer.retrieve({}, authHeaders);
+    const { customer } = await sdk.store.customer.retrieve(
+      { fields: "*metadata" },
+      authHeaders,
+    );
 
     if (customer) {
       const authCustomer = customer as unknown as CustomerWithMetadata;

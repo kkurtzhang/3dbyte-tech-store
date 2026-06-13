@@ -118,11 +118,13 @@ export async function POST(
       filters: Record<string, unknown>,
       config?: Record<string, unknown>,
     ) => Promise<CustomerRecord[]>;
-    updateCustomers: (input: {
-      id: string;
-      email?: string;
-      metadata: Record<string, unknown>;
-    }) => Promise<unknown>;
+    updateCustomers: (
+      id: string,
+      data: {
+        email?: string;
+        metadata: Record<string, unknown>;
+      },
+    ) => Promise<unknown>;
   }>(Modules.CUSTOMER);
   const customer = await customerModule.retrieveCustomer(customerId);
 
@@ -157,8 +159,7 @@ export async function POST(
   }>("notification");
   const senderProfile = await resolveSenderProfile(req.scope);
 
-  await customerModule.updateCustomers({
-    id: customer.id,
+  await customerModule.updateCustomers(customer.id, {
     metadata: buildPendingMetadata(customer),
   });
 
@@ -212,10 +213,12 @@ export async function GET(
 
   const customerModule = req.scope.resolve<{
     retrieveCustomer: (id: string) => Promise<CustomerRecord>;
-    updateCustomers: (input: {
-      id: string;
-      metadata: Record<string, unknown>;
-    }) => Promise<unknown>;
+    updateCustomers: (
+      id: string,
+      data: {
+        metadata: Record<string, unknown>;
+      },
+    ) => Promise<unknown>;
   }>(Modules.CUSTOMER);
   const customer = await customerModule.retrieveCustomer(
     verification.payload.customer_id,
@@ -272,8 +275,8 @@ export async function GET(
   ) {
     if (existingMetadata.email_verification_status === "verified") {
       respondVerificationResult(req, res, {
-        redirectTo: `${getStorefrontUrl()}/sign-in?verified=1`,
-        verified: true,
+        redirectTo: `${getStorefrontUrl()}/sign-in?verified=used`,
+        verified: false,
       });
     } else {
       respondVerificationResult(req, res, {
@@ -306,8 +309,7 @@ export async function GET(
     });
   }
 
-  await customerModule.updateCustomers({
-    id: customer.id,
+  await customerModule.updateCustomers(customer.id, {
     metadata: buildVerifiedMetadata(
       customerForMetadata,
       verification.payload.iat,

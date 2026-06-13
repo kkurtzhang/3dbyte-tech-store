@@ -73,7 +73,8 @@ type CustomerModule = {
   listCustomers: (filters: { email: string }) => Promise<CustomerRecord[]>;
   retrieveCustomer: (id: string) => Promise<CustomerRecord>;
   updateCustomers: (
-    input: Partial<CustomerRecord> & { id: string },
+    id: string,
+    data: Partial<CustomerRecord>,
   ) => Promise<CustomerRecord>;
 };
 
@@ -284,7 +285,6 @@ const getCoordinationSecret = (): string => {
 };
 
 const buildGoogleVerifiedCustomerUpdate = (customer: CustomerRecord) => ({
-  id: customer.id,
   metadata: {
     ...getMetadata(customer),
     email_verification_status: "verified",
@@ -441,6 +441,7 @@ async function handleExplicitGoogleLink({
     customerId: customer.id,
   });
   const updatedCustomer = await customerModule.updateCustomers(
+    customer.id,
     buildGoogleVerifiedCustomerUpdate(customer),
   );
   await coordinationModule.updateOAuthLinkIntents({
@@ -616,6 +617,7 @@ export async function POST(
     customerId: registeredCustomer.id,
   });
   const customer = await customerModule.updateCustomers(
+    registeredCustomer.id,
     buildGoogleVerifiedCustomerUpdate(registeredCustomer),
   );
   await coordinationModule.createAccountSecurityEvents({

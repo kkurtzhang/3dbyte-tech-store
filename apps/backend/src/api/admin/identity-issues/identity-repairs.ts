@@ -279,7 +279,10 @@ export async function mergeDuplicateRegisteredCustomers({
     listCustomers: (
       filters: Record<string, unknown>,
     ) => Promise<CustomerRecord[]>;
-    updateCustomers: (input: Record<string, unknown>) => Promise<unknown>;
+    updateCustomers: (
+      id: string,
+      data: Record<string, unknown>,
+    ) => Promise<unknown>;
   }>(Modules.CUSTOMER);
   const authModule = container.resolve<{
     listAuthIdentities: (
@@ -460,14 +463,10 @@ export async function mergeDuplicateRegisteredCustomers({
       : {}),
   };
   if (Object.keys(profileUpdate).length) {
-    await customerModule.updateCustomers({
-      id: canonical.id,
-      ...profileUpdate,
-    });
+    await customerModule.updateCustomers(canonical.id, profileUpdate);
   }
   for (const source of sourceCustomers) {
-    await customerModule.updateCustomers({
-      id: source.id,
+    await customerModule.updateCustomers(source.id, {
       has_account: false,
       metadata: {
         ...getMetadata(source),

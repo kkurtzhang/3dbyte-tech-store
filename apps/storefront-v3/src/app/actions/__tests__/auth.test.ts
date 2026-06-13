@@ -110,7 +110,7 @@ describe("auth actions", () => {
     });
 
     expect(mockCustomerRetrieve).toHaveBeenCalledWith(
-      {},
+      { fields: "*metadata" },
       {
         Authorization: "Bearer login-token",
       },
@@ -458,6 +458,32 @@ describe("auth actions", () => {
     );
   });
 
+  it("requests customer metadata when checking the current session verification state", async () => {
+    mockCustomerRetrieve.mockResolvedValueOnce({
+      customer: {
+        id: "cus_verified",
+        email: "verified@example.com",
+        metadata: {
+          email_verification_status: "verified",
+        },
+      },
+    });
+
+    await expect(getSessionAction()).resolves.toEqual({
+      success: true,
+      user: {
+        id: "cus_verified",
+        email: "verified@example.com",
+        email_verified: true,
+      },
+    });
+
+    expect(mockCustomerRetrieve).toHaveBeenCalledWith(
+      { fields: "*metadata" },
+      expect.any(Object),
+    );
+  });
+
   it("retrieves the current session from the stored customer token", async () => {
     await expect(getSessionAction()).resolves.toEqual({
       success: true,
@@ -465,7 +491,7 @@ describe("auth actions", () => {
     });
 
     expect(mockCustomerRetrieve).toHaveBeenCalledWith(
-      {},
+      { fields: "*metadata" },
       {
         Authorization: "Bearer stored-token",
       },
