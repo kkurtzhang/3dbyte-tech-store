@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { MailCheck } from "lucide-react"
+import { AlertTriangle, MailCheck } from "lucide-react"
 import { redirect } from "next/navigation"
 
 import { getSessionAction } from "@/app/actions/auth"
@@ -25,6 +25,13 @@ function getSingleParam(value?: string | string[]) {
 }
 
 function getCopy(source?: string, verified?: string) {
+  if (verified === "used") {
+    return {
+      heading: "Verification link already used",
+      body: "That verification link has already been used. Sign in or send yourself a fresh link if this account still shows as pending.",
+    }
+  }
+
   if (verified === "0") {
     return {
       heading: "Verification link did not work",
@@ -79,13 +86,21 @@ export default async function VerifyRequiredPage({
   }
 
   const copy = getCopy(source, verified)
+  const isVerificationFailure = verified === "0" || verified === "used"
+  const StatusIcon = isVerificationFailure ? AlertTriangle : MailCheck
 
   return (
     <main className="container flex min-h-[calc(100vh-8rem)] items-center justify-center py-12">
       <section className="w-full max-w-xl space-y-6 rounded-lg border bg-card p-6 shadow-sm md:p-8">
         <div className="flex items-start gap-4">
-          <div className="rounded-full bg-primary/10 p-3 text-primary">
-            <MailCheck className="h-6 w-6" />
+          <div
+            className={
+              isVerificationFailure
+                ? "rounded-full bg-destructive/10 p-3 text-destructive"
+                : "rounded-full bg-primary/10 p-3 text-primary"
+            }
+          >
+            <StatusIcon className="h-6 w-6" />
           </div>
           <div className="space-y-2">
             <h1 className="text-2xl font-semibold tracking-tight">
@@ -95,9 +110,27 @@ export default async function VerifyRequiredPage({
           </div>
         </div>
 
-        <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-800 dark:text-amber-200">
-          <p className="font-medium">Email pending verification</p>
-          <p className="mt-1 break-all">{session.user.email}</p>
+        <div
+          role={isVerificationFailure ? "alert" : undefined}
+          className={
+            isVerificationFailure
+              ? "rounded-md border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
+              : "rounded-md border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-800 dark:text-amber-200"
+          }
+        >
+          <p className="font-medium">
+            {isVerificationFailure
+              ? "Verification needs attention"
+              : "Email pending verification"}
+          </p>
+          <p className="mt-1">
+            {isVerificationFailure ? copy.body : session.user.email}
+          </p>
+          {isVerificationFailure ? (
+            <p className="mt-2 break-all text-muted-foreground">
+              {session.user.email}
+            </p>
+          ) : null}
         </div>
 
         <div className="space-y-3 text-sm text-muted-foreground">

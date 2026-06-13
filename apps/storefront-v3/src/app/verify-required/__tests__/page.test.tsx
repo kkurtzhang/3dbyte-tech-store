@@ -17,6 +17,7 @@ jest.mock("next/navigation", () => ({
 }))
 
 jest.mock("lucide-react", () => ({
+  AlertTriangle: () => <span data-testid="warning-icon" />,
   Loader2: () => <span />,
   LogOut: () => <span />,
   Mail: () => <span />,
@@ -55,6 +56,33 @@ describe("VerifyRequiredPage", () => {
     expect(
       screen.getByRole("button", { name: /resend email/i }),
     ).toBeInTheDocument()
+  })
+
+  it("uses a clear warning state when a verification link fails", async () => {
+    mockGetSessionAction.mockResolvedValue({
+      success: true,
+      user: {
+        id: "cus_pending",
+        email: "pending@example.com",
+        email_verified: false,
+      },
+    })
+
+    render(
+      await VerifyRequiredPage({
+        searchParams: Promise.resolve({ verified: "0" }),
+      }),
+    )
+
+    expect(
+      screen.getByRole("heading", {
+        name: /verification link did not work/i,
+      }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      /send yourself a fresh link/i,
+    )
+    expect(screen.getByTestId("warning-icon")).toBeInTheDocument()
   })
 
   it("redirects signed-out visitors to sign in", async () => {

@@ -508,14 +508,16 @@ export async function getSessionAction() {
       return { success: false, error: "No session" };
     }
 
-    const { customer } = await sdk.store.customer.retrieve(
-      { fields: "*metadata" },
-      authHeaders,
-    );
+    const { customer } = await sdk.client.fetch<{
+      customer?: CustomerWithMetadata;
+    }>("/store/customers/me", {
+      cache: "no-store",
+      headers: authHeaders,
+      query: { fields: "*metadata" },
+    });
 
     if (customer) {
-      const authCustomer = customer as unknown as CustomerWithMetadata;
-      return { success: true, user: toAuthUser(authCustomer) };
+      return { success: true, user: toAuthUser(customer) };
     }
 
     return { success: false, error: "No session" };
