@@ -42,10 +42,9 @@ describe("LoginForm", () => {
   it("refreshes server-rendered UI and leaves the sign-in page after standalone login", async () => {
     render(<LoginForm />)
 
-    expect(screen.getByRole("link", { name: /forgot password/i })).toHaveAttribute(
-      "href",
-      "/forgot-password"
-    )
+    expect(
+      screen.getByRole("link", { name: /forgot password/i }),
+    ).toHaveAttribute("href", "/forgot-password")
 
     fireEvent.change(screen.getByLabelText("Email"), {
       target: { value: "customer@example.com" },
@@ -81,6 +80,63 @@ describe("LoginForm", () => {
       expect(mockNavigateTo).toHaveBeenCalledWith("/account/orders")
     })
     expect(mockReplace).not.toHaveBeenCalled()
+  })
+
+  it("sends unverified email/password sessions to the verification-required page", async () => {
+    mockLoginAction.mockResolvedValueOnce({
+      success: true,
+      user: {
+        id: "cus_pending",
+        email: "customer@example.com",
+        email_verified: false,
+      },
+    })
+
+    render(<LoginForm />)
+
+    fireEvent.change(screen.getByLabelText("Email"), {
+      target: { value: "customer@example.com" },
+    })
+    fireEvent.change(screen.getByLabelText("Password"), {
+      target: { value: "Password123!" },
+    })
+
+    fireEvent.submit(screen.getByRole("button", { name: /sign in/i }))
+
+    await waitFor(() => {
+      expect(mockNavigateTo).toHaveBeenCalledWith(
+        "/verify-required?source=signin",
+      )
+    })
+  })
+
+  it("keeps a safe redirect for after unverified customers complete verification", async () => {
+    window.history.replaceState({}, "", "/sign-in?redirect=/checkout")
+    mockLoginAction.mockResolvedValueOnce({
+      success: true,
+      user: {
+        id: "cus_pending",
+        email: "customer@example.com",
+        email_verified: false,
+      },
+    })
+
+    render(<LoginForm />)
+
+    fireEvent.change(screen.getByLabelText("Email"), {
+      target: { value: "customer@example.com" },
+    })
+    fireEvent.change(screen.getByLabelText("Password"), {
+      target: { value: "Password123!" },
+    })
+
+    fireEvent.submit(screen.getByRole("button", { name: /sign in/i }))
+
+    await waitFor(() => {
+      expect(mockNavigateTo).toHaveBeenCalledWith(
+        "/verify-required?source=signin&redirect=%2Fcheckout",
+      )
+    })
   })
 
   it("keeps sheet logins in place while still refreshing account state", async () => {

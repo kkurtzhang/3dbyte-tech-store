@@ -7,14 +7,11 @@ describe("store complete-preorder route", () => {
   beforeAll(() => {
     jest.resetModules();
 
-    jest.doMock(
-      "../../../../../../workflows/complete-cart-preorder",
-      () => ({
-        completeCartPreorderWorkflow: jest.fn(() => ({
-          run: mockRun,
-        })),
-      })
-    );
+    jest.doMock("../../../../../../workflows/complete-cart-preorder", () => ({
+      completeCartPreorderWorkflow: jest.fn(() => ({
+        run: mockRun,
+      })),
+    }));
     jest.doMock("@medusajs/medusa/core-flows", () => ({
       updateProductsWorkflow: jest.fn(() => ({
         run: mockUpdateProductsRun,
@@ -114,9 +111,9 @@ describe("store complete-preorder route", () => {
       }),
     };
     const fulfillmentModuleService = {
-      listShippingProfiles: jest.fn().mockResolvedValue([
-        { id: "sp_default", type: "default" },
-      ]),
+      listShippingProfiles: jest
+        .fn()
+        .mockResolvedValue([{ id: "sp_default", type: "default" }]),
     };
 
     mockRun.mockResolvedValue({
@@ -166,6 +163,54 @@ describe("store complete-preorder route", () => {
       input: {
         cart_id: "cart_1",
       },
+    });
+  });
+
+  it("returns an order id fallback when the workflow cannot hydrate the order immediately", async () => {
+    const query = {
+      graph: jest.fn().mockResolvedValue({
+        data: [
+          {
+            id: "cart_1",
+            items: [],
+          },
+        ],
+      }),
+    };
+    const fulfillmentModuleService = {
+      listShippingProfiles: jest.fn(),
+    };
+
+    mockRun.mockResolvedValue({
+      result: {
+        order_id: "order_1",
+      },
+    });
+
+    const res = {
+      json: jest.fn(),
+    };
+
+    const req = {
+      params: { id: "cart_1" },
+      scope: {
+        resolve: jest.fn((key) => {
+          if (key === "query") {
+            return query;
+          }
+          if (key === "fulfillment") {
+            return fulfillmentModuleService;
+          }
+          return undefined;
+        }),
+      },
+    };
+
+    await POST(req as never, res as never);
+
+    expect(res.json).toHaveBeenCalledWith({
+      type: "order",
+      order: { id: "order_1" },
     });
   });
 });

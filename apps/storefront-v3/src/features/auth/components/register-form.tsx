@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { registerAction } from "@/app/actions/auth"
 import { strongPasswordSchema } from "@/lib/auth/password"
+import { buildVerifyRequiredPath } from "@/lib/auth/verification-required"
 import { zodFormResolver } from "@/lib/forms/zod-form-resolver"
 
 const registerSchema = z
@@ -78,11 +79,16 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       if (result.success) {
         onSuccess?.()
         setSuccessMessage(
-          "Account created! We sent a verification email — check your inbox. Redirecting to your account...",
+          "Account created! We sent a verification email — check your inbox.",
         )
         setTimeout(() => {
           const redirectTo = getSafeRedirectPath()
-          router.push(redirectTo || "/account?registered=1")
+          router.push(
+            buildVerifyRequiredPath({
+              redirectTo,
+              source: "registered",
+            }),
+          )
           router.refresh()
         }, 2000)
       } else {

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { loginAction } from "@/app/actions/auth"
 import { GoogleIcon } from "@/components/ui/google-icon"
+import { buildVerifyRequiredPath } from "@/lib/auth/verification-required"
 import { navigateTo } from "@/lib/browser/navigation"
 import { zodFormResolver } from "@/lib/forms/zod-form-resolver"
 
@@ -62,6 +63,16 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
       if (result.success) {
         const redirectTo = getSafeRedirectPath()
         router.refresh()
+        if (result.user?.email_verified === false) {
+          navigateTo(
+            buildVerifyRequiredPath({
+              redirectTo,
+              source: "signin",
+            }),
+          )
+          return
+        }
+
         onSuccess?.()
         if (redirectTo) {
           navigateTo(redirectTo)

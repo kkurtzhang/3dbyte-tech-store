@@ -27,9 +27,11 @@ jest.mock("@/features/checkout/components/checkout-summary", () => ({
 jest.mock(
   "@/features/checkout/components/checkout-summary-estimate-context",
   () => ({
-    CheckoutSummaryEstimateProvider: ({ children }: { children: React.ReactNode }) => (
-      <div>{children}</div>
-    ),
+    CheckoutSummaryEstimateProvider: ({
+      children,
+    }: {
+      children: React.ReactNode
+    }) => <div>{children}</div>,
   }),
 )
 
@@ -38,7 +40,10 @@ import CheckoutPage from "../page"
 describe("CheckoutPage", () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockGetSessionAction.mockResolvedValue({ success: true, user: { id: "cus_1", email_verified: true } })
+    mockGetSessionAction.mockResolvedValue({
+      success: true,
+      user: { id: "cus_1", email_verified: true },
+    })
   })
 
   it("uses a customer-facing checkout title", async () => {
@@ -67,7 +72,7 @@ describe("CheckoutPage", () => {
     expect(screen.queryByText("Stay Updated")).not.toBeInTheDocument()
   })
 
-  it("redirects unverified customers to account page", async () => {
+  it("redirects unverified customers to the verification-required page", async () => {
     mockGetCartAction.mockResolvedValue({
       id: "cart_123",
       items: [{ id: "item_123" }],
@@ -79,6 +84,8 @@ describe("CheckoutPage", () => {
 
     await CheckoutPage()
 
-    expect(mockRedirect).toHaveBeenCalledWith("/account?checkout_blocked=unverified")
+    expect(mockRedirect).toHaveBeenCalledWith(
+      "/verify-required?source=checkout&redirect=%2Fcheckout",
+    )
   })
 })

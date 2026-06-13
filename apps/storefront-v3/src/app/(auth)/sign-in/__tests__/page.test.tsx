@@ -42,6 +42,21 @@ describe("SignInPage", () => {
     expect(mockRedirect).toHaveBeenCalledWith("/account")
   })
 
+  it("redirects signed-in unverified customers to the verification-required page", async () => {
+    mockGetSessionAction.mockResolvedValue({
+      success: true,
+      user: {
+        id: "cus_123",
+        email: "customer@example.com",
+        email_verified: false,
+      },
+    })
+
+    await SignInPage({})
+
+    expect(mockRedirect).toHaveBeenCalledWith("/verify-required?source=signin")
+  })
+
   it("renders the sign-in form for signed-out customers", async () => {
     mockGetSessionAction.mockResolvedValue({
       success: false,
@@ -50,7 +65,9 @@ describe("SignInPage", () => {
 
     render(await SignInPage({}))
 
-    expect(screen.getByRole("form", { name: /sign in form/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole("form", { name: /sign in form/i }),
+    ).toBeInTheDocument()
     expect(mockRedirect).not.toHaveBeenCalled()
   })
 
@@ -63,11 +80,11 @@ describe("SignInPage", () => {
     render(
       await SignInPage({
         searchParams: Promise.resolve({ error: "google_oauth_failed" }),
-      })
+      }),
     )
 
     expect(
-      screen.getByText(/Google sign-in could not be completed/i)
+      screen.getByText(/Google sign-in could not be completed/i),
     ).toBeInTheDocument()
   })
 

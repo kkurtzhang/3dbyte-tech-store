@@ -55,6 +55,31 @@ const getStorefrontUrl = (): string => {
 const getVerificationUrl = (token: string): string =>
   `${getStorefrontUrl()}/verify-email?token=${encodeURIComponent(token)}`;
 
+const wantsJsonResponse = (req: MedusaRequest): boolean =>
+  (req.query as Record<string, unknown> | undefined)?.response === "json";
+
+const respondVerificationResult = (
+  req: MedusaRequest,
+  res: MedusaResponse,
+  {
+    redirectTo,
+    verified,
+  }: {
+    redirectTo: string;
+    verified: boolean;
+  },
+): void => {
+  if (wantsJsonResponse(req)) {
+    res.json({
+      verified,
+      redirect_to: redirectTo,
+    });
+    return;
+  }
+
+  res.redirect(redirectTo);
+};
+
 const getMetadata = (customer: CustomerRecord): Record<string, unknown> =>
   customer.metadata && typeof customer.metadata === "object"
     ? customer.metadata
@@ -69,10 +94,7 @@ const buildPendingMetadata = (customer: CustomerRecord) => ({
   email_verification_sent_at: new Date().toISOString(),
 });
 
-const buildVerifiedMetadata = (
-  customer: CustomerRecord,
-  tokenIat: number,
-) => ({
+const buildVerifiedMetadata = (customer: CustomerRecord, tokenIat: number) => ({
   ...getMetadata(customer),
   email_verification_status: "verified",
   email_verified_at: new Date().toISOString(),
@@ -169,7 +191,10 @@ export async function GET(
   const token = (req.query as Record<string, unknown> | undefined)?.token;
 
   if (typeof token !== "string" || token.length === 0) {
-    res.redirect(`${getStorefrontUrl()}/sign-in?verified=0`);
+    respondVerificationResult(req, res, {
+      redirectTo: `${getStorefrontUrl()}/sign-in?verified=0`,
+      verified: false,
+    });
     return;
   }
 
@@ -178,7 +203,10 @@ export async function GET(
   });
 
   if (!verification.valid) {
-    res.redirect(`${getStorefrontUrl()}/sign-in?verified=0`);
+    respondVerificationResult(req, res, {
+      redirectTo: `${getStorefrontUrl()}/sign-in?verified=0`,
+      verified: false,
+    });
     return;
   }
 
@@ -202,7 +230,10 @@ export async function GET(
     !customer.email ||
     customer.id !== verification.payload.customer_id
   ) {
-    res.redirect(`${getStorefrontUrl()}/sign-in?verified=0`);
+    respondVerificationResult(req, res, {
+      redirectTo: `${getStorefrontUrl()}/sign-in?verified=0`,
+      verified: false,
+    });
     return;
   }
 
@@ -216,16 +247,20 @@ export async function GET(
       email: verification.payload.email,
     });
 
-    res.redirect(
-      applied
+    respondVerificationResult(req, res, {
+      redirectTo: applied
         ? `${getStorefrontUrl()}/account/settings?email=changed`
         : `${getStorefrontUrl()}/account/settings?email=change_failed`,
-    );
+      verified: applied,
+    });
     return;
   }
 
   if (normalizedCurrentEmail !== verification.payload.email) {
-    res.redirect(`${getStorefrontUrl()}/sign-in?verified=0`);
+    respondVerificationResult(req, res, {
+      redirectTo: `${getStorefrontUrl()}/sign-in?verified=0`,
+      verified: false,
+    });
     return;
   }
 
@@ -236,9 +271,15 @@ export async function GET(
     verification.payload.iat <= lastTokenIat
   ) {
     if (existingMetadata.email_verification_status === "verified") {
-      res.redirect(`${getStorefrontUrl()}/sign-in?verified=1`);
+      respondVerificationResult(req, res, {
+        redirectTo: `${getStorefrontUrl()}/sign-in?verified=1`,
+        verified: true,
+      });
     } else {
-      res.redirect(`${getStorefrontUrl()}/sign-in?verified=0`);
+      respondVerificationResult(req, res, {
+        redirectTo: `${getStorefrontUrl()}/sign-in?verified=0`,
+        verified: false,
+      });
     }
     return;
   }
@@ -260,5 +301,8 @@ export async function GET(
     });
   }
 
-  res.redirect(`${getStorefrontUrl()}/sign-in?verified=1`);
+  respondVerificationResult(req, res, {
+    redirectTo: `${getStorefrontUrl()}/sign-in?verified=1`,
+    verified: true,
+  });
 }

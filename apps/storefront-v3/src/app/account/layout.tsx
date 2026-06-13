@@ -1,6 +1,9 @@
+import { redirect } from "next/navigation"
+
 import { getSessionAction } from "@/app/actions/auth"
+import { buildVerifyRequiredPath } from "@/lib/auth/verification-required"
+
 import { AccountNav } from "./account-nav"
-import { EmailVerificationNotice } from "./email-verification-notice"
 
 export default async function AccountLayout({
   children,
@@ -8,17 +11,16 @@ export default async function AccountLayout({
   children: React.ReactNode
 }) {
   const session = await getSessionAction()
-  const showVerificationNotice =
-    session.success && session.user?.email_verified === false
+
+  if (session.success && session.user?.email_verified === false) {
+    redirect(buildVerifyRequiredPath({ source: "account" }))
+  }
 
   return (
     <div className="container py-8">
       <div className="flex flex-col gap-8 md:flex-row">
         <AccountNav />
-        <main className="flex-1 min-w-0">
-          {showVerificationNotice && <EmailVerificationNotice />}
-          {children}
-        </main>
+        <main className="flex-1 min-w-0">{children}</main>
       </div>
     </div>
   )
