@@ -44,6 +44,21 @@ describe("Footer", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("hides Blog until the launch flag is enabled", () => {
+    const { rerender } = render(<Footer />);
+
+    expect(
+      screen.queryByRole("link", { name: /^blog$/i }),
+    ).not.toBeInTheDocument();
+
+    rerender(<Footer blogEnabled />);
+
+    expect(screen.getByRole("link", { name: /^blog$/i })).toHaveAttribute(
+      "href",
+      "/blog",
+    );
+  });
+
   it("shows the current copyright year", () => {
     render(<Footer />);
 

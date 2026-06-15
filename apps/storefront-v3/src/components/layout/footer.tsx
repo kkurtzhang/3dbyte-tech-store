@@ -13,7 +13,7 @@ import { NewsletterSignup } from "./newsletter-signup";
  * - Responsive: 4-column (desktop), 2-column (tablet), 1-column (mobile)
  * - Minimalist support navigation with muted text
  */
-export function Footer() {
+export function Footer({ blogEnabled = false }: { blogEnabled?: boolean }) {
   return (
     <footer className="border-t bg-background">
       <div className="container py-12 md:py-16">
@@ -163,14 +163,16 @@ export function Footer() {
                   Download Center
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/blog"
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Blog
-                </Link>
-              </li>
+              {blogEnabled ? (
+                <li>
+                  <Link
+                    href="/blog"
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    Blog
+                  </Link>
+                </li>
+              ) : null}
             </ul>
           </div>
 

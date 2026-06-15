@@ -6,6 +6,8 @@ export const metadata: Metadata = {
   description: "View and manage items in your cart.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default function CartPage() {
   return (
     <div className="container py-8 md:py-12">

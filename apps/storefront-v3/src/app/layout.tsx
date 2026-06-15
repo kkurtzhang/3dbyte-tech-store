@@ -14,6 +14,7 @@ import { AnnouncementBarSlot } from "@/components/layout/announcement-bar-slot";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { ShoppingAssistantDrawer } from "@/features/ai-shopping-assistant/components/shopping-assistant-drawer";
+import { isBlogEnabled } from "@/lib/content/blog-visibility";
 import { buildRootMetadata } from "@/lib/seo/site-metadata";
 
 const inter = Inter({
@@ -33,6 +34,8 @@ export default function RootLayout({
 }: Readonly<{
   children: ReactNode;
 }>) {
+  const blogEnabled = isBlogEnabled();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -57,9 +60,9 @@ export default function RootLayout({
                       <Suspense fallback={null}>
                         <AnnouncementBarSlot />
                       </Suspense>
-                      <Navbar />
+                      <Navbar blogEnabled={blogEnabled} />
                       <main className="flex-1">{children}</main>
-                      <Footer />
+                      <Footer blogEnabled={blogEnabled} />
                     </div>
                     <Toaster />
                     <ShoppingAssistantDrawer />

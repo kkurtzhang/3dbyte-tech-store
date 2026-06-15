@@ -42,6 +42,7 @@ export default async function BrandsPage() {
       },
     ])
   );
+  const visibleBrands = brands.filter((brand) => brand.product_count !== 0);
 
   return (
     <div className="container py-8 md:py-12">
@@ -54,7 +55,7 @@ export default async function BrandsPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {brands.map((brand) => {
+        {visibleBrands.map((brand) => {
           const content = contentByHandle.get(brand.handle);
           const logoUrl = resolveStrapiMediaUrl(content?.logo?.url);
           const logoAlt =
@@ -104,7 +105,7 @@ export default async function BrandsPage() {
           );
         })}
 
-        {brands.length === 0 && (
+        {visibleBrands.length === 0 && (
           <div className="col-span-full py-20 text-center text-muted-foreground">
             No brands found.
           </div>
