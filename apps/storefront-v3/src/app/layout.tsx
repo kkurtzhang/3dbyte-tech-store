@@ -12,6 +12,7 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { AnnouncementBarSlot } from "@/components/layout/announcement-bar-slot";
 import { Navbar } from "@/components/layout/navbar";
+import { OfflineStatusBanner } from "@/components/layout/offline-status-banner";
 import { Footer } from "@/components/layout/footer";
 import { ShoppingAssistantDrawer } from "@/features/ai-shopping-assistant/components/shopping-assistant-drawer";
 import { isBlogEnabled } from "@/lib/content/blog-visibility";
@@ -61,6 +62,7 @@ export default function RootLayout({
                         <AnnouncementBarSlot />
                       </Suspense>
                       <Navbar blogEnabled={blogEnabled} />
+                      <OfflineStatusBanner />
                       <main className="flex-1">{children}</main>
                       <Footer blogEnabled={blogEnabled} />
                     </div>
