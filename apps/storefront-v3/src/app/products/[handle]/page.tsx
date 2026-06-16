@@ -3,7 +3,6 @@ import { getProductByHandle, getProductHandles } from "@/lib/medusa/products"
 import { ProductTemplate } from "@/features/product/templates/product-template"
 import { loadProductPageData } from "@/features/product/lib/load-product-page-data"
 import { Metadata } from "next"
-import { Suspense } from "react"
 import type { ProductSourceContext } from "@/features/product/lib/product-detail-content"
 import { getPricingContext } from "@/lib/medusa/regions.server"
 
@@ -68,16 +67,14 @@ export default async function ProductPage({
       : null
 
   return (
-    <Suspense fallback={<div className="container py-12 animate-pulse"><div className="h-96 bg-muted rounded-sm"></div></div>}>
-      <ProductTemplate
-        product={pageData.product}
-        richDescription={pageData.richDescription}
-        variantImageUrls={pageData.variantImageUrls}
-        bundleProduct={pageData.bundleProduct}
-        availableInBundles={pageData.availableInBundles}
-        sourceContext={sourceContext}
-        productDocuments={pageData.productDocuments}
-      />
-    </Suspense>
+    <ProductTemplate
+      product={pageData.product}
+      richDescription={pageData.richDescription}
+      variantImageUrls={pageData.variantImageUrls}
+      bundleProduct={pageData.bundleProduct}
+      availableInBundles={pageData.availableInBundles}
+      sourceContext={sourceContext}
+      productDocuments={pageData.productDocuments}
+    />
   )
 }

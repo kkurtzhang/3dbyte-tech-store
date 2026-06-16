@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getProductHandles } from "@/lib/medusa/products";
 import { getCollections } from "@/lib/medusa/collections";
+import { isBlogEnabled } from "@/lib/content/blog-visibility";
 import { getSiteUrl, isIndexableSiteUrl } from "@/lib/seo/site-metadata";
 
 const staticRoutes = [
@@ -11,7 +12,6 @@ const staticRoutes = [
   "/collections",
   "/bundles",
   "/deals",
-  "/blog",
   "/docs",
   "/downloads",
   "/guides",
@@ -34,10 +34,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   const now = new Date();
-  const staticEntries: MetadataRoute.Sitemap = staticRoutes.map((route) => ({
-    url: `${siteUrl}${route}`,
-    lastModified: now,
-  }));
+  const enabledStaticRoutes = isBlogEnabled()
+    ? [...staticRoutes, "/blog"]
+    : staticRoutes;
+  const staticEntries: MetadataRoute.Sitemap = enabledStaticRoutes.map(
+    (route) => ({
+      url: `${siteUrl}${route}`,
+      lastModified: now,
+    }),
+  );
 
   try {
     const [productHandles, collections] = await Promise.all([

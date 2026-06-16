@@ -39,6 +39,15 @@ describe("NewsletterSignup", () => {
     expect(screen.getByLabelText("Email Address")).toBeInTheDocument()
   })
 
+  it("uses a neutral email placeholder", () => {
+    render(<NewsletterSignup compact />)
+
+    expect(screen.getByLabelText("Email Address")).toHaveAttribute(
+      "placeholder",
+      "you@example.com",
+    )
+  })
+
   it("displays validation toast for invalid email", async () => {
     const { container } = render(<NewsletterSignup />)
 

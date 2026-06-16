@@ -17,7 +17,7 @@ import { ThemeToggle } from "./theme-toggle";
  * MobileMenu component for navigation on mobile devices.
  * Opens in a Sheet overlay with all navigation links.
  */
-export function MobileMenu() {
+export function MobileMenu({ blogEnabled = false }: { blogEnabled?: boolean }) {
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -68,12 +68,14 @@ export function MobileMenu() {
             >
               Guides
             </Link>
-            <Link
-              href="/blog"
-              className="text-sm font-medium transition-colors hover:text-primary"
-            >
-              Blog
-            </Link>
+            {blogEnabled ? (
+              <Link
+                href="/blog"
+                className="text-sm font-medium transition-colors hover:text-primary"
+              >
+                Blog
+              </Link>
+            ) : null}
             <Link
               href="/about"
               className="text-sm font-medium transition-colors hover:text-primary"

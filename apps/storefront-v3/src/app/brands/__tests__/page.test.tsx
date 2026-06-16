@@ -62,4 +62,48 @@ describe("BrandsPage", () => {
       screen.getByText("Materials tuned for reliable 3D printing.")
     ).toBeInTheDocument()
   })
+
+  it("hides brands with an explicit zero product count", async () => {
+    mockSearchBrands.mockResolvedValueOnce({
+      hits: [
+        {
+          id: "brand_empty",
+          name: "Empty Brand",
+          handle: "empty-brand",
+          product_count: 0,
+        },
+        {
+          id: "brand_active",
+          name: "Active Brand",
+          handle: "active-brand",
+          product_count: 3,
+        },
+      ],
+      count: 2,
+    })
+    mockGetBrandDescriptions.mockResolvedValueOnce({ data: [] })
+
+    render(await BrandsPage())
+
+    expect(screen.queryByText("Empty Brand")).not.toBeInTheDocument()
+    expect(screen.getByText("Active Brand")).toBeInTheDocument()
+  })
+
+  it("keeps brands visible when the product count is unavailable", async () => {
+    mockSearchBrands.mockResolvedValueOnce({
+      hits: [
+        {
+          id: "brand_pending",
+          name: "Pending Count Brand",
+          handle: "pending-count-brand",
+        },
+      ],
+      count: 1,
+    })
+    mockGetBrandDescriptions.mockResolvedValueOnce({ data: [] })
+
+    render(await BrandsPage())
+
+    expect(screen.getByText("Pending Count Brand")).toBeInTheDocument()
+  })
 })

@@ -1,8 +1,11 @@
+import { readFileSync } from "node:fs"
+import path from "node:path"
 import { render, screen } from "@testing-library/react"
 
 import { getSessionAction } from "@/app/actions/auth"
+import { AccountShellSkeleton } from "@/components/loading/storefront-page-skeletons"
 
-import AccountLayout from "../layout"
+import { AccountAccessBoundary } from "../layout"
 import { AccountNav } from "../account-nav"
 
 const mockPush = jest.fn()
@@ -70,8 +73,20 @@ describe("AccountNav", () => {
       },
     })
 
-    await AccountLayout({ children: <div>Account content</div> })
+    await AccountAccessBoundary({ children: <div>Account content</div> })
 
     expect(mockRedirect).toHaveBeenCalledWith("/verify-required?source=account")
+  })
+
+  it("wraps session access with an accessible account shell fallback", () => {
+    const source = readFileSync(path.resolve(__dirname, "../layout.tsx"), "utf8")
+
+    expect(source).toContain("<Suspense fallback={<AccountShellSkeleton />}>")
+
+    render(<AccountShellSkeleton />)
+
+    expect(
+      screen.getByRole("status", { name: /loading account/i }),
+    ).toBeInTheDocument()
   })
 })

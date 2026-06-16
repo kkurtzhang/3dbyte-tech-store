@@ -40,7 +40,7 @@ function getCustomerDisplayName(user: AuthUser | null) {
   return user?.email?.split("@")[0] || "Account";
 }
 
-export function Navbar() {
+export function Navbar({ blogEnabled = false }: { blogEnabled?: boolean }) {
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [authOpen, setAuthOpen] = React.useState(false);
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
@@ -84,7 +84,7 @@ export function Navbar() {
         <div className="container flex h-16 items-center justify-between">
           {/* Left Section: Mobile Menu + Logo */}
           <div className="flex items-center gap-2">
-            <MobileMenu />
+            <MobileMenu blogEnabled={blogEnabled} />
 
             <BrandLogo mobileMark priority />
           </div>
@@ -115,12 +115,14 @@ export function Navbar() {
             >
               Downloads
             </Link>
-            <Link
-              href="/blog"
-              className="text-sm font-medium transition-colors hover:text-primary"
-            >
-              Blog
-            </Link>
+            {blogEnabled ? (
+              <Link
+                href="/blog"
+                className="text-sm font-medium transition-colors hover:text-primary"
+              >
+                Blog
+              </Link>
+            ) : null}
             <Link
               href="/about"
               className="text-sm font-medium transition-colors hover:text-primary"

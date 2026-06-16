@@ -1,11 +1,25 @@
 import { redirect } from "next/navigation"
+import { Suspense } from "react"
 
 import { getSessionAction } from "@/app/actions/auth"
+import { AccountShellSkeleton } from "@/components/loading/storefront-page-skeletons"
 import { buildVerifyRequiredPath } from "@/lib/auth/verification-required"
 
 import { AccountNav } from "./account-nav"
 
-export default async function AccountLayout({
+export default function AccountLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <Suspense fallback={<AccountShellSkeleton />}>
+      <AccountAccessBoundary>{children}</AccountAccessBoundary>
+    </Suspense>
+  )
+}
+
+export async function AccountAccessBoundary({
   children,
 }: {
   children: React.ReactNode

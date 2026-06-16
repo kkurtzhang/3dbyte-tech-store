@@ -97,6 +97,21 @@ describe("Navbar", () => {
     })
   })
 
+  it("hides Blog navigation until the launch flag is enabled", async () => {
+    const { rerender } = render(<Navbar />)
+
+    await waitFor(() => {
+      expect(screen.queryByRole("link", { name: /^blog$/i })).not.toBeInTheDocument()
+    })
+
+    rerender(<Navbar blogEnabled />)
+
+    expect(screen.getByRole("link", { name: /^blog$/i })).toHaveAttribute(
+      "href",
+      "/blog",
+    )
+  })
+
   it("shows the signed-in customer's name as a profile menu trigger", async () => {
     mockGetSessionAction.mockResolvedValue({
       success: true,

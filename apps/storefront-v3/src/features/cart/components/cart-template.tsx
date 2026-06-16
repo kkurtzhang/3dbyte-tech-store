@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { ArrowRight, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CartPageSkeleton } from "@/components/loading/storefront-page-skeletons";
 import { useCart } from "@/context/cart-context";
 import { useSavedItems } from "@/context/saved-items-context";
 import { CartItem } from "./cart-item";
@@ -38,11 +39,7 @@ export function CartTemplate() {
   const cartDisplayGroups = useMemo(() => buildCartDisplayGroups(cart?.items), [cart?.items]);
 
   if (isLoading && !cart) {
-    return (
-      <div className="flex h-[50vh] items-center justify-center text-sm text-muted-foreground animate-pulse">
-        Loading cart...
-      </div>
-    );
+    return <CartPageSkeleton />;
   }
 
   if (!cart || cart.items?.length === 0) {
