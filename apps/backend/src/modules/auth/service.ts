@@ -1,4 +1,5 @@
 import { MedusaService } from "@medusajs/framework/utils";
+import { resolveRuntimeSecret } from "../../lib/medusa-runtime-config";
 import { AuthUser } from "./models/user";
 
 class AuthModuleService extends MedusaService({
@@ -47,7 +48,7 @@ class AuthModuleService extends MedusaService({
 
   async generateToken(user: any) {
     const jwt = require("jsonwebtoken");
-    const secret = process.env.JWT_SECRET || "supersecret";
+    const secret = resolveRuntimeSecret("JWT_SECRET");
     
     const token = jwt.sign(
       {
