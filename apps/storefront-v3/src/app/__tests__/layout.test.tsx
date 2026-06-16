@@ -28,6 +28,10 @@ jest.mock("@/components/layout/announcement-bar-slot", () => ({
   AnnouncementBarSlot: () => <div data-testid="announcement-bar-slot" />,
 }))
 
+jest.mock("@/components/layout/offline-status-banner", () => ({
+  OfflineStatusBanner: () => <div data-testid="offline-status-banner" />,
+}))
+
 jest.mock("@/components/ui/toaster", () => ({
   Toaster: () => <div data-testid="toaster" />,
 }))
@@ -81,6 +85,7 @@ describe("RootLayout", () => {
     })
 
     expect(screen.getByTestId("shopping-assistant-drawer")).toBeInTheDocument()
+    expect(screen.getByTestId("offline-status-banner")).toBeInTheDocument()
 
     consoleErrorSpy.mockRestore()
   })
