@@ -161,13 +161,23 @@ export function ProductActions({
     <div className="flex flex-col gap-8">
       {/* Price Display */}
       <div className="border-b pb-6">
-        <h1 className="text-3xl font-bold tracking-tight mb-2">{product.title}</h1>
-        {resolvedVariant?.sku && (
-          <p className="mb-3 text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
-            SKU {resolvedVariant.sku}
-          </p>
-        )}
-        <div className="flex items-start gap-3 flex-wrap">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 flex-1">
+            <h1 className="mb-2 text-3xl font-bold tracking-tight">{product.title}</h1>
+            {resolvedVariant?.sku && (
+              <p className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
+                SKU {resolvedVariant.sku}
+              </p>
+            )}
+          </div>
+          <SocialShare
+            productTitle={product.title}
+            productDescription={product.description || undefined}
+            productImage={product.thumbnail || undefined}
+            variant="compact"
+          />
+        </div>
+        <div className="mt-4 flex items-start gap-3 flex-wrap">
           {isPreorderVariant && preorderPrice ? (
             <div className="space-y-3">
               <PriceDisplay price={preorderPrice} label="Pre-order price" size="lg" />
@@ -204,16 +214,9 @@ export function ProductActions({
           </p>
         )}
         {product.description && (
-             <p className="mt-4 text-muted-foreground leading-relaxed">{product.description}</p>
+          <p className="mt-4 text-muted-foreground leading-relaxed">{product.description}</p>
         )}
       </div>
-
-      {/* Social Share Buttons */}
-      <SocialShare
-        productTitle={product.title}
-        productDescription={product.description || undefined}
-        productImage={product.thumbnail || undefined}
-      />
 
       <AvailableInBundles
         bundles={availableInBundles}

@@ -4,12 +4,14 @@ import { useState } from "react"
 import { Facebook, Twitter, Linkedin, Link2, Check, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/lib/hooks/use-toast"
+import { cn } from "@/lib/utils"
 
 interface SocialShareProps {
   productTitle: string
   productUrl?: string
   productImage?: string
   productDescription?: string
+  variant?: "default" | "compact"
 }
 
 export function SocialShare({
@@ -17,9 +19,11 @@ export function SocialShare({
   productUrl,
   productImage,
   productDescription,
+  variant = "default",
 }: SocialShareProps) {
   const { toast } = useToast()
   const [copied, setCopied] = useState(false)
+  const isCompact = variant === "compact"
 
   // Get current URL if not provided
   const shareUrl = productUrl || (typeof window !== "undefined" ? window.location.href : "")
@@ -82,23 +86,43 @@ export function SocialShare({
   }
 
   return (
-    <div className="flex flex-col gap-4 pt-4">
-      <span className="text-sm font-mono font-bold uppercase tracking-wider text-muted-foreground">
-        Share Product
+    <div
+      className={cn(
+        isCompact
+          ? "flex flex-wrap items-center gap-2 sm:justify-end"
+          : "flex flex-col gap-4 pt-4"
+      )}
+      role="group"
+      aria-label="Share product"
+    >
+      <span
+        className={cn(
+          "font-mono font-bold uppercase text-muted-foreground",
+          isCompact
+            ? "text-[11px] tracking-[0.18em]"
+            : "text-sm tracking-wider"
+        )}
+      >
+        {isCompact ? "Share" : "Share Product"}
       </span>
-      
-      <div className="flex flex-wrap gap-2">
+
+      <div className={cn("flex flex-wrap", isCompact ? "gap-1.5" : "gap-2")}>
         {socialLinks.map((social) => (
           <Button
             key={social.name}
             variant="ghost"
             size="icon"
-            className={`h-10 w-10 rounded-full transition-all ${social.bgColor} ${social.color} border border-transparent hover:border-transparent`}
+            className={cn(
+              isCompact ? "h-8 w-8" : "h-10 w-10",
+              "rounded-full border border-transparent transition-all hover:border-transparent",
+              social.bgColor,
+              social.color
+            )}
             onClick={() => openShareWindow(social.href)}
             title={`Share on ${social.name}`}
             type="button"
           >
-            <social.icon className="h-5 w-5" />
+            <social.icon className={isCompact ? "h-4 w-4" : "h-5 w-5"} />
             <span className="sr-only">Share on {social.name}</span>
           </Button>
         ))}
@@ -107,16 +131,22 @@ export function SocialShare({
         <Button
           variant="ghost"
           size="icon"
-          className={`h-10 w-10 rounded-full transition-all ${
+          className={cn(
+            isCompact ? "h-8 w-8" : "h-10 w-10",
+            "rounded-full transition-all",
             copied
-              ? "bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400"
-              : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-primary hover:text-primary-foreground"
-          }`}
+              ? "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-400"
+              : "bg-gray-100 text-gray-900 hover:bg-primary hover:text-primary-foreground dark:bg-gray-800 dark:text-gray-100"
+          )}
           onClick={handleCopyLink}
           title={copied ? "Copied!" : "Copy Link"}
           type="button"
         >
-          {copied ? <Check className="h-5 w-5" /> : <Link2 className="h-5 w-5" />}
+          {copied ? (
+            <Check className={isCompact ? "h-4 w-4" : "h-5 w-5"} />
+          ) : (
+            <Link2 className={isCompact ? "h-4 w-4" : "h-5 w-5"} />
+          )}
           <span className="sr-only">{copied ? "Copied!" : "Copy Link"}</span>
         </Button>
       </div>

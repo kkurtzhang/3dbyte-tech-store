@@ -7,6 +7,7 @@ import { BundleProductActions } from "../bundle-product-actions"
 const addBundle = jest.fn()
 const toast = jest.fn()
 const priceDisplayMock = jest.fn()
+const mockSocialShare = jest.fn()
 
 jest.mock("@/context/cart-context", () => ({
   useCart: () => ({ addBundle }),
@@ -24,7 +25,10 @@ jest.mock("@/components/ui/price-display", () => ({
 }))
 
 jest.mock("../social-share", () => ({
-  SocialShare: () => <div data-testid="social-share" />,
+  SocialShare: (props: unknown) => {
+    mockSocialShare(props)
+    return <div data-testid="social-share" />
+  },
 }))
 
 jest.mock("../product-shipping-estimate", () => ({
@@ -129,6 +133,67 @@ describe("BundleProductActions", () => {
           amount: 75,
           currency_code: "aud",
         },
+      })
+    )
+  })
+
+  it("renders bundle sharing as a compact header action", () => {
+    const product = {
+      id: "prod_bundle",
+      title: "Starter Bundle",
+      handle: "starter-bundle",
+      description: "A ready-to-build parts bundle.",
+      thumbnail: "/bundle.jpg",
+      variants: [
+        {
+          id: "variant_bundle",
+          title: "Default",
+          prices: [{ amount: 75, currency_code: "aud" }],
+          calculated_price: {
+            calculated_amount: 75,
+            original_amount: 75,
+            currency_code: "aud",
+          },
+          options: [],
+        },
+      ],
+      options: [],
+    } as unknown as MedusaProduct
+
+    const bundleProduct = {
+      id: "bundle_123",
+      title: "Starter Bundle",
+      product,
+      items: [
+        {
+          id: "item_1",
+          quantity: 1,
+          product: {
+            id: "prod_child",
+            title: "Part A",
+            handle: "part-a",
+            variants: [
+              {
+                id: "variant_child",
+                title: "Default",
+                options: [],
+                prices: [{ amount: 75, currency_code: "aud" }],
+              },
+            ],
+            options: [],
+          } as unknown as MedusaProduct,
+        },
+      ],
+    } as BundleProduct
+
+    render(<BundleProductActions product={product} bundleProduct={bundleProduct} />)
+
+    expect(mockSocialShare).toHaveBeenCalledWith(
+      expect.objectContaining({
+        productTitle: "Starter Bundle",
+        productDescription: "A ready-to-build parts bundle.",
+        productImage: "/bundle.jpg",
+        variant: "compact",
       })
     )
   })
