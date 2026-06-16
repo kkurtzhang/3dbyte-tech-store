@@ -32,6 +32,24 @@ describe("buildMedusaHttpConfig", () => {
     expect(config.authCors).not.toContain("127.0.0.1");
   });
 
+  it("accepts Coolify Medusa secret aliases during staging image builds", () => {
+    const config = buildMedusaHttpConfig({
+      APP_ENV: "staging",
+      STORE_CORS: "https://store.staging.example.com",
+      ADMIN_CORS: "https://api.staging.example.com",
+      AUTH_CORS: "https://store.staging.example.com,https://api.staging.example.com",
+      MEDUSA_JWT_SECRET: "staging-jwt-secret-from-coolify-alias-64-chars",
+      MEDUSA_COOKIE_SECRET: "staging-cookie-secret-from-coolify-alias-64-chars",
+    });
+
+    expect(config.jwtSecret).toBe(
+      "staging-jwt-secret-from-coolify-alias-64-chars",
+    );
+    expect(config.cookieSecret).toBe(
+      "staging-cookie-secret-from-coolify-alias-64-chars",
+    );
+  });
+
   it("requires explicit CORS values in production-like environments", () => {
     expect(() =>
       buildMedusaHttpConfig({
