@@ -36,6 +36,17 @@ function isWeakSecret(value: string) {
   );
 }
 
+function getSecretValues(
+  env: RuntimeEnv,
+  name: "JWT_SECRET" | "COOKIE_SECRET",
+) {
+  const aliasName = `MEDUSA_${name}`;
+
+  return [env[name], env[aliasName]]
+    .map((value) => value?.trim())
+    .filter((value): value is string => Boolean(value));
+}
+
 function getRuntimeName(env: RuntimeEnv) {
   return (env.APP_ENV || env.NODE_ENV || "development").toLowerCase();
 }
@@ -85,19 +96,18 @@ export function resolveRuntimeSecret(
   name: "JWT_SECRET" | "COOKIE_SECRET",
   env: RuntimeEnv = process.env,
 ) {
-  const value = env[name]?.trim();
+  const values = getSecretValues(env, name);
+  const value = values.find((candidate) => !isWeakSecret(candidate));
 
   if (!isProductionLike(env)) {
-    return value || "supersecret";
+    return values[0] || "supersecret";
   }
 
   if (!value) {
-    throw new Error(`${name} is required in ${getRuntimeName(env)}`);
-  }
-
-  if (isWeakSecret(value)) {
     throw new Error(
-      `${name} must not use a development placeholder in ${getRuntimeName(env)}`,
+      values.length === 0
+        ? `${name} is required in ${getRuntimeName(env)}`
+        : `${name} must not use a development placeholder in ${getRuntimeName(env)}`,
     );
   }
 
