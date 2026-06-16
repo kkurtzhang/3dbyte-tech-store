@@ -7,6 +7,7 @@ import {
 } from "@medusajs/framework/utils";
 import { customSchema } from "./src/custom-index-schema";
 import { generateOrderCustomDisplayId } from "./src/lib/order-display-id";
+import { buildMedusaHttpConfig } from "./src/lib/medusa-runtime-config";
 import { getMaildevNotificationProvider } from "./src/modules/maildev-notification/config";
 import { getResendNotificationProvider } from "./src/modules/resend-notification/config";
 
@@ -39,17 +40,7 @@ const authProviders = [
   ...(googleAuthProvider ? [googleAuthProvider] : []),
 ];
 
-const mergeCors = (value: string | undefined, defaults: string[]): string => {
-  return Array.from(
-    new Set(
-      [value, ...defaults]
-        .filter(Boolean)
-        .flatMap((entry) => entry!.split(","))
-        .map((entry) => entry.trim())
-        .filter(Boolean),
-    ),
-  ).join(",");
-};
+const medusaHttpConfig = buildMedusaHttpConfig();
 
 module.exports = defineConfig({
   projectConfig: {
@@ -57,26 +48,7 @@ module.exports = defineConfig({
     workerMode:
       (process.env.MEDUSA_WORKER_MODE as "shared" | "worker" | "server") ||
       "server",
-    http: {
-      storeCors: mergeCors(process.env.STORE_CORS, [
-        "http://localhost:3001",
-        "http://127.0.0.1:3001",
-        "http://localhost:8000",
-      ]),
-      adminCors: mergeCors(process.env.ADMIN_CORS, [
-        "http://localhost:9000",
-        "http://127.0.0.1:9000",
-      ]),
-      authCors: mergeCors(process.env.AUTH_CORS, [
-        "http://localhost:3001",
-        "http://127.0.0.1:3001",
-        "http://localhost:9000",
-        "http://127.0.0.1:9000",
-        "http://localhost:8000",
-      ]),
-      jwtSecret: process.env.JWT_SECRET || "supersecret",
-      cookieSecret: process.env.COOKIE_SECRET || "supersecret",
-    },
+    http: medusaHttpConfig,
     redisUrl: process.env.REDIS_URL,
   },
   admin: {
