@@ -1,5 +1,6 @@
 import Link from "next/link"
 import {
+  CheckCircle2,
   Download,
   Heart,
   MapPin,
@@ -16,6 +17,24 @@ interface CustomerData {
   last_name?: string | null
   email?: string | null
   phone?: string | null
+}
+
+interface DashboardOrder {
+  id: string
+  custom_display_id?: string | null
+  display_id?: number | string | null
+  created_at?: string | Date | null
+  total?: number | null
+  currency_code?: string | null
+}
+
+interface AccountDashboardData {
+  addressCount: number | null
+  hasDefaultShippingAddress: boolean
+  hasPhone: boolean
+  isEmailVerified: boolean
+  latestOrder: DashboardOrder | null
+  orderCount: number | null
 }
 
 const accountActions = [
@@ -66,9 +85,116 @@ function getDisplayName(customer: CustomerData) {
   return name || customer.email || "Customer"
 }
 
-export function AccountContent({ customer }: { customer: CustomerData }) {
+function getOrderDisplayName(order: DashboardOrder) {
+  if (order.custom_display_id?.trim()) {
+    return order.custom_display_id.trim()
+  }
+
+  if (order.display_id) {
+    return `#${order.display_id}`
+  }
+
+  return `#${order.id.slice(-8).toUpperCase()}`
+}
+
+function formatPrice(amount: number | null | undefined, currencyCode: string | null | undefined) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: currencyCode || "usd",
+  }).format(amount || 0)
+}
+
+function formatCount(count: number | null, singular: string, plural: string) {
+  if (count === null) {
+    return "Unavailable"
+  }
+
+  return `${count} ${count === 1 ? singular : plural}`
+}
+
+export function AccountContent({
+  customer,
+  dashboard,
+}: {
+  customer: CustomerData
+  dashboard: AccountDashboardData
+}) {
   return (
     <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-3">
+        <Link
+          href="/account/orders"
+          className="rounded-lg border bg-card p-5 text-card-foreground transition-colors hover:border-primary/40 hover:bg-muted/40"
+        >
+          <span className="flex items-start justify-between gap-3">
+            <span>
+              <span className="block text-sm text-muted-foreground">
+                Order history
+              </span>
+              <span className="mt-2 block font-mono text-xl font-semibold">
+                {formatCount(dashboard.orderCount, "order", "orders")}
+              </span>
+              {dashboard.latestOrder ? (
+                <span className="mt-1 block text-sm text-muted-foreground">
+                  Latest {getOrderDisplayName(dashboard.latestOrder)} ·{" "}
+                  {formatPrice(
+                    dashboard.latestOrder.total,
+                    dashboard.latestOrder.currency_code,
+                  )}
+                </span>
+              ) : (
+                <span className="mt-1 block text-sm text-muted-foreground">
+                  No recent order yet
+                </span>
+              )}
+            </span>
+            <Package className="h-5 w-5 text-primary" />
+          </span>
+        </Link>
+
+        <Link
+          href="/account/addresses"
+          className="rounded-lg border bg-card p-5 text-card-foreground transition-colors hover:border-primary/40 hover:bg-muted/40"
+        >
+          <span className="flex items-start justify-between gap-3">
+            <span>
+              <span className="block text-sm text-muted-foreground">
+                Saved addresses
+              </span>
+              <span className="mt-2 block font-mono text-xl font-semibold">
+                {formatCount(dashboard.addressCount, "saved address", "saved addresses")}
+              </span>
+              <span className="mt-1 block text-sm text-muted-foreground">
+                {dashboard.hasDefaultShippingAddress
+                  ? "Default shipping ready"
+                  : "Add a default shipping address"}
+              </span>
+            </span>
+            <MapPin className="h-5 w-5 text-primary" />
+          </span>
+        </Link>
+
+        <Link
+          href="/account/settings"
+          className="rounded-lg border bg-card p-5 text-card-foreground transition-colors hover:border-primary/40 hover:bg-muted/40"
+        >
+          <span className="flex items-start justify-between gap-3">
+            <span>
+              <span className="block text-sm text-muted-foreground">
+                Account readiness
+              </span>
+              <span className="mt-2 block font-mono text-xl font-semibold">
+                {dashboard.isEmailVerified ? "Email verified" : "Email pending"}
+              </span>
+              <span className="mt-1 block text-sm text-muted-foreground">
+                {dashboard.hasPhone ? "Phone added" : "Add a phone number"}
+              </span>
+            </span>
+            <CheckCircle2 className="h-5 w-5 text-primary" />
+          </span>
+        </Link>
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
