@@ -8,6 +8,7 @@ import {
   getSourceBackedProductImageHostnames,
   getStrapiMediaRemotePatterns,
 } from "./src/lib/images/remote-image-config";
+import { buildSecurityHeaders } from "./src/lib/security/content-security-policy";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -30,6 +31,14 @@ const nextConfig: NextConfig = {
         source: "/about-us",
         destination: "/about",
         permanent: true,
+      },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: buildSecurityHeaders(),
       },
     ];
   },
