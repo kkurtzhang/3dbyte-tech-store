@@ -9,6 +9,7 @@ const setOptions = jest.fn()
 const onVariantChange = jest.fn()
 const priceDisplayMock = jest.fn()
 const mockGetStockStatus = jest.fn(() => ({ status: "preorder", quantity: 0 }))
+const mockSocialShare = jest.fn()
 
 jest.mock("@/context/cart-context", () => ({
   useCart: () => ({ addItem }),
@@ -23,7 +24,10 @@ jest.mock("next/navigation", () => ({
 }))
 
 jest.mock("../social-share", () => ({
-  SocialShare: () => <div data-testid="social-share" />,
+  SocialShare: (props: unknown) => {
+    mockSocialShare(props)
+    return <div data-testid="social-share" />
+  },
 }))
 
 jest.mock("../product-shipping-estimate", () => ({
@@ -189,6 +193,27 @@ describe("ProductActions", () => {
     )
 
     expect(screen.getByText(/Available on/i)).toBeInTheDocument()
+  })
+
+  it("renders product sharing as a compact header action", () => {
+    render(
+      <ProductActions
+        product={product}
+        selectedVariant={product.variants?.[0]}
+        onVariantChange={onVariantChange}
+        options={{}}
+        setOptions={setOptions}
+      />
+    )
+
+    expect(mockSocialShare).toHaveBeenCalledWith(
+      expect.objectContaining({
+        productTitle: "Pre-order Product",
+        productDescription: "A product that can be pre-ordered.",
+        productImage: "/product.jpg",
+        variant: "compact",
+      })
+    )
   })
 
   it("hides default-only option groups on the normal product PDP", () => {

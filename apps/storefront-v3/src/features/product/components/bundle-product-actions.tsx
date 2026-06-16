@@ -265,11 +265,21 @@ export function BundleProductActions({
   return (
     <div className="flex flex-col gap-8">
       <div className="border-b pb-6">
-        <p className="text-xs font-mono uppercase tracking-[0.2em] text-primary">
-          Bundled Product
-        </p>
-        <h1 className="mb-2 text-3xl font-bold tracking-tight">{product.title}</h1>
-        <div className="flex flex-wrap items-start gap-3">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-mono uppercase tracking-[0.2em] text-primary">
+              Bundled Product
+            </p>
+            <h1 className="mt-1 text-3xl font-bold tracking-tight">{product.title}</h1>
+          </div>
+          <SocialShare
+            productTitle={product.title}
+            productDescription={product.description || undefined}
+            productImage={product.thumbnail || undefined}
+            variant="compact"
+          />
+        </div>
+        <div className="mt-4 flex flex-wrap items-start gap-3">
           <PriceDisplay
             price={priceInfo.price}
             originalPrice={priceInfo.originalPrice}
@@ -294,12 +304,6 @@ export function BundleProductActions({
           </p>
         ) : null}
       </div>
-
-      <SocialShare
-        productTitle={product.title}
-        productDescription={product.description || undefined}
-        productImage={product.thumbnail || undefined}
-      />
 
       <div className="space-y-4">
         {bundleProduct.items.map((item, index) => {
