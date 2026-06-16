@@ -18,6 +18,19 @@ jest.mock("@medusajs/framework/http", () => ({
 }));
 
 describe("API middleware configuration", () => {
+  const hasRateLimit = (
+    route: { middlewares?: Array<unknown> } | undefined,
+    name: string,
+  ) =>
+    Boolean(
+      route?.middlewares?.some(
+        (middleware) =>
+          typeof middleware === "function" &&
+          (middleware as { rateLimitRuleName?: string }).rateLimitRuleName ===
+            name,
+      ),
+    );
+
   it("allows authenticated but unregistered customers to claim an account", async () => {
     const { default: configuration } = await import("../middlewares");
     const claimRoute = configuration.routes.find(
@@ -52,5 +65,101 @@ describe("API middleware configuration", () => {
     expect(resolutionRoute.middlewares[1]).toEqual({
       type: "body-validation",
     });
+  });
+
+  it("rate limits expensive public storefront lookup routes", async () => {
+    const { default: configuration } = await import("../middlewares");
+
+    const searchRoute = configuration.routes.find(
+      (route: { matcher: string }) => route.matcher === "/store/search",
+    );
+    const addressAutocompleteRoute = configuration.routes.find(
+      (route: { matcher: string }) =>
+        route.matcher === "/store/addresses/autocomplete",
+    );
+    const localityAutocompleteRoute = configuration.routes.find(
+      (route: { matcher: string }) =>
+        route.matcher === "/store/localities/autocomplete",
+    );
+
+    expect(hasRateLimit(searchRoute, "store_search")).toBe(true);
+    expect(
+      hasRateLimit(addressAutocompleteRoute, "store_address_autocomplete"),
+    ).toBe(true);
+    expect(
+      hasRateLimit(localityAutocompleteRoute, "store_locality_autocomplete"),
+    ).toBe(true);
+  });
+
+  it("rate limits public customer-intent mutation endpoints", async () => {
+    const { default: configuration } = await import("../middlewares");
+
+    const supportRoute = configuration.routes.find(
+      (route: { matcher: string }) =>
+        route.matcher === "/store/support-tickets",
+    );
+    const newsletterRoute = configuration.routes.find(
+      (route: { matcher: string }) =>
+        route.matcher === "/store/newsletter/subscribe",
+    );
+    const waitlistRoute = configuration.routes.find(
+      (route: { matcher: string; methods?: string[] }) =>
+        route.matcher === "/store/waitlist" && route.methods?.includes("POST"),
+    );
+
+    expect(hasRateLimit(supportRoute, "store_support_ticket")).toBe(true);
+    expect(hasRateLimit(newsletterRoute, "store_newsletter_subscribe")).toBe(
+      true,
+    );
+    expect(hasRateLimit(waitlistRoute, "store_waitlist_join")).toBe(true);
+  });
+
+  it("rate limits authenticated account security mutations after authentication", async () => {
+    const { default: configuration } = await import("../middlewares");
+
+    const emailChangeRoute = configuration.routes.find(
+      (route: { matcher: string }) =>
+        route.matcher === "/store/customers/me/email-change-requests",
+    );
+    const googleLinkRoute = configuration.routes.find(
+      (route: { matcher: string }) =>
+        route.matcher === "/store/customers/me/google-link-intents",
+    );
+    const setPasswordRoute = configuration.routes.find(
+      (route: { matcher: string }) =>
+        route.matcher === "/store/customers/me/login-methods/emailpass",
+    );
+
+    expect(emailChangeRoute?.middlewares[0]).toMatchObject({
+      actorType: "customer",
+    });
+    expect(hasRateLimit(emailChangeRoute, "customer_email_change")).toBe(true);
+    expect(googleLinkRoute?.middlewares[0]).toMatchObject({
+      actorType: "customer",
+    });
+    expect(hasRateLimit(googleLinkRoute, "customer_google_link")).toBe(true);
+    expect(setPasswordRoute?.middlewares[0]).toMatchObject({
+      actorType: "customer",
+    });
+    expect(hasRateLimit(setPasswordRoute, "customer_set_password")).toBe(true);
+  });
+
+  it("rate limits sensitive admin and internal automation endpoints", async () => {
+    const { default: configuration } = await import("../middlewares");
+
+    const meilisearchSyncRoute = configuration.routes.find(
+      (route: { matcher: string; methods?: string[] }) =>
+        route.matcher === "/admin/meilisearch*" &&
+        route.methods?.includes("POST"),
+    );
+    const aiRoute = configuration.routes.find(
+      (route: { matcher: string; methods?: string[] }) =>
+        route.matcher === "/ai*" && route.methods?.includes("POST"),
+    );
+
+    expect(hasRateLimit(meilisearchSyncRoute, "admin_meilisearch_sync")).toBe(
+      true,
+    );
+    expect(hasRateLimit(aiRoute, "internal_ai")).toBe(true);
   });
 });

@@ -53,6 +53,7 @@
     "@react-email/render": "1.1.4",
     "@strapi/client": "^1.6.0",
     "@uiw/react-json-view": "2.0.0-alpha.33",
+    "ioredis": "5.8.2",
     "meilisearch": "^0.54.0",
     "node-cron": "^4.2.1",
     "nodemailer": "^6.10.1",

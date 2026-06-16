@@ -258,7 +258,7 @@ describe("store customer email verification route", () => {
     const { createCustomerEmailVerificationToken } = await import(
       "../../../../../lib/customer-verification/tokens"
     );
-    const issuedAt = new Date("2026-06-13T08:00:00.000Z");
+    const issuedAt = new Date(Date.now() - 60_000);
     const token = createCustomerEmailVerificationToken({
       customerId: "cus_123",
       email: "ava@example.com",

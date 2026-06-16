@@ -115,6 +115,9 @@ importers:
       '@uiw/react-json-view':
         specifier: 2.0.0-alpha.33
         version: 2.0.0-alpha.33(@babel/runtime@7.28.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      ioredis:
+        specifier: 5.8.2
+        version: 5.8.2
       meilisearch:
         specifier: ^0.54.0
         version: 0.54.0

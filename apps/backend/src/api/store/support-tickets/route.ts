@@ -1,35 +1,23 @@
-import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 
-import { getClientIp, getSupportTicketModule } from "../../support-ticket-utils"
-import { sendSupportTicketCreatedNotifications } from "../../../lib/support-tickets/notifications"
-import { checkSupportTicketRateLimit } from "../../../lib/support-tickets/rate-limit"
-import { generateSupportTicketNumber } from "../../../lib/support-tickets/ticket-number"
-import { parseCreateSupportTicketInput } from "../../../lib/support-tickets/validation"
+import { getSupportTicketModule } from "../../support-ticket-utils";
+import { sendSupportTicketCreatedNotifications } from "../../../lib/support-tickets/notifications";
+import { generateSupportTicketNumber } from "../../../lib/support-tickets/ticket-number";
+import { parseCreateSupportTicketInput } from "../../../lib/support-tickets/validation";
 
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
-  const rate = checkSupportTicketRateLimit(
-    `store-support-ticket:${getClientIp(req)}`
-  )
-
-  if (!rate.allowed) {
-    res.setHeader?.("Retry-After", Math.ceil(rate.retryAfterMs / 1000).toString())
-    return res.status(429).json({
-      message: "Too many support requests. Please try again shortly.",
-    })
-  }
-
   const parsed = parseCreateSupportTicketInput(
     req.body as Record<string, unknown>,
-    "contact_form"
-  )
+    "contact_form",
+  );
 
   if (!parsed.success) {
     return res.status(400).json({
       message: parsed.message,
-    })
+    });
   }
 
-  const supportTicketModule = getSupportTicketModule(req)
+  const supportTicketModule = getSupportTicketModule(req);
   const ticket = await supportTicketModule.createSupportTickets({
     ticket_number: generateSupportTicketNumber(),
     status: "new",
@@ -47,7 +35,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     ai_summary: parsed.data.ai_summary,
     metadata: parsed.data.metadata,
     last_message_at: new Date().toISOString(),
-  })
+  });
 
   await supportTicketModule.createSupportTicketMessages({
     ticket_id: ticket.id,
@@ -58,7 +46,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     author_name: parsed.data.name,
     author_email: parsed.data.email,
     metadata: null,
-  })
+  });
   await supportTicketModule.createSupportTicketEvents({
     ticket_id: ticket.id,
     type: "created",
@@ -67,11 +55,11 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     metadata: {
       source: parsed.data.source,
     },
-  })
+  });
   await sendSupportTicketCreatedNotifications({
     container: req.scope,
     ticket,
-  })
+  });
 
   return res.status(201).json({
     ticket: {
@@ -80,5 +68,5 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       status: ticket.status,
       created_at: ticket.created_at,
     },
-  })
+  });
 }

@@ -36,6 +36,19 @@ import { PostStoreEmailpassLoginMethodSchema } from "./store/customers/me/login-
 import { PostStoreCustomerEmailChangeSchema } from "./store/customers/me/email-change-requests/route";
 import { GetAdminIdentityIssuesSchema } from "./admin/identity-issues/route";
 import { PostAdminResolveIdentityIssueSchema } from "./admin/identity-issues/resolve/route";
+import {
+  adminEmailTestRateLimit,
+  adminMeilisearchSyncRateLimit,
+  customerDisconnectGoogleRateLimit,
+  customerEmailChangeRateLimit,
+  customerEmailVerificationRateLimit,
+  customerGoogleLinkRateLimit,
+  customerSetPasswordRateLimit,
+  internalAiRateLimit,
+  storeNewsletterSubscribeRateLimit,
+  storeSupportTicketRateLimit,
+  storeWaitlistJoinRateLimit,
+} from "../lib/rate-limits/api-rules";
 
 export const GetBrandsSchema = createFindParams();
 
@@ -44,38 +57,35 @@ export default defineMiddlewares({
     // Media Manager plugin authentication
     {
       matcher: "/admin/media*",
-      middlewares: [
-        authenticate("user", ["session", "bearer", "api-key"]),
-      ],
+      middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
     },
     {
       matcher: "/admin/meilisearch*",
-      middlewares: [
-        authenticate("user", ["session", "bearer", "api-key"]),
-      ],
+      middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
+    },
+    {
+      matcher: "/admin/meilisearch*",
+      methods: ["POST"],
+      middlewares: [adminMeilisearchSyncRateLimit],
     },
     {
       matcher: "/admin/email-settings*",
-      middlewares: [
-        authenticate("user", ["session", "bearer", "api-key"]),
-      ],
+      middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
     },
     {
       matcher: "/admin/product-registrations*",
-      middlewares: [
-        authenticate("user", ["session", "bearer", "api-key"]),
-      ],
+      middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
     },
     {
       matcher: "/admin/product-registrations",
       methods: ["POST"],
-      middlewares: [validateAndTransformBody(PostAdminProductRegistrationSchema)],
+      middlewares: [
+        validateAndTransformBody(PostAdminProductRegistrationSchema),
+      ],
     },
     {
       matcher: "/admin/product-entitlement-files*",
-      middlewares: [
-        authenticate("user", ["session", "bearer", "api-key"]),
-      ],
+      middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
     },
     {
       matcher: "/admin/product-entitlement-files",
@@ -92,7 +102,10 @@ export default defineMiddlewares({
     {
       matcher: "/admin/email-settings/profiles/:key/test",
       methods: ["POST"],
-      middlewares: [validateAndTransformBody(PostAdminEmailSenderProfileTest)],
+      middlewares: [
+        adminEmailTestRateLimit,
+        validateAndTransformBody(PostAdminEmailSenderProfileTest),
+      ],
     },
     {
       matcher: "/admin/brands",
@@ -109,13 +122,7 @@ export default defineMiddlewares({
       methods: ["GET"],
       middlewares: [
         validateAndTransformQuery(createFindParams(), {
-          defaults: [
-            "id",
-            "title",
-            "product.*",
-            "items.*",
-            "items.product.*",
-          ],
+          defaults: ["id", "title", "product.*", "items.*", "items.product.*"],
           isList: true,
           defaultLimit: 15,
         }),
@@ -216,13 +223,12 @@ export default defineMiddlewares({
         authenticate("customer", ["session", "bearer"], {
           allowUnauthenticated: true,
         }),
+        storeWaitlistJoinRateLimit,
       ],
     },
     {
       matcher: "/admin/waitlist*",
-      middlewares: [
-        authenticate("user", ["session", "bearer", "api-key"]),
-      ],
+      middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
     },
     {
       matcher: "/admin/support-tickets*",
@@ -281,7 +287,10 @@ export default defineMiddlewares({
     {
       matcher: "/store/customers/email-verifications",
       methods: ["POST"],
-      middlewares: [authenticate("customer", ["session", "bearer"])],
+      middlewares: [
+        authenticate("customer", ["session", "bearer"]),
+        customerEmailVerificationRateLimit,
+      ],
     },
     {
       matcher: "/store/customers/claim-account",
@@ -313,6 +322,7 @@ export default defineMiddlewares({
       methods: ["POST"],
       middlewares: [
         authenticate("customer", ["session", "bearer"]),
+        customerEmailChangeRateLimit,
         validateAndTransformBody(PostStoreCustomerEmailChangeSchema),
       ],
     },
@@ -321,6 +331,7 @@ export default defineMiddlewares({
       methods: ["POST"],
       middlewares: [
         authenticate("customer", ["session", "bearer"]),
+        customerGoogleLinkRateLimit,
         validateAndTransformBody(PostStoreGoogleLinkIntentSchema),
       ],
     },
@@ -329,13 +340,17 @@ export default defineMiddlewares({
       methods: ["POST"],
       middlewares: [
         authenticate("customer", ["session", "bearer"]),
+        customerSetPasswordRateLimit,
         validateAndTransformBody(PostStoreEmailpassLoginMethodSchema),
       ],
     },
     {
       matcher: "/store/customers/me/login-methods/google",
       methods: ["DELETE"],
-      middlewares: [authenticate("customer", ["session", "bearer"])],
+      middlewares: [
+        authenticate("customer", ["session", "bearer"]),
+        customerDisconnectGoogleRateLimit,
+      ],
     },
     {
       matcher: "/store/customers/me",
@@ -355,16 +370,27 @@ export default defineMiddlewares({
     {
       matcher: "/admin/shipping-rates",
       methods: ["POST"],
-      middlewares: [
-        authenticate("user", ["session", "bearer", "api-key"]),
-      ],
+      middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
     },
     {
       matcher: "/admin/fulfillments/:id/label",
       methods: ["POST"],
-      middlewares: [
-        authenticate("user", ["session", "bearer", "api-key"]),
-      ],
+      middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
+    },
+    {
+      matcher: "/store/support-tickets",
+      methods: ["POST"],
+      middlewares: [storeSupportTicketRateLimit],
+    },
+    {
+      matcher: "/store/newsletter/subscribe",
+      methods: ["POST"],
+      middlewares: [storeNewsletterSubscribeRateLimit],
+    },
+    {
+      matcher: "/ai*",
+      methods: ["POST"],
+      middlewares: [internalAiRateLimit],
     },
   ],
 });

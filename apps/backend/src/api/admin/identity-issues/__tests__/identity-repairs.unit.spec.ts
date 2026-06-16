@@ -320,8 +320,8 @@ describe("identity issue repairs", () => {
       },
     });
     expect(customerModule.updateCustomers).toHaveBeenCalledWith(
+      "cus_old",
       expect.objectContaining({
-        id: "cus_old",
         has_account: false,
         metadata: expect.objectContaining({
           merged_into_customer_id: "cus_login",
