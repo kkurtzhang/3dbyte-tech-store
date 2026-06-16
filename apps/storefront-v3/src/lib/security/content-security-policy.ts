@@ -5,11 +5,18 @@ type SecurityHeader = {
 
 type CspEnv = Record<string, string | undefined>;
 
+type CspDisposition = "enforce" | "report-only";
+
+type ContentSecurityPolicyOptions = {
+  disposition?: CspDisposition;
+};
+
 const REPORT_ENDPOINT = "/api/csp-report";
 
 const STRIPE_SCRIPT_SOURCES = [
   "https://js.stripe.com",
   "https://checkout.stripe.com",
+  "https://m.stripe.network",
 ];
 
 const STRIPE_CONNECT_SOURCES = [
@@ -104,8 +111,16 @@ function originsFromEnv(env: CspEnv, keys: readonly string[]) {
   return unique(keys.flatMap((key) => splitEnvOrigins(env[key])));
 }
 
-export function buildContentSecurityPolicy(env: CspEnv = process.env) {
+function shouldEnforceContentSecurityPolicy(env: CspEnv) {
+  return env.NODE_ENV === "production" && env.CSP_ENFORCEMENT !== "report-only";
+}
+
+export function buildContentSecurityPolicy(
+  env: CspEnv = process.env,
+  options: ContentSecurityPolicyOptions = {}
+) {
   const isDevelopment = env.NODE_ENV === "development";
+  const disposition = options.disposition ?? "report-only";
   const connectSources = unique([
     ...originsFromEnv(env, CONNECT_ENV_KEYS),
     ...STRIPE_CONNECT_SOURCES,
@@ -131,7 +146,7 @@ export function buildContentSecurityPolicy(env: CspEnv = process.env) {
     "base-uri 'self'",
     "form-action 'self'",
     "frame-ancestors 'none'",
-    !isDevelopment && "upgrade-insecure-requests",
+    !isDevelopment && disposition === "enforce" && "upgrade-insecure-requests",
     `report-uri ${REPORT_ENDPOINT}`,
     "report-to csp-endpoint",
   ];
@@ -141,9 +156,17 @@ export function buildContentSecurityPolicy(env: CspEnv = process.env) {
 
 export function buildSecurityHeaders(env: CspEnv = process.env): SecurityHeader[] {
   return [
+    ...(shouldEnforceContentSecurityPolicy(env)
+      ? [
+          {
+            key: "Content-Security-Policy",
+            value: buildContentSecurityPolicy(env, { disposition: "enforce" }),
+          },
+        ]
+      : []),
     {
       key: "Content-Security-Policy-Report-Only",
-      value: buildContentSecurityPolicy(env),
+      value: buildContentSecurityPolicy(env, { disposition: "report-only" }),
     },
     {
       key: "Reporting-Endpoints",

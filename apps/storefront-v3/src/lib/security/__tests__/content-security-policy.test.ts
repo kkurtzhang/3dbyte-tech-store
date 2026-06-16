@@ -4,7 +4,7 @@ import {
 } from "../content-security-policy";
 
 describe("content security policy headers", () => {
-  it("builds a report-only CSP that monitors core storefront risks without forcing nonce rendering", () => {
+  it("builds enforced and report-only CSP headers for production storefront traffic", () => {
     const headers = buildSecurityHeaders({
       NODE_ENV: "production",
       NEXT_PUBLIC_SITE_URL: "https://store.staging.3dbytetech.com.au",
@@ -14,24 +14,49 @@ describe("content security policy headers", () => {
     });
 
     expect(headers).toContainEqual({
+      key: "Content-Security-Policy",
+      value: expect.stringContaining("upgrade-insecure-requests"),
+    });
+    expect(headers).toContainEqual({
       key: "Content-Security-Policy-Report-Only",
       value: expect.stringContaining("report-uri /api/csp-report"),
     });
-    expect(headers).not.toContainEqual(
-      expect.objectContaining({ key: "Content-Security-Policy" })
-    );
 
-    const csp = headers.find(
+    const enforcedCsp = headers.find(
+      (header) => header.key === "Content-Security-Policy"
+    )?.value;
+    const reportOnlyCsp = headers.find(
       (header) => header.key === "Content-Security-Policy-Report-Only"
     )?.value;
 
-    expect(csp).toContain("default-src 'self'");
-    expect(csp).toContain("object-src 'none'");
-    expect(csp).toContain("frame-ancestors 'none'");
-    expect(csp).toContain("script-src 'self' 'unsafe-inline' https://js.stripe.com https://checkout.stripe.com");
-    expect(csp).toContain("frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com https://www.openstreetmap.org");
-    expect(csp).toContain("connect-src 'self' https://store.staging.3dbytetech.com.au https://api.staging.3dbytetech.com.au https://cms.staging.3dbytetech.com.au https://search.staging.3dbytetech.com.au");
-    expect(csp).toContain("report-to csp-endpoint");
+    expect(enforcedCsp).toContain("default-src 'self'");
+    expect(enforcedCsp).toContain("object-src 'none'");
+    expect(enforcedCsp).toContain("frame-ancestors 'none'");
+    expect(enforcedCsp).toContain(
+      "script-src 'self' 'unsafe-inline' https://js.stripe.com https://checkout.stripe.com https://m.stripe.network"
+    );
+    expect(enforcedCsp).toContain(
+      "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com https://www.openstreetmap.org"
+    );
+    expect(enforcedCsp).toContain(
+      "connect-src 'self' https://store.staging.3dbytetech.com.au https://api.staging.3dbytetech.com.au https://cms.staging.3dbytetech.com.au https://search.staging.3dbytetech.com.au"
+    );
+    expect(enforcedCsp).toContain("report-to csp-endpoint");
+    expect(reportOnlyCsp).not.toContain("upgrade-insecure-requests");
+  });
+
+  it("allows production deployments to roll back to report-only CSP with an env flag", () => {
+    const headers = buildSecurityHeaders({
+      CSP_ENFORCEMENT: "report-only",
+      NODE_ENV: "production",
+    });
+
+    expect(headers).toContainEqual(
+      expect.objectContaining({ key: "Content-Security-Policy-Report-Only" })
+    );
+    expect(headers).not.toContainEqual(
+      expect.objectContaining({ key: "Content-Security-Policy" })
+    );
   });
 
   it("normalizes configured origins and ignores path/query details", () => {
