@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 import { getCustomerAuthHeaders } from '@/app/actions/auth'
-import { OrderDetails } from '@/app/track-order/page'
+import { OrderDetails } from '@/app/track-order/track-order-client'
 import { Button } from '@/components/ui/button'
 import { getOrder, ORDER_TRACKING_FIELDS } from '@/lib/medusa/orders'
 

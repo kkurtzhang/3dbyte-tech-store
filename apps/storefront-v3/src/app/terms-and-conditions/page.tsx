@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Read our terms and conditions for using our website and services.",
 };
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic"
 
 function stripLeadingMarkdownH2(content: string): string {
   return content.replace(/^\s*##\s+Terms(?:\s+and|\s*&)\s+Conditions\s*\n+/i, "");

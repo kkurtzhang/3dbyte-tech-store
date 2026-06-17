@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: "Create an account to track orders and checkout faster.",
 };
 
+export const dynamic = "force-dynamic"
+
 export default function SignUpPage() {
   return (
     <div className="space-y-6">

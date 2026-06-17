@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Learn about our returns and refunds policy.",
 };
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic"
 
 // Fallback content when Strapi is unavailable
 const FALLBACK_CONTENT = `

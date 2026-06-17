@@ -24,6 +24,8 @@ export const metadata: Metadata = {
   description: "Find answers to common questions and contact 3DByte Tech support.",
 }
 
+export const dynamic = "force-dynamic"
+
 type HelpCategory = {
   title: string
   description: string

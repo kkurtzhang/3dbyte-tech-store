@@ -18,7 +18,8 @@ jest.mock("next/navigation", () => ({
   useSearchParams: () => mockSearchParams,
 }))
 
-import TrackOrderPage, { formatOrderTrackPrice } from "../page"
+import TrackOrderPage from "../page"
+import { formatOrderTrackPrice } from "../track-order-client"
 
 let mockSearchParams = new URLSearchParams()
 

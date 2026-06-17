@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Learn about our shipping options and delivery times.",
 };
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic"
 
 const FALLBACK_CONTENT = `
 ## Shipping Policy
