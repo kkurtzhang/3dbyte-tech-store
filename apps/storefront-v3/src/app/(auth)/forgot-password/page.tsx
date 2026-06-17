@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   description: "Request a password reset link for your 3D Byte Tech account.",
 }
 
+export const dynamic = "force-dynamic"
+
 export default function ForgotPasswordPage() {
   return (
     <div className="space-y-6">

@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Read our privacy policy to understand how we handle your data.",
 };
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic"
 
 function stripLeadingMarkdownH2(content: string): string {
   return content.replace(/^\s*##\s+Privacy Policy\s*\n+/i, "");

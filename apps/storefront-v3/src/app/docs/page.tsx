@@ -18,6 +18,8 @@ export const metadata: Metadata = {
     "Find downloads, guides, support articles, blog posts, and account-only product files from 3D Byte Tech.",
 };
 
+export const dynamic = "force-dynamic"
+
 const primaryResources = [
   {
     title: "Download Center",

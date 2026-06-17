@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react"
 
-import TrackOrderPage, { OrderDetails } from "../page"
+import TrackOrderPage from "../page"
+import { OrderDetails } from "../track-order-client"
 import type { MedusaOrder } from "@/lib/medusa/types"
 
 jest.mock("next/navigation", () => ({

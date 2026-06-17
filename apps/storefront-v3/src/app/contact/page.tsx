@@ -8,6 +8,8 @@ export const metadata: Metadata = {
     "Get in touch with 3DByte Tech support for product help, orders, returns, and account questions.",
 };
 
+export const dynamic = "force-dynamic"
+
 export default function ContactPage() {
   return (
     <div className="container py-12 md:py-16">
