@@ -161,8 +161,8 @@ export function ProductActions({
     <div className="flex flex-col gap-8">
       {/* Price Display */}
       <div className="border-b pb-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0 flex-1">
+        <div className="space-y-4" data-testid="product-identity">
+          <div className="min-w-0" data-testid="product-title-row">
             <h1 className="mb-2 text-3xl font-bold tracking-tight">{product.title}</h1>
             {resolvedVariant?.sku && (
               <p className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
@@ -170,12 +170,14 @@ export function ProductActions({
               </p>
             )}
           </div>
-          <SocialShare
-            productTitle={product.title}
-            productDescription={product.description || undefined}
-            productImage={product.thumbnail || undefined}
-            variant="compact"
-          />
+          <div className="pt-1">
+            <SocialShare
+              productTitle={product.title}
+              productDescription={product.description || undefined}
+              productImage={product.thumbnail || undefined}
+              variant="compact"
+            />
+          </div>
         </div>
         <div className="mt-4 flex items-start gap-3 flex-wrap">
           {isPreorderVariant && preorderPrice ? (

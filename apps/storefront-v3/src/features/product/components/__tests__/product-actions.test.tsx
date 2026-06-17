@@ -216,6 +216,28 @@ describe("ProductActions", () => {
     )
   })
 
+  it("keeps product sharing below the title instead of sharing the title row", () => {
+    render(
+      <ProductActions
+        product={product}
+        selectedVariant={product.variants?.[0]}
+        onVariantChange={onVariantChange}
+        options={{}}
+        setOptions={setOptions}
+      />
+    )
+
+    const identityBlock = screen.getByTestId("product-identity")
+
+    expect(identityBlock).toContainElement(
+      screen.getByRole("heading", { name: "Pre-order Product" })
+    )
+    expect(identityBlock).toContainElement(screen.getByTestId("social-share"))
+    expect(screen.getByTestId("product-title-row")).not.toContainElement(
+      screen.getByTestId("social-share")
+    )
+  })
+
   it("hides default-only option groups on the normal product PDP", () => {
     const defaultOptionProduct = {
       ...product,

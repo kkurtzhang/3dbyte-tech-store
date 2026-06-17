@@ -4,6 +4,7 @@ import { searchProducts } from "@/lib/search/products";
 import { ProductGrid } from "@/features/shop/components/product-grid";
 import { DealsFilter } from "@/features/shop/components/deals-filter";
 import { ListingLayout } from "@/components/layout/listing-layout";
+import { ListingPagination } from "@/components/layout/listing-pagination";
 import { Button } from "@/components/ui/button";
 import { Tag, ArrowRight } from "lucide-react";
 import { ShopErrorState } from "@/features/shop/components/shop-error-state";
@@ -68,7 +69,6 @@ export default async function DealsPage({ searchParams }: DealsPageProps) {
   }
 
   const totalCount = result.totalCount;
-  const totalPages = Math.ceil(totalCount / limit);
 
   // Handle empty state
   if (result.products.length === 0) {
@@ -180,40 +180,20 @@ export default async function DealsPage({ searchParams }: DealsPageProps) {
 
         <ProductGrid products={productsForGrid} />
 
-        {totalPages > 1 && (
-          <div className="flex justify-center">
-            <nav
-              className="flex gap-2"
-              role="navigation"
-              aria-label="Pagination"
-            >
-              {Array.from({ length: totalPages }).map((_, i) => {
-                const pageNum = i + 1;
-                const isCurrent = pageNum === page;
+        <ListingPagination
+          buildHref={(pageNumber) => {
+            const pageParams = new URLSearchParams();
+            if (pageNumber > 1) pageParams.set("page", pageNumber.toString());
+            if (minDiscount) pageParams.set("minDiscount", minDiscount.toString());
+            if (maxDiscount) pageParams.set("maxDiscount", maxDiscount.toString());
 
-                const searchParams = new URLSearchParams();
-                if (pageNum > 1) searchParams.set("page", pageNum.toString());
-                if (minDiscount) searchParams.set("minDiscount", minDiscount.toString());
-                if (maxDiscount) searchParams.set("maxDiscount", maxDiscount.toString());
-
-                return (
-                  <a
-                    key={pageNum}
-                    href={`/deals?${searchParams.toString()}`}
-                    className={`inline-flex h-10 w-10 items-center justify-center rounded-md border font-mono text-sm transition-colors ${
-                      isCurrent
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-card hover:border-primary/50 hover:bg-accent"
-                    }`}
-                    aria-current={isCurrent ? "page" : undefined}
-                  >
-                    {pageNum}
-                  </a>
-                );
-              })}
-            </nav>
-          </div>
-        )}
+            const query = pageParams.toString();
+            return `/deals${query ? `?${query}` : ""}`;
+          }}
+          currentPage={page}
+          pageSize={limit}
+          totalItems={totalCount}
+        />
       </div>
     </ListingLayout>
   );
