@@ -23,6 +23,7 @@ export function PriceRangeSlider({
 }: PriceRangeSliderProps) {
   const [localMin, setLocalMin] = useState(currentMin)
   const [localMax, setLocalMax] = useState(currentMax)
+  const hasSelectableRange = max > min
 
   // Sync local state when current props change
   useEffect(() => {
@@ -42,9 +43,22 @@ export function PriceRangeSlider({
     onClear()
   }
 
+  if (!hasSelectableRange) {
+    return (
+      <div className="space-y-3">
+        <div className="rounded-sm border border-dashed bg-muted/30 px-3 py-4 text-center">
+          <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+            Single price
+          </p>
+          <p className="mt-1 font-mono text-sm font-semibold">${min}</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4">
-      <div className="px-2 py-3">
+      <div className="px-3 py-3">
         <Slider
           min={min}
           max={max}

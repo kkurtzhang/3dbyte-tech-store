@@ -17,7 +17,12 @@ export function ListingLayout({
     <div className={cn("container mx-auto px-4 py-8", className)}>
       {header && <div className="mb-8">{header}</div>}
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[250px_1fr]">
+      <div
+        className={cn(
+          "grid grid-cols-1 gap-8",
+          sidebar && "lg:grid-cols-[250px_1fr]"
+        )}
+      >
         {sidebar && (
           <aside className="hidden lg:block">
             <div className="sticky top-20">{sidebar}</div>

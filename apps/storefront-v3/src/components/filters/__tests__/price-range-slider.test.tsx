@@ -262,7 +262,7 @@ describe("PriceRangeSlider", () => {
       expect(slider).toHaveAttribute("data-max", "5000")
     })
 
-    it("handles same min and max values", () => {
+    it("renders a fixed-price state instead of a slider when min and max are the same", () => {
       render(
         <PriceRangeSlider
           {...defaultProps}
@@ -273,9 +273,10 @@ describe("PriceRangeSlider", () => {
         />
       )
 
-      // When min === max, there should be two $100 labels (one for min, one for max)
-      const dollarLabels = screen.getAllByText("$100")
-      expect(dollarLabels.length).toBe(2)
+      expect(screen.queryByTestId("slider")).not.toBeInTheDocument()
+      expect(screen.getByText("Single price")).toBeInTheDocument()
+      expect(screen.getByText("$100")).toBeInTheDocument()
+      expect(screen.queryByText("Apply")).not.toBeInTheDocument()
     })
   })
 
