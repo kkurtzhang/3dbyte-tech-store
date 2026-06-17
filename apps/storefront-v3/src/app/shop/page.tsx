@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { cn } from "@/lib/utils";
 import { searchProducts } from "@/lib/search/products";
 
 // Force dynamic rendering to prevent caching
@@ -10,6 +9,7 @@ import {
   type SortOption,
 } from "@/features/shop/components/shop-sort";
 import { ListingLayout } from "@/components/layout/listing-layout";
+import { ListingPagination } from "@/components/layout/listing-pagination";
 import { ShopErrorState } from "@/features/shop/components/shop-error-state";
 import { ShopEmptyState } from "@/features/shop/components/shop-empty-state";
 import {
@@ -152,9 +152,6 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
     );
   }
 
-  // Calculate pagination
-  const totalPages = Math.ceil(result.totalCount / limit);
-
   // Check if any filters are active (for empty state)
   const filtersActive = hasActiveFilters(params, effectiveInStock);
 
@@ -230,36 +227,12 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
           sourceLabel="Shop"
         />
 
-        {totalPages > 1 && (
-          <div className="flex justify-center">
-            <nav
-              className="flex flex-wrap gap-2 justify-center"
-              role="navigation"
-              aria-label="Pagination"
-            >
-              {Array.from({ length: totalPages }).map((_, i) => {
-                const pageNum = i + 1;
-                const isCurrent = pageNum === page;
-
-                return (
-                  <a
-                    key={pageNum}
-                    href={buildPaginationUrl(pageNum, params, sort)}
-                    className={cn(
-                      "inline-flex h-10 w-10 items-center justify-center rounded-md border font-mono text-sm transition-colors",
-                      isCurrent
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-card hover:border-primary/50 hover:bg-accent"
-                    )}
-                    aria-current={isCurrent ? "page" : undefined}
-                  >
-                    {pageNum}
-                  </a>
-                );
-              })}
-            </nav>
-          </div>
-        )}
+        <ListingPagination
+          buildHref={(pageNumber) => buildPaginationUrl(pageNumber, params, sort)}
+          currentPage={page}
+          pageSize={limit}
+          totalItems={result.totalCount}
+        />
       </div>
     </ListingLayout>
   );

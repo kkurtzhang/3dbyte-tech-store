@@ -24,6 +24,10 @@ jest.mock("@/components/layout/listing-layout", () => ({
   ),
 }))
 
+jest.mock("@/components/layout/listing-pagination", () => ({
+  ListingPagination: () => <nav aria-label="Product pagination" />,
+}))
+
 jest.mock("@/features/shop/components/product-grid", () => ({
   ProductGrid: () => <div data-testid="product-grid" />,
 }))

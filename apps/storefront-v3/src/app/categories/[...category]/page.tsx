@@ -7,6 +7,7 @@ import { ShopSort, type SortOption } from "@/features/shop/components/shop-sort"
 import { ShopErrorState } from "@/features/shop/components/shop-error-state"
 import { ShopEmptyState } from "@/features/shop/components/shop-empty-state"
 import { ListingLayout } from "@/components/layout/listing-layout"
+import { ListingPagination } from "@/components/layout/listing-pagination"
 import { CategoryFilters } from "@/components/filters/category-filters"
 import { parseDynamicOptionParams } from "@/lib/utils/search-params"
 import { getPricingContext } from "@/lib/medusa/regions.server"
@@ -174,8 +175,6 @@ export default async function CategoryPage({
     )
   }
 
-  const totalPages = Math.ceil(result.totalCount / limit)
-
   // Transform products for ProductGrid compatibility
   // Note: Meilisearch returns prices in dollars, ProductGrid uses them directly
   const productsForGrid = result.products.map((product) => ({
@@ -220,43 +219,22 @@ export default async function CategoryPage({
       <div className="space-y-8">
         <ProductGrid products={productsForGrid} />
 
-        {totalPages > 1 && (
-          <div className="flex justify-center">
-            <nav
-              className="flex flex-wrap gap-2 justify-center"
-              role="navigation"
-              aria-label="Pagination"
-            >
-              {Array.from({ length: totalPages }).map((_, i) => {
-                const pageNum = i + 1
-                const isCurrent = pageNum === page
-
-                return (
-                  <a
-                    key={pageNum}
-                    href={buildCategoryUrl(category.category, pageNum, sort, {
-                      brand: search.brand,
-                      collection: search.collection,
-                      onSale: search.onSale,
-                      inStock: search.inStock,
-                      minPrice: search.minPrice,
-                      maxPrice: search.maxPrice,
-                      options,
-                    })}
-                    className={`inline-flex h-10 w-10 items-center justify-center rounded-md border font-mono text-sm transition-colors ${
-                      isCurrent
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-card hover:border-primary/50 hover:bg-accent"
-                    }`}
-                    aria-current={isCurrent ? "page" : undefined}
-                  >
-                    {pageNum}
-                  </a>
-                )
-              })}
-            </nav>
-          </div>
-        )}
+        <ListingPagination
+          buildHref={(pageNumber) =>
+            buildCategoryUrl(category.category, pageNumber, sort, {
+              brand: search.brand,
+              collection: search.collection,
+              onSale: search.onSale,
+              inStock: search.inStock,
+              minPrice: search.minPrice,
+              maxPrice: search.maxPrice,
+              options,
+            })
+          }
+          currentPage={page}
+          pageSize={limit}
+          totalItems={result.totalCount}
+        />
       </div>
     </ListingLayout>
   )

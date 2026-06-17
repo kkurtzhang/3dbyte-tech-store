@@ -3,6 +3,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { ArrowRight, Package, ShoppingCart } from "lucide-react"
 import { ListingLayout } from "@/components/layout/listing-layout"
+import { ListingPagination } from "@/components/layout/listing-pagination"
 import { Button } from "@/components/ui/button"
 import { getProductBundles } from "@/lib/medusa/products"
 import {
@@ -63,7 +64,6 @@ export default async function BundlesPage({ searchParams }: BundlesPageProps) {
     ...pricing,
   })
   const bundleProductsById = await getBundleProductsById(products, pricing)
-  const totalPages = Math.ceil(count / limit)
 
   return (
     <ListingLayout
@@ -231,36 +231,22 @@ export default async function BundlesPage({ searchParams }: BundlesPageProps) {
           </div>
         )}
 
-        {totalPages > 1 ? (
-          <div className="flex justify-center">
-            <nav className="flex gap-2" aria-label="Bundle pagination">
-              {Array.from({ length: totalPages }).map((_, index) => {
-                const pageNumber = index + 1
-                const isCurrent = pageNumber === page
-                const query = new URLSearchParams()
+        <ListingPagination
+          ariaLabel="Bundle pagination"
+          buildHref={(pageNumber) => {
+            const query = new URLSearchParams()
 
-                if (pageNumber > 1) {
-                  query.set("page", String(pageNumber))
-                }
+            if (pageNumber > 1) {
+              query.set("page", String(pageNumber))
+            }
 
-                return (
-                  <Link
-                    key={pageNumber}
-                    href={`/bundles${query.size ? `?${query.toString()}` : ""}`}
-                    className={`inline-flex h-10 w-10 items-center justify-center rounded-sm border font-mono text-sm transition-colors ${
-                      isCurrent
-                        ? "border-cyan-500 bg-cyan-500 text-slate-950 font-bold"
-                        : "hover:border-cyan-500/50 hover:text-cyan-500"
-                    }`}
-                    aria-current={isCurrent ? "page" : undefined}
-                  >
-                    {pageNumber}
-                  </Link>
-                )
-              })}
-            </nav>
-          </div>
-        ) : null}
+            return `/bundles${query.size ? `?${query.toString()}` : ""}`
+          }}
+          currentPage={page}
+          itemLabel="bundles"
+          pageSize={limit}
+          totalItems={count}
+        />
       </div>
     </ListingLayout>
   )
