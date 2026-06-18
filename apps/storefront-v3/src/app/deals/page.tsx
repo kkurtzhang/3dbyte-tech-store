@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CampaignBand } from "@/features/campaigns/components/campaign-band";
+import { resolveCampaignMerchandising } from "@/features/campaigns/lib/campaign-merchandising";
 import { searchProducts } from "@/lib/search/products";
 import { ProductGrid } from "@/features/shop/components/product-grid";
 import { DealsFilter } from "@/features/shop/components/deals-filter";
@@ -9,7 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Tag, ArrowRight } from "lucide-react";
 import { ShopErrorState } from "@/features/shop/components/shop-error-state";
 import { ShopEmptyState } from "@/features/shop/components/shop-empty-state";
+import { getActiveCampaigns } from "@/lib/medusa/campaigns";
 import { getPricingContext } from "@/lib/medusa/regions.server";
+import { getCampaignPlacements } from "@/lib/strapi/content";
 
 // Force dynamic rendering to prevent caching
 export const dynamic = "force-dynamic";
@@ -30,17 +34,26 @@ export default async function DealsPage({ searchParams }: DealsPageProps) {
   const maxDiscount = params.maxDiscount ? Number(params.maxDiscount) : undefined;
   const pricing = await getPricingContext();
 
-  // Fetch products on sale from Meilisearch
-  const result = await searchProducts({
-    page,
-    limit,
-    pricing,
-    filters: {
-      onSale: true,
-      minDiscount,
-      maxDiscount,
-    },
-  });
+  const [result, activeCampaigns, campaignPlacements] = await Promise.all([
+    searchProducts({
+      page,
+      limit,
+      pricing,
+      filters: {
+        onSale: true,
+        minDiscount,
+        maxDiscount,
+      },
+    }),
+    getActiveCampaigns().catch(() => []),
+    getCampaignPlacements()
+      .then((response) => response.data || [])
+      .catch(() => []),
+  ]);
+  const campaign = resolveCampaignMerchandising(
+    activeCampaigns,
+    campaignPlacements
+  );
 
   // Handle error state
   if (result.error) {
@@ -119,14 +132,14 @@ export default async function DealsPage({ searchParams }: DealsPageProps) {
     discountPercentage: product.discount_percentage,
   }));
 
-  // Generate discount filter options based on the transformed products
+  // Generate discount filter options from actual discount data only.
   const discountFilters = [
     { id: "all", label: "All Deals", min: undefined, max: undefined, count: totalCount },
-    { id: "10", label: "10%+ Off", min: 10, max: undefined, count: productsForGrid.filter((p: any) => (p.discountPercentage || 0) >= 10).length || Math.floor(totalCount * 0.6) },
-    { id: "20", label: "20%+ Off", min: 20, max: undefined, count: productsForGrid.filter((p: any) => (p.discountPercentage || 0) >= 20).length || Math.floor(totalCount * 0.4) },
-    { id: "30", label: "30%+ Off", min: 30, max: undefined, count: productsForGrid.filter((p: any) => (p.discountPercentage || 0) >= 30).length || Math.floor(totalCount * 0.25) },
-    { id: "40", label: "40%+ Off", min: 40, max: undefined, count: productsForGrid.filter((p: any) => (p.discountPercentage || 0) >= 40).length || Math.floor(totalCount * 0.1) },
-    { id: "50", label: "50%+ Off", min: 50, max: undefined, count: productsForGrid.filter((p: any) => (p.discountPercentage || 0) >= 50).length || Math.floor(totalCount * 0.05) },
+    { id: "10", label: "10%+ Off", min: 10, max: undefined, count: productsForGrid.filter((product) => (product.discountPercentage || 0) >= 10).length },
+    { id: "20", label: "20%+ Off", min: 20, max: undefined, count: productsForGrid.filter((product) => (product.discountPercentage || 0) >= 20).length },
+    { id: "30", label: "30%+ Off", min: 30, max: undefined, count: productsForGrid.filter((product) => (product.discountPercentage || 0) >= 30).length },
+    { id: "40", label: "40%+ Off", min: 40, max: undefined, count: productsForGrid.filter((product) => (product.discountPercentage || 0) >= 40).length },
+    { id: "50", label: "50%+ Off", min: 50, max: undefined, count: productsForGrid.filter((product) => (product.discountPercentage || 0) >= 50).length },
   ];
 
   return (
@@ -166,17 +179,7 @@ export default async function DealsPage({ searchParams }: DealsPageProps) {
       }
     >
       <div className="space-y-8">
-        {/* Promotional Banner */}
-        <div className="relative overflow-hidden rounded-lg bg-gradient-to-r from-red-600 to-red-800 px-6 py-8 text-white">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA2MCAwIEwgMCAwIDAgNjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-30"></div>
-          <div className="relative">
-            <h2 className="text-3xl font-bold tracking-tight">Mega Sale!</h2>
-            <p className="mt-2 max-w-md text-red-100">
-              Save big on select 3D printing supplies and accessories. 
-              Limited time offers - while supplies last!
-            </p>
-          </div>
-        </div>
+        {campaign ? <CampaignBand campaign={campaign} compact /> : null}
 
         <ProductGrid products={productsForGrid} />
 

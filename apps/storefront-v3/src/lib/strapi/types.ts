@@ -175,6 +175,26 @@ export interface HomepageSupportStrip {
   CTA?: HomepageCta | null;
 }
 
+export type CampaignPlacementTheme =
+  | "default"
+  | "sale"
+  | "new-arrival"
+  | "clearance";
+
+export interface CampaignPlacementData {
+  id: number;
+  CampaignIdentifier: string;
+  Enabled?: boolean | null;
+  Priority?: number | null;
+  Eyebrow?: string | null;
+  Headline: string;
+  Text?: string | null;
+  Image?: StrapiImage | null;
+  CTA?: HomepageCta | null;
+  BadgeText?: string | null;
+  Theme?: CampaignPlacementTheme | null;
+}
+
 export interface HomepageData {
   id: number;
   HeroBanner?: HomepageHeroBanner | null;

@@ -94,7 +94,9 @@ export interface MeilisearchProductDocument extends AiProductMetadataSearchField
     type_id?: string;
     type_value?: string;
     [key: `price_${string}`]: number | undefined;
+    [key: `original_price_${string}`]: number | undefined;
     [key: `tax_inclusive_price_${string}`]: boolean | undefined;
+    discount_percentage?: number;
     on_sale: boolean;
     inventory_quantity: number;
     in_stock: boolean;

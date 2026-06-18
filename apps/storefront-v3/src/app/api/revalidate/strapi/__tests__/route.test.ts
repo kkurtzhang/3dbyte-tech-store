@@ -100,6 +100,30 @@ describe("POST /api/revalidate/strapi", () => {
     expect(revalidatePath).toHaveBeenCalledWith("/")
   })
 
+  it("maps campaign placement webhooks to campaign merchandising cache", async () => {
+    const response = await POST(
+      buildRequest({
+        secret: "secret-token",
+        body: {
+          model: "api::campaign-placement.campaign-placement",
+          event: "entry.publish",
+        },
+      })
+    )
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body).toEqual({
+      revalidated: true,
+      tags: ["campaign-placements"],
+      paths: ["/", "/deals"],
+    })
+    expect(revalidateTag).toHaveBeenCalledTimes(1)
+    expect(revalidateTag).toHaveBeenCalledWith("campaign-placements", "max")
+    expect(revalidatePath).toHaveBeenCalledWith("/")
+    expect(revalidatePath).toHaveBeenCalledWith("/deals")
+  })
+
   it("accepts the legacy x-webhook-secret header and ignores disallowed tags", async () => {
     const response = await POST(
       buildRequest({

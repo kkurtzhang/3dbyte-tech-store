@@ -115,8 +115,11 @@ export interface MeilisearchProductDocument extends AiProductMetadataSearchField
   // --- 3. MULTI-CURRENCY PRICING ---
   // Dynamic keys: price_aud, price_usd, etc.
   [key: `price_${string}`]: number | undefined;
+  // Dynamic keys: original_price_aud, original_price_usd, etc.
+  [key: `original_price_${string}`]: number | undefined;
   // Dynamic keys: tax_inclusive_price_aud, tax_inclusive_price_usd, etc.
   [key: `tax_inclusive_price_${string}`]: boolean | undefined;
+  discount_percentage?: number;
   on_sale: boolean;
 
   // --- 4. INVENTORY & AVAILABILITY ---

@@ -10,6 +10,7 @@ import { useSavedItems } from "@/context/saved-items-context";
 import { CartItem } from "./cart-item";
 import { CartNotices } from "./cart-notices";
 import { BundleCartGroup } from "./bundle-cart-group";
+import { CartPromotionForm } from "./cart-promotion-form";
 import { buildCartDisplayGroups, getCartDisplayItemCount } from "../lib/bundle-groups";
 import { resolveCartItemsSubtotalInclTax } from "../lib/cart-totals";
 import { OrderTotalsSummary } from "@/features/order/components/order-totals-summary";
@@ -37,6 +38,11 @@ export function CartTemplate() {
   }, [cart, currencyCode]);
 
   const cartDisplayGroups = useMemo(() => buildCartDisplayGroups(cart?.items), [cart?.items]);
+  const discountTotal = cart?.discount_total ?? 0;
+  const orderTotal =
+    typeof cart?.total === "number"
+      ? cart.total
+      : Math.max(0, subtotal - discountTotal);
 
   if (isLoading && !cart) {
     return <CartPageSkeleton />;
@@ -232,13 +238,15 @@ export function CartTemplate() {
           </CardHeader>
           <CardContent className="grid gap-4">
             <CartNotices items={cart.items} currencyCode={currencyCode} />
+            <CartPromotionForm promotions={cart.promotions} />
             <OrderTotalsSummary
               currencyCode={currencyCode}
+              discountTotal={discountTotal}
               shippingLabel="Calculated at checkout"
               shippingTotal={null}
               subtotal={subtotal}
               taxTotal={cart.tax_total ?? 0}
-              total={subtotal}
+              total={orderTotal}
             />
           </CardContent>
           <CardFooter>

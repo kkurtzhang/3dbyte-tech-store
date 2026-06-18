@@ -208,6 +208,40 @@ describe("toMeilisearchDocument", () => {
     expect(document.tax_inclusive_price_aud).toBe(true);
   });
 
+  it("indexes Medusa sale prices with original price and discount percentage", () => {
+    const document = toMeilisearchDocument(
+      createProduct({
+        variants: [
+          {
+            id: "variant_sale",
+            title: "Black",
+            sku: "PETG-BLK",
+            prices: [
+              {
+                amount: 24,
+                currency_code: "aud",
+              },
+            ],
+            calculated_price: {
+              calculated_amount: 18,
+              original_amount: 24,
+              currency_code: "aud",
+            },
+            original_price: 24,
+            original_price_calculated: 24,
+            options: [],
+          },
+        ],
+      }),
+      regions,
+    );
+
+    expect(document.price_aud).toBe(18);
+    expect(document.original_price_aud).toBe(24);
+    expect(document.discount_percentage).toBe(25);
+    expect(document.on_sale).toBe(true);
+  });
+
   it("indexes ancestor category IDs so parent category filters include child products", () => {
     const document = toMeilisearchDocument(
       createProduct({

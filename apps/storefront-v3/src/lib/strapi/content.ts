@@ -10,6 +10,7 @@ import {
   HomepageData,
   HelpCenterData,
   GuidesPageData,
+  CampaignPlacementData,
   BrandDescriptionData,
   CollectionDescriptionData,
 } from "./types";
@@ -175,6 +176,35 @@ export async function getHomepageAnnouncements() {
   );
 
   return response.data?.AnnouncementBarItems ?? [];
+}
+
+export async function getCampaignPlacements() {
+  const query = qs.stringify(
+    {
+      filters: {
+        Enabled: {
+          $eq: true,
+        },
+      },
+      pagination: {
+        page: 1,
+        pageSize: 20,
+      },
+      sort: ["Priority:desc", "updatedAt:desc"],
+      populate: {
+        Image: true,
+        CTA: true,
+      },
+    },
+    { encodeValuesOnly: true }
+  );
+
+  return strapiClient.fetch<StrapiResponse<CampaignPlacementData[]>>(
+    `/campaign-placements?${query}`,
+    {
+      tags: ["campaign-placements"],
+    }
+  );
 }
 
 export async function getHelpCenter() {

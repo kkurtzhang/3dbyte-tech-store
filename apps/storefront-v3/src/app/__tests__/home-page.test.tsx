@@ -3,9 +3,14 @@ import { render, screen } from "@testing-library/react"
 import Home from "../page"
 
 import { getFeaturedCollections } from "@/lib/medusa/collections"
+import { getActiveCampaigns } from "@/lib/medusa/campaigns"
 import { getPricingContext } from "@/lib/medusa/regions.server"
 import { searchProducts } from "@/lib/search/products"
-import { getCollectionDescriptions, getHomepage } from "@/lib/strapi/content"
+import {
+  getCampaignPlacements,
+  getCollectionDescriptions,
+  getHomepage,
+} from "@/lib/strapi/content"
 
 jest.mock("next/image", () => ({
   __esModule: true,
@@ -43,6 +48,10 @@ jest.mock("@/lib/medusa/collections", () => ({
   getFeaturedCollections: jest.fn(),
 }))
 
+jest.mock("@/lib/medusa/campaigns", () => ({
+  getActiveCampaigns: jest.fn(),
+}))
+
 jest.mock("@/lib/medusa/regions.server", () => ({
   getPricingContext: jest.fn(),
 }))
@@ -52,6 +61,7 @@ jest.mock("@/lib/search/products", () => ({
 }))
 
 jest.mock("@/lib/strapi/content", () => ({
+  getCampaignPlacements: jest.fn(),
   getCollectionDescriptions: jest.fn(),
   getHomepage: jest.fn(),
 }))
@@ -59,8 +69,14 @@ jest.mock("@/lib/strapi/content", () => ({
 const mockGetFeaturedCollections = getFeaturedCollections as jest.MockedFunction<
   typeof getFeaturedCollections
 >
+const mockGetActiveCampaigns = getActiveCampaigns as jest.MockedFunction<
+  typeof getActiveCampaigns
+>
 const mockGetPricingContext = getPricingContext as jest.MockedFunction<typeof getPricingContext>
 const mockSearchProducts = searchProducts as jest.MockedFunction<typeof searchProducts>
+const mockGetCampaignPlacements = getCampaignPlacements as jest.MockedFunction<
+  typeof getCampaignPlacements
+>
 const mockGetCollectionDescriptions = getCollectionDescriptions as jest.MockedFunction<
   typeof getCollectionDescriptions
 >
@@ -97,13 +113,20 @@ function mockCommerceData() {
     data: [],
     meta: {},
   })
+  mockGetActiveCampaigns.mockResolvedValue([])
+  mockGetCampaignPlacements.mockResolvedValue({
+    data: [],
+    meta: {},
+  })
 }
 
 describe("Home page", () => {
   beforeEach(() => {
     mockGetFeaturedCollections.mockReset()
+    mockGetActiveCampaigns.mockReset()
     mockGetPricingContext.mockReset()
     mockSearchProducts.mockReset()
+    mockGetCampaignPlacements.mockReset()
     mockGetCollectionDescriptions.mockReset()
     mockGetHomepage.mockReset()
     mockCommerceData()
@@ -224,5 +247,55 @@ describe("Home page", () => {
 
     expect(screen.getByText(/curated 3D printing components/i)).toBeInTheDocument()
     expect(screen.getByText("Unable to load products")).toBeInTheDocument()
+  })
+
+  it("renders CMS merchandising for an active Medusa campaign", async () => {
+    mockGetHomepage.mockResolvedValue({
+      data: {
+        id: 1,
+        HeroBanner: null,
+        MidBanner: null,
+        QuickLinks: [],
+        TrustStats: [],
+        AnnouncementBarItems: [],
+      },
+      meta: {},
+    } as Awaited<ReturnType<typeof getHomepage>>)
+    mockGetActiveCampaigns.mockResolvedValue([
+      {
+        id: "camp_1",
+        name: "Winter PETG Sale",
+        campaign_identifier: "winter-petg-sale",
+        description: "Medusa fallback sale description",
+        starts_at: "2026-06-01T00:00:00.000Z",
+        ends_at: "2026-06-30T00:00:00.000Z",
+        promotions: [{ id: "promo_1", code: "PETG10" }],
+      },
+    ])
+    mockGetCampaignPlacements.mockResolvedValue({
+      data: [
+        {
+          id: 1,
+          CampaignIdentifier: "winter-petg-sale",
+          Enabled: true,
+          Priority: 10,
+          Eyebrow: "Limited run",
+          Headline: "PETG workshop sale",
+          Text: "Save on PETG for functional printer parts.",
+          BadgeText: "PETG10",
+          Theme: "sale",
+          CTA: { id: 1, BtnText: "Shop sale", BtnLink: "/deals" },
+        },
+      ],
+      meta: {},
+    })
+
+    render(await Home())
+
+    expect(screen.getByText("Limited run")).toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: "PETG workshop sale" })).toBeInTheDocument()
+    expect(screen.getByText("Save on PETG for functional printer parts.")).toBeInTheDocument()
+    expect(screen.getByText("PETG10")).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: /shop sale/i })).toHaveAttribute("href", "/deals")
   })
 })

@@ -6,10 +6,23 @@ import { NextResponse } from "next/server"
 export const dynamic = "force-dynamic"
 
 const homepageTags = ["homepage", "homepage-announcements"] as const
-const allowedTags = new Set<string>(homepageTags)
-const homepagePaths = ["/"] as const
+const campaignPlacementTags = ["campaign-placements"] as const
+const allowedTags = new Set<string>([
+  ...homepageTags,
+  ...campaignPlacementTags,
+])
+const pathsByTag: Record<string, readonly string[]> = {
+  homepage: ["/"],
+  "homepage-announcements": ["/"],
+  "campaign-placements": ["/", "/deals"],
+}
+const tagsByModel: Record<string, readonly string[]> = {
+  "api::homepage.homepage": homepageTags,
+  "api::campaign-placement.campaign-placement": campaignPlacementTags,
+}
 
 type RevalidationPayload = {
+  model?: unknown
   tags?: unknown
 }
 
@@ -45,13 +58,29 @@ async function getPayload(request: Request): Promise<RevalidationPayload> {
   }
 }
 
+function getDefaultTags(payload: RevalidationPayload) {
+  if (typeof payload.model === "string") {
+    return tagsByModel[payload.model] ?? homepageTags
+  }
+
+  return homepageTags
+}
+
 function getRequestedTags(payload: RevalidationPayload) {
-  const requestedTags = Array.isArray(payload.tags) ? payload.tags : homepageTags
+  const requestedTags = Array.isArray(payload.tags)
+    ? payload.tags
+    : getDefaultTags(payload)
   const tags = requestedTags.filter(
     (tag): tag is string => typeof tag === "string" && allowedTags.has(tag)
   )
 
   return Array.from(new Set(tags))
+}
+
+function getRequestedPaths(tags: string[]) {
+  return Array.from(
+    new Set(tags.flatMap((tag) => [...(pathsByTag[tag] ?? [])]))
+  )
 }
 
 export async function POST(request: Request) {
@@ -84,11 +113,12 @@ export async function POST(request: Request) {
   }
 
   tags.forEach((tag) => revalidateTag(tag, "max"))
-  homepagePaths.forEach((path) => revalidatePath(path))
+  const paths = getRequestedPaths(tags)
+  paths.forEach((path) => revalidatePath(path))
 
   return NextResponse.json({
     revalidated: true,
     tags,
-    paths: [...homepagePaths],
+    paths,
   })
 }
