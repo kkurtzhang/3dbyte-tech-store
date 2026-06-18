@@ -1,4 +1,10 @@
-import { completePreorderCart, getCart, initiatePaymentSession } from "../cart"
+import {
+  addPromotionCode,
+  completePreorderCart,
+  getCart,
+  initiatePaymentSession,
+  removePromotionCode,
+} from "../cart"
 import { sdk } from "../client"
 
 jest.mock("../client", () => ({
@@ -144,5 +150,63 @@ describe("medusa cart helpers", () => {
         provider_id: "pp_stripe_stripe",
       },
     )
+  })
+
+  it("applies promotion codes through Medusa cart promotions and rehydrates the cart", async () => {
+    ;(sdk.client.fetch as jest.Mock).mockResolvedValue({
+      cart: { id: "cart_1" },
+    })
+    ;(sdk.store.cart.retrieve as jest.Mock).mockResolvedValue({
+      cart: { id: "cart_1", discount_total: 10 },
+    })
+
+    await expect(
+      addPromotionCode({
+        cartId: "cart_1",
+        promoCode: " PETG10 ",
+      }),
+    ).resolves.toEqual({ id: "cart_1", discount_total: 10 })
+
+    expect(sdk.client.fetch).toHaveBeenCalledWith(
+      "/store/carts/cart_1/promotions",
+      {
+        method: "POST",
+        body: {
+          promo_codes: ["PETG10"],
+        },
+      },
+    )
+    expect(sdk.store.cart.retrieve).toHaveBeenCalledWith("cart_1", {
+      fields: expect.stringContaining("*promotions"),
+    })
+  })
+
+  it("removes promotion codes through Medusa cart promotions and rehydrates the cart", async () => {
+    ;(sdk.client.fetch as jest.Mock).mockResolvedValue({
+      cart: { id: "cart_1" },
+    })
+    ;(sdk.store.cart.retrieve as jest.Mock).mockResolvedValue({
+      cart: { id: "cart_1", discount_total: 0 },
+    })
+
+    await expect(
+      removePromotionCode({
+        cartId: "cart_1",
+        promoCode: "PETG10",
+      }),
+    ).resolves.toEqual({ id: "cart_1", discount_total: 0 })
+
+    expect(sdk.client.fetch).toHaveBeenCalledWith(
+      "/store/carts/cart_1/promotions",
+      {
+        method: "DELETE",
+        body: {
+          promo_codes: ["PETG10"],
+        },
+      },
+    )
+    expect(sdk.store.cart.retrieve).toHaveBeenCalledWith("cart_1", {
+      fields: expect.stringContaining("*promotions"),
+    })
   })
 })

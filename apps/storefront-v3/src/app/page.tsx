@@ -4,6 +4,8 @@ import Link from "next/link"
 import { BookOpen } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { CampaignBand } from "@/features/campaigns/components/campaign-band"
+import { resolveCampaignMerchandising } from "@/features/campaigns/lib/campaign-merchandising"
 import {
   CollectionGrid,
   CollectionsSkeleton,
@@ -11,10 +13,12 @@ import {
 import { buildCollectionContentByHandle } from "@/features/collections/lib/collection-cards"
 import { getCmsIcon } from "@/features/cms/components/cms-icon-map"
 import { ProductCard } from "@/features/product/components/product-card"
+import { getActiveCampaigns } from "@/lib/medusa/campaigns"
 import { getFeaturedCollections } from "@/lib/medusa/collections"
 import { getPricingContext } from "@/lib/medusa/regions.server"
 import { searchProducts, type ProductSearchResult } from "@/lib/search/products"
 import {
+  getCampaignPlacements,
   getCollectionDescriptions,
   getHomepage,
 } from "@/lib/strapi/content"
@@ -339,12 +343,23 @@ function GuidesHelpSection({ section }: { section?: HomepageGuidesHelpSection | 
 }
 
 export default async function Home() {
-  const [productsResult, collections, homepageData, collectionDescriptions] =
+  const [
+    productsResult,
+    collections,
+    homepageData,
+    collectionDescriptions,
+    activeCampaigns,
+    campaignPlacements,
+  ] =
     await Promise.all([
       loadHomepageProducts(),
       loadHomepageCollections(),
       getHomepage().catch(() => null),
       getCollectionDescriptions()
+        .then((response) => response.data || [])
+        .catch(() => []),
+      getActiveCampaigns().catch(() => []),
+      getCampaignPlacements()
         .then((response) => response.data || [])
         .catch(() => []),
     ])
@@ -360,6 +375,10 @@ export default async function Home() {
   const heroImageSrc = resolveStrapiMediaUrl(heroImage?.url)
   const collectionsSection = home?.CollectionsSection
   const productsSection = home?.ProductsSection
+  const campaign = resolveCampaignMerchandising(
+    activeCampaigns,
+    campaignPlacements
+  )
 
   const title = hero?.Headline || "Engineered for Precision."
   const subtitle =
@@ -440,6 +459,12 @@ export default async function Home() {
           </div>
         ) : null}
       </section>
+
+      {campaign ? (
+        <section className="mb-12">
+          <CampaignBand campaign={campaign} />
+        </section>
+      ) : null}
 
       {quickLinks.length > 0 ? (
         <section className="mb-12">

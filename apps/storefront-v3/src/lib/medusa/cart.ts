@@ -17,7 +17,7 @@ export async function createCart(regionId: string): Promise<MedusaCart> {
 export async function getCart(cartId: string): Promise<MedusaCart> {
   const { cart } = await sdk.store.cart.retrieve(cartId, {
     fields:
-      "+items.*,+items.metadata,+items.product,+items.variant,+items.variant.calculated_price,+items.variant.prices,+items.variant.product,+items.variant.product.images,*items.variant.preorder_variant,*items.variant.preorder_variant.prices,+region,*promotions,*shipping_methods,+item_subtotal,+item_total,+item_tax_total,+shipping_subtotal,+shipping_total,+shipping_tax_total,+tax_total,+shipping_address",
+      "+items.*,+items.metadata,+items.product,+items.variant,+items.variant.calculated_price,+items.variant.prices,+items.variant.product,+items.variant.product.images,*items.variant.preorder_variant,*items.variant.preorder_variant.prices,+region,*promotions,*shipping_methods,+item_subtotal,+item_total,+item_tax_total,+discount_total,+total,+shipping_subtotal,+shipping_total,+shipping_tax_total,+tax_total,+shipping_address",
   })
   return cart
 }
@@ -89,6 +89,46 @@ export async function deleteLineItem({
 }): Promise<MedusaCart> {
   await sdk.store.cart.deleteLineItem(cartId, lineItemId)
   // Re-fetch the cart to get the updated state
+  return getCart(cartId)
+}
+
+export async function addPromotionCode({
+  cartId,
+  promoCode,
+}: {
+  cartId: string
+  promoCode: string
+}): Promise<MedusaCart> {
+  await sdk.client.fetch<{ cart: MedusaCart }>(
+    `/store/carts/${cartId}/promotions`,
+    {
+      method: "POST",
+      body: {
+        promo_codes: [promoCode.trim()],
+      },
+    },
+  )
+
+  return getCart(cartId)
+}
+
+export async function removePromotionCode({
+  cartId,
+  promoCode,
+}: {
+  cartId: string
+  promoCode: string
+}): Promise<MedusaCart> {
+  await sdk.client.fetch<{ cart: MedusaCart }>(
+    `/store/carts/${cartId}/promotions`,
+    {
+      method: "DELETE",
+      body: {
+        promo_codes: [promoCode.trim()],
+      },
+    },
+  )
+
   return getCart(cartId)
 }
 

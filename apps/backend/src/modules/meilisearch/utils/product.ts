@@ -91,6 +91,14 @@ function getVariantPriceAmount(
   variant: NonNullable<SyncProductsStepProduct["variants"]>[number],
   region: RegionForPricing,
 ): number | null {
+  const calculatedAmount = normalizePriceAmount(
+    variant.calculated_price?.calculated_amount,
+  );
+
+  if (calculatedAmount !== null) {
+    return calculatedAmount;
+  }
+
   const regionPrice = variant.prices?.find(
     (p) => p.rules?.region_id === region.id && p.amount !== undefined,
   );
@@ -108,6 +116,27 @@ function getVariantPriceAmount(
   }
 
   return normalizePriceAmount(variant.calculated_price?.calculated_amount);
+}
+
+function getVariantOriginalPriceAmount(
+  variant: NonNullable<SyncProductsStepProduct["variants"]>[number],
+): number | null {
+  return (
+    normalizePriceAmount(variant.calculated_price?.original_amount) ??
+    normalizePriceAmount(variant.original_price_calculated) ??
+    normalizePriceAmount(variant.original_price)
+  );
+}
+
+function calculateDiscountPercentage(
+  originalPrice: number,
+  salePrice: number,
+): number | null {
+  if (originalPrice <= salePrice || originalPrice <= 0) {
+    return null;
+  }
+
+  return ((originalPrice - salePrice) / originalPrice) * 100;
 }
 
 function isActivePreorderVariant(
@@ -171,10 +200,12 @@ export function toMeilisearchDocument(
   // --- 3. MULTI-CURRENCY PRICING ---
   // Calculate lowest price for each region/currency
   const prices: Record<string, number | boolean> = {};
+  let maxDiscountPercentage: number | undefined;
   let on_sale = false;
 
   regions.forEach((region) => {
     let minPrice = Infinity;
+    let originalPriceForMin: number | null = null;
     let found = false;
 
     product.variants?.forEach((variant) => {
@@ -182,20 +213,30 @@ export function toMeilisearchDocument(
 
       if (amount !== null && amount < minPrice) {
         minPrice = amount;
+        originalPriceForMin = getVariantOriginalPriceAmount(variant);
         found = true;
       }
 
-      // Check if any variant has a sale price
-      if (
-        variant.original_price_calculated &&
-        variant.original_price_calculated < minPrice
-      ) {
+      const originalAmount = getVariantOriginalPriceAmount(variant);
+      const discountPercentage =
+        amount !== null && originalAmount !== null
+          ? calculateDiscountPercentage(originalAmount, amount)
+          : null;
+
+      if (discountPercentage !== null) {
         on_sale = true;
+        maxDiscountPercentage = Math.max(
+          maxDiscountPercentage ?? 0,
+          discountPercentage,
+        );
       }
     });
 
     if (found) {
       prices[`price_${region.currency_code}`] = minPrice;
+      if (originalPriceForMin !== null && originalPriceForMin > minPrice) {
+        prices[`original_price_${region.currency_code}`] = originalPriceForMin;
+      }
       prices[`tax_inclusive_price_${region.currency_code}`] =
         region.is_tax_inclusive === true;
     }
@@ -341,6 +382,7 @@ export function toMeilisearchDocument(
 
     // 3. MULTI-CURRENCY PRICING
     ...prices,
+    discount_percentage: maxDiscountPercentage,
     on_sale,
 
     // 4. INVENTORY & AVAILABILITY

@@ -6,10 +6,12 @@ import {
   ensureCartPricingContext,
   getCart,
   addToCart,
+  addPromotionCode,
   updateLineItem,
   deleteLineItem,
   addBundleToCart,
   removeBundleFromCart,
+  removePromotionCode,
   updateBundleInCart,
   type BundleCartSelection,
 } from "@/lib/medusa/cart"
@@ -33,6 +35,8 @@ interface CartContextType {
   removeItem: (lineItemId: string) => Promise<void>
   removeBundle: (bundleId: string) => Promise<void>
   updateBundle: (bundleId: string, quantity: number) => Promise<void>
+  applyPromotion: (promoCode: string) => Promise<void>
+  removePromotion: (promoCode: string) => Promise<void>
   refreshCart: () => Promise<void>
   clearCart: () => void
 }
@@ -235,6 +239,42 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const applyPromotion = async (promoCode: string) => {
+    setIsLoading(true)
+    try {
+      const cartId = getCartId()
+      if (!cartId) {
+        throw new Error("No cart found")
+      }
+
+      const updatedCart = await addPromotionCode({ cartId, promoCode })
+      setCart(updatedCart)
+    } catch (error) {
+      console.error("Failed to apply promotion", error)
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const removePromotion = async (promoCode: string) => {
+    setIsLoading(true)
+    try {
+      const cartId = getCartId()
+      if (!cartId) {
+        throw new Error("No cart found")
+      }
+
+      const updatedCart = await removePromotionCode({ cartId, promoCode })
+      setCart(updatedCart)
+    } catch (error) {
+      console.error("Failed to remove promotion", error)
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <CartContext.Provider
       value={{
@@ -246,6 +286,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         removeItem,
         removeBundle,
         updateBundle,
+        applyPromotion,
+        removePromotion,
         refreshCart,
         clearCart,
       }}

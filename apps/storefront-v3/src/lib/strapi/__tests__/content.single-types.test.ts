@@ -1,4 +1,5 @@
 import {
+  getCampaignPlacements,
   getHomepage,
   getGuidesPage,
   getHelpCenter,
@@ -107,5 +108,40 @@ describe("strapi single-type content helpers", () => {
       "populate[Categories][populate][Guides]=true"
     )
     expect(result.data.Heading).toBe("Builder Knowledge Base")
+  })
+
+  it("fetches campaign placements with merchandising media and CTA content", async () => {
+    mockFetch.mockResolvedValueOnce({
+      data: [
+        {
+          id: 1,
+          CampaignIdentifier: "winter-petg-sale",
+          Enabled: true,
+          Priority: 10,
+          Headline: "PETG workshop sale",
+          Image: {
+            id: 1,
+            url: "/uploads/petg-sale.jpg",
+            width: 1200,
+            height: 600,
+          },
+          CTA: { id: 1, BtnText: "Shop sale", BtnLink: "/deals" },
+        },
+      ],
+      meta: {},
+    })
+
+    const result = await getCampaignPlacements()
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining("/campaign-placements?"),
+      expect.objectContaining({
+        tags: ["campaign-placements"],
+      })
+    )
+    expect(mockFetch.mock.calls[0][0]).toContain("populate[Image]=true")
+    expect(mockFetch.mock.calls[0][0]).toContain("populate[CTA]=true")
+    expect(mockFetch.mock.calls[0][0]).toContain("filters[Enabled][$eq]=true")
+    expect(result.data[0].CampaignIdentifier).toBe("winter-petg-sale")
   })
 })
