@@ -11,7 +11,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@medusajs/js-sdk": "2.12.3"
+    "@medusajs/js-sdk": "2.15.5"
   },
   "devDependencies": {
     "@3dbyte-tech-store/shared-config": "workspace:*",

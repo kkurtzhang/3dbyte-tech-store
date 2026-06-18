@@ -53,8 +53,12 @@ type AiCatalogueProductSeedInput = ReturnType<
   shipping_profile_id: string;
 };
 
-type AiCatalogueProductUpdateInput = AiCatalogueProductSeedInput & {
+type AiCatalogueProductUpdateInput = Omit<
+  AiCatalogueProductSeedInput,
+  "handle"
+> & {
   id: string;
+  handle?: string;
 };
 
 const DEFAULT_CURRENCY_CODE = "aud";
@@ -847,7 +851,8 @@ export default async function seedAiReadyCatalogue({
     productsToUpdate.push({
       id: existingProduct.id,
       title: productInput.title,
-      handle: productInput.handle,
+      handle:
+        typeof productInput.handle === "string" ? productInput.handle : undefined,
       description: productInput.description,
       status: productInput.status,
       thumbnail: productInput.thumbnail,
