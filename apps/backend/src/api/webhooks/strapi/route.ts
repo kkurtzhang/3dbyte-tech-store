@@ -150,7 +150,7 @@ export async function POST(
 		res.status(400).json({
 			error: "Invalid payload",
 			message: "Webhook payload failed validation",
-			details: parseResult.error.flatten(),
+			details: z.treeifyError(parseResult.error),
 		})
 		return
 	}
