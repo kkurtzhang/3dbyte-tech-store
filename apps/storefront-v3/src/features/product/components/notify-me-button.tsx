@@ -154,11 +154,11 @@ export function NotifyMeButton({
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogContent 
-              className="rounded-sm sm:rounded-sm border-cyan-500/20 bg-slate-900/95 dark:bg-slate-950/95 backdrop-blur-md max-w-md shadow-[0_0_25px_rgba(6,182,212,0.05)]"
+              className="max-w-md rounded-sm border-border bg-card text-card-foreground shadow-lg backdrop-blur-md sm:rounded-sm"
               onClose={() => setIsDialogOpen(false)}
             >
               <DialogHeader>
-                <DialogTitle className="font-mono text-lg uppercase tracking-wider text-cyan-500">
+                <DialogTitle className="font-mono text-lg uppercase tracking-wider text-cyan-700 dark:text-cyan-300">
                   Stock Alert Subscription
                 </DialogTitle>
                 <DialogDescription className="text-sm text-muted-foreground mt-1">
