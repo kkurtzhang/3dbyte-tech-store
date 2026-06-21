@@ -111,6 +111,20 @@ describe("NotifyMeButton", () => {
     })
   })
 
+  it("uses theme-safe contrast tokens for the email popup", async () => {
+    const user = userEvent.setup()
+
+    render(<NotifyMeButton {...props} />)
+
+    await user.click(screen.getByRole("button", { name: /notify me/i }))
+
+    const dialog = screen.getByRole("dialog")
+
+    expect(dialog.className).toContain("bg-card")
+    expect(dialog.className).toContain("text-card-foreground")
+    expect(dialog.className).not.toContain("bg-slate")
+  })
+
   it("validates guest email before subscribing", async () => {
     const user = userEvent.setup()
 
