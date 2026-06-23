@@ -156,6 +156,7 @@ describe("Deals page", () => {
         name: "Winter PETG Sale",
         campaign_identifier: "winter-petg-sale",
         description: "Medusa campaign fallback",
+        ends_at: "2099-06-30T00:00:00.000Z",
         promotions: [{ id: "promo_1", code: "PETG10" }],
       },
     ])
@@ -169,7 +170,7 @@ describe("Deals page", () => {
           Eyebrow: "Campaign",
           Headline: "PETG workshop sale",
           Text: "Save on everyday PETG.",
-          BadgeText: "PETG10",
+          BadgeText: "Workshop Week",
           CTA: { id: 1, BtnText: "Shop PETG deals", BtnLink: "/deals" },
           Theme: "sale",
         },
@@ -183,9 +184,87 @@ describe("Deals page", () => {
 
     expect(screen.getByRole("heading", { name: "PETG workshop sale" })).toBeInTheDocument()
     expect(screen.getByText("Save on everyday PETG.")).toBeInTheDocument()
+    expect(screen.getByText("Workshop Week")).toBeInTheDocument()
     expect(screen.getByText("PETG10")).toBeInTheDocument()
     expect(screen.getByText("PETG Black")).toBeInTheDocument()
     expect(screen.queryByText("Mega Sale!")).not.toBeInTheDocument()
+  })
+
+  it("renders the deals hub summary and separates sale prices from promo codes", async () => {
+    render(await DealsPage({ searchParams: Promise.resolve({}) }))
+
+    expect(
+      screen.getByText("Current markdowns, promo codes, and limited-time offers for 3D printing supplies.")
+    ).toBeInTheDocument()
+    expect(screen.getByText("1 active promotion")).toBeInTheDocument()
+    expect(screen.getByText("1 product on sale")).toBeInTheDocument()
+    expect(screen.getByText("Sale prices")).toBeInTheDocument()
+    expect(screen.getByText("Already reflected on product cards.")).toBeInTheDocument()
+    expect(screen.getByText("Promo codes")).toBeInTheDocument()
+    expect(screen.getByText("Apply in cart or checkout.")).toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: "Products on sale" })).toBeInTheDocument()
+  })
+
+  it("renders multiple active promotions in CMS priority order with expiry and copy controls", async () => {
+    mockGetActiveCampaigns.mockResolvedValueOnce([
+      {
+        id: "camp_2",
+        name: "Clearance Hardware",
+        campaign_identifier: "clearance-hardware",
+        description: "Clearance fallback",
+        ends_at: "2099-07-15T00:00:00.000Z",
+        promotions: [{ id: "promo_2", code: "HARDWARE15" }],
+      },
+      {
+        id: "camp_1",
+        name: "Winter PETG Sale",
+        campaign_identifier: "winter-petg-sale",
+        description: "Medusa campaign fallback",
+        ends_at: "2099-06-30T00:00:00.000Z",
+        promotions: [{ id: "promo_1", code: "PETG10" }],
+      },
+    ])
+    mockGetCampaignPlacements.mockResolvedValueOnce({
+      data: [
+        {
+          id: 1,
+          CampaignIdentifier: "winter-petg-sale",
+          Enabled: true,
+          Priority: 20,
+          Eyebrow: "Campaign",
+          Headline: "PETG workshop sale",
+          Text: "Save on everyday PETG.",
+          BadgeText: "PETG10",
+          CTA: { id: 1, BtnText: "Shop PETG deals", BtnLink: "/deals" },
+          Theme: "sale",
+        },
+        {
+          id: 2,
+          CampaignIdentifier: "clearance-hardware",
+          Enabled: true,
+          Priority: 5,
+          Eyebrow: "Clearance",
+          Headline: "Hardware clearance",
+          Text: "Save on selected nozzles and spares.",
+          BadgeText: "HARDWARE15",
+          CTA: { id: 2, BtnText: "Shop hardware", BtnLink: "/collections/spare-parts" },
+          Theme: "clearance",
+        },
+      ],
+      meta: {},
+    })
+
+    render(await DealsPage({ searchParams: Promise.resolve({}) }))
+
+    expect(screen.getByText("2 active promotions")).toBeInTheDocument()
+    expect(screen.getAllByText(/Ends .*2099/)).toHaveLength(2)
+    expect(screen.getByRole("button", { name: "Copy promo code PETG10" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Copy promo code HARDWARE15" })).toBeInTheDocument()
+
+    const pageText = document.body.textContent || ""
+    expect(pageText.indexOf("PETG workshop sale")).toBeLessThan(
+      pageText.indexOf("Hardware clearance")
+    )
   })
 
   it("keeps campaign merchandising visible when no sale products are indexed", async () => {
@@ -200,7 +279,22 @@ describe("Deals page", () => {
 
     expect(screen.getByRole("heading", { name: "PETG workshop sale" })).toBeInTheDocument()
     expect(screen.getByText("Save on everyday PETG.")).toBeInTheDocument()
-    expect(screen.getByText("No deals found")).toBeInTheDocument()
+    expect(screen.getByText("No product markdowns are indexed right now.")).toBeInTheDocument()
+    expect(screen.getByText("Promo codes may still apply in cart.")).toBeInTheDocument()
+  })
+
+  it("shows active promotions when sale products fail to load", async () => {
+    mockSearchProducts.mockResolvedValueOnce({
+      products: [],
+      totalCount: 0,
+      facets: {},
+      error: true,
+    })
+
+    render(await DealsPage({ searchParams: Promise.resolve({}) }))
+
+    expect(screen.getByRole("heading", { name: "PETG workshop sale" })).toBeInTheDocument()
+    expect(screen.getByText("Unable to load deals")).toBeInTheDocument()
   })
 
   it("uses actual discount counts without heuristic fallbacks", async () => {

@@ -13,6 +13,10 @@ export type CampaignMerchandising = {
   image?: CampaignPlacementData["Image"]
   theme: NonNullable<CampaignPlacementData["Theme"]>
   promotionCodes: string[]
+  primaryPromotionCode?: string
+  hasPromotionCode: boolean
+  startsAt?: string | null
+  endsAt?: string | null
 }
 
 function normalizeIdentifier(value?: string | null) {
@@ -43,16 +47,61 @@ function getPromotionCodes(campaign: StoreCampaign) {
   )
 }
 
-export function resolveCampaignMerchandising(
+function buildCampaignMerchandising(
+  campaign: StoreCampaign,
+  placement?: CampaignPlacementData
+): CampaignMerchandising {
+  const promotionCodes = getPromotionCodes(campaign)
+  const primaryPromotionCode = promotionCodes[0]
+
+  if (placement) {
+    return {
+      id: campaign.id,
+      campaignIdentifier: campaign.campaign_identifier,
+      eyebrow: textOrUndefined(placement.Eyebrow),
+      headline: textOrUndefined(placement.Headline) ?? campaign.name,
+      text: textOrUndefined(placement.Text) ?? textOrUndefined(campaign.description),
+      badgeText:
+        textOrUndefined(placement.BadgeText) ?? primaryPromotionCode,
+      ctaText: textOrUndefined(placement.CTA?.BtnText) ?? "Shop deals",
+      ctaHref: safeHref(placement.CTA?.BtnLink),
+      image: placement.Image,
+      theme: placement.Theme ?? "default",
+      promotionCodes,
+      primaryPromotionCode,
+      hasPromotionCode: promotionCodes.length > 0,
+      startsAt: campaign.starts_at ?? null,
+      endsAt: campaign.ends_at ?? null,
+    }
+  }
+
+  return {
+    id: campaign.id,
+    campaignIdentifier: campaign.campaign_identifier,
+    headline: campaign.name,
+    text: textOrUndefined(campaign.description),
+    badgeText: primaryPromotionCode,
+    ctaText: "Shop deals",
+    ctaHref: "/deals",
+    theme: "default",
+    promotionCodes,
+    primaryPromotionCode,
+    hasPromotionCode: promotionCodes.length > 0,
+    startsAt: campaign.starts_at ?? null,
+    endsAt: campaign.ends_at ?? null,
+  }
+}
+
+export function resolveCampaignMerchandisingList(
   campaigns: StoreCampaign[],
   placements: CampaignPlacementData[]
-): CampaignMerchandising | null {
+): CampaignMerchandising[] {
   const activeCampaigns = campaigns.filter((campaign) =>
     normalizeIdentifier(campaign.campaign_identifier)
   )
 
   if (activeCampaigns.length === 0) {
-    return null
+    return []
   }
 
   const placementsByIdentifier = new Map<string, CampaignPlacementData>()
@@ -67,41 +116,43 @@ export function resolveCampaignMerchandising(
       }
     })
 
+  const campaignsByIdentifier = new Map<string, StoreCampaign>()
   for (const campaign of activeCampaigns) {
     const identifier = normalizeIdentifier(campaign.campaign_identifier)
-    const placement = placementsByIdentifier.get(identifier)
-    const promotionCodes = getPromotionCodes(campaign)
 
-    if (placement) {
-      return {
-        id: campaign.id,
-        campaignIdentifier: campaign.campaign_identifier,
-        eyebrow: textOrUndefined(placement.Eyebrow),
-        headline: placement.Headline,
-        text: textOrUndefined(placement.Text) ?? textOrUndefined(campaign.description),
-        badgeText:
-          textOrUndefined(placement.BadgeText) ?? promotionCodes[0],
-        ctaText: textOrUndefined(placement.CTA?.BtnText) ?? "Shop deals",
-        ctaHref: safeHref(placement.CTA?.BtnLink),
-        image: placement.Image,
-        theme: placement.Theme ?? "default",
-        promotionCodes,
-      }
+    if (!campaignsByIdentifier.has(identifier)) {
+      campaignsByIdentifier.set(identifier, campaign)
     }
   }
 
-  const fallbackCampaign = activeCampaigns[0]
-  const promotionCodes = getPromotionCodes(fallbackCampaign)
+  const matchedIdentifiers = new Set<string>()
+  const placedCampaigns = Array.from(placementsByIdentifier.entries())
+    .map(([identifier, placement]) => {
+      const campaign = campaignsByIdentifier.get(identifier)
 
-  return {
-    id: fallbackCampaign.id,
-    campaignIdentifier: fallbackCampaign.campaign_identifier,
-    headline: fallbackCampaign.name,
-    text: textOrUndefined(fallbackCampaign.description),
-    badgeText: promotionCodes[0],
-    ctaText: "Shop deals",
-    ctaHref: "/deals",
-    theme: "default",
-    promotionCodes,
-  }
+      if (!campaign) {
+        return null
+      }
+
+      matchedIdentifiers.add(identifier)
+
+      return buildCampaignMerchandising(campaign, placement)
+    })
+    .filter((campaign): campaign is CampaignMerchandising => Boolean(campaign))
+
+  const fallbackCampaigns = activeCampaigns
+    .filter(
+      (campaign) =>
+        !matchedIdentifiers.has(normalizeIdentifier(campaign.campaign_identifier))
+    )
+    .map((campaign) => buildCampaignMerchandising(campaign))
+
+  return [...placedCampaigns, ...fallbackCampaigns]
+}
+
+export function resolveCampaignMerchandising(
+  campaigns: StoreCampaign[],
+  placements: CampaignPlacementData[]
+): CampaignMerchandising | null {
+  return resolveCampaignMerchandisingList(campaigns, placements)[0] ?? null
 }
