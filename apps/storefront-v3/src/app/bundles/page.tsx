@@ -95,13 +95,13 @@ export default async function BundlesPage({ searchParams }: BundlesPageProps) {
           <div className="absolute inset-0 opacity-30 dark:opacity-20 [background-image:linear-gradient(rgba(8,145,178,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(8,145,178,0.12)_1px,transparent_1px)] [background-size:20px_20px]" />
           <div className="relative max-w-2xl space-y-3">
             <p className="text-xs font-mono uppercase tracking-[0.3em] text-cyan-700 dark:text-cyan-300">
-              Real Bundle Inventory
+              Curated Kits
             </p>
             <h2 className="text-3xl font-bold tracking-tight">
-              Medusa-backed bundles with per-item variant selection.
+              Everything you need, bundled together.
             </h2>
             <p className="text-muted-foreground">
-              Each bundle is linked to a real Medusa product, priced as a bundle, and expanded into grouped cart items at checkout.
+              Save time with matched parts, accessories, and filament selected to work together. Choose a bundle, confirm your options, and add the full set to your cart.
             </p>
           </div>
         </div>
@@ -151,7 +151,7 @@ export default async function BundlesPage({ searchParams }: BundlesPageProps) {
                         </Link>
                       </h3>
                       <p className="line-clamp-2 text-sm text-muted-foreground">
-                        {product.description || "Bundle together multiple products with a single grouped add-to-cart flow."}
+                        {product.description || "Matched products selected to work together."}
                       </p>
                     </div>
 
@@ -182,7 +182,7 @@ export default async function BundlesPage({ searchParams }: BundlesPageProps) {
                         </ul>
                       ) : (
                         <p className="text-sm text-muted-foreground">
-                          Bundle details will appear once the backend route returns the linked bundle items.
+                          Included items will appear here once this bundle is ready.
                         </p>
                       )}
                     </div>
@@ -219,9 +219,9 @@ export default async function BundlesPage({ searchParams }: BundlesPageProps) {
         ) : (
           <div className="flex flex-col items-center justify-center rounded-sm border border-dashed border-border bg-muted/30 py-16 text-center">
             <Package className="h-14 w-14 text-muted-foreground/30" />
-            <h3 className="mt-4 text-lg font-semibold">No bundles available yet</h3>
+            <h3 className="mt-4 text-lg font-semibold">Bundles are coming soon</h3>
             <p className="mt-2 max-w-md text-sm text-muted-foreground">
-              Create a bundled product in the backend and it will surface here automatically once its linked Medusa product is published.
+              We are preparing curated kits for printers, upgrades, and everyday printing essentials. Browse the full catalogue while we finish this section.
             </p>
             <Button className="mt-6 rounded-sm font-mono" asChild>
               <Link href="/shop">
@@ -257,6 +257,6 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "Product Bundles",
     description:
-      "Browse Medusa-backed product bundles with grouped cart handling and per-item variant selection.",
+      "Shop curated 3D printing bundles with matched parts, accessories, and filament selected to work together.",
   }
 }
