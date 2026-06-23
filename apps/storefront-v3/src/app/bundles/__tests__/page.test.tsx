@@ -1,9 +1,10 @@
 import { render, screen } from "@testing-library/react"
 
-import BundlesPage from "../page"
+import BundlesPage, { generateMetadata } from "../page"
 
 import { getPricingContext } from "@/lib/medusa/regions.server"
-import { getBundleProductsById } from "@/lib/medusa/bundles"
+import type { MedusaProduct } from "@/lib/medusa/types"
+import { getBundleLink, getBundleProductsById } from "@/lib/medusa/bundles"
 import { getProductBundles } from "@/lib/medusa/products"
 
 jest.mock("next/link", () => ({
@@ -75,6 +76,9 @@ const mockGetPricingContext = getPricingContext as jest.MockedFunction<
 const mockGetBundleProductsById = getBundleProductsById as jest.MockedFunction<
   typeof getBundleProductsById
 >
+const mockGetBundleLink = getBundleLink as jest.MockedFunction<
+  typeof getBundleLink
+>
 const mockGetProductBundles = getProductBundles as jest.MockedFunction<
   typeof getProductBundles
 >
@@ -91,17 +95,18 @@ describe("Bundles page", () => {
       count: 0,
     })
     mockGetBundleProductsById.mockResolvedValue({})
+    mockGetBundleLink.mockReturnValue(null)
   })
 
-  it("uses theme-safe contrast classes on the bundle hero and empty state", async () => {
+  it("uses customer-facing copy and theme-safe contrast classes", async () => {
     render(await BundlesPage({ searchParams: Promise.resolve({}) }))
 
-    const heroContent = screen.getByText("Real Bundle Inventory").parentElement
+    const heroContent = screen.getByText("Curated Kits").parentElement
     const heroPanel = heroContent?.parentElement
     const heroDescription = screen.getByText(
-      /Each bundle is linked to a real Medusa product/i
+      /Save time with matched parts, accessories, and filament/i
     )
-    const emptyState = screen.getByText("No bundles available yet").parentElement
+    const emptyState = screen.getByText("Bundles are coming soon").parentElement
 
     expect(heroPanel).toHaveClass("bg-card")
     expect(heroPanel).toHaveClass("text-card-foreground")
@@ -112,5 +117,47 @@ describe("Bundles page", () => {
     expect(emptyState).toHaveClass("bg-muted/30")
     expect(emptyState).toHaveClass("border-border")
     expect(emptyState?.className).not.toContain("bg-slate")
+    expect(screen.queryByText(/Medusa|backend|grouped cart/i)).not.toBeInTheDocument()
+  })
+
+  it("uses customer-facing fallback copy on bundle cards", async () => {
+    mockGetProductBundles.mockResolvedValue({
+      products: [
+        {
+          id: "prod_bundle",
+          title: "Printer Starter Kit",
+          handle: "printer-starter-kit",
+          description: null,
+          variants: [
+            {
+              calculated_price: {
+                calculated_amount: 24900,
+                currency_code: "aud",
+              },
+            },
+          ],
+        } as unknown as MedusaProduct,
+      ],
+      count: 1,
+    })
+
+    render(await BundlesPage({ searchParams: Promise.resolve({}) }))
+
+    expect(
+      screen.getByText("Matched products selected to work together.")
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByText(/backend|route|grouped add-to-cart/i)
+    ).not.toBeInTheDocument()
+  })
+
+  it("uses customer-facing metadata", async () => {
+    const metadata = await generateMetadata()
+
+    expect(metadata.title).toBe("Product Bundles")
+    expect(metadata.description).toBe(
+      "Shop curated 3D printing bundles with matched parts, accessories, and filament selected to work together."
+    )
+    expect(metadata.description).not.toMatch(/Medusa|grouped cart|variant/i)
   })
 })
