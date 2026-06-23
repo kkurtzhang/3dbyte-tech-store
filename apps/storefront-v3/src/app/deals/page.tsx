@@ -112,7 +112,10 @@ export default async function DealsPage({ searchParams }: DealsPageProps) {
         }
         sidebar={null}
       >
-        <ShopEmptyState hasActiveFilters={false} />
+        <div className="space-y-8">
+          {campaign ? <CampaignBand campaign={campaign} compact /> : null}
+          <ShopEmptyState hasActiveFilters={false} />
+        </div>
       </ListingLayout>
     );
   }

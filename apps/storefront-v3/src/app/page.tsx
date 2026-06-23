@@ -532,11 +532,6 @@ export default async function Home() {
             fallbackHeading="Featured Products"
             fallbackCta={{ id: 0, BtnText: "View All →", BtnLink: "/shop" }}
           />
-          {!productsResult.error && productsResult.totalCount > 0 ? (
-            <p aria-hidden="true" className="-mt-5 mb-5 text-xs text-muted-foreground">
-              {productsResult.totalCount} indexed products
-            </p>
-          ) : null}
           <Suspense fallback={<ProductsSkeleton />}>
             <ProductGrid
               products={productsResult.products}

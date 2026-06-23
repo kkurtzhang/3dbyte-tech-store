@@ -217,6 +217,7 @@ describe("Home page", () => {
     expect(screen.getByText("Find parts by the work you are doing.")).toBeInTheDocument()
     expect(screen.getByRole("heading", { name: "Fresh Components" })).toBeInTheDocument()
     expect(screen.getByText("Nozzle Pack")).toBeInTheDocument()
+    expect(screen.queryByText(/^\d+ indexed products$/i)).not.toBeInTheDocument()
     expect(screen.getByRole("heading", { name: "Guides and Support" })).toBeInTheDocument()
     expect(screen.getByRole("link", { name: /workshop guides/i })).toHaveAttribute(
       "href",

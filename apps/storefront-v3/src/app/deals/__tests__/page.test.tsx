@@ -188,6 +188,21 @@ describe("Deals page", () => {
     expect(screen.queryByText("Mega Sale!")).not.toBeInTheDocument()
   })
 
+  it("keeps campaign merchandising visible when no sale products are indexed", async () => {
+    mockSearchProducts.mockResolvedValueOnce({
+      products: [],
+      totalCount: 0,
+      facets: {},
+      error: false,
+    })
+
+    render(await DealsPage({ searchParams: Promise.resolve({}) }))
+
+    expect(screen.getByRole("heading", { name: "PETG workshop sale" })).toBeInTheDocument()
+    expect(screen.getByText("Save on everyday PETG.")).toBeInTheDocument()
+    expect(screen.getByText("No deals found")).toBeInTheDocument()
+  })
+
   it("uses actual discount counts without heuristic fallbacks", async () => {
     render(await DealsPage({ searchParams: Promise.resolve({}) }))
 
