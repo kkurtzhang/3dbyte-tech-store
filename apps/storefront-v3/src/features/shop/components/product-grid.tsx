@@ -69,7 +69,7 @@ export function ProductGrid({
         const thumbnail =
           product.thumbnail ||
           product.images?.[0]?.url ||
-          "/placeholder-product.png";
+          "";
 
         // Handle price resolution for different product types
         let price = 0;
