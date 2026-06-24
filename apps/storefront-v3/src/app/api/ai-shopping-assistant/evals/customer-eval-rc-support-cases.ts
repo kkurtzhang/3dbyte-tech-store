@@ -143,7 +143,7 @@ export const customerAiRcSupportEvalCases = [
     expectedAnswer: {
       formatHints: followUpFormatHints,
       minimumCueMatches: 2,
-      mustIncludeOneOf: ["confirm", "name", "email", "subject", "message"],
+      mustIncludeOneOf: ["email", "verify", "order", "support", "details"],
     },
     id: "support-ticket-no-confirmation",
     suites: smokeSuites,
