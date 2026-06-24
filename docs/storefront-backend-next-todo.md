@@ -68,14 +68,11 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 
 ### 0) Security dependency upgrade pass (All apps)
 
-- Problem: `pnpm audit` currently reports high/critical advisories across CMS, backend, storefront, and root tooling. The audit does not currently block builds or CI because CI runs it with `continue-on-error`, but the advisories should be handled before wider staging/product-data work.
-- Last checked: `2026-06-07` on `feature/customer-auth-consolidation`; `pnpm audit --audit-level=high` reported 239 total advisories, including 9 critical and 104 high, so this remains a dedicated security-upgrade PR rather than part of account coordination.
+- Status: the broad June dependency/security upgrade was completed. A smaller follow-up remains for newly reported transitive advisories.
+- Last checked: `2026-06-24` on `staging`; `pnpm audit --audit-level=high` reported 6 advisories: 4 low, 1 moderate, and 1 high. The high advisory is `undici <6.27.0` through `apps/cms > @strapi/strapi > @strapi/core`.
 - Current audit targets:
-  - Upgrade Strapi packages from `5.33.0` toward the latest compatible `5.46.x` line.
-  - Upgrade Next.js from `16.1.0` toward `16.2.6+`.
-  - Review Medusa packages from `2.13.3` toward the latest compatible `2.15.x` line.
-  - Review Nodemailer `6.10.1` advisories; plan carefully because latest major is `8.x`.
-  - Upgrade root Turbo from `^2.6.3` toward `2.9.14+`.
+  - Upgrade or override the Strapi-compatible `undici` path to `6.27.0+` after compatibility verification.
+  - Review the remaining moderate/low advisories and keep explicit ignores limited to documented non-runtime or accepted risks.
 - Acceptance:
   - `pnpm audit --audit-level=high` is clean, or any remaining advisories have explicit risk acceptance notes with owner/date.
   - CMS, backend, and storefront builds pass after upgrades.
@@ -161,12 +158,14 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 
 ### 7) Calibrate Langfuse prompt and judge workflows (Observability + AI)
 
-- Status: Langfuse Prompt Management, deterministic score publishing, assistant session grouping, cache-aware usage, and sanitized trace input/output are implemented. LLM-as-judge remains a follow-up after deterministic eval scores and human feedback are visible and trusted.
+- Status: Langfuse Prompt Management, assistant session grouping, cache-aware usage, sanitized trace input/output, tiered customer eval suites, multi-turn evaluation, and evidence-backed deterministic score publishing are implemented. LLM-as-judge remains a follow-up after deterministic eval scores and human feedback are visible and trusted.
 - Problem: dashboard-managed prompts and Langfuse judge scores are useful for prompt iteration, but they should not replace code-owned safety constraints or deterministic release gates.
 - Deliverable:
   - Keep assistant tone/format wording in Langfuse Prompt Management with `staging` and `production` labels.
   - Keep hard assistant guardrails in code and append them after any dashboard-managed prompt.
-  - Publish deterministic eval scores to Langfuse sessions for prompt-label comparisons.
+  - Keep the 8-case smoke, 28-case release, and 43-case extended suites current as catalogue/tool behavior changes.
+  - Publish deterministic and evidence-backed eval scores to individual Langfuse traces for prompt-label comparisons.
+  - Keep `grounded_answer` unset until tool/source facts can verify claims; keep helpfulness, actionability, and reviewer notes human-owned.
   - Next high-value improvement: add customer feedback capture from the storefront assistant and map thumbs/comment feedback to Langfuse scores on the same session/trace.
   - Next high-value improvement: create an annotation queue for low-score, thumbs-down, or support-handoff conversations so human review creates trusted examples.
   - Create a Langfuse dataset from customer-realistic eval cases and selected reviewed conversations.

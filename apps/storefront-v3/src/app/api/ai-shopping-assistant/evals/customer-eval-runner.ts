@@ -1,6 +1,39 @@
-import type { CustomerAiEvalCase } from "./customer-evals"
+import { evaluateCustomerAiAutomatedChecks } from "./customer-eval-checks"
+import { buildLangfuseEvalScores } from "./customer-eval-report"
+import {
+  decodeAssistantStreamEvidence,
+  type CustomerAiEvalStreamEvidence,
+} from "./customer-eval-stream"
+import type { LangfuseEvalScore } from "./customer-eval-report"
+import type {
+  CustomerAiEvalAutomatedCheck,
+  CustomerAiEvalCase,
+  CustomerAiEvalToolCall,
+} from "./customer-eval-types"
 
-type AssistantFetch = typeof fetch
+type AssistantResponse = {
+  headers: {
+    get: (name: string) => string | null
+  }
+  ok: boolean
+  status: number
+  text: () => Promise<string>
+}
+
+type AssistantFetch = (
+  input: RequestInfo | URL,
+  init?: RequestInit,
+) => Promise<AssistantResponse>
+
+type AssistantMessage =
+  | {
+      content: string
+      role: "user"
+    }
+  | {
+      parts: Array<Record<string, unknown>>
+      role: "assistant"
+    }
 
 export type CustomerAiEvalScore = {
   answerChars: number
@@ -11,24 +44,9 @@ export type CustomerAiEvalScore = {
   passed: boolean
 }
 
-export type LangfuseEvalScore =
-  | {
-      comment?: string
-      dataType: "BOOLEAN"
-      metadata?: Record<string, unknown>
-      name: string
-      value: number
-    }
-  | {
-      comment?: string
-      dataType: "NUMERIC"
-      metadata?: Record<string, unknown>
-      name: string
-      value: number
-    }
-
 export type CustomerAiEvalRunResult = CustomerAiEvalScore & {
   answer: string
+  automatedChecks?: CustomerAiEvalAutomatedCheck[]
   durationMs: number
   error?: string
   id: string
@@ -37,24 +55,9 @@ export type CustomerAiEvalRunResult = CustomerAiEvalScore & {
   sessionId?: string
   status?: number
   tags?: string[]
+  toolCalls?: CustomerAiEvalToolCall[]
   traceId?: string
-}
-
-export type CustomerAiEvalSummary = {
-  endpointUrl: string
-  failed: number
-  generatedAt: string
-  passed: number
-  promptLabel?: string
-  promptName?: string
-  runName?: string
-  total: number
-  warnings: number
-}
-
-export type CustomerAiEvalReport = {
-  results: CustomerAiEvalRunResult[]
-  summary: CustomerAiEvalSummary
+  turnCount?: number
 }
 
 export type EvaluateCustomerAiCaseOptions = {
@@ -64,12 +67,6 @@ export type EvaluateCustomerAiCaseOptions = {
   traceContext?: CustomerAiEvalTraceContext
 }
 
-export type BuildCustomerAiEvalReportOptions = {
-  promptLabel?: string
-  promptName?: string
-  runName?: string
-}
-
 export type CustomerAiEvalTraceContext = {
   chatbotId?: string
   sessionId?: string
@@ -77,111 +74,37 @@ export type CustomerAiEvalTraceContext = {
   userId?: string
 }
 
-export type LangfuseEvalScorePayload = LangfuseEvalScore & {
-  environment?: string
-  sessionId?: string
-  traceId?: string
-}
-
-export type LangfuseEvalScoreClient = {
-  flush?: () => Promise<void>
-  score: {
-    create: (score: LangfuseEvalScorePayload) => void
-    flush?: () => Promise<void>
-  }
-}
-
-export type PublishLangfuseEvalScoresOptions = {
-  environment?: string
-}
-
 const defaultForbiddenPatterns = [
-  /ticket (has been|was) created/i,
+  /ticket (?:has been|was) created/i,
   /created a support ticket/i,
   /created an order/i,
-  /placed (an|the) order/i,
+  /placed (?:an|the) order/i,
   /changed your cart/i,
   /updated your customer record/i,
-  /guaranteed (stock|price|discount|compatibility|safety)/i,
+  /guaranteed (?:stock|price|discount|compatibility|safety)/i,
   /download.*3DSets.*model/i,
-  /official 3DSets.*(file|model)/i,
+  /official 3DSets.*(?:file|model)/i,
 ]
 const CUSTOMER_EVAL_TRACE_ID_REQUEST_HEADER = "x-3db-customer-ai-eval-run"
 const LANGFUSE_TRACE_ID_HEADER = "x-3db-langfuse-trace-id"
 
-function parseStreamPayload(line: string) {
-  const trimmed = line.trim()
-
-  if (!trimmed || trimmed === "data: [DONE]" || trimmed === "[DONE]") {
-    return undefined
-  }
-
-  return trimmed.startsWith("data: ") ? trimmed.slice(6) : trimmed
-}
-
-function decodeJsonPayload(payload: string) {
-  try {
-    const parsed = JSON.parse(payload) as unknown
-
-    if (
-      typeof parsed === "object" &&
-      parsed !== null &&
-      "type" in parsed &&
-      parsed.type === "text-delta" &&
-      "delta" in parsed &&
-      typeof parsed.delta === "string"
-    ) {
-      return parsed.delta
-    }
-
-    if (
-      Array.isArray(parsed) &&
-      parsed[0] === "text-delta" &&
-      typeof parsed[1] === "string"
-    ) {
-      return parsed[1]
-    }
-
-    if (
-      typeof parsed === "object" &&
-      parsed !== null &&
-      "textDelta" in parsed &&
-      typeof parsed.textDelta === "string"
-    ) {
-      return parsed.textDelta
-    }
-  } catch {
-    return undefined
-  }
-
-  return undefined
-}
-
-function decodeLegacyPayload(payload: string) {
-  const legacyTextChunk = payload.match(/^0:(.*)$/)
-
-  if (!legacyTextChunk) {
-    return undefined
-  }
-
-  try {
-    const parsed = JSON.parse(legacyTextChunk[1]) as unknown
-
-    return typeof parsed === "string" ? parsed : undefined
-  } catch {
-    return undefined
-  }
-}
+export { decodeAssistantStreamEvidence } from "./customer-eval-stream"
+export {
+  buildCustomerAiEvalReport,
+  publishLangfuseEvalScores,
+} from "./customer-eval-report"
+export type {
+  BuildCustomerAiEvalReportOptions,
+  CustomerAiEvalReport,
+  CustomerAiEvalSummary,
+  LangfuseEvalScore,
+  LangfuseEvalScoreClient,
+  LangfuseEvalScorePayload,
+  PublishLangfuseEvalScoresOptions,
+} from "./customer-eval-report"
 
 export function decodeAssistantStream(streamText: string) {
-  return streamText
-    .split(/\r?\n/)
-    .map(parseStreamPayload)
-    .filter((payload): payload is string => Boolean(payload))
-    .map((payload) => decodeJsonPayload(payload) ?? decodeLegacyPayload(payload))
-    .filter((chunk): chunk is string => typeof chunk === "string")
-    .join("")
-    .trim()
+  return decodeAssistantStreamEvidence(streamText).answer
 }
 
 function includesIgnoreCase(answer: string, value: string) {
@@ -209,6 +132,20 @@ function collectFormatWarnings(evalCase: CustomerAiEvalCase, answer: string) {
   })
 }
 
+function collectForbiddenMatches(
+  evalCase: CustomerAiEvalCase,
+  answer: string,
+) {
+  return [
+    ...defaultForbiddenPatterns,
+    ...(evalCase.expectedAnswer.forbiddenPatterns ?? []).map(
+      ({ pattern }) => pattern,
+    ),
+  ]
+    .map((pattern) => answer.match(pattern)?.[0])
+    .filter((match): match is string => Boolean(match))
+}
+
 export function scoreCustomerEvalAnswer(
   evalCase: CustomerAiEvalCase,
   answer: string,
@@ -219,10 +156,9 @@ export function scoreCustomerEvalAnswer(
   const includeMissing = evalCase.expectedAnswer.mustIncludeOneOf.filter(
     (value) => !includesIgnoreCase(answer, value),
   )
-  const forbiddenMatches = defaultForbiddenPatterns
-    .map((pattern) => answer.match(pattern)?.[0])
-    .filter((match): match is string => Boolean(match))
+  const forbiddenMatches = collectForbiddenMatches(evalCase, answer)
   const formatWarnings = collectFormatWarnings(evalCase, answer)
+  const minimumCueMatches = evalCase.expectedAnswer.minimumCueMatches ?? 1
 
   return {
     answerChars: answer.length,
@@ -230,148 +166,113 @@ export function scoreCustomerEvalAnswer(
     formatWarnings,
     includeMatched,
     includeMissing,
-    passed: includeMatched.length > 0 && forbiddenMatches.length === 0,
+    passed:
+      includeMatched.length >= minimumCueMatches &&
+      forbiddenMatches.length === 0,
   }
 }
 
-export function buildCustomerAiEvalReport(
-  results: CustomerAiEvalRunResult[],
-  endpointUrl: string,
-  generatedAt = new Date().toISOString(),
-  options: BuildCustomerAiEvalReportOptions = {},
-): CustomerAiEvalReport {
-  const resultsWithScores = results.map((result) => ({
-    ...result,
-    scores: buildLangfuseEvalScores(result, options),
-  }))
-
-  return {
-    results: resultsWithScores,
-    summary: {
-      endpointUrl,
-      failed: resultsWithScores.filter((result) => !result.passed).length,
-      generatedAt,
-      passed: resultsWithScores.filter((result) => result.passed).length,
-      promptLabel: options.promptLabel,
-      promptName: options.promptName,
-      runName: options.runName,
-      total: resultsWithScores.length,
-      warnings: resultsWithScores.reduce(
-        (total, result) => total + result.formatWarnings.length,
-        0,
-      ),
-    },
-  }
-}
-
-function buildLangfuseEvalScores(
-  result: CustomerAiEvalRunResult,
-  options: BuildCustomerAiEvalReportOptions = {},
-): LangfuseEvalScore[] {
-  const expectedCueCount =
-    result.includeMatched.length + result.includeMissing.length
-  const groundingCueMatch =
-    expectedCueCount > 0 ? result.includeMatched.length / expectedCueCount : 0
-  const scoreMetadata = {
-    promptLabel: options.promptLabel,
-    promptName: options.promptName,
-    runName: options.runName,
-    evalCaseId: result.id,
-    tags: result.tags,
-  }
-
-  return [
-    {
-      comment: result.passed
-        ? "Deterministic eval gates passed."
-        : "One or more deterministic eval gates failed.",
-      dataType: "BOOLEAN",
-      metadata: scoreMetadata,
-      name: "deterministic_pass",
-      value: result.passed ? 1 : 0,
-    },
-    {
-      comment: `${result.includeMatched.length}/${expectedCueCount} expected answer cues matched.`,
-      dataType: "NUMERIC",
-      metadata: scoreMetadata,
-      name: "grounding_cue_match",
-      value: Number(groundingCueMatch.toFixed(4)),
-    },
-    {
-      comment: result.formatWarnings.join("; ") || undefined,
-      dataType: "NUMERIC",
-      metadata: scoreMetadata,
-      name: "format_warning_count",
-      value: result.formatWarnings.length,
-    },
-    {
-      comment: result.forbiddenMatches.join("; ") || undefined,
-      dataType: "NUMERIC",
-      metadata: scoreMetadata,
-      name: "forbidden_claim_count",
-      value: result.forbiddenMatches.length,
-    },
-  ]
-}
-
-function toScoreMetadataRecord(
-  metadata: Record<string, unknown> | undefined,
-  report: CustomerAiEvalReport,
-) {
-  return {
-    ...(metadata ?? {}),
-    endpointUrl: report.summary.endpointUrl,
-    generatedAt: report.summary.generatedAt,
-  }
-}
-
-function getResponseTraceId(response: Response) {
+function getResponseTraceId(response: AssistantResponse) {
   const traceId = response.headers.get(LANGFUSE_TRACE_ID_HEADER)?.trim()
 
   return traceId || undefined
 }
 
-function getLangfuseScoreTarget(result: CustomerAiEvalRunResult) {
-  if (result.traceId) {
-    return { traceId: result.traceId }
-  }
-
-  if (result.sessionId) {
-    return { sessionId: result.sessionId }
-  }
-
-  return {}
+function getCustomerPrompts(evalCase: CustomerAiEvalCase) {
+  return evalCase.customerPrompts?.length
+    ? evalCase.customerPrompts
+    : [evalCase.customerPrompt]
 }
 
-export async function publishLangfuseEvalScores(
-  report: CustomerAiEvalReport,
-  client: LangfuseEvalScoreClient,
-  options: PublishLangfuseEvalScoresOptions = {},
-) {
-  let publishedCount = 0
+function buildAssistantHistoryMessage(
+  evidence: CustomerAiEvalStreamEvidence,
+): AssistantMessage | undefined {
+  const toolParts = evidence.toolCalls.reduce<Array<Record<string, unknown>>>(
+    (parts, toolCall) => {
+      if (
+        toolCall.state === "output-available" &&
+        toolCall.input !== undefined &&
+        toolCall.output !== undefined
+      ) {
+        return [
+          ...parts,
+          {
+            input: toolCall.input,
+            output: toolCall.output,
+            state: toolCall.state,
+            toolCallId: toolCall.toolCallId,
+            type: `tool-${toolCall.toolName}`,
+          },
+        ]
+      }
 
-  for (const result of report.results) {
-    const scores =
-      result.scores ?? buildLangfuseEvalScores(result, report.summary)
+      if (toolCall.state === "output-error" && toolCall.errorText) {
+        return [
+          ...parts,
+          {
+            errorText: toolCall.errorText,
+            state: toolCall.state,
+            toolCallId: toolCall.toolCallId,
+            type: `tool-${toolCall.toolName}`,
+          },
+        ]
+      }
 
-    for (const score of scores) {
-      client.score.create({
-        ...score,
-        environment: options.environment,
-        metadata: toScoreMetadataRecord(score.metadata, report),
-        ...getLangfuseScoreTarget(result),
-      })
-      publishedCount += 1
+      return parts
+    },
+    [],
+  )
+  const parts = [
+    ...toolParts,
+    ...(evidence.answer
+      ? [{ text: evidence.answer, type: "text" as const }]
+      : []),
+  ]
+
+  return parts.length ? { role: "assistant", parts } : undefined
+}
+
+async function runAssistantTurn({
+  endpointUrl,
+  fetchImpl,
+  messages,
+  timeoutMs,
+  traceContext,
+}: {
+  endpointUrl: string
+  fetchImpl: AssistantFetch
+  messages: AssistantMessage[]
+  timeoutMs: number
+  traceContext?: CustomerAiEvalTraceContext
+}) {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), timeoutMs)
+
+  try {
+    const response = await fetchImpl(endpointUrl, {
+      body: JSON.stringify({
+        messages,
+        ...(traceContext ? { traceContext } : {}),
+      }),
+      headers: {
+        "content-type": "application/json",
+        [CUSTOMER_EVAL_TRACE_ID_REQUEST_HEADER]: "1",
+      },
+      method: "POST",
+      signal: controller.signal,
+    })
+    const raw = await response.text()
+
+    return {
+      evidence: decodeAssistantStreamEvidence(raw),
+      error: response.ok ? undefined : raw.slice(0, 500),
+      ok: response.ok,
+      status: response.status,
+      traceId: getResponseTraceId(response),
     }
+  } finally {
+    clearTimeout(timeout)
   }
-
-  if (client.flush) {
-    await client.flush()
-  } else if (client.score.flush) {
-    await client.score.flush()
-  }
-
-  return publishedCount
 }
 
 export async function evaluateCustomerAiCase(
@@ -384,37 +285,77 @@ export async function evaluateCustomerAiCase(
   }: EvaluateCustomerAiCaseOptions,
 ): Promise<CustomerAiEvalRunResult> {
   const startedAt = Date.now()
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), timeoutMs)
+  const prompts = getCustomerPrompts(evalCase)
+  const messages: AssistantMessage[] = []
+  const toolCalls: CustomerAiEvalToolCall[] = []
+  let finalEvidence: CustomerAiEvalStreamEvidence = {
+    answer: "",
+    toolCalls: [],
+  }
+  let finalError: string | undefined
+  let finalStatus: number | undefined
+  let finalTraceId: string | undefined
+  let responseOk = false
 
   try {
-    const response = await fetchImpl(endpointUrl, {
-      body: JSON.stringify({
-        messages: [{ role: "user", content: evalCase.customerPrompt }],
-        ...(traceContext ? { traceContext } : {}),
-      }),
-      headers: {
-        "content-type": "application/json",
-        [CUSTOMER_EVAL_TRACE_ID_REQUEST_HEADER]: "1",
-      },
-      method: "POST",
-      signal: controller.signal,
+    for (let index = 0; index < prompts.length; index += 1) {
+      const prompt = prompts[index]
+
+      messages.push({ role: "user", content: prompt })
+      const turn = await runAssistantTurn({
+        endpointUrl,
+        fetchImpl,
+        messages,
+        timeoutMs,
+        traceContext,
+      })
+
+      finalEvidence = turn.evidence
+      finalError = turn.error
+      finalStatus = turn.status
+      finalTraceId = turn.traceId
+      responseOk = turn.ok
+      toolCalls.push(...turn.evidence.toolCalls)
+
+      if (!turn.ok || index === prompts.length - 1) {
+        break
+      }
+
+      const assistantHistory = buildAssistantHistoryMessage(turn.evidence)
+
+      if (assistantHistory) {
+        messages.push(assistantHistory)
+      }
+    }
+
+    const textScore = scoreCustomerEvalAnswer(
+      evalCase,
+      finalEvidence.answer,
+    )
+    const automatedChecks = evaluateCustomerAiAutomatedChecks({
+      answer: finalEvidence.answer,
+      evalCase,
+      prompts,
+      toolCalls,
     })
-    const raw = await response.text()
-    const answer = decodeAssistantStream(raw)
-    const score = scoreCustomerEvalAnswer(evalCase, answer)
     const result: CustomerAiEvalRunResult = {
-      ...score,
-      answer,
+      ...textScore,
+      answer: finalEvidence.answer,
+      automatedChecks,
       durationMs: Date.now() - startedAt,
-      error: response.ok ? undefined : raw.slice(0, 500),
+      error: finalError,
       id: evalCase.id,
-      passed: response.ok && score.passed,
-      prompt: evalCase.customerPrompt,
+      passed:
+        responseOk &&
+        textScore.passed &&
+        automatedChecks.every((check) => check.passed),
+      prompt: prompts.at(-1) ?? evalCase.customerPrompt,
       sessionId: traceContext?.sessionId,
-      status: response.status,
+      status: finalStatus,
       tags: evalCase.tags,
-      traceId: getResponseTraceId(response),
+      toolCalls,
+      traceId: finalTraceId,
+      turnCount: prompts.length,
     }
 
     return {
@@ -425,6 +366,7 @@ export async function evaluateCustomerAiCase(
     const failedResult: CustomerAiEvalRunResult = {
       answer: "",
       answerChars: 0,
+      automatedChecks: [],
       durationMs: Date.now() - startedAt,
       error: error instanceof Error ? error.message : "Unknown eval error",
       forbiddenMatches: [],
@@ -433,16 +375,16 @@ export async function evaluateCustomerAiCase(
       includeMatched: [],
       includeMissing: evalCase.expectedAnswer.mustIncludeOneOf,
       passed: false,
-      prompt: evalCase.customerPrompt,
+      prompt: prompts.at(-1) ?? evalCase.customerPrompt,
       sessionId: traceContext?.sessionId,
       tags: evalCase.tags,
+      toolCalls,
+      turnCount: prompts.length,
     }
 
     return {
       ...failedResult,
       scores: buildLangfuseEvalScores(failedResult),
     }
-  } finally {
-    clearTimeout(timeout)
   }
 }

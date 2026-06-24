@@ -39,17 +39,26 @@ describe("customer AI eval prompts", () => {
     }
   })
 
-  it("defines answer-quality and forbidden-behavior checks for every case", () => {
+  it("defines answer-quality checks and suite ownership for every case", () => {
     for (const evalCase of customerAiEvalCases) {
       expect(evalCase.expectedAnswer.mustIncludeOneOf.length).toBeGreaterThan(0)
-      expect(evalCase.expectedAnswer.mustAvoid.length).toBeGreaterThan(0)
       expect(evalCase.expectedAnswer.formatHints.length).toBeGreaterThan(0)
-
-      expect(evalCase.expectedAnswer.mustAvoid).toEqual(
+      expect(evalCase.suites.length).toBeGreaterThan(0)
+      expect(evalCase.suites).toEqual(
         expect.arrayContaining([
-          expect.stringMatching(/invent|claim|create|change/i),
-        ])
+          expect.stringMatching(/^(smoke|release|extended)$/),
+        ]),
       )
     }
+  })
+
+  it("adds case-specific forbidden patterns or evidence checks where needed", () => {
+    const guardedCases = customerAiEvalCases.filter(
+      (evalCase) =>
+        Boolean(evalCase.expectedAnswer.forbiddenPatterns?.length) ||
+        Boolean(evalCase.checks),
+    )
+
+    expect(guardedCases.length).toBeGreaterThanOrEqual(12)
   })
 })
