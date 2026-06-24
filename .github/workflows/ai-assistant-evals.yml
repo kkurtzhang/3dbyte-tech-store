@@ -16,7 +16,7 @@ on:
       limit:
         description: Optional max number of eval cases.
         required: false
-        default: "3"
+        default: ""
         type: string
   push:
     branches: [staging]
@@ -58,7 +58,8 @@ jobs:
         env:
           AI_ASSISTANT_EVAL_BASE_URL: ${{ inputs.base_url || 'https://store.staging.3dbytetech.com.au' }}
           AI_ASSISTANT_EVAL_CASES: ${{ inputs.cases || '' }}
-          AI_ASSISTANT_EVAL_LIMIT: ${{ inputs.limit || '3' }}
+          AI_ASSISTANT_EVAL_LIMIT: ${{ inputs.limit || '' }}
+          AI_ASSISTANT_EVAL_SUITE: smoke
           AI_ASSISTANT_EVAL_OUTPUT: json
           AI_ASSISTANT_EVAL_OUTPUT_FILE: ${{ github.workspace }}/artifacts/customer-ai-evals.json
         run: |

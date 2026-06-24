@@ -3,7 +3,10 @@
 import { mkdir, writeFile } from "node:fs/promises"
 import { dirname } from "node:path"
 
-import { customerAiEvalCases } from "../src/app/api/ai-shopping-assistant/evals/customer-evals"
+import {
+  selectCustomerAiEvalCases,
+  type CustomerAiEvalSuite,
+} from "../src/app/api/ai-shopping-assistant/evals/customer-evals"
 import {
   buildCustomerAiEvalReport,
   evaluateCustomerAiCase,
@@ -44,14 +47,20 @@ function resolveCases() {
     ?.split(",")
     .map((id: string) => id.trim())
     .filter(Boolean)
-  const selectedCases = requestedIds?.length
-    ? customerAiEvalCases.filter((evalCase) => requestedIds.includes(evalCase.id))
-    : customerAiEvalCases
   const limit = Number.parseInt(getEnvValue("AI_ASSISTANT_EVAL_LIMIT") ?? "", 10)
+  const suiteValue = getEnvValue("AI_ASSISTANT_EVAL_SUITE") ?? "release"
 
-  return Number.isFinite(limit) && limit > 0
-    ? selectedCases.slice(0, limit)
-    : selectedCases
+  if (!["smoke", "release", "extended"].includes(suiteValue)) {
+    throw new Error(
+      "AI_ASSISTANT_EVAL_SUITE must be smoke, release, or extended.",
+    )
+  }
+
+  return selectCustomerAiEvalCases({
+    ids: requestedIds,
+    limit: Number.isFinite(limit) && limit > 0 ? limit : undefined,
+    suite: suiteValue as CustomerAiEvalSuite,
+  })
 }
 
 function toTraceSafeId(value: string) {

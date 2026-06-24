@@ -64,7 +64,9 @@ The storefront AI drawer sends a browser-tab chat session id with every assistan
 
 Trace input/output is written through `@langfuse/tracing` in an active request observation. The route keeps that observation open until the AI stream finishes so the final assistant output can be attached to the top-level trace. The values deliberately mask emails, order/support references, and common commerce IDs before writing to Langfuse. Keep full customer transcripts in application data only when the customer has explicitly consented.
 
-Customer assistant eval runs use an internal request marker so the route can return the active Langfuse trace id to the eval runner. Deterministic eval score publishing should target `traceId` when it is available, with `sessionId` as a fallback only when the trace id is unavailable. Normal browser chat responses do not expose this trace-id header.
+Customer assistant eval runs use an internal request marker so the route can return the active Langfuse trace id to the eval runner. Deterministic eval score publishing should target `traceId` when it is available, with `sessionId` as a fallback only when the trace id is unavailable. Multi-turn evals publish aggregate case scores to the session because their evidence spans more than one trace. Normal browser chat responses do not expose this trace-id header.
+
+The eval runner always publishes `deterministic_pass`, `grounding_cue_match`, `format_warning_count`, and `forbidden_claim_count`. Cases can also publish evidence-backed boolean scores for exact product links, tool-call correctness, safe support handoff, order privacy, and synthetic PII leakage. It intentionally leaves `grounded_answer`, human helpfulness/actionability, and reviewer notes unset until source evidence or a human reviewer supplies them.
 
 DeepSeek streaming requests include `stream_options.include_usage=true` so the final provider usage chunk can report cache-aware token counts. Configure the Langfuse `deepseek-v4-flash` model pricing with these usage detail keys:
 
