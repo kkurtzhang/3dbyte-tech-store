@@ -11,6 +11,8 @@ import {
   stepCountIs,
   streamText,
   tool,
+  type TextStreamPart,
+  type ToolSet,
   type UIMessage,
 } from "ai"
 import { z } from "zod"
@@ -627,6 +629,29 @@ function sanitizeTraceText(text: string) {
   return truncateTraceText(maskedText)
 }
 
+function sanitizeVisibleAssistantText(text: string) {
+  TRACE_EMAIL_PATTERN.lastIndex = 0
+
+  return text.replace(TRACE_EMAIL_PATTERN, "[email]")
+}
+
+function createAssistantVisibleTextTransform<TOOLS extends ToolSet>() {
+  return (_options: { stopStream: () => void; tools: TOOLS }) =>
+    new TransformStream<TextStreamPart<TOOLS>, TextStreamPart<TOOLS>>({
+      transform(chunk, controller) {
+        if (chunk.type === "text-delta") {
+          controller.enqueue({
+            ...chunk,
+            text: sanitizeVisibleAssistantText(chunk.text),
+          })
+          return
+        }
+
+        controller.enqueue(chunk)
+      },
+    })
+}
+
 function getLatestUserMessage(messages: AssistantMessage[]) {
   for (let index = messages.length - 1; index >= 0; index -= 1) {
     const message = messages[index]
@@ -941,6 +966,7 @@ export async function POST(req: Request): Promise<Response> {
               messages: await convertToModelMessages(uiMessages, {
                 ignoreIncompleteToolCalls: true,
               }),
+              experimental_transform: createAssistantVisibleTextTransform(),
               experimental_telemetry: {
                 functionId: "storefront.ai-shopping-assistant",
                 isEnabled: isAiTelemetryEnabled(),
