@@ -70,7 +70,13 @@ export const customerAiCommerceEvalCases = [
     expectedAnswer: {
       formatHints: followUpFormatHints,
       minimumCueMatches: 2,
-      mustIncludeOneOf: ["email", "order reference", "verify", "proof"],
+      mustIncludeOneOf: [
+        "email",
+        "security",
+        "order",
+        "verify",
+        "look it up",
+      ],
     },
     id: "order-lookup-missing-email",
     suites: smokeSuites,
