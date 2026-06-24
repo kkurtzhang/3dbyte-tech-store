@@ -1,4 +1,5 @@
 import {
+  CODE_OWNED_ASSISTANT_GUARDRAILS_VERSION,
   DEFAULT_ASSISTANT_PROMPT_NAME,
   resolveAssistantSystemPrompt,
   resolveLangfusePromptLabel,
@@ -13,8 +14,12 @@ describe("assistant prompt management", () => {
     expect(result.source).toBe("code_fallback")
     expect(result.prompt).toContain("You are the 3D Byte Tech shopping assistant.")
     expect(result.prompt).toContain("Never place orders, modify carts")
+    expect(result.prompt).toContain(
+      "do not repeat customer email addresses, order references",
+    )
     expect(result.metadata).toEqual(
       expect.objectContaining({
+        code_guardrails_version: CODE_OWNED_ASSISTANT_GUARDRAILS_VERSION,
         langfuse_prompt_label: "production",
         langfuse_prompt_name: DEFAULT_ASSISTANT_PROMPT_NAME,
         langfuse_prompt_source: "code_fallback",
@@ -68,6 +73,7 @@ describe("assistant prompt management", () => {
     expect(result.prompt).toContain("Never place orders, modify carts")
     expect(result.metadata).toEqual(
       expect.objectContaining({
+        code_guardrails_version: CODE_OWNED_ASSISTANT_GUARDRAILS_VERSION,
         langfusePrompt: {
           name: DEFAULT_ASSISTANT_PROMPT_NAME,
           version: 7,

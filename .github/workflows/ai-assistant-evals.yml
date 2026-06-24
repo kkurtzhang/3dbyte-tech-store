@@ -22,6 +22,8 @@ on:
     branches: [staging]
     paths:
       - .github/workflows/ai-assistant-evals.yml
+      - .github/scripts/decide-ai-assistant-eval.sh
+      - .github/scripts/__tests__/decide-ai-assistant-eval.test.sh
       - apps/storefront-v3/scripts/run-customer-ai-evals.ts
       - apps/storefront-v3/src/app/api/ai-shopping-assistant/**
       - docs/ai-engineer-pathway/phase-3-operational-feedback.md
@@ -34,61 +36,26 @@ jobs:
     name: customer-smoke
     runs-on: ubuntu-latest
     steps:
-      - name: Decide whether live eval can run before deploy
-        id: live-eval
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          if [ "${GITHUB_EVENT_NAME}" != "push" ]; then
-            echo "should_run=true" >> "$GITHUB_OUTPUT"
-            echo "reason=manual dispatch" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          python3 <<'PY' >> "$GITHUB_OUTPUT"
-          import json
-          import os
-
-          runtime_paths = {
-              "apps/storefront-v3/src/app/api/ai-shopping-assistant/route.ts",
-              "apps/storefront-v3/src/app/api/ai-shopping-assistant/prompt-management.ts",
-          }
-
-          with open(os.environ["GITHUB_EVENT_PATH"], encoding="utf-8") as handle:
-              event = json.load(handle)
-
-          head_commit = event.get("head_commit") or {}
-          changed = set()
-          for key in ("added", "modified", "removed"):
-              changed.update(head_commit.get(key) or [])
-
-          runtime_changed = sorted(changed.intersection(runtime_paths))
-
-          if runtime_changed:
-              print("should_run=false")
-              print(
-                  "reason=assistant runtime changed; run workflow_dispatch after Coolify deploy"
-              )
-          else:
-              print("should_run=true")
-              print("reason=eval-only or docs/workflow change")
-          PY
-
-      - name: Note skipped live eval
-        if: steps.live-eval.outputs.should_run != 'true'
-        run: |
-          echo "Skipping live staging assistant eval: ${{ steps.live-eval.outputs.reason }}"
-
-      - name: Checkout without token
-        if: steps.live-eval.outputs.should_run == 'true'
+      - name: Checkout source and parent without token
         run: |
           set -euo pipefail
           git init .
           git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          git fetch --no-tags --prune --depth=1 origin "$GITHUB_SHA"
+          git fetch --no-tags --prune --depth=2 origin "$GITHUB_SHA"
           git checkout --force FETCH_HEAD
+
+      - name: Test live eval decision
+        run: bash .github/scripts/__tests__/decide-ai-assistant-eval.test.sh
+
+      - name: Decide whether live eval can run before deploy
+        id: live-eval
+        run: bash .github/scripts/decide-ai-assistant-eval.sh
+
+      - name: Note skipped live eval
+        if: steps.live-eval.outputs.should_run != 'true'
+        run: |
+          echo "Skipping live staging assistant eval: ${{ steps.live-eval.outputs.reason }}"
 
       - uses: actions/setup-node@v6
         if: steps.live-eval.outputs.should_run == 'true'

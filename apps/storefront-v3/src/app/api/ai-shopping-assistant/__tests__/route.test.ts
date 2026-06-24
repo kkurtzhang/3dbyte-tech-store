@@ -88,6 +88,7 @@ const fetchMock = jest.fn()
 function createPromptResolutionMock() {
   return {
     metadata: {
+      code_guardrails_version: "2026-06-24.1",
       langfuse_prompt_label: "staging",
       langfuse_prompt_name: "storefront.ai-shopping-assistant.system",
       langfuse_prompt_source: "langfuse",
@@ -808,6 +809,7 @@ describe("POST /api/ai-shopping-assistant", () => {
         metadata: expect.objectContaining({
           chatbot_id: "storefront.shopping-assistant",
           chatbot_surface: "storefront-floating-drawer",
+          code_guardrails_version: "2026-06-24.1",
           langfuse_prompt_name: "storefront.ai-shopping-assistant.system",
           provider: "deepseek",
         }),
@@ -845,6 +847,7 @@ describe("POST /api/ai-shopping-assistant", () => {
       metadata: {
         chatbot_id: "storefront.shopping-assistant",
         chatbot_surface: "storefront-floating-drawer",
+        code_guardrails_version: "2026-06-24.1",
         model: "deepseek-v4-flash",
         provider: "deepseek",
         langfuse_prompt_label: "staging",
@@ -867,6 +870,7 @@ describe("POST /api/ai-shopping-assistant", () => {
         metadata: expect.objectContaining({
           chatbot_id: "storefront.shopping-assistant",
           chatbot_surface: "storefront-floating-drawer",
+          code_guardrails_version: "2026-06-24.1",
           model: "deepseek-v4-flash",
           provider: "deepseek",
           langfuse_prompt_label: "staging",
