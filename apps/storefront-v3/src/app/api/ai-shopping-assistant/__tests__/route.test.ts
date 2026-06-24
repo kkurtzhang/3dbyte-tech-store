@@ -1092,6 +1092,62 @@ describe("POST /api/ai-shopping-assistant", () => {
     expect(assistantTraceEndMock).toHaveBeenCalledTimes(1)
   })
 
+  it("redacts email addresses from visible streamed text deltas", async () => {
+    configureAiEnv()
+    const { POST } = await import("../route")
+
+    await POST(
+      createJsonRequest({
+        messages: [
+          {
+            role: "user",
+            content:
+              "My order is ORDER-999 and my email is ava.customer@example.com.",
+          },
+        ],
+      }),
+    )
+
+    const streamConfig = streamTextMock.mock.calls[0]?.[0] as
+      | {
+          experimental_transform?: (options: {
+            stopStream: () => void
+            tools: Record<string, unknown>
+          }) => TransformStream<
+            { text: string; type: "text-delta" } | { type: "finish" },
+            { text: string; type: "text-delta" } | { type: "finish" }
+          >
+        }
+      | undefined
+    const transform = streamConfig?.experimental_transform?.({
+      stopStream: jest.fn(),
+      tools: {},
+    })
+
+    expect(transform).toBeDefined()
+
+    const writer = transform!.writable.getWriter()
+    const reader = transform!.readable.getReader()
+    const firstRead = reader.read()
+
+    await writer.write({
+      text: "Tracking lookup failed for ava.customer@example.com.",
+      type: "text-delta",
+    })
+    await expect(firstRead).resolves.toEqual({
+      done: false,
+      value: {
+        text: "Tracking lookup failed for [email].",
+        type: "text-delta",
+      },
+    })
+    await writer.close()
+    await expect(reader.read()).resolves.toEqual({
+      done: true,
+      value: undefined,
+    })
+  })
+
   it("exposes the active Langfuse trace id for eval score attachment", async () => {
     configureAiEnv()
     const { POST } = await import("../route")

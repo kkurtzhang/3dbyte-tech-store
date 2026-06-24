@@ -57,7 +57,7 @@ The repo now includes a GitHub Actions workflow:
 
 On `staging`, it runs automatically on pushes that change the assistant eval runner, assistant route/evals, this workflow, or this Phase 3 doc. It runs the full 8-case smoke suite by default so every relevant staging merge covers product links, support confirmation, order privacy, tool evidence, and key material prompts.
 
-Because the automatic workflow runs after `staging` advances, PRs that change eval scoring rules or case wording should run the same staging smoke suite locally before merge and include the result in the PR validation evidence.
+Because the automatic workflow runs after `staging` advances but before Coolify necessarily redeploys the storefront, it skips live eval execution when the assistant runtime route or prompt-management code changes. For those changes, run `workflow_dispatch` after Coolify deploys the new storefront. PRs that change only eval scoring rules or case wording should run the same staging smoke suite locally before merge and include the result in the PR validation evidence.
 
 Manual `workflow_dispatch` is also defined, but GitHub only exposes manually dispatched workflows after the workflow file exists on the repository default branch. Until then, use the local command for ad hoc full-suite staging checks and rely on the automatic `staging` push run for GitHub-hosted artifacts.
 
@@ -159,6 +159,8 @@ Trace output includes:
 - finish reason when the provider reports one.
 
 Sanitization masks emails, order/support references, and common commerce IDs before the values are written to Langfuse. Full transcripts should only move into support tickets or review tooling when the customer explicitly consents.
+
+Visible assistant streams also redact email addresses from text deltas before they reach the UI. This is a last-resort privacy guard for order/tracking/support flows; order-reference safety still depends on the code-owned protected-tool proof checks and deterministic `order_privacy_safe` evals.
 
 ## Recommended Next Langfuse Feature
 
