@@ -89,4 +89,9 @@ if [ -n "${runtime_changed}" ]; then
   exit 0
 fi
 
-write_decision "true" "eval-only or docs/workflow change" "current-deploy" "1" "false"
+write_decision \
+  "true" \
+  "eval-only or docs/workflow change; wait for staging deploy" \
+  "post-deploy" \
+  "1" \
+  "true"

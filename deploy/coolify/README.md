@@ -8,6 +8,19 @@ The default Coolify Docker Compose resource still uses the root
 choice when `docker-compose.yml`, lockfiles, shared packages, database bootstrap,
 or multiple apps changed.
 
+## Release Identity
+
+The storefront health endpoint reports `releaseSha` for post-deploy checks and
+AI assistant eval gating. Configure Coolify with a runtime variable:
+
+```sh
+STOREFRONT_RELEASE_SHA=$SOURCE_COMMIT
+```
+
+Do not create a normal application variable named `SOURCE_COMMIT`. That shadows
+Coolify's predefined source commit value and makes `/api/health` report
+`unknown`, which can cause the eval workflow to test the previous deployment.
+
 For one-app hotfixes, use a scoped redeploy so Coolify does not rebuild every
 service in the compose file.
 
