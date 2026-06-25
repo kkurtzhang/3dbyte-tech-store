@@ -9,9 +9,15 @@ export type LangfuseEvalScore = {
 }
 
 export type CustomerAiEvalSummary = {
+  attemptsPerCase: number
+  casesFailed: number
+  casesStable: number
+  casesTotal: number
   endpointUrl: string
   failed: number
   generatedAt: string
+  passAt1: number
+  passToK: number
   passed: number
   promptLabel?: string
   promptName?: string
@@ -40,6 +46,7 @@ export type LangfuseEvalScorePayload = LangfuseEvalScore & {
 export type LangfuseEvalScoreClient = {
   flush?: () => Promise<void>
   score: {
+    // eslint-disable-next-line no-unused-vars -- Type-only payload name keeps score publishing typed.
     create: (score: LangfuseEvalScorePayload) => void
     flush?: () => Promise<void>
   }
@@ -57,6 +64,9 @@ function buildScoreMetadata(
     promptLabel: options.promptLabel,
     promptName: options.promptName,
     runName: options.runName,
+    attempt: result.attempt,
+    attemptCount: result.attemptCount,
+    diagnostics: result.diagnostics,
     evalCaseId: result.id,
     tags: result.tags,
     turnCount: result.turnCount,
@@ -127,13 +137,45 @@ export function buildCustomerAiEvalReport(
     ...result,
     scores: buildLangfuseEvalScores(result, options),
   }))
+  const attemptsPerCase = Math.max(
+    1,
+    ...resultsWithScores.map((result) => result.attemptCount ?? 1),
+  )
+  const resultsByCase = resultsWithScores.reduce(
+    (grouped, result) => {
+      const existing = grouped.get(result.id) ?? []
+
+      return new Map(grouped).set(result.id, [...existing, result])
+    },
+    new Map<string, typeof resultsWithScores>(),
+  )
+  const casesTotal = resultsByCase.size
+  const casesStable = Array.from(resultsByCase.values()).filter(
+    (caseResults) =>
+      caseResults.length === attemptsPerCase &&
+      caseResults.every((result) => result.passed),
+  ).length
+  const firstAttemptPassed = Array.from(resultsByCase.values()).filter(
+    (caseResults) =>
+      caseResults.find((result) => (result.attempt ?? 1) === 1)?.passed,
+  ).length
 
   return {
     results: resultsWithScores,
     summary: {
+      attemptsPerCase,
+      casesFailed: casesTotal - casesStable,
+      casesStable,
+      casesTotal,
       endpointUrl,
       failed: resultsWithScores.filter((result) => !result.passed).length,
       generatedAt,
+      passAt1:
+        casesTotal > 0
+          ? Number((firstAttemptPassed / casesTotal).toFixed(4))
+          : 0,
+      passToK:
+        casesTotal > 0 ? Number((casesStable / casesTotal).toFixed(4)) : 0,
       passed: resultsWithScores.filter((result) => result.passed).length,
       promptLabel: options.promptLabel,
       promptName: options.promptName,

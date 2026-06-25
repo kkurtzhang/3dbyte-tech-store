@@ -29,6 +29,7 @@ Useful options:
 | --- | --- |
 | `AI_ASSISTANT_EVAL_BASE_URL` | Storefront base URL. Defaults to `http://127.0.0.1:3001`. |
 | `AI_ASSISTANT_EVAL_CASES` | Comma-separated eval case ids to run. |
+| `AI_ASSISTANT_EVAL_ATTEMPTS` | Runs the complete selected suite repeatedly, from `1` to `10`. Defaults to `1`. Repeated attempts are sequential and paced to respect the assistant rate limit. |
 | `AI_ASSISTANT_EVAL_LIMIT` | Limits the number of cases for quick smoke runs. |
 | `AI_ASSISTANT_EVAL_SUITE` | Selects `smoke`, `release`, or `extended`. Explicit case ids override suite membership. Defaults to `release`. |
 | `AI_ASSISTANT_EVAL_OUTPUT=json` | Prints full JSON results for later tooling. |
@@ -46,6 +47,34 @@ AI_ASSISTANT_EVAL_OUTPUT=json \
 AI_ASSISTANT_EVAL_OUTPUT_FILE=artifacts/customer-ai-evals.json \
 pnpm --filter=@3dbyte-tech-store/storefront-v3 eval:ai:customer
 ```
+
+Repeated-attempt reports include both per-attempt totals and case stability:
+
+- `pass@1`: first-attempt reliability, useful for customer-visible odds on the first response.
+- `pass^k`: every attempt passed, useful as the release gate when `AI_ASSISTANT_EVAL_ATTEMPTS` is greater than `1`.
+- `casesStable`: number of cases where every attempt passed.
+- `attemptsPerCase`: the expected attempt count for each case.
+
+For assistant runtime changes, use the post-deploy consistency proof after Coolify has picked up the merged commit:
+
+```bash
+AI_ASSISTANT_EVAL_BASE_URL=https://store.staging.3dbytetech.com.au \
+AI_ASSISTANT_EVAL_CASES=tracking-with-proof-shape \
+AI_ASSISTANT_EVAL_ATTEMPTS=10 \
+AI_ASSISTANT_EVAL_OUTPUT_FILE=/tmp/3dbyte-ai-evals/tracking-with-proof-shape.json \
+pnpm --filter=@3dbyte-tech-store/storefront-v3 eval:ai:customer
+```
+
+Then run the full smoke suite with three complete passes:
+
+```bash
+AI_ASSISTANT_EVAL_BASE_URL=https://store.staging.3dbytetech.com.au \
+AI_ASSISTANT_EVAL_ATTEMPTS=3 \
+AI_ASSISTANT_EVAL_OUTPUT_FILE=/tmp/3dbyte-ai-evals/customer-smoke-3x.json \
+pnpm --filter=@3dbyte-tech-store/storefront-v3 eval:ai:customer:smoke
+```
+
+Repeated attempts fail if the marked eval responses cannot report the deployed model, temperature, prompt version, guardrail version, and release SHA. This prevents a consistency proof from mixing old and new storefront deployments or silently using a prompt fallback.
 
 ## Phase 3B: Manual Staging Eval Artifacts
 
@@ -82,10 +111,12 @@ Runtime prompt env:
 
 | Env var | Purpose |
 | --- | --- |
+| `AI_ASSISTANT_TEMPERATURE` | DeepSeek chat completion temperature, validated from `0` to `2`. Defaults to `0.2` for more stable customer smoke behavior. |
 | `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` | Enables Langfuse prompt fetch and trace/score writes. |
 | `LANGFUSE_HOST` | Self-hosted Langfuse base URL. |
 | `LANGFUSE_ASSISTANT_PROMPT_NAME` | Prompt name. Defaults to `storefront.ai-shopping-assistant.system`. |
 | `LANGFUSE_ASSISTANT_PROMPT_LABEL` | Prompt label. If unset, uses `APP_ENV` when it is `staging` or `production`, otherwise `production`. |
+| `STOREFRONT_RELEASE_SHA` | Runtime release identity returned by `/api/health` and eval diagnostic headers. Coolify maps this from `SOURCE_COMMIT` in compose without enabling build-time source commit injection. |
 
 Safety rule: Langfuse owns editable tone/format wording only. The storefront route always appends the code-owned assistant guardrails after the dashboard prompt, including suggest-only behavior, exact `productUrl` copying, support-ticket confirmation, and no cart/order/customer mutation.
 
@@ -127,7 +158,7 @@ LANGFUSE_ASSISTANT_PROMPT_LABEL=staging \
 pnpm --filter=@3dbyte-tech-store/storefront-v3 eval:ai:customer:one
 ```
 
-When upload is enabled, the eval runner also marks its assistant requests with an internal QA header. The storefront route returns the active Langfuse trace id only for those marked eval requests. The runner publishes each deterministic score to `traceId` when the route returns one, with `sessionId` as a fallback only if the trace id is unavailable. Without upload, scores are intentionally local-only in the console/JSON artifact.
+When upload is enabled, the eval runner also marks its assistant requests with an internal QA header. The storefront route returns the active Langfuse trace id only for those marked eval requests. Marked eval responses also include diagnostic headers for model, temperature, prompt version, code-owned guardrail version, and release SHA. The runner publishes each deterministic score to `traceId` when the route returns one, with `sessionId` as a fallback only if the trace id is unavailable. Without upload, scores are intentionally local-only in the console/JSON artifact.
 
 When local access to self-hosted Langfuse requires the observation server, open the tunnel before the eval and point the client at the local end:
 

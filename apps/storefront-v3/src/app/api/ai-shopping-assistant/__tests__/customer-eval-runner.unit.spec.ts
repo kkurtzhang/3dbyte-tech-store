@@ -8,6 +8,10 @@ import {
   publishLangfuseEvalScores,
   scoreCustomerEvalAnswer,
 } from "../evals/customer-eval-runner"
+import {
+  resolveEvalAttempts,
+  runCustomerAiEvalSuite,
+} from "../evals/customer-eval-execution"
 
 const baseEvalCase: CustomerAiEvalCase = {
   id: "petg-outdoor-rc-parts",
@@ -148,10 +152,18 @@ describe("customer AI eval runner", () => {
   it("runs an eval case against a mocked assistant endpoint", async () => {
     const fetchMock = jest.fn(async () => ({
       headers: {
-        get: (name: string) =>
-          name.toLowerCase() === "x-3db-langfuse-trace-id"
-            ? "trace_01HQA"
-            : null,
+        get: (name: string) => {
+          const headers: Record<string, string> = {
+            "x-3db-ai-guardrails-version": "2026-06-24.1",
+            "x-3db-ai-model": "deepseek-v4-flash",
+            "x-3db-ai-prompt-version": "7",
+            "x-3db-ai-temperature": "0.2",
+            "x-3db-langfuse-trace-id": "trace_01HQA",
+            "x-3db-release-sha": "release-123",
+          }
+
+          return headers[name.toLowerCase()] ?? null
+        },
       },
       ok: true,
       status: 200,
@@ -195,6 +207,202 @@ describe("customer AI eval runner", () => {
     expect(result.passed).toBe(true)
     expect(result.sessionId).toBe("customer-ai-eval-session")
     expect(result.traceId).toBe("trace_01HQA")
+    expect(result.diagnostics).toEqual({
+      guardrailsVersion: "2026-06-24.1",
+      model: "deepseek-v4-flash",
+      promptVersion: "7",
+      releaseSha: "release-123",
+      temperature: "0.2",
+    })
+  })
+
+  it("parses eval attempts within the supported range", () => {
+    expect(resolveEvalAttempts(undefined)).toBe(1)
+    expect(resolveEvalAttempts("3")).toBe(3)
+    expect(() => resolveEvalAttempts("0")).toThrow(
+      "AI_ASSISTANT_EVAL_ATTEMPTS must be an integer between 1 and 10.",
+    )
+    expect(() => resolveEvalAttempts("11")).toThrow(
+      "AI_ASSISTANT_EVAL_ATTEMPTS must be an integer between 1 and 10.",
+    )
+  })
+
+  it("runs complete suite attempts sequentially and preserves failures", async () => {
+    const evalCases = [
+      { ...baseEvalCase, id: "case-a" },
+      { ...baseEvalCase, id: "case-b" },
+    ]
+    const calls: string[] = []
+    const evaluateCase = jest.fn(async (evalCase: CustomerAiEvalCase) => {
+      calls.push(evalCase.id)
+      const attempt = Math.floor((calls.length - 1) / evalCases.length) + 1
+
+      return makeRunResult({
+        diagnostics: {
+          guardrailsVersion: "guardrails-1",
+          model: "deepseek-v4-flash",
+          promptVersion: "7",
+          releaseSha: "release-123",
+          temperature: "0.2",
+        },
+        id: evalCase.id,
+        passed: !(evalCase.id === "case-b" && attempt === 2),
+      })
+    })
+
+    const results = await runCustomerAiEvalSuite({
+      attempts: 3,
+      endpointUrl: "https://store.test/api/ai-shopping-assistant",
+      evalCases,
+      evaluateCase,
+      minimumRequestIntervalMs: 0,
+    })
+
+    expect(calls).toEqual([
+      "case-a",
+      "case-b",
+      "case-a",
+      "case-b",
+      "case-a",
+      "case-b",
+    ])
+    expect(results.map(({ attempt, attemptCount, id, passed }) => ({
+      attempt,
+      attemptCount,
+      id,
+      passed,
+    }))).toEqual([
+      { attempt: 1, attemptCount: 3, id: "case-a", passed: true },
+      { attempt: 1, attemptCount: 3, id: "case-b", passed: true },
+      { attempt: 2, attemptCount: 3, id: "case-a", passed: true },
+      { attempt: 2, attemptCount: 3, id: "case-b", passed: false },
+      { attempt: 3, attemptCount: 3, id: "case-a", passed: true },
+      { attempt: 3, attemptCount: 3, id: "case-b", passed: true },
+    ])
+  })
+
+  it("paces request starts when repeated attempts are enabled", async () => {
+    let nowMs = 0
+    const sleep = jest.fn(async (delayMs: number) => {
+      nowMs += delayMs
+    })
+    const requestStarts: number[] = []
+    const evaluateCase = jest.fn(
+      async (
+        evalCase: CustomerAiEvalCase,
+        options: {
+          beforeRequest?: () => Promise<void>
+        },
+      ) => {
+        await options.beforeRequest?.()
+        requestStarts.push(nowMs)
+
+        return makeRunResult({
+          diagnostics: {
+            guardrailsVersion: "guardrails-1",
+            model: "deepseek-v4-flash",
+            promptVersion: "7",
+            releaseSha: "release-123",
+            temperature: "0.2",
+          },
+          id: evalCase.id,
+          passed: true,
+        })
+      },
+    )
+
+    await runCustomerAiEvalSuite({
+      attempts: 2,
+      endpointUrl: "https://store.test/api/ai-shopping-assistant",
+      evalCases: [{ ...baseEvalCase, id: "case-a" }],
+      evaluateCase,
+      minimumRequestIntervalMs: 6_500,
+      now: () => nowMs,
+      sleep,
+    })
+
+    expect(requestStarts).toEqual([0, 6_500])
+    expect(sleep).toHaveBeenCalledWith(6_500)
+  })
+
+  it("fails results when runtime diagnostics change between attempts", async () => {
+    const evaluateCase = jest
+      .fn()
+      .mockResolvedValueOnce(
+        makeRunResult({
+          diagnostics: {
+            guardrailsVersion: "guardrails-1",
+            model: "deepseek-v4-flash",
+            promptVersion: "7",
+            releaseSha: "release-123",
+            temperature: "0.2",
+          },
+          id: "case-a",
+          passed: true,
+        }),
+      )
+      .mockResolvedValueOnce(
+        makeRunResult({
+          diagnostics: {
+            guardrailsVersion: "guardrails-1",
+            model: "deepseek-v4-flash",
+            promptVersion: "8",
+            releaseSha: "release-456",
+            temperature: "0.2",
+          },
+          id: "case-a",
+          passed: true,
+        }),
+      )
+
+    const results = await runCustomerAiEvalSuite({
+      attempts: 2,
+      endpointUrl: "https://store.test/api/ai-shopping-assistant",
+      evalCases: [{ ...baseEvalCase, id: "case-a" }],
+      evaluateCase,
+      minimumRequestIntervalMs: 0,
+    })
+
+    expect(results[0].passed).toBe(true)
+    expect(results[1]).toEqual(
+      expect.objectContaining({
+        passed: false,
+        error: expect.stringContaining("Runtime diagnostics changed"),
+      }),
+    )
+  })
+
+  it("fails consistency runs when runtime diagnostics are unavailable", async () => {
+    const results = await runCustomerAiEvalSuite({
+      attempts: 2,
+      endpointUrl: "https://store.test/api/ai-shopping-assistant",
+      evalCases: [{ ...baseEvalCase, id: "case-a" }],
+      evaluateCase: jest.fn(async () =>
+        makeRunResult({
+          diagnostics: {
+            guardrailsVersion: "unknown",
+            model: "deepseek-v4-flash",
+            promptVersion: "unknown",
+            releaseSha: "unknown",
+            temperature: "0.2",
+          },
+          id: "case-a",
+          passed: true,
+        }),
+      ),
+      minimumRequestIntervalMs: 0,
+    })
+
+    expect(results).toEqual([
+      expect.objectContaining({
+        passed: false,
+        error: expect.stringContaining("Runtime diagnostics are incomplete"),
+      }),
+      expect.objectContaining({
+        passed: false,
+        error: expect.stringContaining("Runtime diagnostics are incomplete"),
+      }),
+    ])
   })
 
   it("runs multi-turn eval cases with prior assistant context", async () => {
@@ -284,13 +492,17 @@ describe("customer AI eval runner", () => {
     const report = buildCustomerAiEvalReport(
       [
         makeRunResult({
+          attempt: 1,
+          attemptCount: 2,
           formatWarnings: ["Missing focused follow-up cue"],
           id: "passing-case",
           passed: true,
         }),
         makeRunResult({
+          attempt: 2,
+          attemptCount: 2,
           formatWarnings: ["Missing visible recommendation cue"],
-          id: "failing-case",
+          id: "passing-case",
           passed: false,
         }),
       ],
@@ -300,15 +512,21 @@ describe("customer AI eval runner", () => {
 
     expect(report.summary).toEqual({
       endpointUrl,
+      attemptsPerCase: 2,
+      casesFailed: 1,
+      casesStable: 0,
+      casesTotal: 1,
       failed: 1,
       generatedAt: "2026-05-28T00:00:00.000Z",
+      passAt1: 1,
+      passToK: 0,
       passed: 1,
       total: 2,
       warnings: 2,
     })
     expect(report.results.map((result) => result.id)).toEqual([
       "passing-case",
-      "failing-case",
+      "passing-case",
     ])
   })
 

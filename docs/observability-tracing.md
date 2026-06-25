@@ -58,13 +58,13 @@ The storefront AI drawer sends a browser-tab chat session id with every assistan
 - trace name: `storefront.ai-shopping-assistant`;
 - session id: one browser chat conversation;
 - tags: `ai-chatbot`, `storefront`, `shopping-assistant`, `storefront.shopping-assistant`;
-- metadata: `chatbot_id`, `chatbot_surface`, `service`, `route`, `provider`, and `model`;
+- metadata: `chatbot_id`, `chatbot_surface`, `service`, `route`, `provider`, `model`, `temperature`, and `release_sha`;
 - input: a sanitized debug object with the latest user message, message count, prompt name, and prompt label;
 - output: a sanitized debug object with the final assistant text and finish reason.
 
 Trace input/output is written through `@langfuse/tracing` in an active request observation. The route keeps that observation open until the AI stream finishes so the final assistant output can be attached to the top-level trace. The values deliberately mask emails, order/support references, and common commerce IDs before writing to Langfuse. Keep full customer transcripts in application data only when the customer has explicitly consented.
 
-Customer assistant eval runs use an internal request marker so the route can return the active Langfuse trace id to the eval runner. Deterministic eval score publishing should target `traceId` when it is available, with `sessionId` as a fallback only when the trace id is unavailable. Multi-turn evals publish aggregate case scores to the session because their evidence spans more than one trace. Normal browser chat responses do not expose this trace-id header.
+Customer assistant eval runs use an internal request marker so the route can return the active Langfuse trace id to the eval runner. Marked eval responses also return diagnostic headers for model, temperature, prompt version, code-owned guardrail version, and release SHA. Repeated consistency runs fail when those diagnostics are missing or change between attempts. Deterministic eval score publishing should target `traceId` when it is available, with `sessionId` as a fallback only when the trace id is unavailable. Multi-turn evals publish aggregate case scores to the session because their evidence spans more than one trace. Normal browser chat responses do not expose trace or diagnostic headers.
 
 The eval runner always publishes `deterministic_pass`, `grounding_cue_match`, `format_warning_count`, and `forbidden_claim_count`. Cases can also publish evidence-backed boolean scores for exact product links, tool-call correctness, safe support handoff, order privacy, and synthetic PII leakage. It intentionally leaves `grounded_answer`, human helpfulness/actionability, and reviewer notes unset until source evidence or a human reviewer supplies them.
 
@@ -77,5 +77,7 @@ output
 ```
 
 The assistant route records usage details with those keys when the stream finishes. If provider-specific cache fields are unavailable, input tokens are conservatively treated as cache misses.
+
+Set `AI_ASSISTANT_TEMPERATURE` from `0` to `2` to control DeepSeek sampling. The default is `0.2`, which keeps customer smoke evals more stable while preserving natural wording. The storefront `/api/health` response returns `releaseSha` from `STOREFRONT_RELEASE_SHA`; in Coolify compose this is wired from the runtime `SOURCE_COMMIT` value so post-deploy evals can wait for the expected commit without reducing Docker build cache reuse.
 
 Set `OTEL_TRACING_ENABLED=false` or `OTEL_SDK_DISABLED=true` to disable tracing for a runtime.

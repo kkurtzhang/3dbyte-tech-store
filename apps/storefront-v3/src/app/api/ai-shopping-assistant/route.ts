@@ -11,8 +11,6 @@ import {
   stepCountIs,
   streamText,
   tool,
-  type TextStreamPart,
-  type ToolSet,
   type UIMessage,
 } from "ai"
 import { z } from "zod"
@@ -21,8 +19,14 @@ import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
 import { checkRateLimit } from "@/lib/security/rate-limit"
 
 import { resolveAssistantSystemPrompt } from "./prompt-management"
+import {
+  collectEmailAddresses,
+  createAssistantVisibleTextTransform,
+  maskCompleteEmailAddresses,
+} from "./visible-output-sanitizer"
 
 const DEFAULT_AI_MODEL = "deepseek-v4-flash"
+const DEFAULT_AI_ASSISTANT_TEMPERATURE = 0.2
 const DEFAULT_DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 const DEEPSEEK_NON_THINKING_MODE = { type: "disabled" } as const
 const ASSISTANT_CHATBOT_ID = "storefront.shopping-assistant"
@@ -36,11 +40,14 @@ const ASSISTANT_TRACE_TAGS = [
 ]
 const CUSTOMER_EVAL_TRACE_ID_REQUEST_HEADER = "x-3db-customer-ai-eval-run"
 const LANGFUSE_TRACE_ID_HEADER = "x-3db-langfuse-trace-id"
+const AI_MODEL_HEADER = "x-3db-ai-model"
+const AI_TEMPERATURE_HEADER = "x-3db-ai-temperature"
+const AI_PROMPT_VERSION_HEADER = "x-3db-ai-prompt-version"
+const AI_GUARDRAILS_VERSION_HEADER = "x-3db-ai-guardrails-version"
+const RELEASE_SHA_HEADER = "x-3db-release-sha"
 const MAX_ASSISTANT_PART_BYTES = 25_000
 const MAX_TRACE_IO_TEXT_CHARS = 1_200
 const TRACE_CONTEXT_ID_PATTERN = /^[a-zA-Z0-9._:-]+$/
-const TRACE_EMAIL_PATTERN =
-  /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi
 const TRACE_REFERENCE_PATTERN =
   /\b(?:CASE|INV|ORDER|ORD|REF|RMA|SUP|TICKET|TKT)-[A-Z0-9-]+\b/gi
 const TRACE_COMMERCE_ID_PATTERN =
@@ -156,10 +163,9 @@ function isSafeDataPart(part: AssistantPart) {
 }
 
 function toModelToolHistoryPart(part: AssistantPart) {
-  const { providerExecuted: _providerExecuted, ...safePart } =
-    part as AssistantPart & { providerExecuted?: unknown }
-
-  return safePart as AssistantPart
+  return Object.fromEntries(
+    Object.entries(part).filter(([key]) => key !== "providerExecuted"),
+  ) as AssistantPart
 }
 
 function toSafeToolHistoryPart(part: AssistantPart): AssistantPart | null {
@@ -383,14 +389,48 @@ function getConfig() {
   const apiKey = process.env.DEEPSEEK_API_KEY
   const baseURL = process.env.DEEPSEEK_BASE_URL || DEFAULT_DEEPSEEK_BASE_URL
   const model = process.env.AI_MODEL || DEFAULT_AI_MODEL
+  const temperature = getAssistantTemperature(
+    process.env.AI_ASSISTANT_TEMPERATURE,
+  )
   const internalToken = process.env.INTERNAL_API_TOKEN
   const backendUrl = resolveMedusaBaseUrl({ isServer: true })
+  const releaseSha = process.env.STOREFRONT_RELEASE_SHA?.trim() || "unknown"
 
-  if (provider !== "deepseek" || !apiKey || !internalToken || !backendUrl) {
+  if (
+    provider !== "deepseek" ||
+    !apiKey ||
+    !internalToken ||
+    !backendUrl ||
+    temperature === null
+  ) {
     return null
   }
 
-  return { apiKey, backendUrl, baseURL, internalToken, model }
+  return {
+    apiKey,
+    backendUrl,
+    baseURL,
+    internalToken,
+    model,
+    releaseSha,
+    temperature,
+  }
+}
+
+function getAssistantTemperature(value: string | undefined) {
+  if (value === undefined) {
+    return DEFAULT_AI_ASSISTANT_TEMPERATURE
+  }
+
+  if (!value.trim()) {
+    return null
+  }
+
+  const temperature = Number(value)
+
+  return Number.isFinite(temperature) && temperature >= 0 && temperature <= 2
+    ? temperature
+    : null
 }
 
 function isJsonRecord(value: unknown): value is Record<string, unknown> {
@@ -516,7 +556,9 @@ function withDeepSeekUsageCapture(
   )
 }
 
-function toDeepSeekNonThinkingBody(body: BodyInit | null | undefined) {
+function toDeepSeekNonThinkingBody(
+  body: globalThis.BodyInit | null | undefined,
+) {
   if (typeof body !== "string") {
     return body
   }
@@ -597,8 +639,10 @@ function buildAssistantTraceMetadata(
     ),
     model: config.model,
     provider: "deepseek",
+    release_sha: config.releaseSha,
     route: "/api/ai-shopping-assistant",
     service: "storefront-v3",
+    temperature: config.temperature,
   }
 }
 
@@ -621,35 +665,11 @@ function truncateTraceText(text: string) {
 }
 
 function sanitizeTraceText(text: string) {
-  const maskedText = text
-    .replace(TRACE_EMAIL_PATTERN, "[email]")
+  const maskedText = maskCompleteEmailAddresses(text)
     .replace(TRACE_REFERENCE_PATTERN, "[reference]")
     .replace(TRACE_COMMERCE_ID_PATTERN, "[id]")
 
   return truncateTraceText(maskedText)
-}
-
-function sanitizeVisibleAssistantText(text: string) {
-  TRACE_EMAIL_PATTERN.lastIndex = 0
-
-  return text.replace(TRACE_EMAIL_PATTERN, "[email]")
-}
-
-function createAssistantVisibleTextTransform<TOOLS extends ToolSet>() {
-  return (_options: { stopStream: () => void; tools: TOOLS }) =>
-    new TransformStream<TextStreamPart<TOOLS>, TextStreamPart<TOOLS>>({
-      transform(chunk, controller) {
-        if (chunk.type === "text-delta") {
-          controller.enqueue({
-            ...chunk,
-            text: sanitizeVisibleAssistantText(chunk.text),
-          })
-          return
-        }
-
-        controller.enqueue(chunk)
-      },
-    })
 }
 
 function getLatestUserMessage(messages: AssistantMessage[]) {
@@ -835,13 +855,51 @@ function toSupportTicketPayload(
   }
 }
 
-function withLangfuseTraceHeader(response: Response, traceId?: string) {
-  if (!traceId) {
-    return response
+function getDiagnosticMetadataValue(
+  metadata: Record<string, unknown>,
+  key: string,
+) {
+  const value = metadata[key]
+
+  if (typeof value === "string" && value.trim()) {
+    return value.trim()
   }
 
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return String(value)
+  }
+
+  return "unknown"
+}
+
+function withEvalDiagnosticHeaders({
+  config,
+  promptMetadata,
+  response,
+  traceId,
+}: {
+  config: NonNullable<ReturnType<typeof getConfig>>
+  promptMetadata: Record<string, unknown>
+  response: Response
+  traceId?: string
+}) {
   const headers = new Headers(response.headers)
-  headers.set(LANGFUSE_TRACE_ID_HEADER, traceId)
+
+  if (traceId) {
+    headers.set(LANGFUSE_TRACE_ID_HEADER, traceId)
+  }
+
+  headers.set(AI_MODEL_HEADER, config.model)
+  headers.set(AI_TEMPERATURE_HEADER, String(config.temperature))
+  headers.set(
+    AI_PROMPT_VERSION_HEADER,
+    getDiagnosticMetadataValue(promptMetadata, "langfuse_prompt_version"),
+  )
+  headers.set(
+    AI_GUARDRAILS_VERSION_HEADER,
+    getDiagnosticMetadataValue(promptMetadata, "code_guardrails_version"),
+  )
+  headers.set(RELEASE_SHA_HEADER, config.releaseSha)
 
   return new Response(response.body, {
     headers,
@@ -893,13 +951,18 @@ export async function POST(req: Request): Promise<Response> {
 
   const assistantPrompt = await resolveAssistantSystemPrompt()
   const traceMetadata = {
-    ...buildAssistantTraceMetadata(config, parsed.data.traceContext),
     ...assistantPrompt.metadata,
+    ...buildAssistantTraceMetadata(config, parsed.data.traceContext),
   }
   const telemetryMetadata = {
-    ...buildAssistantTelemetryMetadata(config, parsed.data.traceContext),
     ...assistantPrompt.metadata,
+    ...buildAssistantTelemetryMetadata(config, parsed.data.traceContext),
   }
+  const suppliedEmails = collectEmailAddresses(
+    parsed.data.messages
+      .filter((message) => message.role === "user")
+      .map(getAssistantMessageContent),
+  )
 
   return startActiveLangfuseTraceObservation(
     ASSISTANT_TRACE_NAME,
@@ -966,7 +1029,9 @@ export async function POST(req: Request): Promise<Response> {
               messages: await convertToModelMessages(uiMessages, {
                 ignoreIncompleteToolCalls: true,
               }),
-              experimental_transform: createAssistantVisibleTextTransform(),
+              temperature: config.temperature,
+              experimental_transform:
+                createAssistantVisibleTextTransform(suppliedEmails),
               experimental_telemetry: {
                 functionId: "storefront.ai-shopping-assistant",
                 isEnabled: isAiTelemetryEnabled(),
@@ -1034,12 +1099,21 @@ export async function POST(req: Request): Promise<Response> {
               },
             })
 
-            return withLangfuseTraceHeader(
-              result.toUIMessageStreamResponse(),
-              shouldExposeLangfuseTraceHeader(req)
-                ? assistantTrace.traceId || getActiveLangfuseTraceId()
-                : undefined,
-            )
+            const response = result.toUIMessageStreamResponse()
+
+            if (!shouldExposeLangfuseTraceHeader(req)) {
+              return response
+            }
+
+            return withEvalDiagnosticHeaders({
+              config,
+              promptMetadata: assistantPrompt.metadata,
+              response,
+              traceId:
+                assistantTrace.traceId ||
+                getActiveLangfuseTraceId() ||
+                undefined,
+            })
           } catch (error) {
             recordAssistantTraceError(error)
             throw error
