@@ -158,7 +158,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
 
 ### 7) Calibrate Langfuse prompt and judge workflows (Observability + AI)
 
-- Status: Langfuse Prompt Management, assistant session grouping, cache-aware usage, sanitized trace input/output, tiered customer eval suites, multi-turn evaluation, and evidence-backed deterministic score publishing are implemented. LLM-as-judge remains a follow-up after deterministic eval scores and human feedback are visible and trusted.
+- Status: Langfuse Prompt Management, assistant session grouping, cache-aware usage, sanitized trace input/output, tiered customer eval suites, multi-turn evaluation, trace-ingestion acknowledgment, and evidence-backed deterministic score publishing are implemented. LLM-as-judge remains a follow-up after deterministic eval scores and human feedback are visible and trusted.
 - Problem: dashboard-managed prompts and Langfuse judge scores are useful for prompt iteration, but they should not replace code-owned safety constraints or deterministic release gates.
 - Deliverable:
   - Keep assistant tone/format wording in Langfuse Prompt Management with `staging` and `production` labels.
