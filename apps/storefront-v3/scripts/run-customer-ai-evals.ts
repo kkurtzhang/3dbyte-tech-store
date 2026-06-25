@@ -12,6 +12,10 @@ import {
   evaluateCustomerAiCase,
   publishLangfuseEvalScores,
 } from "../src/app/api/ai-shopping-assistant/evals/customer-eval-runner"
+import {
+  resolveEvalAttempts,
+  runCustomerAiEvalSuite,
+} from "../src/app/api/ai-shopping-assistant/evals/customer-eval-execution"
 
 function getEnvValue(key: string) {
   const value = process.env[key]?.trim()
@@ -123,7 +127,9 @@ function formatResultLine(
     ? ` warnings=${result.formatWarnings.length}`
     : ""
 
-  return `[${status}] ${result.id} status=${result.status ?? "n/a"} duration=${result.durationMs}ms chars=${result.answerChars} ${includeText}${warningText}`
+  const attemptText = `attempt=${result.attempt ?? 1}/${result.attemptCount ?? 1}`
+
+  return `[${status}] ${result.id} ${attemptText} status=${result.status ?? "n/a"} duration=${result.durationMs}ms chars=${result.answerChars} ${includeText}${warningText}`
 }
 
 async function writeReportFile(
@@ -137,6 +143,9 @@ async function writeReportFile(
 async function main() {
   const endpointUrl = resolveEndpointUrl()
   const evalCases = resolveCases()
+  const attempts = resolveEvalAttempts(
+    getEnvValue("AI_ASSISTANT_EVAL_ATTEMPTS"),
+  )
   const generatedAt = new Date().toISOString()
   const runName = resolveRunName(generatedAt)
   const traceContext = resolveTraceContext(runName)
@@ -158,16 +167,15 @@ async function main() {
     throw new Error("No customer AI eval cases matched the requested filters.")
   }
 
-  const results = []
+  const results = await runCustomerAiEvalSuite({
+    attempts,
+    endpointUrl,
+    evalCases,
+    evaluateCase: evaluateCustomerAiCase,
+    traceContext,
+  })
 
-  for (const evalCase of evalCases) {
-    const result = await evaluateCustomerAiCase(evalCase, {
-      endpointUrl,
-      traceContext,
-    })
-
-    results.push(result)
-
+  for (const result of results) {
     if (!outputJson) {
       console.log(formatResultLine(result))
 
@@ -214,7 +222,7 @@ async function main() {
     console.log(JSON.stringify(report, null, 2))
   } else {
     console.log(
-      `Summary: ${report.summary.passed}/${report.summary.total} passed, ${report.summary.failed} failed, ${report.summary.warnings} warnings`,
+      `Summary: ${report.summary.passed}/${report.summary.total} attempts passed, ${report.summary.casesStable}/${report.summary.casesTotal} cases stable, pass@1=${report.summary.passAt1}, pass^${report.summary.attemptsPerCase}=${report.summary.passToK}, ${report.summary.warnings} warnings`,
     )
   }
 

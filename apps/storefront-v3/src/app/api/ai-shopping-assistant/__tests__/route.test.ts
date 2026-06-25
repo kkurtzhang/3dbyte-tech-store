@@ -266,6 +266,7 @@ function configureAiEnv() {
     NEXT_PUBLIC_MEDUSA_BACKEND_URL: "http://localhost:9000",
     OTEL_EXPORTER_OTLP_ENDPOINT: "http://observability.tailnet.local:4318",
     OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf",
+    STOREFRONT_RELEASE_SHA: "release_01HQA",
   }
 }
 
@@ -346,6 +347,58 @@ describe("POST /api/ai-shopping-assistant", () => {
     expect(body.error).toContain("Assistant configuration is incomplete")
     expect(streamTextMock).not.toHaveBeenCalled()
   })
+
+  it.each(["", " ", "not-a-number", "Infinity", "-0.1", "2.1"])(
+    "rejects invalid configured assistant temperature %p",
+    async (temperature) => {
+      configureAiEnv()
+      process.env.AI_ASSISTANT_TEMPERATURE = temperature
+      const { POST } = await import("../route")
+
+      const response = await POST(
+        createJsonRequest({
+          messages: [{ role: "user", content: "Which PETG should I buy?" }],
+        }),
+      )
+      const body = await response.json()
+
+      expect(response.status).toBe(503)
+      expect(body.error).toContain("Assistant configuration is incomplete")
+      expect(streamTextMock).not.toHaveBeenCalled()
+    },
+  )
+
+  it.each([
+    [undefined, 0.2],
+    ["0", 0],
+    ["2", 2],
+  ])(
+    "uses assistant temperature %p as %p for model calls",
+    async (configuredTemperature, expectedTemperature) => {
+      configureAiEnv()
+
+      if (configuredTemperature === undefined) {
+        delete process.env.AI_ASSISTANT_TEMPERATURE
+      } else {
+        process.env.AI_ASSISTANT_TEMPERATURE = configuredTemperature
+      }
+
+      const { POST } = await import("../route")
+
+      const response = await POST(
+        createJsonRequest({
+          messages: [{ role: "user", content: "Which PETG should I buy?" }],
+        }),
+      )
+
+      expect(response.status).toBe(200)
+      expect(streamTextMock.mock.calls[0]?.[0]).toEqual(
+        expect.objectContaining({
+          temperature: expectedTemperature,
+        }),
+      )
+    },
+  )
 
   it("rate limits expensive assistant requests before model creation", async () => {
     configureAiEnv()
@@ -812,6 +865,8 @@ describe("POST /api/ai-shopping-assistant", () => {
           code_guardrails_version: "2026-06-24.1",
           langfuse_prompt_name: "storefront.ai-shopping-assistant.system",
           provider: "deepseek",
+          release_sha: "release_01HQA",
+          temperature: 0.2,
         }),
         name: "storefront.ai-shopping-assistant",
         sessionId: "assistant-session_01",
@@ -850,6 +905,8 @@ describe("POST /api/ai-shopping-assistant", () => {
         code_guardrails_version: "2026-06-24.1",
         model: "deepseek-v4-flash",
         provider: "deepseek",
+        release_sha: "release_01HQA",
+        temperature: 0.2,
         langfuse_prompt_label: "staging",
         langfuse_prompt_name: "storefront.ai-shopping-assistant.system",
         langfuse_prompt_source: "langfuse",
@@ -877,7 +934,9 @@ describe("POST /api/ai-shopping-assistant", () => {
           langfuse_prompt_name: "storefront.ai-shopping-assistant.system",
           langfuse_prompt_source: "langfuse",
           langfuse_prompt_version: 3,
+          release_sha: "release_01HQA",
           service: "storefront-v3",
+          temperature: 0.2,
         }),
         name: "storefront.ai-shopping-assistant",
         sessionId: "assistant-session_01",
@@ -1132,24 +1191,39 @@ describe("POST /api/ai-shopping-assistant", () => {
 
     const writer = transform!.writable.getWriter()
     const reader = transform!.readable.getReader()
-    const firstRead = reader.read()
+    const outputPromise = (async () => {
+      const output: string[] = []
+      let read = await reader.read()
+
+      while (!read.done) {
+        if (read.value.type === "text-delta") {
+          output.push(read.value.text)
+        }
+
+        read = await reader.read()
+      }
+
+      return output.join("")
+    })()
 
     await writer.write({
-      text: "Tracking lookup failed for ava.customer@example.com.",
+      text: "Tracking lookup failed for ava.customer@",
       type: "text-delta",
     })
-    await expect(firstRead).resolves.toEqual({
-      done: false,
-      value: {
-        text: "Tracking lookup failed for [email].",
-        type: "text-delta",
-      },
+    await writer.write({
+      toolCallId: "call_01",
+      toolName: "searchProducts",
+      type: "tool-input-start",
+    })
+    await writer.write({
+      text: "example.com.",
+      type: "text-delta",
     })
     await writer.close()
-    await expect(reader.read()).resolves.toEqual({
-      done: true,
-      value: undefined,
-    })
+
+    await expect(outputPromise).resolves.toBe(
+      "Tracking lookup failed for [email].",
+    )
   })
 
   it("exposes the active Langfuse trace id for eval score attachment", async () => {
@@ -1167,6 +1241,55 @@ describe("POST /api/ai-shopping-assistant", () => {
     )
 
     expect(response.headers.get("x-3db-langfuse-trace-id")).toBe("trace_01HQA")
+    expect(response.headers.get("x-3db-ai-model")).toBe("deepseek-v4-flash")
+    expect(response.headers.get("x-3db-ai-temperature")).toBe("0.2")
+    expect(response.headers.get("x-3db-ai-prompt-version")).toBe("3")
+    expect(response.headers.get("x-3db-ai-guardrails-version")).toBe(
+      "2026-06-24.1",
+    )
+    expect(response.headers.get("x-3db-release-sha")).toBe("release_01HQA")
+  })
+
+  it("does not expose eval diagnostics to normal browser requests", async () => {
+    configureAiEnv()
+    const { POST } = await import("../route")
+
+    const response = await POST(
+      createJsonRequest({
+        messages: [{ role: "user", content: "Which PETG should I buy?" }],
+      }),
+    )
+
+    expect(response.headers.get("x-3db-langfuse-trace-id")).toBeNull()
+    expect(response.headers.get("x-3db-ai-model")).toBeNull()
+    expect(response.headers.get("x-3db-ai-temperature")).toBeNull()
+    expect(response.headers.get("x-3db-ai-prompt-version")).toBeNull()
+    expect(response.headers.get("x-3db-ai-guardrails-version")).toBeNull()
+    expect(response.headers.get("x-3db-release-sha")).toBeNull()
+  })
+
+  it("uses unknown diagnostic fallbacks when prompt and release metadata are unavailable", async () => {
+    configureAiEnv()
+    delete process.env.STOREFRONT_RELEASE_SHA
+    resolveAssistantSystemPromptMock.mockResolvedValueOnce({
+      metadata: {},
+      prompt: "Use verified store context only.",
+      source: "code",
+    })
+    const { POST } = await import("../route")
+
+    const response = await POST(
+      createJsonRequest(
+        {
+          messages: [{ role: "user", content: "Which PETG should I buy?" }],
+        },
+        { "x-3db-customer-ai-eval-run": "1" },
+      ),
+    )
+
+    expect(response.headers.get("x-3db-ai-prompt-version")).toBe("unknown")
+    expect(response.headers.get("x-3db-ai-guardrails-version")).toBe("unknown")
+    expect(response.headers.get("x-3db-release-sha")).toBe("unknown")
   })
 
   it("prefers DeepSeek provider cache usage chunks over generic AI SDK usage", async () => {

@@ -12,18 +12,13 @@ import type {
 } from "./customer-eval-types"
 
 type AssistantResponse = {
-  headers: {
-    get: (name: string) => string | null
-  }
+  headers: Pick<globalThis.Headers, "get">
   ok: boolean
   status: number
   text: () => Promise<string>
 }
 
-type AssistantFetch = (
-  input: RequestInfo | URL,
-  init?: RequestInit,
-) => Promise<AssistantResponse>
+type AssistantFetch = typeof globalThis.fetch
 
 type AssistantMessage =
   | {
@@ -46,7 +41,10 @@ export type CustomerAiEvalScore = {
 
 export type CustomerAiEvalRunResult = CustomerAiEvalScore & {
   answer: string
+  attempt?: number
+  attemptCount?: number
   automatedChecks?: CustomerAiEvalAutomatedCheck[]
+  diagnostics?: CustomerAiEvalDiagnostics
   durationMs: number
   error?: string
   id: string
@@ -61,6 +59,7 @@ export type CustomerAiEvalRunResult = CustomerAiEvalScore & {
 }
 
 export type EvaluateCustomerAiCaseOptions = {
+  beforeRequest?: () => Promise<void>
   endpointUrl: string
   fetchImpl?: AssistantFetch
   timeoutMs?: number
@@ -72,6 +71,14 @@ export type CustomerAiEvalTraceContext = {
   sessionId?: string
   surface?: string
   userId?: string
+}
+
+export type CustomerAiEvalDiagnostics = {
+  guardrailsVersion: string
+  model: string
+  promptVersion: string
+  releaseSha: string
+  temperature: string
 }
 
 const defaultForbiddenPatterns = [
@@ -86,6 +93,11 @@ const defaultForbiddenPatterns = [
   /official 3DSets.*(?:file|model)/i,
 ]
 const CUSTOMER_EVAL_TRACE_ID_REQUEST_HEADER = "x-3db-customer-ai-eval-run"
+const GUARDRAILS_VERSION_HEADER = "x-3db-ai-guardrails-version"
+const MODEL_HEADER = "x-3db-ai-model"
+const PROMPT_VERSION_HEADER = "x-3db-ai-prompt-version"
+const RELEASE_SHA_HEADER = "x-3db-release-sha"
+const TEMPERATURE_HEADER = "x-3db-ai-temperature"
 const LANGFUSE_TRACE_ID_HEADER = "x-3db-langfuse-trace-id"
 
 export { decodeAssistantStreamEvidence } from "./customer-eval-stream"
@@ -178,6 +190,21 @@ function getResponseTraceId(response: AssistantResponse) {
   return traceId || undefined
 }
 
+function getResponseDiagnostics(
+  response: AssistantResponse,
+): CustomerAiEvalDiagnostics {
+  return {
+    guardrailsVersion:
+      response.headers.get(GUARDRAILS_VERSION_HEADER)?.trim() || "unknown",
+    model: response.headers.get(MODEL_HEADER)?.trim() || "unknown",
+    promptVersion:
+      response.headers.get(PROMPT_VERSION_HEADER)?.trim() || "unknown",
+    releaseSha: response.headers.get(RELEASE_SHA_HEADER)?.trim() || "unknown",
+    temperature:
+      response.headers.get(TEMPERATURE_HEADER)?.trim() || "unknown",
+  }
+}
+
 function getCustomerPrompts(evalCase: CustomerAiEvalCase) {
   return evalCase.customerPrompts?.length
     ? evalCase.customerPrompts
@@ -233,12 +260,14 @@ function buildAssistantHistoryMessage(
 }
 
 async function runAssistantTurn({
+  beforeRequest,
   endpointUrl,
   fetchImpl,
   messages,
   timeoutMs,
   traceContext,
 }: {
+  beforeRequest?: () => Promise<void>
   endpointUrl: string
   fetchImpl: AssistantFetch
   messages: AssistantMessage[]
@@ -249,6 +278,7 @@ async function runAssistantTurn({
   const timeout = setTimeout(() => controller.abort(), timeoutMs)
 
   try {
+    await beforeRequest?.()
     const response = await fetchImpl(endpointUrl, {
       body: JSON.stringify({
         messages,
@@ -264,6 +294,7 @@ async function runAssistantTurn({
     const raw = await response.text()
 
     return {
+      diagnostics: getResponseDiagnostics(response),
       evidence: decodeAssistantStreamEvidence(raw),
       error: response.ok ? undefined : raw.slice(0, 500),
       ok: response.ok,
@@ -279,6 +310,7 @@ export async function evaluateCustomerAiCase(
   evalCase: CustomerAiEvalCase,
   {
     endpointUrl,
+    beforeRequest,
     fetchImpl = fetch,
     timeoutMs = 45_000,
     traceContext,
@@ -293,6 +325,7 @@ export async function evaluateCustomerAiCase(
     toolCalls: [],
   }
   let finalError: string | undefined
+  let finalDiagnostics: CustomerAiEvalDiagnostics | undefined
   let finalStatus: number | undefined
   let finalTraceId: string | undefined
   let responseOk = false
@@ -303,6 +336,7 @@ export async function evaluateCustomerAiCase(
 
       messages.push({ role: "user", content: prompt })
       const turn = await runAssistantTurn({
+        beforeRequest,
         endpointUrl,
         fetchImpl,
         messages,
@@ -311,6 +345,7 @@ export async function evaluateCustomerAiCase(
       })
 
       finalEvidence = turn.evidence
+      finalDiagnostics = turn.diagnostics
       finalError = turn.error
       finalStatus = turn.status
       finalTraceId = turn.traceId
@@ -342,6 +377,7 @@ export async function evaluateCustomerAiCase(
       ...textScore,
       answer: finalEvidence.answer,
       automatedChecks,
+      diagnostics: finalDiagnostics,
       durationMs: Date.now() - startedAt,
       error: finalError,
       id: evalCase.id,
