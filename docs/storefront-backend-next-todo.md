@@ -164,7 +164,7 @@ These items are no longer open TODOs and should be treated as shipped baseline u
   - Keep assistant tone/format wording in Langfuse Prompt Management with `staging` and `production` labels.
   - Keep hard assistant guardrails in code and append them after any dashboard-managed prompt.
   - Keep the 8-case smoke, 28-case release, and 43-case extended suites current as catalogue/tool behavior changes.
-  - Run the staging smoke suite locally before merging PRs that change eval scoring rules or case wording. For assistant runtime route/prompt changes, run the GitHub `workflow_dispatch` smoke after Coolify redeploys the new storefront because automatic push workflows run before deploy completion.
+  - Run the staging smoke suite locally before merging PRs that change eval scoring rules or case wording. For assistant runtime route/prompt changes, the GitHub staging workflow waits for `/api/health.releaseSha` to match the pushed commit before running three complete smoke attempts.
   - Publish deterministic and evidence-backed eval scores to individual Langfuse traces for prompt-label comparisons.
   - Keep `grounded_answer` unset until tool/source facts can verify claims; keep helpfulness, actionability, and reviewer notes human-owned.
   - Next high-value improvement: add customer feedback capture from the storefront assistant and map thumbs/comment feedback to Langfuse scores on the same session/trace.

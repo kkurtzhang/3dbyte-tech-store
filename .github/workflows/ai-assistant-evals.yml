@@ -18,23 +18,36 @@ on:
         required: false
         default: ""
         type: string
+      attempts:
+        description: Complete suite attempts to run.
+        required: true
+        default: "3"
+        type: choice
+        options:
+          - "3"
+          - "1"
   push:
     branches: [staging]
     paths:
       - .github/workflows/ai-assistant-evals.yml
       - .github/scripts/decide-ai-assistant-eval.sh
+      - .github/scripts/wait-for-staging-release.sh
       - .github/scripts/__tests__/decide-ai-assistant-eval.test.sh
+      - .github/scripts/__tests__/ai-assistant-evals-workflow.test.sh
+      - .github/scripts/__tests__/wait-for-staging-release.test.sh
       - apps/storefront-v3/scripts/run-customer-ai-evals.ts
       - apps/storefront-v3/src/app/api/ai-shopping-assistant/**
       - docs/ai-engineer-pathway/phase-3-operational-feedback.md
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   customer-smoke:
     name: customer-smoke
     runs-on: ubuntu-latest
+    environment: staging
     steps:
       - name: Checkout source and parent without token
         run: |
@@ -46,16 +59,31 @@ jobs:
           git checkout --force FETCH_HEAD
 
       - name: Test live eval decision
-        run: bash .github/scripts/__tests__/decide-ai-assistant-eval.test.sh
+        run: |
+          set -euo pipefail
+          for test_script in .github/scripts/__tests__/*.test.sh; do
+            bash "${test_script}"
+          done
 
       - name: Decide whether live eval can run before deploy
         id: live-eval
+        env:
+          AI_ASSISTANT_EVAL_WORKFLOW_ATTEMPTS: ${{ inputs.attempts || '3' }}
         run: bash .github/scripts/decide-ai-assistant-eval.sh
 
       - name: Note skipped live eval
         if: steps.live-eval.outputs.should_run != 'true'
         run: |
           echo "Skipping live staging assistant eval: ${{ steps.live-eval.outputs.reason }}"
+
+      - name: Wait for staging deployment
+        if: steps.live-eval.outputs.should_run == 'true' && steps.live-eval.outputs.wait_for_release == 'true'
+        env:
+          EXPECTED_RELEASE_SHA: ${{ github.sha }}
+          POLL_SECONDS: "15"
+          STAGING_HEALTH_URL: ${{ inputs.base_url || 'https://store.staging.3dbytetech.com.au' }}/api/health
+          TIMEOUT_SECONDS: "1200"
+        run: bash .github/scripts/wait-for-staging-release.sh
 
       - uses: actions/setup-node@v6
         if: steps.live-eval.outputs.should_run == 'true'
@@ -71,15 +99,47 @@ jobs:
       - run: pnpm install --frozen-lockfile
         if: steps.live-eval.outputs.should_run == 'true'
 
+      - name: Connect to private observability network
+        if: steps.live-eval.outputs.should_run == 'true'
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          audience: ${{ secrets.TS_AUDIENCE }}
+          tags: tag:github-ai-eval
+          version: latest
+          ping: 100.68.121.61
+
+      - name: Check Langfuse access
+        if: steps.live-eval.outputs.should_run == 'true'
+        env:
+          LANGFUSE_HOST: ${{ vars.LANGFUSE_HOST || secrets.LANGFUSE_HOST }}
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          : "${LANGFUSE_HOST:?LANGFUSE_HOST is required}"
+          : "${LANGFUSE_PUBLIC_KEY:?LANGFUSE_PUBLIC_KEY is required}"
+          : "${LANGFUSE_SECRET_KEY:?LANGFUSE_SECRET_KEY is required}"
+          curl -fsS "${LANGFUSE_HOST%/}/api/public/health" >/dev/null
+          curl -fsS \
+            -u "${LANGFUSE_PUBLIC_KEY}:${LANGFUSE_SECRET_KEY}" \
+            "${LANGFUSE_HOST%/}/api/public/projects" >/dev/null
+
       - name: Run customer AI evals
         if: steps.live-eval.outputs.should_run == 'true'
         env:
+          AI_ASSISTANT_EVAL_ATTEMPTS: ${{ steps.live-eval.outputs.attempts }}
           AI_ASSISTANT_EVAL_BASE_URL: ${{ inputs.base_url || 'https://store.staging.3dbytetech.com.au' }}
           AI_ASSISTANT_EVAL_CASES: ${{ inputs.cases || '' }}
           AI_ASSISTANT_EVAL_LIMIT: ${{ inputs.limit || '' }}
           AI_ASSISTANT_EVAL_SUITE: smoke
+          AI_ASSISTANT_EVAL_UPLOAD_LANGFUSE: "true"
           AI_ASSISTANT_EVAL_OUTPUT: json
           AI_ASSISTANT_EVAL_OUTPUT_FILE: ${{ github.workspace }}/artifacts/customer-ai-evals.json
+          LANGFUSE_EVAL_ENVIRONMENT: staging
+          LANGFUSE_HOST: ${{ vars.LANGFUSE_HOST || secrets.LANGFUSE_HOST }}
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
         run: |
           set -euo pipefail
           mkdir -p artifacts

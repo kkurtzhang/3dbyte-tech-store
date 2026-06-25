@@ -84,9 +84,15 @@ The repo now includes a GitHub Actions workflow:
 .github/workflows/ai-assistant-evals.yml
 ```
 
-On `staging`, it runs automatically on pushes that change the assistant eval runner, assistant route/evals, this workflow, or this Phase 3 doc. It runs the full 8-case smoke suite by default so every relevant staging merge covers product links, support confirmation, order privacy, tool evidence, and key material prompts.
+On `staging`, it runs automatically on pushes that change the assistant eval runner, assistant route/evals, this workflow, or this Phase 3 doc. It runs the full 8-case smoke suite so every relevant staging merge covers product links, support confirmation, order privacy, tool evidence, and key material prompts.
 
-Because the automatic workflow runs after `staging` advances but before Coolify necessarily redeploys the storefront, it skips live eval execution when the assistant runtime route or prompt-management code changes. For those changes, run `workflow_dispatch` after Coolify deploys the new storefront. PRs that change only eval scoring rules or case wording should run the same staging smoke suite locally before merge and include the result in the PR validation evidence.
+The workflow now distinguishes runtime assistant changes from eval-only changes:
+
+- Runtime assistant changes wait for staging `/api/health.releaseSha` to match the pushed commit, then run three complete smoke attempts.
+- Eval-only, docs, or workflow changes run one smoke attempt against the currently deployed staging assistant.
+- Manual dispatch defaults to three complete attempts and allows one attempt for budget-safe ad hoc checks.
+
+PRs that change only eval scoring rules or case wording should still run the staging smoke suite locally before merge and include the result in the PR validation evidence. Runtime changes are covered again after Coolify deploys because the workflow waits for the expected release before calling the assistant.
 
 Manual `workflow_dispatch` is also defined, but GitHub only exposes manually dispatched workflows after the workflow file exists on the repository default branch. Until then, use the local command for ad hoc full-suite staging checks and rely on the automatic `staging` push run for GitHub-hosted artifacts.
 
@@ -97,6 +103,7 @@ When manual dispatch is available, the workflow accepts:
 | `base_url` | Storefront base URL, defaulting to staging. |
 | `cases` | Optional comma-separated eval case ids. |
 | `limit` | Optional max number of eval cases for quick ad hoc runs. Defaults to the full selected suite. |
+| `attempts` | Complete suite attempts. Defaults to `3`; can be set to `1` for budget-safe checks. |
 
 The workflow uploads `customer-ai-evals-<run-number>` with:
 
@@ -159,6 +166,18 @@ pnpm --filter=@3dbyte-tech-store/storefront-v3 eval:ai:customer:one
 ```
 
 When upload is enabled, the eval runner also marks its assistant requests with an internal QA header. The storefront route returns the active Langfuse trace id only for those marked eval requests. Marked eval responses also include diagnostic headers for model, temperature, prompt version, code-owned guardrail version, and release SHA. The runner publishes each deterministic score to `traceId` when the route returns one, with `sessionId` as a fallback only if the trace id is unavailable. Without upload, scores are intentionally local-only in the console/JSON artifact.
+
+Score upload uses Langfuse's acknowledged Public API instead of a queued flush path. The runner posts each score to `/api/public/scores`, limits concurrent writes to five, counts only API responses that return a score id as published, and fails the run if any score write is rejected.
+
+GitHub-hosted uploads use Tailscale workload identity to reach the private observation server. The `staging` GitHub environment must provide:
+
+- `TS_OAUTH_CLIENT_ID`
+- `TS_AUDIENCE`
+- `LANGFUSE_PUBLIC_KEY`
+- `LANGFUSE_SECRET_KEY`
+- `LANGFUSE_HOST`, as a variable or secret, pointing at the private API host such as `http://100.68.121.61:3000`
+
+The Tailscale credential should be limited to the `tag:github-ai-eval` tag, and the tailnet ACL should allow that tag to reach only the observation host's Langfuse port.
 
 When local access to self-hosted Langfuse requires the observation server, open the tunnel before the eval and point the client at the local end:
 
