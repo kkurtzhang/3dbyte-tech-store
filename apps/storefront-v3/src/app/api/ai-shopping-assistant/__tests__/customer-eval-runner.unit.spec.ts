@@ -1,3 +1,5 @@
+import { Buffer } from "node:buffer"
+
 import type { CustomerAiEvalCase } from "../evals/customer-evals"
 import type { CustomerAiEvalRunResult } from "../evals/customer-eval-runner"
 import {
@@ -5,6 +7,7 @@ import {
   decodeAssistantStream,
   decodeAssistantStreamEvidence,
   evaluateCustomerAiCase,
+  LangfuseHttpScoreClient,
   publishLangfuseEvalScores,
   scoreCustomerEvalAnswer,
 } from "../evals/customer-eval-runner"
@@ -819,8 +822,7 @@ describe("customer AI eval runner", () => {
   })
 
   it("publishes deterministic scores to Langfuse by eval session", async () => {
-    const scoreCreateMock = jest.fn()
-    const flushMock = jest.fn(async () => undefined)
+    const scoreCreateMock = jest.fn(async () => "score-id")
     const report = buildCustomerAiEvalReport(
       [
         makeRunResult({
@@ -844,8 +846,7 @@ describe("customer AI eval runner", () => {
     const publishedCount = await publishLangfuseEvalScores(
       report,
       {
-        flush: flushMock,
-        score: { create: scoreCreateMock },
+        createScore: scoreCreateMock,
       },
       { environment: "staging" },
     )
@@ -874,11 +875,10 @@ describe("customer AI eval runner", () => {
         traceId: "trace_01HQA",
       }),
     )
-    expect(flushMock).toHaveBeenCalledTimes(1)
   })
 
   it("publishes multi-turn aggregate scores to the Langfuse session", async () => {
-    const scoreCreateMock = jest.fn()
+    const scoreCreateMock = jest.fn(async () => "score-id")
     const report = buildCustomerAiEvalReport(
       [
         makeRunResult({
@@ -895,7 +895,7 @@ describe("customer AI eval runner", () => {
     )
 
     await publishLangfuseEvalScores(report, {
-      score: { create: scoreCreateMock },
+      createScore: scoreCreateMock,
     })
 
     expect(scoreCreateMock).toHaveBeenCalledWith(
@@ -909,5 +909,136 @@ describe("customer AI eval runner", () => {
         traceId: "trace-final-turn",
       }),
     )
+  })
+
+  it("creates Langfuse scores through the acknowledged public API", async () => {
+    const fetchMock = jest.fn(async () => ({
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify({ id: "score_123" }),
+    }))
+    const client = new LangfuseHttpScoreClient({
+      baseUrl: "https://observe.test/api/public/",
+      fetchImpl: fetchMock as unknown as typeof fetch,
+      publicKey: "pk-test",
+      secretKey: "sk-test",
+    })
+
+    await expect(
+      client.createScore({
+        dataType: "BOOLEAN",
+        name: "deterministic_pass",
+        traceId: "trace_01HQA",
+        value: 1,
+      }),
+    ).resolves.toBe("score_123")
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://observe.test/api/public/scores",
+      expect.objectContaining({
+        body: JSON.stringify({
+          dataType: "BOOLEAN",
+          name: "deterministic_pass",
+          traceId: "trace_01HQA",
+          value: 1,
+        }),
+        headers: expect.objectContaining({
+          authorization: `Basic ${Buffer.from("pk-test:sk-test").toString("base64")}`,
+          "content-type": "application/json",
+        }),
+        method: "POST",
+      }),
+    )
+  })
+
+  it("rejects Langfuse score API responses without an acknowledged id", async () => {
+    const client = new LangfuseHttpScoreClient({
+      baseUrl: "https://observe.test",
+      fetchImpl: jest.fn(async () => ({
+        ok: true,
+        status: 200,
+        text: async () => "{}",
+      })) as unknown as typeof fetch,
+      publicKey: "pk-test",
+      secretKey: "sk-test",
+    })
+
+    await expect(
+      client.createScore({
+        dataType: "BOOLEAN",
+        name: "deterministic_pass",
+        traceId: "trace_01HQA",
+        value: 1,
+      }),
+    ).rejects.toThrow("did not include an id")
+  })
+
+  it("fails score publishing when any Langfuse API write is rejected", async () => {
+    const createScoreMock = jest
+      .fn()
+      .mockResolvedValueOnce("score-1")
+      .mockRejectedValueOnce(new Error("network denied"))
+      .mockResolvedValue("score-ok")
+    const report = buildCustomerAiEvalReport(
+      [
+        makeRunResult({
+          id: "partial-score-case",
+          includeMatched: ["PETG"],
+          passed: true,
+          traceId: "trace_01HQA",
+        }),
+      ],
+      "https://store.test/api/ai-shopping-assistant",
+    )
+
+    await expect(
+      publishLangfuseEvalScores(
+        report,
+        { createScore: createScoreMock },
+        { concurrency: 2 },
+      ),
+    ).rejects.toThrow("Failed to publish 1/4 Langfuse eval scores")
+    expect(createScoreMock).toHaveBeenCalledTimes(4)
+  })
+
+  it("limits concurrent Langfuse score writes", async () => {
+    let activeWrites = 0
+    let maxActiveWrites = 0
+    const createScoreMock = jest.fn(async () => {
+      activeWrites += 1
+      maxActiveWrites = Math.max(maxActiveWrites, activeWrites)
+      await new Promise((resolve) => {
+        setTimeout(resolve, 0)
+      })
+      activeWrites -= 1
+
+      return "score-ok"
+    })
+    const report = buildCustomerAiEvalReport(
+      [
+        makeRunResult({
+          id: "concurrency-case-a",
+          includeMatched: ["PETG"],
+          passed: true,
+          traceId: "trace-a",
+        }),
+        makeRunResult({
+          id: "concurrency-case-b",
+          includeMatched: ["PETG"],
+          passed: true,
+          traceId: "trace-b",
+        }),
+      ],
+      "https://store.test/api/ai-shopping-assistant",
+    )
+
+    await expect(
+      publishLangfuseEvalScores(
+        report,
+        { createScore: createScoreMock },
+        { concurrency: 2 },
+      ),
+    ).resolves.toBe(8)
+    expect(maxActiveWrites).toBeLessThanOrEqual(2)
   })
 })

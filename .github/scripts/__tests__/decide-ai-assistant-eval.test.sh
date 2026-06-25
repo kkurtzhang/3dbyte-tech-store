@@ -35,7 +35,10 @@ runtime_output="${test_repo}/runtime-output"
     bash "${decision_script}"
 )
 
-grep -Fxq "should_run=false" "${runtime_output}"
+grep -Fxq "should_run=true" "${runtime_output}"
+grep -Fxq "mode=post-deploy" "${runtime_output}"
+grep -Fxq "attempts=3" "${runtime_output}"
+grep -Fxq "wait_for_release=true" "${runtime_output}"
 grep -Fq "assistant runtime changed" "${runtime_output}"
 rm -f "${runtime_output}"
 
@@ -57,6 +60,9 @@ eval_output="${test_repo}/eval-output"
 )
 
 grep -Fxq "should_run=true" "${eval_output}"
+grep -Fxq "mode=current-deploy" "${eval_output}"
+grep -Fxq "attempts=1" "${eval_output}"
+grep -Fxq "wait_for_release=false" "${eval_output}"
 grep -Fq "eval-only" "${eval_output}"
 
 manual_output="${test_repo}/manual-output"
@@ -66,6 +72,18 @@ GITHUB_EVENT_NAME=workflow_dispatch \
   bash "${decision_script}"
 
 grep -Fxq "should_run=true" "${manual_output}"
+grep -Fxq "mode=manual" "${manual_output}"
+grep -Fxq "attempts=3" "${manual_output}"
+grep -Fxq "wait_for_release=false" "${manual_output}"
 grep -Fq "manual dispatch" "${manual_output}"
+
+manual_one_output="${test_repo}/manual-one-output"
+GITHUB_EVENT_NAME=workflow_dispatch \
+  GITHUB_OUTPUT="${manual_one_output}" \
+  GITHUB_SHA="${eval_sha}" \
+  AI_ASSISTANT_EVAL_WORKFLOW_ATTEMPTS=1 \
+  bash "${decision_script}"
+
+grep -Fxq "attempts=1" "${manual_one_output}"
 
 echo "AI assistant eval decision tests passed"

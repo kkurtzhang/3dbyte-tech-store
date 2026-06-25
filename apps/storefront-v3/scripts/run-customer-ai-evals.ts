@@ -10,6 +10,7 @@ import {
 import {
   buildCustomerAiEvalReport,
   evaluateCustomerAiCase,
+  LangfuseHttpScoreClient,
   publishLangfuseEvalScores,
 } from "../src/app/api/ai-shopping-assistant/evals/customer-eval-runner"
 import {
@@ -97,9 +98,16 @@ function resolveTraceContext(runName: string) {
   }
 }
 
-async function createLangfuseScoreClient() {
+function createLangfuseScoreClient() {
+  const host = getEnvValue("LANGFUSE_HOST")
   const publicKey = getEnvValue("LANGFUSE_PUBLIC_KEY")
   const secretKey = getEnvValue("LANGFUSE_SECRET_KEY")
+
+  if (!host) {
+    throw new Error(
+      "LANGFUSE_HOST is required when AI_ASSISTANT_EVAL_UPLOAD_LANGFUSE is enabled.",
+    )
+  }
 
   if (!publicKey || !secretKey) {
     throw new Error(
@@ -107,10 +115,8 @@ async function createLangfuseScoreClient() {
     )
   }
 
-  const { LangfuseClient } = await import("@langfuse/client")
-
-  return new LangfuseClient({
-    baseUrl: getEnvValue("LANGFUSE_HOST"),
+  return new LangfuseHttpScoreClient({
+    baseUrl: host,
     publicKey,
     secretKey,
   })
@@ -197,7 +203,7 @@ async function main() {
   )
 
   if (isTruthyEnv("AI_ASSISTANT_EVAL_UPLOAD_LANGFUSE")) {
-    const langfuse = await createLangfuseScoreClient()
+    const langfuse = createLangfuseScoreClient()
     const publishedCount = await publishLangfuseEvalScores(report, langfuse, {
       environment:
         getEnvValue("LANGFUSE_EVAL_ENVIRONMENT") ?? getEnvValue("APP_ENV"),

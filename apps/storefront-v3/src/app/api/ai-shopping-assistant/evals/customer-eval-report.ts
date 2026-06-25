@@ -1,3 +1,5 @@
+import { Buffer } from "node:buffer"
+
 import type { CustomerAiEvalRunResult } from "./customer-eval-runner"
 
 export type LangfuseEvalScore = {
@@ -43,17 +45,110 @@ export type LangfuseEvalScorePayload = LangfuseEvalScore & {
   traceId?: string
 }
 
-export type LangfuseEvalScoreClient = {
-  flush?: () => Promise<void>
-  score: {
-    // eslint-disable-next-line no-unused-vars -- Type-only payload name keeps score publishing typed.
-    create: (score: LangfuseEvalScorePayload) => void
-    flush?: () => Promise<void>
-  }
+export type LangfuseEvalScorePublisher = {
+  // eslint-disable-next-line no-unused-vars -- Type-only payload name keeps score publishing typed.
+  createScore: (score: LangfuseEvalScorePayload) => Promise<unknown>
 }
 
 export type PublishLangfuseEvalScoresOptions = {
+  concurrency?: number
   environment?: string
+}
+
+type LangfuseScoreFetch = typeof globalThis.fetch
+
+type LangfuseHttpScoreClientOptions = {
+  baseUrl: string
+  fetchImpl?: LangfuseScoreFetch
+  publicKey: string
+  secretKey: string
+}
+
+const DEFAULT_LANGFUSE_SCORE_UPLOAD_CONCURRENCY = 5
+const MAX_LANGFUSE_ERROR_BODY_CHARS = 500
+
+function normalizeLangfusePublicApiBaseUrl(baseUrl: string) {
+  const normalized = baseUrl.trim().replace(/\/+$/g, "")
+
+  if (!normalized) {
+    throw new Error("LANGFUSE_HOST is required for score uploads.")
+  }
+
+  if (normalized.endsWith("/api/public")) {
+    return normalized
+  }
+
+  return `${normalized}/api/public`
+}
+
+function createBasicAuthHeader(publicKey: string, secretKey: string) {
+  return `Basic ${Buffer.from(`${publicKey}:${secretKey}`).toString("base64")}`
+}
+
+function parseJsonObject(value: string) {
+  if (!value.trim()) {
+    return undefined
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(value)
+
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? (parsed as Record<string, unknown>)
+      : undefined
+  } catch {
+    return undefined
+  }
+}
+
+function truncateErrorBody(value: string) {
+  return value.length > MAX_LANGFUSE_ERROR_BODY_CHARS
+    ? `${value.slice(0, MAX_LANGFUSE_ERROR_BODY_CHARS)}...`
+    : value
+}
+
+export class LangfuseHttpScoreClient implements LangfuseEvalScorePublisher {
+  private readonly apiBaseUrl: string
+  private readonly authorization: string
+  private readonly fetchImpl: LangfuseScoreFetch
+
+  constructor({
+    baseUrl,
+    fetchImpl = globalThis.fetch,
+    publicKey,
+    secretKey,
+  }: LangfuseHttpScoreClientOptions) {
+    this.apiBaseUrl = normalizeLangfusePublicApiBaseUrl(baseUrl)
+    this.authorization = createBasicAuthHeader(publicKey, secretKey)
+    this.fetchImpl = fetchImpl
+  }
+
+  async createScore(score: LangfuseEvalScorePayload) {
+    const response = await this.fetchImpl(`${this.apiBaseUrl}/scores`, {
+      body: JSON.stringify(score),
+      headers: {
+        authorization: this.authorization,
+        "content-type": "application/json",
+      },
+      method: "POST",
+    })
+    const responseText = await response.text()
+
+    if (!response.ok) {
+      throw new Error(
+        `Langfuse score create failed with status ${response.status}: ${truncateErrorBody(responseText)}`,
+      )
+    }
+
+    const parsed = parseJsonObject(responseText)
+    const id = parsed?.id
+
+    if (typeof id !== "string" || !id) {
+      throw new Error("Langfuse score create response did not include an id.")
+    }
+
+    return id
+  }
 }
 
 function buildScoreMetadata(
@@ -216,32 +311,69 @@ function getLangfuseScoreTarget(result: CustomerAiEvalRunResult) {
   return {}
 }
 
-export async function publishLangfuseEvalScores(
+function buildLangfuseEvalScorePayloads(
   report: CustomerAiEvalReport,
-  client: LangfuseEvalScoreClient,
-  options: PublishLangfuseEvalScoresOptions = {},
+  options: PublishLangfuseEvalScoresOptions,
 ) {
-  let publishedCount = 0
-
-  for (const result of report.results) {
+  return report.results.flatMap((result) => {
     const scores =
       result.scores ?? buildLangfuseEvalScores(result, report.summary)
+    const target = getLangfuseScoreTarget(result)
 
-    for (const score of scores) {
-      client.score.create({
-        ...score,
-        environment: options.environment,
-        metadata: toScoreMetadataRecord(score.metadata, report),
-        ...getLangfuseScoreTarget(result),
-      })
-      publishedCount += 1
-    }
+    return scores.map((score) => ({
+      ...score,
+      environment: options.environment,
+      metadata: toScoreMetadataRecord(score.metadata, report),
+      ...target,
+    }))
+  })
+}
+
+async function publishLangfuseScoreBatch(
+  batch: LangfuseEvalScorePayload[],
+  client: LangfuseEvalScorePublisher,
+) {
+  const results = await Promise.allSettled(
+    batch.map((score) => client.createScore(score)),
+  )
+
+  return {
+    failed: results.filter((result) => result.status === "rejected").length,
+    published: results.filter((result) => result.status === "fulfilled").length,
+  }
+}
+
+export async function publishLangfuseEvalScores(
+  report: CustomerAiEvalReport,
+  client: LangfuseEvalScorePublisher,
+  options: PublishLangfuseEvalScoresOptions = {},
+) {
+  const payloads = buildLangfuseEvalScorePayloads(report, options)
+  const concurrency =
+    options.concurrency && options.concurrency > 0
+      ? Math.floor(options.concurrency)
+      : DEFAULT_LANGFUSE_SCORE_UPLOAD_CONCURRENCY
+  let publishedCount = 0
+  let failedCount = 0
+
+  for (
+    let index = 0;
+    index < payloads.length;
+    index += concurrency
+  ) {
+    const { failed, published } = await publishLangfuseScoreBatch(
+      payloads.slice(index, index + concurrency),
+      client,
+    )
+
+    publishedCount += published
+    failedCount += failed
   }
 
-  if (client.flush) {
-    await client.flush()
-  } else if (client.score.flush) {
-    await client.score.flush()
+  if (failedCount > 0) {
+    throw new Error(
+      `Failed to publish ${failedCount}/${payloads.length} Langfuse eval scores.`,
+    )
   }
 
   return publishedCount

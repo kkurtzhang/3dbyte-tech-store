@@ -103,6 +103,7 @@ const LANGFUSE_TRACE_ID_HEADER = "x-3db-langfuse-trace-id"
 export { decodeAssistantStreamEvidence } from "./customer-eval-stream"
 export {
   buildCustomerAiEvalReport,
+  LangfuseHttpScoreClient,
   publishLangfuseEvalScores,
 } from "./customer-eval-report"
 export type {
@@ -110,7 +111,7 @@ export type {
   CustomerAiEvalReport,
   CustomerAiEvalSummary,
   LangfuseEvalScore,
-  LangfuseEvalScoreClient,
+  LangfuseEvalScorePublisher,
   LangfuseEvalScorePayload,
   PublishLangfuseEvalScoresOptions,
 } from "./customer-eval-report"
