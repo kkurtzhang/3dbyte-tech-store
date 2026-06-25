@@ -169,6 +169,8 @@ When upload is enabled, the eval runner also marks its assistant requests with a
 
 Score upload uses Langfuse's acknowledged Public API instead of a queued flush path. The runner posts each score to `/api/public/scores`, limits concurrent writes to five, counts only API responses that return a score id as published, and fails the run if any score write is rejected.
 
+Before publishing scores, the runner polls `/api/public/traces/{traceId}` for every trace id returned by the storefront. Langfuse documents that newly ingested data can take roughly 15-30 seconds to become queryable, so the runner allows up to 60 seconds. A missing trace id or trace-ingestion timeout fails the run before score creation. This prevents a healthy GitHub-to-Langfuse tunnel from hiding a broken staging-storefront-to-Langfuse OTLP path.
+
 GitHub-hosted uploads use Tailscale workload identity to reach the private observation server. The `staging` GitHub environment must provide:
 
 - `TS_OAUTH_CLIENT_ID`
@@ -178,6 +180,8 @@ GitHub-hosted uploads use Tailscale workload identity to reach the private obser
 - `LANGFUSE_HOST`, as a variable or secret, pointing at the private API host such as `http://100.68.121.61:3000`
 
 The Tailscale credential should be limited to the `tag:github-ai-eval` tag, and the tailnet ACL should allow that tag to reach only the observation host's Langfuse port.
+
+Keep the existing `oci-app` to `oci-observation` grants alongside the GitHub workload grant. Replacing the full tailnet policy with only the ephemeral GitHub grant can let score uploads work while storefront prompt fetches and OTLP trace exports fail.
 
 When local access to self-hosted Langfuse requires the observation server, open the tunnel before the eval and point the client at the local end:
 

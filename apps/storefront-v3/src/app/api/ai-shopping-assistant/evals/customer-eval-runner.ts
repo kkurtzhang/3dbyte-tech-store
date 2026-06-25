@@ -105,6 +105,8 @@ export {
   buildCustomerAiEvalReport,
   LangfuseHttpScoreClient,
   publishLangfuseEvalScores,
+  publishVerifiedLangfuseEvalScores,
+  waitForLangfuseEvalTraces,
 } from "./customer-eval-report"
 export type {
   BuildCustomerAiEvalReportOptions,
@@ -114,6 +116,8 @@ export type {
   LangfuseEvalScorePublisher,
   LangfuseEvalScorePayload,
   PublishLangfuseEvalScoresOptions,
+  PublishVerifiedLangfuseEvalScoresOptions,
+  WaitForLangfuseEvalTracesOptions,
 } from "./customer-eval-report"
 
 export function decodeAssistantStream(streamText: string) {

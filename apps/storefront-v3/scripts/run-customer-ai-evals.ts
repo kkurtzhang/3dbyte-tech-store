@@ -11,7 +11,7 @@ import {
   buildCustomerAiEvalReport,
   evaluateCustomerAiCase,
   LangfuseHttpScoreClient,
-  publishLangfuseEvalScores,
+  publishVerifiedLangfuseEvalScores,
 } from "../src/app/api/ai-shopping-assistant/evals/customer-eval-runner"
 import {
   resolveEvalAttempts,
@@ -204,10 +204,14 @@ async function main() {
 
   if (isTruthyEnv("AI_ASSISTANT_EVAL_UPLOAD_LANGFUSE")) {
     const langfuse = createLangfuseScoreClient()
-    const publishedCount = await publishLangfuseEvalScores(report, langfuse, {
-      environment:
-        getEnvValue("LANGFUSE_EVAL_ENVIRONMENT") ?? getEnvValue("APP_ENV"),
-    })
+    const publishedCount = await publishVerifiedLangfuseEvalScores(
+      report,
+      langfuse,
+      {
+        environment:
+          getEnvValue("LANGFUSE_EVAL_ENVIRONMENT") ?? getEnvValue("APP_ENV"),
+      },
+    )
 
     if (!outputJson) {
       console.log(
