@@ -138,6 +138,7 @@ jobs:
           grep -Fq 'APP_ENV: "${APP_ENV:-production}"' docker-compose.yml
           grep -Fq 'STRAPI_RESEND_API_KEY: "${STRAPI_RESEND_API_KEY:?Set STRAPI_RESEND_API_KEY}"' docker-compose.yml
           grep -Fq 'MEILISEARCH_HOST: "${MEILISEARCH_HOST:?Set MEILISEARCH_HOST}"' docker-compose.yml
+          ! grep -Fq 'STOREFRONT_RELEASE_SHA:' docker-compose.yml
           grep -Fq 'http://127.0.0.1:3000/api/health' docker-compose.yml
           grep -Fq 'http://127.0.0.1:9000/health' docker-compose.yml
           grep -Fq 'http://127.0.0.1:1337/admin/init' docker-compose.yml
