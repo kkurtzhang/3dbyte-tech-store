@@ -316,6 +316,39 @@ describe("toMeilisearchDocument", () => {
     );
   });
 
+  it("flattens universal AI core metadata into searchable product facts", () => {
+    const document = toMeilisearchDocument(
+      createProduct({
+        metadata: {
+          ai_core: {
+            schema_version: 1,
+            product_kind: "soldering_station",
+            audience: ["electronics beginners", "makers"],
+            best_for: ["bench repairs", "kit assembly"],
+            not_recommended_for: ["high-volume production"],
+            compatibility_notes: ["Use with 240V AU outlet"],
+            care_or_safety_notes: ["Let the iron cool before storing"],
+            ai_search_keywords: ["soldering iron", "electronics bench"],
+          },
+        },
+      } as Partial<SyncProductsStepProduct>),
+      regions,
+    );
+
+    expect(document).toEqual(
+      expect.objectContaining({
+        aic_schema_version: 1,
+        aic_product_kind: "soldering_station",
+        aic_audience: ["electronics beginners", "makers"],
+        aic_best_for: ["bench repairs", "kit assembly"],
+        aic_not_recommended_for: ["high-volume production"],
+        aic_compatibility_notes: ["Use with 240V AU outlet"],
+        aic_care_or_safety_notes: ["Let the iron cool before storing"],
+        aic_ai_search_keywords: ["soldering iron", "electronics bench"],
+      }),
+    );
+  });
+
   it("flattens RC model building metadata into searchable product facts", () => {
     const document = toMeilisearchDocument(
       createProduct({

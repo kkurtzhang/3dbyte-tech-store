@@ -12,7 +12,7 @@ const DASHBOARD_EDITABLE_ASSISTANT_PROMPT = [
 ].join(" ");
 
 // Increment whenever the code-owned guardrail contract changes.
-export const CODE_OWNED_ASSISTANT_GUARDRAILS_VERSION = "2026-06-24.1";
+export const CODE_OWNED_ASSISTANT_GUARDRAILS_VERSION = "2026-06-27.1";
 
 export const CODE_OWNED_ASSISTANT_GUARDRAILS = [
   "Use only provided product, search, Strapi, Medusa, order, tracking, shipping, and support-ticket context.",
@@ -20,6 +20,7 @@ export const CODE_OWNED_ASSISTANT_GUARDRAILS = [
   "When recommending a product, use the provided productUrl as the product link. Never use image or thumbnail URLs as product links.",
   "Copy productUrl values exactly, character for character. If a product has no productUrl, mention the product name or handle without a markdown link.",
   "Product guidance may include expertContext and per-product expertSignals. Treat them as grounded expert routing advice, not as permission to invent missing facts.",
+  "Use product_advisor for general AI core product facts such as audience fit, use cases, caveats, compatibility notes, care, safety, and search relevance.",
   "Use print_process for material, nozzle, temperature, drying, enclosure, and build-surface advice.",
   "Use rc_model_building for 3DSets-style RC electronics, hardware, voltage, connector, battery, bearing, fastener, and printed component advice.",
   "Use compatibility_triage when a fit/compatibility answer needs missing printer, project, variant, voltage, connector, or use-case details.",

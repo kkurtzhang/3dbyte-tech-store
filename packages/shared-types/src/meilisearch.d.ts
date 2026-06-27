@@ -58,15 +58,75 @@ export declare const BRAND_INDEX_SETTINGS: {
         readonly disableOnAttributes: readonly ["handle"];
     };
 };
+export type AiCoreProductMetadata = {
+    schema_version: 1;
+    product_kind?: string;
+    audience?: string[];
+    best_for?: string[];
+    not_recommended_for?: string[];
+    compatibility_notes?: string[];
+    care_or_safety_notes?: string[];
+    ai_search_keywords?: string[];
+};
+export type ThreeDPrintingProductMetadata = {
+    schema_version: 1;
+    product_kind?: string;
+    material?: string;
+    diameter_mm?: number;
+    nozzle_diameter_mm?: number;
+    recommended_nozzle_temp_c?: {
+        min?: number;
+        max?: number;
+    };
+    recommended_bed_temp_c?: {
+        min?: number;
+        max?: number;
+    };
+    max_temperature_c?: number;
+    requires_enclosure?: boolean;
+    requires_hardened_nozzle?: boolean;
+    drying_recommended?: boolean;
+    compatible_printers?: string[];
+    compatible_build_surfaces?: string[];
+    best_for?: string[];
+    not_recommended_for?: string[];
+    common_issues?: string[];
+    ai_search_keywords?: string[];
+};
+export type RcModelBuildingProductMetadata = {
+    schema_version: 1;
+    component_role?: string;
+    compatible_project_types?: string[];
+    voltage?: string;
+    connector_type?: string;
+    used_for?: string[];
+    best_for?: string[];
+    ai_search_keywords?: string[];
+};
+export type AiReadyProductMetadata = {
+    ai_core?: AiCoreProductMetadata;
+    three_d_printing?: ThreeDPrintingProductMetadata;
+    rc_model_building?: RcModelBuildingProductMetadata;
+};
 export interface AiProductMetadataSearchFields {
+    aic_schema_version?: number;
+    aic_product_kind?: string;
+    aic_audience?: string[];
+    aic_best_for?: string[];
+    aic_not_recommended_for?: string[];
+    aic_compatibility_notes?: string[];
+    aic_care_or_safety_notes?: string[];
+    aic_ai_search_keywords?: string[];
     tdp_schema_version?: number;
     tdp_product_kind?: string;
     tdp_material?: string;
     tdp_diameter_mm?: number;
+    tdp_nozzle_diameter_mm?: number;
     tdp_nozzle_temp_min_c?: number;
     tdp_nozzle_temp_max_c?: number;
     tdp_bed_temp_min_c?: number;
     tdp_bed_temp_max_c?: number;
+    tdp_max_temperature_c?: number;
     tdp_requires_enclosure?: boolean;
     tdp_requires_hardened_nozzle?: boolean;
     tdp_drying_recommended?: boolean;

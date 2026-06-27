@@ -30,6 +30,7 @@ assistant query
 
 | Expert | Purpose | Grounding |
 | --- | --- | --- |
+| `product_advisor` | General audience fit, use cases, caveats, compatibility notes, care, safety, and search relevance. | `metadata.ai_core`, flattened `aic_*`, Strapi product copy, product documents. |
 | `print_process` | Material, nozzle, bed, drying, enclosure, and build-surface guidance. | `metadata.three_d_printing`, flattened `tdp_*`, Strapi product copy, product documents. |
 | `rc_model_building` | 3DSets-style RC electronics, hardware, connectors, batteries, fasteners, and printed build components. | `metadata.rc_model_building`, flattened `rcb_*`, Strapi product copy, product documents. |
 | `compatibility_triage` | Identify compatibility uncertainty, ask required follow-up questions, and avoid unsupported yes/no claims. | Product metadata, query wording, product role, known connector/voltage/material facts. |
