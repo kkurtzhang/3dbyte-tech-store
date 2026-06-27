@@ -1,6 +1,7 @@
 import type { AiProductMetadataSearchFields } from "@3dbyte-tech-store/shared-types"
 
 type ExpertId =
+  | "product_advisor"
   | "print_process"
   | "rc_model_building"
   | "compatibility_triage"
@@ -49,6 +50,12 @@ export type ExpertProductGuidance = {
 }
 
 const EXPERT_PROFILES: Record<ExpertId, ExpertProfile> = {
+  product_advisor: {
+    id: "product_advisor",
+    label: "Product advisor",
+    role: "Ground general product recommendations, audience fit, use cases, caveats, care, safety, and search relevance in AI core metadata.",
+    useWhen: "Use for any product with AI core metadata, especially products outside the specialist 3D-printing or RC model-building profiles.",
+  },
   print_process: {
     id: "print_process",
     label: "Print-process expert",
@@ -172,6 +179,30 @@ function compactEvidence(items: Array<string | null | undefined>) {
   return [...new Set(items.filter((item): item is string => Boolean(item)))].slice(0, 6)
 }
 
+function buildCoreEvidence(context: AiContext | null | undefined) {
+  const productKind = asString(context?.aic_product_kind)
+  const audience = asStringArray(context?.aic_audience)
+  const bestFor = asStringArray(context?.aic_best_for)
+  const notRecommendedFor = asStringArray(context?.aic_not_recommended_for)
+  const compatibilityNotes = asStringArray(context?.aic_compatibility_notes)
+  const careOrSafetyNotes = asStringArray(context?.aic_care_or_safety_notes)
+
+  return compactEvidence([
+    productKind ? `product_advisor product_kind=${productKind}` : null,
+    audience.length ? `product_advisor audience=${audience.join(", ")}` : null,
+    bestFor.length ? `product_advisor best_for=${bestFor.join(", ")}` : null,
+    notRecommendedFor.length
+      ? `product_advisor not_recommended_for=${notRecommendedFor.join(", ")}`
+      : null,
+    compatibilityNotes.length
+      ? `product_advisor compatibility_notes=${compatibilityNotes.join(", ")}`
+      : null,
+    careOrSafetyNotes.length
+      ? `product_advisor care_or_safety_notes=${careOrSafetyNotes.join(", ")}`
+      : null,
+  ])
+}
+
 function buildPrintEvidence(context: AiContext | null | undefined) {
   const productKind = asString(context?.tdp_product_kind)
   const material = asString(context?.tdp_material)
@@ -217,12 +248,25 @@ function buildProductSignals(
   queryText: string
 ): ProductExpertSignal[] {
   const context = product.aiContext ?? null
+  const coreEvidence = buildCoreEvidence(context)
   const printEvidence = buildPrintEvidence(context)
   const rcEvidence = buildRcEvidence(context)
   const needsCompatibilityTriage = includesAny(queryText, COMPATIBILITY_QUERY_TERMS)
   const needsSupportHandoff = includesAny(queryText, SUPPORT_QUERY_TERMS)
 
   return [
+    ...(coreEvidence.length
+      ? [
+          {
+            expertId: "product_advisor" as const,
+            confidence: "high" as const,
+            evidence: coreEvidence,
+            cautions: [
+              "Use AI core product facts as general guidance, not as permission to invent missing specs.",
+            ],
+          },
+        ]
+      : []),
     ...(printEvidence.length
       ? [
           {
@@ -287,6 +331,9 @@ function getActiveExpertIds(
     ...(includesAny(queryText, SUPPORT_QUERY_TERMS) ? ["support_handoff" as const] : []),
   ]
   const metadataIds: ExpertId[] = [
+    ...(products.some((product) => hasAnyContextKey(product.aiContext, "aic_"))
+      ? ["product_advisor" as const]
+      : []),
     ...(products.some((product) => hasAnyContextKey(product.aiContext, "tdp_"))
       ? ["print_process" as const]
       : []),
@@ -336,6 +383,7 @@ export function buildExpertProductGuidance(
       activeExperts: activeExpertIds.map((expertId) => EXPERT_PROFILES[expertId]),
       responseRules: [
         "Use only provided product facts; do not infer missing compatibility, safety, stock, price, or discount claims.",
+        "Use AI core product facts for general audience fit, use cases, caveats, compatibility notes, care, safety, and search relevance.",
         "Separate known facts from assumptions and ask follow-up questions when compatibility details are incomplete.",
         "Use productUrl exactly when linking products; never use image or thumbnail URLs as product links.",
       ],

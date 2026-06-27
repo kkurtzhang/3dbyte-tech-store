@@ -62,9 +62,33 @@ export function flattenAiProductMetadata(
     return {};
   }
 
+  const aiCore = asRecord(source.ai_core);
   const threeDPrinting = asRecord(source.three_d_printing);
   const rcModelBuilding = asRecord(source.rc_model_building);
   const output: AiProductMetadataSearchFields = {};
+
+  if (aiCore) {
+    output.aic_schema_version = getNumber(aiCore, "schema_version");
+    output.aic_product_kind = getString(aiCore, "product_kind");
+    output.aic_audience = getStringArray(aiCore, "audience");
+    output.aic_best_for = getStringArray(aiCore, "best_for");
+    output.aic_not_recommended_for = getStringArray(
+      aiCore,
+      "not_recommended_for",
+    );
+    output.aic_compatibility_notes = getStringArray(
+      aiCore,
+      "compatibility_notes",
+    );
+    output.aic_care_or_safety_notes = getStringArray(
+      aiCore,
+      "care_or_safety_notes",
+    );
+    output.aic_ai_search_keywords = getStringArray(
+      aiCore,
+      "ai_search_keywords",
+    );
+  }
 
   if (threeDPrinting) {
     const nozzleTemp = getTemperatureRange(
@@ -80,10 +104,18 @@ export function flattenAiProductMetadata(
     output.tdp_product_kind = getString(threeDPrinting, "product_kind");
     output.tdp_material = getString(threeDPrinting, "material");
     output.tdp_diameter_mm = getNumber(threeDPrinting, "diameter_mm");
+    output.tdp_nozzle_diameter_mm = getNumber(
+      threeDPrinting,
+      "nozzle_diameter_mm",
+    );
     output.tdp_nozzle_temp_min_c = nozzleTemp?.min;
     output.tdp_nozzle_temp_max_c = nozzleTemp?.max;
     output.tdp_bed_temp_min_c = bedTemp?.min;
     output.tdp_bed_temp_max_c = bedTemp?.max;
+    output.tdp_max_temperature_c = getNumber(
+      threeDPrinting,
+      "max_temperature_c",
+    );
     output.tdp_requires_enclosure = getBoolean(
       threeDPrinting,
       "requires_enclosure",
