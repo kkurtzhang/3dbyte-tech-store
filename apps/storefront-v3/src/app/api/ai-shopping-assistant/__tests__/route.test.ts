@@ -1396,6 +1396,8 @@ describe("POST /api/ai-shopping-assistant", () => {
   it("uses unknown diagnostic fallbacks when prompt and release metadata are unavailable", async () => {
     configureAiEnv()
     delete process.env.STOREFRONT_RELEASE_SHA
+    delete process.env.SOURCE_COMMIT
+    delete process.env.GITHUB_SHA
     resolveAssistantSystemPromptMock.mockResolvedValueOnce({
       metadata: {},
       prompt: "Use verified store context only.",
