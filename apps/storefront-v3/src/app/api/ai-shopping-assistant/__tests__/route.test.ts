@@ -1396,6 +1396,8 @@ describe("POST /api/ai-shopping-assistant", () => {
   it("uses unknown diagnostic fallbacks when prompt and release metadata are unavailable", async () => {
     configureAiEnv()
     delete process.env.STOREFRONT_RELEASE_SHA
+    delete process.env.SOURCE_COMMIT
+    delete process.env.GITHUB_SHA
     resolveAssistantSystemPromptMock.mockResolvedValueOnce({
       metadata: {},
       prompt: "Use verified store context only.",
@@ -1415,6 +1417,26 @@ describe("POST /api/ai-shopping-assistant", () => {
     expect(response.headers.get("x-3db-ai-prompt-version")).toBe("unknown")
     expect(response.headers.get("x-3db-ai-guardrails-version")).toBe("unknown")
     expect(response.headers.get("x-3db-release-sha")).toBe("unknown")
+  })
+
+  it("falls back to SOURCE_COMMIT for eval release diagnostics", async () => {
+    configureAiEnv()
+    delete process.env.STOREFRONT_RELEASE_SHA
+    process.env.SOURCE_COMMIT = "d7c797d2b9c209cdd2e245b732a211c8b583d1b8"
+    const { POST } = await import("../route")
+
+    const response = await POST(
+      createJsonRequest(
+        {
+          messages: [{ role: "user", content: "Which PETG should I buy?" }],
+        },
+        { "x-3db-customer-ai-eval-run": "1" },
+      ),
+    )
+
+    expect(response.headers.get("x-3db-release-sha")).toBe(
+      "d7c797d2b9c209cdd2e245b732a211c8b583d1b8",
+    )
   })
 
   it("prefers DeepSeek provider cache usage chunks over generic AI SDK usage", async () => {
