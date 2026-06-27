@@ -10,8 +10,10 @@ export {
   getActiveLangfuseTraceId,
   propagateActiveLangfuseTraceAttributes,
   startActiveLangfuseTraceObservation,
+  updateActiveLangfuseTraceIO,
   updateActiveLangfuseGeneration,
   type LangfuseGenerationUpdateInput,
+  type LangfuseTraceIOUpdateInput,
   type LangfuseTraceObservation,
   type LangfuseTracePropagationInput,
 } from "./langfuse";

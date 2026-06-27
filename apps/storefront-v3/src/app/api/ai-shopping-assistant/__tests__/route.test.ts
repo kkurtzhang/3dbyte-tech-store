@@ -19,6 +19,7 @@ const startActiveLangfuseTraceObservationMock = jest.fn(
     }),
 )
 const updateActiveLangfuseGenerationMock = jest.fn()
+const updateActiveLangfuseTraceIOMock = jest.fn()
 const resolveAssistantSystemPromptMock = jest.fn()
 const providerModelMock = jest.fn((model: string) => ({
   provider: "deepseek.responses",
@@ -77,6 +78,8 @@ jest.mock("@3dbyte-tech-store/observability", () => ({
   ) => startActiveLangfuseTraceObservationMock(name, fn),
   updateActiveLangfuseGeneration: (attributes: unknown) =>
     updateActiveLangfuseGenerationMock(attributes),
+  updateActiveLangfuseTraceIO: (attributes: unknown) =>
+    updateActiveLangfuseTraceIOMock(attributes),
 }))
 
 const originalEnv = process.env
@@ -927,26 +930,26 @@ describe("POST /api/ai-shopping-assistant", () => {
         ],
       },
     })
-    expect(assistantTraceUpdateMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        input: "Find a beginner Voron kit",
-        metadata: expect.objectContaining({
-          chatbot_id: "storefront.shopping-assistant",
-          chatbot_surface: "storefront-floating-drawer",
-          code_guardrails_version: "2026-06-24.1",
-          model: "deepseek-v4-flash",
-          provider: "deepseek",
-          langfuse_prompt_label: "staging",
-          langfuse_prompt_name: "storefront.ai-shopping-assistant.system",
-          langfuse_prompt_source: "langfuse",
-          langfuse_prompt_version: 3,
-          message_count: 1,
-          release_sha: "release_01HQA",
-          service: "storefront-v3",
-          temperature: 0.2,
-        }),
+    expect(updateActiveLangfuseTraceIOMock).toHaveBeenCalledWith({
+      input: "Find a beginner Voron kit",
+    })
+    expect(assistantTraceUpdateMock).toHaveBeenCalledWith({
+      metadata: expect.objectContaining({
+        chatbot_id: "storefront.shopping-assistant",
+        chatbot_surface: "storefront-floating-drawer",
+        code_guardrails_version: "2026-06-24.1",
+        model: "deepseek-v4-flash",
+        provider: "deepseek",
+        langfuse_prompt_label: "staging",
+        langfuse_prompt_name: "storefront.ai-shopping-assistant.system",
+        langfuse_prompt_source: "langfuse",
+        langfuse_prompt_version: 3,
+        message_count: 1,
+        release_sha: "release_01HQA",
+        service: "storefront-v3",
+        temperature: 0.2,
       }),
-    )
+    })
     expect(streamConfig.system).toContain("suggest-only")
     expect(streamConfig.system).toContain("explicit customer confirmation")
     expect(streamConfig.system).toContain("productUrl")
@@ -1121,15 +1124,14 @@ describe("POST /api/ai-shopping-assistant", () => {
       }),
     )
 
-    expect(assistantTraceUpdateMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        input:
-          "Can you check order [reference] for [email] and suggest PETG?",
-        metadata: expect.objectContaining({
-          message_count: 1,
-        }),
+    expect(updateActiveLangfuseTraceIOMock).toHaveBeenCalledWith({
+      input: "Can you check order [reference] for [email] and suggest PETG?",
+    })
+    expect(assistantTraceUpdateMock).toHaveBeenCalledWith({
+      metadata: expect.objectContaining({
+        message_count: 1,
       }),
-    )
+    })
 
     const streamConfig = streamTextMock.mock.calls[0]?.[0]
 
@@ -1143,9 +1145,19 @@ describe("POST /api/ai-shopping-assistant", () => {
       },
     })
 
-    expect(assistantTraceUpdateMock).toHaveBeenLastCalledWith({
+    expect(updateActiveLangfuseTraceIOMock).toHaveBeenLastCalledWith({
       output: "Use PETG, and I found [email] in the request.",
     })
+    expect(assistantTraceUpdateMock).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.anything(),
+      }),
+    )
+    expect(assistantTraceUpdateMock).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        output: expect.anything(),
+      }),
+    )
     expect(updateActiveLangfuseGenerationMock).toHaveBeenLastCalledWith(
       expect.objectContaining({
         metadata: {
@@ -1155,6 +1167,29 @@ describe("POST /api/ai-shopping-assistant", () => {
       }),
     )
     expect(assistantTraceEndMock).toHaveBeenCalledTimes(1)
+  })
+
+  it("does not send trace metadata as Langfuse trace input or output", async () => {
+    configureAiEnv()
+    const { POST } = await import("../route")
+
+    await POST(
+      createJsonRequest({
+        messages: [{ role: "user", content: "Recommend PETG for a printer." }],
+      }),
+    )
+
+    const streamConfig = streamTextMock.mock.calls[0]?.[0]
+    streamConfig.onFinish({
+      finishReason: "stop",
+      text: "PETG works well for durable printer parts.",
+      usage: {},
+    })
+
+    expect(updateActiveLangfuseTraceIOMock.mock.calls).toEqual([
+      [{ input: "Recommend PETG for a printer." }],
+      [{ output: "PETG works well for durable printer parts." }],
+    ])
   })
 
   it("keeps full sanitized trace output without truncation", async () => {
@@ -1169,9 +1204,9 @@ describe("POST /api/ai-shopping-assistant", () => {
       }),
     )
 
-    expect(assistantTraceUpdateMock).toHaveBeenCalledWith(
-      expect.objectContaining({ input: longInput }),
-    )
+    expect(updateActiveLangfuseTraceIOMock).toHaveBeenCalledWith({
+      input: longInput,
+    })
 
     const streamConfig = streamTextMock.mock.calls[0]?.[0]
     streamConfig.onFinish({
@@ -1180,7 +1215,7 @@ describe("POST /api/ai-shopping-assistant", () => {
       usage: {},
     })
 
-    expect(assistantTraceUpdateMock).toHaveBeenLastCalledWith({
+    expect(updateActiveLangfuseTraceIOMock).toHaveBeenLastCalledWith({
       output: longOutput,
     })
     expect(longOutput).not.toContain("...[truncated]")
@@ -1204,9 +1239,11 @@ describe("POST /api/ai-shopping-assistant", () => {
     })
     streamConfig.onAbort({ steps: [] })
 
+    expect(updateActiveLangfuseTraceIOMock).toHaveBeenLastCalledWith({
+      output: "Provider failed for [reference] and [email]",
+    })
     expect(assistantTraceUpdateMock).toHaveBeenLastCalledWith({
       level: "ERROR",
-      output: "Provider failed for [reference] and [email]",
       statusMessage: "Provider failed for [reference] and [email]",
     })
     expect(assistantTraceEndMock).toHaveBeenCalledTimes(1)
@@ -1233,9 +1270,11 @@ describe("POST /api/ai-shopping-assistant", () => {
     streamConfig.onAbort({ steps: [] })
     streamConfig.onAbort({ steps: [] })
 
+    expect(updateActiveLangfuseTraceIOMock).toHaveBeenLastCalledWith({
+      output: "Assistant stream aborted",
+    })
     expect(assistantTraceUpdateMock).toHaveBeenLastCalledWith({
       level: "WARNING",
-      output: "Assistant stream aborted",
       statusMessage: "Assistant stream aborted",
     })
     expect(assistantTraceEndMock).toHaveBeenCalledTimes(1)

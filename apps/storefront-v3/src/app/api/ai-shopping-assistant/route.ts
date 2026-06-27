@@ -5,6 +5,7 @@ import {
   propagateActiveLangfuseTraceAttributes,
   startActiveLangfuseTraceObservation,
   updateActiveLangfuseGeneration,
+  updateActiveLangfuseTraceIO,
 } from "@3dbyte-tech-store/observability"
 import {
   convertToModelMessages,
@@ -942,7 +943,13 @@ export async function POST(req: Request): Promise<Response> {
             }
 
             traceEnded = true
-            assistantTrace.update(attributes)
+            updateActiveLangfuseTraceIO({ output: attributes.output })
+            assistantTrace.update({
+              ...(attributes.level ? { level: attributes.level } : {}),
+              ...(attributes.statusMessage
+                ? { statusMessage: attributes.statusMessage }
+                : {}),
+            })
             assistantTrace.end()
           }
           const recordAssistantTraceError = (errorOrEvent: unknown) => {
@@ -965,10 +972,12 @@ export async function POST(req: Request): Promise<Response> {
           }
 
           try {
-            assistantTrace.update({
+            updateActiveLangfuseTraceIO({
               input: sanitizeTraceText(
                 getLatestUserMessage(parsed.data.messages),
               ),
+            })
+            assistantTrace.update({
               metadata: traceMetadata,
             })
 

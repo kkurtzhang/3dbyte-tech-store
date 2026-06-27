@@ -1,6 +1,7 @@
 import {
   getActiveTraceId,
   propagateAttributes,
+  setActiveTraceIO,
   startActiveObservation,
   updateActiveObservation,
   type LangfuseGenerationAttributes,
@@ -30,6 +31,11 @@ export type LangfuseTracePropagationInput = {
   sessionId?: string;
   tags?: string[];
   userId?: string;
+};
+
+export type LangfuseTraceIOUpdateInput = {
+  input?: JsonValue;
+  output?: JsonValue;
 };
 
 export type LangfuseTraceObservation = Pick<
@@ -93,6 +99,19 @@ export function updateActiveLangfuseGeneration(
   };
 
   updateActiveObservation(generationAttributes, { asType: "generation" });
+}
+
+export function updateActiveLangfuseTraceIO(
+  attributes: LangfuseTraceIOUpdateInput,
+) {
+  const traceAttributes = {
+    ...(attributes.input !== undefined ? { input: attributes.input } : {}),
+    ...(attributes.output !== undefined ? { output: attributes.output } : {}),
+  };
+
+  if (Object.keys(traceAttributes).length > 0) {
+    setActiveTraceIO(traceAttributes);
+  }
 }
 
 export function propagateActiveLangfuseTraceAttributes<T>(
