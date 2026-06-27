@@ -2,6 +2,7 @@ const mockGetActiveTraceId = jest.fn(
   (): string | undefined => "official-active-trace-id",
 );
 const mockPropagateAttributes = jest.fn((_attributes, fn) => fn());
+const mockSetActiveTraceIO = jest.fn();
 const mockUpdateActiveObservation = jest.fn();
 const mockStartedObservation = {
   end: jest.fn(),
@@ -26,6 +27,7 @@ jest.mock("@langfuse/tracing", () => ({
   getActiveTraceId: () => mockGetActiveTraceId(),
   propagateAttributes: (attributes, fn) =>
     mockPropagateAttributes(attributes, fn),
+  setActiveTraceIO: (attributes) => mockSetActiveTraceIO(attributes),
   startActiveObservation: (name, fn, options) =>
     mockStartActiveObservation(name, fn, options),
   updateActiveObservation: (attributes, options) =>
@@ -36,6 +38,7 @@ import {
   getActiveLangfuseTraceId,
   propagateActiveLangfuseTraceAttributes,
   startActiveLangfuseTraceObservation,
+  updateActiveLangfuseTraceIO,
   updateActiveLangfuseGeneration,
 } from "../langfuse";
 
@@ -43,6 +46,7 @@ describe("Langfuse trace attributes", () => {
   beforeEach(() => {
     mockGetActiveTraceId.mockClear();
     mockPropagateAttributes.mockClear();
+    mockSetActiveTraceIO.mockClear();
     mockUpdateActiveObservation.mockClear();
     mockStartedObservation.end.mockClear();
     mockStartedObservation.update.mockClear();
@@ -121,6 +125,30 @@ describe("Langfuse trace attributes", () => {
       },
       { asType: "generation" },
     );
+  });
+
+  it("updates top-level trace input and output through the official trace IO helper", () => {
+    updateActiveLangfuseTraceIO({
+      input: "Which PETG should I use outside?",
+      output: "Use PETG for outdoor parts.",
+    });
+
+    expect(mockSetActiveTraceIO).toHaveBeenCalledWith({
+      input: "Which PETG should I use outside?",
+      output: "Use PETG for outdoor parts.",
+    });
+    expect(mockUpdateActiveObservation).not.toHaveBeenCalled();
+  });
+
+  it("drops undefined trace input and output fields before updating Langfuse", () => {
+    updateActiveLangfuseTraceIO({
+      input: undefined,
+      output: "Assistant stream aborted",
+    });
+
+    expect(mockSetActiveTraceIO).toHaveBeenCalledWith({
+      output: "Assistant stream aborted",
+    });
   });
 
   it("exposes the active trace id for score attachment", () => {
