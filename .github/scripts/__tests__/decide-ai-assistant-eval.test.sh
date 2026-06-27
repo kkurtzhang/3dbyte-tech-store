@@ -64,6 +64,29 @@ grep -Fxq "mode=post-deploy" "${eval_output}"
 grep -Fxq "attempts=1" "${eval_output}"
 grep -Fxq "wait_for_release=true" "${eval_output}"
 grep -Fq "eval-only" "${eval_output}"
+rm -f "${eval_output}"
+
+mkdir -p "${test_repo}/.github/scripts/__tests__"
+printf '%s\n' "echo deploy-only" \
+  > "${test_repo}/.github/scripts/__tests__/coolify-compose-build-stability.test.sh"
+git -C "${test_repo}" add .
+git -C "${test_repo}" commit --quiet -m "test: change deploy script test"
+deploy_sha="$(git -C "${test_repo}" rev-parse HEAD)"
+deploy_output="${test_repo}/deploy-output"
+
+(
+  cd "${test_repo}"
+  GITHUB_EVENT_NAME=push \
+    GITHUB_OUTPUT="${deploy_output}" \
+    GITHUB_SHA="${deploy_sha}" \
+    bash "${decision_script}"
+)
+
+grep -Fxq "should_run=false" "${deploy_output}"
+grep -Fxq "mode=skip" "${deploy_output}"
+grep -Fxq "attempts=0" "${deploy_output}"
+grep -Fxq "wait_for_release=false" "${deploy_output}"
+grep -Fq "no assistant runtime or eval files changed" "${deploy_output}"
 
 manual_output="${test_repo}/manual-output"
 GITHUB_EVENT_NAME=workflow_dispatch \

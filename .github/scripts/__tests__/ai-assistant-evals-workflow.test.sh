@@ -16,5 +16,18 @@ grep -Fq "bash .github/scripts/wait-for-staging-release.sh" "${workflow}"
 grep -Fq "LANGFUSE_HOST" "${workflow}"
 grep -Fq "/api/public/health" "${workflow}"
 grep -Fq "/api/public/projects" "${workflow}"
+grep -Fq "apps/storefront-v3/src/app/api/ai-shopping-assistant/**" "${workflow}"
+grep -Fq "apps/storefront-v3/scripts/run-customer-ai-evals.ts" "${workflow}"
+
+for forbidden_path in \
+  ".github/scripts/__tests__/coolify-compose-build-stability.test.sh" \
+  ".github/scripts/__tests__/coolify-release-sha-env.test.sh" \
+  "docs/ai-engineer-pathway/phase-3-operational-feedback.md"
+do
+  if grep -Fq "${forbidden_path}" "${workflow}"; then
+    echo "Unexpected AI assistant eval trigger path: ${forbidden_path}" >&2
+    exit 1
+  fi
+done
 
 echo "AI assistant eval workflow tests passed"
