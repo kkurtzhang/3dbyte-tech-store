@@ -21,7 +21,7 @@ fresh staging DB with 0 products
 | Structured AI facts                                      | Medusa `product.metadata`          | Phase 1 uses namespaced metadata only.                             |
 | Rich product copy                                        | Strapi product descriptions        | Editorial descriptions stay outside metadata.                      |
 | Manuals, datasheets, SDS, install guides, warranty docs  | Strapi product documents           | Public search target remains `product_documents_public`.           |
-| Product search and assistant retrieval facts             | Existing Meilisearch product index | Metadata is flattened into allowlisted `tdp_*` and `rcb_*` fields. |
+| Product search and assistant retrieval facts             | Existing Meilisearch product index | Metadata is flattened into allowlisted `aic_*`, `tdp_*`, and `rcb_*` fields. |
 
 ## Metadata Namespaces
 
@@ -29,6 +29,16 @@ All Phase 1 AI metadata lives under each Medusa product's `metadata` object.
 
 ```json
 {
+  "ai_core": {
+    "schema_version": 1,
+    "product_kind": "soldering_station",
+    "audience": ["electronics beginners", "makers"],
+    "best_for": ["kit assembly", "bench repairs"],
+    "not_recommended_for": ["high-volume production"],
+    "compatibility_notes": ["Use with 240V AU outlet"],
+    "care_or_safety_notes": ["Let the iron cool before storing"],
+    "ai_search_keywords": ["soldering iron", "electronics bench"]
+  },
   "three_d_printing": {
     "schema_version": 1,
     "product_kind": "filament",
@@ -50,11 +60,13 @@ All Phase 1 AI metadata lives under each Medusa product's `metadata` object.
 }
 ```
 
+`metadata.ai_core` is for universal product-advice facts that can apply to any product category the store sells.
+
 `metadata.three_d_printing` is for print-process facts, regardless of whether the product is filament, nozzles, build surfaces, drying/storage, or maintenance.
 
 `metadata.rc_model_building` is for 3DSets-style RC build facts, including electronics and hardware such as motors, ESCs, servos, bearings, fastener kits, batteries, and connector packs.
 
-Products may have one namespace, both namespaces, or neither. Malformed namespaces are ignored by indexing and assistant guidance.
+Products may have `ai_core`, one or more specialist namespaces, or no AI metadata. Malformed namespaces are ignored by indexing and assistant guidance.
 
 ## Meilisearch Flattening
 
@@ -62,9 +74,12 @@ Phase 1 flattens allowlisted metadata into the existing product document:
 
 - `three_d_printing` -> `tdp_*`
 - `rc_model_building` -> `rcb_*`
+- `ai_core` -> `aic_*`
 
 Examples:
 
+- `metadata.ai_core.product_kind` -> `aic_product_kind`
+- `metadata.ai_core.best_for` -> `aic_best_for`
 - `metadata.three_d_printing.material` -> `tdp_material`
 - `metadata.three_d_printing.requires_hardened_nozzle` -> `tdp_requires_hardened_nozzle`
 - `metadata.rc_model_building.component_role` -> `rcb_component_role`

@@ -12,7 +12,7 @@ const DASHBOARD_EDITABLE_ASSISTANT_PROMPT = [
 ].join(" ");
 
 // Increment whenever the code-owned guardrail contract changes.
-export const CODE_OWNED_ASSISTANT_GUARDRAILS_VERSION = "2026-06-24.1";
+export const CODE_OWNED_ASSISTANT_GUARDRAILS_VERSION = "2026-06-27.1";
 
 export const CODE_OWNED_ASSISTANT_GUARDRAILS = [
   "Use only provided product, search, Strapi, Medusa, order, tracking, shipping, and support-ticket context.",
