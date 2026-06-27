@@ -1,8 +1,13 @@
 const langfuseSpanProcessorMock = jest.fn().mockImplementation((config) => ({
   config,
 }));
+const isDefaultExportSpanMock = jest.fn(
+  (span: { attributes: Record<string, unknown> }) =>
+    span.attributes["langfuse.default"] === true,
+);
 
 jest.mock("@langfuse/otel", () => ({
+  isDefaultExportSpan: isDefaultExportSpanMock,
   LangfuseSpanProcessor: langfuseSpanProcessorMock,
 }));
 
@@ -28,13 +33,28 @@ function createLangfuseConfig(): TracingConfig {
 describe("observability node tracing", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    isDefaultExportSpanMock.mockImplementation(
+      (span: { attributes: Record<string, unknown> }) =>
+        span.attributes["langfuse.default"] === true,
+    );
   });
 
-  it("exports AI SDK v6 spans with ai.* attributes to Langfuse", async () => {
+  it("composes AI SDK v6 span detection with the Langfuse default filter", async () => {
     await buildSpanProcessorsAsync(createLangfuseConfig());
 
     const processorConfig = langfuseSpanProcessorMock.mock.calls[0]?.[0];
 
+    expect(
+      processorConfig.shouldExportSpan({
+        otelSpan: {
+          attributes: {
+            "http.route": "/shop",
+            "langfuse.default": true,
+          },
+          instrumentationScope: { name: "next" },
+        },
+      }),
+    ).toBe(true);
     expect(
       processorConfig.shouldExportSpan({
         otelSpan: {
@@ -46,6 +66,7 @@ describe("observability node tracing", () => {
         },
       }),
     ).toBe(true);
+    expect(isDefaultExportSpanMock).toHaveBeenCalled();
     expect(
       processorConfig.shouldExportSpan({
         otelSpan: {

@@ -7,13 +7,12 @@ export {
   type TracingConfig,
 } from "./config";
 export {
-  createActiveLangfuseTraceAttributeWriter,
   getActiveLangfuseTraceId,
   propagateActiveLangfuseTraceAttributes,
-  setActiveLangfuseTraceAttributes,
   startActiveLangfuseTraceObservation,
+  updateActiveLangfuseGeneration,
+  type LangfuseGenerationUpdateInput,
   type LangfuseTraceObservation,
-  type LangfuseTraceAttributeInput,
   type LangfuseTracePropagationInput,
 } from "./langfuse";
 export {

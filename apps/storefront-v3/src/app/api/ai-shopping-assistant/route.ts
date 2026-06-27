@@ -1,10 +1,10 @@
 import { createOpenAI } from "@ai-sdk/openai"
 import {
-  createActiveLangfuseTraceAttributeWriter,
   getActiveLangfuseTraceId,
   isAiTelemetryEnabled,
   propagateActiveLangfuseTraceAttributes,
   startActiveLangfuseTraceObservation,
+  updateActiveLangfuseGeneration,
 } from "@3dbyte-tech-store/observability"
 import {
   convertToModelMessages,
@@ -46,7 +46,6 @@ const AI_PROMPT_VERSION_HEADER = "x-3db-ai-prompt-version"
 const AI_GUARDRAILS_VERSION_HEADER = "x-3db-ai-guardrails-version"
 const RELEASE_SHA_HEADER = "x-3db-release-sha"
 const MAX_ASSISTANT_PART_BYTES = 25_000
-const MAX_TRACE_IO_TEXT_CHARS = 1_200
 const TRACE_CONTEXT_ID_PATTERN = /^[a-zA-Z0-9._:-]+$/
 const TRACE_REFERENCE_PATTERN =
   /\b(?:CASE|INV|ORDER|ORD|REF|RMA|SUP|TICKET|TKT)-[A-Z0-9-]+\b/gi
@@ -658,18 +657,10 @@ function buildAssistantTelemetryMetadata(
   }
 }
 
-function truncateTraceText(text: string) {
-  return text.length > MAX_TRACE_IO_TEXT_CHARS
-    ? `${text.slice(0, MAX_TRACE_IO_TEXT_CHARS)}...[truncated]`
-    : text
-}
-
 function sanitizeTraceText(text: string) {
-  const maskedText = maskCompleteEmailAddresses(text)
+  return maskCompleteEmailAddresses(text)
     .replace(TRACE_REFERENCE_PATTERN, "[reference]")
     .replace(TRACE_COMMERCE_ID_PATTERN, "[id]")
-
-  return truncateTraceText(maskedText)
 }
 
 function getLatestUserMessage(messages: AssistantMessage[]) {
@@ -682,47 +673,6 @@ function getLatestUserMessage(messages: AssistantMessage[]) {
   }
 
   return ""
-}
-
-function getPromptMetadataString(
-  metadata: Record<string, unknown>,
-  key: string,
-  fallback: string,
-) {
-  const value = metadata[key]
-
-  return typeof value === "string" && value.trim() ? value.trim() : fallback
-}
-
-function buildAssistantTraceInput({
-  messages,
-  promptMetadata,
-  traceContext,
-}: {
-  messages: AssistantMessage[]
-  promptMetadata: Record<string, unknown>
-  traceContext: AssistantTraceContext
-}) {
-  return {
-    chatbotId: getTraceContextValue(
-      traceContext,
-      "chatbotId",
-      ASSISTANT_CHATBOT_ID,
-    ),
-    latestUserMessage: sanitizeTraceText(getLatestUserMessage(messages)),
-    messageCount: messages.length,
-    promptLabel: getPromptMetadataString(
-      promptMetadata,
-      "langfuse_prompt_label",
-      "unknown",
-    ),
-    promptName: getPromptMetadataString(
-      promptMetadata,
-      "langfuse_prompt_name",
-      "unknown",
-    ),
-    surface: getTraceContextValue(traceContext, "surface", ASSISTANT_SURFACE),
-  }
 }
 
 function getFinishUsage(finish: unknown): UsageSnapshot {
@@ -751,11 +701,15 @@ function getFinishReason(finish: unknown) {
     : "unknown"
 }
 
-function buildAssistantTraceOutput(finish: unknown) {
-  return {
-    assistantText: sanitizeTraceText(getFinishText(finish)),
-    finishReason: getFinishReason(finish),
-  }
+function getAssistantStreamError(errorOrEvent: unknown) {
+  const error =
+    isJsonRecord(errorOrEvent) && "error" in errorOrEvent
+      ? errorOrEvent.error
+      : errorOrEvent
+
+  return error instanceof Error
+    ? sanitizeTraceText(error.message)
+    : "Assistant stream failed"
 }
 
 function toFiniteNumber(value: unknown) {
@@ -953,6 +907,7 @@ export async function POST(req: Request): Promise<Response> {
   const traceMetadata = {
     ...assistantPrompt.metadata,
     ...buildAssistantTraceMetadata(config, parsed.data.traceContext),
+    message_count: parsed.data.messages.length,
   }
   const telemetryMetadata = {
     ...assistantPrompt.metadata,
@@ -976,41 +931,45 @@ export async function POST(req: Request): Promise<Response> {
           userId: parsed.data.traceContext?.userId,
         },
         async () => {
-          const setLangfuseTraceAttributes =
-            createActiveLangfuseTraceAttributeWriter()
           let traceEnded = false
-          const endAssistantTrace = () => {
+          const finishAssistantTrace = (attributes: {
+            level?: "DEFAULT" | "ERROR" | "WARNING"
+            output: string
+            statusMessage?: string
+          }) => {
             if (traceEnded) {
               return
             }
 
             traceEnded = true
+            assistantTrace.update(attributes)
             assistantTrace.end()
           }
-          const recordAssistantTraceError = (error: unknown) => {
-            setLangfuseTraceAttributes({
-              output: {
-                error:
-                  error instanceof Error
-                    ? sanitizeTraceText(error.message)
-                    : "Assistant stream failed",
-              },
+          const recordAssistantTraceError = (errorOrEvent: unknown) => {
+            const errorMessage = getAssistantStreamError(errorOrEvent)
+
+            finishAssistantTrace({
+              level: "ERROR",
+              output: errorMessage,
+              statusMessage: errorMessage,
             })
-            endAssistantTrace()
+          }
+          const recordAssistantTraceAbort = () => {
+            const statusMessage = "Assistant stream aborted"
+
+            finishAssistantTrace({
+              level: "WARNING",
+              output: statusMessage,
+              statusMessage,
+            })
           }
 
           try {
-            setLangfuseTraceAttributes({
-              input: buildAssistantTraceInput({
-                messages: parsed.data.messages,
-                promptMetadata: assistantPrompt.metadata,
-                traceContext: parsed.data.traceContext,
-              }),
+            assistantTrace.update({
+              input: sanitizeTraceText(
+                getLatestUserMessage(parsed.data.messages),
+              ),
               metadata: traceMetadata,
-              name: ASSISTANT_TRACE_NAME,
-              sessionId: parsed.data.traceContext?.sessionId,
-              tags: ASSISTANT_TRACE_TAGS,
-              userId: parsed.data.traceContext?.userId,
             })
 
             const deepSeekUsageRef: { current: DeepSeekUsage | null } = {
@@ -1024,6 +983,7 @@ export async function POST(req: Request): Promise<Response> {
             })
             const uiMessages = toUiMessages(parsed.data.messages)
             const result = streamText({
+              abortSignal: req.signal,
               model: deepseek.chat(config.model),
               system: assistantPrompt.prompt,
               messages: await convertToModelMessages(uiMessages, {
@@ -1043,17 +1003,19 @@ export async function POST(req: Request): Promise<Response> {
                   deepSeekUsageRef.current,
                 )
 
-                setLangfuseTraceAttributes({
+                updateActiveLangfuseGeneration({
                   metadata: {
-                    ...traceMetadata,
                     deepseek_cache_hit_ratio: getCacheHitRatio(usageDetails),
+                    finish_reason: getFinishReason(finish),
                   },
                   model: config.model,
-                  output: buildAssistantTraceOutput(finish),
                   usageDetails,
                 })
-                endAssistantTrace()
+                finishAssistantTrace({
+                  output: sanitizeTraceText(getFinishText(finish)),
+                })
               },
+              onAbort: recordAssistantTraceAbort,
               onError: recordAssistantTraceError,
               stopWhen: stepCountIs(5),
               tools: {

@@ -3,3 +3,8 @@ packages:
   - apps/backend
   - apps/cms
   - packages/*
+
+# Keep direct `pnpm` invocations on the root packageManager pin instead of
+# allowing older global/app-local pnpm versions to rewrite the lockfile.
+managePackageManagerVersions: true
+pmOnFail: download
