@@ -274,6 +274,84 @@ describe("internal AI routes", () => {
     }))
   })
 
+  it("activates generic product guidance from AI core metadata", async () => {
+    meiliSearch.mockResolvedValue({
+      hits: [
+        {
+          id: "prod_tool_1",
+          title: "Compact Soldering Station",
+          handle: "compact-soldering-station",
+        },
+      ],
+    })
+    productGraph.mockResolvedValue({
+      data: [
+        {
+          id: "prod_tool_1",
+          title: "Compact Soldering Station",
+          handle: "compact-soldering-station",
+          status: "published",
+          metadata: {
+            ai_core: {
+              schema_version: 1,
+              product_kind: "soldering_station",
+              audience: ["electronics beginners"],
+              best_for: ["kit assembly", "bench repairs"],
+              not_recommended_for: ["high-volume production"],
+              compatibility_notes: ["Use with 240V AU outlet"],
+              care_or_safety_notes: ["Let the iron cool before storing"],
+              ai_search_keywords: ["soldering iron", "electronics bench"],
+            },
+          },
+        },
+      ],
+    })
+    getProductDescription.mockResolvedValue(null)
+    const res = createResponse()
+
+    await productGuidancePOST(
+      createRequest({
+        query: "Which soldering station is best for kit assembly?",
+        limit: 1,
+      }) as never,
+      res as never
+    )
+
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+      expertContext: expect.objectContaining({
+        activeExperts: expect.arrayContaining([
+          expect.objectContaining({ id: "product_advisor" }),
+        ]),
+        responseRules: expect.arrayContaining([
+          expect.stringContaining("AI core product facts"),
+        ]),
+      }),
+      products: [
+        expect.objectContaining({
+          aiContext: expect.objectContaining({
+            aic_schema_version: 1,
+            aic_product_kind: "soldering_station",
+            aic_audience: ["electronics beginners"],
+            aic_best_for: ["kit assembly", "bench repairs"],
+            aic_not_recommended_for: ["high-volume production"],
+            aic_compatibility_notes: ["Use with 240V AU outlet"],
+            aic_care_or_safety_notes: ["Let the iron cool before storing"],
+            aic_ai_search_keywords: ["soldering iron", "electronics bench"],
+          }),
+          expertSignals: expect.arrayContaining([
+            expect.objectContaining({
+              expertId: "product_advisor",
+              evidence: expect.arrayContaining([
+                expect.stringContaining("soldering_station"),
+                expect.stringContaining("kit assembly"),
+              ]),
+            }),
+          ]),
+        }),
+      ],
+    }))
+  })
+
   it("does not activate support handoff for generic check wording", async () => {
     meiliSearch.mockResolvedValue({
       hits: [

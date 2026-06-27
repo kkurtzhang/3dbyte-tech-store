@@ -77,6 +77,8 @@ describe("buildProductIndexSettings", () => {
 
     expect(settings.filterableAttributes).toEqual(
       expect.arrayContaining([
+        "aic_product_kind",
+        "aic_audience",
         "tdp_product_kind",
         "tdp_material",
         "tdp_requires_enclosure",
@@ -92,6 +94,11 @@ describe("buildProductIndexSettings", () => {
     );
     expect(settings.searchableAttributes).toEqual(
       expect.arrayContaining([
+        "aic_best_for",
+        "aic_not_recommended_for",
+        "aic_compatibility_notes",
+        "aic_care_or_safety_notes",
+        "aic_ai_search_keywords",
         "tdp_best_for",
         "tdp_not_recommended_for",
         "tdp_common_issues",
@@ -103,6 +110,14 @@ describe("buildProductIndexSettings", () => {
     );
     expect(settings.displayedAttributes).toEqual(
       expect.arrayContaining([
+        "aic_schema_version",
+        "aic_product_kind",
+        "aic_audience",
+        "aic_best_for",
+        "aic_not_recommended_for",
+        "aic_compatibility_notes",
+        "aic_care_or_safety_notes",
+        "aic_ai_search_keywords",
         "tdp_product_kind",
         "tdp_material",
         "tdp_requires_hardened_nozzle",
