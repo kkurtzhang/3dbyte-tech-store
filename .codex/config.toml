@@ -42,10 +42,12 @@ notify = [
 # command = "npx"
 # args = ["-y", "@modelcontextprotocol/server-github"]
 
-[mcp_servers.context7]
-command = "npx"
-args = ["-y", "@upstash/context7-mcp@latest"]
-startup_timeout_sec=60
+# Context7 is configured at user level so personal API keys are not shadowed
+# by an unauthenticated project-local server definition.
+# [mcp_servers.context7]
+# command = "npx"
+# args = ["-y", "@upstash/context7-mcp@latest"]
+# startup_timeout_sec=60
 
 [mcp_servers.exa]
 url = "https://mcp.exa.ai/mcp"

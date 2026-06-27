@@ -1,37 +1,40 @@
 import {
   getActiveTraceId,
   propagateAttributes,
-  setActiveTraceIO,
   startActiveObservation,
+  updateActiveObservation,
+  type LangfuseGenerationAttributes,
   type LangfuseSpan,
+  type ObservationLevel,
 } from "@langfuse/tracing";
-import { trace, type Span } from "@opentelemetry/api";
+import { trace } from "@opentelemetry/api";
 
 type JsonPrimitive = string | number | boolean | null;
 type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
 const EMPTY_TRACE_ID = "00000000000000000000000000000000";
 
-export type LangfuseTraceAttributeInput = {
+export type LangfuseGenerationUpdateInput = {
   costDetails?: Record<string, number | undefined>;
   input?: JsonValue;
+  level?: ObservationLevel;
   metadata?: Record<string, JsonValue | undefined>;
   model?: string;
-  name?: string;
   output?: JsonValue;
+  statusMessage?: string;
+  usageDetails?: Record<string, number | undefined>;
+};
+
+export type LangfuseTracePropagationInput = {
+  metadata?: Record<string, JsonValue | undefined>;
+  name?: string;
   sessionId?: string;
   tags?: string[];
-  usageDetails?: Record<string, number | undefined>;
   userId?: string;
 };
 
-export type LangfuseTracePropagationInput = Pick<
-  LangfuseTraceAttributeInput,
-  "metadata" | "name" | "sessionId" | "tags" | "userId"
->;
-
 export type LangfuseTraceObservation = Pick<
   LangfuseSpan,
-  "end" | "traceId"
+  "end" | "traceId" | "update"
 >;
 
 function compactNumberRecord(record: Record<string, number | undefined>) {
@@ -67,137 +70,29 @@ function compactStringMetadata(record: Record<string, JsonValue | undefined>) {
   );
 }
 
-function setJsonAttribute(span: Span, name: string, value: unknown) {
-  if (!span) {
-    return false;
-  }
-
-  span.setAttribute(name, JSON.stringify(value));
-  return true;
-}
-
-function setLangfuseTopLevelTraceAttributes(
-  span: Span | undefined,
-  attributes: LangfuseTraceAttributeInput,
+export function updateActiveLangfuseGeneration(
+  attributes: LangfuseGenerationUpdateInput,
 ) {
-  if (!span) {
-    return false;
-  }
-
-  if (attributes.name) {
-    span.setAttribute("langfuse.trace.name", attributes.name);
-  }
-
-  if (attributes.userId) {
-    span.setAttribute("user.id", attributes.userId);
-    span.setAttribute("langfuse.user.id", attributes.userId);
-  }
-
-  if (attributes.sessionId) {
-    span.setAttribute("session.id", attributes.sessionId);
-    span.setAttribute("langfuse.session.id", attributes.sessionId);
-  }
-
-  if (attributes.tags?.length) {
-    span.setAttribute("langfuse.trace.tags", attributes.tags);
-  }
-
-  if (attributes.metadata) {
-    setJsonAttribute(
-      span,
-      "langfuse.trace.metadata",
-      compactMetadata(attributes.metadata),
-    );
-  }
-
-  if (attributes.input !== undefined) {
-    setJsonAttribute(span, "langfuse.trace.input", attributes.input);
-    setActiveTraceIO({ input: attributes.input });
-  }
-
-  if (attributes.output !== undefined) {
-    setJsonAttribute(span, "langfuse.trace.output", attributes.output);
-    setActiveTraceIO({ output: attributes.output });
-  }
-
-  return true;
-}
-
-function setLangfuseObservationAttributes(
-  span: Span | undefined,
-  attributes: LangfuseTraceAttributeInput,
-) {
-  if (!span) {
-    return false;
-  }
-
-  let wroteAttributes = false;
-
-  if (attributes.model) {
-    span.setAttribute("langfuse.observation.model.name", attributes.model);
-    span.setAttribute("langfuse.observation.type", "generation");
-    wroteAttributes = true;
-  }
-
-  if (attributes.usageDetails) {
-    wroteAttributes =
-      setJsonAttribute(
-        span,
-        "langfuse.observation.usage_details",
-        compactNumberRecord(attributes.usageDetails),
-      ) || wroteAttributes;
-  }
-
-  if (attributes.costDetails) {
-    wroteAttributes =
-      setJsonAttribute(
-        span,
-        "langfuse.observation.cost_details",
-        compactNumberRecord(attributes.costDetails),
-      ) || wroteAttributes;
-  }
-
-  return wroteAttributes;
-}
-
-function setLangfuseTraceAttributes(
-  span: Span | undefined,
-  attributes: LangfuseTraceAttributeInput,
-) {
-  const wroteTraceAttributes = setLangfuseTopLevelTraceAttributes(
-    span,
-    attributes,
-  );
-  const wroteObservationAttributes = setLangfuseObservationAttributes(
-    span,
-    attributes,
-  );
-
-  return wroteTraceAttributes || wroteObservationAttributes;
-}
-
-export function createActiveLangfuseTraceAttributeWriter() {
-  const fallbackSpan = trace.getActiveSpan();
-
-  return (attributes: LangfuseTraceAttributeInput) => {
-    const activeSpan = trace.getActiveSpan();
-    const wroteTraceAttributes = setLangfuseTopLevelTraceAttributes(
-      fallbackSpan ?? activeSpan,
-      attributes,
-    );
-    const wroteObservationAttributes = setLangfuseObservationAttributes(
-      activeSpan ?? fallbackSpan,
-      attributes,
-    );
-
-    return wroteTraceAttributes || wroteObservationAttributes;
+  const generationAttributes: LangfuseGenerationAttributes = {
+    ...(attributes.costDetails
+      ? { costDetails: compactNumberRecord(attributes.costDetails) }
+      : {}),
+    ...(attributes.input !== undefined ? { input: attributes.input } : {}),
+    ...(attributes.level ? { level: attributes.level } : {}),
+    ...(attributes.metadata
+      ? { metadata: compactMetadata(attributes.metadata) }
+      : {}),
+    ...(attributes.model ? { model: attributes.model } : {}),
+    ...(attributes.output !== undefined ? { output: attributes.output } : {}),
+    ...(attributes.statusMessage
+      ? { statusMessage: attributes.statusMessage }
+      : {}),
+    ...(attributes.usageDetails
+      ? { usageDetails: compactNumberRecord(attributes.usageDetails) }
+      : {}),
   };
-}
 
-export function setActiveLangfuseTraceAttributes(
-  attributes: LangfuseTraceAttributeInput,
-) {
-  return setLangfuseTraceAttributes(trace.getActiveSpan(), attributes);
+  updateActiveObservation(generationAttributes, { asType: "generation" });
 }
 
 export function propagateActiveLangfuseTraceAttributes<T>(

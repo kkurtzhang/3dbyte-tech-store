@@ -97,7 +97,8 @@ export async function buildSpanProcessorsAsync(
   const processors = buildSpanProcessors(config);
 
   if (config.langfuse) {
-    const { LangfuseSpanProcessor } = await import("@langfuse/otel");
+    const { isDefaultExportSpan, LangfuseSpanProcessor } =
+      await import("@langfuse/otel");
 
     processors.push(
       new LangfuseSpanProcessor({
@@ -105,7 +106,9 @@ export async function buildSpanProcessorsAsync(
         environment: config.langfuse.environment,
         publicKey: config.langfuse.publicKey,
         secretKey: config.langfuse.secretKey,
-        shouldExportSpan: shouldExportLangfuseSpan,
+        shouldExportSpan: ({ otelSpan }) =>
+          isDefaultExportSpan(otelSpan) ||
+          shouldExportLangfuseSpan({ otelSpan }),
       }),
     );
   }
