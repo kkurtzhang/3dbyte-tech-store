@@ -4,6 +4,7 @@ set -euo pipefail
 
 root="$(git rev-parse --show-toplevel)"
 compose="${root}/docker-compose.yml"
+coolify_docs="${root}/deploy/coolify/README.md"
 root_pnpm_version="$(
   node -e "const pm = require('${root}/package.json').packageManager; console.log(pm.split('@')[1].split('+')[0])"
 )"
@@ -38,6 +39,11 @@ fi
 
 if ! printf '%s\n' "${worker_block}" | grep -Fq 'pull_policy: never'; then
   echo "medusa-worker must use pull_policy: never so compose does not try to pull the local medusa image."
+  exit 1
+fi
+
+if ! grep -Fq 'COMPOSE_PARALLEL_LIMIT=1' "${coolify_docs}"; then
+  echo "Coolify deployment docs must mention COMPOSE_PARALLEL_LIMIT=1."
   exit 1
 fi
 
