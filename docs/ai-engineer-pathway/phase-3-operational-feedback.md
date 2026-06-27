@@ -84,12 +84,13 @@ The repo now includes a GitHub Actions workflow:
 .github/workflows/ai-assistant-evals.yml
 ```
 
-On `staging`, it runs automatically on pushes that change the assistant eval runner, assistant route/evals, this workflow, or this Phase 3 doc. It runs the full 8-case smoke suite so every relevant staging merge covers product links, support confirmation, order privacy, tool evidence, and key material prompts.
+On `staging`, it runs automatically on pushes that change the assistant eval runner, assistant route/evals, or this workflow. Documentation-only and unrelated deployment changes should not spend model tokens. The smoke suite covers product links, support confirmation, order privacy, tool evidence, and key material prompts.
 
 The workflow now distinguishes runtime assistant changes from eval-only changes:
 
 - Runtime assistant changes wait for staging `/api/health.releaseSha` to match the pushed commit, then run three complete smoke attempts.
-- Eval-only, docs, or workflow changes run one smoke attempt against the currently deployed staging assistant.
+- Eval-only or workflow changes run one smoke attempt after the staging deployment is visible.
+- Unrelated changes skip the live eval job before dependency install, Tailscale, Langfuse checks, or model calls.
 - Manual dispatch defaults to three complete attempts and allows one attempt for budget-safe ad hoc checks.
 
 PRs that change only eval scoring rules or case wording should still run the staging smoke suite locally before merge and include the result in the PR validation evidence. Runtime changes are covered again after Coolify deploys because the workflow waits for the expected release before calling the assistant.
