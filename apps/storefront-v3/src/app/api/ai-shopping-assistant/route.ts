@@ -17,6 +17,7 @@ import {
 import { z } from "zod"
 
 import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
+import { getReleaseSha } from "@/lib/release-identity"
 import { checkRateLimit } from "@/lib/security/rate-limit"
 
 import { resolveAssistantSystemPrompt } from "./prompt-management"
@@ -394,7 +395,7 @@ function getConfig() {
   )
   const internalToken = process.env.INTERNAL_API_TOKEN
   const backendUrl = resolveMedusaBaseUrl({ isServer: true })
-  const releaseSha = process.env.STOREFRONT_RELEASE_SHA?.trim() || "unknown"
+  const releaseSha = getReleaseSha()
 
   if (
     provider !== "deepseek" ||
