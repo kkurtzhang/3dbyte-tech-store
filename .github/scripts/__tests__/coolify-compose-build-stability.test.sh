@@ -42,8 +42,8 @@ if ! printf '%s\n' "${worker_block}" | grep -Fq 'pull_policy: never'; then
   exit 1
 fi
 
-if ! grep -Fq 'COMPOSE_PARALLEL_LIMIT=1' "${coolify_docs}"; then
-  echo "Coolify deployment docs must mention COMPOSE_PARALLEL_LIMIT=1."
+if ! grep -Fq 'not define its own `build:` block' "${coolify_docs}"; then
+  echo "Coolify deployment docs must explain that medusa-worker reuses the medusa image."
   exit 1
 fi
 
