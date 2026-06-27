@@ -89,9 +89,34 @@ if [ -n "${runtime_changed}" ]; then
   exit 0
 fi
 
+eval_changed="$(
+  printf '%s\n' "${changed_files}" |
+    awk '
+      /^\.github\/workflows\/ai-assistant-evals\.yml$/ ||
+      /^\.github\/scripts\/decide-ai-assistant-eval\.sh$/ ||
+      /^\.github\/scripts\/wait-for-staging-release\.sh$/ ||
+      /^\.github\/scripts\/__tests__\/(ai-assistant-evals-workflow|decide-ai-assistant-eval|wait-for-staging-release)\.test\.sh$/ ||
+      /^apps\/storefront-v3\/scripts\/run-customer-ai-evals\.ts$/ ||
+      /^apps\/storefront-v3\/src\/app\/api\/ai-shopping-assistant\/evals\// {
+        print
+      }
+    '
+)"
+
+if [ -n "${eval_changed}" ]; then
+  printf 'Eval-only assistant files:\n%s\n' "${eval_changed}"
+  write_decision \
+    "true" \
+    "eval-only assistant file changed; wait for staging deploy" \
+    "post-deploy" \
+    "1" \
+    "true"
+  exit 0
+fi
+
 write_decision \
-  "true" \
-  "eval-only or docs/workflow change; wait for staging deploy" \
-  "post-deploy" \
-  "1" \
-  "true"
+  "false" \
+  "no assistant runtime or eval files changed" \
+  "skip" \
+  "0" \
+  "false"
