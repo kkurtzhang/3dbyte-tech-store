@@ -40,6 +40,18 @@ while the buildable `medusa` service receives Coolify's generated commit image
 tag during compose parsing. Do not add a separate build-time `SOURCE_COMMIT`
 variable, because that would reduce Docker layer-cache reuse.
 
+Set this Coolify application variable for both build-time and runtime:
+
+```sh
+COMPOSE_PARALLEL_LIMIT=1
+```
+
+Coolify invokes `docker compose build --pull` for all buildable services in one
+command. Serializing those service builds avoids overlapping large BuildKit
+image exports, which is where the webhook deployments have failed with
+`context canceled` / `broken pipe` while the application build itself had
+already succeeded.
+
 ## Scope Rules
 
 | Scope | Use when changed files are limited to |
