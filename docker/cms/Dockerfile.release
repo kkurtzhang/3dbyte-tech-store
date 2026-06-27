@@ -1,8 +1,10 @@
 # syntax=docker/dockerfile:1.7
 
 ARG TARGETPLATFORM=linux/arm64
+ARG PNPM_VERSION=10.32.1
 
 FROM --platform=${TARGETPLATFORM} node:22-alpine
+ARG PNPM_VERSION
 
 RUN apk update && apk add --no-cache \
     build-base \
@@ -18,7 +20,7 @@ RUN apk update && apk add --no-cache \
 
 WORKDIR /opt
 
-RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
+RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 ENV PATH=/opt/node_modules/.bin:$PATH
 # Give more heap during admin build in CI build runners

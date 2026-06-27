@@ -34,6 +34,7 @@ on:
       - .github/scripts/wait-for-staging-release.sh
       - .github/scripts/__tests__/decide-ai-assistant-eval.test.sh
       - .github/scripts/__tests__/ai-assistant-evals-workflow.test.sh
+      - .github/scripts/__tests__/coolify-compose-build-stability.test.sh
       - .github/scripts/__tests__/coolify-release-sha-env.test.sh
       - .github/scripts/__tests__/wait-for-staging-release.test.sh
       - apps/storefront-v3/scripts/run-customer-ai-evals.ts

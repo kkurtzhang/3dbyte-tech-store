@@ -12,6 +12,7 @@ x-stateful-runtime: &stateful-runtime
   security_opt:
     - no-new-privileges:true
   init: true
+x-medusa-runtime-image: &medusa-runtime-image "${COMPOSE_PROJECT_NAME:-3dbyte-tech-store}_medusa:${SOURCE_COMMIT:-local}"
 x-observability-env: &observability-env
   OTEL_SDK_DISABLED: "${OTEL_SDK_DISABLED:-}"
   OTEL_TRACING_ENABLED: "${OTEL_TRACING_ENABLED:-}"
@@ -211,11 +212,11 @@ services:
   medusa-worker:
     <<: *hardened-runtime
     platform: *arm64
-    build:
-      context: .
-      dockerfile: docker/backend/Dockerfile.release
-      args:
-        TARGETPLATFORM: linux/arm64
+    # Coolify injects the commit-tagged image for the buildable `medusa`
+    # service. The worker runs the same backend artifact in worker mode instead
+    # of exporting a duplicate backend image during every webhook deployment.
+    image: *medusa-runtime-image
+    pull_policy: never
     restart: *restart
     tmpfs:
       - /tmp:size=512m,mode=1777

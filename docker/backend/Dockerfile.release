@@ -1,8 +1,10 @@
 # syntax=docker/dockerfile:1.7
 
 ARG TARGETPLATFORM=linux/arm64
+ARG PNPM_VERSION=10.32.1
 
 FROM --platform=${TARGETPLATFORM} node:20-alpine AS builder
+ARG PNPM_VERSION
 
 RUN apk add --no-cache libc6-compat
 WORKDIR /opt
@@ -14,7 +16,7 @@ COPY packages/shared-types/package.json packages/shared-types/package.json
 COPY packages/shared-utils/package.json packages/shared-utils/package.json
 COPY packages/shared-config/package.json packages/shared-config/package.json
 
-RUN corepack enable && pnpm install --frozen-lockfile
+RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate && pnpm install --frozen-lockfile
 
 COPY apps/backend apps/backend
 COPY packages/observability packages/observability

@@ -75,7 +75,7 @@ case "$scope" in
     health_services=(storefront)
     ;;
   backend)
-    build_services=(postgres-init medusa medusa-worker)
+    build_services=(postgres-init medusa)
     up_args=(up -d postgres-init medusa medusa-worker)
     health_services=(medusa medusa-worker)
     ;;

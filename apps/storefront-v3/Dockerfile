@@ -2,15 +2,17 @@
 
 ARG TARGETPLATFORM=linux/arm64
 ARG NODE_VERSION=22-alpine
+ARG PNPM_VERSION=10.32.1
 
 FROM --platform=${TARGETPLATFORM} node:${NODE_VERSION} AS base
+ARG PNPM_VERSION
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
-RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
+RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 
 FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
