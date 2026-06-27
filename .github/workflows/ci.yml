@@ -11,6 +11,35 @@ permissions:
   pull-requests: read
 
 jobs:
+  deployment-config:
+    name: deployment-config
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout without token
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            git fetch --no-tags --prune --depth=1 origin \
+              "+refs/pull/${PR_NUMBER}/merge:refs/remotes/pull/${PR_NUMBER}/merge" \
+              "main:refs/remotes/origin/main" \
+              "${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+            git checkout --force "refs/remotes/pull/${PR_NUMBER}/merge"
+          else
+            git fetch --no-tags --prune --depth=2 origin "$GITHUB_SHA"
+            git checkout --force FETCH_HEAD
+          fi
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Verify Coolify compose build stability
+        run: bash .github/scripts/__tests__/coolify-compose-build-stability.test.sh
+
   lint:
     name: lint
     runs-on: ubuntu-latest

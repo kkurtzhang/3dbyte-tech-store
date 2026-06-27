@@ -24,6 +24,22 @@ Coolify's predefined source commit value and makes `/api/health` report
 For one-app hotfixes, use a scoped redeploy so Coolify does not rebuild every
 service in the compose file.
 
+## Compose Build Stability
+
+The root compose file is tuned for Coolify's webhook path. Coolify runs a full
+`docker compose build --pull` for buildable services, so the Medusa worker must
+not define its own `build:` block. It reuses the commit-tagged image built by
+the `medusa` service:
+
+```yaml
+image: ${COMPOSE_PROJECT_NAME:-3dbyte-tech-store}_medusa:${SOURCE_COMMIT:-local}
+```
+
+Keep `SOURCE_COMMIT` runtime-only. Coolify injects it for `docker compose up`,
+while the buildable `medusa` service receives Coolify's generated commit image
+tag during compose parsing. Do not add a separate build-time `SOURCE_COMMIT`
+variable, because that would reduce Docker layer-cache reuse.
+
 ## Scope Rules
 
 | Scope | Use when changed files are limited to |
