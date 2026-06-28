@@ -30,4 +30,40 @@ describe("sendAiProductDraftAdminNotification", () => {
       }),
     })
   })
+
+  it("does not fail draft handling when the Admin feed provider is unavailable", async () => {
+    const createNotifications = jest
+      .fn()
+      .mockRejectedValue(
+        new Error(
+          "Could not find a notification provider for channel: feed for notification id noti_1"
+        )
+      )
+    const logger = {
+      warn: jest.fn(),
+    }
+    const container = {
+      resolve: jest.fn((key: string) => {
+        if (key === "notification") {
+          return { createNotifications }
+        }
+        if (key === "logger") {
+          return logger
+        }
+        throw new Error(`Unexpected module ${key}`)
+      }),
+    }
+
+    await expect(
+      sendAiProductDraftAdminNotification(container as never, {
+        kind: "validation_failed",
+        draft_id: "aipd_123",
+        validation_error_count: 1,
+      })
+    ).resolves.toBeUndefined()
+
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.stringContaining("AI product draft Admin notification failed")
+    )
+  })
 })
