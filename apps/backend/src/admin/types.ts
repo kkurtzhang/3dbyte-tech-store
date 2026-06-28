@@ -229,3 +229,79 @@ export type CreateSupportTicketMessageParams = {
 export type AdminSupportTicketMessageResponse = {
   message: AdminSupportTicketMessage;
 };
+
+export type AdminAiProductDraft = {
+  id: string;
+  status: string;
+  packet_version?: number | null;
+  source_agent?: string | null;
+  product_id?: string | null;
+  product_handle?: string | null;
+  product_input?: Record<string, unknown> | null;
+  source_summary?: Record<string, unknown> | null;
+  raw_packet?: Record<string, unknown> | null;
+  normalized_draft?: Record<string, unknown> | null;
+  sources?: unknown[] | null;
+  warnings?: string[] | null;
+  confidence_summary?: Record<string, unknown> | null;
+  validation_errors?: unknown[] | null;
+  normalizer?: string | null;
+  normalizer_trace_id?: string | null;
+  admin_notes?: string | null;
+  rejection_reason?: string | null;
+  approved_by?: string | null;
+  approved_at?: string | null;
+  rejected_by?: string | null;
+  rejected_at?: string | null;
+  imported_by?: string | null;
+  imported_at?: string | null;
+  import_summary?: Record<string, unknown> | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+export type AdminAiProductDraftEvent = {
+  id: string;
+  draft_id: string;
+  type: string;
+  actor_type?: string | null;
+  actor_id?: string | null;
+  from_status?: string | null;
+  to_status?: string | null;
+  metadata?: Record<string, unknown> | null;
+  created_at?: string | null;
+};
+
+export type AdminAiProductDraftsResponse = {
+  drafts: AdminAiProductDraft[];
+  count: number;
+  limit: number;
+  offset: number;
+};
+
+export type AdminAiProductDraftResponse = {
+  draft: AdminAiProductDraft;
+  events: AdminAiProductDraftEvent[];
+};
+
+export interface AiProductDraftQueryParams extends FindParams {
+  q?: string;
+  source_agent?: string;
+  status?: string;
+}
+
+export type AdminAiProductDraftRejectParams = {
+  reason: string;
+};
+
+export type AdminAiProductDraftImportParams = {
+  import_targets?: {
+    medusa_metadata?: boolean;
+    strapi_description_draft?: boolean;
+    product_document_drafts?: boolean;
+  };
+};
+
+export type AdminAiProductDraftActionResponse = {
+  draft: AdminAiProductDraft;
+};

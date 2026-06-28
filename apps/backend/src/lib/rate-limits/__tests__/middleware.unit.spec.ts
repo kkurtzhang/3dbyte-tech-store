@@ -97,4 +97,44 @@ describe("rate limit middleware", () => {
       "rate-limit:v1:customer_email_change:cus_123",
     );
   });
+
+  it("uses the default Hermes product draft limit when the env value is invalid", async () => {
+    const originalLimit = process.env.AI_PRODUCT_DRAFT_RATE_LIMIT_PER_MINUTE;
+    const originalRateLimitRedisUrl = process.env.RATE_LIMIT_REDIS_URL;
+    const originalRedisUrl = process.env.REDIS_URL;
+
+    try {
+      process.env.AI_PRODUCT_DRAFT_RATE_LIMIT_PER_MINUTE = "not-a-number";
+      delete process.env.RATE_LIMIT_REDIS_URL;
+      delete process.env.REDIS_URL;
+      jest.resetModules();
+
+      const { hermesProductDraftRateLimit } = await import("../api-rules");
+      const req = { headers: { "x-forwarded-for": "203.0.113.20" } };
+      const res = createResponse();
+      const next = jest.fn() as MedusaNextFunction;
+
+      await hermesProductDraftRateLimit(req as never, res as never, next);
+
+      expect(next).toHaveBeenCalledTimes(1);
+      expect(res.status).not.toHaveBeenCalledWith(429);
+    } finally {
+      if (originalLimit === undefined) {
+        delete process.env.AI_PRODUCT_DRAFT_RATE_LIMIT_PER_MINUTE;
+      } else {
+        process.env.AI_PRODUCT_DRAFT_RATE_LIMIT_PER_MINUTE = originalLimit;
+      }
+      if (originalRateLimitRedisUrl === undefined) {
+        delete process.env.RATE_LIMIT_REDIS_URL;
+      } else {
+        process.env.RATE_LIMIT_REDIS_URL = originalRateLimitRedisUrl;
+      }
+      if (originalRedisUrl === undefined) {
+        delete process.env.REDIS_URL;
+      } else {
+        process.env.REDIS_URL = originalRedisUrl;
+      }
+      jest.resetModules();
+    }
+  });
 });

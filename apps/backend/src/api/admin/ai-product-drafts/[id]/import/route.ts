@@ -1,0 +1,92 @@
+import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+
+import { importAiProductDraft } from "../../../../../lib/ai-product-drafts/importer"
+import { sendAiProductDraftAdminNotification } from "../../../../../lib/ai-product-drafts/notifications"
+import {
+  assertAiProductDraftCanImport,
+  buildAiProductDraftEvent,
+} from "../../../../../modules/ai-product-draft/lifecycle"
+import {
+  getAdminActorId,
+  getAiProductDraftModule,
+  getDraftById,
+} from "../../utils"
+
+export async function POST(req: MedusaRequest, res: MedusaResponse) {
+  const draft = await getDraftById(req, res)
+  if (!draft) return
+
+  try {
+    assertAiProductDraftCanImport({
+      id: String(draft.id),
+      status: String(draft.status),
+    })
+  } catch (error) {
+    return res.status(409).json({
+      error: error instanceof Error ? error.message : "Draft cannot be imported",
+    })
+  }
+
+  const draftModule = getAiProductDraftModule(req)
+  const actorId = getAdminActorId(req)
+  let importSummary
+
+  try {
+    importSummary = await importAiProductDraft({
+      container: req.scope as never,
+      draft: draft as never,
+    })
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "AI product draft import failed"
+
+    await draftModule.createAiProductDraftEvents(
+      buildAiProductDraftEvent({
+        draft_id: req.params.id,
+        type: "import_failed",
+        actor_type: "admin",
+        actor_id: actorId || null,
+        from_status: String(draft.status),
+        to_status: String(draft.status),
+        metadata: { error: message },
+      })
+    )
+    await sendAiProductDraftAdminNotification(req.scope as never, {
+      kind: "import_failed",
+      draft_id: req.params.id,
+      product_id: String(draft.product_id || ""),
+      product_handle: String(draft.product_handle || ""),
+      error: message,
+    })
+
+    return res.status(502).json({ error: message })
+  }
+
+  const updated = await draftModule.updateAiProductDrafts({
+    id: req.params.id,
+    status: "imported",
+    imported_by: actorId || null,
+    imported_at: new Date().toISOString(),
+    import_summary: importSummary,
+  })
+
+  await draftModule.createAiProductDraftEvents(
+    buildAiProductDraftEvent({
+      draft_id: req.params.id,
+      type: "imported",
+      actor_type: "admin",
+      actor_id: actorId || null,
+      from_status: String(draft.status),
+      to_status: "imported",
+      metadata: importSummary,
+    })
+  )
+  await sendAiProductDraftAdminNotification(req.scope as never, {
+    kind: "imported",
+    draft_id: req.params.id,
+    product_id: String(draft.product_id || ""),
+    product_handle: String(draft.product_handle || ""),
+  })
+
+  return res.status(200).json({ draft: updated })
+}
