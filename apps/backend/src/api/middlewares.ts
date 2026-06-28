@@ -237,7 +237,7 @@ export default defineMiddlewares({
       middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
     },
     {
-      matcher: "/admin/ai-product-drafts",
+      matcher: "/integrations/hermes/product-drafts",
       methods: ["POST"],
       middlewares: [
         hermesProductDraftRateLimit,

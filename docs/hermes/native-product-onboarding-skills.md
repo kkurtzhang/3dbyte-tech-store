@@ -7,8 +7,9 @@ These are native Hermes-runtime skills for AI product draft onboarding. Hermes o
 - Packet schema: `docs/hermes/product-research-packet.v1.schema.json`
 - Valid fixture: `docs/hermes/fixtures/product-research-packet.v1.example.json`
 - Skill pack: `docs/hermes/skills/*/SKILL.md`
-- Submit endpoint: `POST /admin/ai-product-drafts`
+- Submit endpoint: `POST /integrations/hermes/product-drafts`
 - Auth header: `x-3db-hermes-product-draft-token`
+- Transport: public Medusa API origin over HTTPS
 - Hermes must never call Medusa product update, Strapi publish, or Meilisearch sync APIs.
 
 ## Skills
@@ -70,8 +71,9 @@ Purpose: submit validated packets to Medusa draft intake.
 Skill file: `docs/hermes/skills/hermes-medusa-draft-submitter/SKILL.md`
 
 Required behavior:
-- Send only to `POST /admin/ai-product-drafts`.
+- Send only to `POST /integrations/hermes/product-drafts`.
 - Use `x-3db-hermes-product-draft-token` from Hermes secret storage.
+- Connect over HTTPS; do not request Medusa Admin, SSH, or Tailscale credentials.
 - Support dry-run validation without writing to Medusa.
 - Retry network failures with an idempotency key when Hermes runtime supports it.
 - Report only draft id, status, warning count, and validation errors to the user.
