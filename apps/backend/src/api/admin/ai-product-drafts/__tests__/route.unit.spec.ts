@@ -96,6 +96,7 @@ function createRequest({
   draftModule,
   product = { id: "prod_123", handle: "example-petg", title: "Example PETG" },
   notificationModule = { createNotifications: jest.fn().mockResolvedValue([]) },
+  logger = { warn: jest.fn() },
   productModule,
   strapiModule,
 }: {
@@ -106,6 +107,7 @@ function createRequest({
   draftModule: Record<string, jest.Mock>
   product?: Record<string, unknown> | null
   notificationModule?: Record<string, jest.Mock>
+  logger?: Record<string, jest.Mock>
   productModule?: Record<string, jest.Mock>
   strapiModule?: Record<string, jest.Mock>
 }) {
@@ -128,6 +130,7 @@ function createRequest({
         if (key === "aiProductDraft") return draftModule
         if (key === "query") return queryModule
         if (key === "notification") return notificationModule
+        if (key === "logger") return logger
         if (key === "product" && productModule) return productModule
         if (key === "strapi" && strapiModule) return strapiModule
         throw new Error(`Unexpected module ${key}`)
@@ -194,6 +197,49 @@ describe("AI product draft routes", () => {
         channel: "feed",
         template: "admin-ui",
       })
+    )
+    expect(res.status).toHaveBeenCalledWith(201)
+  })
+
+  it("keeps Hermes intake successful when Admin feed notifications are unavailable", async () => {
+    const draftModule = {
+      createAiProductDrafts: jest.fn().mockResolvedValue(draft),
+      createAiProductDraftEvents: jest.fn().mockResolvedValue({ id: "evt_1" }),
+    }
+    const notificationModule = {
+      createNotifications: jest.fn().mockRejectedValue(
+        new Error(
+          "Could not find a notification provider for channel: feed for notification id noti_1"
+        )
+      ),
+    }
+    const logger = {
+      warn: jest.fn(),
+    }
+    const req = createRequest({
+      body: validPacket,
+      draftModule,
+      logger,
+      notificationModule,
+    })
+    const res = createResponse()
+
+    await intakeDraft(req as never, res as never)
+
+    expect(draftModule.createAiProductDrafts).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "needs_review",
+        raw_packet: expect.objectContaining({ source_agent: "hermes" }),
+      })
+    )
+    expect(notificationModule.createNotifications).toHaveBeenCalledWith(
+      expect.objectContaining({
+        channel: "feed",
+        template: "admin-ui",
+      })
+    )
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.stringContaining("AI product draft Admin notification failed")
     )
     expect(res.status).toHaveBeenCalledWith(201)
   })

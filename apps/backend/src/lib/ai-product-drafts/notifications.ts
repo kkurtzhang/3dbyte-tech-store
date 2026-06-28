@@ -1,7 +1,13 @@
 type NotificationContainer = {
-  resolve: (key: string) => {
-    createNotifications: (input: unknown) => Promise<unknown>
-  }
+  resolve: <T = unknown>(key: string) => T
+}
+
+type NotificationModule = {
+  createNotifications: (input: unknown) => Promise<unknown>
+}
+
+type Logger = {
+  warn: (message: string) => void
 }
 
 type DraftNotificationKind =
@@ -50,26 +56,49 @@ const notificationCopy: Record<
   },
 }
 
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "Unknown notification error"
+}
+
+function warnNotificationFailure(
+  container: NotificationContainer,
+  input: DraftNotificationInput,
+  error: unknown
+) {
+  try {
+    const logger = container.resolve<Logger>("logger")
+    logger.warn(
+      `AI product draft Admin notification failed for ${input.draft_id}: ${getErrorMessage(error)}`
+    )
+  } catch {
+    // Logging is best-effort here; the draft record remains the source of truth.
+  }
+}
+
 export async function sendAiProductDraftAdminNotification(
   container: NotificationContainer,
   input: DraftNotificationInput
 ) {
   const copy = notificationCopy[input.kind]
-  const notificationModule = container.resolve("notification")
+  const notificationModule = container.resolve<NotificationModule>("notification")
 
-  await notificationModule.createNotifications({
-    to: "",
-    channel: "feed",
-    template: "admin-ui",
-    data: {
-      title: copy.title,
-      description: copy.description(input),
-      draft_id: input.draft_id,
-      product_id: input.product_id || null,
-      product_handle: input.product_handle || null,
-      status: input.kind,
-      warnings_count: input.warnings_count || 0,
-      route: `/ai-product-drafts/${input.draft_id}`,
-    },
-  })
+  try {
+    await notificationModule.createNotifications({
+      to: "",
+      channel: "feed",
+      template: "admin-ui",
+      data: {
+        title: copy.title,
+        description: copy.description(input),
+        draft_id: input.draft_id,
+        product_id: input.product_id || null,
+        product_handle: input.product_handle || null,
+        status: input.kind,
+        warnings_count: input.warnings_count || 0,
+        route: `/ai-product-drafts/${input.draft_id}`,
+      },
+    })
+  } catch (error) {
+    warnNotificationFailure(container, input, error)
+  }
 }

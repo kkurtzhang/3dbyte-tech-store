@@ -8,14 +8,19 @@ import {
 import { customSchema } from "./src/custom-index-schema";
 import { generateOrderCustomDisplayId } from "./src/lib/order-display-id";
 import { buildMedusaHttpConfig } from "./src/lib/medusa-runtime-config";
+import { getAdminFeedNotificationProvider } from "./src/modules/admin-feed-notification/config";
 import { getMaildevNotificationProvider } from "./src/modules/maildev-notification/config";
 import { getResendNotificationProvider } from "./src/modules/resend-notification/config";
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd());
 
 const maildevNotificationProvider = getMaildevNotificationProvider();
-const notificationProvider =
+const emailNotificationProvider =
   getResendNotificationProvider() || maildevNotificationProvider;
+const notificationProviders = [
+  getAdminFeedNotificationProvider(),
+  ...(emailNotificationProvider ? [emailNotificationProvider] : []),
+];
 
 const googleAuthProvider =
   process.env.GOOGLE_CLIENT_ID &&
@@ -142,12 +147,12 @@ module.exports = defineConfig({
         providers: authProviders,
       },
     },
-    ...(notificationProvider
+    ...(notificationProviders.length
       ? [
           {
             resolve: "@medusajs/medusa/notification",
             options: {
-              providers: [notificationProvider],
+              providers: notificationProviders,
             },
           },
         ]
