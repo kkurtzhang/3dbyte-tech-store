@@ -62,8 +62,39 @@ describe("Hermes product draft contract artifacts", () => {
     )
 
     expect(submitter).toContain("POST")
-    expect(submitter).toContain("/admin/ai-product-drafts")
+    expect(submitter).toContain("/integrations/hermes/product-drafts")
+    expect(submitter).not.toContain("POST /admin/ai-product-drafts")
     expect(submitter).toContain("x-3db-hermes-product-draft-token")
     expect(submitter).toContain("Never call Medusa product update routes")
+  })
+
+  it("keeps Hermes intake outside the Medusa Admin authentication namespace", () => {
+    const middlewareSource = readFileSync(
+      path.join(repoRoot, "apps/backend/src/api/middlewares.ts"),
+      "utf8"
+    )
+    const adminRouteSource = readFileSync(
+      path.join(
+        repoRoot,
+        "apps/backend/src/api/admin/ai-product-drafts/route.ts"
+      ),
+      "utf8"
+    )
+    const onboardingGuide = readFileSync(
+      path.join(repoRoot, "docs/hermes/native-product-onboarding-skills.md"),
+      "utf8"
+    )
+
+    expect(middlewareSource).toContain(
+      'matcher: "/integrations/hermes/product-drafts"'
+    )
+    expect(middlewareSource).not.toMatch(
+      /matcher: "\/admin\/ai-product-drafts",\s+methods: \["POST"\]/
+    )
+    expect(adminRouteSource).not.toMatch(/export async function POST/)
+    expect(onboardingGuide).toContain(
+      "POST /integrations/hermes/product-drafts"
+    )
+    expect(onboardingGuide).not.toContain("POST /admin/ai-product-drafts")
   })
 })

@@ -1,4 +1,6 @@
-import { POST as intakeDraft, GET as listDrafts } from "../route"
+import { POST as intakeDraft } from "../../../integrations/hermes/product-drafts/route"
+import * as adminDraftRoutes from "../route"
+import { GET as listDrafts } from "../route"
 import { GET as getDraft } from "../[id]/route"
 import { POST as approveDraft } from "../[id]/approve/route"
 import { POST as rejectDraft } from "../[id]/reject/route"
@@ -144,7 +146,7 @@ const draft = {
   created_at: "2026-06-28T00:00:00.000Z",
 }
 
-describe("admin AI product draft routes", () => {
+describe("AI product draft routes", () => {
   const originalToken = process.env.HERMES_PRODUCT_DRAFT_TOKEN
 
   beforeEach(() => {
@@ -153,6 +155,10 @@ describe("admin AI product draft routes", () => {
 
   afterEach(() => {
     process.env.HERMES_PRODUCT_DRAFT_TOKEN = originalToken
+  })
+
+  it("keeps Hermes intake outside the Admin-authenticated route", () => {
+    expect(adminDraftRoutes).not.toHaveProperty("POST")
   })
 
   it("stores valid Hermes packets as needs_review drafts and notifies Admin", async () => {
