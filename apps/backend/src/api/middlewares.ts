@@ -44,11 +44,13 @@ import {
   customerEmailVerificationRateLimit,
   customerGoogleLinkRateLimit,
   customerSetPasswordRateLimit,
+  hermesProductDraftRateLimit,
   internalAiRateLimit,
   storeNewsletterSubscribeRateLimit,
   storeSupportTicketRateLimit,
   storeWaitlistJoinRateLimit,
 } from "../lib/rate-limits/api-rules";
+import { hermesProductDraftPayloadLimit } from "../lib/ai-product-drafts/security";
 
 export const GetBrandsSchema = createFindParams();
 
@@ -232,6 +234,23 @@ export default defineMiddlewares({
     },
     {
       matcher: "/admin/support-tickets*",
+      middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
+    },
+    {
+      matcher: "/admin/ai-product-drafts",
+      methods: ["POST"],
+      middlewares: [
+        hermesProductDraftRateLimit,
+        hermesProductDraftPayloadLimit,
+      ],
+    },
+    {
+      matcher: "/admin/ai-product-drafts",
+      methods: ["GET"],
+      middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
+    },
+    {
+      matcher: "/admin/ai-product-drafts/:id*",
       middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
     },
     {

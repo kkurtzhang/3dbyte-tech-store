@@ -115,6 +115,9 @@ module.exports = defineConfig({
       resolve: "./src/modules/support-ticket",
     },
     {
+      resolve: "./src/modules/ai-product-draft",
+    },
+    {
       resolve: "./src/modules/account-coordination",
     },
     {

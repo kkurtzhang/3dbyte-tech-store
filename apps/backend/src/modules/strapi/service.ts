@@ -28,6 +28,32 @@ export interface SyncProductData {
   handle: string;
 }
 
+export interface AiProductDescriptionDraftData {
+  medusa_product_id: string;
+  product_title: string;
+  product_handle: string;
+  rich_description: string;
+  features: string[];
+  specifications: Record<string, unknown>;
+  seo_title: string;
+  seo_description: string;
+  meta_keywords: string[];
+}
+
+export interface AiProductDocumentDraftData {
+  medusa_product_id: string;
+  product_title: string;
+  product_handle: string;
+  title: string;
+  document_type: string;
+  source_url: string;
+  source_kind: string;
+  source_label: string;
+  source_checked_at: string;
+  search_keywords: string[];
+  is_public: boolean;
+}
+
 export interface SyncBrandData {
   id: string; //medusaBrandId
   name: string;
@@ -280,6 +306,43 @@ class StrapiModuleService {
     }
   }
 
+  async upsertAiProductDescriptionDraft(
+    draft: AiProductDescriptionDraftData
+  ): Promise<unknown> {
+    const existingResponse = (await this.makeRequest(
+      `product-descriptions?filters[medusa_product_id][$eq]=${encodeURIComponent(draft.medusa_product_id)}&status=draft&pagination[pageSize]=1`
+    )) as { data?: { documentId?: string; id?: string }[] };
+    const existing = existingResponse.data?.[0];
+    const documentId = existing?.documentId || existing?.id;
+    const payload = {
+      data: {
+        medusa_product_id: draft.medusa_product_id,
+        product_title: draft.product_title,
+        product_handle: draft.product_handle,
+        rich_description: draft.rich_description,
+        features: draft.features,
+        specifications: draft.specifications,
+        seo_title: draft.seo_title,
+        seo_description: draft.seo_description,
+        meta_keywords: draft.meta_keywords,
+        last_synced: new Date().toISOString(),
+        sync_status: "manual",
+      },
+    };
+
+    const result = (await this.makeRequest(
+      documentId
+        ? `product-descriptions/${documentId}?status=draft`
+        : "product-descriptions?status=draft",
+      {
+        method: documentId ? "PUT" : "POST",
+        body: JSON.stringify(payload),
+      }
+    )) as { data: unknown };
+
+    return result.data;
+  }
+
   async getOutdatedProductDescriptions(): Promise<any[]> {
     try {
       const response = await this.makeRequest(
@@ -350,6 +413,36 @@ class StrapiModuleService {
       );
       return null;
     }
+  }
+
+  async upsertAiProductDocumentDrafts(
+    medusaProductId: string,
+    documents: AiProductDocumentDraftData[]
+  ): Promise<unknown[]> {
+    const upserted: unknown[] = [];
+
+    for (const document of documents) {
+      const response = (await this.makeRequest(
+        `product-documents?filters[medusa_product_id][$eq]=${encodeURIComponent(medusaProductId)}&filters[source_url][$eq]=${encodeURIComponent(document.source_url)}&status=draft&pagination[pageSize]=1`
+      )) as { data?: { documentId?: string; id?: string }[] };
+      const existing = response.data?.[0];
+      const documentId = existing?.documentId || existing?.id;
+      const result = (await this.makeRequest(
+        documentId
+          ? `product-documents/${documentId}?status=draft`
+          : "product-documents?status=draft",
+        {
+          method: documentId ? "PUT" : "POST",
+          body: JSON.stringify({
+            data: document,
+          }),
+        }
+      )) as { data: unknown };
+
+      upserted.push(result.data);
+    }
+
+    return upserted;
   }
   //====End======Product Documents Section===============
 

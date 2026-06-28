@@ -12,6 +12,12 @@ const actorKey =
   ({ actorId, clientIp }: { actorId?: string; clientIp: string }) =>
     makeRateLimitKey(name, actorId || clientIp);
 
+function positiveIntegerFromEnv(value: string | undefined, fallback: number) {
+  const parsed = Number.parseInt(value || "", 10);
+
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
 export const storeSearchRateLimit = createRateLimitMiddleware({
   name: "store_search",
   limit: 120,
@@ -109,4 +115,15 @@ export const internalAiRateLimit = createRateLimitMiddleware({
   limit: 120,
   windowMs: minute,
   key: ipKey("internal_ai"),
+});
+
+export const hermesProductDraftRateLimit = createRateLimitMiddleware({
+  name: "hermes_product_draft",
+  limit: positiveIntegerFromEnv(
+    process.env.AI_PRODUCT_DRAFT_RATE_LIMIT_PER_MINUTE,
+    30,
+  ),
+  windowMs: minute,
+  key: ipKey("hermes_product_draft"),
+  message: "Too many Hermes product draft submissions. Please try again shortly.",
 });
