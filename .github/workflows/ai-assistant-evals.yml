@@ -78,6 +78,9 @@ jobs:
       - name: Wait for staging deployment
         if: steps.live-eval.outputs.should_run == 'true' && steps.live-eval.outputs.wait_for_release == 'true'
         env:
+          COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN || '' }}
+          COOLIFY_API_URL: ${{ vars.COOLIFY_API_URL || secrets.COOLIFY_API_URL || '' }}
+          COOLIFY_APPLICATION_UUID: ${{ vars.COOLIFY_STAGING_APPLICATION_UUID || secrets.COOLIFY_STAGING_APPLICATION_UUID || '' }}
           EXPECTED_RELEASE_SHA: ${{ github.sha }}
           POLL_SECONDS: "15"
           STAGING_HEALTH_URL: ${{ inputs.base_url || 'https://store.staging.3dbytetech.com.au' }}/api/health

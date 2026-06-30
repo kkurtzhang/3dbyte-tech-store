@@ -90,6 +90,7 @@ The workflow now distinguishes runtime assistant changes from eval-only changes:
 
 - Runtime assistant changes wait for staging `/api/health.releaseSha` to match the pushed commit, then run three complete smoke attempts.
 - Eval-only or workflow changes run one smoke attempt after the staging deployment is visible.
+- If Coolify API credentials are configured, the release wait also fails fast when the matching Coolify deployment reaches `failed` or `cancelled-by-user` instead of waiting for the full timeout.
 - Unrelated changes skip the live eval job before dependency install, Tailscale, Langfuse checks, or model calls.
 - Manual dispatch defaults to three complete attempts and allows one attempt for budget-safe ad hoc checks.
 
@@ -125,6 +126,9 @@ Runtime prompt env:
 | `LANGFUSE_ASSISTANT_PROMPT_NAME` | Prompt name. Defaults to `storefront.ai-shopping-assistant.system`. |
 | `LANGFUSE_ASSISTANT_PROMPT_LABEL` | Prompt label. If unset, uses `APP_ENV` when it is `staging` or `production`, otherwise `production`. |
 | `STOREFRONT_RELEASE_SHA` | Runtime release identity returned by `/api/health` and eval diagnostic headers. Coolify maps this from `SOURCE_COMMIT` in compose without enabling build-time source commit injection. |
+| `COOLIFY_API_URL` | Optional GitHub Actions variable or secret. Base URL for Coolify API fail-fast checks during the staging release wait. |
+| `COOLIFY_API_TOKEN` | Optional GitHub Actions secret. Read-only Coolify API token used by the eval workflow to inspect deployment status. |
+| `COOLIFY_STAGING_APPLICATION_UUID` | Optional GitHub Actions variable or secret. Coolify application UUID for the staging app stack checked by the eval workflow. |
 
 Safety rule: Langfuse owns editable tone/format wording only. The storefront route always appends the code-owned assistant guardrails after the dashboard prompt, including suggest-only behavior, exact `productUrl` copying, support-ticket confirmation, and no cart/order/customer mutation.
 
