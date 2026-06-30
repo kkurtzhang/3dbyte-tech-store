@@ -60,9 +60,9 @@ eval_output="${test_repo}/eval-output"
 )
 
 grep -Fxq "should_run=true" "${eval_output}"
-grep -Fxq "mode=post-deploy" "${eval_output}"
+grep -Fxq "mode=eval-only" "${eval_output}"
 grep -Fxq "attempts=1" "${eval_output}"
-grep -Fxq "wait_for_release=true" "${eval_output}"
+grep -Fxq "wait_for_release=false" "${eval_output}"
 grep -Fq "eval-only" "${eval_output}"
 rm -f "${eval_output}"
 

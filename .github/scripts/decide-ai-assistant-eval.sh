@@ -107,10 +107,10 @@ if [ -n "${eval_changed}" ]; then
   printf 'Eval-only assistant files:\n%s\n' "${eval_changed}"
   write_decision \
     "true" \
-    "eval-only assistant file changed; wait for staging deploy" \
-    "post-deploy" \
+    "eval-only assistant file changed; run against current staging release" \
+    "eval-only" \
     "1" \
-    "true"
+    "false"
   exit 0
 fi
 
