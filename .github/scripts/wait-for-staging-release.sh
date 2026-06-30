@@ -9,7 +9,8 @@ timeout_seconds="${TIMEOUT_SECONDS:-1200}"
 coolify_api_url="${COOLIFY_API_URL:-}"
 coolify_api_token="${COOLIFY_API_TOKEN:-}"
 coolify_application_uuid="${COOLIFY_APPLICATION_UUID:-}"
-coolify_deployment_take="${COOLIFY_DEPLOYMENT_TAKE:-10}"
+coolify_deployment_take="${COOLIFY_DEPLOYMENT_TAKE:-1}"
+coolify_poll_seconds="${COOLIFY_POLL_SECONDS:-60}"
 
 if ! [[ "${poll_seconds}" =~ ^[0-9]+$ ]] || [ "${poll_seconds}" -lt 1 ]; then
   echo "POLL_SECONDS must be a positive integer." >&2
@@ -26,7 +27,13 @@ if ! [[ "${coolify_deployment_take}" =~ ^[0-9]+$ ]] || [ "${coolify_deployment_t
   exit 2
 fi
 
+if ! [[ "${coolify_poll_seconds}" =~ ^[0-9]+$ ]] || [ "${coolify_poll_seconds}" -lt 1 ]; then
+  echo "COOLIFY_POLL_SECONDS must be a positive integer." >&2
+  exit 2
+fi
+
 max_attempts=$(( (timeout_seconds + poll_seconds - 1) / poll_seconds + 1 ))
+last_coolify_check_elapsed=""
 
 extract_release_sha() {
   node -e '
@@ -45,6 +52,18 @@ coolify_check_enabled() {
   [ -n "${coolify_api_url}" ] &&
     [ -n "${coolify_api_token}" ] &&
     [ -n "${coolify_application_uuid}" ]
+}
+
+should_check_coolify_deployment_status() {
+  if ! coolify_check_enabled; then
+    return 1
+  fi
+
+  if [ -z "${last_coolify_check_elapsed}" ]; then
+    return 0
+  fi
+
+  [ $((elapsed_seconds - last_coolify_check_elapsed)) -ge "${coolify_poll_seconds}" ]
 }
 
 extract_matching_coolify_deployment() {
@@ -131,6 +150,7 @@ check_coolify_deployment_status() {
 }
 
 for attempt in $(seq 1 "${max_attempts}"); do
+  elapsed_seconds=$(( (attempt - 1) * poll_seconds ))
   body="$(curl -fsS "${health_url}" 2>/dev/null || true)"
   release_sha="$(printf '%s' "${body}" | extract_release_sha)"
 
@@ -140,7 +160,10 @@ for attempt in $(seq 1 "${max_attempts}"); do
     exit 0
   fi
 
-  check_coolify_deployment_status
+  if should_check_coolify_deployment_status; then
+    last_coolify_check_elapsed="${elapsed_seconds}"
+    check_coolify_deployment_status
+  fi
 
   if [ "${attempt}" -lt "${max_attempts}" ]; then
     sleep "${poll_seconds}"

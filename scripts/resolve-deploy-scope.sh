@@ -35,10 +35,10 @@ map_file_to_scope() {
     apps/cms/* | docker/cms/*)
       echo "cms"
       ;;
-    docs/* | README.md)
+    .github/* | docs/* | deploy/* | README.md | AGENTS.md | CLAUDE.md | PROJECT.md)
       echo "none"
       ;;
-    package.json | pnpm-lock.yaml | pnpm-workspace.yaml | docker-compose.yml | .github/workflows/* | deploy/* | docker/postgres/* | packages/*)
+    package.json | pnpm-lock.yaml | pnpm-workspace.yaml | turbo.json | .dockerignore | .node-version | .nvmrc | docker-compose.yml | docker/postgres/* | packages/*)
       echo "all"
       ;;
     *)

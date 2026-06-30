@@ -81,6 +81,7 @@ jobs:
           COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN || '' }}
           COOLIFY_API_URL: ${{ vars.COOLIFY_API_URL || secrets.COOLIFY_API_URL || '' }}
           COOLIFY_APPLICATION_UUID: ${{ vars.COOLIFY_STAGING_APPLICATION_UUID || secrets.COOLIFY_STAGING_APPLICATION_UUID || '' }}
+          COOLIFY_POLL_SECONDS: "60"
           EXPECTED_RELEASE_SHA: ${{ github.sha }}
           POLL_SECONDS: "15"
           STAGING_HEALTH_URL: ${{ inputs.base_url || 'https://store.staging.3dbytetech.com.au' }}/api/health
