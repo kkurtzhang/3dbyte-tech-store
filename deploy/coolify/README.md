@@ -48,6 +48,32 @@ normal Coolify application variable for this resource: Coolify writes those
 variables to the generated compose env file, but that does not make them process
 environment variables for the `docker compose build` command.
 
+## Recommended Watch Paths
+
+Configure the staging Coolify application's **Watch Paths** so only runtime or
+build inputs queue a deployment. Leaving watch paths blank makes every push to
+`staging` rebuild the full compose app, including CI-only and docs-only commits.
+That unnecessary rebuild can stress the same Docker image export path that has
+failed before.
+
+Use this newline-separated list:
+
+```text
+apps/storefront-v3/**
+apps/backend/**
+apps/cms/**
+packages/**
+docker/**
+docker-compose.yml
+package.json
+pnpm-lock.yaml
+pnpm-workspace.yaml
+turbo.json
+.dockerignore
+.node-version
+.nvmrc
+```
+
 ## Scope Rules
 
 | Scope | Use when changed files are limited to |
@@ -55,8 +81,8 @@ environment variables for the `docker compose build` command.
 | `storefront` | `apps/storefront-v3/**` |
 | `backend` | `apps/backend/**`, `docker/backend/**` |
 | `cms` | `apps/cms/**`, `docker/cms/**` |
-| `all` | `docker-compose.yml`, lockfiles, root package files, `packages/**`, `deploy/**`, `.github/workflows/**`, or multiple app scopes |
-| `none` | docs-only changes |
+| `all` | `docker-compose.yml`, lockfiles, root package files, `packages/**`, `docker/**`, or multiple app scopes |
+| `none` | docs-only, workflow-only, deploy-doc, or helper-script changes |
 
 Check a commit range:
 

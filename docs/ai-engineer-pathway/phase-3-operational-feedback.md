@@ -129,6 +129,7 @@ Runtime prompt env:
 | `COOLIFY_API_URL` | Optional GitHub Actions variable or secret. Base URL for Coolify API fail-fast checks during the staging release wait. |
 | `COOLIFY_API_TOKEN` | Optional GitHub Actions secret. Read-only Coolify API token used by the eval workflow to inspect deployment status. |
 | `COOLIFY_STAGING_APPLICATION_UUID` | Optional GitHub Actions variable or secret. Coolify application UUID for the staging app stack checked by the eval workflow. |
+| `COOLIFY_POLL_SECONDS` | Optional workflow override. Defaults to `60` so the workflow keeps polling `/api/health` frequently while checking Coolify deployment status less often. |
 
 Safety rule: Langfuse owns editable tone/format wording only. The storefront route always appends the code-owned assistant guardrails after the dashboard prompt, including suggest-only behavior, exact `productUrl` copying, support-ticket confirmation, and no cart/order/customer mutation.
 

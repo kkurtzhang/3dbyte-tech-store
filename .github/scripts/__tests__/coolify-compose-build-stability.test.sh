@@ -47,6 +47,44 @@ if ! grep -Fq 'not define its own `build:` block' "${coolify_docs}"; then
   exit 1
 fi
 
+if ! grep -Fq '## Recommended Watch Paths' "${coolify_docs}"; then
+  echo "Coolify deployment docs must include the recommended watch paths."
+  exit 1
+fi
+
+watch_paths_block="$(
+  awk '
+    /^## Recommended Watch Paths$/ { in_section = 1; next }
+    in_section && /^## / { exit }
+    in_section { print }
+  ' "${coolify_docs}"
+)"
+
+for watch_path in \
+  'apps/storefront-v3/**' \
+  'apps/backend/**' \
+  'apps/cms/**' \
+  'packages/**' \
+  'docker/**' \
+  'docker-compose.yml' \
+  'package.json' \
+  'pnpm-lock.yaml' \
+  'pnpm-workspace.yaml' \
+  'turbo.json' \
+  '.dockerignore' \
+  '.node-version' \
+  '.nvmrc'; do
+  if ! printf '%s\n' "${watch_paths_block}" | grep -Fxq "${watch_path}"; then
+    echo "Coolify deployment docs must list watch path: ${watch_path}"
+    exit 1
+  fi
+done
+
+if printf '%s\n' "${watch_paths_block}" | grep -Fq '.github/'; then
+  echo "Coolify watch-path docs must not make GitHub workflow/script changes deployable."
+  exit 1
+fi
+
 for dockerfile in \
   "${root}/apps/storefront-v3/Dockerfile" \
   "${root}/docker/backend/Dockerfile.release" \
