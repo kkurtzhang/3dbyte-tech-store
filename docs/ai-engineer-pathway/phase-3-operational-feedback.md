@@ -89,7 +89,7 @@ On `staging`, it runs automatically on pushes that change the assistant eval run
 The workflow now distinguishes runtime assistant changes from eval-only changes:
 
 - Runtime assistant changes wait for staging `/api/health.releaseSha` to match the pushed commit, then run three complete smoke attempts.
-- Eval-only or workflow changes run one smoke attempt after the staging deployment is visible.
+- Eval-only or workflow changes run one smoke attempt against the current staging release without waiting for a new Coolify deployment.
 - If Coolify API credentials are configured, the release wait also fails fast when the matching Coolify deployment reaches `failed` or `cancelled-by-user` instead of waiting for the full timeout.
 - Unrelated changes skip the live eval job before dependency install, Tailscale, Langfuse checks, or model calls.
 - Manual dispatch defaults to three complete attempts and allows one attempt for budget-safe ad hoc checks.
