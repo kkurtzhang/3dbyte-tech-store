@@ -12,6 +12,7 @@ grep -Fq "version: latest" "${workflow}"
 grep -Fq "ping: 100.68.121.61" "${workflow}"
 grep -Fq "AI_ASSISTANT_EVAL_UPLOAD_LANGFUSE: \"true\"" "${workflow}"
 grep -Fq 'AI_ASSISTANT_EVAL_ATTEMPTS: ${{ steps.live-eval.outputs.attempts }}' "${workflow}"
+grep -Fq 'AI_ASSISTANT_EVAL_REVIEW_FILE: ${{ github.workspace }}/artifacts/customer-ai-evals-review.md' "${workflow}"
 grep -Fq "bash .github/scripts/wait-for-staging-release.sh" "${workflow}"
 grep -Fq 'COOLIFY_API_URL: ${{ vars.COOLIFY_API_URL || secrets.COOLIFY_API_URL || '"'"''"'"' }}' "${workflow}"
 grep -Fq 'COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN || '"'"''"'"' }}' "${workflow}"
@@ -22,6 +23,11 @@ grep -Fq "/api/public/health" "${workflow}"
 grep -Fq "/api/public/projects" "${workflow}"
 grep -Fq "apps/storefront-v3/src/app/api/ai-shopping-assistant/**" "${workflow}"
 grep -Fq "apps/storefront-v3/scripts/run-customer-ai-evals.ts" "${workflow}"
+
+if grep -Fq "AI_ASSISTANT_EVAL_OUTPUT: json" "${workflow}"; then
+  echo "AI assistant eval workflow should keep full JSON in the report artifact, not dump it to stdout." >&2
+  exit 1
+fi
 
 for forbidden_path in \
   ".github/scripts/__tests__/coolify-compose-build-stability.test.sh" \

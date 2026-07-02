@@ -110,7 +110,8 @@ When manual dispatch is available, the workflow accepts:
 The workflow uploads `customer-ai-evals-<run-number>` with:
 
 - `customer-ai-evals.json`: structured report used for comparison and review.
-- `customer-ai-evals.stdout.log`: exact command output, including package-manager warnings and runner stdout.
+- `customer-ai-evals-review.md`: human-readable review report with full prompts and answers rendered as multiline blocks.
+- `customer-ai-evals.stdout.log`: concise command output, including package-manager warnings, per-case status lines, file-write confirmations, and the final summary. The full JSON is intentionally kept out of stdout so GitHub log rendering does not make answers look truncated.
 
 ## Phase 3C: Langfuse Prompt and Score Control Plane
 
