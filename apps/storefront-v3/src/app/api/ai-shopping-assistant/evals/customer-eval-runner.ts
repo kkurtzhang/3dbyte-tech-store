@@ -102,6 +102,7 @@ const LANGFUSE_TRACE_ID_HEADER = "x-3db-langfuse-trace-id"
 
 export { decodeAssistantStreamEvidence } from "./customer-eval-stream"
 export {
+  buildCustomerAiEvalReviewMarkdown,
   buildCustomerAiEvalReport,
   LangfuseHttpScoreClient,
   publishLangfuseEvalScores,
@@ -149,10 +150,7 @@ function collectFormatWarnings(evalCase: CustomerAiEvalCase, answer: string) {
   })
 }
 
-function collectForbiddenMatches(
-  evalCase: CustomerAiEvalCase,
-  answer: string,
-) {
+function collectForbiddenMatches(evalCase: CustomerAiEvalCase, answer: string) {
   return [
     ...defaultForbiddenPatterns,
     ...(evalCase.expectedAnswer.forbiddenPatterns ?? []).map(
@@ -205,8 +203,7 @@ function getResponseDiagnostics(
     promptVersion:
       response.headers.get(PROMPT_VERSION_HEADER)?.trim() || "unknown",
     releaseSha: response.headers.get(RELEASE_SHA_HEADER)?.trim() || "unknown",
-    temperature:
-      response.headers.get(TEMPERATURE_HEADER)?.trim() || "unknown",
+    temperature: response.headers.get(TEMPERATURE_HEADER)?.trim() || "unknown",
   }
 }
 
@@ -368,10 +365,7 @@ export async function evaluateCustomerAiCase(
       }
     }
 
-    const textScore = scoreCustomerEvalAnswer(
-      evalCase,
-      finalEvidence.answer,
-    )
+    const textScore = scoreCustomerEvalAnswer(evalCase, finalEvidence.answer)
     const automatedChecks = evaluateCustomerAiAutomatedChecks({
       answer: finalEvidence.answer,
       evalCase,

@@ -205,6 +205,90 @@ export function buildCustomerAiEvalReport(
   }
 }
 
+function markdownFence(value: string) {
+  const fence = value.includes("```") ? "````" : "```"
+
+  return `${fence}\n${value.trim() || "(empty)"}\n${fence}`
+}
+
+function formatReviewList(label: string, values: string[]) {
+  if (!values.length) {
+    return `- ${label}: none`
+  }
+
+  return [`- ${label}:`, ...values.map((value) => `  - ${value}`)].join("\n")
+}
+
+function formatReviewChecks(result: CustomerAiEvalRunResult) {
+  const checks = result.automatedChecks ?? []
+
+  if (!checks.length) {
+    return "- Automated checks: none"
+  }
+
+  return [
+    "- Automated checks:",
+    ...checks.map(
+      (check) =>
+        `  - ${check.name}: ${check.passed ? "PASS" : "FAIL"}${
+          check.comment ? ` (${check.comment})` : ""
+        }`,
+    ),
+  ].join("\n")
+}
+
+export function buildCustomerAiEvalReviewMarkdown(
+  report: CustomerAiEvalReport,
+) {
+  const summary = report.summary
+  const lines = [
+    "# Customer AI Eval Review",
+    "",
+    `Generated: ${summary.generatedAt}`,
+    `Endpoint: ${summary.endpointUrl}`,
+    `Run: ${summary.runName ?? "unknown"}`,
+    `Summary: ${summary.passed}/${summary.total} attempts passed, ${summary.casesStable}/${summary.casesTotal} cases stable, pass@1=${summary.passAt1}, pass^${summary.attemptsPerCase}=${summary.passToK}, warnings=${summary.warnings}`,
+    "",
+  ]
+
+  report.results.forEach((result, index) => {
+    lines.push(
+      `## ${index + 1}. ${result.id} - ${result.passed ? "PASS" : "FAIL"}`,
+      "",
+      `- Attempt: ${result.attempt ?? 1}/${result.attemptCount ?? 1}`,
+      `- Status: ${result.status ?? "n/a"}`,
+      `- Duration: ${result.durationMs}ms`,
+      `- Answer chars: ${result.answerChars}`,
+      `- Trace id: ${result.traceId ?? "n/a"}`,
+      `- Session id: ${result.sessionId ?? "n/a"}`,
+      `- Tags: ${(result.tags ?? []).join(", ") || "none"}`,
+      formatReviewList("Matched cues", result.includeMatched),
+      formatReviewList("Missing cues", result.includeMissing),
+      formatReviewList("Format warnings", result.formatWarnings),
+      formatReviewList("Forbidden matches", result.forbiddenMatches),
+      formatReviewChecks(result),
+    )
+
+    if (result.error) {
+      lines.push(`- Error: ${result.error}`)
+    }
+
+    lines.push(
+      "",
+      "### Prompt",
+      "",
+      markdownFence(result.prompt),
+      "",
+      "### Answer",
+      "",
+      markdownFence(result.answer),
+      "",
+    )
+  })
+
+  return `${lines.join("\n").trimEnd()}\n`
+}
+
 function toScoreMetadataRecord(
   metadata: Record<string, unknown> | undefined,
   report: CustomerAiEvalReport,

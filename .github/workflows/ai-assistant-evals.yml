@@ -137,8 +137,8 @@ jobs:
           AI_ASSISTANT_EVAL_LIMIT: ${{ inputs.limit || '' }}
           AI_ASSISTANT_EVAL_SUITE: smoke
           AI_ASSISTANT_EVAL_UPLOAD_LANGFUSE: "true"
-          AI_ASSISTANT_EVAL_OUTPUT: json
           AI_ASSISTANT_EVAL_OUTPUT_FILE: ${{ github.workspace }}/artifacts/customer-ai-evals.json
+          AI_ASSISTANT_EVAL_REVIEW_FILE: ${{ github.workspace }}/artifacts/customer-ai-evals-review.md
           LANGFUSE_EVAL_ENVIRONMENT: staging
           LANGFUSE_HOST: ${{ vars.LANGFUSE_HOST || secrets.LANGFUSE_HOST }}
           LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}

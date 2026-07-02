@@ -3,6 +3,7 @@ import { Buffer } from "node:buffer"
 import type { CustomerAiEvalCase } from "../evals/customer-evals"
 import type { CustomerAiEvalRunResult } from "../evals/customer-eval-runner"
 import {
+  buildCustomerAiEvalReviewMarkdown,
   buildCustomerAiEvalReport,
   decodeAssistantStream,
   decodeAssistantStreamEvidence,
@@ -18,8 +19,7 @@ import {
 
 const baseEvalCase: CustomerAiEvalCase = {
   id: "petg-outdoor-rc-parts",
-  customerPrompt:
-    "I'm printing outdoor RC car parts. Is PETG a good choice?",
+  customerPrompt: "I'm printing outdoor RC car parts. Is PETG a good choice?",
   tags: ["petg_outdoor"],
   expectedAnswer: {
     minimumCueMatches: 1,
@@ -269,12 +269,14 @@ describe("customer AI eval runner", () => {
       "case-a",
       "case-b",
     ])
-    expect(results.map(({ attempt, attemptCount, id, passed }) => ({
-      attempt,
-      attemptCount,
-      id,
-      passed,
-    }))).toEqual([
+    expect(
+      results.map(({ attempt, attemptCount, id, passed }) => ({
+        attempt,
+        attemptCount,
+        id,
+        passed,
+      })),
+    ).toEqual([
       { attempt: 1, attemptCount: 3, id: "case-a", passed: true },
       { attempt: 1, attemptCount: 3, id: "case-b", passed: true },
       { attempt: 2, attemptCount: 3, id: "case-a", passed: true },
@@ -460,8 +462,7 @@ describe("customer AI eval runner", () => {
                   output: {
                     products: [
                       {
-                        productUrl:
-                          "https://store.test/products/petg-black",
+                        productUrl: "https://store.test/products/petg-black",
                       },
                     ],
                   },
@@ -531,6 +532,36 @@ describe("customer AI eval runner", () => {
       "passing-case",
       "passing-case",
     ])
+  })
+
+  it("builds a review markdown artifact with complete answers", () => {
+    const answer =
+      "I'd be happy to help you check on your order! Once you provide both, I can look up the order status and tracking details for you."
+    const report = buildCustomerAiEvalReport(
+      [
+        makeRunResult({
+          answer,
+          answerChars: answer.length,
+          id: "order-lookup-missing-email",
+          includeMatched: ["email", "order reference"],
+          passed: true,
+          prompt: "My order reference is ORDER-123. Can you check it?",
+          traceId: "trace_01HQA",
+        }),
+      ],
+      "https://store.test/api/ai-shopping-assistant",
+      "2026-07-02T00:00:00.000Z",
+      { runName: "staging-customer-smoke" },
+    )
+
+    const markdown = buildCustomerAiEvalReviewMarkdown(report)
+
+    expect(markdown).toContain("# Customer AI Eval Review")
+    expect(markdown).toContain("order-lookup-missing-email")
+    expect(markdown).toContain("trace_01HQA")
+    expect(markdown).toContain("tracking details for you.")
+    expect(markdown).toContain(`Answer chars: ${answer.length}`)
+    expect(markdown).not.toContain("...[truncated]")
   })
 
   it("emits Langfuse-friendly deterministic score objects", () => {

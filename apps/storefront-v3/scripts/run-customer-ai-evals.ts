@@ -8,6 +8,7 @@ import {
   type CustomerAiEvalSuite,
 } from "../src/app/api/ai-shopping-assistant/evals/customer-evals"
 import {
+  buildCustomerAiEvalReviewMarkdown,
   buildCustomerAiEvalReport,
   evaluateCustomerAiCase,
   LangfuseHttpScoreClient,
@@ -52,7 +53,10 @@ function resolveCases() {
     ?.split(",")
     .map((id: string) => id.trim())
     .filter(Boolean)
-  const limit = Number.parseInt(getEnvValue("AI_ASSISTANT_EVAL_LIMIT") ?? "", 10)
+  const limit = Number.parseInt(
+    getEnvValue("AI_ASSISTANT_EVAL_LIMIT") ?? "",
+    10,
+  )
   const suiteValue = getEnvValue("AI_ASSISTANT_EVAL_SUITE") ?? "release"
 
   if (!["smoke", "release", "extended"].includes(suiteValue)) {
@@ -93,8 +97,7 @@ function resolveTraceContext(runName: string) {
       getEnvValue("AI_ASSISTANT_EVAL_CHATBOT_ID") ??
       "storefront.customer-ai-evals",
     sessionId,
-    surface:
-      getEnvValue("AI_ASSISTANT_EVAL_SURFACE") ?? "customer-eval-runner",
+    surface: getEnvValue("AI_ASSISTANT_EVAL_SURFACE") ?? "customer-eval-runner",
   }
 }
 
@@ -146,6 +149,17 @@ async function writeReportFile(
   await writeFile(outputFile, `${JSON.stringify(report, null, 2)}\n`, "utf8")
 }
 
+async function writeTextFile(outputFile: string, contents: string) {
+  await mkdir(dirname(outputFile), { recursive: true })
+  await writeFile(outputFile, contents, "utf8")
+}
+
+function formatSummaryLine(
+  report: ReturnType<typeof buildCustomerAiEvalReport>,
+) {
+  return `Summary: ${report.summary.passed}/${report.summary.total} attempts passed, ${report.summary.casesStable}/${report.summary.casesTotal} cases stable, pass@1=${report.summary.passAt1}, pass^${report.summary.attemptsPerCase}=${report.summary.passToK}, ${report.summary.warnings} warnings`
+}
+
 async function main() {
   const endpointUrl = resolveEndpointUrl()
   const evalCases = resolveCases()
@@ -157,6 +171,7 @@ async function main() {
   const traceContext = resolveTraceContext(runName)
   const outputJson = getEnvValue("AI_ASSISTANT_EVAL_OUTPUT") === "json"
   const outputFile = getEnvValue("AI_ASSISTANT_EVAL_OUTPUT_FILE")
+  const reviewFile = getEnvValue("AI_ASSISTANT_EVAL_REVIEW_FILE")
   const reportMetadata = {
     promptLabel: getFirstEnvValue(
       "AI_ASSISTANT_PROMPT_LABEL",
@@ -223,17 +238,18 @@ async function main() {
   if (outputFile) {
     await writeReportFile(outputFile, report)
 
-    if (!outputJson) {
-      console.log(`Wrote eval report to ${outputFile}`)
-    }
+    console.log(`Wrote full JSON eval report to ${outputFile}`)
   }
 
-  if (outputJson) {
+  if (reviewFile) {
+    await writeTextFile(reviewFile, buildCustomerAiEvalReviewMarkdown(report))
+    console.log(`Wrote review eval report to ${reviewFile}`)
+  }
+
+  if (outputJson && !outputFile) {
     console.log(JSON.stringify(report, null, 2))
   } else {
-    console.log(
-      `Summary: ${report.summary.passed}/${report.summary.total} attempts passed, ${report.summary.casesStable}/${report.summary.casesTotal} cases stable, pass@1=${report.summary.passAt1}, pass^${report.summary.attemptsPerCase}=${report.summary.passToK}, ${report.summary.warnings} warnings`,
-    )
+    console.log(formatSummaryLine(report))
   }
 
   if (report.summary.failed > 0) {
