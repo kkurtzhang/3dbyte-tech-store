@@ -19,7 +19,6 @@ const startActiveLangfuseTraceObservationMock = jest.fn(
     }),
 )
 const updateActiveLangfuseGenerationMock = jest.fn()
-const updateActiveLangfuseObservationIOMock = jest.fn()
 const updateActiveLangfuseTraceIOMock = jest.fn()
 const resolveAssistantSystemPromptMock = jest.fn()
 const providerModelMock = jest.fn((model: string) => ({
@@ -79,8 +78,6 @@ jest.mock("@3dbyte-tech-store/observability", () => ({
   ) => startActiveLangfuseTraceObservationMock(name, fn),
   updateActiveLangfuseGeneration: (attributes: unknown) =>
     updateActiveLangfuseGenerationMock(attributes),
-  updateActiveLangfuseObservationIO: (attributes: unknown) =>
-    updateActiveLangfuseObservationIOMock(attributes),
   updateActiveLangfuseTraceIO: (attributes: unknown) =>
     updateActiveLangfuseTraceIOMock(attributes),
 }))
@@ -932,6 +929,8 @@ describe("POST /api/ai-shopping-assistant", () => {
           "storefront.shopping-assistant",
         ],
       },
+      recordInputs: false,
+      recordOutputs: false,
     })
     expect(updateActiveLangfuseTraceIOMock).toHaveBeenCalledWith({
       input: "Find a beginner Voron kit",
@@ -1421,12 +1420,6 @@ describe("POST /api/ai-shopping-assistant", () => {
       "That'll help me confirm settings for your setup",
     )
     expect(updateActiveLangfuseTraceIOMock).toHaveBeenLastCalledWith({
-      output: "That'll help me confirm settings for your setup",
-    })
-    expect(updateActiveLangfuseObservationIOMock).toHaveBeenLastCalledWith({
-      output: "That'll help me confirm settings for your setup",
-    })
-    expect(updateActiveLangfuseGenerationMock).toHaveBeenLastCalledWith({
       output: "That'll help me confirm settings for your setup",
     })
     expect(assistantTraceEndMock).toHaveBeenCalledTimes(1)
