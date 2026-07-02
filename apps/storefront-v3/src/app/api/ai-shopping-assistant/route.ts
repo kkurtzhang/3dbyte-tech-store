@@ -934,6 +934,10 @@ export async function POST(req: Request): Promise<Response> {
         },
         async () => {
           let traceEnded = false
+          let pendingFinishOutput: string | null = null
+          let visibleAssistantOutput = ""
+          let visibleStreamClosed = false
+          let visibleStreamObserved = false
           const finishAssistantTrace = (attributes: {
             level?: "DEFAULT" | "ERROR" | "WARNING"
             output: string
@@ -952,6 +956,18 @@ export async function POST(req: Request): Promise<Response> {
                 : {}),
             })
             assistantTrace.end()
+          }
+          const finishPendingAssistantTrace = () => {
+            if (pendingFinishOutput === null) {
+              return
+            }
+
+            const output = visibleAssistantOutput || pendingFinishOutput
+            pendingFinishOutput = null
+
+            finishAssistantTrace({
+              output: sanitizeTraceText(output),
+            })
           }
           const recordAssistantTraceError = (errorOrEvent: unknown) => {
             const errorMessage = getAssistantStreamError(errorOrEvent)
@@ -1000,8 +1016,19 @@ export async function POST(req: Request): Promise<Response> {
                 ignoreIncompleteToolCalls: true,
               }),
               temperature: config.temperature,
-              experimental_transform:
-                createAssistantVisibleTextTransform(suppliedEmails),
+              experimental_transform: createAssistantVisibleTextTransform(
+                suppliedEmails,
+                {
+                  onFlush: () => {
+                    visibleStreamClosed = true
+                    finishPendingAssistantTrace()
+                  },
+                  onText: (text) => {
+                    visibleStreamObserved = true
+                    visibleAssistantOutput += text
+                  },
+                },
+              ),
               experimental_telemetry: {
                 functionId: "storefront.ai-shopping-assistant",
                 isEnabled: isAiTelemetryEnabled(),
@@ -1021,9 +1048,11 @@ export async function POST(req: Request): Promise<Response> {
                   model: config.model,
                   usageDetails,
                 })
-                finishAssistantTrace({
-                  output: sanitizeTraceText(getFinishText(finish)),
-                })
+                pendingFinishOutput = getFinishText(finish)
+
+                if (!visibleStreamObserved || visibleStreamClosed) {
+                  finishPendingAssistantTrace()
+                }
               },
               onAbort: recordAssistantTraceAbort,
               onError: recordAssistantTraceError,

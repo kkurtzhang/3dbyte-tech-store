@@ -86,6 +86,10 @@ export function createStreamingEmailRedactor(
 
 export function createAssistantVisibleTextTransform<TOOLS extends ToolSet>(
   suppliedEmails: readonly string[],
+  hooks: {
+    onFlush?: () => void
+    onText?: (text: string) => void
+  } = {},
 ) {
   return () => {
     const redactor = createStreamingEmailRedactor(suppliedEmails)
@@ -101,6 +105,7 @@ export function createAssistantVisibleTextTransform<TOOLS extends ToolSet>(
           const safeText = redactor.push(chunk.text)
 
           if (safeText) {
+            hooks.onText?.(safeText)
             controller.enqueue({ ...chunk, text: safeText })
           }
           return
@@ -112,8 +117,11 @@ export function createAssistantVisibleTextTransform<TOOLS extends ToolSet>(
         const safeText = redactor.flush()
 
         if (safeText && latestTextChunk) {
+          hooks.onText?.(safeText)
           controller.enqueue({ ...latestTextChunk, text: safeText })
         }
+
+        hooks.onFlush?.()
       },
     })
   }

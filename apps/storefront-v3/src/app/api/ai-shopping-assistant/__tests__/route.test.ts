@@ -1351,6 +1351,78 @@ describe("POST /api/ai-shopping-assistant", () => {
     )
   })
 
+  it("records flushed visible stream text as complete Langfuse output", async () => {
+    configureAiEnv()
+    const { POST } = await import("../route")
+
+    await POST(
+      createJsonRequest({
+        messages: [
+          {
+            role: "user",
+            content: "Can I use PETG for a printed RC car outside?",
+          },
+        ],
+      }),
+    )
+
+    const streamConfig = streamTextMock.mock.calls[0]?.[0] as
+      | {
+          experimental_transform?: (options: {
+            stopStream: () => void
+            tools: Record<string, unknown>
+          }) => TransformStream<
+            { text: string; type: "text-delta" } | { type: "finish" },
+            { text: string; type: "text-delta" } | { type: "finish" }
+          >
+          onFinish?: (finish: unknown) => void
+        }
+      | undefined
+    const transform = streamConfig?.experimental_transform?.({
+      stopStream: jest.fn(),
+      tools: {},
+    })
+
+    expect(transform).toBeDefined()
+
+    const writer = transform!.writable.getWriter()
+    const reader = transform!.readable.getReader()
+    const outputPromise = (async () => {
+      const output: string[] = []
+      let read = await reader.read()
+
+      while (!read.done) {
+        if (read.value.type === "text-delta") {
+          output.push(read.value.text)
+        }
+
+        read = await reader.read()
+      }
+
+      return output.join("")
+    })()
+
+    await writer.write({
+      text: "That'll help me confirm settings for your ",
+      type: "text-delta",
+    })
+    streamConfig?.onFinish?.({
+      finishReason: "stop",
+      text: "That'll help me confirm settings for your ",
+      usage: {},
+    })
+    await writer.write({ text: "setup", type: "text-delta" })
+    await writer.close()
+
+    await expect(outputPromise).resolves.toBe(
+      "That'll help me confirm settings for your setup",
+    )
+    expect(updateActiveLangfuseTraceIOMock).toHaveBeenLastCalledWith({
+      output: "That'll help me confirm settings for your setup",
+    })
+    expect(assistantTraceEndMock).toHaveBeenCalledTimes(1)
+  })
+
   it("exposes the active Langfuse trace id for eval score attachment", async () => {
     configureAiEnv()
     const { POST } = await import("../route")
