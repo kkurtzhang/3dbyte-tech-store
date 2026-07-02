@@ -38,6 +38,11 @@ export type LangfuseTraceIOUpdateInput = {
   output?: JsonValue;
 };
 
+export type LangfuseObservationIOUpdateInput = {
+  input?: JsonValue;
+  output?: JsonValue;
+};
+
 export type LangfuseTraceObservation = Pick<
   LangfuseSpan,
   "end" | "traceId" | "update"
@@ -111,6 +116,19 @@ export function updateActiveLangfuseTraceIO(
 
   if (Object.keys(traceAttributes).length > 0) {
     setActiveTraceIO(traceAttributes);
+  }
+}
+
+export function updateActiveLangfuseObservationIO(
+  attributes: LangfuseObservationIOUpdateInput,
+) {
+  const observationAttributes = {
+    ...(attributes.input !== undefined ? { input: attributes.input } : {}),
+    ...(attributes.output !== undefined ? { output: attributes.output } : {}),
+  };
+
+  if (Object.keys(observationAttributes).length > 0) {
+    updateActiveObservation(observationAttributes);
   }
 }
 
