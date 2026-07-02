@@ -5,7 +5,6 @@ import {
   propagateActiveLangfuseTraceAttributes,
   startActiveLangfuseTraceObservation,
   updateActiveLangfuseGeneration,
-  updateActiveLangfuseObservationIO,
   updateActiveLangfuseTraceIO,
 } from "@3dbyte-tech-store/observability"
 import {
@@ -936,7 +935,6 @@ export async function POST(req: Request): Promise<Response> {
         async () => {
           let traceEnded = false
           let pendingFinishOutput: string | null = null
-          let pendingFinishNeedsObservationRepair = false
           let visibleAssistantOutput = ""
           let visibleStreamClosed = false
           let visibleStreamObserved = false
@@ -965,20 +963,8 @@ export async function POST(req: Request): Promise<Response> {
             }
 
             const output = visibleAssistantOutput || pendingFinishOutput
-            const shouldRepairObservationOutput =
-              pendingFinishNeedsObservationRepair
             pendingFinishOutput = null
-            pendingFinishNeedsObservationRepair = false
             const sanitizedOutput = sanitizeTraceText(output)
-
-            if (shouldRepairObservationOutput) {
-              updateActiveLangfuseObservationIO({
-                output: sanitizedOutput,
-              })
-              updateActiveLangfuseGeneration({
-                output: sanitizedOutput,
-              })
-            }
 
             finishAssistantTrace({
               output: sanitizedOutput,
@@ -1048,6 +1034,8 @@ export async function POST(req: Request): Promise<Response> {
                 functionId: "storefront.ai-shopping-assistant",
                 isEnabled: isAiTelemetryEnabled(),
                 metadata: telemetryMetadata,
+                recordInputs: false,
+                recordOutputs: false,
               },
               onFinish: (finish) => {
                 const usageDetails = buildDeepSeekUsageDetails(
@@ -1064,10 +1052,8 @@ export async function POST(req: Request): Promise<Response> {
                   usageDetails,
                 })
                 pendingFinishOutput = getFinishText(finish)
-                pendingFinishNeedsObservationRepair =
-                  visibleStreamObserved && !visibleStreamClosed
 
-                if (!pendingFinishNeedsObservationRepair) {
+                if (!visibleStreamObserved || visibleStreamClosed) {
                   finishPendingAssistantTrace()
                 }
               },
