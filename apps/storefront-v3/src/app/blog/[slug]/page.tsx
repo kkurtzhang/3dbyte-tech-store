@@ -6,7 +6,7 @@ import { ChevronLeft } from "lucide-react";
 import { getMDXPost } from "@/lib/mdx";
 import { getBlogPostBySlug } from "@/lib/strapi/content";
 import type { MDXPostWithContent } from "@/lib/mdx";
-import type { BlogPost } from "@/lib/strapi/types";
+import type { BlogPost, StrapiImage } from "@/lib/strapi/types";
 import { MDXProvider } from "@/components/mdx/mdx-provider";
 import { MdxContent } from "@/features/cms/components/mdx-content";
 import { Separator } from "@/components/ui/separator";
@@ -36,6 +36,64 @@ function formatPostDate(value: string) {
   return format(date, "yyyy.MM.dd");
 }
 
+function firstText(...values: Array<string | null | undefined>) {
+  return values.map((value) => value?.trim()).find(Boolean);
+}
+
+function normalizeKeywords(value?: string[] | null) {
+  if (!Array.isArray(value)) return undefined;
+
+  const keywords = value.map((keyword) => keyword.trim()).filter(Boolean);
+  return keywords.length > 0 ? keywords : undefined;
+}
+
+function getStrapiImageUrl(image?: StrapiImage | null) {
+  const imageUrl = image?.url?.trim();
+  if (!imageUrl) return undefined;
+
+  try {
+    return new URL(
+      imageUrl,
+      process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337"
+    ).toString();
+  } catch {
+    return imageUrl;
+  }
+}
+
+function getOpenGraphImage(post: BlogPost) {
+  const image = post.open_graph_image || post.FeaturedImage;
+  const url = getStrapiImageUrl(image);
+  if (!image || !url) return undefined;
+
+  return [
+    {
+      url,
+      width: image.width,
+      height: image.height,
+      alt: image.alternativeText || post.Title,
+    },
+  ];
+}
+
+function buildCmsPostMetadata(post: BlogPost): Metadata {
+  const title = firstText(post.seo_title, post.Title) || post.Title;
+  const description = firstText(post.seo_description, post.Excerpt);
+  const keywords = normalizeKeywords(post.search_keywords);
+  const images = getOpenGraphImage(post);
+
+  return {
+    title,
+    description,
+    ...(keywords ? { keywords } : {}),
+    openGraph: {
+      title,
+      ...(description ? { description } : {}),
+      ...(images ? { images } : {}),
+    },
+  };
+}
+
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -43,10 +101,7 @@ export async function generateMetadata({
   const cmsPost = await getCmsBlogPost(slug);
 
   if (cmsPost) {
-    return {
-      title: cmsPost.Title,
-      description: cmsPost.Excerpt,
-    };
+    return buildCmsPostMetadata(cmsPost);
   }
 
   const mdxPost = await getMDXPost(slug);

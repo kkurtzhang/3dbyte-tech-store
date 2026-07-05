@@ -68,9 +68,16 @@ const cmsPost = {
 }
 
 describe("Blog post page", () => {
+  const originalStrapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL
+
   beforeEach(() => {
     mockGetBlogPostBySlug.mockReset()
     mockGetMDXPost.mockReset()
+    process.env.NEXT_PUBLIC_STRAPI_URL = "https://cms.example.com"
+  })
+
+  afterEach(() => {
+    process.env.NEXT_PUBLIC_STRAPI_URL = originalStrapiUrl
   })
 
   it("renders CMS blog detail pages before falling back to local MDX posts", async () => {
@@ -115,5 +122,53 @@ describe("Blog post page", () => {
       description: cmsPost.Excerpt,
     })
     expect(mockGetMDXPost).not.toHaveBeenCalled()
+  })
+
+  it("prefers CMS SEO fields and Open Graph image for metadata", async () => {
+    mockGetBlogPostBySlug.mockResolvedValueOnce({
+      data: [
+        {
+          ...cmsPost,
+          seo_title: "Nozzle Diameter Guide for 3D Printing",
+          seo_description:
+            "Choose the right 3D printer nozzle diameter for speed, strength, and surface finish.",
+          search_keywords: ["3D printer nozzle", "0.4mm nozzle"],
+          open_graph_image: {
+            id: 7,
+            url: "/uploads/nozzle-guide-og.jpg",
+            alternativeText: "Nozzle diameter comparison",
+            width: 1200,
+            height: 630,
+          },
+        },
+      ],
+      meta: {
+        pagination: { page: 1, pageSize: 25, pageCount: 1, total: 1 },
+      },
+    })
+
+    await expect(
+      generateMetadata({
+        params: Promise.resolve({ slug: cmsPost.Slug }),
+      })
+    ).resolves.toMatchObject({
+      title: "Nozzle Diameter Guide for 3D Printing",
+      description:
+        "Choose the right 3D printer nozzle diameter for speed, strength, and surface finish.",
+      keywords: ["3D printer nozzle", "0.4mm nozzle"],
+      openGraph: {
+        title: "Nozzle Diameter Guide for 3D Printing",
+        description:
+          "Choose the right 3D printer nozzle diameter for speed, strength, and surface finish.",
+        images: [
+          {
+            url: "https://cms.example.com/uploads/nozzle-guide-og.jpg",
+            width: 1200,
+            height: 630,
+            alt: "Nozzle diameter comparison",
+          },
+        ],
+      },
+    })
   })
 })
