@@ -14,10 +14,25 @@
     "meilisearch": {
       "indexName": "blog",
       "settings": {
-        "searchableAttributes": ["Title", "Content", "Excerpt"],
+        "searchableAttributes": [
+          "Title",
+          "Content",
+          "Excerpt",
+          "seo_description",
+          "search_keywords"
+        ],
         "filterableAttributes": ["Categories"],
         "sortableAttributes": ["Title"],
-        "displayedAttributes": ["Title", "Slug", "Content", "Excerpt", "publishedAt"]
+        "displayedAttributes": [
+          "Title",
+          "Slug",
+          "Content",
+          "Excerpt",
+          "seo_title",
+          "seo_description",
+          "search_keywords",
+          "publishedAt"
+        ]
       }
     }
   },
@@ -51,6 +66,26 @@
     "Excerpt": {
       "type": "text",
       "required": false
+    },
+    "seo_title": {
+      "type": "string",
+      "required": false
+    },
+    "seo_description": {
+      "type": "text",
+      "required": false
+    },
+    "search_keywords": {
+      "type": "json",
+      "required": false
+    },
+    "open_graph_image": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
     }
   }
 }

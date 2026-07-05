@@ -55,7 +55,10 @@ describe("searchContent", () => {
     expect(mockClient.__mockSearch).toHaveBeenCalledWith(
       "blog",
       "voron",
-      expect.objectContaining({ limit: 5 })
+      expect.objectContaining({
+        limit: 5,
+        attributesToRetrieve: expect.arrayContaining(["search_keywords"]),
+      })
     )
 
     expect(result).toEqual([

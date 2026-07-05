@@ -19,6 +19,7 @@ interface BlogDocument {
   Slug?: string
   Excerpt?: string
   Content?: string
+  search_keywords?: string[]
   Categories?: Array<{ Title?: string } | string>
 }
 
@@ -59,7 +60,9 @@ function mapBlogHit(hit: BlogDocument, scope: ContentSearchScope): ContentSearch
     id: `blog:${slug}`,
     kind: isGuide ? "guide" : "article",
     title,
-    snippet: extractSnippet(hit.Excerpt || hit.Content),
+    snippet: extractSnippet(
+      hit.Excerpt || hit.Content || hit.search_keywords?.join(", ")
+    ),
     url: `/blog/${slug}`,
   }
 }
@@ -93,7 +96,15 @@ async function searchBlog(query: string, limit: number, scope: ContentSearchScop
   try {
     const response = await searchClient.index(BLOG_INDEX).search<BlogDocument>(query, {
       limit,
-      attributesToRetrieve: ["id", "Title", "Slug", "Excerpt", "Content", "Categories"],
+      attributesToRetrieve: [
+        "id",
+        "Title",
+        "Slug",
+        "Excerpt",
+        "Content",
+        "search_keywords",
+        "Categories",
+      ],
     })
     return response.hits
       .map((hit) => mapBlogHit(hit, scope))

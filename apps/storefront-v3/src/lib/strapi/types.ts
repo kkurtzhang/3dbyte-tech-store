@@ -327,7 +327,11 @@ export interface BlogPost {
   Slug: string;
   Content: string;
   Excerpt?: string;
+  seo_title?: string | null;
+  seo_description?: string | null;
+  search_keywords?: string[] | null;
   FeaturedImage?: StrapiImage;
+  open_graph_image?: StrapiImage | null;
   Categories?: BlogPostCategory[];
   publishedAt: string;
   createdAt: string;
