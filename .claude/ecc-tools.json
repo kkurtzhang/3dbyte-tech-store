@@ -139,7 +139,6 @@
     ".agents/skills/everything-claude-code/agents/openai.yaml",
     ".claude/identity.json",
     ".codex/config.toml",
-    ".codex/AGENTS.md",
     ".codex/agents/explorer.toml",
     ".codex/agents/reviewer.toml",
     ".codex/agents/docs-researcher.toml",
@@ -159,7 +158,6 @@
       ".agents/skills/everything-claude-code/agents/openai.yaml",
       ".claude/identity.json",
       ".codex/config.toml",
-      ".codex/AGENTS.md",
       ".codex/agents/explorer.toml",
       ".codex/agents/reviewer.toml",
       ".codex/agents/docs-researcher.toml",
@@ -190,7 +188,6 @@
       ".agents/skills/everything-claude-code/agents/openai.yaml",
       ".claude/identity.json",
       ".codex/config.toml",
-      ".codex/AGENTS.md",
       ".codex/agents/explorer.toml",
       ".codex/agents/reviewer.toml",
       ".codex/agents/docs-researcher.toml",
@@ -239,11 +236,6 @@
       "moduleId": "runtime-core",
       "path": ".codex/config.toml",
       "description": "Repo-local Codex MCP and multi-agent baseline aligned with ECC defaults."
-    },
-    {
-      "moduleId": "runtime-core",
-      "path": ".codex/AGENTS.md",
-      "description": "Codex usage guide that points at the generated repo skill and workflow bundle."
     },
     {
       "moduleId": "runtime-core",

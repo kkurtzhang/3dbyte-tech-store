@@ -1,98 +1,33 @@
-# 3D Byte Tech Store - Monorepo Rules
+# Claude Code Entry Point
 
-## MCP-First Development
+`AGENTS.md` is the canonical repository instruction file. Apply it for all work
+in this monorepo; this file only defines Claude-facing routing.
 
-**Always use Context7 MCP** for library/API documentation, code generation, setup, or configuration steps without being explicitly asked.
+## Context loading
 
-### App-Specific MCPs
+- Read the app-local `CLAUDE.md` only for apps being changed.
+- Do not preload `.agent/`, `.claude/`, historical plans, or every available
+  skill. Load the smallest matching skill or reference when the task triggers
+  it.
+- Treat package manifests, active source, environment examples, and runtime
+  evidence as more authoritative than generated guidance.
+- `apps/storefront-v3` is active. `apps/storefront` is reference-only unless the
+  user explicitly asks to work on it.
 
-| App | MCPs to Use |
-|-----|-------------|
-| **Backend** (Medusa) | `medusa`, `meilisearch`, `context7` |
-| **CMS** (Strapi) | `context7` (for Strapi docs) |
-| **Storefront-v3** (Next.js) | `next-devtools`, `context7` |
+## Execution
 
-Serena MCP is intentionally disabled in the project Codex config because the
-repo has not benefited enough from its startup cost. Re-enable it only when a
-task specifically needs semantic symbol tooling.
+- Use an isolated worktree for substantial changes and copy ignored `.env`
+  files without staging them.
+- Use sub-agents only for bounded independent workstreams when the harness
+  allows them.
+- Use current library documentation for version-sensitive decisions.
+- For live bugs, verify the failing boundary and deployed revision before
+  choosing or declaring a fix.
+- Run the narrow relevant checks, review the full diff, and report validation
+  gaps explicitly.
 
-**Chrome DevTools MCP**: When using `take_snapshot` or `take_screenshot`, set `filePath` to `mcp-files/chrome-devtools`.
+Path-specific guidance:
 
-## Project Structure
-
-```
-apps/
-├── backend/       # Medusa v2.13.3 - Headless commerce
-├── cms/           # Strapi v5.33.0 - Content management
-├── storefront/    # Reference code (skip)
-└── storefront-v3/ # Next.js 16.1.0 - Customer store
-
-packages/
-├── shared-config/ # ESLint, TypeScript, Prettier configs
-├── shared-types/  # Common TypeScript definitions
-└── shared-utils/  # Utility functions
-```
-
-## Before Every Task
-
-1. Read app-specific `CLAUDE.md` in the workspace you're modifying
-2. Check `packages/shared-types` for existing type definitions
-3. Use workspace protocol for existing internal packages, for example:
-   - `"@3dbyte-tech-store/shared-config": "workspace:*"`
-   - `"@3dbyte-tech-store/shared-types": "workspace:*"`
-   - `"@3dbyte-tech-store/shared-utils": "workspace:*"`
-4. If you're modifying `packages/*`, read the root `CLAUDE.md` first because those workspaces do not have package-local `CLAUDE.md` files.
-
-## Workspace Commands
-
-```bash
-pnpm add <pkg> --filter=@3dbyte-tech-store/<workspace>  # Add dependency
-pnpm --filter=@3dbyte-tech-store/storefront-v3 dev      # Run single app
-pnpm run dev:backend                                    # Backend dev helper
-pnpm run dev:cms                                        # CMS dev helper
-pnpm run dev:storefront                                 # Storefront dev helper
-pnpm run dev                                             # All apps
-pnpm run build:turbo                                     # Optimized build
-```
-
-## Code Standards
-
-- **Max file size**: 400 lines (ideal: 200-300)
-- **No `any` types** without justification
-- **Import order**: External > Workspace (@3dbyte-tech-store/*) > Internal (~/) > Relative > Types
-
-## Testing
-
-| App | Tools |
-|-----|-------|
-| Backend | Jest (`test:unit`, `test:integration:http`, `test:integration:modules`) |
-| CMS | No standard automated test script is currently configured in `package.json` |
-| Storefront-v3 | Jest + React Testing Library |
-| E2E | Playwright is available at repo level; add or run E2E coverage when the workflow is critical and config exists |
-
-**Meilisearch tests**: Use `client.waitForTask(task.taskUid)` before assertions.
-
-## Git Workflow
-
-**Conventional commits**: `feat(backend):`, `fix(storefront):`, `docs(cms):`
-
-**Branch naming**: `feature/[app]-description`, `fix/[app]-issue`
-
-## Worktree Management
-
-**Crucial**: When creating a new worktree, automatically copy local untracked `.env` files from the main worktree into the new worktree when they exist. Never commit those files; keep tracked `.env.example` and template files as the canonical references.
-
-## Security
-
-- Never commit `.env` files
-- Validate all user inputs
-- Use parameterized queries
-- Each app has its own `.env` file
-
-## Data Flow Architecture
-
-```
-Medusa (Products) <-> Strapi (Content) -> Meilisearch (Index) <- Storefront (Consumer)
-```
-
-**Pattern**: Storefront Composition - parallel fetching from multiple sources for resilience and performance.
+- `apps/backend/CLAUDE.md`
+- `apps/cms/CLAUDE.md`
+- `apps/storefront-v3/CLAUDE.md`

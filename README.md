@@ -1,346 +1,305 @@
 # 3D Byte Tech Store
 
-A modern, full-stack e-commerce platform built with a monorepo architecture, combining the power of Medusa, Strapi, and Next.js to deliver a premium shopping experience.
+3D Byte Tech Store is a TypeScript monorepo for a 3D-printing commerce
+platform. Medusa owns commerce, Strapi owns editorial content, Meilisearch
+serves discovery, and the Next.js storefront composes those services for
+customers.
 
-## 🚀 Quick Start
+> The active storefront is `apps/storefront-v3`. `apps/storefront` is retained
+> as reference code and is not a pnpm workspace.
+
+## System at a glance
+
+```text
+Medusa (catalogue, carts, orders, customers) <-> Strapi (editorial content)
+                  |                                  |
+                  +--------> Meilisearch <------------+
+                                  |
+                           Next.js storefront
+```
+
+The storefront reads Medusa for transactional commerce, Strapi for managed
+content, and Meilisearch for products, categories, brands, documents, blog
+content, and address lookup. Shared OpenTelemetry helpers live in
+`packages/observability`.
+
+## AI Shopping Assistant
+
+The shopping assistant is a bounded, tool-using system. The model does not
+query commerce databases or mutate carts and orders directly. A Next.js route
+streams the conversation, applies the prompt and safety policy, and exposes a
+small set of typed tools backed by protected Medusa endpoints.
+
+### Current and planned architecture
+
+Solid arrows below are implemented. Dashed arrows and the **Planned** group are
+future work, not claims about the current runtime.
+
+```mermaid
+flowchart LR
+  subgraph Runtime["Implemented runtime"]
+    Customer["Customer"] --> UI["Assistant drawer<br/>AI SDK useChat"]
+    UI --> API["Next.js assistant API<br/>validation and rate limit"]
+    API --> Policy["Langfuse-managed or code-fallback prompt<br/>plus code-owned guardrails"]
+    Policy --> Model["DeepSeek through AI SDK<br/>streaming tool loop"]
+    Model --> Tools["Five typed tools"]
+    Tools --> Backend["Protected Medusa AI routes"]
+    Backend <--> ProductSources["Medusa commerce<br/>Meilisearch retrieval<br/>Strapi content"]
+    Backend <--> Karrio["Karrio shipping rates"]
+    Backend -->|"tool results"| Model
+    Model --> Safe["API streaming transform<br/>with PII redaction"]
+    Safe --> UI
+    API --> Obs["OpenTelemetry and Langfuse"]
+  end
+
+  subgraph Knowledge["Implemented knowledge supply"]
+    Packet["Source-backed research packet"] --> Normalize["Schema validation<br/>deterministic or AI normalization"]
+    Normalize --> Review["Admin review and approval"]
+    Review --> Import["Separate admin import"]
+    Import --> MedusaMetadata["Medusa AI metadata"]
+    Import --> StrapiDrafts["Unpublished Strapi<br/>content and document drafts"]
+    MedusaMetadata -->|"catalogue sync"| ProductSources
+    StrapiDrafts -->|"review, publish and sync"| ProductSources
+  end
+
+  subgraph Quality["Implemented quality loop"]
+    Evals["Smoke, release, and extended evals"] --> API
+    Evals --> Scores["Deterministic reports and scores"]
+    Scores --> Obs
+  end
+
+  subgraph Planned["Planned extensions"]
+    Hybrid["Document chunks, hybrid retrieval<br/>provenance and citations"]
+    Feedback["Customer feedback<br/>and annotation queue"]
+    Judge["Human-calibrated<br/>LLM quality judge"]
+    Reliability["Provider abstraction, tool deadlines<br/>fallbacks, SLOs and alerts"]
+    Personal["Consent-based printer<br/>and project preferences"]
+  end
+
+  Tools -.-> Hybrid
+  UI -.-> Feedback
+  Feedback -.-> Obs
+  Feedback -.-> Judge
+  Judge -.-> Scores
+  Reliability -.-> API
+  Personal -.-> API
+```
+
+### What is implemented
+
+| Layer               | Current behavior                                                                                                                                                                                                                                                | Evidence                                                                                                                                                                                                 |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Conversation        | A responsive drawer sends browser-session context and renders AI SDK text, tool state, and product suggestions as a stream.                                                                                                                                     | [Assistant UI](apps/storefront-v3/src/features/ai-shopping-assistant/components/shopping-assistant-drawer.tsx)                                                                                           |
+| Orchestration       | Zod bounds public input, an IP limiter protects the route, the agent loop is capped at five steps, and DeepSeek is called through an OpenAI-compatible AI SDK adapter.                                                                                          | [Assistant route](apps/storefront-v3/src/app/api/ai-shopping-assistant/route.ts)                                                                                                                         |
+| Grounded tools      | `searchProducts`, `lookupOrder`, `getTracking`, `estimateShipping`, and `createSupportTicket` call internal Medusa routes rather than giving the model direct data access.                                                                                      | [Backend AI routes](apps/backend/src/api/ai/)                                                                                                                                                            |
+| Product knowledge   | Product candidates come from Meilisearch and are hydrated with Medusa facts, Strapi content, and deterministic print-process, RC-building, compatibility, and support signals.                                                                                  | [Product guidance](apps/backend/src/api/ai/product-guidance/route.ts), [expert routing](apps/backend/src/api/ai/product-guidance/product-experts.ts)                                                     |
+| Knowledge ingestion | Source-backed research packets are validated, normalized, held as drafts, and reviewed by an admin. Approved drafts can then be imported through a separate admin action into Medusa metadata and unpublished Strapi content/document drafts.                   | [Integration intake](apps/backend/src/api/integrations/hermes/product-drafts/), [draft importer](apps/backend/src/lib/ai-product-drafts/importer.ts)                                                     |
+| Safety              | Commerce guidance is suggest-only. Order and tracking reads require reference-plus-email proof, support creation requires explicit confirmation, internal calls use a shared token, and visible email addresses are redacted from streamed output.              | [Code-owned guardrails](apps/storefront-v3/src/app/api/ai-shopping-assistant/prompt-management.ts), [stream sanitizer](apps/storefront-v3/src/app/api/ai-shopping-assistant/visible-output-sanitizer.ts) |
+| Observability       | Traces carry session, release, model, prompt, guardrail, token-usage, and provider-cache metadata. Trace input/output is sanitized before Langfuse export.                                                                                                      | [Observability package](packages/observability/src/langfuse.ts)                                                                                                                                          |
+| Evaluation          | The runner decodes real streams, captures tool evidence, supports multi-turn cases, and produces deterministic Langfuse-compatible scores across 8-case smoke, 28-case release, and 43-case extended suites. GitHub Actions applies deploy-aware staging gates. | [Eval cases](apps/storefront-v3/src/app/api/ai-shopping-assistant/evals/), [eval workflow](.github/workflows/ai-assistant-evals.yml)                                                                     |
+
+This is currently tool-grounded retrieval over structured commerce and
+editorial data, not an embedding/vector RAG system. Product documents already
+have a public Meilisearch index, but assistant-side chunk retrieval, answer
+citations, and hybrid ranking are still planned.
+
+### Future implementation roadmap
+
+| Priority                         | Planned architecture change                                                                                                                                                                                         | Acceptance signal                                                                                            |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| 1. Grounded document retrieval   | Add a `searchKnowledge` tool over chunked product manuals, datasheets, safety documents, and source metadata; combine lexical and semantic candidates, rerank them, and return citations with every grounded claim. | Versioned retrieval set with recall-at-k, ranking, citation-validity, and unsupported-claim checks.          |
+| 2. Human feedback loop           | Add optional answer feedback tied to the existing trace/session, route low scores and support handoffs to an annotation queue, and promote reviewed failures into versioned eval cases.                             | Traceable feedback-to-dataset lineage and a review queue with explicit ownership.                            |
+| 3. Calibrated quality evaluation | Keep deterministic safety/tool checks as hard gates, then add an LLM judge calibrated against human labels for relevance, completeness, and recommendation quality.                                                 | Judge agreement measured against reviewed examples; model scores remain advisory until the threshold is met. |
+| 4. Production reliability        | Split the large route into policy, provider, tool, and telemetry modules; add a shared rate limiter, per-tool deadlines, retry budgets, circuit breakers, provider fallback, and cost/latency/error budgets.        | Failure-injection tests plus release dashboards and alerts for quality, p95 latency, tool errors, and cost.  |
+| 5. Consent-based personalization | Store explicit printer, material, and project preferences separately from protected order data, with expiry, export, and deletion controls.                                                                         | Opt-in recommendation lift without weakening privacy or order-proof requirements.                            |
+
+Detailed eval operations and historical design decisions live in the
+[AI engineer pathway](docs/ai-engineer-pathway/README.md). The README describes
+the stable architecture; implementation plans remain in `docs/` until shipped.
+
+## Active workspaces
+
+| Workspace                | Responsibility                                 | Local endpoint                |
+| ------------------------ | ---------------------------------------------- | ----------------------------- |
+| `apps/backend`           | Medusa API, admin, workflows, integrations     | `http://localhost:9000`       |
+| `apps/cms`               | Strapi content management                      | `http://localhost:1337/admin` |
+| `apps/storefront-v3`     | Next.js customer storefront                    | `http://localhost:3001`       |
+| `packages/observability` | OpenTelemetry and Langfuse helpers             | Library                       |
+| `packages/shared-config` | Shared TypeScript, ESLint, and Prettier config | Library                       |
+| `packages/shared-types`  | Cross-workspace contracts                      | Library                       |
+| `packages/shared-utils`  | Shared utilities                               | Library                       |
+
+Exact framework versions are pinned in each workspace's `package.json`. Those
+manifests are the source of truth; do not duplicate version pins in guides.
+
+Current runtime integrations include Stripe payments, Karrio shipping,
+Cloudflare R2 media storage, Resend/MailDev email, Google customer OAuth, an AI
+shopping assistant, and OpenTelemetry/Langfuse tracing.
+
+## Prerequisites
+
+- Node.js `22.22.1` (see `.node-version` and `.nvmrc`)
+- Corepack with pnpm `10.32.1` (pinned in the root `package.json`)
+- Docker with Compose for the recommended hybrid development command
+- PostgreSQL reachable from Medusa and the local Karrio containers; Strapi may
+  use its default local SQLite database or an explicitly configured PostgreSQL
+  database
+
+## Local setup
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-org/3dbyte-tech-store.git
+git clone https://github.com/kkurtzhang/3dbyte-tech-store.git
 cd 3dbyte-tech-store
 
-# Install dependencies
-pnpm install
+corepack enable
+corepack prepare pnpm@10.32.1 --activate
+pnpm install --frozen-lockfile
 
-# Copy environment files
-cp apps/backend/.env.example apps/backend/.env
+cp apps/backend/.env.template apps/backend/.env
 cp apps/cms/.env.example apps/cms/.env
-cp apps/storefront/.env.example apps/storefront/.env.local
-
-# Start all services
-pnpm run dev
+cp apps/storefront-v3/.env.example apps/storefront-v3/.env
 ```
 
-Your store will be available at:
-- **Storefront**: http://localhost:8000
-- **Admin Panel**: http://localhost:9000/app
-- **CMS Admin**: http://localhost:1337/admin
+Fill in Medusa's database URL, service keys, and shared secrets before starting
+the apps. Configure Strapi's database variables if you do not want its default
+local SQLite database. In particular, `INTERNAL_API_TOKEN` must match between
+the backend and storefront. Never commit a populated `.env` file.
 
-## 📋 Prerequisites
+The Docker support stack expects a Karrio database at
+`host.docker.internal:5432` with database `karrio`, user `postgres`, and
+password `password` by default. Create that database or override
+`KARRIO_DATABASE_NAME`, `KARRIO_DATABASE_USERNAME`,
+`KARRIO_DATABASE_PASSWORD`, `KARRIO_DATABASE_HOST`, and
+`KARRIO_DATABASE_PORT` in an ignored root `.env` file.
 
-- **Node.js**: 20.0.0 or higher
-- **pnpm**: 8.0.0 or higher
-- **PostgreSQL**: For local development
-- **Redis**: For caching (optional for development)
-
-## 🏗️ Architecture
-
-This project uses a monorepo structure managed by pnpm and Turborepo, consisting of three main applications:
-
-```
-3dbyte-tech-store/
-├── apps/
-│   ├── backend/          # Medusa v2.12.3 - Commerce API
-│   ├── cms/              # Strapi v5.15.1 - Headless CMS
-│   └── storefront/       # Next.js 16.1.0 - Frontend
-├── packages/
-│   ├── shared-config/    # ESLint, TypeScript, Prettier configs
-│   ├── shared-types/     # Common TypeScript definitions
-│   ├── shared-ui/        # Reusable React components
-│   └── shared-utils/     # Shared utility functions
-├── scripts/              # Build and development scripts
-├── docker/               # Docker configurations
-└── docs/                 # Project documentation
-```
-
-## 🛠️ Technology Stack
-
-### Backend (Medusa v2.12.3)
-- **Framework**: Headless commerce platform
-- **Database**: PostgreSQL
-- **Cache**: Redis
-- **Features**:
-  - Product & inventory management
-  - Order processing
-  - Customer management
-  - Payment integrations (Stripe, PayPal)
-  - Shipping & tax calculations
-  - Admin dashboard
-
-### CMS (Strapi v5.15.1)
-- **Framework**: Headless CMS
-- **Features**:
-  - Blog management
-  - Content pages
-  - Media management with AWS S3
-  - Meilisearch integration
-  - Webhooks for automatic revalidation
-
-### Storefront (Next.js 16.1.0)
-- **Framework**: React 19.2.3 with TypeScript
-- **Styling**: Tailwind CSS with Medusa UI components
-- **Features**:
-  - Server-side rendering (SSR)
-  - Static site generation (SSG)
-  - Product catalog with filtering
-  - Shopping cart
-  - Multi-step checkout
-  - User authentication
-  - Search (Algolia integration)
-  - Dark/Light themes
-
-### Development Tools
-- **Package Manager**: pnpm with workspace support
-- **Build System**: Turborepo for optimized builds
-- **Code Quality**: ESLint, Prettier, TypeScript
-- **Testing**: Jest (unit), Playwright (e2e)
-- **Containerization**: Docker with Compose
-
-## ✨ Key Features
-
-### E-commerce Functionality
-- 📦 Product catalog with variants and options
-- 🛒 Shopping cart with promotional codes
-- 💳 Multi-payment methods (Stripe, PayPal)
-- 📦 Order tracking and history
-- 👥 Customer accounts and profiles
-- 🚚 Shipping calculations
-- 💰 Tax management
-- 📉 Inventory tracking
-- 🔄 Returns and exchanges
-
-### Content Management
-- 📝 Blog posts and articles
-- 📄 Static pages (About, FAQ, etc.)
-- 🖼️ Media asset management
-- 🔍 SEO-friendly URLs
-- 📝 Rich text editing
-- 🔄 Content versioning
-
-### Developer Experience
-- 🔗 Type-safe APIs across all services
-- ⚡ Optimized build pipeline with caching
-- 🔄 Hot reloading in development
-- 🐳 Docker support for easy setup
-- 🧪 Comprehensive testing suite
-- 🎨 Shared UI components
-- 📚 Extensive documentation
-
-## 🛠️ Development
-
-### Starting the Development Server
+Start the hybrid development stack:
 
 ```bash
-# All services in parallel (recommended)
-pnpm run dev
-
-# Individual services
-pnpm run dev:backend      # Medusa on http://localhost:9000
-pnpm run dev:cms          # Strapi on http://localhost:1337
-pnpm run dev:storefront   # Next.js on http://localhost:8000
-
-# Using Turborepo directly
-pnpm run dev:turbo
+pnpm dev
 ```
 
-### Docker Development
+This runs the CMS and supporting Redis, Meilisearch, and Karrio services in
+Docker, while Medusa and the active storefront run through Turborepo on the
+host. The local support compose file is `docker/docker-compose.yml`; the root
+`docker-compose.yml` is the Coolify release stack and is not the default local
+development path.
+
+Run one application when the rest of the stack is already available:
 
 ```bash
-# Start all services with Docker
-pnpm run dev:docker
-
-# View logs
-docker-compose -f docker/docker-compose.yml logs -f
-
-# Stop services
-docker-compose -f docker/docker-compose.yml down
+pnpm run dev:backend
+pnpm run dev:cms
+pnpm run dev:storefront
 ```
 
-### Building
+Useful local endpoints:
+
+| Service          | URL                           |
+| ---------------- | ----------------------------- |
+| Storefront       | `http://localhost:3001`       |
+| Medusa API       | `http://localhost:9000`       |
+| Medusa Admin     | `http://localhost:9000/app`   |
+| Strapi Admin     | `http://localhost:1337/admin` |
+| Meilisearch      | `http://localhost:7700`       |
+| Karrio API       | `http://localhost:5002`       |
+| Karrio dashboard | `http://localhost:3002`       |
+
+## Common commands
 
 ```bash
-# Build all applications
-pnpm run build
+# Build, lint, type-check, or test every workspace that defines the task
+pnpm build
+pnpm lint
+pnpm type-check
+pnpm test
 
-# Build specific application
-pnpm --filter @3dbyte-tech-store/storefront build
+# Active storefront
+pnpm --filter=@3dbyte-tech-store/storefront-v3 build
+pnpm --filter=@3dbyte-tech-store/storefront-v3 lint
+pnpm --filter=@3dbyte-tech-store/storefront-v3 test
+pnpm --filter=@3dbyte-tech-store/storefront-v3 test:coverage
+
+# Backend
+pnpm --filter=@3dbyte-tech-store/backend build
+pnpm --filter=@3dbyte-tech-store/backend test:unit
+pnpm --filter=@3dbyte-tech-store/backend test:integration:http
+pnpm --filter=@3dbyte-tech-store/backend test:integration:modules
+
+# CMS
+pnpm --filter=@3dbyte-tech-store/cms build
+
+# Browser tests
+pnpm exec playwright test
 ```
 
-### Testing
+`pnpm test` only runs workspaces with a generic `test` task; backend suites are
+separate and must be invoked explicitly. The CMS currently has no standard
+automated test script, so CMS changes require a build plus focused manual or API
+verification.
 
-```bash
-# Run all tests
-pnpm run test
+When changing a shared package, keep internal dependencies on `workspace:*` and
+build the affected consumers.
 
-# Specific test types
-pnpm run test:unit
-pnpm run test:integration
-pnpm run test-e2e
-```
+## Environment contracts
 
-### Code Quality
+Use the tracked examples as checklists instead of copying environment variable
+lists into new documentation:
 
-```bash
-# Lint all packages
-pnpm run lint
+- Local backend: `apps/backend/.env.template`
+- Local CMS: `apps/cms/.env.example`
+- Local storefront: `apps/storefront-v3/.env.example`
+- Staging: `deploy/environments/staging.env.example`
+- Production: `deploy/environments/production.env.example`
+- Shared search: `deploy/search/search.env.example`
 
-# Type checking
-pnpm run type-check
+The root `.env.example` documents the Coolify/OCI release compose contract. It
+is not a drop-in local application environment file.
 
-# Format code
-pnpm run format:write
-```
+## Deployment
 
-## 📦 Package Management
+Deployments use Coolify on OCI with the root `docker-compose.yml`:
 
-This monorepo uses pnpm workspaces for efficient dependency management:
+- `staging` is the staging release branch.
+- `main` is the production release branch.
+- Meilisearch runs as a separate shared Coolify resource.
+- Documentation-only and workflow-only changes should not trigger a runtime
+  rebuild; keep Coolify watch paths aligned with the runtime inputs documented
+  in the deploy runbook.
 
-```bash
-# Add dependency to specific app
-pnpm add <package> --filter=@3dbyte-tech-store/storefront
+Read these before changing deployment behavior:
 
-# Add shared dependency to root
-pnpm add <package> -w
+- [Environment policy](deploy/environments/README.md)
+- [Coolify scoped deploys and watch paths](deploy/coolify/README.md)
+- [Shared Meilisearch resource](deploy/search/README.md)
+- [Development-stage architecture](docs/dev-stage-architecture.md)
 
-# Update all dependencies
-pnpm update
+## Project documentation
 
-# Check dependency tree
-pnpm ls
-```
+- [Agent and contributor instructions](AGENTS.md)
+- [AI engineer pathway](docs/ai-engineer-pathway/README.md)
+- [Meilisearch integration guide](docs/meilisearch-integration-guide.md)
+- [Observability and tracing](docs/observability-tracing.md)
+- [Customer authentication manual test](docs/runbooks/customer-auth-manual-test.md)
+- [CMS documentation](apps/cms/docs/)
 
-## 🔧 Environment Configuration
+Historical plans and reports are evidence of past decisions, not current
+runtime documentation. Verify their claims against the active manifests and
+code before reusing them.
 
-### Backend (apps/backend/.env)
-```env
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/medusa
+## Contribution workflow
 
-# Redis
-REDIS_URL=redis://localhost:6379
+1. Start from the target branch and use an isolated worktree for substantial
+   changes.
+2. Read [AGENTS.md](AGENTS.md) and the `CLAUDE.md` inside each active app you
+   will modify.
+3. Add regression coverage before implementation when a test harness exists.
+4. Run the smallest relevant test set, then the broader build/lint/type-check
+   gates for affected workspaces.
+5. Review the full diff for secrets and unrelated changes.
+6. Use conventional commits such as `fix(storefront): ...` or
+   `docs(backend): ...`.
 
-# Medusa
-MEDUSA_ADMIN_ONBOARDING_TYPE=default
-CORS_ORIGIN=http://localhost:8000
-ADMIN_CORS=http://localhost:9000
-```
-
-### CMS (apps/cms/.env)
-```env
-# Database
-DATABASE_CLIENT=postgres
-DATABASE_HOST=localhost
-DATABASE_PORT=5432
-DATABASE_NAME=cms
-DATABASE_USERNAME=username
-DATABASE_PASSWORD=password
-
-# Strapi
-STRAPI_ADMIN_JWT_SECRET=your-jwt-secret
-API_TOKEN_SALT=your-token-salt
-
-# S3 (optional)
-S3_BUCKET=your-bucket
-S3_REGION=your-region
-S3_ACCESS_KEY_ID=your-access-key
-S3_ACCESS_SECRET=your-secret-key
-```
-
-### Storefront (apps/storefront/.env.local)
-```env
-# Medusa
-NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=your-publishable-key
-NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://localhost:9000
-
-# Strapi
-NEXT_PUBLIC_STRAPI_URL=http://localhost:1337
-NEXT_PUBLIC_STRAPI_READ_TOKEN=your-read-token
-
-# Webhook secret
-STRAPI_WEBHOOK_REVALIDATION_SECRET=your-webhook-secret
-```
-
-## 🚀 Deployment
-
-### Production Deployment
-
-1. **Build Applications**
-   ```bash
-   pnpm run build
-   ```
-
-2. **Environment Setup**
-   - Configure production environment variables
-   - Set up PostgreSQL and Redis instances
-   - Configure AWS S3 for media storage
-
-3. **Deploy Storefront (Vercel)**
-   ```bash
-   # Connect repository to Vercel
-   # Set environment variables in Vercel dashboard
-   ```
-
-4. **Deploy Backend & CMS**
-   - Recommended platforms: Railway, AWS, DigitalOcean
-   - Ensure database persistence
-   - Configure SSL certificates
-
-### Docker Production Deployment
-
-```bash
-# Build and deploy with Docker Compose
-docker-compose -f docker/docker-compose.prod.yml up -d
-```
-
-## 📚 Documentation
-
-- [Project Overview](docs/project-overview.md) - Detailed project information
-- [API Documentation](docs/api/) - Backend API reference
-- [Components Guide](docs/components.md) - Shared UI components
-- [Deployment Guide](docs/deployment.md) - Production deployment instructions
-- [Troubleshooting](docs/troubleshooting.md) - Common issues and solutions
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'feat: Add amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
-
-### Commit Convention
-
-We follow conventional commits:
-
-- `feat:` for new features
-- `fix:` for bug fixes
-- `docs:` for documentation
-- `style:` for formatting
-- `refactor:` for code refactoring
-- `test:` for tests
-- `chore:` for maintenance
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- [Medusa](https://medusajs.com/) - The headless commerce platform
-- [Strapi](https://strapi.io/) - The leading open-source headless CMS
-- [Next.js](https://nextjs.org/) - The React framework
-- [Vercel](https://vercel.com/) - For hosting the storefront
-- [Turborepo](https://turbo.build/) - For optimized monorepo builds
-
-## 📞 Support
-
-If you have any questions or need help, please:
-
-1. Check the [documentation](docs/)
-2. Search [existing issues](https://github.com/your-org/3dbyte-tech-store/issues)
-3. Create a new issue if needed
-4. Join our [Discord community](https://discord.gg/your-invite)
-
----
-
-**Built with ❤️ by the 3D Byte Tech Store team**
+Operational claims are not considered verified until the relevant boundary is
+checked. For staging issues, that usually means the deployed commit, service
+health, logs, backing data, and the browser or API behavior—not a local build
+alone.

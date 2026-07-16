@@ -1,103 +1,60 @@
-# CMS (Strapi v5.33.0)
+# CMS (Strapi)
 
-> **Parent**: Read `/CLAUDE.md` first for monorepo rules.
+Apply the repo-root `AGENTS.md`, then these CMS-specific rules. Read the Strapi
+version from `apps/cms/package.json` rather than this file.
 
-## MCP Usage
+## Ownership and boundaries
 
-| MCP | When to Use |
-|-----|-------------|
-| `context7` | Strapi v5 docs, API patterns, plugins, lifecycle hooks |
-| `meilisearch` | Search index configuration (if using Meilisearch plugin) |
+Strapi owns editorial content such as homepage sections, articles, guides,
+policies, FAQs, brand/product descriptions, collections, campaign placements,
+and public product documents. The current content-type inventory is the set of
+directories under `src/api/`.
 
-**Always query Context7 for Strapi docs** - API changed significantly in v5.
+- `src/api/`: content types, controllers, routes, services, and lifecycles.
+- `src/components/`: reusable content components.
+- `src/extensions/`: supported customizations of installed plugins.
+- `config/`: database, plugins, middleware, server, and admin configuration.
+- `scripts/`: explicit content seeding and synchronization jobs.
 
-## Architecture
+Populate only required relations and fields. Preserve Draft & Publish behavior
+and confirm that records intended for public APIs are published.
 
-```
-src/
-├── api/           # Content types & controllers
-├── components/    # Reusable content components
-├── extensions/    # Extend Strapi functionality
-├── middlewares/   # Custom middleware
-└── plugins/       # Custom plugins
+## Schema and extension policy
 
-config/
-├── database.ts    # Database config
-├── plugins.ts     # Plugin settings (S3, Meilisearch)
-└── middlewares.ts # Middleware registration
-```
+- Do not edit schema/content-type files for routine model changes unless the
+  current user request explicitly authorizes that code-level change.
+- Prefer the agreed Strapi Admin/API workflow for normal content-model updates.
+- New plugins, lifecycle code, controllers, or plugin configuration require
+  explicit task authorization and focused verification.
+- Treat webhook delivery as fallible. Make consumers idempotent and verify
+  revalidation or sync behavior at the receiving boundary.
+- Keep Meilisearch indexes derived from published CMS content; do not use them
+  as the content source of truth.
 
-## Content Types
+Check current Strapi v5 documentation for version-sensitive APIs. Do not reuse
+Strapi v4 controller, query, or response patterns from memory.
 
-### This Project's Content Types
-
-| Type | Purpose |
-|------|---------|
-| Brand descriptions | Rich content for brands |
-| Product descriptions | Marketing content for products |
-| Product variant colors | Color metadata |
-| Blog posts & categories | Blog content |
-| Collections | Product collections |
-| Homepage, About, FAQ, etc. | Static pages |
-
-### Key Patterns
-
-```typescript
-// Custom controller
-export default factories.createCoreController(
-  'api::blog-post.blog-post',
-  ({ strapi }) => ({
-    async findBySlug(ctx) {
-      const { slug } = ctx.params;
-      const entity = await strapi.db.query('api::blog-post.blog-post')
-        .findOne({ where: { slug }, populate: ['author'] });
-      return this.transformResponse(entity);
-    }
-  })
-);
-```
-
-### Lifecycle Hooks
-
-Use for: auto-slug generation, webhook triggers, search indexing, audit logging.
-
-Location: `src/api/[content-type]/content-types/[name]/lifecycles.ts`
-
-## Webhooks to Storefront
-
-Configure webhooks to trigger Next.js revalidation on content changes:
-- `entry.create`, `entry.update`, `entry.delete`
-- `entry.publish`, `entry.unpublish`
-
-## Common Commands
+## Commands
 
 ```bash
-pnpm --filter=@3dbyte-tech-store/cms dev     # Start dev server (port 1337)
-pnpm --filter=@3dbyte-tech-store/cms build   # Build admin
-pnpm --filter=@3dbyte-tech-store/cms strapi transfer  # Data transfer
+pnpm --filter=@3dbyte-tech-store/cms dev
+pnpm --filter=@3dbyte-tech-store/cms build
+pnpm --filter=@3dbyte-tech-store/cms strapi transfer
+pnpm --filter=@3dbyte-tech-store/cms seed:blog-guides:api
+pnpm --filter=@3dbyte-tech-store/cms seed:help-guides
 ```
 
-## Environment Variables
+The CMS has no standard automated test task. For CMS changes, run the build and
+perform focused API/Admin verification against the affected content type or
+integration. Do not claim automated coverage that does not exist.
 
-```bash
-HOST=0.0.0.0
-PORT=1337
-DATABASE_CLIENT=postgres
-DATABASE_HOST=localhost
-DATABASE_NAME=cms
-S3_BUCKET=...
-S3_ACCESS_KEY_ID=...
-MEILISEARCH_HOST=http://localhost:7700
-```
+## Configuration and safety
 
-## Gotchas
+Use `apps/cms/.env.example` as the local variable contract. Never commit CMS
+secrets or real content credentials. Validate public permissions, uploaded file
+handling, webhook secrets, and admin-only operations when those boundaries
+change.
 
-- **Schema governance (team policy)**:
-  - Do **not** edit CMS schema/content-type files directly for normal model updates.
-  - Use Strapi Admin/API flows for schema/content model changes.
-  - Any code-level CMS extension (new plugin, plugin config extension, lifecycle/custom code) requires explicit founder approval before implementation.
-- **Populate depth**: Deep population kills performance - specify only needed fields
-- **Draft & Publish**: Remember to publish entries for API access
-- **Permissions**: Public access requires explicit configuration in Settings
-- **Circular dependencies**: Be careful with bidirectional relations
-- **Webhooks don't retry**: Test thoroughly
+For staging issues, compare the deployed revision, Strapi logs, database row or
+API response, publication status, downstream index/webhook state, and visible
+storefront behavior.

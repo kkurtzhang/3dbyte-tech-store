@@ -30,8 +30,8 @@ copy_dir_contents() {
 }
 
 require_file "$ECC_ROOT/.codex/config.toml"
-require_file "$ECC_ROOT/.codex/AGENTS.md"
 require_file "$PROJECT_ROOT/.codex/config.project.toml"
+require_file "$PROJECT_ROOT/.codex/AGENTS.md"
 
 mkdir -p "$PROJECT_ROOT/.codex/agents"
 mkdir -p "$PROJECT_ROOT/.claude/commands"
@@ -52,12 +52,39 @@ mkdir -p "$PROJECT_ROOT/.agents/skills/everything-claude-code/agents"
   printf '\n'
 } > "$PROJECT_ROOT/.codex/config.toml"
 
-copy_file "$ECC_ROOT/.codex/AGENTS.md" "$PROJECT_ROOT/.codex/AGENTS.md"
+# Keep the lean, project-owned .codex/AGENTS.md adapter. The upstream ECC file
+# contains a generic skill catalogue that duplicates root guidance and adds
+# context to every Codex session.
 copy_file "$ECC_ROOT/.codex/agents/explorer.toml" "$PROJECT_ROOT/.codex/agents/explorer.toml"
 copy_file "$ECC_ROOT/.codex/agents/reviewer.toml" "$PROJECT_ROOT/.codex/agents/reviewer.toml"
 copy_file "$ECC_ROOT/.codex/agents/docs-researcher.toml" "$PROJECT_ROOT/.codex/agents/docs-researcher.toml"
 
 copy_file "$ECC_ROOT/.claude/ecc-tools.json" "$PROJECT_ROOT/.claude/ecc-tools.json"
+node --input-type=module - "$PROJECT_ROOT/.claude/ecc-tools.json" <<'NODE'
+import fs from "node:fs";
+
+const metadataPath = process.argv[2];
+const projectOwnedPath = ".codex/AGENTS.md";
+const metadata = JSON.parse(fs.readFileSync(metadataPath, "utf8"));
+
+metadata.managedFiles = (metadata.managedFiles || []).filter(
+  (filePath) => filePath !== projectOwnedPath,
+);
+
+for (const collectionName of ["packageFiles", "moduleFiles"]) {
+  for (const [key, filePaths] of Object.entries(metadata[collectionName] || {})) {
+    metadata[collectionName][key] = filePaths.filter(
+      (filePath) => filePath !== projectOwnedPath,
+    );
+  }
+}
+
+metadata.files = (metadata.files || []).filter(
+  (file) => file.path !== projectOwnedPath,
+);
+
+fs.writeFileSync(metadataPath, `${JSON.stringify(metadata, null, 2)}\n`);
+NODE
 copy_file "$ECC_ROOT/.claude/identity.json" "$PROJECT_ROOT/.claude/identity.json"
 copy_file "$ECC_ROOT/.claude/enterprise/controls.md" "$PROJECT_ROOT/.claude/enterprise/controls.md"
 copy_file "$ECC_ROOT/.claude/research/everything-claude-code-research-playbook.md" "$PROJECT_ROOT/.claude/research/everything-claude-code-research-playbook.md"
