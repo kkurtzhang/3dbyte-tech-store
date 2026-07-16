@@ -24,9 +24,6 @@ coverage
 .tmp
 .cache
 
-# Unneeded app/runtime payloads for backend image
-storefront
-
 # Local agent / editor noise
 .openclaw
 .claude

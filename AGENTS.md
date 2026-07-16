@@ -8,8 +8,9 @@ add path-specific constraints only.
 - `pnpm-workspace.yaml` defines active workspaces.
 - `package.json` files define package names, scripts, and versions.
 - Tracked environment examples and Compose files define runtime configuration.
-- `apps/storefront-v3` is active; `apps/storefront` is reference-only unless the
-  user explicitly requests legacy work.
+- `apps/storefront-v3` is the only active storefront. The retired predecessor
+  is available from the `archive/storefront-v1-final` Git tag when historical
+  comparison is explicitly needed.
 - Current code and runtime evidence outrank historical plans or generated docs.
 
 | Area                     | Ownership                                       |

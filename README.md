@@ -5,8 +5,9 @@ platform. Medusa owns commerce, Strapi owns editorial content, Meilisearch
 serves discovery, and the Next.js storefront composes those services for
 customers.
 
-> The active storefront is `apps/storefront-v3`. `apps/storefront` is retained
-> as reference code and is not a pnpm workspace.
+> The active storefront is `apps/storefront-v3`. Its retired predecessor was
+> removed from the working tree and remains available at the
+> `archive/storefront-v1-final` Git tag.
 
 ## System at a glance
 
