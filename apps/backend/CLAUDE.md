@@ -1,82 +1,66 @@
-# Backend (Medusa v2.12.3)
+# Backend (Medusa)
 
-> **Parent**: Read `/CLAUDE.md` first for monorepo rules.
+Apply the repo-root `AGENTS.md`, then these backend-specific rules. Read the
+Medusa version from `apps/backend/package.json` rather than this file.
 
-## MCP Usage
+## Ownership and boundaries
 
-| MCP | When to Use |
-|-----|-------------|
-| `medusa` | API docs, workflows, modules, services, subscribers |
-| `meilisearch` | Index management, search queries, settings |
-| `context7` | Other library docs (TypeORM, Zod, etc.) |
+- Medusa is the source of truth for catalogue, inventory, carts, orders,
+  customers, payments, shipping, and custom commerce modules.
+- `src/api/` contains Store/Admin routes and middleware.
+- `src/modules/` contains custom domain and integration modules.
+- `src/workflows/` contains recoverable multi-step operations.
+- `src/subscribers/` and `src/jobs/` react to events or schedules.
+- `src/admin/` contains Medusa Admin extensions.
+- Shared cross-app contracts belong in `packages/shared-types`.
 
-**Always query MCPs before implementing** - don't rely on memory for API patterns.
+Use container resolution for registered services. Keep business operations in
+modules/workflows instead of embedding them in route handlers.
 
-## Architecture
+## Medusa and search patterns
 
-```
-src/
-├── api/           # REST routes (Store & Admin)
-├── modules/       # Custom modules (brand, meilisearch, strapi)
-├── workflows/     # Multi-step operations with rollback
-├── subscribers/   # Event handlers
-├── admin/         # Admin UI customizations
-└── loaders/       # External service injection
-```
+- Check current Medusa v2 documentation before using framework APIs that are
+  not already demonstrated in this codebase.
+- Give repeated `useQueryGraphStep` instances unique `.config({ name })`
+  values inside one workflow.
+- Keep workflow `transform` callbacks deterministic and side-effect free; use a
+  step for logging or I/O.
+- Medusa aggregates product state with Strapi enrichment and publishes derived
+  documents to Meilisearch. Do not treat the index as authoritative state.
+- Only index the intended published/active records, and remove stale documents
+  when source records leave that state.
+- Await `client.waitForTask(taskUid)` before asserting Meilisearch results.
+- Do not use legacy TypeORM CLI instructions for Medusa module migrations;
+  verify the current module migration command first.
 
-## Key Patterns
-
-### Workflows (Medusa v2)
-
-```typescript
-// Multi-step operations with automatic rollback
-const myWorkflow = createWorkflow("my-workflow", (input) => {
-  const step1 = validateStep(input);
-  const step2 = processStep(step1);
-  return new WorkflowResponse(step2);
-});
-```
-
-**Multiple `useQueryGraphStep`**: Use `.config({ name: "unique-name" })` to avoid duplicate step errors.
-
-**`transform` callback**: Data manipulation ONLY - no logging or side effects. Use steps for logging.
-
-### Meilisearch Integration
-
-- **Medusa is the aggregator**: Listens to product events → fetches Strapi content → pushes to Meilisearch
-- **Only published products indexed**: Draft/proposed/rejected are deleted from index
-- **Tests must wait**: `await client.waitForTask(task.taskUid)` before assertions
-
-### Product Status Sync
-
-| Medusa Status | Strapi Status | Result |
-|---------------|---------------|--------|
-| `published` | `published` | Synced with enrichment |
-| `published` | `draft` | Synced without Strapi content |
-| `draft/proposed/rejected` | Any | Deleted from index |
-
-## Common Commands
+## Commands
 
 ```bash
-pnpm --filter=@3dbyte-tech-store/backend dev     # Start dev server
-pnpm --filter=@3dbyte-tech-store/backend build   # Build
-npx typeorm migration:generate -n MigrationName  # Generate migration
+pnpm --filter=@3dbyte-tech-store/backend dev
+pnpm --filter=@3dbyte-tech-store/backend build
+pnpm --filter=@3dbyte-tech-store/backend test:unit
+pnpm --filter=@3dbyte-tech-store/backend test:integration:http
+pnpm --filter=@3dbyte-tech-store/backend test:integration:modules
+pnpm --filter=@3dbyte-tech-store/backend seed
 ```
 
-## Environment Variables
+Start with the smallest matching Jest suite. Integration tests may require
+PostgreSQL, Redis, Meilisearch, Strapi, or other configured services.
 
-```bash
-DATABASE_URL=postgresql://...
-REDIS_URL=redis://localhost:6379
-MEILISEARCH_HOST=http://localhost:7700
-MEILISEARCH_API_KEY=...
-STRAPI_URL=http://localhost:1337
-STRAPI_API_KEY=...
-```
+## Configuration and security
 
-## Gotchas
+Use `apps/backend/.env.template` as the local variable contract. Important
+boundaries include `DATABASE_URL`, Redis, Strapi, Meilisearch, internal AI
+tokens, OAuth, payment, shipping, email, media, and observability credentials.
+Do not copy values into documentation or tests.
 
-- Use `container.resolve()` for services, not direct imports
-- Always use `atomicPhase_` for data modifications
-- Explicitly specify relations in queries (not auto-loaded)
-- Plugin order matters in `medusa-config.ts`
+For Store/Admin routes:
+
+- validate request bodies, query parameters, and headers;
+- verify actor scope and authorization before resolving protected data;
+- bound payload size and expensive operations;
+- return user-safe errors while logging enough server-side context to diagnose
+  failures.
+
+For staging bugs, verify the deployed API request, runtime logs, database/module
+state, downstream service state, and release SHA before declaring resolution.

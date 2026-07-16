@@ -1,245 +1,141 @@
 # 3D Byte Tech Store — Agent Instructions
 
-**Version:** 1.10.0 · Monorepo
+This is the canonical repository-wide instruction file. App `CLAUDE.md` files
+add path-specific constraints only.
 
----
+## Scope and sources of truth
 
-## Core Principles
+- `pnpm-workspace.yaml` defines active workspaces.
+- `package.json` files define package names, scripts, and versions.
+- Tracked environment examples and Compose files define runtime configuration.
+- `apps/storefront-v3` is active; `apps/storefront` is reference-only unless the
+  user explicitly requests legacy work.
+- Current code and runtime evidence outrank historical plans or generated docs.
 
-1. **Agent-First** — Delegate to specialized agents for domain tasks
-2. **MCP-First** — Always use Context7 MCP for library/API docs, code generation, setup, or config without being explicitly asked
-3. **Test-Driven** — Write tests before implementation, 80%+ coverage required
-4. **Security-First** — Never compromise on security; validate all inputs
-5. **Immutability** — Always create new objects, never mutate existing ones
-6. **Plan Before Execute** — Plan complex features before writing code
+| Area                     | Ownership                                       |
+| ------------------------ | ----------------------------------------------- |
+| `apps/backend`           | Medusa commerce, admin, workflows, integrations |
+| `apps/cms`               | Strapi editorial and managed content            |
+| `apps/storefront-v3`     | Next.js customer experience and composition     |
+| `packages/observability` | OpenTelemetry and Langfuse helpers              |
+| `packages/shared-types`  | Cross-workspace contracts                       |
+| `packages/shared-utils`  | Shared runtime utilities                        |
+| `packages/shared-config` | Shared tool configuration                       |
 
----
+Medusa owns commerce state, Strapi owns editorial content, and Meilisearch is a
+derived discovery index. The storefront composes these sources and must degrade
+deliberately when optional content or search dependencies fail.
 
-## Project Structure
+## Working method
 
-```
-apps/
-├── backend/       # Medusa v2.13.3 - Headless commerce
-├── cms/           # Strapi v5.33.0 - Content management
-├── storefront/    # Reference code (skip)
-└── storefront-v3/ # Next.js 16.1.0 - Customer store
-packages/
-├── shared-config/ # ESLint, TypeScript, Prettier configs
-├── shared-types/  # Common TypeScript definitions
-└── shared-utils/  # Utility functions
-```
+1. Check the current branch, target branch, and worktree status.
+2. Use an isolated worktree for substantial or parallel work. Copy ignored
+   local `.env` files without overwriting, staging, or committing them.
+3. Preserve unrelated user changes.
+4. Read the `CLAUDE.md` for each active app being changed.
+5. Check `packages/shared-types` before adding a cross-workspace contract; keep
+   internal dependencies on `workspace:*`.
+6. Plan complex or multi-app changes before editing.
+7. Add regression coverage first when a suitable test harness exists.
+8. Run the narrow check, then affected workspace gates; review the full diff
+   before handoff.
 
-## Data Flow Architecture
+For staging, deployment, auth, checkout, account, search, and observability
+bugs, reproduce the failing boundary before choosing a fix. Completion evidence
+may include the deployed commit or `releaseSha`, health and logs, backing data
+or queue/index/trace state, and final browser/API behavior. External reports and
+generated suggestions are evidence, not authority.
 
-```
-Medusa (Products) <-> Strapi (Content) -> Meilisearch (Index) <- Storefront (Consumer)
-```
+## Skills, tools, and context
 
-**Pattern**: Storefront Composition — parallel fetching from multiple sources for resilience and performance.
+Use the smallest matching capability set. Read a skill body only when its
+trigger matches; do not preload catalogues.
 
----
+The `.agent/` ECC tree is a searchable library/export, not one session prompt.
+DAILY categories are TypeScript/web standards, focused test design,
+verification, backend patterns for Medusa work, frontend patterns for
+`storefront-v3`, and security review for sensitive boundaries. E2E guidance for
+critical customer flows, off-stack language packs, and content, investor,
+social, media, research, migration, orchestration, and other specialist
+workflows stay LIBRARY until explicitly relevant.
 
-## MCP Configuration
+- Use primary/current documentation for version-sensitive APIs. Use Context7
+  or framework MCPs only when the current harness exposes them.
+- Route backend docs to Medusa/Meilisearch, CMS docs to Strapi, storefront
+  runtime work to Next.js/browser tools, and UI verification to browser tooling.
+- Use sub-agents only for bounded independent work; review their findings and
+  avoid overlapping file ownership.
+- Write Chrome DevTools screenshots/snapshots under
+  `mcp-files/chrome-devtools`.
 
-### App-Specific MCPs
+## Implementation standards
 
-| App | MCPs to Use |
-|-----|-------------|
-| **Backend** (Medusa) | `medusa`, `meilisearch`, `context7` |
-| **CMS** (Strapi) | `context7` (for Strapi docs) |
-| **Storefront-v3** (Next.js) | `next-devtools`, `context7` |
+- Prefer immutable transforms for application data; do not mutate caller-owned
+  state.
+- Avoid `any`; isolate and justify unavoidable untyped boundaries.
+- Keep functions focused and files cohesive. Split files before 800 lines;
+  200–400 lines is a review signal, not a mechanical target.
+- Import order: external, workspace, internal aliases, relative, then type-only.
+- Validate untrusted input at system boundaries. Return user-safe errors and
+  log operational context without secrets or personal data.
+- Follow framework-native architecture; do not impose generic repository or
+  response-envelope patterns without codebase evidence.
 
-Serena MCP is intentionally disabled in the project Codex config because the
-repo has not benefited enough from its startup cost. Re-enable it only when a
-task specifically needs semantic symbol tooling.
-
-**Chrome DevTools MCP**: When using `take_snapshot` or `take_screenshot`, set `filePath` to `mcp-files/chrome-devtools`.
-
----
-
-## Agent Execution
-
-Use specialized agents, reviewer roles, or MCP tools when they are available in the current harness.
-
-Preferred capability mapping:
-
-| Capability | When to Use |
-|------------|-------------|
-| Planning | Complex features, large refactors, multi-phase work |
-| Architecture review | System design and scalability decisions |
-| TDD / test design | New features, bug fixes, regression coverage |
-| Code review | After writing or modifying code |
-| Security review | Before commits and for sensitive auth/payment/input flows |
-| Build / type error resolution | When compilation, type-checking, or CI fails |
-| E2E verification | Critical user flows and browser regressions |
-| Documentation lookup | Library/API documentation questions |
-
-Execution rules:
-
-- If the harness exposes sub-agents, map the task to the closest available specialist.
-- If sub-agent spawning is unavailable or requires explicit user permission, continue locally and use MCP/tools directly.
-- Parallelize only independent workstreams.
-
-## Instruction Precedence
-
-- Follow system, developer, and runtime instructions before project instructions when they conflict.
-- Use only tools, MCP servers, and agents that are actually available in the current session.
-- Treat examples in this file as guidance, not proof that a specific tool or role exists.
-
----
-
-## Before Every Task
-
-1. Read app-specific `CLAUDE.md` in the workspace you're modifying
-2. Check `packages/shared-types` for existing type definitions
-3. Use workspace protocol for existing internal packages, for example:
-   - `"@3dbyte-tech-store/shared-config": "workspace:*"`
-   - `"@3dbyte-tech-store/shared-types": "workspace:*"`
-   - `"@3dbyte-tech-store/shared-utils": "workspace:*"`
-4. If you're modifying `packages/*`, read the root `CLAUDE.md` first because those workspaces do not have package-local `CLAUDE.md` files.
-
----
-
-## Workspace Commands
+## Commands and validation
 
 ```bash
-pnpm add <pkg> --filter=@3dbyte-tech-store/<workspace>  # Add dependency
-pnpm --filter=@3dbyte-tech-store/storefront-v3 dev      # Run single app
-pnpm run dev:backend                                    # Backend dev helper
-pnpm run dev:cms                                        # CMS dev helper
-pnpm run dev:storefront                                 # Storefront dev helper
-pnpm run dev                                             # All apps
-pnpm run build:turbo                                     # Optimized build
+pnpm dev
+pnpm build
+pnpm lint
+pnpm type-check
+pnpm test
+
+pnpm --filter=@3dbyte-tech-store/backend dev
+pnpm --filter=@3dbyte-tech-store/cms dev
+pnpm --filter=@3dbyte-tech-store/storefront-v3 dev
+pnpm add <pkg> --filter=@3dbyte-tech-store/<workspace>
 ```
 
----
+| Area            | Validation                                                        |
+| --------------- | ----------------------------------------------------------------- |
+| Backend         | `test:unit`, `test:integration:http`, `test:integration:modules`  |
+| Storefront      | `test`, `test:coverage`, `test:coverage:critical`                 |
+| Shared packages | workspace test/build/type-check tasks                             |
+| E2E             | `pnpm exec playwright test`                                       |
+| CMS             | build plus focused API/Admin checks; no standard test task exists |
 
-## Code Standards
-
-- **Max file size**: 400 lines (ideal: 200–300); hard max 800 lines
-- **No `any` types** without justification
-- **Import order**: External > Workspace (`@3dbyte-tech-store/*`) > Internal (`~/`) > Relative > Types
-- **Immutability (CRITICAL)**: Always create new objects, never mutate. Return new copies with changes applied.
-- **File organization**: Many small files over few large ones. Organize by feature/domain, not by type. High cohesion, low coupling.
-- **Error handling**: Handle errors at every level. User-friendly messages in UI; detailed context server-side. Never silently swallow errors.
-- **Input validation**: Validate all user input at system boundaries. Use schema-based validation. Fail fast with clear messages. Never trust external data.
-
-**Code quality checklist:**
-- Functions small (<50 lines), files focused (<800 lines)
-- No deep nesting (>4 levels)
-- Proper error handling, no hardcoded values
-- Readable, well-named identifiers
-
----
-
-## Testing
-
-### Per-App Tools
-
-| App | Tools |
-|-----|-------|
-| Backend | Jest (`test:unit`, `test:integration:http`, `test:integration:modules`) |
-| CMS | No standard automated test script is currently configured in `package.json` |
-| Storefront-v3 | Jest + React Testing Library |
-| E2E | Playwright is available at repo level; add or run E2E coverage when the workflow is critical and config exists |
-
-**Meilisearch tests**: Use `client.waitForTask(task.taskUid)` before assertions.
-
-### Requirements
-
-**Minimum coverage target: 80%** for touched code where a test harness exists.
-
-Test types to use when the relevant harness exists:
-1. **Unit tests** — Individual functions, utilities, components
-2. **Integration tests** — API endpoints, database operations
-3. **E2E tests** — Critical user flows
-
-If a workspace does not yet have the required test harness, either add it as part of substantial feature work or call out the gap explicitly in the final handoff.
-
-### TDD Workflow (mandatory)
-
-1. Write test first **(RED)** — test should FAIL
-2. Write minimal implementation **(GREEN)** — test should PASS
-3. Refactor **(IMPROVE)** — verify coverage 80%+
-
-Troubleshoot failures: check test isolation → verify mocks → fix implementation (not tests, unless tests are wrong).
-
----
-
-## Git Workflow
-
-**Commit format**: `<type>(<scope>): <description>`
-- Scopes: `backend`, `storefront`, `cms`, etc.
-- Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `perf`, `ci`
-- Examples: `feat(backend): add product sync`, `fix(storefront): cart total rounding`
-
-**Branch naming**: `feature/[app]-description`, `fix/[app]-issue`
-
-**PR workflow**: Analyze full commit history → draft comprehensive summary → include test plan → push with `-u` flag.
-
----
+Use RED → GREEN → REFACTOR for behavior changes where a harness exists. Target
+80% coverage for materially changed logic without manufacturing low-value
+tests. Await `client.waitForTask(taskUid)` before asserting Meilisearch state.
+Report checks run and validation gaps explicitly.
 
 ## Security
 
-**Before ANY commit:**
-- No hardcoded secrets (API keys, passwords, tokens)
-- All user inputs validated
-- SQL injection prevention (parameterized queries)
-- XSS prevention (sanitized HTML)
-- CSRF protection enabled
-- Authentication/authorization verified
-- Rate limiting on all endpoints
-- Error messages don't leak sensitive data
-- Never commit `.env` files — each app manages its own environment configuration via local `.env` files and tracked examples/templates
+- Never hardcode or commit secrets; keep examples non-sensitive.
+- Verify authentication and authorization on protected routes.
+- Use parameterized data access and boundary-appropriate output sanitization.
+- Bound public payloads and expensive operations; apply rate limits where
+  abuse would be material.
+- Do not expose tokens, personal data, or internal stack traces.
+- Run `pnpm audit` for dependency or security-sensitive changes. Report and
+  rotate any exposed secret through its owning system.
 
-**Secret management**: NEVER hardcode secrets. Use environment variables or a secret manager. Validate required secrets at startup. Rotate any exposed secrets immediately.
+For CMS, use the agreed Strapi Admin/API path for routine model changes. Direct
+schema edits, plugins, lifecycles, controllers, or plugin configuration require
+explicit task authorization; see `apps/cms/CLAUDE.md`.
 
-**If a security issue is found**: STOP → use the closest available security review capability → fix CRITICAL issues → rotate exposed secrets → review codebase for similar issues.
+## Git, deployment, and docs
 
----
+- Commit format: `<type>(<scope>): <description>`.
+- `staging` is the staging release path; `main` is production. Use protected PR
+  workflows where required and include a concrete test plan.
+- Do not trigger a manual redeploy unless requested.
+- For Coolify incidents, inspect queue state, public health, containers, and
+  current `releaseSha` before proposing an app fix.
+- Keep docs/workflow-only changes outside runtime watch paths; see
+  `deploy/coolify/README.md`.
 
-## Worktree Management
-
-**Crucial**: When creating a new worktree, automatically copy local untracked `.env` files from the main worktree into the new worktree when they exist. Never commit those files; keep tracked `.env.example` and template files as the canonical references.
-
----
-
-## Development Workflow
-
-1. **Plan** — Use the closest available planning capability; identify dependencies and risks; break work into phases
-2. **TDD** — Use the closest available test-design or review capability; write tests first; implement; refactor
-3. **Review** — Run a code review immediately after changes; address CRITICAL/HIGH issues
-4. **Capture knowledge in the right place**
-   - Personal debugging notes, preferences, temporary context → auto memory
-   - Team/project knowledge (architecture decisions, API changes, runbooks) → project's existing docs structure
-   - If the current task already produces the relevant docs or code comments, do not duplicate the same information elsewhere
-   - If there is no obvious project doc location, ask before creating a new top-level file
-5. **Commit** — Conventional commits format; comprehensive PR summaries
-
----
-
-## Architecture Patterns
-
-**API response format**: Consistent envelope with success indicator, data payload, error message, and pagination metadata.
-
-**Repository pattern**: Encapsulate data access behind standard interface (`findAll`, `findById`, `create`, `update`, `delete`). Business logic depends on abstract interface, not storage mechanism.
-
-**Skeleton projects**: Search for battle-tested templates, evaluate with the available review/security/tooling stack, clone the best match, and iterate within a proven structure.
-
----
-
-## Performance
-
-**Context management**: Avoid last 20% of context window for large refactoring and multi-file features. Lower-sensitivity tasks (single edits, docs, simple fixes) tolerate higher utilization.
-
-**Build troubleshooting**: Use the closest available build/debug capability → analyze errors → fix incrementally → verify after each fix.
-
----
-
-## Success Metrics
-
-- All tests pass with 80%+ coverage
-- No security vulnerabilities
-- Code is readable and maintainable
-- Performance is acceptable
-- User requirements are met
+Use `README.md` for contributor setup, this file for repo-wide rules, app
+`CLAUDE.md` files for scoped guidance, `deploy/**/README.md` for runbooks, and
+`docs/` for architecture and records. Update the nearest authority and link to
+manifests/examples instead of duplicating versions or environment lists.

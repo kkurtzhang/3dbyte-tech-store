@@ -17,7 +17,7 @@ if [ -n "$CMS_CONTAINERS" ]; then
 else
     # Start Docker container for CMS services (Strapi, Redis, Meilisearch)
     echo "🐳 Starting Docker container for CMS services..."
-    docker-compose -f $COMPOSE_FILE -p $PROJECT_NAME up -d
+    docker compose -f $COMPOSE_FILE -p $PROJECT_NAME up -d
 
     # Wait a moment for services to start
     echo "⏳ Waiting for CMS services to initialize..."
@@ -31,7 +31,7 @@ pnpm run dev:turbo --filter=!@3dbyte-tech-store/cms
 echo ""
 echo "✅ Development services started!"
 echo "📊 Backend: http://localhost:9000"
-echo "🛍️  Storefront: http://localhost:8000"
+echo "🛍️  Storefront: http://localhost:3001"
 if [ -n "$CMS_CONTAINERS" ]; then
     echo "🔧 CMS Admin: http://localhost:1337/admin (reused existing container)"
 else
