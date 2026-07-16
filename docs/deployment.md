@@ -131,14 +131,14 @@ Create `vercel.json` in the root:
   "version": 2,
   "builds": [
     {
-      "src": "apps/storefront/package.json",
+      "src": "apps/storefront-v3/package.json",
       "use": "@vercel/next"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "apps/storefront/$1"
+      "dest": "apps/storefront-v3/$1"
     }
   ],
   "env": {
@@ -516,7 +516,7 @@ services:
   storefront:
     build:
       context: .
-      dockerfile: apps/storefront/Dockerfile
+      dockerfile: apps/storefront-v3/Dockerfile
     environment:
       NODE_ENV: production
     depends_on:
@@ -720,9 +720,10 @@ module.exports = {
 
 #### Image Optimization
 
-```javascript
-// apps/storefront/next.config.js
-module.exports = {
+```typescript
+// apps/storefront-v3/next.config.ts
+// Merge this into the existing `nextConfig` object and retain its MDX wrapper.
+const nextConfig: NextConfig = {
   images: {
     domains: ['your-cms-domain.com', 'your-s3-bucket.s3.amazonaws.com'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],

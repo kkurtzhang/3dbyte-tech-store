@@ -11,8 +11,8 @@ in this monorepo; this file only defines Claude-facing routing.
   it.
 - Treat package manifests, active source, environment examples, and runtime
   evidence as more authoritative than generated guidance.
-- `apps/storefront-v3` is active. `apps/storefront` is reference-only unless the
-  user explicitly asks to work on it.
+- `apps/storefront-v3` is the only active storefront. Use the
+  `archive/storefront-v1-final` Git tag only for explicit historical research.
 
 ## Execution
 

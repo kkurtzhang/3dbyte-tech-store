@@ -70,7 +70,7 @@ bash scripts/dev.sh
 2. **Use different port**:
    ```bash
    # For storefront
-   pnpm --filter @3dbyte-tech-store/storefront dev -p 3001
+   pnpm --filter @3dbyte-tech-store/storefront-v3 dev -p 3001
    ```
 
 ### Services not connecting
@@ -226,7 +226,7 @@ bash scripts/dev.sh
    ```bash
    pnpm --filter @3dbyte-tech-store/backend build
    pnpm --filter @3dbyte-tech-store/cms build
-   pnpm --filter @3dbyte-tech-store/storefront build
+   pnpm --filter @3dbyte-tech-store/storefront-v3 build
    ```
 
 ### Next.js build fails
@@ -236,19 +236,19 @@ bash scripts/dev.sh
 **Solutions**:
 1. **Check Next.js version**:
    ```bash
-   pnpm --filter @3dbyte-tech-store/storefront list next
+   pnpm --filter @3dbyte-tech-store/storefront-v3 list next
    ```
 
 2. **Clean Next.js cache**:
    ```bash
-   cd apps/storefront
+   cd apps/storefront-v3
    rm -rf .next
    pnpm run build
    ```
 
 3. **Disable analytics during build**:
    ```bash
-   echo "NEXT_PUBLIC_ANALYTICS_ID=" >> apps/storefront/.env.local
+   echo "NEXT_PUBLIC_ANALYTICS_ID=" >> apps/storefront-v3/.env.local
    ```
 
 ## Docker Issues
@@ -358,8 +358,9 @@ bash scripts/dev.sh
 
 3. **Optimize Next.js builds**:
    ```bash
-   # In apps/storefront/next.config.js
-   module.exports = {
+   // Merge this into the existing `nextConfig` object in
+   // apps/storefront-v3/next.config.ts.
+   const nextConfig: NextConfig = {
      experimental: {
        optimizeCss: true
      }
@@ -402,7 +403,7 @@ docker ps -a
 docker-compose -f docker/docker-compose.yml ps
 
 # Check package versions
-pnpm --filter @3dbyte-tech-store/storefront list
+pnpm --filter @3dbyte-tech-store/storefront-v3 list
 pnpm --filter @3dbyte-tech-store/backend list
 pnpm --filter @3dbyte-tech-store/cms list
 

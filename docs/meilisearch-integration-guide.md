@@ -939,7 +939,7 @@ describe("Dual Status Filtering", () => {
 ### Search Client Setup
 
 ```typescript
-// apps/storefront/lib/meilisearch/client.ts
+// Conceptual example. Current client: apps/storefront-v3/src/lib/search/client.ts
 import { Meilisearch as MeilisearchClient } from "meilisearch"
 
 export const meilisearch = new MeilisearchClient({
@@ -954,7 +954,7 @@ export const CONTENT_INDEX = "content"
 ### Search Hook with Parallel Fetching
 
 ```typescript
-// apps/storefront/lib/hooks/use-search.ts
+// Conceptual example. Current hook: apps/storefront-v3/src/lib/hooks/use-search.ts
 "use client"
 
 import { useState, useCallback } from "react"
@@ -1019,7 +1019,8 @@ export function useSearch() {
 ### Product Page with Storefront Composition
 
 ```typescript
-// apps/storefront/app/(shop)/products/[handle]/page.tsx
+// Conceptual composition example. Current route:
+// apps/storefront-v3/src/app/products/[handle]/page.tsx
 import { notFound } from "next/navigation"
 import { getProductByHandle } from "@/lib/medusa/products"
 import { getStrapiContent } from "@/lib/strapi/content"
