@@ -32,7 +32,11 @@ describe('POST /store/orders/lookup', () => {
         resolve: jest.fn().mockReturnValue({ graph: mockGraph }),
       },
     }
-    const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
+    const res = {
+      json: jest.fn(),
+      setHeader: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    }
 
     await POST(req as never, res as never)
 
@@ -46,7 +50,6 @@ describe('POST /store/orders/lookup', () => {
           'items.total',
           'items.variant.preorder_variant.available_date',
           'fulfillments.id',
-          'fulfillments.data',
           'fulfillments.labels.tracking_number',
           'shipping_address.city',
           'shipping_methods.name',
@@ -56,12 +59,16 @@ describe('POST /store/orders/lookup', () => {
         },
       })
     )
+    const requestedFields = mockGraph.mock.calls[0]?.[0].fields
+    expect(requestedFields).not.toContain('fulfillments.data')
+    expect(requestedFields).not.toContain('billing_address.address_1')
     expect(res.json).toHaveBeenCalledWith({
       order: expect.objectContaining({
         id: 'order_123',
         custom_display_id: '3DB-1777978800123',
       }),
     })
+    expect(res.json.mock.calls[0]?.[0].order).not.toHaveProperty('email')
   })
 
   it('normalizes graph totals so custom reference lookups match customer-facing order details', async () => {
@@ -102,7 +109,11 @@ describe('POST /store/orders/lookup', () => {
         resolve: jest.fn().mockReturnValue({ graph: mockGraph }),
       },
     }
-    const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
+    const res = {
+      json: jest.fn(),
+      setHeader: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    }
 
     await POST(req as never, res as never)
 
@@ -169,7 +180,11 @@ describe('POST /store/orders/lookup', () => {
         resolve: jest.fn().mockReturnValue({ graph: mockGraph }),
       },
     }
-    const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
+    const res = {
+      json: jest.fn(),
+      setHeader: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    }
 
     await POST(req as never, res as never)
 
@@ -204,9 +219,7 @@ describe('POST /store/orders/lookup', () => {
             {
               id: 'ful_1',
               shipped_at: '2026-06-03T01:00:00.000Z',
-              data: {
-                tracking_number: 'STG-3DBO-AKK7-5KYYDE',
-              },
+              shipped_at: '2026-06-03T01:00:00.000Z',
             },
           ],
         },
@@ -222,7 +235,11 @@ describe('POST /store/orders/lookup', () => {
         resolve: jest.fn().mockReturnValue({ graph: mockGraph }),
       },
     }
-    const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
+    const res = {
+      json: jest.fn(),
+      setHeader: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    }
 
     await POST(req as never, res as never)
 
@@ -231,9 +248,7 @@ describe('POST /store/orders/lookup', () => {
         fulfillment_status: 'shipped',
         fulfillments: expect.arrayContaining([
           expect.objectContaining({
-            data: expect.objectContaining({
-              tracking_number: 'STG-3DBO-AKK7-5KYYDE',
-            }),
+            shipped_at: '2026-06-03T01:00:00.000Z',
           }),
         ]),
       }),
@@ -273,7 +288,11 @@ describe('POST /store/orders/lookup', () => {
         resolve: jest.fn().mockReturnValue({ graph: mockGraph }),
       },
     }
-    const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
+    const res = {
+      json: jest.fn(),
+      setHeader: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    }
 
     await POST(req as never, res as never)
 
@@ -304,7 +323,11 @@ describe('POST /store/orders/lookup', () => {
         resolve: jest.fn().mockReturnValue({ graph: mockGraph }),
       },
     }
-    const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
+    const res = {
+      json: jest.fn(),
+      setHeader: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    }
 
     await POST(req as never, res as never)
 
@@ -322,7 +345,11 @@ describe('POST /store/orders/lookup', () => {
         resolve: jest.fn().mockReturnValue({ graph: mockGraph }),
       },
     }
-    const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
+    const res = {
+      json: jest.fn(),
+      setHeader: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    }
 
     await POST(req as never, res as never)
 

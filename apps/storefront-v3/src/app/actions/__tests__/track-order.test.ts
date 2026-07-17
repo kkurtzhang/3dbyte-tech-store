@@ -17,6 +17,7 @@ import { lookupOrder } from '../track-order'
 describe('track order action', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockFetch.mockReset()
     process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL = 'http://localhost:9000'
     process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY = 'pk_test'
     mockFetch
@@ -55,6 +56,7 @@ describe('track order action', () => {
   })
 
   it('adds the verified safe card payment method to the tracked order', async () => {
+    mockFetch.mockReset()
     mockFetch
       .mockResolvedValueOnce({
         ok: true,
@@ -96,6 +98,7 @@ describe('track order action', () => {
   })
 
   it('looks up custom display ids through the backend lookup endpoint', async () => {
+    mockFetch.mockReset()
     mockFetch
       .mockResolvedValueOnce({
         ok: true,

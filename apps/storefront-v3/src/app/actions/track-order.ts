@@ -1,8 +1,6 @@
 'use server'
 
-import { sdk } from '@/lib/medusa/client'
 import { resolveMedusaBaseUrl } from '@/lib/medusa/base-url'
-import { ORDER_TRACKING_FIELDS } from '@/lib/medusa/orders'
 import type { MedusaOrder, MedusaOrderTrackingPaymentMethod } from '@/lib/medusa/types'
 
 interface OrderLookupResult {
@@ -60,15 +58,17 @@ async function getTrackingPaymentMethod(orderId: string, email: string) {
 
 async function lookupOrderByCustomerReference(reference: string, email: string) {
   const lookupUrl = new URL('/store/orders/lookup', getMedusaBackendUrl())
-  lookupUrl.searchParams.set('reference', reference)
-  lookupUrl.searchParams.set('email', email)
+  const publishableKey = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
 
   const response = await fetch(lookupUrl, {
-    headers: process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
-      ? {
-          'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-        }
-      : undefined,
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      ...(publishableKey
+        ? { 'x-publishable-api-key': publishableKey }
+        : {}),
+    },
+    body: JSON.stringify({ reference, email }),
     cache: 'no-store',
   })
 
@@ -87,30 +87,12 @@ export async function lookupOrder(orderId: string, email: string): Promise<Order
     const cleanOrderId = orderId.trim()
     const cleanEmail = email.trim().toLowerCase()
 
-    const order = cleanOrderId.startsWith('order_')
-      ? (
-          await sdk.store.order.retrieve(cleanOrderId, {
-            fields: ORDER_TRACKING_FIELDS.join(','),
-          })
-        ).order
-      : await lookupOrderByCustomerReference(cleanOrderId, cleanEmail)
+    const order = await lookupOrderByCustomerReference(cleanOrderId, cleanEmail)
 
     if (!order) {
       return {
         success: false,
         error: 'Order not found. Please check your order number or reference and try again.',
-      }
-    }
-
-    // Verify email matches
-    // The order might have email in different fields depending on Medusa version
-    const orderEmail = (order.email || '').toLowerCase()
-
-    if (orderEmail !== cleanEmail) {
-      return {
-        success: false,
-        error:
-          "The email address doesn't match our records for this order. Please check and try again.",
       }
     }
 
@@ -121,11 +103,15 @@ export async function lookupOrder(orderId: string, email: string): Promise<Order
         tracking_payment_method: await getTrackingPaymentMethod(order.id, cleanEmail),
       },
     }
-  } catch (error: any) {
-    console.error('Order lookup failed:', error)
+  } catch (error: unknown) {
+    console.error('Order lookup failed')
 
     // Check if it's a 404 (order not found)
-    if (error?.status === 404 || error?.response?.status === 404) {
+    const requestError = error as {
+      status?: number
+      response?: { status?: number }
+    }
+    if (requestError?.status === 404 || requestError?.response?.status === 404) {
       return {
         success: false,
         error: 'Order not found. Please check your order number or reference and try again.',

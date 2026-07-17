@@ -61,6 +61,14 @@ export const storeWaitlistJoinRateLimit = createRateLimitMiddleware({
   key: ipKey("store_waitlist_join"),
 });
 
+export const storeOrderLookupRateLimit = createRateLimitMiddleware({
+  name: "store_order_lookup",
+  limit: 5,
+  windowMs: 10 * minute,
+  key: ipKey("store_order_lookup"),
+  message: "Too many order lookup attempts. Please try again shortly.",
+});
+
 export const customerEmailChangeRateLimit = createRateLimitMiddleware({
   name: "customer_email_change",
   limit: 5,

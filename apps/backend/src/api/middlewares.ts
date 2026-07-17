@@ -34,6 +34,7 @@ import { PostStoreClaimCustomerAccountSchema } from "./store/customers/claim-acc
 import { PostStoreGoogleLinkIntentSchema } from "./store/customers/me/google-link-intents/route";
 import { PostStoreEmailpassLoginMethodSchema } from "./store/customers/me/login-methods/emailpass/route";
 import { PostStoreCustomerEmailChangeSchema } from "./store/customers/me/email-change-requests/route";
+import { PostStoreOrderLookupSchema } from "./store/orders/lookup/route";
 import { GetAdminIdentityIssuesSchema } from "./admin/identity-issues/route";
 import { PostAdminResolveIdentityIssueSchema } from "./admin/identity-issues/resolve/route";
 import {
@@ -47,6 +48,7 @@ import {
   hermesProductDraftRateLimit,
   internalAiRateLimit,
   storeNewsletterSubscribeRateLimit,
+  storeOrderLookupRateLimit,
   storeSupportTicketRateLimit,
   storeWaitlistJoinRateLimit,
 } from "../lib/rate-limits/api-rules";
@@ -395,6 +397,14 @@ export default defineMiddlewares({
       matcher: "/admin/fulfillments/:id/label",
       methods: ["POST"],
       middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
+    },
+    {
+      matcher: "/store/orders/lookup",
+      methods: ["POST"],
+      middlewares: [
+        storeOrderLookupRateLimit,
+        validateAndTransformBody(PostStoreOrderLookupSchema),
+      ],
     },
     {
       matcher: "/store/support-tickets",
