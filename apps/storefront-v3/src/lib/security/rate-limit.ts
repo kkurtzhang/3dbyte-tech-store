@@ -36,10 +36,10 @@ return { current, ttl }
 `
 
 class RedisRateLimitStore implements RateLimitStore {
-  readonly #client: Redis
+  private readonly client: Redis
 
   constructor(redisUrl: string) {
-    this.#client = new Redis(redisUrl, {
+    this.client = new Redis(redisUrl, {
       enableOfflineQueue: false,
       lazyConnect: true,
       maxRetriesPerRequest: 1,
@@ -50,7 +50,7 @@ class RedisRateLimitStore implements RateLimitStore {
     key: string,
     { limit, windowMs }: RateLimitOptions
   ): Promise<RateLimitResult> {
-    const result = await this.#client.eval(
+    const result = await this.client.eval(
       redisConsumeScript,
       1,
       key,
