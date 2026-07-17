@@ -151,6 +151,26 @@ describe("Navbar", () => {
     expect(screen.getByRole("button", { name: /sign out/i })).toBeInTheDocument()
   })
 
+  it("moves focus into the account menu and restores it on Escape", async () => {
+    mockGetSessionAction.mockResolvedValue({
+      success: true,
+      user: { id: "cus_123", email: "kurt@example.com", first_name: "Kurt" },
+    })
+    render(<Navbar />)
+
+    const trigger = await screen.findByRole("button", { name: /kurt/i })
+    fireEvent.click(trigger)
+
+    await waitFor(() => {
+      expect(screen.getByRole("menuitem", { name: /my account/i })).toHaveFocus()
+    })
+
+    fireEvent.keyDown(document, { key: "Escape" })
+
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument()
+    expect(trigger).toHaveFocus()
+  })
+
   it("signs out from the profile menu and refreshes account state", async () => {
     mockGetSessionAction.mockResolvedValue({
       success: true,
