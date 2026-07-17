@@ -1,4 +1,7 @@
 const mockGraph = jest.fn()
+const mockFetch = jest.fn()
+
+global.fetch = mockFetch as unknown as typeof fetch
 
 import { POST } from '../route'
 
@@ -10,6 +13,7 @@ const amount = (value: number) => ({
 describe('POST /store/orders/lookup', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    process.env.STRIPE_SECRET_KEY = 'sk_test_safe'
   })
 
   it('returns an email-verified order by custom display id', async () => {
@@ -255,7 +259,7 @@ describe('POST /store/orders/lookup', () => {
     })
   })
 
-  it('does not request or return payment provider data in public lookup responses', async () => {
+  it('derives a safe payment summary inside the verified lookup boundary', async () => {
     mockGraph.mockResolvedValue({
       data: [
         {
@@ -278,6 +282,19 @@ describe('POST /store/orders/lookup', () => {
         },
       ],
     })
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: 'pm_sensitive',
+        type: 'card',
+        card: {
+          brand: 'visa',
+          last4: '4242',
+          exp_month: 7,
+          exp_year: 2030,
+        },
+      }),
+    })
 
     const req = {
       body: {
@@ -299,8 +316,15 @@ describe('POST /store/orders/lookup', () => {
     const graphRequest = mockGraph.mock.calls[0]?.[0]
     const payload = res.json.mock.calls[0]?.[0]
 
-    expect(graphRequest.fields).not.toContain('payment_collections.payments.data')
+    expect(graphRequest.fields).toContain('payment_collections.payments.data')
     expect(payload.order).not.toHaveProperty('payment_collections')
+    expect(payload.order.tracking_payment_method).toEqual({
+      type: 'card',
+      brand: 'visa',
+      last4: '4242',
+    })
+    expect(JSON.stringify(payload)).not.toContain('pm_sensitive')
+    expect(JSON.stringify(payload)).not.toContain('exp_month')
   })
 
   it('rejects lookup when the email does not match', async () => {

@@ -20,17 +20,12 @@ describe('track order action', () => {
     mockFetch.mockReset()
     process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL = 'http://localhost:9000'
     process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY = 'pk_test'
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          order: { id: 'order_1', custom_display_id: '3DB-123' },
-        }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ payment_method: null }),
-      })
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        order: { id: 'order_1', custom_display_id: '3DB-123' },
+      }),
+    })
   })
 
   it('looks up internal order IDs through the POST-only backend boundary', async () => {
@@ -57,21 +52,19 @@ describe('track order action', () => {
 
   it('adds the verified safe card payment method to the tracked order', async () => {
     mockFetch.mockReset()
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ order: { id: 'order_1' } }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          payment_method: {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        order: {
+          id: 'order_1',
+          tracking_payment_method: {
             type: 'card',
             brand: 'visa',
             last4: '4242',
           },
-        }),
-      })
+        },
+      }),
+    })
 
     await expect(lookupOrder('order_1', 'customer@example.com')).resolves.toMatchObject({
       success: true,
@@ -84,36 +77,20 @@ describe('track order action', () => {
       },
     })
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      new URL(
-        'http://localhost:9000/store/orders/order_1/payment-method?email=customer%40example.com'
-      ),
-      expect.objectContaining({
-        cache: 'no-store',
-        headers: {
-          'x-publishable-api-key': 'pk_test',
-        },
-      })
-    )
+    expect(mockFetch).toHaveBeenCalledTimes(1)
   })
 
   it('looks up custom display ids through the backend lookup endpoint', async () => {
     mockFetch.mockReset()
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          order: {
-            id: 'order_123',
-            custom_display_id: '3DB-1777978800123',
-            email: 'customer@example.com',
-          },
-        }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ payment_method: null }),
-      })
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        order: {
+          id: 'order_123',
+          custom_display_id: '3DB-1777978800123',
+        },
+      }),
+    })
 
     await expect(
       lookupOrder(' 3DB-1777978800123 ', ' CUSTOMER@example.com ')
@@ -141,12 +118,6 @@ describe('track order action', () => {
         },
       })
     )
-    expect(mockFetch).toHaveBeenNthCalledWith(
-      2,
-      new URL(
-        'http://localhost:9000/store/orders/order_123/payment-method?email=customer%40example.com'
-      ),
-      expect.any(Object)
-    )
+    expect(mockFetch).toHaveBeenCalledTimes(1)
   })
 })

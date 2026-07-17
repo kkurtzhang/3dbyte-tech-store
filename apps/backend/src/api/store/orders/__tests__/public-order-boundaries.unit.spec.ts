@@ -12,6 +12,9 @@ describe("public order API boundaries", () => {
     expect(existsSync(resolve(ordersDirectory, "[id]/tracking/route.ts"))).toBe(
       false,
     );
+    expect(
+      existsSync(resolve(ordersDirectory, "[id]/payment-method/route.ts")),
+    ).toBe(false);
     expect(lookupSource).toMatch(/export const POST/);
     expect(lookupSource).not.toMatch(/export const GET/);
   });
