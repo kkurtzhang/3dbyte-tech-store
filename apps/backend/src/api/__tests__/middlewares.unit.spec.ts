@@ -116,6 +116,25 @@ describe("API middleware configuration", () => {
     expect(hasRateLimit(orderLookupRoute, "store_order_lookup")).toBe(true);
   });
 
+  it("requires customer ownership or signed proof for direct order reads", async () => {
+    const { default: configuration } = await import("../middlewares");
+    const orderReadRoute = configuration.routes.find(
+      (route: { matcher: string; methods?: string[] }) =>
+        route.matcher === "/store/orders/:id" &&
+        route.methods?.includes("GET"),
+    );
+
+    expect(orderReadRoute).toBeDefined();
+    expect(orderReadRoute?.middlewares[0]).toEqual({
+      actorType: "customer",
+      authTypes: ["session", "bearer"],
+      options: { allowUnauthenticated: true },
+    });
+    expect(orderReadRoute?.middlewares[1]).toEqual(
+      expect.objectContaining({ orderAccessMiddleware: true }),
+    );
+  });
+
   it("rate limits authenticated account security mutations after authentication", async () => {
     const { default: configuration } = await import("../middlewares");
 

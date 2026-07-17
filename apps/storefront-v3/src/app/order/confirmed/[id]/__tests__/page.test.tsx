@@ -69,6 +69,8 @@ describe("order confirmation access", () => {
       params: Promise.resolve({ id: "order_123" }),
     })
 
-    expect(mockGetOrder).toHaveBeenCalledWith("order_123")
+    expect(mockGetOrder).toHaveBeenCalledWith("order_123", undefined, {
+      "x-order-access-token": token,
+    })
   })
 })
