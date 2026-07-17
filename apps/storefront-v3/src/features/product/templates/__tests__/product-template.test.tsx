@@ -66,6 +66,11 @@ function createProduct(): MedusaProduct {
 }
 
 describe("ProductTemplate", () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    useQueryStateMock.mockReturnValue([null, setVariantIdMock])
+  })
+
   it("replaces purchase actions with an outage notice for cached content", () => {
     render(<ProductTemplate product={createProduct()} readOnly />)
 
@@ -73,11 +78,6 @@ describe("ProductTemplate", () => {
     expect(
       screen.getByText(/live price and availability are temporarily unavailable/i)
     ).toBeInTheDocument()
-  })
-
-  beforeEach(() => {
-    jest.clearAllMocks()
-    useQueryStateMock.mockReturnValue([null, setVariantIdMock])
   })
 
   it("uses replace history for variant query state", () => {

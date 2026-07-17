@@ -1,4 +1,4 @@
-import { getProductByHandle } from "@/lib/medusa/products"
+import { getProductReadByHandle } from "@/lib/medusa/products"
 import {
   getAvailableInBundleProducts,
   getProductCurrencyCode,
@@ -35,8 +35,8 @@ export async function loadProductPageData(
   handle: string,
   pricingContext?: PricingContext
 ) {
-  const [product, strapiData] = await Promise.all([
-    getProductByHandle(handle, pricingContext),
+  const [productRead, strapiData] = await Promise.all([
+    getProductReadByHandle(handle, pricingContext),
     getStrapiContent<StrapiResponse<StrapiProductDescription>>("product-descriptions", {
       filters: {
         product_handle: {
@@ -50,9 +50,15 @@ export async function loadProductPageData(
     }).catch(() => ({ data: [] })),
   ])
 
-  if (!product) {
+  if (productRead.status === "not_found") {
     return null
   }
+
+  if (productRead.status === "unavailable") {
+    return { status: "unavailable" as const }
+  }
+
+  const product = productRead.product
 
   const bundleLink = getBundleLink(product)
   const currencyCode = pricingContext?.currency_code ?? getProductCurrencyCode(product)
@@ -90,6 +96,7 @@ export async function loadProductPageData(
     enrichedContent?.rich_description ?? enrichedContent?.rich_text
 
   return {
+    status: productRead.status,
     product,
     bundleLink,
     bundleProduct,
