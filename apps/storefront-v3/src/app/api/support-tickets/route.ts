@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 
 import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
-import { checkRateLimit } from "@/lib/security/rate-limit"
+import { checkRateLimit, getClientIp } from "@/lib/security/rate-limit"
 
 const supportTicketSchema = z.object({
   name: z.string().trim().min(1).max(120),
@@ -36,10 +36,8 @@ const readJson = async (response: Response) => {
 
 export async function POST(request: NextRequest) {
   try {
-    const ip =
-      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-      "unknown"
-    const rate = checkRateLimit(`support-ticket:${ip}`, 5, 60_000)
+    const ip = getClientIp(request.headers)
+    const rate = await checkRateLimit(`support-ticket:${ip}`, 5, 60_000)
 
     if (!rate.allowed) {
       return NextResponse.json(

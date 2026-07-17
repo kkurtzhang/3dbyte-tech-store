@@ -18,7 +18,7 @@ import { z } from "zod"
 
 import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
 import { getReleaseSha } from "@/lib/release-identity"
-import { checkRateLimit } from "@/lib/security/rate-limit"
+import { checkRateLimit, getClientIp } from "@/lib/security/rate-limit"
 
 import { resolveAssistantSystemPrompt } from "./prompt-management"
 import {
@@ -869,9 +869,8 @@ function shouldExposeLangfuseTraceHeader(req: Request) {
 }
 
 export async function POST(req: Request): Promise<Response> {
-  const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"
-  const rate = checkRateLimit(`ai-shopping-assistant:${ip}`, 12, 60_000)
+  const ip = getClientIp(req.headers)
+  const rate = await checkRateLimit(`ai-shopping-assistant:${ip}`, 12, 60_000)
 
   if (!rate.allowed) {
     return Response.json(

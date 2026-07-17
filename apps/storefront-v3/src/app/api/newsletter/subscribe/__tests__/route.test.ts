@@ -15,6 +15,7 @@ jest.mock("@/lib/medusa/base-url", () => ({
 
 jest.mock("@/lib/security/rate-limit", () => ({
   checkRateLimit: () => ({ allowed: true, retryAfterMs: 0 }),
+  getClientIp: () => "203.0.113.10",
 }))
 
 describe("newsletter subscribe route", () => {

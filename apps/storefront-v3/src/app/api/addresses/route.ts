@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sdk } from '@/lib/medusa/client'
 import { z } from 'zod'
-import { checkRateLimit } from '@/lib/security/rate-limit'
+import { checkRateLimit, getClientIp } from '@/lib/security/rate-limit'
 import { getCustomerAuthHeaders } from '@/app/actions/auth'
 
 const actionSchema = z.enum(['add', 'update', 'delete'])
@@ -24,8 +24,8 @@ const addressPayloadSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-    const rate = checkRateLimit(`addresses:${ip}`, 30, 60_000)
+    const ip = getClientIp(request.headers)
+    const rate = await checkRateLimit(`addresses:${ip}`, 30, 60_000)
     if (!rate.allowed) {
       return NextResponse.json(
         { success: false, error: 'Too many requests' },

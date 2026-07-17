@@ -30,6 +30,7 @@ jest.mock('@/app/actions/auth', () => ({
 
 jest.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: () => ({ allowed: true, retryAfterMs: 0 }),
+  getClientIp: () => '127.0.0.1',
 }))
 
 import { POST } from '../route'
