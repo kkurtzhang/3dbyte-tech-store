@@ -47,6 +47,8 @@ export function Navbar({ blogEnabled = false }: { blogEnabled?: boolean }) {
   const [isLoading, setIsLoading] = React.useState(true);
   const [accountMenuOpen, setAccountMenuOpen] = React.useState(false);
   const [sessionUser, setSessionUser] = React.useState<AuthUser | null>(null);
+  const accountMenuRef = React.useRef<HTMLDivElement>(null);
+  const accountMenuTriggerRef = React.useRef<HTMLButtonElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   const { wishlist } = useWishlist();
@@ -54,7 +56,62 @@ export function Navbar({ blogEnabled = false }: { blogEnabled?: boolean }) {
 
   React.useEffect(() => {
     checkSession();
+    setAccountMenuOpen(false);
   }, [pathname]);
+
+  React.useEffect(() => {
+    if (!accountMenuOpen) return;
+
+    accountMenuRef.current
+      ?.querySelector<HTMLElement>("[role='menuitem']")
+      ?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setAccountMenuOpen(false);
+        accountMenuTriggerRef.current?.focus();
+        return;
+      }
+
+      if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
+        return;
+      }
+
+      const items = Array.from(
+        accountMenuRef.current?.querySelectorAll<HTMLElement>("[role='menuitem']") || []
+      );
+      if (!items.length) return;
+
+      event.preventDefault();
+      const currentIndex = items.indexOf(document.activeElement as HTMLElement);
+      const nextIndex =
+        event.key === "Home"
+          ? 0
+          : event.key === "End"
+            ? items.length - 1
+            : event.key === "ArrowUp"
+              ? (currentIndex - 1 + items.length) % items.length
+              : (currentIndex + 1) % items.length;
+      items[nextIndex]?.focus();
+    };
+    const handlePointerDown = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        !accountMenuRef.current?.contains(event.target) &&
+        !accountMenuTriggerRef.current?.contains(event.target)
+      ) {
+        setAccountMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [accountMenuOpen]);
 
   async function checkSession() {
     try {
@@ -156,10 +213,12 @@ export function Navbar({ blogEnabled = false }: { blogEnabled?: boolean }) {
             ) : isLoggedIn ? (
               <div className="relative">
                 <Button
+                  ref={accountMenuTriggerRef}
                   variant="ghost"
                   size="icon"
                   aria-expanded={accountMenuOpen}
                   aria-haspopup="menu"
+                  aria-controls="account-menu"
                   onClick={() => setAccountMenuOpen((current) => !current)}
                   className="sm:h-9 sm:w-auto sm:px-3"
                 >
@@ -176,17 +235,20 @@ export function Navbar({ blogEnabled = false }: { blogEnabled?: boolean }) {
                 </Button>
                 {accountMenuOpen ? (
                   <div
+                    id="account-menu"
+                    ref={accountMenuRef}
                     role="menu"
                     aria-label="Account menu"
                     className="absolute right-0 top-full mt-2 w-64 rounded-md border bg-popover p-2 text-popover-foreground shadow-lg"
                   >
-                    <div className="border-b px-3 py-2 text-xs text-muted-foreground">
+                    <div role="none" className="border-b px-3 py-2 text-xs text-muted-foreground">
                       Signed in as
                       <span className="mt-1 block truncate font-medium text-foreground">
                         {sessionUser?.email}
                       </span>
                     </div>
                     <Link
+                      role="menuitem"
                       href="/account"
                       className="mt-2 flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
                       onClick={() => setAccountMenuOpen(false)}
@@ -195,6 +257,7 @@ export function Navbar({ blogEnabled = false }: { blogEnabled?: boolean }) {
                       My Account
                     </Link>
                     <Link
+                      role="menuitem"
                       href="/account/orders"
                       className="flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
                       onClick={() => setAccountMenuOpen(false)}
@@ -203,6 +266,7 @@ export function Navbar({ blogEnabled = false }: { blogEnabled?: boolean }) {
                       Orders
                     </Link>
                     <Link
+                      role="menuitem"
                       href="/account/addresses"
                       className="flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
                       onClick={() => setAccountMenuOpen(false)}
@@ -211,6 +275,7 @@ export function Navbar({ blogEnabled = false }: { blogEnabled?: boolean }) {
                       Addresses
                     </Link>
                     <Link
+                      role="menuitem"
                       href="/account/settings"
                       className="flex items-center gap-2 rounded-sm px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
                       onClick={() => setAccountMenuOpen(false)}
@@ -219,6 +284,7 @@ export function Navbar({ blogEnabled = false }: { blogEnabled?: boolean }) {
                       Settings
                     </Link>
                     <button
+                      role="menuitem"
                       type="button"
                       className="mt-2 flex w-full items-center gap-2 rounded-sm border-t px-3 py-2 pt-3 text-left text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                       onClick={handleLogout}

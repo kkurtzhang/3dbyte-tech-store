@@ -132,23 +132,23 @@ describe("Navbar", () => {
     fireEvent.click(accountButton)
 
     expect(screen.getByRole("menu", { name: /account menu/i })).toBeInTheDocument()
-    expect(screen.getByRole("link", { name: /my account/i })).toHaveAttribute(
+    expect(screen.getByRole("menuitem", { name: /my account/i })).toHaveAttribute(
       "href",
       "/account",
     )
-    expect(screen.getByRole("link", { name: /orders/i })).toHaveAttribute(
+    expect(screen.getByRole("menuitem", { name: /orders/i })).toHaveAttribute(
       "href",
       "/account/orders",
     )
-    expect(screen.getByRole("link", { name: /addresses/i })).toHaveAttribute(
+    expect(screen.getByRole("menuitem", { name: /addresses/i })).toHaveAttribute(
       "href",
       "/account/addresses",
     )
-    expect(screen.getByRole("link", { name: /settings/i })).toHaveAttribute(
+    expect(screen.getByRole("menuitem", { name: /settings/i })).toHaveAttribute(
       "href",
       "/account/settings",
     )
-    expect(screen.getByRole("button", { name: /sign out/i })).toBeInTheDocument()
+    expect(screen.getByRole("menuitem", { name: /sign out/i })).toBeInTheDocument()
   })
 
   it("moves focus into the account menu and restores it on Escape", async () => {
@@ -184,7 +184,7 @@ describe("Navbar", () => {
     render(<Navbar />)
 
     fireEvent.click(await screen.findByRole("button", { name: /kurt/i }))
-    fireEvent.click(screen.getByRole("button", { name: /sign out/i }))
+    fireEvent.click(screen.getByRole("menuitem", { name: /sign out/i }))
 
     await waitFor(() => {
       expect(mockLogoutAction).toHaveBeenCalled()
