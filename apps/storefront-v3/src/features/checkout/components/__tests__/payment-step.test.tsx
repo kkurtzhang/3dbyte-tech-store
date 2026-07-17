@@ -13,7 +13,9 @@ jest.mock("lucide-react", () => ({
 }))
 
 const createDeferred = <T,>() => {
+  // eslint-disable-next-line no-unused-vars
   let resolve!: (value: T) => void
+  // eslint-disable-next-line no-unused-vars
   let reject!: (reason?: unknown) => void
   const promise = new Promise<T>((promiseResolve, promiseReject) => {
     resolve = promiseResolve

@@ -4,7 +4,7 @@ import { Check, ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
-export type CheckoutStepId = "shipping" | "delivery" | "payment" | "review" | "confirmation"
+export type CheckoutStepId = "shipping" | "delivery" | "payment" | "confirmation"
 
 export interface CheckoutStep {
   id: CheckoutStepId
@@ -16,12 +16,12 @@ export const CHECKOUT_STEPS: CheckoutStep[] = [
   { id: "shipping", label: "Shipping", shortLabel: "Ship" },
   { id: "delivery", label: "Delivery", shortLabel: "Delivery" },
   { id: "payment", label: "Payment", shortLabel: "Pay" },
-  { id: "review", label: "Review", shortLabel: "Review" },
   { id: "confirmation", label: "Confirmation", shortLabel: "Done" },
 ]
 
 interface CheckoutStepperProps {
   currentStep: CheckoutStepId
+  // eslint-disable-next-line no-unused-vars
   onStepClick?: (step: CheckoutStepId) => void
   completedSteps?: CheckoutStepId[]
   showNavigation?: boolean

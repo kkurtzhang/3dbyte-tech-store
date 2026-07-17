@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { AddressStep } from "./address-step"
 import { DeliveryStep } from "./delivery-step"
 import { PaymentStep } from "./payment-step"
-import { ReviewStep } from "./review-step"
+import { CheckoutSummary } from "./checkout-summary"
 import { CheckoutStepper, type CheckoutStepId } from "./checkout-stepper"
 import { StripeWrapper } from "./stripe-wrapper"
 
@@ -14,16 +14,11 @@ import {
   setShippingMethodAction,
   completeCartAction,
   initPaymentSessionAction,
-  getShippingOptionsAction
 } from "@/app/actions/checkout"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/lib/hooks/use-toast"
 import { useCart } from "@/context/cart-context"
 import type { MedusaCart } from "@/lib/medusa/cart"
-import type {
-  MedusaCurrencyAmount,
-  MedusaProductVariantWithPreorder,
-} from "@/lib/medusa/types"
 import { useCheckoutSummaryEstimate } from "./checkout-summary-estimate-context"
 
 interface CheckoutFormProps {
@@ -31,12 +26,12 @@ interface CheckoutFormProps {
 }
 
 // Checkout flow: shipping → delivery → payment → confirmation
-type CheckoutFlowStep = "shipping" | "delivery" | "payment" | "review"
+type CheckoutFlowStep = "shipping" | "delivery" | "payment"
 
 export function CheckoutForm({ cart }: CheckoutFormProps) {
   const router = useRouter()
   const { toast } = useToast()
-  const { clearCart, refreshCart } = useCart()
+  const { cart: liveCart, clearCart, refreshCart } = useCart()
   const checkoutSummaryEstimate = useCheckoutSummaryEstimate()
   const [currentStep, setCurrentStep] = useState<CheckoutFlowStep>("shipping")
 
@@ -45,14 +40,8 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
 
   // Form Data State
   const [addressData, setAddressData] = useState<any>(null)
-  const [shippingMethodData, setShippingMethodData] = useState<{ name: string; price: number } | null>(null)
   const [clientSecret, setClientSecret] = useState<string | undefined>(undefined)
   
-  // Loading states
-  const [isLoadingAddress, setIsLoadingAddress] = useState(false)
-  const [isLoadingDelivery, setIsLoadingDelivery] = useState(false)
-  const [isLoadingOrder, setIsLoadingOrder] = useState(false)
-
   const findStripeClientSecret = (paymentCollection: any) => {
     const paymentSession = paymentCollection?.payment_sessions?.find(
       (session: any) =>
@@ -67,9 +56,9 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
 
   // Handle step navigation from stepper - allow going back to completed steps
   const handleStepClick = (stepId: CheckoutStepId) => {
-    if (stepId === "confirmation" || stepId === "review") return
+    if (stepId === "confirmation") return
     
-    const stepOrder: CheckoutStepId[] = ["shipping", "delivery", "payment", "review", "confirmation"]
+    const stepOrder: CheckoutStepId[] = ["shipping", "delivery", "payment", "confirmation"]
     const currentIndex = stepOrder.indexOf(currentStep)
     const clickedIndex = stepOrder.indexOf(stepId)
     
@@ -81,7 +70,6 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
   }
 
   const handleAddressComplete = async (data: any) => {
-    setIsLoadingAddress(true)
     try {
       const result = await setAddressesAction(data)
       if (result.success) {
@@ -104,36 +92,16 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
         title: "Connection Error",
         description: "Unable to save address. Please check your connection and try again.",
       })
-    } finally {
-      setIsLoadingAddress(false)
     }
   }
 
   const handleDeliveryComplete = async (
     methodId: string,
-    data?: Record<string, unknown>,
-    summary?: { name: string; price: number }
+    data?: Record<string, unknown>
   ) => {
-    setIsLoadingDelivery(true)
     try {
       const result = await setShippingMethodAction(methodId, data)
       if (result.success) {
-        if (summary) {
-          setShippingMethodData(summary)
-        } else {
-          // Get shipping method details
-          const optionsResult = await getShippingOptionsAction()
-          const shippingOption = optionsResult.options?.find((opt: any) => opt.id === methodId)
-          if (optionsResult.success) {
-            setShippingMethodData({
-              name: shippingOption?.name || "Shipping",
-              price:
-                typeof shippingOption?.amount === "number"
-                  ? shippingOption.amount
-                  : 0,
-            })
-          }
-        }
         await refreshCart()
 
         // Initialize payment session
@@ -178,8 +146,6 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
         title: "Connection Error",
         description: "Unable to save delivery method. Please check your connection and try again.",
       })
-    } finally {
-      setIsLoadingDelivery(false)
     }
   }
 
@@ -189,11 +155,10 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
   }
 
   const handlePlaceOrder = async () => {
-    setIsLoadingOrder(true)
     try {
       const result = await completeCartAction()
       if (result.success && result.order) {
-        setCompletedSteps((prev) => [...prev, "review", "confirmation"])
+        setCompletedSteps((prev) => [...prev, "confirmation"])
         clearCart()
         // Redirect to confirmation page
         if (result.order.id) {
@@ -214,50 +179,7 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
         title: "Connection Error",
         description: "Unable to complete order. Please check your connection and try again.",
       })
-    } finally {
-      setIsLoadingOrder(false)
     }
-  }
-
-  // Build cart data for review step
-  const cartDataForReview = {
-    items: cart.items?.map((item) => {
-      const preorderVariant = item.variant as
-        | (MedusaProductVariantWithPreorder & {
-            prices?: MedusaCurrencyAmount[] | null
-          })
-        | undefined
-
-      return {
-        id: item.id,
-        title: item.product?.title || item.title,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        subtotal: item.subtotal,
-        total: item.total,
-        metadata: item.metadata ?? null,
-        product: {
-          title: item.product?.title,
-          thumbnail: item.product?.thumbnail || item.thumbnail,
-        },
-        variant: {
-          title: item.variant?.title || undefined,
-          calculated_price: item.variant?.calculated_price,
-          prices: preorderVariant?.prices,
-          preorder_variant: preorderVariant?.preorder_variant
-            ? {
-                status: preorderVariant.preorder_variant.status,
-                available_date: preorderVariant.preorder_variant.available_date,
-                prices: preorderVariant.preorder_variant.prices,
-              }
-            : undefined,
-        },
-      }
-    }),
-    shippingAddress: addressData,
-    email: addressData?.email || cart.email,
-    shippingMethod: shippingMethodData,
-    currencyCode: cart.region?.currency_code || "usd",
   }
 
   // Get the current step ID for the stepper
@@ -267,7 +189,7 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
 
   // Handle going back from a step
   const goBack = () => {
-    const stepOrder: CheckoutFlowStep[] = ["shipping", "delivery", "payment", "review"]
+    const stepOrder: CheckoutFlowStep[] = ["shipping", "delivery", "payment"]
     const currentIndex = stepOrder.indexOf(currentStep)
     if (currentIndex > 0) {
       const prevStep = stepOrder[currentIndex - 1]
@@ -305,35 +227,38 @@ export function CheckoutForm({ cart }: CheckoutFormProps) {
         )}
 
         {currentStep === "payment" && (
-          clientSecret ? (
-            <StripeWrapper clientSecret={clientSecret}>
-              <PaymentStep
-                onBack={goBack}
-                onComplete={handlePaymentComplete}
-              />
-            </StripeWrapper>
-          ) : (
-            <div className="space-y-6">
-              <div className="grid gap-2">
-                <h2 className="text-xl font-bold">Payment</h2>
-                <p className="text-sm text-destructive">
-                  Payment setup is not ready. Please go back and choose a delivery method again.
-                </p>
+          <div className="space-y-6">
+            <details className="rounded-lg border bg-muted/20 lg:hidden">
+              <summary className="cursor-pointer px-4 py-3 font-medium">
+                Review order summary
+              </summary>
+              <div className="border-t p-3">
+                <CheckoutSummary cart={liveCart ?? cart} />
               </div>
-              <Button type="button" variant="outline" onClick={goBack}>
-                Back
-              </Button>
-            </div>
-          )
-        )}
-
-        {currentStep === "review" && (
-          <ReviewStep
-            cartData={cartDataForReview as any}
-            onBack={goBack}
-            onComplete={handlePlaceOrder}
-            isProcessing={isLoadingOrder}
-          />
+            </details>
+            {clientSecret ? (
+              <StripeWrapper clientSecret={clientSecret}>
+                <PaymentStep
+                  onBack={goBack}
+                  onComplete={handlePaymentComplete}
+                  total={(liveCart ?? cart).total ?? 0}
+                  currencyCode={(liveCart ?? cart).region?.currency_code ?? "aud"}
+                />
+              </StripeWrapper>
+            ) : (
+              <div className="space-y-6">
+                <div className="grid gap-2">
+                  <h2 className="text-xl font-bold">Payment</h2>
+                  <p className="text-sm text-destructive">
+                    Payment setup is not ready. Please go back and choose a delivery method again.
+                  </p>
+                </div>
+                <Button type="button" variant="outline" onClick={goBack}>
+                  Back
+                </Button>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>
