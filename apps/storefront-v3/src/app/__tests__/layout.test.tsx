@@ -36,14 +36,11 @@ jest.mock("@/components/ui/toaster", () => ({
   Toaster: () => <div data-testid="toaster" />,
 }))
 
-jest.mock(
-  "@/features/ai-shopping-assistant/components/shopping-assistant-drawer",
-  () => ({
-    ShoppingAssistantDrawer: () => (
-      <div data-testid="shopping-assistant-drawer" />
-    ),
-  })
-)
+jest.mock("@/components/layout/lazy-shopping-assistant", () => ({
+  LazyShoppingAssistant: () => (
+    <div data-testid="lazy-shopping-assistant" />
+  ),
+}))
 
 jest.mock("@/context/cart-context", () => ({
   CartProvider: ({ children }: { children: ReactNode }) => children,
@@ -84,7 +81,7 @@ describe("RootLayout", () => {
       expect(screen.getByText("ready")).toBeInTheDocument()
     })
 
-    expect(screen.getByTestId("shopping-assistant-drawer")).toBeInTheDocument()
+    expect(screen.getByTestId("lazy-shopping-assistant")).toBeInTheDocument()
     expect(screen.getByTestId("offline-status-banner")).toBeInTheDocument()
 
     consoleErrorSpy.mockRestore()
