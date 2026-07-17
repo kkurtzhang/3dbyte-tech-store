@@ -19,6 +19,12 @@ import type {
 interface MeiliSearchClient {
   index(indexName: string): MeiliSearchIndex;
   health(): Promise<{ status: string }>;
+  tasks: {
+    waitForTask(
+      taskUid: number,
+      options?: { timeout?: number; interval?: number },
+    ): Promise<MeiliSearchCompletedTask>;
+  };
 }
 
 interface MeiliSearchIndex {
@@ -83,6 +89,11 @@ interface MeiliSearchEnqueuedTask {
   enqueuedAt: string;
 }
 
+interface MeiliSearchCompletedTask extends MeiliSearchEnqueuedTask {
+  status: "succeeded" | "failed" | "canceled";
+  error?: { message?: string };
+}
+
 interface MeiliSearchSearchResponse {
   hits: Record<string, unknown>[];
   estimatedTotalHits?: number;
@@ -110,14 +121,9 @@ export type MeilisearchOptions = Omit<MeilisearchModuleConfig, "settings">;
  * Meilisearch processes indexing tasks asynchronously. The addDocuments/deleteDocuments
  * methods return a task object, but the actual processing happens in the background.
  *
- * This implementation does NOT wait for tasks to complete, which is the recommended
- * approach for production:
- * - Faster response times (no blocking on task completion)
- * - Meilisearch handles task queuing automatically
- * - Documents appear in search within milliseconds
- *
- * If you need to ensure immediate consistency (e.g., for tests), use:
- *   await client.waitForTask(task.taskUid)
+ * Every mutation waits for the task terminal state before the surrounding
+ * workflow reports success. This prevents queued or failed writes from being
+ * mistaken for a reconciled search projection.
  */
 export default class MeilisearchModuleService {
   private client: MeiliSearchClient;
@@ -185,6 +191,27 @@ export default class MeilisearchModuleService {
     return this.client.index(indexName);
   }
 
+  private async waitForTask(
+    task: MeiliSearchEnqueuedTask,
+  ): Promise<MeiliSearchCompletedTask> {
+    const completed = await this.client.tasks.waitForTask(task.taskUid, {
+      timeout: 30_000,
+      interval: 100,
+    });
+
+    if (completed.status !== "succeeded") {
+      const detail = completed.error?.message
+        ? `: ${completed.error.message}`
+        : "";
+      throw new MedusaError(
+        MedusaError.Types.UNEXPECTED_STATE,
+        `Meilisearch task ${task.taskUid} failed${detail}`,
+      );
+    }
+
+    return completed;
+  }
+
   async indexData(
     data: Record<string, unknown>[],
     type: MeilisearchIndexType = "product",
@@ -196,8 +223,9 @@ export default class MeilisearchModuleService {
     }));
 
     const task = await index.addDocuments(documents, { primaryKey: "id" });
+    await this.waitForTask(task);
     this.logger_.info(
-      `Indexed ${documents.length} documents into ${type} index (task: ${task.taskUid})`,
+      `Indexed ${documents.length} documents into ${type} index (completed task: ${task.taskUid})`,
     );
 
     return task;
@@ -292,9 +320,10 @@ export default class MeilisearchModuleService {
   ): Promise<MeiliSearchEnqueuedTask> {
     const index = await this.getIndex(type);
     const task = await index.deleteDocuments(documentIds);
+    await this.waitForTask(task);
 
     this.logger_.info(
-      `Deleted ${documentIds.length} documents from ${type} index (task: ${task.taskUid})`,
+      `Deleted ${documentIds.length} documents from ${type} index (completed task: ${task.taskUid})`,
     );
 
     return task;
@@ -380,7 +409,8 @@ export default class MeilisearchModuleService {
       updateTasks.push(index.updatePagination(settings.pagination));
     }
 
-    await Promise.all(updateTasks);
+    const tasks = await Promise.all(updateTasks);
+    await Promise.all(tasks.map((task) => this.waitForTask(task)));
     this.logger_.info(`${type} index configuration completed`);
   }
 
@@ -680,7 +710,14 @@ export const PRODUCT_DOCUMENT_INDEX_SETTINGS: MeilisearchIndexSettings = {
     "source_kind",
   ],
   sortableAttributes: ["sort_order", "published_at_timestamp", "title"],
-  rankingRules: ["words", "typo", "proximity", "attribute", "sort", "exactness"],
+  rankingRules: [
+    "words",
+    "typo",
+    "proximity",
+    "attribute",
+    "sort",
+    "exactness",
+  ],
   displayedAttributes: [
     "id",
     "medusa_product_id",
