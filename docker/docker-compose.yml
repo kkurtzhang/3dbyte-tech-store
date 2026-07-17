@@ -34,7 +34,7 @@ services:
     container_name: 3dbyte-meilisearch
     command: meilisearch
     environment:
-      MEILI_MASTER_KEY: IZKjKX6kXKnH0d4VgL0LrBgSccbImu4PkvDOvL81dww
+      MEILI_MASTER_KEY: "${MEILISEARCH_MASTER_KEY:?Set MEILISEARCH_MASTER_KEY}"
       MEILI_ENV: development
     volumes:
       - ../apps/cms/docker_volumes/meili_data:/meili_data
