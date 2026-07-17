@@ -8,6 +8,7 @@ import {
 import { getStrapiContent } from "@/lib/strapi/content"
 import { getPublicProductDocuments } from "@/lib/product-documents/api"
 import type { PricingContext } from "@/lib/medusa/regions"
+import { sanitizeCmsHtml } from "@/lib/security/sanitize-cms-html"
 
 interface StrapiProductDescription {
   id: number
@@ -85,6 +86,9 @@ export async function loadProductPageData(
       item.product_handle === handle
   )
 
+  const richDescription =
+    enrichedContent?.rich_description ?? enrichedContent?.rich_text
+
   return {
     product,
     bundleLink,
@@ -92,7 +96,8 @@ export async function loadProductPageData(
     availableInBundles,
     variantImageUrls,
     productDocuments,
-    richDescription:
-      enrichedContent?.rich_description ?? enrichedContent?.rich_text,
+    richDescription: richDescription
+      ? sanitizeCmsHtml(richDescription)
+      : undefined,
   }
 }
