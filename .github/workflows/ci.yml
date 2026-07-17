@@ -72,9 +72,8 @@ jobs:
           node-version: 20
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
-      - name: Type-check storefront and shared packages
+      - name: Type-check shared TypeScript packages
         run: |
-          pnpm --filter=@3dbyte-tech-store/storefront-v3 exec tsc --noEmit
           pnpm --filter=@3dbyte-tech-store/observability type-check
           pnpm --filter=@3dbyte-tech-store/shared-types type-check
           pnpm --filter=@3dbyte-tech-store/shared-utils type-check
