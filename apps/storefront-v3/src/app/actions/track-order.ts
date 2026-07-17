@@ -1,7 +1,7 @@
 'use server'
 
 import { resolveMedusaBaseUrl } from '@/lib/medusa/base-url'
-import type { MedusaOrder, MedusaOrderTrackingPaymentMethod } from '@/lib/medusa/types'
+import type { MedusaOrder } from '@/lib/medusa/types'
 
 interface OrderLookupResult {
   success: boolean
@@ -11,49 +11,6 @@ interface OrderLookupResult {
 
 function getMedusaBackendUrl() {
   return resolveMedusaBaseUrl({ isServer: true })
-}
-
-function isTrackingPaymentMethod(value: unknown): value is MedusaOrderTrackingPaymentMethod {
-  if (typeof value !== 'object' || value === null) {
-    return false
-  }
-
-  const paymentMethod = value as Record<string, unknown>
-
-  return (
-    paymentMethod.type === 'card' &&
-    typeof paymentMethod.brand === 'string' &&
-    typeof paymentMethod.last4 === 'string'
-  )
-}
-
-async function getTrackingPaymentMethod(orderId: string, email: string) {
-  try {
-    const paymentMethodUrl = new URL(
-      `/store/orders/${orderId}/payment-method`,
-      getMedusaBackendUrl()
-    )
-    paymentMethodUrl.searchParams.set('email', email)
-
-    const response = await fetch(paymentMethodUrl, {
-      headers: process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
-        ? {
-            'x-publishable-api-key': process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-          }
-        : undefined,
-      cache: 'no-store',
-    })
-
-    if (!response.ok) {
-      return null
-    }
-
-    const data = (await response.json()) as { payment_method?: unknown }
-
-    return isTrackingPaymentMethod(data.payment_method) ? data.payment_method : null
-  } catch {
-    return null
-  }
 }
 
 async function lookupOrderByCustomerReference(reference: string, email: string) {
@@ -96,13 +53,7 @@ export async function lookupOrder(orderId: string, email: string): Promise<Order
       }
     }
 
-    return {
-      success: true,
-      order: {
-        ...order,
-        tracking_payment_method: await getTrackingPaymentMethod(order.id, cleanEmail),
-      },
-    }
+    return { success: true, order }
   } catch (error: unknown) {
     console.error('Order lookup failed')
 

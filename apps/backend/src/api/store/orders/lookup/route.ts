@@ -1,6 +1,12 @@
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
 import { z } from '@medusajs/framework/zod'
 
+import {
+  extractPaymentMethodId,
+  retrieveStripePaymentMethod,
+  type OrderWithPayments,
+} from '../../../../utils/stripe-payment-method'
+
 export const PostStoreOrderLookupSchema = z.object({
   reference: z.string().trim().min(6).max(100),
   email: z.string().trim().toLowerCase().email().max(320),
@@ -59,6 +65,8 @@ const lookupOrderFields = [
   'shipping_address.province',
   'shipping_address.postal_code',
   'shipping_address.country_code',
+  'payment_collections.payments.provider_id',
+  'payment_collections.payments.data',
 ]
 
 const getFiniteNumber = (value: unknown): number | null => {
@@ -85,7 +93,7 @@ const isCloseMoney = (left: number, right: number): boolean => Math.abs(left - r
 
 type LookupLineItem = Record<string, unknown>
 
-type LookupOrder = Record<string, unknown> & {
+type LookupOrder = Record<string, unknown> & OrderWithPayments & {
   email?: string | null
   fulfillments?: Array<Record<string, unknown>> | null
   items?: LookupLineItem[] | null
@@ -187,6 +195,18 @@ const sanitizePublicLookupOrder = (order: LookupOrder): LookupOrder => {
   return safeOrder
 }
 
+const getSafePaymentMethod = async (order: LookupOrder) => {
+  const paymentMethodId = extractPaymentMethodId(order)
+
+  if (!paymentMethodId) return null
+
+  try {
+    return await retrieveStripePaymentMethod(paymentMethodId)
+  } catch {
+    return null
+  }
+}
+
 export const POST = async (req: MedusaRequest, res: MedusaResponse): Promise<void> => {
   res.setHeader('Cache-Control', 'no-store')
   const parsed = PostStoreOrderLookupSchema.safeParse(req.body)
@@ -224,5 +244,10 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse): Promise<voi
     return
   }
 
-  res.json({ order: sanitizePublicLookupOrder(order) })
+  res.json({
+    order: {
+      ...sanitizePublicLookupOrder(order),
+      tracking_payment_method: await getSafePaymentMethod(order),
+    },
+  })
 }
