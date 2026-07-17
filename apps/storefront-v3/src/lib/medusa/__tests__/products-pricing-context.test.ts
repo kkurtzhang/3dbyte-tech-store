@@ -90,6 +90,7 @@ describe("Medusa product pricing context", () => {
         fields: expect.stringContaining("*variants.calculated_price"),
       })
     )
+    expect(mockMeiliSearch).not.toHaveBeenCalled()
   })
 
   it("passes selected region context when loading a product detail page", async () => {
