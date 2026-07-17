@@ -4,6 +4,8 @@ type LegacyTrackOrderPageProps = {
   searchParams: Promise<{ reference?: string | string[] }>
 }
 
+export const dynamic = "force-dynamic"
+
 export default async function TrackOrderPage({
   searchParams,
 }: LegacyTrackOrderPageProps) {

@@ -1,5 +1,13 @@
 import { render, screen } from "@testing-library/react"
 
+jest.mock("lucide-react", () => ({
+  SlidersHorizontal: () => <span aria-hidden="true" />,
+}))
+
+jest.mock("next/navigation", () => ({
+  useSearchParams: () => new URLSearchParams(),
+}))
+
 import { ListingLayout } from "../listing-layout"
 
 describe("ListingLayout", () => {
@@ -29,6 +37,6 @@ describe("ListingLayout", () => {
 
     expect(grid).toHaveClass("grid-cols-1")
     expect(grid).toHaveClass("lg:grid-cols-[250px_1fr]")
-    expect(screen.getByText("Show Filters")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Filters" })).toBeInTheDocument()
   })
 })
