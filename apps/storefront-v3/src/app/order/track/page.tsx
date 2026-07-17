@@ -1,7 +1,16 @@
-import TrackOrderClient from "./track-order-client"
+import { permanentRedirect } from "next/navigation"
 
-export const dynamic = "force-dynamic"
+type LegacyTrackOrderPageProps = {
+  searchParams: Promise<{ reference?: string | string[] }>
+}
 
-export default function TrackOrderPage() {
-  return <TrackOrderClient />
+export default async function TrackOrderPage({
+  searchParams,
+}: LegacyTrackOrderPageProps) {
+  const { reference } = await searchParams
+  const value = (Array.isArray(reference) ? reference[0] : reference)?.trim()
+
+  permanentRedirect(
+    value ? `/track-order?reference=${encodeURIComponent(value)}` : "/track-order"
+  )
 }
