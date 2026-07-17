@@ -1,10 +1,13 @@
 import { cn } from "@/lib/utils";
+import { MobileFilterDrawer } from "./mobile-filter-drawer";
+import type { ReactNode } from "react";
 
 interface ListingLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
-  sidebar?: React.ReactNode;
-  header?: React.ReactNode;
+  sidebar?: ReactNode;
+  header?: ReactNode;
+  mobileFilterResetUrl?: string;
 }
 
 export function ListingLayout({
@@ -12,6 +15,7 @@ export function ListingLayout({
   className,
   sidebar,
   header,
+  mobileFilterResetUrl = "/shop",
 }: ListingLayoutProps) {
   return (
     <div className={cn("container mx-auto px-4 py-8", className)}>
@@ -31,12 +35,9 @@ export function ListingLayout({
 
         <div className="space-y-8 min-w-0">
           {sidebar && (
-            <details className="lg:hidden">
-              <summary className="cursor-pointer font-medium select-none">
-                Show Filters
-              </summary>
-              <div className="mt-4">{sidebar}</div>
-            </details>
+            <MobileFilterDrawer resetUrl={mobileFilterResetUrl}>
+              {sidebar}
+            </MobileFilterDrawer>
           )}
 
           {children}

@@ -8,6 +8,7 @@ jest.mock("next/navigation", () => ({
 
 jest.mock("lucide-react", () => ({
   SlidersHorizontal: () => <span />,
+  X: () => <span />,
 }))
 
 describe("MobileFilterDrawer", () => {
