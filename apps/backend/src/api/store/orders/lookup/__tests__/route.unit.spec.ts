@@ -1,13 +1,13 @@
 const mockGraph = jest.fn()
 
-import { GET } from '../route'
+import { POST } from '../route'
 
 const amount = (value: number) => ({
   toJSON: () => value,
   valueOf: () => value,
 })
 
-describe('GET /store/orders/lookup', () => {
+describe('POST /store/orders/lookup', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -24,7 +24,7 @@ describe('GET /store/orders/lookup', () => {
     })
 
     const req = {
-      query: {
+      body: {
         email: ' CUSTOMER@example.com ',
         reference: ' 3DB-1777978800123 ',
       },
@@ -34,7 +34,7 @@ describe('GET /store/orders/lookup', () => {
     }
     const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
 
-    await GET(req as never, res as never)
+    await POST(req as never, res as never)
 
     expect(mockGraph).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -48,8 +48,7 @@ describe('GET /store/orders/lookup', () => {
           'fulfillments.id',
           'fulfillments.data',
           'fulfillments.labels.tracking_number',
-          'shipping_address.address_1',
-          'billing_address.address_1',
+          'shipping_address.city',
           'shipping_methods.name',
         ]),
         filters: {
@@ -95,7 +94,7 @@ describe('GET /store/orders/lookup', () => {
     })
 
     const req = {
-      query: {
+      body: {
         email: 'customer@example.com',
         reference: '3DBO-NSX9-UUTPSK',
       },
@@ -105,7 +104,7 @@ describe('GET /store/orders/lookup', () => {
     }
     const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
 
-    await GET(req as never, res as never)
+    await POST(req as never, res as never)
 
     const payload = res.json.mock.calls[0]?.[0]
 
@@ -162,7 +161,7 @@ describe('GET /store/orders/lookup', () => {
     })
 
     const req = {
-      query: {
+      body: {
         email: 'customer@example.com',
         reference: '3DBO-AKK7-5KYYDE',
       },
@@ -172,7 +171,7 @@ describe('GET /store/orders/lookup', () => {
     }
     const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
 
-    await GET(req as never, res as never)
+    await POST(req as never, res as never)
 
     const payload = res.json.mock.calls[0]?.[0]
 
@@ -215,7 +214,7 @@ describe('GET /store/orders/lookup', () => {
     })
 
     const req = {
-      query: {
+      body: {
         email: 'customer@example.com',
         reference: '3DBO-AKK7-5KYYDE',
       },
@@ -225,7 +224,7 @@ describe('GET /store/orders/lookup', () => {
     }
     const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
 
-    await GET(req as never, res as never)
+    await POST(req as never, res as never)
 
     expect(res.json).toHaveBeenCalledWith({
       order: expect.objectContaining({
@@ -266,7 +265,7 @@ describe('GET /store/orders/lookup', () => {
     })
 
     const req = {
-      query: {
+      body: {
         email: 'customer@example.com',
         reference: '3DBO-AKK7-5KYYDE',
       },
@@ -276,7 +275,7 @@ describe('GET /store/orders/lookup', () => {
     }
     const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
 
-    await GET(req as never, res as never)
+    await POST(req as never, res as never)
 
     const graphRequest = mockGraph.mock.calls[0]?.[0]
     const payload = res.json.mock.calls[0]?.[0]
@@ -297,7 +296,7 @@ describe('GET /store/orders/lookup', () => {
     })
 
     const req = {
-      query: {
+      body: {
         email: 'other@example.com',
         reference: '3DB-1777978800123',
       },
@@ -307,7 +306,7 @@ describe('GET /store/orders/lookup', () => {
     }
     const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
 
-    await GET(req as never, res as never)
+    await POST(req as never, res as never)
 
     expect(res.status).toHaveBeenCalledWith(404)
     expect(res.json).toHaveBeenCalledWith({ order: null })
@@ -315,7 +314,7 @@ describe('GET /store/orders/lookup', () => {
 
   it('requires both reference and email', async () => {
     const req = {
-      query: {
+      body: {
         email: '',
         reference: '',
       },
@@ -325,7 +324,7 @@ describe('GET /store/orders/lookup', () => {
     }
     const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
 
-    await GET(req as never, res as never)
+    await POST(req as never, res as never)
 
     expect(mockGraph).not.toHaveBeenCalled()
     expect(res.status).toHaveBeenCalledWith(400)
