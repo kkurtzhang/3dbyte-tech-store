@@ -14,7 +14,7 @@ import { AnnouncementBarSlot } from "@/components/layout/announcement-bar-slot";
 import { Navbar } from "@/components/layout/navbar";
 import { OfflineStatusBanner } from "@/components/layout/offline-status-banner";
 import { Footer } from "@/components/layout/footer";
-import { ShoppingAssistantDrawer } from "@/features/ai-shopping-assistant/components/shopping-assistant-drawer";
+import { LazyShoppingAssistant } from "@/components/layout/lazy-shopping-assistant";
 import { isBlogEnabled } from "@/lib/content/blog-visibility";
 import { buildRootMetadata } from "@/lib/seo/site-metadata";
 
@@ -67,7 +67,7 @@ export default function RootLayout({
                       <Footer blogEnabled={blogEnabled} />
                     </div>
                     <Toaster />
-                    <ShoppingAssistantDrawer />
+                    <LazyShoppingAssistant />
                   </InventoryAlertProvider>
                 </WishlistProvider>
               </SavedItemsProvider>
