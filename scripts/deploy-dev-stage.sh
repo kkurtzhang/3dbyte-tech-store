@@ -144,22 +144,22 @@ for svc in "${services[@]}"; do
 done
 
 # Ensure meilisearch is running before backend migration/start.
-# Use a deterministic file-backed key source: MEILI_MASTER_KEY in backend .env,
-# falling back to MEILISEARCH_API_KEY if needed, then sync that same value into CMS.
+# Local dev-stage owns its local Meilisearch instance. Use its master key for
+# the two server-only app variables; deployed environments use separate scoped keys.
 MEILI_MASTER_KEY_RAW="$(get_env_val MEILI_MASTER_KEY apps/backend/.env)"
 MEILI_MASTER_KEY="${MEILI_MASTER_KEY_RAW%\"}"; MEILI_MASTER_KEY="${MEILI_MASTER_KEY#\"}"
 if [ -z "$MEILI_MASTER_KEY" ]; then
-  MEILISEARCH_API_KEY_RAW="$(get_env_val MEILISEARCH_API_KEY apps/backend/.env)"
-  MEILI_MASTER_KEY="${MEILISEARCH_API_KEY_RAW%\"}"; MEILI_MASTER_KEY="${MEILI_MASTER_KEY#\"}"
+  BACKEND_SEARCH_KEY_RAW="$(get_env_val MEILISEARCH_BACKEND_API_KEY apps/backend/.env)"
+  MEILI_MASTER_KEY="${BACKEND_SEARCH_KEY_RAW%\"}"; MEILI_MASTER_KEY="${MEILI_MASTER_KEY#\"}"
 fi
 TMP_ENV="$(mktemp)"
 awk -v key="$MEILI_MASTER_KEY" 'BEGIN{done=0} /^MEILI_MASTER_KEY=/{print "MEILI_MASTER_KEY=" key; done=1; next} {print} END{if(!done) print "MEILI_MASTER_KEY=" key}' apps/backend/.env > "$TMP_ENV"
 mv "$TMP_ENV" apps/backend/.env
 TMP_ENV="$(mktemp)"
-awk -v key="$MEILI_MASTER_KEY" 'BEGIN{done=0} /^MEILISEARCH_API_KEY=/{print "MEILISEARCH_API_KEY=" key; done=1; next} {print} END{if(!done) print "MEILISEARCH_API_KEY=" key}' apps/backend/.env > "$TMP_ENV"
+awk -v key="$MEILI_MASTER_KEY" 'BEGIN{done=0} /^MEILISEARCH_BACKEND_API_KEY=/{print "MEILISEARCH_BACKEND_API_KEY=" key; done=1; next} {print} END{if(!done) print "MEILISEARCH_BACKEND_API_KEY=" key}' apps/backend/.env > "$TMP_ENV"
 mv "$TMP_ENV" apps/backend/.env
 TMP_ENV="$(mktemp)"
-awk -v key="$MEILI_MASTER_KEY" 'BEGIN{done=0} /^MEILISEARCH_API_KEY=/{print "MEILISEARCH_API_KEY=" key; done=1; next} {print} END{if(!done) print "MEILISEARCH_API_KEY=" key}' apps/cms/.env > "$TMP_ENV"
+awk -v key="$MEILI_MASTER_KEY" 'BEGIN{done=0} /^MEILISEARCH_CMS_API_KEY=/{print "MEILISEARCH_CMS_API_KEY=" key; done=1; next} {print} END{if(!done) print "MEILISEARCH_CMS_API_KEY=" key}' apps/cms/.env > "$TMP_ENV"
 mv "$TMP_ENV" apps/cms/.env
 export MEILI_MASTER_KEY
 

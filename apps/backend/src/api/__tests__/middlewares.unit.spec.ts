@@ -70,9 +70,6 @@ describe("API middleware configuration", () => {
   it("rate limits expensive public storefront lookup routes", async () => {
     const { default: configuration } = await import("../middlewares");
 
-    const searchRoute = configuration.routes.find(
-      (route: { matcher: string }) => route.matcher === "/store/search",
-    );
     const addressAutocompleteRoute = configuration.routes.find(
       (route: { matcher: string }) =>
         route.matcher === "/store/addresses/autocomplete",
@@ -82,7 +79,6 @@ describe("API middleware configuration", () => {
         route.matcher === "/store/localities/autocomplete",
     );
 
-    expect(hasRateLimit(searchRoute, "store_search")).toBe(true);
     expect(
       hasRateLimit(addressAutocompleteRoute, "store_address_autocomplete"),
     ).toBe(true);

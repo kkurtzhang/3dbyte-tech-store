@@ -161,7 +161,7 @@ module.exports = defineConfig({
       resolve: "./src/modules/meilisearch",
       options: {
         host: process.env.MEILISEARCH_HOST || "http://localhost:7700",
-        apiKey: process.env.MEILISEARCH_API_KEY || "",
+        apiKey: process.env.MEILISEARCH_BACKEND_API_KEY || "",
         productIndexName:
           process.env.MEILISEARCH_PRODUCT_INDEX_NAME || "products",
         categoryIndexName:

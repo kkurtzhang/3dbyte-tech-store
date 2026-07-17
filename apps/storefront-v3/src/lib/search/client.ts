@@ -23,8 +23,6 @@ export const INDEX_PRODUCTS =
   "products";
 export const INDEX_CATEGORIES =
   process.env.NEXT_PUBLIC_MEILISEARCH_CATEGORY_INDEX_NAME || "categories";
-export const INDEX_COLLECTIONS =
-  process.env.NEXT_PUBLIC_MEILISEARCH_COLLECTION_INDEX_NAME || "collections";
 export const INDEX_BRANDS =
   process.env.NEXT_PUBLIC_MEILISEARCH_BRAND_INDEX_NAME || "brands";
 export const INDEX_BLOG =

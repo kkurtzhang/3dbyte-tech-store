@@ -67,6 +67,9 @@ jobs:
           grep -Eq "^ADDRESS_MANUAL_REINDEX_ENABLED=(true|false)$" "$staging_file"
           grep -qx "MEILISEARCH_HOST=https://search.3dbytetech.com.au" "$staging_file"
           grep -qx "MEILISEARCH_SERVER_HOST=https://search.3dbytetech.com.au" "$staging_file"
+          grep -q '^MEILISEARCH_BACKEND_API_KEY=' "$staging_file"
+          grep -q '^MEILISEARCH_CMS_API_KEY=' "$staging_file"
+          grep -q '^NEXT_PUBLIC_MEILISEARCH_API_KEY=' "$staging_file"
           grep -qx "MEILISEARCH_ADDRESS_INDEX_NAME=addresses_v1" "$staging_file"
           grep -qx "MEILISEARCH_LOCALITY_INDEX_NAME=localities_v1" "$staging_file"
           grep -Fqx 'RESEND_FROM_EMAIL="3D Byte Tech <staging-no-reply@3dbytetech.com.au>"' "$staging_file"
@@ -115,6 +118,9 @@ jobs:
           grep -qx "ADDRESS_MANUAL_REINDEX_ENABLED=false" "$prod_file"
           grep -qx "MEILISEARCH_HOST=https://search.3dbytetech.com.au" "$prod_file"
           grep -qx "MEILISEARCH_SERVER_HOST=https://search.3dbytetech.com.au" "$prod_file"
+          grep -q '^MEILISEARCH_BACKEND_API_KEY=' "$prod_file"
+          grep -q '^MEILISEARCH_CMS_API_KEY=' "$prod_file"
+          grep -q '^NEXT_PUBLIC_MEILISEARCH_API_KEY=' "$prod_file"
           grep -qx "MEILISEARCH_ADDRESS_INDEX_NAME=addresses_v1" "$prod_file"
           grep -qx "MEILISEARCH_LOCALITY_INDEX_NAME=localities_v1" "$prod_file"
           grep -qx "MEILISEARCH_PRODUCT_INDEX_NAME=prod_products" "$prod_file"
@@ -138,6 +144,9 @@ jobs:
           grep -Fq 'APP_ENV: "${APP_ENV:-production}"' docker-compose.yml
           grep -Fq 'STRAPI_RESEND_API_KEY: "${STRAPI_RESEND_API_KEY:?Set STRAPI_RESEND_API_KEY}"' docker-compose.yml
           grep -Fq 'MEILISEARCH_HOST: "${MEILISEARCH_HOST:?Set MEILISEARCH_HOST}"' docker-compose.yml
+          grep -Fq 'MEILISEARCH_BACKEND_API_KEY: "${MEILISEARCH_BACKEND_API_KEY:?Set MEILISEARCH_BACKEND_API_KEY}"' docker-compose.yml
+          grep -Fq 'MEILISEARCH_CMS_API_KEY: "${MEILISEARCH_CMS_API_KEY:?Set MEILISEARCH_CMS_API_KEY}"' docker-compose.yml
+          ! grep -Fq 'MEILISEARCH_API_KEY:' docker-compose.yml
           ! grep -Fq 'STOREFRONT_RELEASE_SHA:' docker-compose.yml
           grep -Fq 'http://127.0.0.1:3000/api/health' docker-compose.yml
           grep -Fq 'http://127.0.0.1:9000/health' docker-compose.yml

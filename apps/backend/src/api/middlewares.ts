@@ -13,7 +13,6 @@ import {
 } from "./admin/brands/validators";
 import { z } from "@medusajs/framework/zod";
 import { createFindParams } from "@medusajs/medusa/api/utils/validators";
-import { storeSearchRoutesMiddlewares } from "./store/search/middlewares";
 import { storeAddressAutocompleteMiddlewares } from "./store/addresses/autocomplete/middlewares";
 import { storeLocalityAutocompleteMiddlewares } from "./store/localities/autocomplete/middlewares";
 import { UpsertPreorderVariantSchema } from "./admin/variants/[id]/preorders/route";
@@ -207,7 +206,6 @@ export default defineMiddlewares({
       methods: ["POST"],
       middlewares: [validateAndTransformBody(AddPricedLineItemSchema)],
     },
-    ...storeSearchRoutesMiddlewares,
     ...storeAddressAutocompleteMiddlewares,
     ...storeLocalityAutocompleteMiddlewares,
     // Wishlist routes

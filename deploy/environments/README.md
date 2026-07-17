@@ -17,7 +17,7 @@ Use `main` as the production branch and `staging` as the staging branch.
 - Keep `RESEND_FROM_EMAIL` on the staging-safe `staging-*` sender and use a
   dedicated `STRAPI_RESEND_API_KEY` for CMS admin reset/invite emails.
 - Use `stg_*` Meilisearch indexes for products, categories, brands,
-  collections, public product documents, and blog content.
+  public product documents, and blog content.
 - Read the shared `addresses_v1` index from the dedicated shared Meilisearch resource.
 
 ## Production
@@ -32,7 +32,7 @@ Use `main` as the production branch and `staging` as the staging branch.
 - Keep `RESEND_FROM_EMAIL` on the non-staging production sender and use the
   production `STRAPI_RESEND_API_KEY` for CMS admin reset/invite emails.
 - Use `prod_*` Meilisearch indexes for products, categories, brands,
-  collections, public product documents, and blog content.
+  public product documents, and blog content.
 - Own and update the shared `addresses_v1` index through the dedicated shared Meilisearch resource.
 
 ## Shared Meilisearch
@@ -42,7 +42,11 @@ Use `main` as the production branch and `staging` as the staging branch.
 - Use `deploy/search/search.env.example` as the environment checklist.
 - Assign the `meilisearch` service domain to `https://search.3dbytetech.com.au:7700`.
 - Keep the master key only in the shared search resource.
-- Use scoped API keys in staging and production app stacks.
+- Use separate scoped API keys in staging and production app stacks:
+  `MEILISEARCH_BACKEND_API_KEY` can mutate only the Medusa-owned product,
+  category, brand, address, locality, and public-product-document indexes;
+  `MEILISEARCH_CMS_API_KEY` can mutate only CMS-owned blog indexes; and
+  `NEXT_PUBLIC_MEILISEARCH_API_KEY` is search-only.
 
 ## Database Bootstrap Notes
 

@@ -34,8 +34,8 @@ services:
     image: getmeili/meilisearch:v1.31.0
     command: meilisearch
     environment:
-      MEILI_MASTER_KEY: ${MEILISEARCH_API_KEY}
-      MELI_ENV: development
+      MEILI_MASTER_KEY: ${MEILISEARCH_MASTER_KEY}
+      MEILI_ENV: development
     volumes:
       - ./docker_volumes/meili_data:/meili_data
     ports:

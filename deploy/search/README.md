@@ -16,5 +16,11 @@ staging or production app stack.
 After the resource is online, use the master key to create scoped API keys:
 
 - browser/public key: `actions=["search"]`
-- staging server key: scoped to `stg_*` and `addresses_v1`
-- production server key: scoped to `prod_*` and `addresses_v1`
+- staging backend key: write access only to Medusa-owned `stg_*` indexes and
+  the shared `addresses_v1` / `localities_v1` indexes
+- staging CMS key: write access only to `stg_blog` and
+  `stg_blog_post_categories`
+- production backend key: write access only to Medusa-owned `prod_*` indexes
+  and the shared `addresses_v1` / `localities_v1` indexes
+- production CMS key: write access only to `prod_blog` and
+  `prod_blog_post_categories`
