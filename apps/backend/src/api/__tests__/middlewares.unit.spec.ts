@@ -106,12 +106,18 @@ describe("API middleware configuration", () => {
       (route: { matcher: string; methods?: string[] }) =>
         route.matcher === "/store/waitlist" && route.methods?.includes("POST"),
     );
+    const orderLookupRoute = configuration.routes.find(
+      (route: { matcher: string; methods?: string[] }) =>
+        route.matcher === "/store/orders/lookup" &&
+        route.methods?.includes("POST"),
+    );
 
     expect(hasRateLimit(supportRoute, "store_support_ticket")).toBe(true);
     expect(hasRateLimit(newsletterRoute, "store_newsletter_subscribe")).toBe(
       true,
     );
     expect(hasRateLimit(waitlistRoute, "store_waitlist_join")).toBe(true);
+    expect(hasRateLimit(orderLookupRoute, "store_order_lookup")).toBe(true);
   });
 
   it("rate limits authenticated account security mutations after authentication", async () => {
