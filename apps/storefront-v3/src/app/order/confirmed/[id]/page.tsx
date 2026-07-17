@@ -42,7 +42,9 @@ export default async function OrderConfirmedPage({
     notFound()
   }
 
-  const order = await getOrder(id)
+  const order = await getOrder(id, undefined, {
+    "x-order-access-token": orderAccessToken!,
+  })
 
   if (!order) {
     notFound()

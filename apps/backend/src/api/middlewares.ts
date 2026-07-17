@@ -52,6 +52,7 @@ import {
   storeWaitlistJoinRateLimit,
 } from "../lib/rate-limits/api-rules";
 import { hermesProductDraftPayloadLimit } from "../lib/ai-product-drafts/security";
+import { requireStoreOrderAccess } from "../lib/order-access/middleware";
 
 export const GetBrandsSchema = createFindParams();
 
@@ -395,6 +396,16 @@ export default defineMiddlewares({
       matcher: "/admin/fulfillments/:id/label",
       methods: ["POST"],
       middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
+    },
+    {
+      matcher: "/store/orders/:id",
+      methods: ["GET"],
+      middlewares: [
+        authenticate("customer", ["session", "bearer"], {
+          allowUnauthenticated: true,
+        }),
+        requireStoreOrderAccess,
+      ],
     },
     {
       matcher: "/store/orders/lookup",
