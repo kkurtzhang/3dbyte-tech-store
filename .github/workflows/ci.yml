@@ -43,6 +43,7 @@ jobs:
         run: |
           bash .github/scripts/__tests__/coolify-compose-build-stability.test.sh
           bash .github/scripts/__tests__/ci-quality-contract.test.sh
+          bash .github/scripts/__tests__/search-ownership-contract.test.sh
 
   lint:
     name: lint
