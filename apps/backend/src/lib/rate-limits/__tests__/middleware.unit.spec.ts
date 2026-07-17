@@ -68,7 +68,7 @@ describe("rate limit middleware", () => {
     expect(isolatedClient.allowed).toBe(true);
   });
 
-  it("fails open and logs a warning when the backing store is unavailable", async () => {
+  it("fails closed for sensitive routes when the backing store is unavailable", async () => {
     const store = {
       consume: jest.fn().mockRejectedValue(new Error("redis unavailable")),
     };
@@ -78,6 +78,7 @@ describe("rate limit middleware", () => {
         name: "store_support_ticket",
         limit: 1,
         windowMs: 60_000,
+        failureMode: "closed",
         key: () => "rate-limit:v1:store_support_ticket:203.0.113.10",
       },
       { logger, store },
@@ -86,7 +87,12 @@ describe("rate limit middleware", () => {
 
     await middleware({} as never, createResponse() as never, next);
 
-    expect(next).toHaveBeenCalledTimes(1);
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.json).toHaveBeenCalledWith({
+      code: "rate_limit_unavailable",
+      message: "Request protection is temporarily unavailable.",
+    });
     expect(logger.warn).toHaveBeenCalledWith(
       "Rate limit skipped for store_support_ticket: redis unavailable",
     );
