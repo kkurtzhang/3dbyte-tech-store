@@ -19,6 +19,12 @@ describe("CheckoutStepper", () => {
     CHECKOUT_STEPS.forEach((step) => {
       expect(screen.getByLabelText(step.label)).toBeInTheDocument()
     })
+    expect(CHECKOUT_STEPS.map((step) => step.id)).toEqual([
+      "shipping",
+      "delivery",
+      "payment",
+      "confirmation",
+    ])
   })
 
   it("highlights current step", () => {
@@ -45,9 +51,8 @@ describe("CheckoutStepper", () => {
   it("disables future steps that are not completed", () => {
     render(<CheckoutStepper currentStep="shipping" />)
 
-    // Review step should be disabled
-    const reviewButton = screen.getByLabelText("Review")
-    expect(reviewButton).toBeDisabled()
+    const confirmationButton = screen.getByLabelText("Confirmation")
+    expect(confirmationButton).toBeDisabled()
   })
 
   it("allows clicking on completed steps", () => {
@@ -75,8 +80,8 @@ describe("CheckoutStepper", () => {
       />
     )
 
-    const reviewButton = screen.getByLabelText("Review")
-    fireEvent.click(reviewButton)
+    const confirmationButton = screen.getByLabelText("Confirmation")
+    fireEvent.click(confirmationButton)
 
     expect(onStepClick).not.toHaveBeenCalled()
   })
@@ -179,15 +184,15 @@ describe("CheckoutStepper", () => {
 
     rerender(<CheckoutStepper currentStep="payment" />)
 
-    // Third step - 50% progress (2 / 4 * 100)
-    expect(progressBar).toHaveStyle({ width: "50%" })
+    // Third step - two of three transitions complete
+    expect(progressBar).toHaveStyle({ width: "66.66666666666666%" })
   })
 
   it("allows navigation to any completed step regardless of order", () => {
     const onStepClick = jest.fn()
     render(
       <CheckoutStepper
-        currentStep="review"
+        currentStep="confirmation"
         completedSteps={["shipping", "payment"]}
         onStepClick={onStepClick}
       />

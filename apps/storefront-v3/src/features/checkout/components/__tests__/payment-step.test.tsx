@@ -10,7 +10,6 @@ jest.mock("@stripe/react-stripe-js", () => ({
 
 jest.mock("lucide-react", () => ({
   CreditCard: () => <span data-testid="credit-card-icon" />,
-  Wallet: () => <span data-testid="wallet-icon" />,
 }))
 
 const createDeferred = <T,>() => {
@@ -42,7 +41,12 @@ describe("PaymentStep", () => {
     mockUseStripe.mockReturnValue({ confirmPayment })
 
     const { container } = render(
-      <PaymentStep onBack={jest.fn()} onComplete={onComplete} />
+      <PaymentStep
+        onBack={jest.fn()}
+        onComplete={onComplete}
+        total={123.45}
+        currencyCode="aud"
+      />
     )
 
     const form = container.querySelector("form")
@@ -56,13 +60,8 @@ describe("PaymentStep", () => {
     })
     expect(confirmPayment).toHaveBeenCalledTimes(1)
     expect(screen.getByRole("button", { name: /back/i })).toBeDisabled()
-    expect(screen.getByRole("button", { name: /pay now/i })).toBeDisabled()
-    expect(
-      screen.getByRole("button", { name: /credit card/i })
-    ).toHaveAttribute("aria-disabled", "true")
-    expect(
-      screen.getByRole("button", { name: /manual payment/i })
-    ).toHaveAttribute("aria-disabled", "true")
+    expect(screen.getByRole("button", { name: /pay a\$123\.45 now/i })).toBeDisabled()
+    expect(screen.queryByText(/manual payment/i)).not.toBeInTheDocument()
     expect(screen.getByText(/finalising your payment/i)).toBeInTheDocument()
 
     paymentDeferred.resolve({})
@@ -70,5 +69,23 @@ describe("PaymentStep", () => {
     await waitFor(() => {
       expect(onComplete).toHaveBeenCalledTimes(1)
     })
+  })
+
+  it("shows the exact order total on the payment action", () => {
+    mockUseElements.mockReturnValue({ submit: jest.fn() })
+    mockUseStripe.mockReturnValue({ confirmPayment: jest.fn() })
+
+    render(
+      <PaymentStep
+        onBack={jest.fn()}
+        onComplete={jest.fn()}
+        total={89}
+        currencyCode="aud"
+      />
+    )
+
+    expect(
+      screen.getByRole("button", { name: "Pay A$89.00 now" })
+    ).toBeInTheDocument()
   })
 })
