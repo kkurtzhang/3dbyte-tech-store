@@ -84,8 +84,9 @@ describe("rate limit middleware", () => {
       { logger, store },
     );
     const next = jest.fn() as MedusaNextFunction;
+    const res = createResponse();
 
-    await middleware({} as never, createResponse() as never, next);
+    await middleware({} as never, res as never, next);
 
     expect(next).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(503);
@@ -94,7 +95,7 @@ describe("rate limit middleware", () => {
       message: "Request protection is temporarily unavailable.",
     });
     expect(logger.warn).toHaveBeenCalledWith(
-      "Rate limit skipped for store_support_ticket: redis unavailable",
+      "Rate limit unavailable for store_support_ticket",
     );
   });
 

@@ -29,6 +29,7 @@ type RateLimitLogger = {
 export type RateLimitRule = RateLimitOptions & {
   name: string;
   message?: string;
+  failureMode?: "open" | "closed";
   key: (context: {
     actorId?: string;
     clientIp: string;
@@ -204,6 +205,10 @@ export function getDefaultRateLimitStore(): RateLimitStore {
   if (defaultStore) return defaultStore;
 
   const redisUrl = process.env.RATE_LIMIT_REDIS_URL || process.env.REDIS_URL;
+  if (!redisUrl && process.env.NODE_ENV !== "test") {
+    throw new Error("REDIS_URL is required for distributed rate limiting");
+  }
+
   defaultStore = redisUrl
     ? new RedisRateLimitStore(redisUrl)
     : new MemoryRateLimitStore();
@@ -272,8 +277,15 @@ export function createRateLimitMiddleware(
       }
     } catch (error) {
       const logger = options.logger ?? defaultLogger;
-      const message = error instanceof Error ? error.message : "unknown error";
-      logger.warn(`Rate limit skipped for ${rule.name}: ${message}`);
+      logger.warn(`Rate limit unavailable for ${rule.name}`);
+
+      if (rule.failureMode !== "open") {
+        res.status(503).json({
+          code: "rate_limit_unavailable",
+          message: "Request protection is temporarily unavailable.",
+        });
+        return;
+      }
     }
 
     next();
