@@ -18,6 +18,11 @@ if grep -Fq 'playwright test --list' "$workflow"; then
   exit 1
 fi
 
+if grep -Fq 'storefront-v3 exec tsc --noEmit' "$workflow"; then
+  echo "Storefront production types belong to the Next.js build, not a generic raw tsc gate" >&2
+  exit 1
+fi
+
 required_commands=(
   'pnpm --filter=@3dbyte-tech-store/storefront-v3 lint'
   'pnpm --filter=@3dbyte-tech-store/storefront-v3 test:ci'
@@ -25,6 +30,9 @@ required_commands=(
   'pnpm --filter=@3dbyte-tech-store/backend test:unit'
   'pnpm --filter=@3dbyte-tech-store/backend build'
   'pnpm --filter=@3dbyte-tech-store/cms build'
+  'pnpm --filter=@3dbyte-tech-store/observability type-check'
+  'pnpm --filter=@3dbyte-tech-store/shared-types type-check'
+  'pnpm --filter=@3dbyte-tech-store/shared-utils type-check'
   'pnpm exec playwright test tests/e2e/homepage.spec.ts'
   'gitleaks dir . --redact --exit-code 1'
   'pnpm audit --audit-level=high'
