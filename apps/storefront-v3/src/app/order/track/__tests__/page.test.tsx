@@ -1,48 +1,35 @@
-import { render, screen } from "@testing-library/react"
-
-jest.mock("lucide-react", () => ({
-  AlertCircle: () => null,
-  ArrowRight: () => null,
-  CheckCircle: () => null,
-  CreditCard: () => null,
-  MapPin: () => null,
-  Package: () => null,
-}))
-
-jest.mock("@/app/actions/track-order", () => ({
-  lookupOrder: jest.fn(),
-}))
+const mockPermanentRedirect = jest.fn(() => {
+  throw new Error("NEXT_REDIRECT")
+})
 
 jest.mock("next/navigation", () => ({
-  useRouter: () => ({ push: jest.fn() }),
-  useSearchParams: () => mockSearchParams,
+  permanentRedirect: (...args: unknown[]) => mockPermanentRedirect(...args),
 }))
 
 import TrackOrderPage from "../page"
-import { formatOrderTrackPrice } from "../track-order-client"
 
-let mockSearchParams = new URLSearchParams()
-
-beforeEach(() => {
-  mockSearchParams = new URLSearchParams()
-})
-
-describe("formatOrderTrackPrice", () => {
-  it("formats Medusa v2 major-unit order amounts without cents conversion", () => {
-    expect(formatOrderTrackPrice(49.95, "aud")).toBe("A$49.95")
-    expect(formatOrderTrackPrice(undefined, "aud")).toBe("A$0.00")
+describe("legacy order tracking route", () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
   })
 
-  it("prefills the order reference from the email tracking link", () => {
-    mockSearchParams = new URLSearchParams({
-      reference: "3DBO-AKK7-5KYYDE",
-    })
+  it("redirects to the canonical tracker while preserving the email reference", async () => {
+    await expect(
+      TrackOrderPage({
+        searchParams: Promise.resolve({ reference: "3DBO-AKK7-5KYYDE" }),
+      })
+    ).rejects.toThrow("NEXT_REDIRECT")
 
-    render(<TrackOrderPage />)
-
-    expect(screen.getByLabelText("Order number or reference")).toHaveValue(
-      "3DBO-AKK7-5KYYDE"
+    expect(mockPermanentRedirect).toHaveBeenCalledWith(
+      "/track-order?reference=3DBO-AKK7-5KYYDE"
     )
-    expect(screen.getByLabelText("Email Address")).toHaveValue("")
+  })
+
+  it("redirects empty legacy links to the canonical tracker", async () => {
+    await expect(
+      TrackOrderPage({ searchParams: Promise.resolve({}) })
+    ).rejects.toThrow("NEXT_REDIRECT")
+
+    expect(mockPermanentRedirect).toHaveBeenCalledWith("/track-order")
   })
 })
