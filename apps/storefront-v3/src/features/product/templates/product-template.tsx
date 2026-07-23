@@ -6,6 +6,7 @@ import { ProductActions } from "../components/product-actions"
 import { ProductBreadcrumbs } from "../components/product-breadcrumbs"
 import { ProductSupportPanel } from "../components/product-support-panel"
 import { ProductDocumentsPanel } from "../components/product-documents-panel"
+import { ProductCompatibilityPanel } from "../components/product-compatibility-panel"
 import { RecentlyViewedProducts } from "@/components/product/recently-viewed-products"
 import { useQueryState } from "nuqs"
 import { useRecentlyViewed } from "@/lib/hooks/use-recently-viewed"
@@ -158,6 +159,10 @@ export function ProductTemplate({
                 availableInBundles={availableInBundles}
              />
            )}
+
+           <ProductCompatibilityPanel
+             metadata={product.metadata as Record<string, unknown> | null | undefined}
+           />
 
            <ProductSupportPanel />
 

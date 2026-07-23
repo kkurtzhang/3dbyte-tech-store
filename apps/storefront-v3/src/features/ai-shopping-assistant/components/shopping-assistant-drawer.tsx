@@ -435,7 +435,7 @@ export function ShoppingAssistantDrawer({
   initiallyOpen = false,
 }: {
   initiallyOpen?: boolean
-} = {}) {
+}) {
   const pathname = usePathname()
   const [input, setInput] = useState("")
   const [isExpanded, setIsExpanded] = useState(false)
