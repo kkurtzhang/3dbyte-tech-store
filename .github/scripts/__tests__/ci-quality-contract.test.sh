@@ -23,6 +23,11 @@ if grep -Fq 'JWT_SECRET: ci-only-jwt-secret' "$workflow" ||
   exit 1
 fi
 
+if grep -Eq '\| tar -xz[[:space:]]*$' "$workflow"; then
+  echo "Security tooling must be extracted outside the repository being scanned" >&2
+  exit 1
+fi
+
 if [[ ! -f "$gitleaks_config" ]]; then
   echo "CI must use a reviewed Gitleaks configuration" >&2
   exit 1
