@@ -2,6 +2,31 @@
 set -euo pipefail
 
 workflow=".github/workflows/ci.yml"
+gitleaks_config=".gitleaks.toml"
+
+global_env="$(
+  awk '
+    /^env:/ { capture = 1 }
+    /^jobs:/ { capture = 0 }
+    capture { print }
+  ' "$workflow"
+)"
+
+if grep -Eq 'NEXT_PUBLIC_|MEDUSA_SERVER_BACKEND_URL|REDIS_URL|TRUSTED_PROXY_HOPS' <<<"$global_env"; then
+  echo "Runtime integration variables must be scoped to the jobs that need them" >&2
+  exit 1
+fi
+
+if grep -Fq 'JWT_SECRET: ci-only-jwt-secret' "$workflow" ||
+  grep -Fq 'COOKIE_SECRET: ci-only-cookie-secret' "$workflow"; then
+  echo "Production-mode CI builds must use fixtures that satisfy secret policy" >&2
+  exit 1
+fi
+
+if [[ ! -f "$gitleaks_config" ]]; then
+  echo "CI must use a reviewed Gitleaks configuration" >&2
+  exit 1
+fi
 
 if grep -Fq -- '--filter="...[origin/main]"' "$workflow"; then
   echo "CI must compare pull requests against their actual base branch" >&2
@@ -34,7 +59,7 @@ required_commands=(
   'pnpm --filter=@3dbyte-tech-store/shared-types type-check'
   'pnpm --filter=@3dbyte-tech-store/shared-utils type-check'
   'pnpm exec playwright test tests/e2e/homepage.spec.ts'
-  'gitleaks dir . --redact --exit-code 1'
+  'gitleaks dir . --config .gitleaks.toml --redact --exit-code 1'
   'pnpm audit --audit-level=high'
 )
 
