@@ -24,7 +24,7 @@ export default async function ({ container }: ExecArgs) {
   }
   
   // Check the medusa_product_id from Strapi
-  const strapiProductId = "prod_01KHSTHFB06QN2F7RSNZZSW20A"; // from first Strapi entry
+  const strapiProductId = "prod_00000000000000000000000000"; // replace with a current Strapi entry
   console.log(`\n\nChecking if Strapi's medusa_product_id exists in Medusa:`);
   console.log(`Looking for: ${strapiProductId}`);
   

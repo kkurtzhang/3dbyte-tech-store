@@ -12,20 +12,6 @@ permissions:
 
 env:
   CI: "true"
-  NEXT_PUBLIC_SITE_URL: http://localhost:3001
-  NEXT_PUBLIC_MEDUSA_BACKEND_URL: https://api.staging.3dbytetech.com.au
-  MEDUSA_SERVER_BACKEND_URL: https://api.staging.3dbytetech.com.au
-  NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ci-publishable-placeholder
-  NEXT_PUBLIC_STRAPI_URL: https://cms.staging.3dbytetech.com.au
-  NEXT_PUBLIC_MEILISEARCH_HOST: https://search.3dbytetech.com.au
-  NEXT_PUBLIC_MEILISEARCH_API_KEY: ci-search-placeholder
-  NEXT_PUBLIC_MEILISEARCH_INDEX_NAME: stg_products
-  NEXT_PUBLIC_MEILISEARCH_PRODUCT_INDEX_NAME: stg_products
-  NEXT_PUBLIC_MEILISEARCH_CATEGORY_INDEX_NAME: stg_categories
-  NEXT_PUBLIC_MEILISEARCH_BRAND_INDEX_NAME: stg_brands
-  ORDER_ACCESS_TOKEN_SECRET: ci-only-order-access-secret-with-32-characters
-  REDIS_URL: redis://localhost:6379/2
-  TRUSTED_PROXY_HOPS: "1"
 
 jobs:
   deployment-config:
@@ -105,8 +91,8 @@ jobs:
     env:
       NODE_ENV: production
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/medusa_ci
-      JWT_SECRET: ci-only-jwt-secret
-      COOKIE_SECRET: ci-only-cookie-secret
+      JWT_SECRET: ci-fixture-jwt-value-0000000000000000
+      COOKIE_SECRET: ci-fixture-cookie-value-0000000000000
       AUTH_MFA_ENCRYPTION_KEY: ci-only-mfa-encryption-key-with-32-characters
       STORE_CORS: http://localhost:3001
       ADMIN_CORS: http://localhost:9000
@@ -116,6 +102,20 @@ jobs:
       ADMIN_JWT_SECRET: ci-admin-jwt-secret
       TRANSFER_TOKEN_SALT: ci-transfer-token-salt
       ENCRYPTION_KEY: ci-encryption-key
+      NEXT_PUBLIC_SITE_URL: http://localhost:3001
+      NEXT_PUBLIC_MEDUSA_BACKEND_URL: https://api.staging.3dbytetech.com.au
+      MEDUSA_SERVER_BACKEND_URL: https://api.staging.3dbytetech.com.au
+      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ci-publishable-placeholder
+      NEXT_PUBLIC_STRAPI_URL: https://cms.staging.3dbytetech.com.au
+      NEXT_PUBLIC_MEILISEARCH_HOST: https://search.3dbytetech.com.au
+      NEXT_PUBLIC_MEILISEARCH_API_KEY: ci-search-placeholder
+      NEXT_PUBLIC_MEILISEARCH_INDEX_NAME: stg_products
+      NEXT_PUBLIC_MEILISEARCH_PRODUCT_INDEX_NAME: stg_products
+      NEXT_PUBLIC_MEILISEARCH_CATEGORY_INDEX_NAME: stg_categories
+      NEXT_PUBLIC_MEILISEARCH_BRAND_INDEX_NAME: stg_brands
+      ORDER_ACCESS_TOKEN_SECRET: ci-only-order-access-secret-with-32-characters
+      REDIS_URL: redis://localhost:6379/2
+      TRUSTED_PROXY_HOPS: "1"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -135,6 +135,21 @@ jobs:
   e2e-smoke:
     name: e2e-smoke
     runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SITE_URL: http://localhost:3001
+      NEXT_PUBLIC_MEDUSA_BACKEND_URL: https://api.staging.3dbytetech.com.au
+      MEDUSA_SERVER_BACKEND_URL: https://api.staging.3dbytetech.com.au
+      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ci-publishable-placeholder
+      NEXT_PUBLIC_STRAPI_URL: https://cms.staging.3dbytetech.com.au
+      NEXT_PUBLIC_MEILISEARCH_HOST: https://search.3dbytetech.com.au
+      NEXT_PUBLIC_MEILISEARCH_API_KEY: ci-search-placeholder
+      NEXT_PUBLIC_MEILISEARCH_INDEX_NAME: stg_products
+      NEXT_PUBLIC_MEILISEARCH_PRODUCT_INDEX_NAME: stg_products
+      NEXT_PUBLIC_MEILISEARCH_CATEGORY_INDEX_NAME: stg_categories
+      NEXT_PUBLIC_MEILISEARCH_BRAND_INDEX_NAME: stg_brands
+      ORDER_ACCESS_TOKEN_SECRET: ci-only-order-access-secret-with-32-characters
+      REDIS_URL: redis://localhost:6379/2
+      TRUSTED_PROXY_HOPS: "1"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -163,7 +178,7 @@ jobs:
             | tar -xz
           sudo install -m 0755 gitleaks /usr/local/bin/gitleaks
       - name: Block credentials in the checked-out tree
-        run: gitleaks dir . --redact --exit-code 1
+        run: gitleaks dir . --config .gitleaks.toml --redact --exit-code 1
       - uses: actions/setup-node@v4
         with:
           node-version: 20

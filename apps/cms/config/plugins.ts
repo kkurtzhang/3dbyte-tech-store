@@ -51,8 +51,7 @@ export default ({ env }: { env: EnvReader }) => {
       config: {
         // Your meili host
         host: env("MEILISEARCH_HOST", "http://localhost:7700"),
-        // Your master key or private key
-        // apiKey: "M8QDSdT0UT74H3leQaq4c72ctnDIo1jAkxuK-AuE7cM",
+        // Use a private search key supplied through the runtime environment.
         apiKey: env("MEILISEARCH_CMS_API_KEY"),
         blog: {
           indexName: env("MEILISEARCH_BLOG_INDEX_NAME", "blog"),

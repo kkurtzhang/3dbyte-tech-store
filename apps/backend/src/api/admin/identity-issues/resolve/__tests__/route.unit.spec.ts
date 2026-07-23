@@ -23,7 +23,7 @@ describe("POST /admin/identity-issues/resolve", () => {
       auth_context: { actor_id: "user_admin" },
       scope: { resolve: jest.fn() },
       validatedBody: {
-        issue_id: "orphan_auth_identity:0123456789abcdef",
+        issue_id: "orphan_auth_identity:0000000000000000",
       },
     };
     const res = { json: jest.fn(), status: jest.fn().mockReturnThis() };
@@ -33,7 +33,7 @@ describe("POST /admin/identity-issues/resolve", () => {
     expect(mockResolve).toHaveBeenCalledWith({
       adminId: "user_admin",
       container: req.scope,
-      issueId: "orphan_auth_identity:0123456789abcdef",
+      issueId: "orphan_auth_identity:0000000000000000",
     });
     expect(res.json).toHaveBeenCalledWith({
       resolution: expect.objectContaining({
@@ -50,7 +50,7 @@ describe("POST /admin/identity-issues/resolve", () => {
         auth_context: {},
         scope: {},
         validatedBody: {
-          issue_id: "orphan_auth_identity:0123456789abcdef",
+          issue_id: "orphan_auth_identity:0000000000000000",
         },
       } as never,
       res as never,
@@ -63,10 +63,10 @@ describe("POST /admin/identity-issues/resolve", () => {
   it("validates opaque issue identifiers", () => {
     expect(
       PostAdminResolveIdentityIssueSchema.parse({
-        issue_id: "orphan_auth_identity:0123456789abcdef",
+        issue_id: "orphan_auth_identity:0000000000000000",
       }),
     ).toEqual({
-      issue_id: "orphan_auth_identity:0123456789abcdef",
+      issue_id: "orphan_auth_identity:0000000000000000",
     });
     expect(() =>
       PostAdminResolveIdentityIssueSchema.parse({
