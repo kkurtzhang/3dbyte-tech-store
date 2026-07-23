@@ -10,13 +10,16 @@ import {
   useDataTable,
 } from "@medusajs/ui"
 import { useMemo, useState } from "react"
+import { useNavigate } from "react-router-dom"
 
 import { ActionMenu } from "../../components/action-menu"
 import { Container } from "../../components/container"
 import { Header } from "../../components/header"
 import { useAiProductDrafts } from "../../hooks/ai-product-drafts"
 import {
+  buildAiProductDraftDetailUrl,
   formatAiProductDraftDate,
+  getAiProductDraftDisplayName,
   getAiProductDraftStatusBadgeColor,
   labelizeAiProductDraftValue,
 } from "../../lib/ai-product-drafts"
@@ -47,7 +50,7 @@ function DraftActions({ draft }: { draft: AdminAiProductDraft }) {
             {
               icon: <Eye />,
               label: "Open draft",
-              to: `/ai-product-drafts/${draft.id}`,
+              to: buildAiProductDraftDetailUrl(draft.id),
             },
           ],
         },
@@ -61,9 +64,13 @@ const columns = [
     header: "Product",
     cell: ({ row, getValue }) => (
       <div>
-        <Text>{getValue() || row.original.product_id || "-"}</Text>
+        <Text>{getAiProductDraftDisplayName(row.original)}</Text>
         <Text className="text-ui-fg-subtle" size="small">
-          {row.original.source_agent || "hermes"}
+          {getValue()
+            ? `/${getValue()}`
+            : `Source: ${labelizeAiProductDraftValue(
+                row.original.source_agent || "hermes"
+              )}`}
         </Text>
       </div>
     ),
@@ -110,18 +117,19 @@ const AiProductDraftsPage = () => {
   })
   const [q, setQ] = useState("")
   const [status, setStatus] = useState("needs_review")
+  const navigate = useNavigate()
   const offset = useMemo(
     () => pagination.pageIndex * pagination.pageSize,
     [pagination]
   )
   const query = useMemo<AiProductDraftQueryParams>(
     () => ({
-      limit,
+      limit: pagination.pageSize,
       offset,
       q,
       ...(status === "all" ? {} : { status }),
     }),
-    [offset, q, status]
+    [offset, pagination.pageSize, q, status]
   )
   const { drafts, count, isLoading } = useAiProductDrafts(query)
   const table = useDataTable({
@@ -129,6 +137,9 @@ const AiProductDraftsPage = () => {
     data: drafts,
     getRowId: (row) => row.id,
     isLoading,
+    onRowClick: (_event, row) => {
+      navigate(buildAiProductDraftDetailUrl(row.id))
+    },
     pagination: {
       state: pagination,
       onPaginationChange: setPagination,
@@ -144,6 +155,7 @@ const AiProductDraftsPage = () => {
       />
       <div className="grid gap-3 px-6 py-4 md:grid-cols-[minmax(0,1fr)_220px]">
         <Input
+          aria-label="Search AI product drafts"
           value={q}
           onChange={(event) => {
             setPagination((current) => ({ ...current, pageIndex: 0 }))
@@ -152,6 +164,7 @@ const AiProductDraftsPage = () => {
           placeholder="Search product, handle, source, or draft id"
         />
         <select
+          aria-label="Filter AI product drafts by status"
           className="rounded-md border border-ui-border-base bg-ui-bg-field px-3 py-2 text-sm"
           value={status}
           onChange={(event) => {

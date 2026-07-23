@@ -13,6 +13,7 @@ import {
 } from "../../../hooks/ai-product-drafts"
 import {
   formatAiProductDraftDate,
+  getAiProductDraftDisplayName,
   getAiProductDraftStatusBadgeColor,
   labelizeAiProductDraftValue,
 } from "../../../lib/ai-product-drafts"
@@ -68,7 +69,7 @@ const AiProductDraftDetailPage = () => {
     <div className="flex flex-col gap-y-3">
       <Container>
         <Header
-          title={draft.product_handle || draft.product_id || draft.id}
+          title={getAiProductDraftDisplayName(draft)}
           subtitle={`Draft ${draft.id}`}
           actions={[
             {

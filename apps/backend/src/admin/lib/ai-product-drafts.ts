@@ -1,6 +1,8 @@
 import type { Badge } from "@medusajs/ui"
 import type React from "react"
 
+import type { AdminAiProductDraft } from "../types"
+
 type AiProductDraftListFilters = {
   q?: string
   source_agent?: string
@@ -57,4 +59,34 @@ export const buildAiProductDraftListUrl = (
 
   const query = params.toString()
   return `/admin/ai-product-drafts${query ? `?${query}` : ""}`
+}
+
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {}
+
+const asTrimmedString = (value: unknown): string =>
+  typeof value === "string" ? value.trim() : ""
+
+export const buildAiProductDraftDetailUrl = (id: string): string =>
+  `/ai-product-drafts/${encodeURIComponent(id)}`
+
+export const getAiProductDraftDisplayName = (
+  draft: Pick<
+    AdminAiProductDraft,
+    "id" | "normalized_draft" | "product_handle" | "product_id" | "product_input"
+  >
+): string => {
+  const normalizedTarget = asRecord(
+    asRecord(draft.normalized_draft).target_product
+  )
+
+  return (
+    asTrimmedString(asRecord(draft.product_input).product_name) ||
+    asTrimmedString(normalizedTarget.product_title) ||
+    asTrimmedString(draft.product_handle) ||
+    asTrimmedString(draft.product_id) ||
+    `Draft ${draft.id}`
+  )
 }
