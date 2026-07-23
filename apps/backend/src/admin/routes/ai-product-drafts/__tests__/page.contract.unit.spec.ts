@@ -28,6 +28,12 @@ describe("AI product draft Admin UI contracts", () => {
     expect(detailPageSource).toContain("break-words")
   })
 
+  it("confirms imports and surfaces mutation failures", () => {
+    expect(detailPageSource).toContain("usePrompt")
+    expect(detailPageSource).toContain('title: "Import approved draft?"')
+    expect(detailPageSource).toContain("toast.error")
+  })
+
   it("keeps the product title and overflow actions keyboard discoverable", () => {
     expect(listPageSource).toContain("<Link")
     expect(listPageSource).toContain("triggerLabel=")
