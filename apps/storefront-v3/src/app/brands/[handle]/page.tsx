@@ -21,6 +21,7 @@ import {
   parseDynamicOptionParams,
 } from "@/lib/utils/search-params";
 import { buildShopUrl, type ShopQueryParams } from "@/lib/utils/url";
+import { sanitizeCmsHtml } from "@/lib/security/sanitize-cms-html";
 
 // Force dynamic rendering to prevent caching
 export const dynamic = "force-dynamic";
@@ -147,7 +148,7 @@ function BrandHeaderContent({
         {richDescription && (
           <div
             className="prose prose-sm mt-3 max-w-none text-muted-foreground dark:prose-invert"
-            dangerouslySetInnerHTML={{ __html: richDescription }}
+            dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(richDescription) }}
           />
         )}
       </div>

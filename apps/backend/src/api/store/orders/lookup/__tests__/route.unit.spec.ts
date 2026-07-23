@@ -1,15 +1,19 @@
 const mockGraph = jest.fn()
+const mockFetch = jest.fn()
 
-import { GET } from '../route'
+global.fetch = mockFetch as unknown as typeof fetch
+
+import { POST } from '../route'
 
 const amount = (value: number) => ({
   toJSON: () => value,
   valueOf: () => value,
 })
 
-describe('GET /store/orders/lookup', () => {
+describe('POST /store/orders/lookup', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    process.env.STRIPE_SECRET_KEY = 'sk_test_safe'
   })
 
   it('returns an email-verified order by custom display id', async () => {
@@ -24,7 +28,7 @@ describe('GET /store/orders/lookup', () => {
     })
 
     const req = {
-      query: {
+      body: {
         email: ' CUSTOMER@example.com ',
         reference: ' 3DB-1777978800123 ',
       },
@@ -32,9 +36,13 @@ describe('GET /store/orders/lookup', () => {
         resolve: jest.fn().mockReturnValue({ graph: mockGraph }),
       },
     }
-    const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
+    const res = {
+      json: jest.fn(),
+      setHeader: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    }
 
-    await GET(req as never, res as never)
+    await POST(req as never, res as never)
 
     expect(mockGraph).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -46,10 +54,8 @@ describe('GET /store/orders/lookup', () => {
           'items.total',
           'items.variant.preorder_variant.available_date',
           'fulfillments.id',
-          'fulfillments.data',
           'fulfillments.labels.tracking_number',
-          'shipping_address.address_1',
-          'billing_address.address_1',
+          'shipping_address.city',
           'shipping_methods.name',
         ]),
         filters: {
@@ -57,12 +63,16 @@ describe('GET /store/orders/lookup', () => {
         },
       })
     )
+    const requestedFields = mockGraph.mock.calls[0]?.[0].fields
+    expect(requestedFields).not.toContain('fulfillments.data')
+    expect(requestedFields).not.toContain('billing_address.address_1')
     expect(res.json).toHaveBeenCalledWith({
       order: expect.objectContaining({
         id: 'order_123',
         custom_display_id: '3DB-1777978800123',
       }),
     })
+    expect(res.json.mock.calls[0]?.[0].order).not.toHaveProperty('email')
   })
 
   it('normalizes graph totals so custom reference lookups match customer-facing order details', async () => {
@@ -95,7 +105,7 @@ describe('GET /store/orders/lookup', () => {
     })
 
     const req = {
-      query: {
+      body: {
         email: 'customer@example.com',
         reference: '3DBO-NSX9-UUTPSK',
       },
@@ -103,9 +113,13 @@ describe('GET /store/orders/lookup', () => {
         resolve: jest.fn().mockReturnValue({ graph: mockGraph }),
       },
     }
-    const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
+    const res = {
+      json: jest.fn(),
+      setHeader: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    }
 
-    await GET(req as never, res as never)
+    await POST(req as never, res as never)
 
     const payload = res.json.mock.calls[0]?.[0]
 
@@ -162,7 +176,7 @@ describe('GET /store/orders/lookup', () => {
     })
 
     const req = {
-      query: {
+      body: {
         email: 'customer@example.com',
         reference: '3DBO-AKK7-5KYYDE',
       },
@@ -170,9 +184,13 @@ describe('GET /store/orders/lookup', () => {
         resolve: jest.fn().mockReturnValue({ graph: mockGraph }),
       },
     }
-    const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
+    const res = {
+      json: jest.fn(),
+      setHeader: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    }
 
-    await GET(req as never, res as never)
+    await POST(req as never, res as never)
 
     const payload = res.json.mock.calls[0]?.[0]
 
@@ -205,9 +223,7 @@ describe('GET /store/orders/lookup', () => {
             {
               id: 'ful_1',
               shipped_at: '2026-06-03T01:00:00.000Z',
-              data: {
-                tracking_number: 'STG-3DBO-AKK7-5KYYDE',
-              },
+              shipped_at: '2026-06-03T01:00:00.000Z',
             },
           ],
         },
@@ -215,7 +231,7 @@ describe('GET /store/orders/lookup', () => {
     })
 
     const req = {
-      query: {
+      body: {
         email: 'customer@example.com',
         reference: '3DBO-AKK7-5KYYDE',
       },
@@ -223,25 +239,27 @@ describe('GET /store/orders/lookup', () => {
         resolve: jest.fn().mockReturnValue({ graph: mockGraph }),
       },
     }
-    const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
+    const res = {
+      json: jest.fn(),
+      setHeader: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    }
 
-    await GET(req as never, res as never)
+    await POST(req as never, res as never)
 
     expect(res.json).toHaveBeenCalledWith({
       order: expect.objectContaining({
         fulfillment_status: 'shipped',
         fulfillments: expect.arrayContaining([
           expect.objectContaining({
-            data: expect.objectContaining({
-              tracking_number: 'STG-3DBO-AKK7-5KYYDE',
-            }),
+            shipped_at: '2026-06-03T01:00:00.000Z',
           }),
         ]),
       }),
     })
   })
 
-  it('does not request or return payment provider data in public lookup responses', async () => {
+  it('derives a safe payment summary inside the verified lookup boundary', async () => {
     mockGraph.mockResolvedValue({
       data: [
         {
@@ -264,9 +282,22 @@ describe('GET /store/orders/lookup', () => {
         },
       ],
     })
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: 'pm_sensitive',
+        type: 'card',
+        card: {
+          brand: 'visa',
+          last4: '4242',
+          exp_month: 7,
+          exp_year: 2030,
+        },
+      }),
+    })
 
     const req = {
-      query: {
+      body: {
         email: 'customer@example.com',
         reference: '3DBO-AKK7-5KYYDE',
       },
@@ -274,15 +305,26 @@ describe('GET /store/orders/lookup', () => {
         resolve: jest.fn().mockReturnValue({ graph: mockGraph }),
       },
     }
-    const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
+    const res = {
+      json: jest.fn(),
+      setHeader: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    }
 
-    await GET(req as never, res as never)
+    await POST(req as never, res as never)
 
     const graphRequest = mockGraph.mock.calls[0]?.[0]
     const payload = res.json.mock.calls[0]?.[0]
 
-    expect(graphRequest.fields).not.toContain('payment_collections.payments.data')
+    expect(graphRequest.fields).toContain('payment_collections.payments.data')
     expect(payload.order).not.toHaveProperty('payment_collections')
+    expect(payload.order.tracking_payment_method).toEqual({
+      type: 'card',
+      brand: 'visa',
+      last4: '4242',
+    })
+    expect(JSON.stringify(payload)).not.toContain('pm_sensitive')
+    expect(JSON.stringify(payload)).not.toContain('exp_month')
   })
 
   it('rejects lookup when the email does not match', async () => {
@@ -297,7 +339,7 @@ describe('GET /store/orders/lookup', () => {
     })
 
     const req = {
-      query: {
+      body: {
         email: 'other@example.com',
         reference: '3DB-1777978800123',
       },
@@ -305,9 +347,13 @@ describe('GET /store/orders/lookup', () => {
         resolve: jest.fn().mockReturnValue({ graph: mockGraph }),
       },
     }
-    const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
+    const res = {
+      json: jest.fn(),
+      setHeader: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    }
 
-    await GET(req as never, res as never)
+    await POST(req as never, res as never)
 
     expect(res.status).toHaveBeenCalledWith(404)
     expect(res.json).toHaveBeenCalledWith({ order: null })
@@ -315,7 +361,7 @@ describe('GET /store/orders/lookup', () => {
 
   it('requires both reference and email', async () => {
     const req = {
-      query: {
+      body: {
         email: '',
         reference: '',
       },
@@ -323,9 +369,13 @@ describe('GET /store/orders/lookup', () => {
         resolve: jest.fn().mockReturnValue({ graph: mockGraph }),
       },
     }
-    const res = { json: jest.fn(), status: jest.fn().mockReturnThis() }
+    const res = {
+      json: jest.fn(),
+      setHeader: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    }
 
-    await GET(req as never, res as never)
+    await POST(req as never, res as never)
 
     expect(mockGraph).not.toHaveBeenCalled()
     expect(res.status).toHaveBeenCalledWith(400)

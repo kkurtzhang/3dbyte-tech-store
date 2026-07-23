@@ -7,6 +7,7 @@ const mockGetShippingOptions = jest.fn()
 const mockGetLiveShippingRates = jest.fn()
 const mockAddShippingMethod = jest.fn()
 const mockCalculateShippingOption = jest.fn()
+const mockCompletePreorderCart = jest.fn()
 
 jest.mock("next/headers", () => ({
   cookies: (...args: unknown[]) => mockCookies(...args)
@@ -22,7 +23,7 @@ jest.mock("@/lib/medusa/cart", () => ({
     mockInitiatePaymentSession(...args),
   getCart: (...args: unknown[]) => mockGetCart(...args),
   addShippingMethod: (...args: unknown[]) => mockAddShippingMethod(...args),
-  completePreorderCart: jest.fn(),
+  completePreorderCart: (...args: unknown[]) => mockCompletePreorderCart(...args),
   getShippingOptions: (...args: unknown[]) => mockGetShippingOptions(...args),
   calculateShippingOption: (...args: unknown[]) =>
     mockCalculateShippingOption(...args)
@@ -33,6 +34,7 @@ jest.mock("@/lib/medusa/shipping", () => ({
 }))
 
 import {
+  completeCartAction,
   getShippingOptionsAction,
   initPaymentSessionAction,
   setAddressesAction,
@@ -41,7 +43,8 @@ import {
 
 const cookieStore = {
   get: jest.fn(() => ({ value: "cart_123" })),
-  delete: jest.fn()
+  delete: jest.fn(),
+  set: jest.fn(),
 }
 
 describe("checkout actions", () => {
@@ -52,6 +55,9 @@ describe("checkout actions", () => {
     mockUpdateCart.mockResolvedValue({ id: "cart_123" })
     mockGetLiveShippingRates.mockResolvedValue({ rates: [] })
     mockCalculateShippingOption.mockResolvedValue(9.95)
+    mockCompletePreorderCart.mockResolvedValue({ id: "order_123" })
+    process.env.ORDER_ACCESS_TOKEN_SECRET =
+      "test-order-access-secret-that-is-at-least-32-bytes"
     mockInitiatePaymentSession.mockResolvedValue({
       payment_collection: {
         payment_sessions: [
@@ -62,6 +68,24 @@ describe("checkout actions", () => {
         ]
       }
     })
+  })
+
+  it("issues an HTTP-only proof cookie for the completed order", async () => {
+    await expect(completeCartAction()).resolves.toMatchObject({
+      success: true,
+      order: { id: "order_123" },
+    })
+
+    expect(cookieStore.set).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: "_3db_order_access",
+        value: expect.any(String),
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/order/confirmed",
+        maxAge: 3600,
+      })
+    )
   })
 
   it("uses Medusa's registered Stripe payment provider id", async () => {

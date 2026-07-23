@@ -11,6 +11,15 @@ root_pnpm_version="$(
 
 config="$(docker compose -f "${compose}" config --no-interpolate)"
 
+order_access_secret_count="$(
+  grep -Fc 'ORDER_ACCESS_TOKEN_SECRET:' "${compose}"
+)"
+
+if [ "${order_access_secret_count}" -ne 2 ]; then
+  echo "ORDER_ACCESS_TOKEN_SECRET must be supplied to both Medusa and the storefront."
+  exit 1
+fi
+
 backend_dockerfile_count="$(
   printf '%s\n' "${config}" |
     grep -Fc 'dockerfile: docker/backend/Dockerfile.release'

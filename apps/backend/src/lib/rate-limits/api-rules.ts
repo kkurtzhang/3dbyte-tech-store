@@ -18,13 +18,6 @@ function positiveIntegerFromEnv(value: string | undefined, fallback: number) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
-export const storeSearchRateLimit = createRateLimitMiddleware({
-  name: "store_search",
-  limit: 120,
-  windowMs: minute,
-  key: ipKey("store_search"),
-});
-
 export const storeAddressAutocompleteRateLimit = createRateLimitMiddleware({
   name: "store_address_autocomplete",
   limit: 120,
@@ -59,6 +52,14 @@ export const storeWaitlistJoinRateLimit = createRateLimitMiddleware({
   limit: 10,
   windowMs: 10 * minute,
   key: ipKey("store_waitlist_join"),
+});
+
+export const storeOrderLookupRateLimit = createRateLimitMiddleware({
+  name: "store_order_lookup",
+  limit: 5,
+  windowMs: 10 * minute,
+  key: ipKey("store_order_lookup"),
+  message: "Too many order lookup attempts. Please try again shortly.",
 });
 
 export const customerEmailChangeRateLimit = createRateLimitMiddleware({
@@ -125,5 +126,6 @@ export const hermesProductDraftRateLimit = createRateLimitMiddleware({
   ),
   windowMs: minute,
   key: ipKey("hermes_product_draft"),
-  message: "Too many Hermes product draft submissions. Please try again shortly.",
+  message:
+    "Too many Hermes product draft submissions. Please try again shortly.",
 });

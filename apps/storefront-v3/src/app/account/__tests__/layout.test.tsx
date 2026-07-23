@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import path from "node:path"
-import { render, screen } from "@testing-library/react"
+import { fireEvent, render, screen } from "@testing-library/react"
 
 import { getSessionAction } from "@/app/actions/auth"
 import { AccountShellSkeleton } from "@/components/loading/storefront-page-skeletons"
@@ -61,6 +61,16 @@ describe("AccountNav", () => {
     expect(
       screen.queryByRole("link", { name: /^profile$/i }),
     ).not.toBeInTheDocument()
+  })
+
+  it("uses client-side routing for the mobile account selector", () => {
+    render(<AccountNav />)
+
+    fireEvent.change(screen.getByLabelText(/navigate account sections/i), {
+      target: { value: "/account/orders" },
+    })
+
+    expect(mockPush).toHaveBeenCalledWith("/account/orders")
   })
 
   it("gates account pages for signed-in customers who have not verified email ownership", async () => {

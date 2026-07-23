@@ -113,7 +113,7 @@ medusaIntegrationTestRunner({
 		 *   const { MeiliSearch } = require("meilisearch")
 		 *   const client = new MeiliSearch({
 		 *     host: process.env.MEILISEARCH_HOST,
-		 *     apiKey: process.env.MEILISEARCH_API_KEY,
+		 *     apiKey: process.env.MEILISEARCH_BACKEND_API_KEY,
 		 *   })
 		 *
 		 *   // Create brand

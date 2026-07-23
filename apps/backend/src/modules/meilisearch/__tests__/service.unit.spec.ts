@@ -1,6 +1,8 @@
 import MeilisearchModuleService from "../service";
 
 const mockIndex = {
+  addDocuments: jest.fn(),
+  deleteDocuments: jest.fn(),
   getDocuments: jest.fn(),
   updateFilterableAttributes: jest.fn(),
   updateSortableAttributes: jest.fn(),
@@ -11,10 +13,14 @@ const mockIndex = {
   updateFaceting: jest.fn(),
   updatePagination: jest.fn(),
 };
+const mockWaitForTask = jest.fn();
 
 jest.mock("meilisearch", () => ({
   MeiliSearch: jest.fn().mockImplementation(() => ({
     index: jest.fn().mockReturnValue(mockIndex),
+    tasks: {
+      waitForTask: mockWaitForTask,
+    },
   })),
 }));
 
@@ -54,6 +60,10 @@ describe("MeilisearchModuleService.configureIndex", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockIndex.getDocuments.mockResolvedValue({ results: [], total: 0 });
+    mockWaitForTask.mockImplementation(async (taskUid: number) => ({
+      ...createTask(taskUid),
+      status: "succeeded",
+    }));
     [
       mockIndex.updateFilterableAttributes,
       mockIndex.updateSortableAttributes,
@@ -81,6 +91,49 @@ describe("MeilisearchModuleService.configureIndex", () => {
 
     expect(mockIndex.updateFilterableAttributes).toHaveBeenCalledWith([]);
     expect(mockIndex.updateSortableAttributes).toHaveBeenCalledWith([]);
+    expect(mockWaitForTask).toHaveBeenCalledWith(1, expect.any(Object));
+    expect(mockWaitForTask).toHaveBeenCalledWith(2, expect.any(Object));
+  });
+});
+
+describe("MeilisearchModuleService mutation completion", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockIndex.addDocuments.mockResolvedValue(createTask(41));
+    mockIndex.deleteDocuments.mockResolvedValue(createTask(42));
+    mockWaitForTask.mockImplementation(async (taskUid: number) => ({
+      ...createTask(taskUid),
+      status: "succeeded",
+    }));
+  });
+
+  it("waits for document writes before reporting success", async () => {
+    const service = createService();
+
+    await service.indexData([{ id: "prod_1" }], "product");
+
+    expect(mockWaitForTask).toHaveBeenCalledWith(41, expect.any(Object));
+  });
+
+  it("waits for document deletes before reporting success", async () => {
+    const service = createService();
+
+    await service.deleteFromIndex(["prod_1"], "product");
+
+    expect(mockWaitForTask).toHaveBeenCalledWith(42, expect.any(Object));
+  });
+
+  it("fails the workflow when Meilisearch finishes a task unsuccessfully", async () => {
+    mockWaitForTask.mockResolvedValue({
+      ...createTask(41),
+      status: "failed",
+      error: { message: "invalid document" },
+    });
+    const service = createService();
+
+    await expect(
+      service.indexData([{ id: "prod_1" }], "product"),
+    ).rejects.toThrow("Meilisearch task 41 failed");
   });
 });
 

@@ -11,6 +11,13 @@ import {
   calculateShippingOption,
 } from "@/lib/medusa/cart"
 import { getLiveShippingRates, type ShippingRate } from "@/lib/medusa/shipping"
+import {
+  getOrderAccessCookieOptions,
+  getOrderAccessTokenSecret,
+  ORDER_ACCESS_COOKIE,
+  ORDER_ACCESS_MAX_AGE_SECONDS,
+} from "@/lib/order-access/cookie"
+import { createOrderAccessToken } from "@/lib/order-access/token"
 import { getShippingServiceDisplayName } from "@/lib/shipping/display-name"
 import { z } from "zod"
 
@@ -347,7 +354,19 @@ export async function completeCartAction() {
   if (!cartId) return { success: false, error: "No cart found" }
 
   try {
+    const orderAccessSecret = getOrderAccessTokenSecret()
     const order = await completePreorderCart(cartId)
+    const orderAccessToken = createOrderAccessToken({
+      orderId: order.id,
+      secret: orderAccessSecret,
+      ttlSeconds: ORDER_ACCESS_MAX_AGE_SECONDS,
+    })
+
+    cookieStore.set({
+      name: ORDER_ACCESS_COOKIE,
+      value: orderAccessToken,
+      ...getOrderAccessCookieOptions(),
+    })
     cookieStore.delete(CART_COOKIE)
     return { success: true, order }
   } catch (error: unknown) {

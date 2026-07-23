@@ -1,4 +1,4 @@
-import { getProductByHandle } from "@/lib/medusa/products"
+import { getProductReadByHandle } from "@/lib/medusa/products"
 import {
   getAvailableInBundleProducts,
   getProductCurrencyCode,
@@ -8,6 +8,7 @@ import {
 import { getStrapiContent } from "@/lib/strapi/content"
 import { getPublicProductDocuments } from "@/lib/product-documents/api"
 import type { PricingContext } from "@/lib/medusa/regions"
+import { sanitizeCmsHtml } from "@/lib/security/sanitize-cms-html"
 
 interface StrapiProductDescription {
   id: number
@@ -30,13 +31,23 @@ interface StrapiResponse<T> {
   }
 }
 
-export async function loadProductPageData(
-  handle: string,
-  pricingContext?: PricingContext
-) {
-  const [product, strapiData] = await Promise.all([
-    getProductByHandle(handle, pricingContext),
-    getStrapiContent<StrapiResponse<StrapiProductDescription>>("product-descriptions", {
+type ProductDescriptionRead =
+  | { status: "found"; data: StrapiProductDescription; stale: boolean }
+  | { status: "missing" }
+  | { status: "unavailable" }
+
+const lastProductDescriptionByHandle = new Map<
+  string,
+  StrapiProductDescription
+>()
+
+async function loadProductDescription(
+  handle: string
+): Promise<ProductDescriptionRead> {
+  try {
+    const response = await getStrapiContent<
+      StrapiResponse<StrapiProductDescription>
+    >("product-descriptions", {
       filters: {
         product_handle: {
           $eq: handle,
@@ -46,12 +57,44 @@ export async function loadProductPageData(
         page: 1,
         pageSize: 1,
       },
-    }).catch(() => ({ data: [] })),
+    })
+    const description = response.data?.find(
+      (item) => item.product_handle === handle
+    )
+
+    if (!description) {
+      lastProductDescriptionByHandle.delete(handle)
+      return { status: "missing" }
+    }
+
+    lastProductDescriptionByHandle.set(handle, description)
+    return { status: "found", data: description, stale: false }
+  } catch {
+    const cached = lastProductDescriptionByHandle.get(handle)
+    return cached
+      ? { status: "found", data: cached, stale: true }
+      : { status: "unavailable" }
+  }
+}
+
+export async function loadProductPageData(
+  handle: string,
+  pricingContext?: PricingContext
+) {
+  const [productRead, productDescription] = await Promise.all([
+    getProductReadByHandle(handle, pricingContext),
+    loadProductDescription(handle),
   ])
 
-  if (!product) {
+  if (productRead.status === "not_found") {
     return null
   }
+
+  if (productRead.status === "unavailable") {
+    return { status: "unavailable" as const }
+  }
+
+  const product = productRead.product
 
   const bundleLink = getBundleLink(product)
   const currencyCode = pricingContext?.currency_code ?? getProductCurrencyCode(product)
@@ -78,21 +121,32 @@ export async function loadProductPageData(
       )
     ) || []
 
-  const enrichedContent = strapiData?.data?.find(
-    (item) =>
-      item.medusa_product_id === product.id ||
-      item.product_handle === product.handle ||
-      item.product_handle === handle
-  )
+  const enrichedContent =
+    productDescription.status === "found" &&
+    (productDescription.data.medusa_product_id === product.id ||
+      productDescription.data.product_handle === product.handle ||
+      productDescription.data.product_handle === handle)
+      ? productDescription.data
+      : undefined
+
+  const richDescription =
+    enrichedContent?.rich_description ?? enrichedContent?.rich_text
 
   return {
+    status: productRead.status,
+    contentStatus: productDescription.status,
+    contentStale:
+      productDescription.status === "found"
+        ? productDescription.stale
+        : false,
     product,
     bundleLink,
     bundleProduct,
     availableInBundles,
     variantImageUrls,
     productDocuments,
-    richDescription:
-      enrichedContent?.rich_description ?? enrichedContent?.rich_text,
+    richDescription: richDescription
+      ? sanitizeCmsHtml(richDescription)
+      : undefined,
   }
 }

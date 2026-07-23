@@ -43,7 +43,11 @@ export default async function BundleProductPage({
   const pricing = await getPricingContext()
   const pageData = await loadProductPageData(handle, pricing)
 
-  if (!pageData || !pageData.bundleLink || !pageData.bundleProduct) {
+  if (!pageData || pageData.status === "unavailable") {
+    notFound()
+  }
+
+  if (!pageData.bundleLink || !pageData.bundleProduct) {
     notFound()
   }
 
@@ -61,6 +65,7 @@ export default async function BundleProductPage({
         variantImageUrls={pageData.variantImageUrls}
         bundleProduct={pageData.bundleProduct}
         availableInBundles={pageData.availableInBundles}
+        readOnly={pageData.status === "cached_read_only"}
       />
     </Suspense>
   )

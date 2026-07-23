@@ -59,6 +59,7 @@ jest.mock(
 jest.mock("@/lib/security/rate-limit", () => ({
   checkRateLimit: (key: string, limit: number, windowMs: number) =>
     checkRateLimitMock(key, limit, windowMs),
+  getClientIp: () => "203.0.113.42",
 }))
 
 jest.mock("../prompt-management", () => ({

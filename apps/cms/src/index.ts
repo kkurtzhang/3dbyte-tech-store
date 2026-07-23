@@ -59,7 +59,7 @@ export default {
    * run jobs, or perform some special logic.
    */
   async bootstrap({ strapi }: { strapi: Core.Strapi }) {
-    const configuredApiKey = process.env.MEILISEARCH_API_KEY?.trim() ?? "";
+    const configuredApiKey = process.env.MEILISEARCH_CMS_API_KEY?.trim() ?? "";
     const configuredHost = process.env.MEILISEARCH_HOST?.trim() ?? "";
 
     // strapi-plugin-meilisearch keeps old credentials in core store.

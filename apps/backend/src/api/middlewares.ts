@@ -13,7 +13,6 @@ import {
 } from "./admin/brands/validators";
 import { z } from "@medusajs/framework/zod";
 import { createFindParams } from "@medusajs/medusa/api/utils/validators";
-import { storeSearchRoutesMiddlewares } from "./store/search/middlewares";
 import { storeAddressAutocompleteMiddlewares } from "./store/addresses/autocomplete/middlewares";
 import { storeLocalityAutocompleteMiddlewares } from "./store/localities/autocomplete/middlewares";
 import { UpsertPreorderVariantSchema } from "./admin/variants/[id]/preorders/route";
@@ -34,6 +33,7 @@ import { PostStoreClaimCustomerAccountSchema } from "./store/customers/claim-acc
 import { PostStoreGoogleLinkIntentSchema } from "./store/customers/me/google-link-intents/route";
 import { PostStoreEmailpassLoginMethodSchema } from "./store/customers/me/login-methods/emailpass/route";
 import { PostStoreCustomerEmailChangeSchema } from "./store/customers/me/email-change-requests/route";
+import { PostStoreOrderLookupSchema } from "./store/orders/lookup/route";
 import { GetAdminIdentityIssuesSchema } from "./admin/identity-issues/route";
 import { PostAdminResolveIdentityIssueSchema } from "./admin/identity-issues/resolve/route";
 import {
@@ -47,10 +47,12 @@ import {
   hermesProductDraftRateLimit,
   internalAiRateLimit,
   storeNewsletterSubscribeRateLimit,
+  storeOrderLookupRateLimit,
   storeSupportTicketRateLimit,
   storeWaitlistJoinRateLimit,
 } from "../lib/rate-limits/api-rules";
 import { hermesProductDraftPayloadLimit } from "../lib/ai-product-drafts/security";
+import { requireStoreOrderAccess } from "../lib/order-access/middleware";
 
 export const GetBrandsSchema = createFindParams();
 
@@ -205,7 +207,6 @@ export default defineMiddlewares({
       methods: ["POST"],
       middlewares: [validateAndTransformBody(AddPricedLineItemSchema)],
     },
-    ...storeSearchRoutesMiddlewares,
     ...storeAddressAutocompleteMiddlewares,
     ...storeLocalityAutocompleteMiddlewares,
     // Wishlist routes
@@ -395,6 +396,24 @@ export default defineMiddlewares({
       matcher: "/admin/fulfillments/:id/label",
       methods: ["POST"],
       middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
+    },
+    {
+      matcher: "/store/orders/:id",
+      methods: ["GET"],
+      middlewares: [
+        authenticate("customer", ["session", "bearer"], {
+          allowUnauthenticated: true,
+        }),
+        requireStoreOrderAccess,
+      ],
+    },
+    {
+      matcher: "/store/orders/lookup",
+      methods: ["POST"],
+      middlewares: [
+        storeOrderLookupRateLimit,
+        validateAndTransformBody(PostStoreOrderLookupSchema),
+      ],
     },
     {
       matcher: "/store/support-tickets",

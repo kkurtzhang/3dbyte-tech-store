@@ -70,9 +70,6 @@ describe("API middleware configuration", () => {
   it("rate limits expensive public storefront lookup routes", async () => {
     const { default: configuration } = await import("../middlewares");
 
-    const searchRoute = configuration.routes.find(
-      (route: { matcher: string }) => route.matcher === "/store/search",
-    );
     const addressAutocompleteRoute = configuration.routes.find(
       (route: { matcher: string }) =>
         route.matcher === "/store/addresses/autocomplete",
@@ -82,7 +79,6 @@ describe("API middleware configuration", () => {
         route.matcher === "/store/localities/autocomplete",
     );
 
-    expect(hasRateLimit(searchRoute, "store_search")).toBe(true);
     expect(
       hasRateLimit(addressAutocompleteRoute, "store_address_autocomplete"),
     ).toBe(true);
@@ -106,12 +102,37 @@ describe("API middleware configuration", () => {
       (route: { matcher: string; methods?: string[] }) =>
         route.matcher === "/store/waitlist" && route.methods?.includes("POST"),
     );
+    const orderLookupRoute = configuration.routes.find(
+      (route: { matcher: string; methods?: string[] }) =>
+        route.matcher === "/store/orders/lookup" &&
+        route.methods?.includes("POST"),
+    );
 
     expect(hasRateLimit(supportRoute, "store_support_ticket")).toBe(true);
     expect(hasRateLimit(newsletterRoute, "store_newsletter_subscribe")).toBe(
       true,
     );
     expect(hasRateLimit(waitlistRoute, "store_waitlist_join")).toBe(true);
+    expect(hasRateLimit(orderLookupRoute, "store_order_lookup")).toBe(true);
+  });
+
+  it("requires customer ownership or signed proof for direct order reads", async () => {
+    const { default: configuration } = await import("../middlewares");
+    const orderReadRoute = configuration.routes.find(
+      (route: { matcher: string; methods?: string[] }) =>
+        route.matcher === "/store/orders/:id" &&
+        route.methods?.includes("GET"),
+    );
+
+    expect(orderReadRoute).toBeDefined();
+    expect(orderReadRoute?.middlewares[0]).toEqual({
+      actorType: "customer",
+      authTypes: ["session", "bearer"],
+      options: { allowUnauthenticated: true },
+    });
+    expect(orderReadRoute?.middlewares[1]).toEqual(
+      expect.objectContaining({ orderAccessMiddleware: true }),
+    );
   });
 
   it("rate limits authenticated account security mutations after authentication", async () => {

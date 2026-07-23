@@ -155,7 +155,7 @@ describe("resolveAdminIdentityIssue", () => {
       resolveAdminIdentityIssue({
         adminId: "user_admin",
         container: container as never,
-        issueId: "orphan_auth_identity:0123456789abcdef",
+        issueId: "orphan_auth_identity:0000000000000000",
       }),
     ).rejects.toThrow("Identity issue no longer exists");
     expect(mockDeleteOrphan).not.toHaveBeenCalled();

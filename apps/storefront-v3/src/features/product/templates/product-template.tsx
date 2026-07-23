@@ -6,8 +6,8 @@ import { ProductActions } from "../components/product-actions"
 import { ProductBreadcrumbs } from "../components/product-breadcrumbs"
 import { ProductSupportPanel } from "../components/product-support-panel"
 import { ProductDocumentsPanel } from "../components/product-documents-panel"
+import { ProductCompatibilityPanel } from "../components/product-compatibility-panel"
 import { RecentlyViewedProducts } from "@/components/product/recently-viewed-products"
-import { Separator } from "@/components/ui/separator"
 import { useQueryState } from "nuqs"
 import { useRecentlyViewed } from "@/lib/hooks/use-recently-viewed"
 import type { MedusaProduct, MedusaProductVariant } from "@/lib/medusa/types"
@@ -19,12 +19,6 @@ import {
   type ProductSourceContext,
 } from "../lib/product-detail-content"
 
-interface VariantImageData {
-  id: string
-  url: string
-  variantId: string
-}
-
 interface ProductTemplateProps {
   product: MedusaProduct
   richDescription?: string
@@ -33,6 +27,7 @@ interface ProductTemplateProps {
   availableInBundles?: BundleProduct[]
   sourceContext?: ProductSourceContext | null
   productDocuments?: PublicProductDocument[]
+  readOnly?: boolean
 }
 
 function ProductRichDescription({
@@ -60,6 +55,7 @@ export function ProductTemplate({
   availableInBundles = [],
   sourceContext,
   productDocuments = [],
+  readOnly = false,
 }: ProductTemplateProps) {
   const [variantId, setVariantId] = useQueryState("variant", {
     shallow: false,
@@ -141,14 +137,31 @@ export function ProductTemplate({
 
         {/* Right Column: Details & Actions */}
         <div className="flex flex-col gap-8">
-           <ProductActions
-              product={product}
-              selectedVariant={selectedVariant}
-              onVariantChange={handleVariantChange}
-              options={options}
-              setOptions={setOptions}
-              bundleProduct={bundleProduct}
-              availableInBundles={availableInBundles}
+           {readOnly ? (
+             <div
+               role="status"
+               className="rounded-sm border border-amber-500/40 bg-amber-500/10 p-5 text-sm text-amber-950 dark:text-amber-100"
+             >
+               <p className="font-semibold">Live purchasing is temporarily paused</p>
+               <p className="mt-1">
+                 Live price and availability are temporarily unavailable. You can
+                 still browse the cached product information, but checkout is disabled.
+               </p>
+             </div>
+           ) : (
+             <ProductActions
+                product={product}
+                selectedVariant={selectedVariant}
+                onVariantChange={handleVariantChange}
+                options={options}
+                setOptions={setOptions}
+                bundleProduct={bundleProduct}
+                availableInBundles={availableInBundles}
+             />
+           )}
+
+           <ProductCompatibilityPanel
+             metadata={product.metadata as Record<string, unknown> | null | undefined}
            />
 
            <ProductSupportPanel />

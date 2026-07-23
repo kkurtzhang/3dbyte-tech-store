@@ -11,7 +11,7 @@
  * Environment variables:
  *   - ADDRESS_REINDEX_ENABLED: Must be "true" to run the shared address reindex
  *   - MEILISEARCH_HOST: Meilisearch server URL
- *   - MEILISEARCH_API_KEY: Meilisearch API key
+ *   - MEILISEARCH_BACKEND_API_KEY: backend-scoped Meilisearch key
  *   - MEILISEARCH_ADDRESS_INDEX_NAME: Production index name (default: "addresses")
  *   - MEILISEARCH_LOCALITY_INDEX_NAME: Locality index name (default: "localities")
  *   - OPENADDRESSES_API_TOKEN: Optional API token for OpenAddresses batch API

@@ -8,6 +8,11 @@ jest.mock("next/server", () => ({
   },
 }))
 
+jest.mock("@/lib/security/rate-limit", () => ({
+  checkRateLimit: () => ({ allowed: true, retryAfterMs: 0 }),
+  getClientIp: () => "203.0.113.10",
+}))
+
 const { POST } = jest.requireActual("../route")
 
 const mockFetch = jest.fn()

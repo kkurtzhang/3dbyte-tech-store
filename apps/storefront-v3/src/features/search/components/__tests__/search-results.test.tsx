@@ -59,4 +59,14 @@ describe("SearchResults", () => {
     expect(screen.getByText("PETG Filament")).toBeInTheDocument()
     expect(screen.queryByText("PETG Cleanup Tool")).not.toBeInTheDocument()
   })
+
+  it("uses document list semantics instead of wrapping interactive cards in options", () => {
+    render(
+      <SearchResults initialHits={[product("petg", "PETG Filament")]} />,
+    )
+
+    expect(screen.getByRole("list", { name: /search results/i })).toBeInTheDocument()
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument()
+    expect(screen.queryByRole("option")).not.toBeInTheDocument()
+  })
 })

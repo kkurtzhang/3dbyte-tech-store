@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation"
+import { cookies } from "next/headers"
 import Link from "next/link"
 import type { Metadata } from "next"
 import { CheckCircle2 } from "lucide-react"
@@ -6,7 +7,11 @@ import { Button } from "@/components/ui/button"
 import { PrintButton } from "@/components/print-button"
 import { getOrder } from "@/lib/medusa/orders"
 import {
-  getCustomerOrderNumber,
+  getOrderAccessTokenSecret,
+  ORDER_ACCESS_COOKIE,
+} from "@/lib/order-access/cookie"
+import { verifyOrderAccessToken } from "@/lib/order-access/token"
+import {
   getOrderTrackingReference,
   OrderSummary,
 } from "@/features/order/components/order-summary"
@@ -19,7 +24,27 @@ export default async function OrderConfirmedPage({
   params,
 }: OrderConfirmedPageProps) {
   const { id } = await params
-  const order = await getOrder(id)
+  const cookieStore = await cookies()
+  const orderAccessToken = cookieStore.get(ORDER_ACCESS_COOKIE)?.value
+  let hasAccess = false
+
+  try {
+    hasAccess = verifyOrderAccessToken({
+      token: orderAccessToken,
+      orderId: id,
+      secret: getOrderAccessTokenSecret(),
+    })
+  } catch {
+    hasAccess = false
+  }
+
+  if (!hasAccess) {
+    notFound()
+  }
+
+  const order = await getOrder(id, undefined, {
+    "x-order-access-token": orderAccessToken!,
+  })
 
   if (!order) {
     notFound()
@@ -71,14 +96,10 @@ export default async function OrderConfirmedPage({
 }
 
 export async function generateMetadata({
-  params,
+  params: _params,
 }: OrderConfirmedPageProps): Promise<Metadata> {
-  const { id } = await params
-  const order = await getOrder(id)
-  const orderNumber = order ? getCustomerOrderNumber(order) : id
-
   return {
-    title: `Order ${orderNumber} - Confirmed`,
+    title: "Order confirmed",
     description: "Your order has been confirmed. View your order details here.",
   }
 }

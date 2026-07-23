@@ -85,7 +85,7 @@ export function AccountNav() {
             id="account-nav"
             value={pathname}
             onChange={(e) => {
-              window.location.href = e.target.value
+              router.push(e.target.value)
             }}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >

@@ -1,18 +1,23 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useRef, useState, type FormEvent } from "react"
 import { Button } from "@/components/ui/button"
-import { CreditCard, Wallet } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { CreditCard } from "lucide-react"
 import { PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js"
 
 interface PaymentStepProps {
   onBack: () => void
   onComplete: () => Promise<void> | void
+  total: number
+  currencyCode: string
 }
 
-export function PaymentStep({ onBack, onComplete }: PaymentStepProps) {
-  const [method, setMethod] = useState<"card" | "manual">("card")
+export function PaymentStep({
+  onBack,
+  onComplete,
+  total,
+  currencyCode,
+}: PaymentStepProps) {
   const [isProcessing, setIsProcessing] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const isProcessingRef = useRef(false)
@@ -20,7 +25,7 @@ export function PaymentStep({ onBack, onComplete }: PaymentStepProps) {
   const stripe = useStripe()
   const elements = useElements()
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (isProcessingRef.current) return
 
@@ -29,50 +34,56 @@ export function PaymentStep({ onBack, onComplete }: PaymentStepProps) {
     setErrorMessage(null)
 
     try {
-      if (method === "card") {
-        if (!stripe || !elements) {
-          throw new Error("Stripe not initialized")
-        }
-
-        // Trigger form validation and wallet collection
-        const { error: submitError } = await elements.submit()
-        if (submitError) {
-          throw new Error(submitError.message)
-        }
-
-        // Confirm the payment
-        // We use redirect: 'if_required' to handle success in-place if possible,
-        // but typically for complex flows we might just let it redirect.
-        // For this single-page flow, we'll try to keep it here.
-        const { error } = await stripe.confirmPayment({
-          elements,
-          confirmParams: {
-            return_url: `${window.location.origin}/checkout/confirmation`,
-          },
-          redirect: 'if_required',
-        })
-
-        if (error) {
-          throw new Error(error.message)
-        }
+      if (!stripe || !elements) {
+        throw new Error("Stripe not initialized")
       }
 
-      // If manual or successful stripe payment (no redirect happened)
-      await onComplete()
+      const { error: submitError } = await elements.submit()
+      if (submitError) {
+        throw new Error(submitError.message)
+      }
 
-    } catch (error: any) {
+      const { error } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/checkout/confirmation`,
+        },
+        redirect: "if_required",
+      })
+
+      if (error) {
+        throw new Error(error.message)
+      }
+
+      await onComplete()
+    } catch (error: unknown) {
       console.error(error)
-      setErrorMessage(error.message || "Payment processing failed")
+      setErrorMessage(
+        error instanceof Error ? error.message : "Payment processing failed"
+      )
     } finally {
       isProcessingRef.current = false
       setIsProcessing(false)
     }
   }
 
-  const selectPaymentMethod = (nextMethod: "card" | "manual") => {
-    if (isProcessing) return
-    setMethod(nextMethod)
-  }
+  const normalizedCurrency = currencyCode.toUpperCase()
+  const regionalPrefix =
+    normalizedCurrency === "AUD"
+      ? "A$"
+      : normalizedCurrency === "NZD"
+        ? "NZ$"
+        : null
+  const formattedTotal = regionalPrefix
+    ? `${regionalPrefix}${new Intl.NumberFormat("en-AU", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(total)}`
+    : new Intl.NumberFormat("en-AU", {
+        style: "currency",
+        currency: normalizedCurrency,
+      }).format(total)
+  const paymentLabel = `Pay ${formattedTotal} now`
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6" aria-busy={isProcessing}>
@@ -101,20 +112,7 @@ export function PaymentStep({ onBack, onComplete }: PaymentStepProps) {
       </div>
 
       <div className="grid gap-4">
-        <button
-          type="button"
-          disabled={isProcessing}
-          aria-disabled={isProcessing}
-          aria-pressed={method === "card"}
-          className={cn(
-            "flex w-full items-center gap-4 rounded-lg border p-4 text-left transition-all",
-            isProcessing ? "cursor-not-allowed opacity-60" : "cursor-pointer",
-            method === "card"
-              ? "border-primary bg-primary/5 ring-1 ring-primary"
-              : "hover:border-primary/50"
-          )}
-          onClick={() => selectPaymentMethod("card")}
-        >
+        <div className="flex w-full items-center gap-4 rounded-lg border border-primary bg-primary/5 p-4 text-left ring-1 ring-primary">
           <CreditCard className="h-6 w-6 text-primary" />
           <div className="flex-1">
             <h3 className="font-mono font-bold text-sm uppercase">Credit Card</h3>
@@ -122,17 +120,12 @@ export function PaymentStep({ onBack, onComplete }: PaymentStepProps) {
               Pay securely with your credit or debit card
             </p>
           </div>
-          <div className={cn(
-            "h-4 w-4 rounded-full border border-primary flex items-center justify-center",
-            method === "card" && "bg-primary"
-          )}>
-            {method === "card" && <div className="h-2 w-2 rounded-full bg-background" />}
+          <div className="flex h-4 w-4 items-center justify-center rounded-full border border-primary bg-primary">
+            <div className="h-2 w-2 rounded-full bg-background" />
           </div>
-        </button>
+        </div>
 
-        {/* Stripe Payment Element */}
-        {method === "card" && (
-          <div className="rounded-md border border-dashed p-4 space-y-4 bg-muted/20">
+        <div className="rounded-md border border-dashed p-4 space-y-4 bg-muted/20">
              {stripe ? (
                 <PaymentElement
                   options={{
@@ -144,37 +137,7 @@ export function PaymentStep({ onBack, onComplete }: PaymentStepProps) {
                    Initializing secure payment...
                 </div>
              )}
-          </div>
-        )}
-
-        <button
-          type="button"
-          disabled={isProcessing}
-          aria-disabled={isProcessing}
-          aria-pressed={method === "manual"}
-          className={cn(
-            "flex w-full items-center gap-4 rounded-lg border p-4 text-left transition-all",
-            isProcessing ? "cursor-not-allowed opacity-60" : "cursor-pointer",
-            method === "manual"
-              ? "border-primary bg-primary/5 ring-1 ring-primary"
-              : "hover:border-primary/50"
-          )}
-          onClick={() => selectPaymentMethod("manual")}
-        >
-          <Wallet className="h-6 w-6 text-primary" />
-          <div className="flex-1">
-            <h3 className="font-mono font-bold text-sm uppercase">Manual Payment</h3>
-            <p className="text-xs text-muted-foreground">
-              Pay by wire transfer or check
-            </p>
-          </div>
-           <div className={cn(
-              "h-4 w-4 rounded-full border border-primary flex items-center justify-center",
-              method === "manual" && "bg-primary"
-          )}>
-              {method === "manual" && <div className="h-2 w-2 rounded-full bg-background" />}
-          </div>
-        </button>
+        </div>
       </div>
 
       {errorMessage && (
@@ -196,10 +159,10 @@ export function PaymentStep({ onBack, onComplete }: PaymentStepProps) {
           type="submit"
           className="flex-1 font-mono uppercase tracking-widest"
           size="lg"
-          disabled={isProcessing || (method === "card" && !stripe)}
-          aria-label={isProcessing ? "Pay now finalising payment" : "Pay now"}
+          disabled={isProcessing || !stripe}
+          aria-label={isProcessing ? `${paymentLabel}, finalising payment` : paymentLabel}
         >
-          {isProcessing ? "Finalising..." : "Pay Now"}
+          {isProcessing ? "Finalising..." : paymentLabel}
         </Button>
       </div>
     </form>

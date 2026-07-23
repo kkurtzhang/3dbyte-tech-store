@@ -10,247 +10,179 @@ permissions:
   contents: read
   pull-requests: read
 
+env:
+  CI: "true"
+
 jobs:
   deployment-config:
     name: deployment-config
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout without token
-        env:
-          BASE_REF: ${{ github.base_ref }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          set -euo pipefail
-          git init .
-          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
-            git fetch --no-tags --prune --depth=1 origin \
-              "+refs/pull/${PR_NUMBER}/merge:refs/remotes/pull/${PR_NUMBER}/merge" \
-              "main:refs/remotes/origin/main" \
-              "${BASE_REF}:refs/remotes/origin/${BASE_REF}"
-            git checkout --force "refs/remotes/pull/${PR_NUMBER}/merge"
-          else
-            git fetch --no-tags --prune --depth=2 origin "$GITHUB_SHA"
-            git checkout --force FETCH_HEAD
-          fi
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Verify Coolify compose build stability
-        run: bash .github/scripts/__tests__/coolify-compose-build-stability.test.sh
+      - name: Verify deployment and CI contracts
+        run: |
+          bash .github/scripts/__tests__/coolify-compose-build-stability.test.sh
+          bash .github/scripts/__tests__/ci-quality-contract.test.sh
+          bash .github/scripts/__tests__/search-ownership-contract.test.sh
 
   lint:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout without token
-        env:
-          BASE_REF: ${{ github.base_ref }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          set -euo pipefail
-          git init .
-          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
-            git fetch --no-tags --prune --depth=1 origin \
-              "+refs/pull/${PR_NUMBER}/merge:refs/remotes/pull/${PR_NUMBER}/merge" \
-              "main:refs/remotes/origin/main" \
-              "${BASE_REF}:refs/remotes/origin/${BASE_REF}"
-            git checkout --force "refs/remotes/pull/${PR_NUMBER}/merge"
-          else
-            git fetch --no-tags --prune --depth=2 origin "$GITHUB_SHA"
-            git checkout --force FETCH_HEAD
-          fi
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Enable pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@10.32.1 --activate
-      - name: Cache Turborepo
-        uses: actions/cache@v4
-        with:
-          path: node_modules/.cache/turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-turbo-
+      - run: corepack enable
       - run: pnpm install --frozen-lockfile
-      - name: Lint changed packages
-        run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            pnpm turbo run lint --filter="...[origin/main]"
-          else
-            pnpm turbo run lint --filter="...[HEAD^1]"
-          fi
+      - name: Lint active storefront
+        run: pnpm --filter=@3dbyte-tech-store/storefront-v3 lint
 
   type-check:
     name: type-check
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout without token
-        env:
-          BASE_REF: ${{ github.base_ref }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          set -euo pipefail
-          git init .
-          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
-            git fetch --no-tags --prune --depth=1 origin \
-              "+refs/pull/${PR_NUMBER}/merge:refs/remotes/pull/${PR_NUMBER}/merge" \
-              "main:refs/remotes/origin/main" \
-              "${BASE_REF}:refs/remotes/origin/${BASE_REF}"
-            git checkout --force "refs/remotes/pull/${PR_NUMBER}/merge"
-          else
-            git fetch --no-tags --prune --depth=2 origin "$GITHUB_SHA"
-            git checkout --force FETCH_HEAD
-          fi
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Enable pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@10.32.1 --activate
-      - name: Cache Turborepo
-        uses: actions/cache@v4
-        with:
-          path: node_modules/.cache/turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-turbo-
+      - run: corepack enable
       - run: pnpm install --frozen-lockfile
-      - name: Type-check changed packages
+      - name: Type-check shared TypeScript packages
         run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            pnpm turbo run type-check --filter="...[origin/main]"
-          else
-            pnpm turbo run type-check --filter="...[HEAD^1]"
-          fi
+          pnpm --filter=@3dbyte-tech-store/observability type-check
+          pnpm --filter=@3dbyte-tech-store/shared-types type-check
+          pnpm --filter=@3dbyte-tech-store/shared-utils type-check
 
   test:
     name: test
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout without token
-        env:
-          BASE_REF: ${{ github.base_ref }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          set -euo pipefail
-          git init .
-          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
-            git fetch --no-tags --prune --depth=1 origin \
-              "+refs/pull/${PR_NUMBER}/merge:refs/remotes/pull/${PR_NUMBER}/merge" \
-              "main:refs/remotes/origin/main" \
-              "${BASE_REF}:refs/remotes/origin/${BASE_REF}"
-            git checkout --force "refs/remotes/pull/${PR_NUMBER}/merge"
-          else
-            git fetch --no-tags --prune --depth=2 origin "$GITHUB_SHA"
-            git checkout --force FETCH_HEAD
-          fi
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Enable pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@10.32.1 --activate
-      - name: Cache Turborepo
-        uses: actions/cache@v4
-        with:
-          path: node_modules/.cache/turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-turbo-
+      - run: corepack enable
       - run: pnpm install --frozen-lockfile
-      - name: Test changed packages
+      - name: Test storefront custom behavior
+        run: pnpm --filter=@3dbyte-tech-store/storefront-v3 test:ci
+      - name: Test Medusa custom modules and routes
+        run: pnpm --filter=@3dbyte-tech-store/backend test:unit
+      - name: Test shared runtime packages
         run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            pnpm turbo run test --only --filter="...[origin/main]"
-          else
-            pnpm turbo run test --only --filter="...[HEAD^1]"
-          fi
+          pnpm --filter=@3dbyte-tech-store/observability test
+          pnpm --filter=@3dbyte-tech-store/shared-utils test
+
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: production
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/medusa_ci
+      JWT_SECRET: ci-fixture-jwt-value-0000000000000000
+      COOKIE_SECRET: ci-fixture-cookie-value-0000000000000
+      AUTH_MFA_ENCRYPTION_KEY: ci-only-mfa-encryption-key-with-32-characters
+      STORE_CORS: http://localhost:3001
+      ADMIN_CORS: http://localhost:9000
+      AUTH_CORS: http://localhost:3001,http://localhost:9000
+      APP_KEYS: ci-app-key-one,ci-app-key-two
+      API_TOKEN_SALT: ci-api-token-salt
+      ADMIN_JWT_SECRET: ci-admin-jwt-secret
+      TRANSFER_TOKEN_SALT: ci-transfer-token-salt
+      ENCRYPTION_KEY: ci-encryption-key
+      NEXT_PUBLIC_SITE_URL: http://localhost:3001
+      NEXT_PUBLIC_MEDUSA_BACKEND_URL: https://api.staging.3dbytetech.com.au
+      MEDUSA_SERVER_BACKEND_URL: https://api.staging.3dbytetech.com.au
+      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ci-publishable-placeholder
+      NEXT_PUBLIC_STRAPI_URL: https://cms.staging.3dbytetech.com.au
+      NEXT_PUBLIC_MEILISEARCH_HOST: https://search.3dbytetech.com.au
+      NEXT_PUBLIC_MEILISEARCH_API_KEY: ci-search-placeholder
+      NEXT_PUBLIC_MEILISEARCH_INDEX_NAME: stg_products
+      NEXT_PUBLIC_MEILISEARCH_PRODUCT_INDEX_NAME: stg_products
+      NEXT_PUBLIC_MEILISEARCH_CATEGORY_INDEX_NAME: stg_categories
+      NEXT_PUBLIC_MEILISEARCH_BRAND_INDEX_NAME: stg_brands
+      ORDER_ACCESS_TOKEN_SECRET: ci-only-order-access-secret-with-32-characters
+      REDIS_URL: redis://localhost:6379/2
+      TRUSTED_PROXY_HOPS: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - name: Build Medusa
+        run: pnpm --filter=@3dbyte-tech-store/backend build
+      - name: Build Strapi Admin and server
+        run: pnpm --filter=@3dbyte-tech-store/cms build
+      - name: Build storefront
+        run: pnpm --filter=@3dbyte-tech-store/storefront-v3 build
 
   e2e-smoke:
     name: e2e-smoke
     runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SITE_URL: http://localhost:3001
+      NEXT_PUBLIC_MEDUSA_BACKEND_URL: https://api.staging.3dbytetech.com.au
+      MEDUSA_SERVER_BACKEND_URL: https://api.staging.3dbytetech.com.au
+      NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ci-publishable-placeholder
+      NEXT_PUBLIC_STRAPI_URL: https://cms.staging.3dbytetech.com.au
+      NEXT_PUBLIC_MEILISEARCH_HOST: https://search.3dbytetech.com.au
+      NEXT_PUBLIC_MEILISEARCH_API_KEY: ci-search-placeholder
+      NEXT_PUBLIC_MEILISEARCH_INDEX_NAME: stg_products
+      NEXT_PUBLIC_MEILISEARCH_PRODUCT_INDEX_NAME: stg_products
+      NEXT_PUBLIC_MEILISEARCH_CATEGORY_INDEX_NAME: stg_categories
+      NEXT_PUBLIC_MEILISEARCH_BRAND_INDEX_NAME: stg_brands
+      ORDER_ACCESS_TOKEN_SECRET: ci-only-order-access-secret-with-32-characters
+      REDIS_URL: redis://localhost:6379/2
+      TRUSTED_PROXY_HOPS: "1"
     steps:
-      - name: Checkout without token
-        env:
-          BASE_REF: ${{ github.base_ref }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          set -euo pipefail
-          git init .
-          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
-            git fetch --no-tags --prune --depth=1 origin \
-              "+refs/pull/${PR_NUMBER}/merge:refs/remotes/pull/${PR_NUMBER}/merge" \
-              "main:refs/remotes/origin/main" \
-              "${BASE_REF}:refs/remotes/origin/${BASE_REF}"
-            git checkout --force "refs/remotes/pull/${PR_NUMBER}/merge"
-          else
-            git fetch --no-tags --prune --depth=2 origin "$GITHUB_SHA"
-            git checkout --force FETCH_HEAD
-          fi
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Enable pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@10.32.1 --activate
+      - run: corepack enable
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright --version
-      - run: pnpm exec playwright test --list
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Run browser smoke against the PR storefront
+        run: pnpm exec playwright test tests/e2e/homepage.spec.ts
 
   security-scan:
     name: security-scan
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout without token
-        env:
-          BASE_REF: ${{ github.base_ref }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          set -euo pipefail
-          git init .
-          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
-            git fetch --no-tags --prune --depth=1 origin \
-              "+refs/pull/${PR_NUMBER}/merge:refs/remotes/pull/${PR_NUMBER}/merge" \
-              "main:refs/remotes/origin/main" \
-              "${BASE_REF}:refs/remotes/origin/${BASE_REF}"
-            git checkout --force "refs/remotes/pull/${PR_NUMBER}/merge"
-          else
-            git fetch --no-tags --prune --depth=2 origin "$GITHUB_SHA"
-            git checkout --force FETCH_HEAD
-          fi
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
       - name: Install gitleaks
         run: |
-          curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz \
-            | tar -xz
-          sudo mv gitleaks /usr/local/bin/gitleaks
-      - name: Secret scan (filesystem)
-        continue-on-error: true
-        run: gitleaks detect --source . --no-git --redact --exit-code 1
+          curl --fail --silent --show-error --location \
+            https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz \
+            | tar -xz -C "${RUNNER_TEMP}" gitleaks
+          sudo install -m 0755 "${RUNNER_TEMP}/gitleaks" /usr/local/bin/gitleaks
+      - name: Block credentials in the checked-out tree
+        run: gitleaks dir . --config .gitleaks.toml --redact --exit-code 1
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Enable pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@10.32.1 --activate
+      - run: corepack enable
       - run: pnpm install --frozen-lockfile
-      - name: Dependency audit (high+)
-        continue-on-error: true
+      - name: Block high and critical dependency advisories
         run: pnpm audit --audit-level=high

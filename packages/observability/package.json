@@ -7,7 +7,6 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",
-    "lint": "echo 'observability lint pending (no ESLint config yet)'",
     "test": "jest",
     "type-check": "tsc --noEmit"
   },

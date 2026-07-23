@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { sanitizeCmsHtml } from "@/lib/security/sanitize-cms-html";
 
 interface CmsContentProps {
   content: string;
@@ -21,7 +22,7 @@ export function CmsContent({ content, className }: CmsContentProps) {
         "prose-code:rounded prose-code:bg-muted prose-code:px-[0.3rem] prose-code:py-[0.2rem] prose-code:font-mono prose-code:text-sm",
         className,
       )}
-      dangerouslySetInnerHTML={{ __html: content }}
+      dangerouslySetInnerHTML={{ __html: sanitizeCmsHtml(content) }}
     />
   );
 }

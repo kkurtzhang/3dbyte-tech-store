@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
-import { checkRateLimit } from "@/lib/security/rate-limit"
+import { checkRateLimit, getClientIp } from "@/lib/security/rate-limit"
 
 const subscribeSchema = z.object({
   email: z.string().email(),
@@ -11,8 +11,8 @@ const subscribeSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"
-    const rate = checkRateLimit(`newsletter:${ip}`, 10, 60_000)
+    const ip = getClientIp(request.headers)
+    const rate = await checkRateLimit(`newsletter:${ip}`, 10, 60_000)
     if (!rate.allowed) {
       return NextResponse.json(
         { message: "Too many requests. Please try again shortly." },

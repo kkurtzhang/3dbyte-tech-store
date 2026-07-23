@@ -1,4 +1,16 @@
 import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
+import { z } from '@medusajs/framework/zod'
+
+import {
+  extractPaymentMethodId,
+  retrieveStripePaymentMethod,
+  type OrderWithPayments,
+} from '../../../../utils/stripe-payment-method'
+
+export const PostStoreOrderLookupSchema = z.object({
+  reference: z.string().trim().min(6).max(100),
+  email: z.string().trim().toLowerCase().email().max(320),
+})
 
 const lookupOrderFields = [
   'id',
@@ -13,18 +25,11 @@ const lookupOrderFields = [
   'subtotal',
   'item_subtotal',
   'item_total',
-  'raw_subtotal',
-  'raw_item_subtotal',
-  'raw_item_total',
   'shipping_total',
   'shipping_subtotal',
-  'raw_shipping_total',
-  'raw_shipping_subtotal',
   'tax_total',
-  'raw_tax_total',
   'discount_total',
   'total',
-  'raw_total',
   'items.id',
   'items.title',
   'items.subtitle',
@@ -33,17 +38,11 @@ const lookupOrderFields = [
   'items.variant_sku',
   'items.quantity',
   'items.detail.quantity',
-  'items.detail.raw_quantity',
   'items.unit_price',
   'items.subtotal',
   'items.total',
   'items.item_subtotal',
   'items.item_total',
-  'items.raw_subtotal',
-  'items.raw_total',
-  'items.raw_item_subtotal',
-  'items.raw_item_total',
-  'items.raw_quantity',
   'items.metadata',
   'items.thumbnail',
   'items.variant.id',
@@ -57,35 +56,18 @@ const lookupOrderFields = [
   'fulfillments.id',
   'fulfillments.status',
   'fulfillments.shipped_at',
-  'fulfillments.data',
   'fulfillments.labels.id',
   'fulfillments.labels.tracking_number',
   'fulfillments.labels.tracking_url',
   'shipping_methods.name',
   'shipping_methods.amount',
-  'shipping_address.first_name',
-  'shipping_address.last_name',
-  'shipping_address.company',
-  'shipping_address.address_1',
-  'shipping_address.address_2',
   'shipping_address.city',
   'shipping_address.province',
   'shipping_address.postal_code',
   'shipping_address.country_code',
-  'shipping_address.phone',
-  'billing_address.first_name',
-  'billing_address.last_name',
-  'billing_address.company',
-  'billing_address.address_1',
-  'billing_address.address_2',
-  'billing_address.city',
-  'billing_address.province',
-  'billing_address.postal_code',
-  'billing_address.country_code',
-  'billing_address.phone',
+  'payment_collections.payments.provider_id',
+  'payment_collections.payments.data',
 ]
-
-const getQueryValue = (value: unknown): string => (typeof value === 'string' ? value.trim() : '')
 
 const getFiniteNumber = (value: unknown): number | null => {
   if (typeof value === 'number') {
@@ -111,7 +93,7 @@ const isCloseMoney = (left: number, right: number): boolean => Math.abs(left - r
 
 type LookupLineItem = Record<string, unknown>
 
-type LookupOrder = Record<string, unknown> & {
+type LookupOrder = Record<string, unknown> & OrderWithPayments & {
   email?: string | null
   fulfillments?: Array<Record<string, unknown>> | null
   items?: LookupLineItem[] | null
@@ -120,12 +102,9 @@ type LookupOrder = Record<string, unknown> & {
 const hasShippedFulfillment = (order: LookupOrder): boolean =>
   Array.isArray(order.fulfillments) &&
   order.fulfillments.some(fulfillment => {
-    const data = fulfillment.data as Record<string, unknown> | null | undefined
-
     return (
       fulfillment.status === 'shipped' ||
-      Boolean(fulfillment.shipped_at) ||
-      Boolean(data?.shipped_at)
+      Boolean(fulfillment.shipped_at)
     )
   })
 
@@ -206,29 +185,57 @@ const normalizeOrderForStoreDisplay = (order: LookupOrder): LookupOrder => {
 }
 
 const sanitizePublicLookupOrder = (order: LookupOrder): LookupOrder => {
-  const { payment_collections: _paymentCollections, ...safeOrder } =
-    normalizeOrderForStoreDisplay(order)
+  const {
+    billing_address: _billingAddress,
+    email: _email,
+    payment_collections: _paymentCollections,
+    ...safeOrder
+  } = normalizeOrderForStoreDisplay(order)
 
   return safeOrder
 }
 
-export const GET = async (req: MedusaRequest, res: MedusaResponse): Promise<void> => {
-  const reference = getQueryValue(req.query.reference)
-  const email = getQueryValue(req.query.email).toLowerCase()
+const getSafePaymentMethod = async (order: LookupOrder) => {
+  const paymentMethodId = extractPaymentMethodId(order)
 
-  if (!reference || !email) {
+  if (!paymentMethodId) return null
+
+  try {
+    return await retrieveStripePaymentMethod(paymentMethodId)
+  } catch {
+    return null
+  }
+}
+
+export const POST = async (req: MedusaRequest, res: MedusaResponse): Promise<void> => {
+  res.setHeader('Cache-Control', 'no-store')
+  const parsed = PostStoreOrderLookupSchema.safeParse(req.body)
+
+  if (!parsed.success) {
     res.status(400).json({ order: null })
     return
   }
 
+  const { reference, email } = parsed.data
+
   const query = req.scope.resolve('query')
-  const { data: orders } = await query.graph({
-    entity: 'order',
-    fields: lookupOrderFields,
-    filters: {
-      custom_display_id: reference,
-    },
-  })
+  let orders: unknown[] | undefined
+
+  try {
+    const result = await query.graph({
+      entity: 'order',
+      fields: lookupOrderFields,
+      filters: reference.startsWith('order_')
+        ? { id: reference }
+        : { custom_display_id: reference },
+    })
+    orders = result.data
+  } catch (error) {
+    const logger = req.scope.resolve('logger')
+    logger.error('Public order lookup failed', error)
+    res.status(503).json({ order: null })
+    return
+  }
 
   const order = orders?.[0] as LookupOrder | undefined
 
@@ -237,5 +244,10 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse): Promise<void
     return
   }
 
-  res.json({ order: sanitizePublicLookupOrder(order) })
+  res.json({
+    order: {
+      ...sanitizePublicLookupOrder(order),
+      tracking_payment_method: await getSafePaymentMethod(order),
+    },
+  })
 }

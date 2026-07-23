@@ -58,6 +58,17 @@ export default async function ProductPage({
     notFound()
   }
 
+  if (pageData.status === "unavailable") {
+    return (
+      <main className="container py-20 text-center">
+        <h1 className="text-2xl font-semibold">Product catalogue temporarily unavailable</h1>
+        <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+          We could not load live or cached product information. Please try again shortly.
+        </p>
+      </main>
+    )
+  }
+
   const sourceContext: ProductSourceContext | null =
     from && fromLabel
       ? {
@@ -75,6 +86,7 @@ export default async function ProductPage({
       availableInBundles={pageData.availableInBundles}
       sourceContext={sourceContext}
       productDocuments={pageData.productDocuments}
+      readOnly={pageData.status === "cached_read_only"}
     />
   )
 }

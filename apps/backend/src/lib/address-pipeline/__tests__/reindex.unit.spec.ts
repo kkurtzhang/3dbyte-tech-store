@@ -40,7 +40,7 @@ describe("address reindex runner", () => {
     delete process.env.ADDRESS_MANUAL_REINDEX_ENABLED;
     delete process.env.ADDRESS_SYNC_BATCH_SIZE;
     delete process.env.MEILISEARCH_HOST;
-    delete process.env.MEILISEARCH_API_KEY;
+    delete process.env.MEILISEARCH_BACKEND_API_KEY;
     delete process.env.MEILISEARCH_ADDRESS_INDEX_NAME;
     delete process.env.MEILISEARCH_LOCALITY_INDEX_NAME;
   });
@@ -74,7 +74,7 @@ describe("address reindex runner", () => {
     process.env.ADDRESS_MANUAL_REINDEX_ENABLED = "true";
     process.env.ADDRESS_SYNC_BATCH_SIZE = "25000";
     process.env.MEILISEARCH_HOST = "https://search.example.com";
-    process.env.MEILISEARCH_API_KEY = "server-key";
+    process.env.MEILISEARCH_BACKEND_API_KEY = "server-key";
     process.env.MEILISEARCH_ADDRESS_INDEX_NAME = "addresses_v1";
     process.env.MEILISEARCH_LOCALITY_INDEX_NAME = "localities_v1";
 

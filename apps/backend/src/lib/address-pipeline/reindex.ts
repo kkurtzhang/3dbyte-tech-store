@@ -28,9 +28,7 @@ export function isAddressReindexEnabled(
     return true;
   }
 
-  return (
-    trigger === "manual" && env.ADDRESS_MANUAL_REINDEX_ENABLED === "true"
-  );
+  return trigger === "manual" && env.ADDRESS_MANUAL_REINDEX_ENABLED === "true";
 }
 
 export function buildAddressPipelineConfig(
@@ -43,7 +41,7 @@ export function buildAddressPipelineConfig(
     tempIndexPrefix: "addresses_tmp_",
     localityTempIndexPrefix: "localities_tmp_",
     meilisearchHost: env.MEILISEARCH_HOST || "http://localhost:7700",
-    meilisearchApiKey: env.MEILISEARCH_API_KEY || "",
+    meilisearchApiKey: env.MEILISEARCH_BACKEND_API_KEY || "",
     addressIndexName: env.MEILISEARCH_ADDRESS_INDEX_NAME || "addresses",
     localityIndexName: env.MEILISEARCH_LOCALITY_INDEX_NAME || "localities",
   };

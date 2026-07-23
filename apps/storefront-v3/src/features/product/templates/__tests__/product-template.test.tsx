@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react"
+import { render, screen } from "@testing-library/react"
 import { ProductTemplate } from "../product-template"
 import type { MedusaProduct } from "@/lib/medusa/types"
 
@@ -69,6 +69,15 @@ describe("ProductTemplate", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     useQueryStateMock.mockReturnValue([null, setVariantIdMock])
+  })
+
+  it("replaces purchase actions with an outage notice for cached content", () => {
+    render(<ProductTemplate product={createProduct()} readOnly />)
+
+    expect(screen.queryByTestId("product-actions")).not.toBeInTheDocument()
+    expect(
+      screen.getByText(/live price and availability are temporarily unavailable/i)
+    ).toBeInTheDocument()
   })
 
   it("uses replace history for variant query state", () => {

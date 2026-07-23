@@ -431,7 +431,11 @@ function FormattedAssistantMessage({ content }: { content: string }) {
   )
 }
 
-export function ShoppingAssistantDrawer() {
+export function ShoppingAssistantDrawer({
+  initiallyOpen = false,
+}: {
+  initiallyOpen?: boolean
+}) {
   const pathname = usePathname()
   const [input, setInput] = useState("")
   const [isExpanded, setIsExpanded] = useState(false)
@@ -478,7 +482,7 @@ export function ShoppingAssistantDrawer() {
   }
 
   return (
-    <Sheet modal={false}>
+    <Sheet defaultOpen={initiallyOpen} modal={false}>
       <SheetTrigger asChild>
         <Button
           className="fixed bottom-6 right-6 z-40 h-12 w-12 sm:w-auto gap-2 rounded-sm border border-primary bg-background p-0 sm:px-5 text-primary shadow-[0_4px_20px_rgba(6,182,212,0.15)] transition-all duration-200 hover:bg-primary hover:text-primary-foreground font-mono uppercase tracking-wider text-sm"
