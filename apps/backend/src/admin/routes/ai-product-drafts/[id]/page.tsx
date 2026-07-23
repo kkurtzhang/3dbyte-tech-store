@@ -1,4 +1,12 @@
-import { Badge, Button, Heading, Text, Textarea, toast } from "@medusajs/ui"
+import {
+  Badge,
+  Button,
+  Heading,
+  Text,
+  Textarea,
+  toast,
+  usePrompt,
+} from "@medusajs/ui"
 import { useState } from "react"
 import { Link, useParams } from "react-router-dom"
 
@@ -13,7 +21,9 @@ import {
 } from "../../../hooks/ai-product-drafts"
 import {
   formatAiProductDraftDate,
+  getAiProductDraftActionAvailability,
   getAiProductDraftDisplayName,
+  getAiProductDraftReviewIssues,
   getAiProductDraftStatusBadgeColor,
   labelizeAiProductDraftValue,
 } from "../../../lib/ai-product-drafts"
@@ -23,10 +33,45 @@ const asObject = (value: unknown): Record<string, unknown> =>
     ? (value as Record<string, unknown>)
     : {}
 
+function DraftReviewIssues({ issues }: { issues: string[] }) {
+  return (
+    <Container>
+      <Header
+        title="Review Warnings"
+        subtitle={
+          issues.length
+            ? "Resolve or consciously accept these issues before approving."
+            : "No warnings or validation issues were reported."
+        }
+      />
+      <div className="flex flex-col gap-2 px-6 py-4">
+        {issues.length === 0 ? (
+          <Text className="text-ui-fg-subtle">
+            No review warnings for this draft.
+          </Text>
+        ) : (
+          issues.map((issue, index) => (
+            <div
+              className="bg-ui-bg-subtle flex items-start gap-3 rounded-md p-3"
+              key={`${issue}-${index}`}
+            >
+              <Badge color="orange" size="xsmall">
+                Review
+              </Badge>
+              <Text className="min-w-0 break-words">{issue}</Text>
+            </div>
+          ))
+        )}
+      </div>
+    </Container>
+  )
+}
+
 const AiProductDraftDetailPage = () => {
   const { id = "" } = useParams()
   const { draft, events, isLoading } = useAiProductDraft(id)
   const [rejectionReason, setRejectionReason] = useState("")
+  const prompt = usePrompt()
   const { mutateAsync: approveDraft, isPending: isApproving } =
     useApproveAiProductDraft(id)
   const { mutateAsync: rejectDraft, isPending: isRejecting } =
@@ -64,6 +109,46 @@ const AiProductDraftDetailPage = () => {
   }
 
   const normalizedDraft = asObject(draft.normalized_draft)
+  const actionAvailability = getAiProductDraftActionAvailability(draft.status)
+  const reviewIssues = getAiProductDraftReviewIssues(draft)
+
+  const handleApprove = async () => {
+    try {
+      await approveDraft({ notes: "Approved from Admin review." })
+      toast.success("AI product draft approved")
+    } catch {
+      toast.error("Could not approve AI product draft")
+    }
+  }
+
+  const handleImport = async () => {
+    const confirmed = await prompt({
+      title: "Import approved draft?",
+      description:
+        "This updates the target product metadata and creates related Strapi drafts. Review the warnings and proposed content first.",
+    })
+
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      await importDraft()
+      toast.success("AI product draft imported")
+    } catch {
+      toast.error("Could not import AI product draft")
+    }
+  }
+
+  const handleReject = async () => {
+    try {
+      await rejectDraft({ reason: rejectionReason.trim() })
+      setRejectionReason("")
+      toast.success("AI product draft rejected")
+    } catch {
+      toast.error("Could not reject AI product draft")
+    }
+  }
 
   return (
     <div className="flex flex-col gap-y-3">
@@ -119,83 +204,77 @@ const AiProductDraftDetailPage = () => {
         </div>
       </Container>
 
+      <DraftReviewIssues issues={reviewIssues} />
+
       <Container>
         <Header title="Review Actions" subtitle="Approve, reject, or import this draft." />
         <div className="flex flex-wrap gap-3 px-6 py-4">
           <Button
-            disabled={draft.status !== "needs_review"}
+            disabled={!actionAvailability.canApprove || isRejecting || isImporting}
             isLoading={isApproving}
             size="small"
-            onClick={async () => {
-              await approveDraft({ notes: "Approved from Admin review." })
-              toast.success("AI product draft approved")
-            }}
+            onClick={handleApprove}
           >
             Approve
           </Button>
           <Button
-            disabled={draft.status !== "approved"}
+            disabled={!actionAvailability.canImport || isApproving || isRejecting}
             isLoading={isImporting}
             size="small"
             variant="secondary"
-            onClick={async () => {
-              await importDraft()
-              toast.success("AI product draft imported")
-            }}
+            onClick={handleImport}
           >
             Import
           </Button>
         </div>
-        <div className="flex flex-col gap-3 px-6 py-4">
-          <Textarea
-            value={rejectionReason}
-            onChange={(event) => setRejectionReason(event.target.value)}
-            placeholder="Reason for rejection"
-            rows={3}
-          />
-          <Button
-            className="w-fit"
-            disabled={draft.status === "imported" || !rejectionReason.trim()}
-            isLoading={isRejecting}
-            size="small"
-            variant="danger"
-            onClick={async () => {
-              await rejectDraft({ reason: rejectionReason })
-              setRejectionReason("")
-              toast.success("AI product draft rejected")
-            }}
-          >
-            Reject
-          </Button>
-        </div>
+        {actionAvailability.canReject ? (
+          <div className="flex flex-col gap-3 px-6 py-4">
+            <Textarea
+              aria-label="Reason for rejecting this AI product draft"
+              value={rejectionReason}
+              onChange={(event) => setRejectionReason(event.target.value)}
+              placeholder="Reason for rejection"
+              rows={3}
+            />
+            <Button
+              className="w-fit"
+              disabled={
+                !rejectionReason.trim() || isApproving || isImporting
+              }
+              isLoading={isRejecting}
+              size="small"
+              variant="danger"
+              onClick={handleReject}
+            >
+              Reject
+            </Button>
+          </div>
+        ) : (
+          <div className="px-6 py-4">
+            <Text className="text-ui-fg-subtle">
+              This draft has reached a terminal state.
+            </Text>
+          </div>
+        )}
       </Container>
 
       <Container>
-        <Header title="Draft Summary" subtitle="Normalized metadata, content, and warnings." />
+        <Header
+          title="Draft Summary"
+          subtitle="Normalized metadata and content proposed by this draft."
+        />
         <div className="grid gap-4 px-6 py-4 md:grid-cols-2">
-          <div>
+          <div className="min-w-0">
             <Heading level="h3">Metadata</Heading>
-            <pre className="mt-2 max-h-80 overflow-auto rounded-md bg-ui-bg-subtle p-3 text-xs">
+            <pre className="bg-ui-bg-subtle mt-2 max-h-80 max-w-full overflow-auto whitespace-pre-wrap break-words rounded-md p-3 text-xs">
               {JSON.stringify(asObject(normalizedDraft.metadata), null, 2)}
             </pre>
           </div>
-          <div>
+          <div className="min-w-0">
             <Heading level="h3">Content</Heading>
-            <pre className="mt-2 max-h-80 overflow-auto rounded-md bg-ui-bg-subtle p-3 text-xs">
+            <pre className="bg-ui-bg-subtle mt-2 max-h-80 max-w-full overflow-auto whitespace-pre-wrap break-words rounded-md p-3 text-xs">
               {JSON.stringify(asObject(normalizedDraft.content_draft), null, 2)}
             </pre>
-          </div>
-        </div>
-        <div className="px-6 py-4">
-          <Heading level="h3">Warnings</Heading>
-          <div className="mt-2 flex flex-col gap-2">
-            {(draft.warnings || []).length === 0 ? (
-              <Text className="text-ui-fg-subtle">No warnings.</Text>
-            ) : (
-              (draft.warnings || []).map((warning, index) => (
-                <Text key={`${warning}-${index}`}>{warning}</Text>
-              ))
-            )}
           </div>
         </div>
       </Container>

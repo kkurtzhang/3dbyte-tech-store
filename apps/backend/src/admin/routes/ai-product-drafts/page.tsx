@@ -10,7 +10,7 @@ import {
   useDataTable,
 } from "@medusajs/ui"
 import { useMemo, useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 
 import { ActionMenu } from "../../components/action-menu"
 import { Container } from "../../components/container"
@@ -42,6 +42,8 @@ const statuses = [
 const columnHelper = createDataTableColumnHelper<AdminAiProductDraft>()
 
 function DraftActions({ draft }: { draft: AdminAiProductDraft }) {
+  const displayName = getAiProductDraftDisplayName(draft)
+
   return (
     <ActionMenu
       groups={[
@@ -55,6 +57,7 @@ function DraftActions({ draft }: { draft: AdminAiProductDraft }) {
           ],
         },
       ]}
+      triggerLabel={`Actions for ${displayName}`}
     />
   )
 }
@@ -64,7 +67,13 @@ const columns = [
     header: "Product",
     cell: ({ row, getValue }) => (
       <div>
-        <Text>{getAiProductDraftDisplayName(row.original)}</Text>
+        <Link
+          className="text-ui-fg-base hover:text-ui-fg-base-hover focus-visible:shadow-borders-focus rounded-sm font-medium outline-none"
+          onClick={(event) => event.stopPropagation()}
+          to={buildAiProductDraftDetailUrl(row.original.id)}
+        >
+          {getAiProductDraftDisplayName(row.original)}
+        </Link>
         <Text className="text-ui-fg-subtle" size="small">
           {getValue()
             ? `/${getValue()}`

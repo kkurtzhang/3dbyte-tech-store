@@ -35,9 +35,13 @@ export type ActionGroup = {
 
 export type ActionMenuProps = {
   groups: ActionGroup[];
+  triggerLabel?: string;
 };
 
-export const ActionMenu = ({ groups }: ActionMenuProps) => {
+export const ActionMenu = ({
+  groups,
+  triggerLabel = "Actions",
+}: ActionMenuProps) => {
   const dialog = usePrompt();
 
   let brand_id = "";
@@ -65,7 +69,11 @@ export const ActionMenu = ({ groups }: ActionMenuProps) => {
   return (
     <DropdownMenu>
       <DropdownMenu.Trigger asChild>
-        <IconButton size="small" variant="transparent">
+        <IconButton
+          aria-label={triggerLabel}
+          size="small"
+          variant="transparent"
+        >
           <EllipsisHorizontal />
         </IconButton>
       </DropdownMenu.Trigger>

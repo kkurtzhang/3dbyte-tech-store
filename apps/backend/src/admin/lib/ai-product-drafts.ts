@@ -90,3 +90,40 @@ export const getAiProductDraftDisplayName = (
     `Draft ${draft.id}`
   )
 }
+
+export const getAiProductDraftActionAvailability = (status: string) => ({
+  canApprove: status === "needs_review",
+  canImport: status === "approved",
+  canReject: [
+    "received",
+    "validation_failed",
+    "needs_review",
+    "approved",
+  ].includes(status),
+})
+
+export const getAiProductDraftReviewIssues = (
+  draft: Pick<AdminAiProductDraft, "validation_errors" | "warnings">
+): string[] => {
+  const warnings = (draft.warnings || [])
+    .map(asTrimmedString)
+    .filter(Boolean)
+  const seenMessages = new Set(warnings)
+  const validationIssues = (draft.validation_errors || [])
+    .map((value) => {
+      const entry = asRecord(value)
+      const message =
+        asTrimmedString(entry.message) || asTrimmedString(value)
+      const path = asTrimmedString(entry.path)
+
+      if (!message || seenMessages.has(message)) {
+        return ""
+      }
+
+      seenMessages.add(message)
+      return path ? `${path}: ${message}` : message
+    })
+    .filter(Boolean)
+
+  return [...warnings, ...validationIssues]
+}
