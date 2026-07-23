@@ -2,7 +2,9 @@ import {
   buildAiProductDraftDetailUrl,
   buildAiProductDraftListUrl,
   formatAiProductDraftDate,
+  getAiProductDraftActionAvailability,
   getAiProductDraftDisplayName,
+  getAiProductDraftReviewIssues,
   getAiProductDraftStatusBadgeColor,
   labelizeAiProductDraftValue,
 } from "../ai-product-drafts"
@@ -70,5 +72,44 @@ describe("AI product draft admin helpers", () => {
     expect(getAiProductDraftDisplayName({ id: "aipd_only" })).toBe(
       "Draft aipd_only"
     )
+  })
+
+  it.each([
+    ["received", false, false, true],
+    ["validation_failed", false, false, true],
+    ["needs_review", true, false, true],
+    ["approved", false, true, true],
+    ["rejected", false, false, false],
+    ["imported", false, false, false],
+  ])(
+    "keeps %s draft actions aligned with backend lifecycle rules",
+    (status, canApprove, canImport, canReject) => {
+      expect(getAiProductDraftActionAvailability(status)).toEqual({
+        canApprove,
+        canImport,
+        canReject,
+      })
+    }
+  )
+
+  it("combines warnings and detailed validation errors without duplicates", () => {
+    expect(
+      getAiProductDraftReviewIssues({
+        warnings: ["Target product was not found"],
+        validation_errors: [
+          {
+            path: "product_handle",
+            message: "Target product was not found",
+          },
+          {
+            path: "normalized_draft.metadata",
+            message: "Metadata is incomplete",
+          },
+        ],
+      })
+    ).toEqual([
+      "Target product was not found",
+      "normalized_draft.metadata: Metadata is incomplete",
+    ])
   })
 })
