@@ -9,6 +9,14 @@ import {
   resolveAiProductDraftNormalizerProvider,
 } from "../../../lib/ai-product-drafts/normalizer"
 import { sendAiProductDraftAdminNotification } from "../../../lib/ai-product-drafts/notifications"
+import {
+  buildAiProductDraftChangeSet,
+  buildAiProductSnapshotHash,
+  resolveAiProductDraftOperation,
+  type AiProductDraftCandidate,
+  type AiProductDraftOperation,
+  type AiProductDraftRequestedOperation,
+} from "../../../lib/ai-product-drafts/resolution"
 import { AI_PRODUCT_DRAFT_MODULE } from "../../../modules/ai-product-draft"
 import { buildAiProductDraftEvent } from "../../../modules/ai-product-draft/lifecycle"
 
@@ -52,7 +60,7 @@ function getString(value: unknown): string {
   return typeof value === "string" ? value.trim() : ""
 }
 
-function getRecord(value: unknown): Record<string, unknown> {
+export function getRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {}
@@ -70,35 +78,136 @@ export async function getDraftById(req: MedusaRequest, res: MedusaResponse) {
   return draft
 }
 
-async function resolveProductReference(
+function normalizeIdentity(value: unknown): string {
+  return getString(value).toLowerCase().replace(/[^a-z0-9]+/g, "")
+}
+
+function getCandidateIdentityValues(candidate: AiProductDraftCandidate): string[] {
+  const metadata = getRecord(candidate.metadata)
+  const identity = getRecord(metadata.product_contract_identity)
+
+  return [
+    candidate.title,
+    candidate.handle,
+    metadata.manufacturer_part_number,
+    metadata.gtin,
+    metadata.supplier_sku,
+    identity.manufacturer_part_number,
+    identity.gtin,
+    identity.supplier_sku,
+  ]
+    .map(normalizeIdentity)
+    .filter(Boolean)
+}
+
+function isStrongIdentityMatch(
+  packet: ProductResearchPacket,
+  candidate: AiProductDraftCandidate
+) {
+  const productInput = getRecord(packet.product_input)
+  const submittedIdentities = [
+    productInput.product_name,
+    productInput.manufacturer_part_number,
+    productInput.gtin,
+    productInput.supplier_sku,
+  ]
+    .map(normalizeIdentity)
+    .filter(Boolean)
+  const candidateIdentities = new Set(getCandidateIdentityValues(candidate))
+
+  return submittedIdentities.some((identity) => candidateIdentities.has(identity))
+}
+
+function toProductCandidate(
+  value: Record<string, unknown>
+): AiProductDraftCandidate | null {
+  const id = getString(value.id)
+
+  if (!id) return null
+
+  return {
+    id,
+    handle: getString(value.handle) || null,
+    title: getString(value.title) || null,
+    metadata: getRecord(value.metadata),
+  } satisfies AiProductDraftCandidate
+}
+
+async function resolveProductCandidates(
   req: MedusaRequest,
   packet: ProductResearchPacket
-): Promise<string[]> {
-  const errors: string[] = []
+): Promise<AiProductDraftCandidate[]> {
   const productId = packet.product_id?.trim()
   const productHandle = packet.product_handle?.trim()
-
-  if (!productId && !productHandle) {
-    return errors
-  }
-
   const query = req.scope.resolve("query") as QueryGraph
   const filters = {
     ...(productId ? { id: productId } : {}),
     ...(productHandle ? { handle: productHandle } : {}),
+    ...(!productId && !productHandle
+      ? { q: packet.product_input.product_name.trim() }
+      : {}),
   }
   const { data } = await query.graph({
     entity: "product",
-    fields: ["id", "handle", "title"],
+    fields: ["id", "handle", "title", "metadata"],
     filters,
-    pagination: { take: 1 },
+    pagination: { take: productId || productHandle ? 1 : 10 },
   })
+  const candidates = data
+    .map(toProductCandidate)
+    .filter(
+      (candidate): candidate is AiProductDraftCandidate => candidate !== null
+    )
 
-  if (!data.length) {
-    errors.push("Provided product_id/product_handle does not match an existing product")
+  return productId || productHandle
+    ? candidates
+    : candidates.filter((candidate) => isStrongIdentityMatch(packet, candidate))
+}
+
+export function buildResolvedDraftState(input: {
+  operation: AiProductDraftOperation
+  target: AiProductDraftCandidate | null
+  normalized_draft: Record<string, unknown>
+}) {
+  const target = input.target
+  const currentSnapshot =
+    input.operation === "enrich" && target
+      ? {
+          id: target.id,
+          handle: target.handle || null,
+          title: target.title || null,
+          metadata: getRecord(target.metadata),
+        }
+      : null
+  const normalizedTarget = {
+    ...getRecord(input.normalized_draft.target_product),
+    product_id: target?.id || undefined,
+    product_handle: target?.handle || undefined,
+    product_title:
+      target?.title ||
+      getString(getRecord(input.normalized_draft.target_product).product_title) ||
+      undefined,
   }
+  const normalizedDraft = {
+    ...input.normalized_draft,
+    target_product: normalizedTarget,
+  }
+  const comparisonTarget =
+    target || ({ id: "__new_product__", metadata: {} } satisfies AiProductDraftCandidate)
 
-  return errors
+  return {
+    normalizedDraft,
+    currentSnapshot,
+    snapshotHash: currentSnapshot
+      ? buildAiProductSnapshotHash(currentSnapshot)
+      : null,
+    proposedChanges: buildAiProductDraftChangeSet({
+      current_product: comparisonTarget,
+      normalized_draft: normalizedDraft,
+    }),
+    productId: target?.id || null,
+    productHandle: target?.handle || null,
+  }
 }
 
 function formatValidationErrors(error: unknown) {
@@ -179,24 +288,40 @@ export async function createDraftFromHermesPacket(
     return res.status(201).json({ draft })
   }
 
-  const productErrors = await resolveProductReference(req, parsedPacket.data)
+  const packet = parsedPacket.data
+  const isV2 = packet.packet_version === 2
 
-  if (productErrors.length) {
+  if (isV2) {
+    const [existingDraft] = await draftModule.listAiProductDrafts({
+      source_agent: packet.source_agent,
+      request_id: packet.request_id,
+    })
+
+    if (existingDraft) {
+      return res.status(200).json({ draft: existingDraft, duplicate: true })
+    }
+  }
+
+  if (!isV2 && !packet.product_id && !packet.product_handle) {
+    const validationErrors = [
+      {
+        path: "product",
+        message:
+          "Targetless packets require packet_version 2 with requested_operation and request_id",
+      },
+    ]
     const draft = await draftModule.createAiProductDrafts({
       status: "validation_failed",
-      packet_version: parsedPacket.data.packet_version,
-      source_agent: parsedPacket.data.source_agent,
-      product_id: parsedPacket.data.product_id || null,
-      product_handle: parsedPacket.data.product_handle || null,
-      product_input: parsedPacket.data.product_input,
-      source_summary: parsedPacket.data.source_summary,
-      raw_packet: parsedPacket.data,
-      sources: parsedPacket.data.sources,
-      validation_errors: productErrors.map((message) => ({
-        path: "product",
-        message,
-      })),
-      warnings: productErrors,
+      packet_version: packet.packet_version,
+      source_agent: packet.source_agent,
+      product_id: null,
+      product_handle: null,
+      product_input: packet.product_input,
+      source_summary: packet.source_summary,
+      raw_packet: packet,
+      sources: packet.sources,
+      validation_errors: validationErrors,
+      warnings: validationErrors.map(({ message }) => message),
       normalizer: "deterministic",
     })
 
@@ -207,15 +332,77 @@ export async function createDraftFromHermesPacket(
         actor_type: "hermes",
         from_status: "received",
         to_status: "validation_failed",
-        metadata: { validation_errors: productErrors },
+        metadata: { validation_errors: validationErrors },
       })
     )
     await sendAiProductDraftAdminNotification(req.scope as never, {
       kind: "validation_failed",
       draft_id: String(draft.id),
-      product_id: parsedPacket.data.product_id,
-      product_handle: parsedPacket.data.product_handle,
-      validation_error_count: productErrors.length,
+      validation_error_count: validationErrors.length,
+    })
+
+    return res.status(201).json({ draft })
+  }
+
+  const candidates = await resolveProductCandidates(req, packet)
+  const requestedOperation: AiProductDraftRequestedOperation = isV2
+    ? packet.requested_operation
+    : "enrich"
+  const resolution = resolveAiProductDraftOperation({
+    requested_operation: requestedOperation,
+    product_id: packet.product_id,
+    product_handle: packet.product_handle,
+    candidates,
+  })
+
+  if (resolution.resolution_status === "validation_failed") {
+    const validationErrors = [
+      {
+        path: "product",
+        message:
+          requestedOperation === "enrich"
+            ? "No existing product matches this enrichment packet"
+            : "Provided product_id/product_handle does not match an existing product",
+      },
+    ]
+    const draft = await draftModule.createAiProductDrafts({
+      status: "validation_failed",
+      packet_version: packet.packet_version,
+      source_agent: packet.source_agent,
+      request_id: isV2 ? packet.request_id : null,
+      requested_operation: requestedOperation,
+      resolution_status: "validation_failed",
+      identity_candidates: candidates,
+      product_id: packet.product_id || null,
+      product_handle: packet.product_handle || null,
+      product_input: packet.product_input,
+      source_summary: packet.source_summary,
+      raw_packet: packet,
+      sources: packet.sources,
+      validation_errors: validationErrors,
+      warnings: validationErrors.map(({ message }) => message),
+      normalizer: "deterministic",
+    })
+
+    await draftModule.createAiProductDraftEvents(
+      buildAiProductDraftEvent({
+        draft_id: String(draft.id),
+        type: "validation_failed",
+        actor_type: "hermes",
+        from_status: "received",
+        to_status: "validation_failed",
+        metadata: {
+          validation_errors: validationErrors,
+          resolution_reason: resolution.reason,
+        },
+      })
+    )
+    await sendAiProductDraftAdminNotification(req.scope as never, {
+      kind: "validation_failed",
+      draft_id: String(draft.id),
+      product_id: packet.product_id,
+      product_handle: packet.product_handle,
+      validation_error_count: validationErrors.length,
     })
 
     return res.status(201).json({ draft })
@@ -224,20 +411,24 @@ export async function createDraftFromHermesPacket(
   let normalization
 
   try {
-    normalization = await normalizeProductResearchPacketForDraft(parsedPacket.data)
+    normalization = await normalizeProductResearchPacketForDraft(packet)
   } catch (error) {
     const validationErrors = formatNormalizerErrors(error)
     const normalizerProvider = resolveAiProductDraftNormalizerProvider()
     const draft = await draftModule.createAiProductDrafts({
       status: "validation_failed",
-      packet_version: parsedPacket.data.packet_version,
-      source_agent: parsedPacket.data.source_agent,
-      product_id: parsedPacket.data.product_id || null,
-      product_handle: parsedPacket.data.product_handle || null,
-      product_input: parsedPacket.data.product_input,
-      source_summary: parsedPacket.data.source_summary,
-      raw_packet: parsedPacket.data,
-      sources: parsedPacket.data.sources,
+      packet_version: packet.packet_version,
+      source_agent: packet.source_agent,
+      request_id: isV2 ? packet.request_id : null,
+      requested_operation: requestedOperation,
+      resolution_status: resolution.resolution_status,
+      identity_candidates: candidates,
+      product_id: packet.product_id || null,
+      product_handle: packet.product_handle || null,
+      product_input: packet.product_input,
+      source_summary: packet.source_summary,
+      raw_packet: packet,
+      sources: packet.sources,
       validation_errors: validationErrors,
       warnings: ["AI product draft normalizer failed validation"],
       normalizer: normalizerProvider,
@@ -256,26 +447,43 @@ export async function createDraftFromHermesPacket(
     await sendAiProductDraftAdminNotification(req.scope as never, {
       kind: "validation_failed",
       draft_id: String(draft.id),
-      product_id: parsedPacket.data.product_id,
-      product_handle: parsedPacket.data.product_handle,
+      product_id: packet.product_id,
+      product_handle: packet.product_handle,
       validation_error_count: validationErrors.length,
     })
 
     return res.status(201).json({ draft })
   }
 
-  const normalizedDraft = normalization.draft
+  const operation = resolution.operation
+  const resolvedState = operation
+    ? buildResolvedDraftState({
+        operation,
+        target: resolution.target,
+        normalized_draft: normalization.draft,
+      })
+    : null
+  const needsResolution = resolution.resolution_status === "needs_resolution"
+  const normalizedDraft = resolvedState?.normalizedDraft || normalization.draft
   const draft = await draftModule.createAiProductDrafts({
-    status: "needs_review",
-    packet_version: parsedPacket.data.packet_version,
-    source_agent: parsedPacket.data.source_agent,
-    product_id: parsedPacket.data.product_id || null,
-    product_handle: parsedPacket.data.product_handle || null,
-    product_input: parsedPacket.data.product_input,
-    source_summary: parsedPacket.data.source_summary,
-    raw_packet: parsedPacket.data,
+    status: needsResolution ? "needs_resolution" : "needs_review",
+    packet_version: packet.packet_version,
+    source_agent: packet.source_agent,
+    request_id: isV2 ? packet.request_id : null,
+    requested_operation: requestedOperation,
+    resolved_operation: operation,
+    resolution_status: resolution.resolution_status,
+    identity_candidates: candidates,
+    product_id: resolvedState?.productId || null,
+    product_handle: resolvedState?.productHandle || null,
+    product_input: packet.product_input,
+    source_summary: packet.source_summary,
+    raw_packet: packet,
     normalized_draft: normalizedDraft,
-    sources: parsedPacket.data.sources,
+    current_snapshot: resolvedState?.currentSnapshot || null,
+    snapshot_hash: resolvedState?.snapshotHash || null,
+    proposed_changes: resolvedState?.proposedChanges || [],
+    sources: packet.sources,
     warnings: normalizedDraft.warnings,
     confidence_summary: normalizedDraft.confidence_summary,
     normalizer: normalization.normalizer,
@@ -285,18 +493,22 @@ export async function createDraftFromHermesPacket(
   await draftModule.createAiProductDraftEvents(
     buildAiProductDraftEvent({
       draft_id: String(draft.id),
-      type: "needs_review",
+      type: needsResolution ? "identity_resolution_required" : "needs_review",
       actor_type: "hermes",
       from_status: "received",
-      to_status: "needs_review",
-      metadata: { received_at: now },
+      to_status: needsResolution ? "needs_resolution" : "needs_review",
+      metadata: {
+        received_at: now,
+        resolution_reason: resolution.reason,
+        candidate_count: candidates.length,
+      },
     })
   )
   await sendAiProductDraftAdminNotification(req.scope as never, {
-    kind: "needs_review",
+    kind: needsResolution ? "needs_resolution" : "needs_review",
     draft_id: String(draft.id),
-    product_id: parsedPacket.data.product_id,
-    product_handle: parsedPacket.data.product_handle,
+    product_id: resolvedState?.productId,
+    product_handle: resolvedState?.productHandle,
     warnings_count: normalizedDraft.warnings.length,
   })
 

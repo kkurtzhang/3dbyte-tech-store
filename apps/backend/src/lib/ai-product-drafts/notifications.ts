@@ -12,6 +12,7 @@ type Logger = {
 
 type DraftNotificationKind =
   | "needs_review"
+  | "needs_resolution"
   | "validation_failed"
   | "imported"
   | "import_failed"
@@ -34,6 +35,11 @@ const notificationCopy: Record<
     title: "AI product draft ready",
     description: (input) =>
       `Hermes submitted a draft${input.product_handle ? ` for ${input.product_handle}` : ""}.`,
+  },
+  needs_resolution: {
+    title: "AI product draft needs product resolution",
+    description: () =>
+      "Hermes submitted a draft with a possible catalogue match. Choose create or enrich before review.",
   },
   validation_failed: {
     title: "AI product draft needs attention",

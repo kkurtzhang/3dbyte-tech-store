@@ -55,7 +55,7 @@ export type AiProductDraftChange = {
 
 type BuildChangeSetInput = {
   current_product: AiProductDraftCandidate
-  normalized_draft: {
+  normalized_draft: Record<string, unknown> & {
     metadata?: unknown
     claim_evidence?: unknown
   }
