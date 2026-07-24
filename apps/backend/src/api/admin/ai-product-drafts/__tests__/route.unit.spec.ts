@@ -1,3 +1,15 @@
+const mockCreateProductsRun = jest.fn()
+const mockUpdateProductsRun = jest.fn()
+
+jest.mock("@medusajs/medusa/core-flows", () => ({
+  createProductsWorkflow: jest.fn(() => ({
+    run: mockCreateProductsRun,
+  })),
+  updateProductsWorkflow: jest.fn(() => ({
+    run: mockUpdateProductsRun,
+  })),
+}))
+
 import { POST as intakeDraft } from "../../../integrations/hermes/product-drafts/route"
 import * as adminDraftRoutes from "../route"
 import { GET as listDrafts } from "../route"
@@ -115,6 +127,8 @@ function createRequest({
   notificationModule = { createNotifications: jest.fn().mockResolvedValue([]) },
   logger = { warn: jest.fn() },
   productModule,
+  fulfillmentModule,
+  salesChannelModule,
   strapiModule,
 }: {
   body?: Record<string, unknown>
@@ -127,6 +141,8 @@ function createRequest({
   notificationModule?: Record<string, jest.Mock>
   logger?: Record<string, jest.Mock>
   productModule?: Record<string, jest.Mock>
+  fulfillmentModule?: Record<string, jest.Mock>
+  salesChannelModule?: Record<string, jest.Mock>
   strapiModule?: Record<string, jest.Mock>
 }) {
   const queryModule = {
@@ -152,6 +168,10 @@ function createRequest({
         if (key === "notification") return notificationModule
         if (key === "logger") return logger
         if (key === "product" && productModule) return productModule
+        if (key === "fulfillment" && fulfillmentModule) return fulfillmentModule
+        if (key === "sales_channel" && salesChannelModule) {
+          return salesChannelModule
+        }
         if (key === "strapi" && strapiModule) return strapiModule
         throw new Error(`Unexpected module ${key}`)
       }),
@@ -173,6 +193,9 @@ describe("AI product draft routes", () => {
   const originalToken = process.env.HERMES_PRODUCT_DRAFT_TOKEN
 
   beforeEach(() => {
+    jest.clearAllMocks()
+    mockCreateProductsRun.mockResolvedValue({ result: [] })
+    mockUpdateProductsRun.mockResolvedValue({ result: [] })
     process.env.HERMES_PRODUCT_DRAFT_TOKEN = "secret"
   })
 
@@ -773,7 +796,7 @@ describe("AI product draft routes", () => {
 
     await importDraft(req as never, res as never)
 
-    expect(productModule.updateProducts).toHaveBeenCalled()
+    expect(mockUpdateProductsRun).toHaveBeenCalled()
     expect(strapiModule.upsertAiProductDescriptionDraft).toHaveBeenCalled()
     expect(draftModule.updateAiProductDrafts).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -782,6 +805,108 @@ describe("AI product draft routes", () => {
         import_summary: expect.objectContaining({
           imported_targets: expect.arrayContaining(["medusa_metadata"]),
         }),
+      })
+    )
+  })
+
+  it("checkpoints a created product before continuing external imports", async () => {
+    const approvedDraft = {
+      ...draft,
+      status: "approved",
+      product_id: null,
+      product_handle: null,
+      resolved_operation: "create",
+      product_input: {
+        product_name: "Example PETG",
+      },
+      approved_changes: [],
+      approved_import_targets: {
+        medusa_metadata: true,
+        strapi_description_draft: false,
+        product_document_drafts: false,
+      },
+      normalized_draft: {
+        schema_version: 1,
+        target_product: {
+          product_title: "Example PETG",
+        },
+        metadata: {},
+        content_draft: {
+          short_description: "Source backed PETG.",
+          feature_bullets: [],
+          seo_title: "Example PETG",
+          seo_description: "Source backed PETG.",
+          ai_search_keywords: [],
+        },
+        related_content_suggestions: [],
+        product_document_suggestions: [],
+        claim_evidence: [],
+        warnings: [],
+        confidence_summary: {
+          overall: 0.9,
+          metadata: 0.9,
+          content: 0.8,
+          documents: 0,
+        },
+      },
+    }
+    mockCreateProductsRun.mockResolvedValue({
+      result: [
+        {
+          id: "prod_created",
+          title: "Example PETG",
+          handle: "example-petg-created",
+          metadata: {},
+        },
+      ],
+    })
+    const draftModule = {
+      listAiProductDrafts: jest.fn().mockResolvedValue([approvedDraft]),
+      updateAiProductDrafts: jest.fn().mockImplementation(async (input) => ({
+        ...approvedDraft,
+        ...input,
+      })),
+      createAiProductDraftEvents: jest.fn().mockResolvedValue({ id: "evt_1" }),
+    }
+    const req = createRequest({
+      params: { id: "aipd_1" },
+      draftModule,
+      productModule: {
+        listProducts: jest.fn(),
+      },
+      fulfillmentModule: {
+        listShippingProfiles: jest
+          .fn()
+          .mockResolvedValue([{ id: "sp_default" }]),
+      },
+      salesChannelModule: {
+        listSalesChannels: jest
+          .fn()
+          .mockResolvedValue([{ id: "sc_web", name: "Web Store" }]),
+      },
+    })
+    const res = createResponse()
+
+    await importDraft(req as never, res as never)
+
+    expect(draftModule.updateAiProductDrafts).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "aipd_1",
+        product_id: "prod_created",
+        product_handle: "example-petg-created",
+        import_progress: expect.objectContaining({
+          medusa_product: expect.objectContaining({
+            status: "completed",
+            product_id: "prod_created",
+          }),
+        }),
+      })
+    )
+    expect(draftModule.updateAiProductDrafts).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        status: "imported",
+        product_id: "prod_created",
+        product_handle: "example-petg-created",
       })
     )
   })
