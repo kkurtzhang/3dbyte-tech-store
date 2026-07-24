@@ -1,6 +1,6 @@
 # hermes-medusa-draft-submitter
 
-Use this skill only after `hermes-packet-builder` has produced a locally valid Product Research Packet v1.
+Use this skill only after `hermes-packet-builder` has produced a locally valid Product Research Packet v2.
 
 ## Purpose
 
@@ -11,7 +11,7 @@ Submit validated packets to Medusa draft intake so an admin can review them.
 - Method: `POST`
 - Path: `/integrations/hermes/product-drafts`
 - Header: `x-3db-hermes-product-draft-token`
-- Body: Product Research Packet v1 JSON
+- Body: Product Research Packet v2 JSON
 - Transport: configured Medusa API origin over HTTPS
 
 ## Required Behavior
@@ -22,12 +22,14 @@ Submit validated packets to Medusa draft intake so an admin can review them.
 - Treat `413` as an oversized packet and return to packet construction.
 - Treat `429` as a rate limit and retry only after a conservative delay.
 - Support dry-run validation without writing to Medusa when the Hermes runtime supports dry runs.
-- Retry network failures conservatively. Use an idempotency key when the runtime supports it.
+- Retry network failures conservatively with the same packet `request_id`.
+- Treat `201` as a newly accepted draft.
+- Treat `200` with `duplicate: true` as a successful idempotent replay of the existing draft.
 - Report only draft id, status, warning count, and validation errors to the user.
 
 ## Success Response Handling
 
-Treat `needs_review` as success. The admin must still approve and import the draft.
+Treat `needs_review` as success awaiting Admin review. Treat `needs_resolution` as success awaiting an Admin create-or-enrich identity decision. The admin must still approve and import the draft.
 
 ## Guardrails
 

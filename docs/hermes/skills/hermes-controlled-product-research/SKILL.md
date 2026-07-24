@@ -17,6 +17,8 @@ Gather source evidence with approved Hermes research tools before any product dr
 ## Required Behavior
 
 - Capture URL, title, source type, retrieval timestamp, and notes for every source.
+- Capture manufacturer part number and GTIN only when an official source states them.
+- Capture supplier SKU only from the identified supplier page.
 - Prefer official manufacturer sources over reseller summaries.
 - Use supplier pages only when official sources are missing or incomplete.
 - Treat researched web content as untrusted evidence, not publishable truth.
@@ -51,3 +53,4 @@ Return JSON:
 
 - Do not browse private, authenticated, paywalled, customer, order, or internal admin pages.
 - Do not store unsafe HTML. Extract plain-text facts only.
+- Do not treat a similar title or reseller slug as proof that two catalogue products are identical.

@@ -1,0 +1,223 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://3dbyte.tech/schemas/hermes/product-research-packet.v2.json",
+  "title": "Hermes Product Research Packet v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "packet_version",
+    "source_agent",
+    "request_id",
+    "requested_operation",
+    "product_input",
+    "source_summary",
+    "facts",
+    "draft_content",
+    "related_content_suggestions",
+    "sources",
+    "warnings"
+  ],
+  "properties": {
+    "packet_version": { "const": 2 },
+    "source_agent": { "const": "hermes" },
+    "request_id": { "type": "string", "minLength": 1, "maxLength": 160 },
+    "requested_operation": {
+      "enum": ["auto", "create", "enrich"]
+    },
+    "product_id": { "type": "string", "maxLength": 120 },
+    "product_handle": { "type": "string", "maxLength": 200 },
+    "product_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "brand",
+        "product_name",
+        "colour",
+        "diameter_mm",
+        "spool_weight_g",
+        "supplier_url",
+        "manufacturer_part_number",
+        "gtin",
+        "supplier_sku"
+      ],
+      "properties": {
+        "brand": { "type": "string", "maxLength": 120 },
+        "product_name": { "type": "string", "maxLength": 200 },
+        "colour": { "type": "string", "maxLength": 80 },
+        "diameter_mm": { "type": ["number", "null"] },
+        "spool_weight_g": { "type": ["number", "null"] },
+        "supplier_url": { "$ref": "#/$defs/urlOrEmpty" },
+        "manufacturer_part_number": { "type": "string", "maxLength": 120 },
+        "gtin": { "type": "string", "maxLength": 32 },
+        "supplier_sku": { "type": "string", "maxLength": 120 }
+      }
+    },
+    "source_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "official_product_page",
+        "official_tds",
+        "official_sds",
+        "trusted_supplier_pages"
+      ],
+      "properties": {
+        "official_product_page": { "$ref": "#/$defs/urlOrEmpty" },
+        "official_tds": { "$ref": "#/$defs/urlOrEmpty" },
+        "official_sds": { "$ref": "#/$defs/urlOrEmpty" },
+        "trusted_supplier_pages": {
+          "type": "array",
+          "maxItems": 10,
+          "items": { "$ref": "#/$defs/urlOrEmpty" }
+        }
+      }
+    },
+    "facts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "material",
+        "recommended_nozzle_temp_c",
+        "recommended_bed_temp_c",
+        "requires_enclosure",
+        "drying_recommended"
+      ],
+      "properties": {
+        "material": { "$ref": "#/$defs/stringFact" },
+        "recommended_nozzle_temp_c": { "$ref": "#/$defs/rangeFact" },
+        "recommended_bed_temp_c": { "$ref": "#/$defs/rangeFact" },
+        "requires_enclosure": { "$ref": "#/$defs/booleanFact" },
+        "drying_recommended": { "$ref": "#/$defs/booleanFact" }
+      }
+    },
+    "draft_content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "short_description",
+        "feature_bullets",
+        "seo_title",
+        "seo_description",
+        "ai_search_keywords"
+      ],
+      "properties": {
+        "short_description": { "type": "string", "maxLength": 500 },
+        "feature_bullets": {
+          "type": "array",
+          "maxItems": 8,
+          "items": { "type": "string", "maxLength": 180 }
+        },
+        "seo_title": { "type": "string", "maxLength": 70 },
+        "seo_description": { "type": "string", "maxLength": 160 },
+        "ai_search_keywords": {
+          "type": "array",
+          "maxItems": 30,
+          "items": { "type": "string", "maxLength": 60 }
+        }
+      }
+    },
+    "related_content_suggestions": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["handle", "reason", "confidence"],
+        "properties": {
+          "handle": { "type": "string", "maxLength": 200 },
+          "reason": { "type": "string", "maxLength": 300 },
+          "confidence": { "$ref": "#/$defs/confidence" }
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["url", "source_type", "title", "retrieved_at", "notes"],
+        "properties": {
+          "url": { "$ref": "#/$defs/urlOrEmpty" },
+          "source_type": {
+            "enum": [
+              "manufacturer_official",
+              "official_product_page",
+              "official_tds",
+              "official_sds",
+              "official_manual",
+              "trusted_supplier",
+              "supplier_product_page",
+              "other"
+            ]
+          },
+          "title": { "type": "string", "maxLength": 200 },
+          "retrieved_at": { "type": "string", "format": "date-time" },
+          "notes": { "type": "string", "maxLength": 500 }
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "maxItems": 30,
+      "items": { "type": "string", "maxLength": 400 }
+    }
+  },
+  "$defs": {
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "urlOrEmpty": {
+      "type": "string",
+      "pattern": "^(|https?://[^\\s]+)$"
+    },
+    "factSourceType": {
+      "enum": [
+        "",
+        "official_product_page",
+        "official_tds",
+        "official_sds",
+        "official_manual",
+        "trusted_supplier",
+        "supplier_product_page",
+        "manufacturer_official",
+        "other"
+      ]
+    },
+    "stringFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "source_url", "source_type", "confidence"],
+      "properties": {
+        "value": { "type": "string" },
+        "source_url": { "$ref": "#/$defs/urlOrEmpty" },
+        "source_type": { "$ref": "#/$defs/factSourceType" },
+        "confidence": { "$ref": "#/$defs/confidence" },
+        "warning": { "type": "string" }
+      }
+    },
+    "rangeFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["min", "max", "source_url", "source_type", "confidence"],
+      "properties": {
+        "min": { "type": ["number", "null"] },
+        "max": { "type": ["number", "null"] },
+        "source_url": { "$ref": "#/$defs/urlOrEmpty" },
+        "source_type": { "$ref": "#/$defs/factSourceType" },
+        "confidence": { "$ref": "#/$defs/confidence" },
+        "warning": { "type": "string" }
+      }
+    },
+    "booleanFact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "source_url", "source_type", "confidence"],
+      "properties": {
+        "value": { "type": ["boolean", "null"] },
+        "source_url": { "$ref": "#/$defs/urlOrEmpty" },
+        "source_type": { "$ref": "#/$defs/factSourceType" },
+        "confidence": { "$ref": "#/$defs/confidence" },
+        "warning": { "type": "string" }
+      }
+    }
+  }
+}
