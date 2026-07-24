@@ -140,28 +140,70 @@ async function resolveProductCandidates(
   const productId = packet.product_id?.trim()
   const productHandle = packet.product_handle?.trim()
   const query = req.scope.resolve("query") as QueryGraph
-  const filters = {
-    ...(productId ? { id: productId } : {}),
-    ...(productHandle ? { handle: productHandle } : {}),
-    ...(!productId && !productHandle
-      ? { q: packet.product_input.product_name.trim() }
-      : {}),
-  }
-  const { data } = await query.graph({
-    entity: "product",
-    fields: ["id", "handle", "title", "metadata"],
-    filters,
-    pagination: { take: productId || productHandle ? 1 : 10 },
-  })
+  const productInput = getRecord(packet.product_input)
+  const searchTerms = productId || productHandle
+    ? []
+    : [
+        productInput.product_name,
+        productInput.manufacturer_part_number,
+        productInput.gtin,
+        productInput.supplier_sku,
+      ]
+        .map(getString)
+        .filter((value, index, values) => value && values.indexOf(value) === index)
+        .slice(0, 4)
+  const responses =
+    productId || productHandle
+      ? [
+          await query.graph({
+            entity: "product",
+            fields: ["id", "handle", "title", "metadata"],
+            filters: {
+              ...(productId ? { id: productId } : {}),
+              ...(productHandle ? { handle: productHandle } : {}),
+            },
+            pagination: { take: 1 },
+          }),
+        ]
+      : await Promise.all(
+          searchTerms.map((q) =>
+            query.graph({
+              entity: "product",
+              fields: ["id", "handle", "title", "metadata"],
+              filters: { q },
+              pagination: { take: 10 },
+            })
+          )
+        )
+  const data = responses.flatMap((response) => response.data)
   const candidates = data
     .map(toProductCandidate)
     .filter(
       (candidate): candidate is AiProductDraftCandidate => candidate !== null
     )
+    .filter(
+      (candidate, index, values) =>
+        values.findIndex((value) => value.id === candidate.id) === index
+    )
 
   return productId || productHandle
     ? candidates
     : candidates.filter((candidate) => isStrongIdentityMatch(packet, candidate))
+}
+
+export async function getCurrentProductCandidate(
+  req: MedusaRequest,
+  productId: string
+): Promise<AiProductDraftCandidate | null> {
+  const query = req.scope.resolve("query") as QueryGraph
+  const { data } = await query.graph({
+    entity: "product",
+    fields: ["id", "handle", "title", "metadata"],
+    filters: { id: productId },
+    pagination: { take: 1 },
+  })
+
+  return data[0] ? toProductCandidate(data[0]) : null
 }
 
 export function buildResolvedDraftState(input: {
@@ -249,6 +291,44 @@ function formatNormalizerErrors(error: unknown) {
   }))
 }
 
+function hasPostgresUniqueViolation(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false
+
+  const record = error as { code?: unknown; cause?: unknown; message?: unknown }
+  return (
+    record.code === "23505" ||
+    hasPostgresUniqueViolation(record.cause) ||
+    (typeof record.message === "string" &&
+      record.message.toLowerCase().includes("duplicate key"))
+  )
+}
+
+async function createHermesDraftIdempotently(
+  draftModule: AiProductDraftModule,
+  packet: ProductResearchPacket,
+  input: Record<string, unknown>
+): Promise<{ draft: Record<string, unknown>; duplicate: boolean }> {
+  try {
+    return {
+      draft: await draftModule.createAiProductDrafts(input),
+      duplicate: false,
+    }
+  } catch (error) {
+    if (packet.packet_version !== 2 || !hasPostgresUniqueViolation(error)) {
+      throw error
+    }
+
+    const [existingDraft] = await draftModule.listAiProductDrafts({
+      source_agent: packet.source_agent,
+      request_id: packet.request_id,
+    })
+
+    if (!existingDraft) throw error
+
+    return { draft: existingDraft, duplicate: true }
+  }
+}
+
 export async function createDraftFromHermesPacket(
   req: MedusaRequest,
   res: MedusaResponse
@@ -310,7 +390,7 @@ export async function createDraftFromHermesPacket(
           "Targetless packets require packet_version 2 with requested_operation and request_id",
       },
     ]
-    const draft = await draftModule.createAiProductDrafts({
+    const creation = await createHermesDraftIdempotently(draftModule, packet, {
       status: "validation_failed",
       packet_version: packet.packet_version,
       source_agent: packet.source_agent,
@@ -324,6 +404,7 @@ export async function createDraftFromHermesPacket(
       warnings: validationErrors.map(({ message }) => message),
       normalizer: "deterministic",
     })
+    const draft = creation.draft
 
     await draftModule.createAiProductDraftEvents(
       buildAiProductDraftEvent({
@@ -365,7 +446,7 @@ export async function createDraftFromHermesPacket(
             : "Provided product_id/product_handle does not match an existing product",
       },
     ]
-    const draft = await draftModule.createAiProductDrafts({
+    const creation = await createHermesDraftIdempotently(draftModule, packet, {
       status: "validation_failed",
       packet_version: packet.packet_version,
       source_agent: packet.source_agent,
@@ -383,6 +464,10 @@ export async function createDraftFromHermesPacket(
       warnings: validationErrors.map(({ message }) => message),
       normalizer: "deterministic",
     })
+    if (creation.duplicate) {
+      return res.status(200).json({ draft: creation.draft, duplicate: true })
+    }
+    const draft = creation.draft
 
     await draftModule.createAiProductDraftEvents(
       buildAiProductDraftEvent({
@@ -415,7 +500,7 @@ export async function createDraftFromHermesPacket(
   } catch (error) {
     const validationErrors = formatNormalizerErrors(error)
     const normalizerProvider = resolveAiProductDraftNormalizerProvider()
-    const draft = await draftModule.createAiProductDrafts({
+    const creation = await createHermesDraftIdempotently(draftModule, packet, {
       status: "validation_failed",
       packet_version: packet.packet_version,
       source_agent: packet.source_agent,
@@ -433,6 +518,10 @@ export async function createDraftFromHermesPacket(
       warnings: ["AI product draft normalizer failed validation"],
       normalizer: normalizerProvider,
     })
+    if (creation.duplicate) {
+      return res.status(200).json({ draft: creation.draft, duplicate: true })
+    }
+    const draft = creation.draft
 
     await draftModule.createAiProductDraftEvents(
       buildAiProductDraftEvent({
@@ -465,7 +554,7 @@ export async function createDraftFromHermesPacket(
     : null
   const needsResolution = resolution.resolution_status === "needs_resolution"
   const normalizedDraft = resolvedState?.normalizedDraft || normalization.draft
-  const draft = await draftModule.createAiProductDrafts({
+  const creation = await createHermesDraftIdempotently(draftModule, packet, {
     status: needsResolution ? "needs_resolution" : "needs_review",
     packet_version: packet.packet_version,
     source_agent: packet.source_agent,
@@ -489,6 +578,10 @@ export async function createDraftFromHermesPacket(
     normalizer: normalization.normalizer,
     normalizer_trace_id: normalization.trace_id || null,
   })
+  if (creation.duplicate) {
+    return res.status(200).json({ draft: creation.draft, duplicate: true })
+  }
+  const draft = creation.draft
 
   await draftModule.createAiProductDraftEvents(
     buildAiProductDraftEvent({

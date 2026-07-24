@@ -125,6 +125,19 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
   const approvedChanges = proposedChanges.filter((change) =>
     selectedChangePaths.includes(change.path)
   )
+
+  if (
+    draft.resolved_operation === "enrich" &&
+    approvedChanges.length === 0 &&
+    !importTargets.strapi_description_draft &&
+    !importTargets.product_document_drafts
+  ) {
+    return res.status(400).json({
+      error:
+        "Select at least one metadata change or content import destination",
+    })
+  }
+
   const draftModule = getAiProductDraftModule(req)
   const actorId = getAdminActorId(req)
   const updated = await draftModule.updateAiProductDrafts({

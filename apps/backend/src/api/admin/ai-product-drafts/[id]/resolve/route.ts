@@ -9,6 +9,7 @@ import {
   buildResolvedDraftState,
   getAdminActorId,
   getAiProductDraftModule,
+  getCurrentProductCandidate,
   getDraftById,
   getRecord,
 } from "../../utils"
@@ -54,14 +55,25 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
   const candidates = getCandidates(draft.identity_candidates)
   const productId =
     typeof body.product_id === "string" ? body.product_id.trim() : ""
-  const target =
+  const storedTarget =
     operation === "enrich"
       ? candidates.find((candidate) => candidate.id === productId) || null
       : null
 
-  if (operation === "enrich" && !target) {
+  if (operation === "enrich" && !storedTarget) {
     return res.status(400).json({
       error: "product_id must identify one of the stored product candidates",
+    })
+  }
+
+  const target =
+    operation === "enrich"
+      ? await getCurrentProductCandidate(req, productId)
+      : null
+
+  if (operation === "enrich" && !target) {
+    return res.status(409).json({
+      error: "The selected product no longer exists",
     })
   }
 
