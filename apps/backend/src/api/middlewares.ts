@@ -247,7 +247,7 @@ export default defineMiddlewares({
     },
     {
       matcher: "/admin/ai-product-drafts",
-      methods: ["GET"],
+      methods: ["GET", "DELETE"],
       middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
     },
     {

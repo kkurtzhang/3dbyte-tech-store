@@ -67,6 +67,30 @@ describe("API middleware configuration", () => {
     });
   });
 
+  it("protects AI product draft reads and cleanup mutations", async () => {
+    const { default: configuration } = await import("../middlewares");
+    const collectionRoute = configuration.routes.find(
+      (route: { matcher: string }) =>
+        route.matcher === "/admin/ai-product-drafts",
+    );
+    const itemRoute = configuration.routes.find(
+      (route: { matcher: string }) =>
+        route.matcher === "/admin/ai-product-drafts/:id*",
+    );
+
+    expect(collectionRoute?.methods).toEqual(["GET", "DELETE"]);
+    expect(collectionRoute?.middlewares[0]).toEqual({
+      actorType: "user",
+      authTypes: ["session", "bearer", "api-key"],
+      options: undefined,
+    });
+    expect(itemRoute?.middlewares[0]).toEqual({
+      actorType: "user",
+      authTypes: ["session", "bearer", "api-key"],
+      options: undefined,
+    });
+  });
+
   it("rate limits expensive public storefront lookup routes", async () => {
     const { default: configuration } = await import("../middlewares");
 

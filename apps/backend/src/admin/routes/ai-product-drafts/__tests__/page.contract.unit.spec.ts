@@ -44,6 +44,19 @@ describe("AI product draft Admin UI contracts", () => {
     expect(actionMenuSource).toContain("aria-label={triggerLabel}")
   })
 
+  it("offers confirmed row and bulk cleanup only for terminal failed drafts", () => {
+    expect(listPageSource).toContain("useDeleteAiProductDraft")
+    expect(listPageSource).toContain("useCleanupAiProductDrafts")
+    expect(listPageSource).toContain('label: "Delete draft"')
+    expect(listPageSource).toContain("Clean up")
+    expect(listPageSource).toContain('status === "validation_failed"')
+    expect(listPageSource).toContain("!q.trim()")
+    expect(listPageSource).toContain("usePrompt")
+    expect(listPageSource).toContain("toast.success")
+    expect(listPageSource).toContain("expected_count")
+    expect(hooksSource).toContain('method: "delete"')
+  })
+
   it("surfaces identity-resolution work in both the list and detail page", () => {
     expect(listPageSource).toContain('"needs_resolution"')
     expect(listPageSource).toContain('header: "Operation"')

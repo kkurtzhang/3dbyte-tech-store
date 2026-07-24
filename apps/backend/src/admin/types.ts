@@ -357,3 +357,18 @@ export type AdminAiProductDraftImportParams = {
 export type AdminAiProductDraftActionResponse = {
   draft: AdminAiProductDraft;
 };
+
+export type AdminAiProductDraftDeleteResponse = {
+  id: string;
+  deleted: true;
+};
+
+export type AdminAiProductDraftCleanupParams = {
+  status: "validation_failed";
+  expected_count: number;
+};
+
+export type AdminAiProductDraftCleanupResponse = {
+  count: number;
+  deleted_ids: string[];
+};

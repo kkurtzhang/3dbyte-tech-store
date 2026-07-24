@@ -23,6 +23,9 @@ import { buildAiProductDraftEvent } from "../../../modules/ai-product-draft/life
 export type AiProductDraftModule = {
   createAiProductDrafts: (input: Record<string, unknown>) => Promise<Record<string, unknown>>
   updateAiProductDrafts: (input: Record<string, unknown>) => Promise<Record<string, unknown>>
+  softDeleteAiProductDrafts: (
+    input: string | string[] | Record<string, unknown>
+  ) => Promise<unknown>
   listAiProductDrafts: (
     filters?: Record<string, unknown>,
     config?: Record<string, unknown>
