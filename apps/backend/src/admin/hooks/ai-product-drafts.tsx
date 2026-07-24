@@ -11,8 +11,10 @@ import {
 import { sdk } from "../lib/sdk"
 import type {
   AdminAiProductDraftActionResponse,
+  AdminAiProductDraftApproveParams,
   AdminAiProductDraftImportParams,
   AdminAiProductDraftRejectParams,
+  AdminAiProductDraftResolveParams,
   AdminAiProductDraftResponse,
   AdminAiProductDraftsResponse,
   AiProductDraftQueryParams,
@@ -103,15 +105,42 @@ export const useApproveAiProductDraft = (
   options?: UseMutationOptions<
     AdminAiProductDraftActionResponse,
     FetchError,
-    { notes?: string }
+    AdminAiProductDraftApproveParams
   >
 ) => {
   const invalidate = useInvalidateAiProductDrafts(id)
 
   return useMutation({
-    mutationFn: (payload: { notes?: string }) =>
+    mutationFn: (payload: AdminAiProductDraftApproveParams) =>
       sdk.client.fetch<AdminAiProductDraftActionResponse>(
         `/admin/ai-product-drafts/${id}/approve`,
+        {
+          method: "post",
+          body: payload,
+        }
+      ),
+    onSuccess: (data, variables, context) => {
+      invalidate()
+      options?.onSuccess?.(data, variables, context)
+    },
+    ...options,
+  })
+}
+
+export const useResolveAiProductDraft = (
+  id: string,
+  options?: UseMutationOptions<
+    AdminAiProductDraftActionResponse,
+    FetchError,
+    AdminAiProductDraftResolveParams
+  >
+) => {
+  const invalidate = useInvalidateAiProductDrafts(id)
+
+  return useMutation({
+    mutationFn: (payload: AdminAiProductDraftResolveParams) =>
+      sdk.client.fetch<AdminAiProductDraftActionResponse>(
+        `/admin/ai-product-drafts/${id}/resolve`,
         {
           method: "post",
           body: payload,

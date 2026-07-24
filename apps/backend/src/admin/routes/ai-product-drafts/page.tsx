@@ -31,6 +31,7 @@ import type {
 const limit = 15
 const statuses = [
   "all",
+  "needs_resolution",
   "needs_review",
   "validation_failed",
   "approved",
@@ -96,6 +97,13 @@ const columns = [
       )
     },
   }),
+  columnHelper.accessor("resolved_operation", {
+    header: "Operation",
+    cell: ({ row, getValue }) =>
+      labelizeAiProductDraftValue(
+        getValue() || row.original.requested_operation || "pending"
+      ),
+  }),
   columnHelper.accessor("confidence_summary", {
     header: "Confidence",
     cell: ({ getValue }) => {
@@ -125,7 +133,7 @@ const AiProductDraftsPage = () => {
     pageSize: limit,
   })
   const [q, setQ] = useState("")
-  const [status, setStatus] = useState("needs_review")
+  const [status, setStatus] = useState("all")
   const navigate = useNavigate()
   const offset = useMemo(
     () => pagination.pageIndex * pagination.pageSize,
