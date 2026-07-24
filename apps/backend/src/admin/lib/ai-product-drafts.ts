@@ -94,9 +94,11 @@ export const getAiProductDraftDisplayName = (
 export const getAiProductDraftActionAvailability = (status: string) => ({
   canApprove: status === "needs_review",
   canImport: status === "approved",
+  canResolve: status === "needs_resolution",
   canReject: [
     "received",
     "validation_failed",
+    "needs_resolution",
     "needs_review",
     "approved",
   ].includes(status),

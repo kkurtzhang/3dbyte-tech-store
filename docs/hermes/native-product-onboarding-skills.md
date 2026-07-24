@@ -4,8 +4,9 @@ These are native Hermes-runtime skills for AI product draft onboarding. Hermes o
 
 ## Shared Contract
 
-- Packet schema: `docs/hermes/product-research-packet.v1.schema.json`
-- Valid fixture: `docs/hermes/fixtures/product-research-packet.v1.example.json`
+- Canonical packet schema: `docs/hermes/product-research-packet.v2.schema.json`
+- Canonical fixture: `docs/hermes/fixtures/product-research-packet.v2.example.json`
+- Compatibility-only v1 schema: `docs/hermes/product-research-packet.v1.schema.json`
 - Skill pack: `docs/hermes/skills/*/SKILL.md`
 - Submit endpoint: `POST /integrations/hermes/product-drafts`
 - Auth header: `x-3db-hermes-product-draft-token`
@@ -21,7 +22,8 @@ Purpose: convert the user conversation into bounded product identity and researc
 Skill file: `docs/hermes/skills/hermes-product-intake/SKILL.md`
 
 Required behavior:
-- Capture brand, product name, colour, diameter, spool weight, supplier URL, product id, and product handle when available.
+- Capture the requested operation, brand, product name, colour, diameter, spool weight, supplier URL, manufacturer part number, GTIN, supplier SKU, product id, and product handle when available.
+- Prefer `requested_operation: auto`; use `create` or `enrich` only when the user's intent is explicit.
 - Ask for missing identity details only when the product cannot be identified.
 - Do not invent product identity, safety, warranty, certification, or compatibility claims.
 - Output structured intake data for `hermes-controlled-product-research`.
@@ -53,12 +55,14 @@ Required behavior:
 
 ### hermes-packet-builder
 
-Purpose: produce Product Research Packet v1.
+Purpose: produce Product Research Packet v2.
 
 Skill file: `docs/hermes/skills/hermes-packet-builder/SKILL.md`
 
 Required behavior:
-- Emit JSON matching `product-research-packet.v1.schema.json`.
+- Emit JSON matching `product-research-packet.v2.schema.json`.
+- Generate one stable, non-secret `request_id` per logical onboarding job and reuse it for every retry.
+- Include `requested_operation`; do not invent a product id, handle, part number, GTIN, or supplier SKU.
 - Keep draft content plain text only.
 - Enforce confidence range `0..1`, maximum list sizes, and source type enums.
 - Validate against the Medusa-owned schema before submit.
@@ -75,7 +79,7 @@ Required behavior:
 - Use `x-3db-hermes-product-draft-token` from Hermes secret storage.
 - Connect over HTTPS; do not request Medusa Admin, SSH, or Tailscale credentials.
 - Support dry-run validation without writing to Medusa.
-- Retry network failures with an idempotency key when Hermes runtime supports it.
+- Retry network failures with the same packet `request_id`; do not mint a new id for a retry.
 - Report only draft id, status, warning count, and validation errors to the user.
 
 ## Acceptance Checks
@@ -83,5 +87,14 @@ Required behavior:
 - A known product with official source URLs produces a valid packet.
 - Weak evidence produces warnings rather than importable claims.
 - Invalid packets fail local validation before submission.
-- Successful submission returns a draft awaiting Admin review.
+- Successful submission returns a draft in `needs_review` or `needs_resolution`.
+- Repeating the same `request_id` returns the existing draft instead of creating a duplicate.
 - No Hermes skill can publish or import content directly.
+
+## Operation Semantics
+
+- `auto`: preferred default. Medusa resolves strong catalogue identity matches.
+- `create`: explicit request for a genuinely separate product. A possible match pauses in `needs_resolution`.
+- `enrich`: explicit request to improve an existing product. A missing or ambiguous target does not silently become a create.
+- Hermes proposes research only. Medusa owns identity resolution, approval, draft product creation, selective enrichment, and import progress.
+- Creation produces an unpublished shell. Hermes never supplies prices, inventory quantities, generated SKUs, publication status, shipping profiles, or sales channels.

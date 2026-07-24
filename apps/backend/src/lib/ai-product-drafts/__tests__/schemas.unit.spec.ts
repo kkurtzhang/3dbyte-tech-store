@@ -1,5 +1,7 @@
 import {
   InternalAiProductDraftSchema,
+  ProductResearchPacketV1Schema,
+  ProductResearchPacketV2Schema,
   ProductResearchPacketSchema,
 } from "../schemas"
 
@@ -107,6 +109,49 @@ describe("Product Research Packet schema", () => {
     })
 
     expect(result.success).toBe(false)
+  })
+
+  it("accepts a v2 create-or-enrich packet with stable identity", () => {
+    const parsed = ProductResearchPacketV2Schema.parse({
+      ...validPacket,
+      packet_version: 2,
+      request_id: "hermes:example-petg:2026-07-24",
+      requested_operation: "auto",
+      product_id: "",
+      product_handle: "",
+      product_input: {
+        ...validPacket.product_input,
+        manufacturer_part_number: "EX-PETG-BLK-175-1KG",
+        gtin: "",
+        supplier_sku: "SUP-123",
+      },
+    })
+
+    expect(parsed.packet_version).toBe(2)
+    expect(parsed.requested_operation).toBe("auto")
+    expect(parsed.product_input.manufacturer_part_number).toBe(
+      "EX-PETG-BLK-175-1KG"
+    )
+  })
+
+  it("keeps v1 packets parseable while distinguishing their contract version", () => {
+    expect(ProductResearchPacketV1Schema.parse(validPacket).packet_version).toBe(
+      1
+    )
+    expect(
+      ProductResearchPacketSchema.parse({
+        ...validPacket,
+        packet_version: 2,
+        request_id: "hermes:example-petg:2026-07-24",
+        requested_operation: "enrich",
+        product_input: {
+          ...validPacket.product_input,
+          manufacturer_part_number: "",
+          gtin: "",
+          supplier_sku: "",
+        },
+      }).packet_version
+    ).toBe(2)
   })
 })
 

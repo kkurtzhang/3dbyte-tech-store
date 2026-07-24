@@ -14,6 +14,15 @@ describe("AI product draft lifecycle", () => {
     )
   })
 
+  it("routes ambiguous identities through resolution before review", () => {
+    expect(
+      getAiProductDraftNextStatus("received", "identity_resolution_required")
+    ).toBe("needs_resolution")
+    expect(getAiProductDraftNextStatus("needs_resolution", "resolved")).toBe(
+      "needs_review"
+    )
+  })
+
   it("only allows approved drafts to be imported", () => {
     expect(() =>
       assertAiProductDraftCanImport({ id: "aipd_1", status: "needs_review" })

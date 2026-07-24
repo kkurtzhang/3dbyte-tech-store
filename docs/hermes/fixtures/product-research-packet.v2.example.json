@@ -1,0 +1,100 @@
+{
+  "packet_version": 2,
+  "source_agent": "hermes",
+  "request_id": "hermes:example-petg-black-175:2026-07-24",
+  "requested_operation": "auto",
+  "product_id": "",
+  "product_handle": "",
+  "product_input": {
+    "brand": "Example",
+    "product_name": "Example PETG Filament",
+    "colour": "Black",
+    "diameter_mm": 1.75,
+    "spool_weight_g": 1000,
+    "supplier_url": "https://supplier.example/products/example-petg-filament",
+    "manufacturer_part_number": "EX-PETG-BLK-175-1KG",
+    "gtin": "",
+    "supplier_sku": "SUP-EX-PETG-BLK"
+  },
+  "source_summary": {
+    "official_product_page": "https://manufacturer.example/example-petg-filament",
+    "official_tds": "https://manufacturer.example/example-petg-filament-tds.pdf",
+    "official_sds": "https://manufacturer.example/example-petg-filament-sds.pdf",
+    "trusted_supplier_pages": [
+      "https://supplier.example/products/example-petg-filament"
+    ]
+  },
+  "facts": {
+    "material": {
+      "value": "PETG",
+      "source_url": "https://manufacturer.example/example-petg-filament",
+      "source_type": "official_product_page",
+      "confidence": 0.96
+    },
+    "recommended_nozzle_temp_c": {
+      "min": 230,
+      "max": 250,
+      "source_url": "https://manufacturer.example/example-petg-filament-tds.pdf",
+      "source_type": "official_tds",
+      "confidence": 0.92,
+      "warning": ""
+    },
+    "recommended_bed_temp_c": {
+      "min": 70,
+      "max": 85,
+      "source_url": "https://manufacturer.example/example-petg-filament-tds.pdf",
+      "source_type": "official_tds",
+      "confidence": 0.9,
+      "warning": ""
+    },
+    "requires_enclosure": {
+      "value": false,
+      "source_url": "https://manufacturer.example/example-petg-filament",
+      "source_type": "official_product_page",
+      "confidence": 0.82
+    },
+    "drying_recommended": {
+      "value": true,
+      "source_url": "https://manufacturer.example/example-petg-filament-tds.pdf",
+      "source_type": "official_tds",
+      "confidence": 0.88
+    }
+  },
+  "draft_content": {
+    "short_description": "Source-backed PETG filament draft for Admin review.",
+    "feature_bullets": [
+      "1.75 mm PETG filament",
+      "Dry before critical prints"
+    ],
+    "seo_title": "Example PETG Filament",
+    "seo_description": "Example PETG filament for functional 3D prints.",
+    "ai_search_keywords": [
+      "petg filament",
+      "1.75mm petg"
+    ]
+  },
+  "related_content_suggestions": [
+    {
+      "handle": "how-to-dry-filament",
+      "reason": "Drying is recommended by the official TDS.",
+      "confidence": 0.8
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://manufacturer.example/example-petg-filament",
+      "source_type": "manufacturer_official",
+      "title": "Example PETG Filament",
+      "retrieved_at": "2026-07-24T00:00:00.000Z",
+      "notes": "Official product page."
+    },
+    {
+      "url": "https://manufacturer.example/example-petg-filament-tds.pdf",
+      "source_type": "official_tds",
+      "title": "Example PETG Technical Data Sheet",
+      "retrieved_at": "2026-07-24T00:00:00.000Z",
+      "notes": "Official technical data sheet."
+    }
+  ],
+  "warnings": []
+}

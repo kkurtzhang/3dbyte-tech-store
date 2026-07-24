@@ -235,12 +235,24 @@ export type AdminAiProductDraft = {
   status: string;
   packet_version?: number | null;
   source_agent?: string | null;
+  request_id?: string | null;
+  requested_operation?: "auto" | "create" | "enrich" | null;
+  resolved_operation?: "create" | "enrich" | null;
+  resolution_status?: string | null;
+  identity_candidates?: AdminAiProductDraftCandidate[] | null;
   product_id?: string | null;
   product_handle?: string | null;
   product_input?: Record<string, unknown> | null;
   source_summary?: Record<string, unknown> | null;
   raw_packet?: Record<string, unknown> | null;
   normalized_draft?: Record<string, unknown> | null;
+  current_snapshot?: Record<string, unknown> | null;
+  snapshot_hash?: string | null;
+  proposed_changes?: AdminAiProductDraftChange[] | null;
+  approved_changes?: AdminAiProductDraftChange[] | null;
+  approved_import_targets?: AdminAiProductDraftImportTargets | null;
+  approved_snapshot_hash?: string | null;
+  import_progress?: Record<string, unknown> | null;
   sources?: unknown[] | null;
   warnings?: string[] | null;
   confidence_summary?: Record<string, unknown> | null;
@@ -258,6 +270,34 @@ export type AdminAiProductDraft = {
   import_summary?: Record<string, unknown> | null;
   created_at?: string | null;
   updated_at?: string | null;
+};
+
+export type AdminAiProductDraftCandidate = {
+  id: string;
+  handle?: string | null;
+  title?: string | null;
+  metadata?: Record<string, unknown> | null;
+};
+
+export type AdminAiProductDraftChange = {
+  path: string;
+  current_value?: unknown;
+  proposed_value?: unknown;
+  disposition?: "missing" | "conflict";
+  default_selected?: boolean;
+  evidence?: {
+    claim_path?: string;
+    source_url?: string;
+    source_type?: string;
+    confidence?: number;
+    value?: unknown;
+  } | null;
+};
+
+export type AdminAiProductDraftImportTargets = {
+  medusa_metadata: boolean;
+  strapi_description_draft: boolean;
+  product_document_drafts: boolean;
 };
 
 export type AdminAiProductDraftEvent = {
@@ -294,12 +334,24 @@ export type AdminAiProductDraftRejectParams = {
   reason: string;
 };
 
+export type AdminAiProductDraftApproveParams = {
+  notes?: string;
+  selected_change_paths: string[];
+  import_targets: AdminAiProductDraftImportTargets;
+  snapshot_hash?: string | null;
+};
+
+export type AdminAiProductDraftResolveParams =
+  | {
+      operation: "create";
+    }
+  | {
+      operation: "enrich";
+      product_id: string;
+    };
+
 export type AdminAiProductDraftImportParams = {
-  import_targets?: {
-    medusa_metadata?: boolean;
-    strapi_description_draft?: boolean;
-    product_document_drafts?: boolean;
-  };
+  import_targets?: Partial<AdminAiProductDraftImportTargets>;
 };
 
 export type AdminAiProductDraftActionResponse = {

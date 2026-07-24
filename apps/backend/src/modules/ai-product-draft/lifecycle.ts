@@ -1,6 +1,7 @@
 export const AI_PRODUCT_DRAFT_STATUSES = [
   "received",
   "validation_failed",
+  "needs_resolution",
   "needs_review",
   "approved",
   "rejected",
@@ -12,6 +13,8 @@ export type AiProductDraftStatus = (typeof AI_PRODUCT_DRAFT_STATUSES)[number]
 export type AiProductDraftTransition =
   | "validated"
   | "validation_failed"
+  | "identity_resolution_required"
+  | "resolved"
   | "approved"
   | "rejected"
   | "imported"
@@ -43,12 +46,29 @@ export function getAiProductDraftNextStatus(
     return "validation_failed"
   }
 
+  if (
+    currentStatus === "received" &&
+    transition === "identity_resolution_required"
+  ) {
+    return "needs_resolution"
+  }
+
+  if (currentStatus === "needs_resolution" && transition === "resolved") {
+    return "needs_review"
+  }
+
   if (currentStatus === "needs_review" && transition === "approved") {
     return "approved"
   }
 
   if (
-    ["received", "validation_failed", "needs_review", "approved"].includes(
+    [
+      "received",
+      "validation_failed",
+      "needs_resolution",
+      "needs_review",
+      "approved",
+    ].includes(
       currentStatus
     ) &&
     transition === "rejected"

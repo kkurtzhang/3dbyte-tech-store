@@ -4,7 +4,7 @@ Use this skill after source pages, TDS files, SDS files, or supplier pages have 
 
 ## Purpose
 
-Extract product facts into source-backed fact envelopes for Product Research Packet v1.
+Extract product facts into source-backed fact envelopes for Product Research Packet v2.
 
 ## Required Facts
 
@@ -72,3 +72,4 @@ Return JSON:
 
 - Any claim without source evidence must remain a warning, not a publishable field.
 - Never infer product safety or compliance from broad material knowledge alone.
+- Never infer prices, inventory, SKUs, product publication state, or catalogue identity.

@@ -1,3 +1,15 @@
+const mockCreateProductsRun = jest.fn()
+const mockUpdateProductsRun = jest.fn()
+
+jest.mock("@medusajs/medusa/core-flows", () => ({
+  createProductsWorkflow: jest.fn(() => ({
+    run: mockCreateProductsRun,
+  })),
+  updateProductsWorkflow: jest.fn(() => ({
+    run: mockUpdateProductsRun,
+  })),
+}))
+
 import { POST as intakeDraft } from "../../../integrations/hermes/product-drafts/route"
 import * as adminDraftRoutes from "../route"
 import { GET as listDrafts } from "../route"
@@ -5,6 +17,7 @@ import { GET as getDraft } from "../[id]/route"
 import { POST as approveDraft } from "../[id]/approve/route"
 import { POST as rejectDraft } from "../[id]/reject/route"
 import { POST as importDraft } from "../[id]/import/route"
+import { POST as resolveDraft } from "../[id]/resolve/route"
 
 const validPacket = {
   packet_version: 1,
@@ -81,6 +94,21 @@ const validPacket = {
   warnings: [],
 }
 
+const validV2Packet = {
+  ...validPacket,
+  packet_version: 2,
+  request_id: "hermes:example-petg:2026-07-24",
+  requested_operation: "auto",
+  product_id: "",
+  product_handle: "",
+  product_input: {
+    ...validPacket.product_input,
+    manufacturer_part_number: "EX-PETG-BLK-175-1KG",
+    gtin: "",
+    supplier_sku: "SUP-123",
+  },
+}
+
 function createResponse() {
   return {
     status: jest.fn().mockReturnThis(),
@@ -95,9 +123,12 @@ function createRequest({
   token = "secret",
   draftModule,
   product = { id: "prod_123", handle: "example-petg", title: "Example PETG" },
+  products,
   notificationModule = { createNotifications: jest.fn().mockResolvedValue([]) },
   logger = { warn: jest.fn() },
   productModule,
+  fulfillmentModule,
+  salesChannelModule,
   strapiModule,
 }: {
   body?: Record<string, unknown>
@@ -106,13 +137,18 @@ function createRequest({
   token?: string
   draftModule: Record<string, jest.Mock>
   product?: Record<string, unknown> | null
+  products?: Record<string, unknown>[]
   notificationModule?: Record<string, jest.Mock>
   logger?: Record<string, jest.Mock>
   productModule?: Record<string, jest.Mock>
+  fulfillmentModule?: Record<string, jest.Mock>
+  salesChannelModule?: Record<string, jest.Mock>
   strapiModule?: Record<string, jest.Mock>
 }) {
   const queryModule = {
-    graph: jest.fn().mockResolvedValue({ data: product ? [product] : [] }),
+    graph: jest
+      .fn()
+      .mockResolvedValue({ data: products ?? (product ? [product] : []) }),
   }
 
   return {
@@ -132,6 +168,10 @@ function createRequest({
         if (key === "notification") return notificationModule
         if (key === "logger") return logger
         if (key === "product" && productModule) return productModule
+        if (key === "fulfillment" && fulfillmentModule) return fulfillmentModule
+        if (key === "sales_channel" && salesChannelModule) {
+          return salesChannelModule
+        }
         if (key === "strapi" && strapiModule) return strapiModule
         throw new Error(`Unexpected module ${key}`)
       }),
@@ -153,6 +193,9 @@ describe("AI product draft routes", () => {
   const originalToken = process.env.HERMES_PRODUCT_DRAFT_TOKEN
 
   beforeEach(() => {
+    jest.clearAllMocks()
+    mockCreateProductsRun.mockResolvedValue({ result: [] })
+    mockUpdateProductsRun.mockResolvedValue({ result: [] })
     process.env.HERMES_PRODUCT_DRAFT_TOKEN = "secret"
   })
 
@@ -199,6 +242,188 @@ describe("AI product draft routes", () => {
       })
     )
     expect(res.status).toHaveBeenCalledWith(201)
+  })
+
+  it("stores a targetless v2 packet as a create draft", async () => {
+    const createdDraft = {
+      ...draft,
+      request_id: validV2Packet.request_id,
+      requested_operation: "auto",
+      resolved_operation: "create",
+      resolution_status: "resolved",
+      product_id: null,
+      product_handle: null,
+    }
+    const draftModule = {
+      listAiProductDrafts: jest.fn().mockResolvedValue([]),
+      createAiProductDrafts: jest.fn().mockResolvedValue(createdDraft),
+      createAiProductDraftEvents: jest.fn().mockResolvedValue({ id: "evt_1" }),
+    }
+    const req = createRequest({
+      body: validV2Packet,
+      draftModule,
+      product: null,
+    })
+    const res = createResponse()
+
+    await intakeDraft(req as never, res as never)
+
+    expect(draftModule.createAiProductDrafts).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "needs_review",
+        request_id: validV2Packet.request_id,
+        requested_operation: "auto",
+        resolved_operation: "create",
+        resolution_status: "resolved",
+        identity_candidates: [],
+        product_id: null,
+        product_handle: null,
+      })
+    )
+    expect(res.status).toHaveBeenCalledWith(201)
+  })
+
+  it("returns the existing draft for a duplicate v2 request id", async () => {
+    const existingDraft = {
+      ...draft,
+      request_id: validV2Packet.request_id,
+      resolved_operation: "create",
+    }
+    const draftModule = {
+      listAiProductDrafts: jest.fn().mockResolvedValue([existingDraft]),
+      createAiProductDrafts: jest.fn(),
+      createAiProductDraftEvents: jest.fn(),
+    }
+    const req = createRequest({
+      body: validV2Packet,
+      draftModule,
+      product: null,
+    })
+    const res = createResponse()
+
+    await intakeDraft(req as never, res as never)
+
+    expect(draftModule.createAiProductDrafts).not.toHaveBeenCalled()
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.json).toHaveBeenCalledWith({
+      draft: existingDraft,
+      duplicate: true,
+    })
+  })
+
+  it("recovers the existing draft when concurrent v2 intake wins the unique key", async () => {
+    const existingDraft = {
+      ...draft,
+      request_id: validV2Packet.request_id,
+      resolved_operation: "create",
+    }
+    const duplicateError = Object.assign(new Error("duplicate key"), {
+      code: "23505",
+    })
+    const draftModule = {
+      listAiProductDrafts: jest
+        .fn()
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([existingDraft]),
+      createAiProductDrafts: jest.fn().mockRejectedValue(duplicateError),
+      createAiProductDraftEvents: jest.fn(),
+    }
+    const req = createRequest({
+      body: validV2Packet,
+      draftModule,
+      product: null,
+    })
+    const res = createResponse()
+
+    await intakeDraft(req as never, res as never)
+
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.json).toHaveBeenCalledWith({
+      draft: existingDraft,
+      duplicate: true,
+    })
+    expect(draftModule.createAiProductDraftEvents).not.toHaveBeenCalled()
+  })
+
+  it("requires admin resolution when a create request matches a product", async () => {
+    const resolutionDraft = {
+      ...draft,
+      status: "needs_resolution",
+      resolved_operation: null,
+      resolution_status: "needs_resolution",
+    }
+    const draftModule = {
+      listAiProductDrafts: jest.fn().mockResolvedValue([]),
+      createAiProductDrafts: jest.fn().mockResolvedValue(resolutionDraft),
+      createAiProductDraftEvents: jest.fn().mockResolvedValue({ id: "evt_1" }),
+    }
+    const req = createRequest({
+      body: {
+        ...validV2Packet,
+        requested_operation: "create",
+      },
+      draftModule,
+      products: [
+        {
+          id: "prod_123",
+          handle: "example-petg",
+          title: "Example PETG",
+          metadata: {},
+        },
+      ],
+    })
+    const res = createResponse()
+
+    await intakeDraft(req as never, res as never)
+
+    expect(draftModule.createAiProductDrafts).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "needs_resolution",
+        resolved_operation: null,
+        resolution_status: "needs_resolution",
+        identity_candidates: [
+          expect.objectContaining({
+            id: "prod_123",
+            handle: "example-petg",
+          }),
+        ],
+      })
+    )
+  })
+
+  it("stores targetless v1 packets as actionable validation failures", async () => {
+    const invalidDraft = {
+      ...draft,
+      status: "validation_failed",
+    }
+    const draftModule = {
+      createAiProductDrafts: jest.fn().mockResolvedValue(invalidDraft),
+      createAiProductDraftEvents: jest.fn().mockResolvedValue({ id: "evt_1" }),
+    }
+    const req = createRequest({
+      body: {
+        ...validPacket,
+        product_id: "",
+        product_handle: "",
+      },
+      draftModule,
+      product: null,
+    })
+    const res = createResponse()
+
+    await intakeDraft(req as never, res as never)
+
+    expect(draftModule.createAiProductDrafts).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "validation_failed",
+        validation_errors: [
+          expect.objectContaining({
+            path: "product",
+            message: expect.stringContaining("packet_version 2"),
+          }),
+        ],
+      })
+    )
   })
 
   it("keeps Hermes intake successful when Admin feed notifications are unavailable", async () => {
@@ -411,6 +636,198 @@ describe("AI product draft routes", () => {
     expect(rejectRes.status).toHaveBeenCalledWith(200)
   })
 
+  it("resolves an ambiguous draft to an existing product before review", async () => {
+    const candidate = {
+      id: "prod_123",
+      handle: "example-petg",
+      title: "Example PETG",
+      metadata: {},
+    }
+    const ambiguousDraft = {
+      ...draft,
+      status: "needs_resolution",
+      identity_candidates: [candidate],
+      normalized_draft: {
+        metadata: {},
+        claim_evidence: [],
+        target_product: {},
+      },
+    }
+    const draftModule = {
+      listAiProductDrafts: jest.fn().mockResolvedValue([ambiguousDraft]),
+      updateAiProductDrafts: jest.fn().mockResolvedValue({
+        ...ambiguousDraft,
+        status: "needs_review",
+        product_id: candidate.id,
+      }),
+      createAiProductDraftEvents: jest.fn().mockResolvedValue({ id: "evt_1" }),
+    }
+    const req = createRequest({
+      body: { operation: "enrich", product_id: candidate.id },
+      params: { id: "aipd_1" },
+      draftModule,
+    })
+    const res = createResponse()
+
+    await resolveDraft(req as never, res as never)
+
+    expect(draftModule.updateAiProductDrafts).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "aipd_1",
+        status: "needs_review",
+        resolved_operation: "enrich",
+        resolution_status: "resolved",
+        product_id: "prod_123",
+        product_handle: "example-petg",
+        snapshot_hash: expect.any(String),
+      })
+    )
+    expect(res.status).toHaveBeenCalledWith(200)
+  })
+
+  it("refreshes the product snapshot while resolving a stored candidate", async () => {
+    const ambiguousDraft = {
+      ...draft,
+      status: "needs_resolution",
+      identity_candidates: [
+        {
+          id: "prod_123",
+          handle: "example-petg",
+          title: "Example PETG",
+          metadata: {
+            three_d_printing: { material: "PLA" },
+          },
+        },
+      ],
+      normalized_draft: {
+        metadata: {},
+        claim_evidence: [],
+        target_product: {},
+      },
+    }
+    const draftModule = {
+      listAiProductDrafts: jest.fn().mockResolvedValue([ambiguousDraft]),
+      updateAiProductDrafts: jest.fn().mockImplementation(async (input) => input),
+      createAiProductDraftEvents: jest.fn().mockResolvedValue({ id: "evt_1" }),
+    }
+    const req = createRequest({
+      body: { operation: "enrich", product_id: "prod_123" },
+      params: { id: "aipd_1" },
+      draftModule,
+      product: {
+        id: "prod_123",
+        handle: "example-petg",
+        title: "Example PETG",
+        metadata: {
+          three_d_printing: { material: "PETG" },
+        },
+      },
+    })
+    const res = createResponse()
+
+    await resolveDraft(req as never, res as never)
+
+    expect(draftModule.updateAiProductDrafts).toHaveBeenCalledWith(
+      expect.objectContaining({
+        current_snapshot: expect.objectContaining({
+          metadata: {
+            three_d_printing: { material: "PETG" },
+          },
+        }),
+      })
+    )
+  })
+
+  it("binds approval to reviewed changes and import targets", async () => {
+    const reviewDraft = {
+      ...draft,
+      snapshot_hash: "snapshot_1",
+      proposed_changes: [
+        {
+          path: "metadata.three_d_printing.material",
+          default_selected: true,
+        },
+        {
+          path: "metadata.three_d_printing.diameter_mm",
+          default_selected: false,
+        },
+      ],
+    }
+    const draftModule = {
+      listAiProductDrafts: jest.fn().mockResolvedValue([reviewDraft]),
+      updateAiProductDrafts: jest.fn().mockResolvedValue({
+        ...reviewDraft,
+        status: "approved",
+      }),
+      createAiProductDraftEvents: jest.fn().mockResolvedValue({ id: "evt_1" }),
+    }
+    const req = createRequest({
+      body: {
+        notes: "Use only reviewed material metadata.",
+        selected_change_paths: ["metadata.three_d_printing.material"],
+        import_targets: {
+          medusa_metadata: true,
+          strapi_description_draft: false,
+          product_document_drafts: false,
+        },
+        snapshot_hash: "snapshot_1",
+      },
+      params: { id: "aipd_1" },
+      draftModule,
+    })
+    const res = createResponse()
+
+    await approveDraft(req as never, res as never)
+
+    expect(draftModule.updateAiProductDrafts).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "aipd_1",
+        approved_changes: [
+          expect.objectContaining({
+            path: "metadata.three_d_printing.material",
+          }),
+        ],
+        approved_import_targets: {
+          medusa_metadata: true,
+          strapi_description_draft: false,
+          product_document_drafts: false,
+        },
+        approved_snapshot_hash: "snapshot_1",
+      })
+    )
+  })
+
+  it("rejects an enrichment approval with no selected work", async () => {
+    const reviewDraft = {
+      ...draft,
+      resolved_operation: "enrich",
+      proposed_changes: [],
+    }
+    const draftModule = {
+      listAiProductDrafts: jest.fn().mockResolvedValue([reviewDraft]),
+      updateAiProductDrafts: jest.fn(),
+      createAiProductDraftEvents: jest.fn(),
+    }
+    const req = createRequest({
+      body: {
+        selected_change_paths: [],
+        import_targets: {
+          medusa_metadata: false,
+          strapi_description_draft: false,
+          product_document_drafts: false,
+        },
+      },
+      params: { id: "aipd_1" },
+      draftModule,
+    })
+    const res = createResponse()
+
+    await approveDraft(req as never, res as never)
+
+    expect(res.status).toHaveBeenCalledWith(400)
+    expect(draftModule.updateAiProductDrafts).not.toHaveBeenCalled()
+  })
+
   it("blocks import until a draft is approved", async () => {
     const draftModule = {
       listAiProductDrafts: jest.fn().mockResolvedValue([draft]),
@@ -497,7 +914,7 @@ describe("AI product draft routes", () => {
 
     await importDraft(req as never, res as never)
 
-    expect(productModule.updateProducts).toHaveBeenCalled()
+    expect(mockUpdateProductsRun).toHaveBeenCalled()
     expect(strapiModule.upsertAiProductDescriptionDraft).toHaveBeenCalled()
     expect(draftModule.updateAiProductDrafts).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -506,6 +923,108 @@ describe("AI product draft routes", () => {
         import_summary: expect.objectContaining({
           imported_targets: expect.arrayContaining(["medusa_metadata"]),
         }),
+      })
+    )
+  })
+
+  it("checkpoints a created product before continuing external imports", async () => {
+    const approvedDraft = {
+      ...draft,
+      status: "approved",
+      product_id: null,
+      product_handle: null,
+      resolved_operation: "create",
+      product_input: {
+        product_name: "Example PETG",
+      },
+      approved_changes: [],
+      approved_import_targets: {
+        medusa_metadata: true,
+        strapi_description_draft: false,
+        product_document_drafts: false,
+      },
+      normalized_draft: {
+        schema_version: 1,
+        target_product: {
+          product_title: "Example PETG",
+        },
+        metadata: {},
+        content_draft: {
+          short_description: "Source backed PETG.",
+          feature_bullets: [],
+          seo_title: "Example PETG",
+          seo_description: "Source backed PETG.",
+          ai_search_keywords: [],
+        },
+        related_content_suggestions: [],
+        product_document_suggestions: [],
+        claim_evidence: [],
+        warnings: [],
+        confidence_summary: {
+          overall: 0.9,
+          metadata: 0.9,
+          content: 0.8,
+          documents: 0,
+        },
+      },
+    }
+    mockCreateProductsRun.mockResolvedValue({
+      result: [
+        {
+          id: "prod_created",
+          title: "Example PETG",
+          handle: "example-petg-created",
+          metadata: {},
+        },
+      ],
+    })
+    const draftModule = {
+      listAiProductDrafts: jest.fn().mockResolvedValue([approvedDraft]),
+      updateAiProductDrafts: jest.fn().mockImplementation(async (input) => ({
+        ...approvedDraft,
+        ...input,
+      })),
+      createAiProductDraftEvents: jest.fn().mockResolvedValue({ id: "evt_1" }),
+    }
+    const req = createRequest({
+      params: { id: "aipd_1" },
+      draftModule,
+      productModule: {
+        listProducts: jest.fn(),
+      },
+      fulfillmentModule: {
+        listShippingProfiles: jest
+          .fn()
+          .mockResolvedValue([{ id: "sp_default" }]),
+      },
+      salesChannelModule: {
+        listSalesChannels: jest
+          .fn()
+          .mockResolvedValue([{ id: "sc_web", name: "Web Store" }]),
+      },
+    })
+    const res = createResponse()
+
+    await importDraft(req as never, res as never)
+
+    expect(draftModule.updateAiProductDrafts).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "aipd_1",
+        product_id: "prod_created",
+        product_handle: "example-petg-created",
+        import_progress: expect.objectContaining({
+          medusa_product: expect.objectContaining({
+            status: "completed",
+            product_id: "prod_created",
+          }),
+        }),
+      })
+    )
+    expect(draftModule.updateAiProductDrafts).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        status: "imported",
+        product_id: "prod_created",
+        product_handle: "example-petg-created",
       })
     )
   })

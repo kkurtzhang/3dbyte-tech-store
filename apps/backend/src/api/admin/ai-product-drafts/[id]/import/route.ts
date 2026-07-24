@@ -1,6 +1,9 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 
-import { importAiProductDraft } from "../../../../../lib/ai-product-drafts/importer"
+import {
+  importAiProductDraft,
+  type AiProductDraftImportProgress,
+} from "../../../../../lib/ai-product-drafts/importer"
 import { sendAiProductDraftAdminNotification } from "../../../../../lib/ai-product-drafts/notifications"
 import {
   assertAiProductDraftCanImport,
@@ -29,12 +32,36 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
   const draftModule = getAiProductDraftModule(req)
   const actorId = getAdminActorId(req)
+  let importProgress =
+    draft.import_progress &&
+    typeof draft.import_progress === "object" &&
+    !Array.isArray(draft.import_progress)
+      ? (draft.import_progress as AiProductDraftImportProgress)
+      : {}
+  let importedProductId = String(draft.product_id || "")
+  let importedProductHandle = String(draft.product_handle || "")
   let importSummary
 
   try {
     importSummary = await importAiProductDraft({
       container: req.scope as never,
       draft: draft as never,
+      onProgress: async (progress) => {
+        importProgress = progress
+        importedProductId =
+          progress.medusa_product?.product_id || importedProductId
+        importedProductHandle =
+          progress.medusa_product?.product_handle || importedProductHandle
+
+        await draftModule.updateAiProductDrafts({
+          id: req.params.id,
+          import_progress: progress,
+          ...(importedProductId ? { product_id: importedProductId } : {}),
+          ...(importedProductHandle
+            ? { product_handle: importedProductHandle }
+            : {}),
+        })
+      },
     })
   } catch (error) {
     const message =
@@ -54,8 +81,8 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     await sendAiProductDraftAdminNotification(req.scope as never, {
       kind: "import_failed",
       draft_id: req.params.id,
-      product_id: String(draft.product_id || ""),
-      product_handle: String(draft.product_handle || ""),
+      product_id: importedProductId,
+      product_handle: importedProductHandle,
       error: message,
     })
 
@@ -67,6 +94,9 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     status: "imported",
     imported_by: actorId || null,
     imported_at: new Date().toISOString(),
+    product_id: importSummary.product_id,
+    product_handle: importSummary.product_handle,
+    import_progress: importProgress,
     import_summary: importSummary,
   })
 
@@ -84,8 +114,8 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
   await sendAiProductDraftAdminNotification(req.scope as never, {
     kind: "imported",
     draft_id: req.params.id,
-    product_id: String(draft.product_id || ""),
-    product_handle: String(draft.product_handle || ""),
+    product_id: importSummary.product_id,
+    product_handle: importSummary.product_handle,
   })
 
   return res.status(200).json({ draft: updated })
