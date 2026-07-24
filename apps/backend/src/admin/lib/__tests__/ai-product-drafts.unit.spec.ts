@@ -75,19 +75,21 @@ describe("AI product draft admin helpers", () => {
   })
 
   it.each([
-    ["received", false, false, true],
-    ["validation_failed", false, false, true],
-    ["needs_review", true, false, true],
-    ["approved", false, true, true],
-    ["rejected", false, false, false],
-    ["imported", false, false, false],
+    ["received", false, false, true, false],
+    ["validation_failed", false, false, true, false],
+    ["needs_resolution", false, false, true, true],
+    ["needs_review", true, false, true, false],
+    ["approved", false, true, true, false],
+    ["rejected", false, false, false, false],
+    ["imported", false, false, false, false],
   ])(
     "keeps %s draft actions aligned with backend lifecycle rules",
-    (status, canApprove, canImport, canReject) => {
+    (status, canApprove, canImport, canReject, canResolve) => {
       expect(getAiProductDraftActionAvailability(status)).toEqual({
         canApprove,
         canImport,
         canReject,
+        canResolve,
       })
     }
   )
