@@ -68,22 +68,30 @@ const sourcedBooleanFact = z
   })
   .strict()
 
-export const ProductResearchPacketSchema = z
+const ProductInputV1Schema = z
+  .object({
+    brand: optionalTrimmedString.max(120),
+    product_name: optionalTrimmedString.max(200),
+    colour: optionalTrimmedString.max(80),
+    diameter_mm: nullableNumber,
+    spool_weight_g: nullableNumber,
+    supplier_url: urlString,
+  })
+  .strict()
+
+const ProductInputV2Schema = ProductInputV1Schema.extend({
+  manufacturer_part_number: optionalTrimmedString.max(120),
+  gtin: optionalTrimmedString.max(32),
+  supplier_sku: optionalTrimmedString.max(120),
+}).strict()
+
+export const ProductResearchPacketV1Schema = z
   .object({
     packet_version: z.literal(1),
     source_agent: z.literal("hermes"),
     product_id: optionalTrimmedString.max(120).optional().default(""),
     product_handle: optionalTrimmedString.max(200).optional().default(""),
-    product_input: z
-      .object({
-        brand: optionalTrimmedString.max(120),
-        product_name: optionalTrimmedString.max(200),
-        colour: optionalTrimmedString.max(80),
-        diameter_mm: nullableNumber,
-        spool_weight_g: nullableNumber,
-        supplier_url: urlString,
-      })
-      .strict(),
+    product_input: ProductInputV1Schema,
     source_summary: z
       .object({
         official_product_page: urlString,
@@ -137,6 +145,19 @@ export const ProductResearchPacketSchema = z
     warnings: z.array(optionalTrimmedString.max(400)).max(30),
   })
   .strict()
+
+export const ProductResearchPacketV2Schema =
+  ProductResearchPacketV1Schema.extend({
+    packet_version: z.literal(2),
+    request_id: nonEmptyTrimmedString.max(160),
+    requested_operation: z.enum(["auto", "create", "enrich"]),
+    product_input: ProductInputV2Schema,
+  }).strict()
+
+export const ProductResearchPacketSchema = z.discriminatedUnion(
+  "packet_version",
+  [ProductResearchPacketV1Schema, ProductResearchPacketV2Schema]
+)
 
 const metadataStringArray = z.array(nonEmptyTrimmedString).max(40)
 const temperatureRange = z
@@ -287,4 +308,10 @@ export const InternalAiProductDraftSchema = z
   .strict()
 
 export type ProductResearchPacket = z.infer<typeof ProductResearchPacketSchema>
+export type ProductResearchPacketV1 = z.infer<
+  typeof ProductResearchPacketV1Schema
+>
+export type ProductResearchPacketV2 = z.infer<
+  typeof ProductResearchPacketV2Schema
+>
 export type InternalAiProductDraft = z.infer<typeof InternalAiProductDraftSchema>
