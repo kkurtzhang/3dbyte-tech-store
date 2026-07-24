@@ -311,6 +311,40 @@ describe("AI product draft routes", () => {
     })
   })
 
+  it("recovers the existing draft when concurrent v2 intake wins the unique key", async () => {
+    const existingDraft = {
+      ...draft,
+      request_id: validV2Packet.request_id,
+      resolved_operation: "create",
+    }
+    const duplicateError = Object.assign(new Error("duplicate key"), {
+      code: "23505",
+    })
+    const draftModule = {
+      listAiProductDrafts: jest
+        .fn()
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([existingDraft]),
+      createAiProductDrafts: jest.fn().mockRejectedValue(duplicateError),
+      createAiProductDraftEvents: jest.fn(),
+    }
+    const req = createRequest({
+      body: validV2Packet,
+      draftModule,
+      product: null,
+    })
+    const res = createResponse()
+
+    await intakeDraft(req as never, res as never)
+
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.json).toHaveBeenCalledWith({
+      draft: existingDraft,
+      duplicate: true,
+    })
+    expect(draftModule.createAiProductDraftEvents).not.toHaveBeenCalled()
+  })
+
   it("requires admin resolution when a create request matches a product", async () => {
     const resolutionDraft = {
       ...draft,
@@ -651,6 +685,59 @@ describe("AI product draft routes", () => {
     expect(res.status).toHaveBeenCalledWith(200)
   })
 
+  it("refreshes the product snapshot while resolving a stored candidate", async () => {
+    const ambiguousDraft = {
+      ...draft,
+      status: "needs_resolution",
+      identity_candidates: [
+        {
+          id: "prod_123",
+          handle: "example-petg",
+          title: "Example PETG",
+          metadata: {
+            three_d_printing: { material: "PLA" },
+          },
+        },
+      ],
+      normalized_draft: {
+        metadata: {},
+        claim_evidence: [],
+        target_product: {},
+      },
+    }
+    const draftModule = {
+      listAiProductDrafts: jest.fn().mockResolvedValue([ambiguousDraft]),
+      updateAiProductDrafts: jest.fn().mockImplementation(async (input) => input),
+      createAiProductDraftEvents: jest.fn().mockResolvedValue({ id: "evt_1" }),
+    }
+    const req = createRequest({
+      body: { operation: "enrich", product_id: "prod_123" },
+      params: { id: "aipd_1" },
+      draftModule,
+      product: {
+        id: "prod_123",
+        handle: "example-petg",
+        title: "Example PETG",
+        metadata: {
+          three_d_printing: { material: "PETG" },
+        },
+      },
+    })
+    const res = createResponse()
+
+    await resolveDraft(req as never, res as never)
+
+    expect(draftModule.updateAiProductDrafts).toHaveBeenCalledWith(
+      expect.objectContaining({
+        current_snapshot: expect.objectContaining({
+          metadata: {
+            three_d_printing: { material: "PETG" },
+          },
+        }),
+      })
+    )
+  })
+
   it("binds approval to reviewed changes and import targets", async () => {
     const reviewDraft = {
       ...draft,
@@ -708,6 +795,37 @@ describe("AI product draft routes", () => {
         approved_snapshot_hash: "snapshot_1",
       })
     )
+  })
+
+  it("rejects an enrichment approval with no selected work", async () => {
+    const reviewDraft = {
+      ...draft,
+      resolved_operation: "enrich",
+      proposed_changes: [],
+    }
+    const draftModule = {
+      listAiProductDrafts: jest.fn().mockResolvedValue([reviewDraft]),
+      updateAiProductDrafts: jest.fn(),
+      createAiProductDraftEvents: jest.fn(),
+    }
+    const req = createRequest({
+      body: {
+        selected_change_paths: [],
+        import_targets: {
+          medusa_metadata: false,
+          strapi_description_draft: false,
+          product_document_drafts: false,
+        },
+      },
+      params: { id: "aipd_1" },
+      draftModule,
+    })
+    const res = createResponse()
+
+    await approveDraft(req as never, res as never)
+
+    expect(res.status).toHaveBeenCalledWith(400)
+    expect(draftModule.updateAiProductDrafts).not.toHaveBeenCalled()
   })
 
   it("blocks import until a draft is approved", async () => {
