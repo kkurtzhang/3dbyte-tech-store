@@ -52,6 +52,12 @@ function getString(value: unknown): string {
   return typeof value === "string" ? value.trim() : ""
 }
 
+function getRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {}
+}
+
 export async function getDraftById(req: MedusaRequest, res: MedusaResponse) {
   const draftModule = getAiProductDraftModule(req)
   const [draft] = await draftModule.listAiProductDrafts({ id: req.params.id })
@@ -315,6 +321,8 @@ export function filterDrafts(
       draft.product_id,
       draft.product_handle,
       draft.source_agent,
+      getRecord(draft.product_input).product_name,
+      getRecord(getRecord(draft.normalized_draft).target_product).product_title,
     ].some((value) => String(value || "").toLowerCase().includes(q))
   })
 }

@@ -2,6 +2,7 @@ const { loadEnv } = require("@medusajs/utils");
 loadEnv("test", process.cwd());
 
 module.exports = {
+  watchman: false,
   transform: {
     "^.+\\.[jt]sx?$": [
       "@swc/jest",

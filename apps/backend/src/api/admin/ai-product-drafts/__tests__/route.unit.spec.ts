@@ -341,6 +341,35 @@ describe("AI product draft routes", () => {
     })
   })
 
+  it("finds a draft by its submitted product name", async () => {
+    const titleOnlyDraft = {
+      ...draft,
+      id: "aipd_title_only",
+      product_id: null,
+      product_handle: null,
+      product_input: {
+        product_name: "Polymaker PolyLite PETG",
+      },
+    }
+    const draftModule = {
+      listAiProductDrafts: jest.fn().mockResolvedValue([titleOnlyDraft]),
+    }
+    const req = createRequest({
+      query: { q: "polylite", limit: "10", offset: "0" },
+      draftModule,
+    })
+    const res = createResponse()
+
+    await listDrafts(req as never, res as never)
+
+    expect(res.json).toHaveBeenCalledWith({
+      drafts: [titleOnlyDraft],
+      count: 1,
+      limit: 10,
+      offset: 0,
+    })
+  })
+
   it("approves and rejects reviewable drafts with audit events", async () => {
     const draftModule = {
       listAiProductDrafts: jest.fn().mockResolvedValue([draft]),
