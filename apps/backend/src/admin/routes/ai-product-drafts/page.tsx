@@ -1,5 +1,5 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk"
-import { BroomSparkle, Eye } from "@medusajs/icons"
+import { BroomSparkle, Eye, Trash } from "@medusajs/icons"
 import {
   Badge,
   createDataTableColumnHelper,
@@ -7,7 +7,9 @@ import {
   DataTablePaginationState,
   Input,
   Text,
+  toast,
   useDataTable,
+  usePrompt,
 } from "@medusajs/ui"
 import { useMemo, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
@@ -15,7 +17,11 @@ import { Link, useNavigate } from "react-router-dom"
 import { ActionMenu } from "../../components/action-menu"
 import { Container } from "../../components/container"
 import { Header } from "../../components/header"
-import { useAiProductDrafts } from "../../hooks/ai-product-drafts"
+import {
+  useAiProductDrafts,
+  useCleanupAiProductDrafts,
+  useDeleteAiProductDraft,
+} from "../../hooks/ai-product-drafts"
 import {
   buildAiProductDraftDetailUrl,
   formatAiProductDraftDate,
@@ -44,6 +50,32 @@ const columnHelper = createDataTableColumnHelper<AdminAiProductDraft>()
 
 function DraftActions({ draft }: { draft: AdminAiProductDraft }) {
   const displayName = getAiProductDraftDisplayName(draft)
+  const prompt = usePrompt()
+  const { mutateAsync: deleteDraft, isPending } = useDeleteAiProductDraft(
+    draft.id
+  )
+  const canDelete = ["validation_failed", "rejected"].includes(draft.status)
+
+  const handleDelete = async () => {
+    const confirmed = await prompt({
+      title: "Delete AI product draft?",
+      description: `Remove ${displayName} from the draft table? The record will be soft-deleted and no product data will be changed.`,
+    })
+
+    if (!confirmed) return
+
+    try {
+      await deleteDraft()
+      toast.success("Draft deleted", {
+        description: `${displayName} was removed from the draft table.`,
+      })
+    } catch {
+      toast.error("Unable to delete draft", {
+        description:
+          "The draft was not removed. Refresh the table and try again.",
+      })
+    }
+  }
 
   return (
     <ActionMenu
@@ -56,6 +88,19 @@ function DraftActions({ draft }: { draft: AdminAiProductDraft }) {
               to: buildAiProductDraftDetailUrl(draft.id),
             },
           ],
+        },
+        {
+          actions: canDelete
+            ? [
+                {
+                  destructive: true,
+                  disabled: isPending,
+                  icon: <Trash />,
+                  label: "Delete draft",
+                  onClick: handleDelete,
+                },
+              ]
+            : [],
         },
       ]}
       triggerLabel={`Actions for ${displayName}`}
@@ -135,6 +180,9 @@ const AiProductDraftsPage = () => {
   const [q, setQ] = useState("")
   const [status, setStatus] = useState("all")
   const navigate = useNavigate()
+  const prompt = usePrompt()
+  const { mutateAsync: cleanupDrafts, isPending: isCleaningUp } =
+    useCleanupAiProductDrafts()
   const offset = useMemo(
     () => pagination.pageIndex * pagination.pageSize,
     [pagination]
@@ -149,6 +197,33 @@ const AiProductDraftsPage = () => {
     [offset, pagination.pageSize, q, status]
   )
   const { drafts, count, isLoading } = useAiProductDrafts(query)
+  const canBulkCleanup =
+    status === "validation_failed" && !q.trim() && count > 0
+
+  const handleBulkCleanup = async () => {
+    const confirmed = await prompt({
+      title: "Clean up validation failures?",
+      description: `Soft-delete all ${count} validation-failed drafts currently shown by this filter? No Medusa product data will be changed.`,
+    })
+
+    if (!confirmed) return
+
+    try {
+      const result = await cleanupDrafts({
+        status: "validation_failed",
+        expected_count: count,
+      })
+      setPagination((current) => ({ ...current, pageIndex: 0 }))
+      toast.success("Failed drafts cleaned up", {
+        description: `${result.count} validation-failed drafts were removed from the table.`,
+      })
+    } catch {
+      toast.error("Unable to clean up failed drafts", {
+        description:
+          "No drafts were removed. Refresh the table and confirm the cleanup again.",
+      })
+    }
+  }
   const table = useDataTable({
     columns,
     data: drafts,
@@ -169,6 +244,21 @@ const AiProductDraftsPage = () => {
       <Header
         title="AI Product Drafts"
         subtitle="Review Hermes product research before importing metadata and draft content."
+        actions={
+          canBulkCleanup
+            ? [
+                {
+                  type: "button",
+                  props: {
+                    children: `Clean up ${count} failed drafts`,
+                    isLoading: isCleaningUp,
+                    onClick: handleBulkCleanup,
+                    variant: "danger",
+                  },
+                },
+              ]
+            : []
+        }
       />
       <div className="grid gap-3 px-6 py-4 md:grid-cols-[minmax(0,1fr)_220px]">
         <Input

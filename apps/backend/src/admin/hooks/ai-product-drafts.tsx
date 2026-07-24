@@ -12,6 +12,9 @@ import { sdk } from "../lib/sdk"
 import type {
   AdminAiProductDraftActionResponse,
   AdminAiProductDraftApproveParams,
+  AdminAiProductDraftCleanupParams,
+  AdminAiProductDraftCleanupResponse,
+  AdminAiProductDraftDeleteResponse,
   AdminAiProductDraftImportParams,
   AdminAiProductDraftRejectParams,
   AdminAiProductDraftResolveParams,
@@ -98,6 +101,58 @@ const useInvalidateAiProductDrafts = (id?: string) => {
       })
     }
   }
+}
+
+export const useDeleteAiProductDraft = (
+  id: string,
+  options?: UseMutationOptions<
+    AdminAiProductDraftDeleteResponse,
+    FetchError,
+    void
+  >
+) => {
+  const invalidate = useInvalidateAiProductDrafts(id)
+
+  return useMutation({
+    mutationFn: () =>
+      sdk.client.fetch<AdminAiProductDraftDeleteResponse>(
+        `/admin/ai-product-drafts/${id}`,
+        {
+          method: "delete",
+        }
+      ),
+    onSuccess: (data, variables, context) => {
+      invalidate()
+      options?.onSuccess?.(data, variables, context)
+    },
+    ...options,
+  })
+}
+
+export const useCleanupAiProductDrafts = (
+  options?: UseMutationOptions<
+    AdminAiProductDraftCleanupResponse,
+    FetchError,
+    AdminAiProductDraftCleanupParams
+  >
+) => {
+  const invalidate = useInvalidateAiProductDrafts()
+
+  return useMutation({
+    mutationFn: (payload: AdminAiProductDraftCleanupParams) =>
+      sdk.client.fetch<AdminAiProductDraftCleanupResponse>(
+        "/admin/ai-product-drafts",
+        {
+          method: "delete",
+          body: payload,
+        }
+      ),
+    onSuccess: (data, variables, context) => {
+      invalidate()
+      options?.onSuccess?.(data, variables, context)
+    },
+    ...options,
+  })
 }
 
 export const useApproveAiProductDraft = (

@@ -1,4 +1,5 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+import { z } from "@medusajs/framework/zod"
 
 import {
   filterDrafts,
@@ -6,6 +7,14 @@ import {
   parseLimit,
   parseOffset,
 } from "./utils"
+
+const BULK_CLEANUP_LIMIT = 500
+const BulkCleanupSchema = z
+  .object({
+    status: z.literal("validation_failed"),
+    expected_count: z.number().int().min(1).max(BULK_CLEANUP_LIMIT),
+  })
+  .strict()
 
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   const draftModule = getAiProductDraftModule(req)
@@ -26,5 +35,43 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     count: filtered.length,
     limit,
     offset,
+  })
+}
+
+export async function DELETE(req: MedusaRequest, res: MedusaResponse) {
+  const parsed = BulkCleanupSchema.safeParse(req.body)
+
+  if (!parsed.success) {
+    return res.status(400).json({
+      error:
+        "Bulk cleanup requires validation_failed status and an expected count between 1 and 500",
+    })
+  }
+
+  const draftModule = getAiProductDraftModule(req)
+  const drafts = await draftModule.listAiProductDrafts(
+    { status: parsed.data.status },
+    {
+      select: ["id", "status"],
+      take: BULK_CLEANUP_LIMIT + 1,
+    }
+  )
+  const ids = drafts
+    .filter((draft) => draft.status === "validation_failed")
+    .map((draft) => (typeof draft.id === "string" ? draft.id : ""))
+    .filter(Boolean)
+
+  if (ids.length !== parsed.data.expected_count) {
+    return res.status(409).json({
+      error:
+        "The validation-failed draft queue changed. Refresh the table and confirm cleanup again.",
+    })
+  }
+
+  await draftModule.softDeleteAiProductDrafts(ids)
+
+  return res.status(200).json({
+    count: ids.length,
+    deleted_ids: ids,
   })
 }

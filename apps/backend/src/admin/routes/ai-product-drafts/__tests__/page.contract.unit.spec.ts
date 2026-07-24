@@ -53,8 +53,8 @@ describe("AI product draft Admin UI contracts", () => {
     expect(listPageSource).toContain("!q.trim()")
     expect(listPageSource).toContain("usePrompt")
     expect(listPageSource).toContain("toast.success")
+    expect(listPageSource).toContain("expected_count")
     expect(hooksSource).toContain('method: "delete"')
-    expect(hooksSource).toContain("expected_count")
   })
 
   it("surfaces identity-resolution work in both the list and detail page", () => {

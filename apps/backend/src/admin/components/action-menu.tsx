@@ -15,6 +15,7 @@ export type Action = {
   icon: React.ReactNode;
   label: string;
   disabled?: boolean;
+  destructive?: boolean;
   prompt?: boolean;
   promptParam?: PromptParam;
   confirmedParam?: ConfirmedParam;
@@ -113,6 +114,8 @@ export const ActionMenu = ({
                         "[&_svg]:text-ui-fg-subtle flex items-center gap-x-2",
                         {
                           "[&_svg]:text-ui-fg-disabled": action.disabled,
+                          "text-ui-fg-error [&_svg]:text-ui-fg-error":
+                            action.destructive && !action.disabled,
                         }
                       )}
                     >
