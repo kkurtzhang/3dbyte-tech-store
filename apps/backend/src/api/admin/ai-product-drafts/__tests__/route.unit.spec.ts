@@ -12,8 +12,8 @@ jest.mock("@medusajs/medusa/core-flows", () => ({
 
 import { POST as intakeDraft } from "../../../integrations/hermes/product-drafts/route"
 import * as adminDraftRoutes from "../route"
-import { GET as listDrafts } from "../route"
-import { GET as getDraft } from "../[id]/route"
+import { DELETE as cleanupDrafts, GET as listDrafts } from "../route"
+import { DELETE as deleteDraft, GET as getDraft } from "../[id]/route"
 import { POST as approveDraft } from "../[id]/approve/route"
 import { POST as rejectDraft } from "../[id]/reject/route"
 import { POST as importDraft } from "../[id]/import/route"
@@ -593,6 +593,137 @@ describe("AI product draft routes", () => {
       limit: 10,
       offset: 0,
     })
+  })
+
+  it("soft-deletes a validation-failed draft without touching product data", async () => {
+    const failedDraft = {
+      ...draft,
+      status: "validation_failed",
+    }
+    const draftModule = {
+      listAiProductDrafts: jest.fn().mockResolvedValue([failedDraft]),
+      softDeleteAiProductDrafts: jest.fn().mockResolvedValue([failedDraft.id]),
+    }
+    const req = createRequest({
+      params: { id: failedDraft.id },
+      draftModule,
+    })
+    const res = createResponse()
+
+    await deleteDraft(req as never, res as never)
+
+    expect(draftModule.softDeleteAiProductDrafts).toHaveBeenCalledWith(
+      failedDraft.id
+    )
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.json).toHaveBeenCalledWith({
+      id: failedDraft.id,
+      deleted: true,
+    })
+  })
+
+  it("protects reviewable and imported drafts from cleanup", async () => {
+    for (const status of ["needs_review", "approved", "imported"]) {
+      const protectedDraft = { ...draft, status }
+      const draftModule = {
+        listAiProductDrafts: jest.fn().mockResolvedValue([protectedDraft]),
+        softDeleteAiProductDrafts: jest.fn(),
+      }
+      const req = createRequest({
+        params: { id: protectedDraft.id },
+        draftModule,
+      })
+      const res = createResponse()
+
+      await deleteDraft(req as never, res as never)
+
+      expect(draftModule.softDeleteAiProductDrafts).not.toHaveBeenCalled()
+      expect(res.status).toHaveBeenCalledWith(409)
+    }
+  })
+
+  it("bulk-cleans validation failures only when the confirmed count is current", async () => {
+    const failedDrafts = [
+      { ...draft, id: "aipd_failed_1", status: "validation_failed" },
+      { ...draft, id: "aipd_failed_2", status: "validation_failed" },
+    ]
+    const draftModule = {
+      listAiProductDrafts: jest.fn().mockResolvedValue(failedDrafts),
+      softDeleteAiProductDrafts: jest
+        .fn()
+        .mockResolvedValue(failedDrafts.map(({ id }) => id)),
+    }
+    const req = createRequest({
+      body: {
+        status: "validation_failed",
+        expected_count: failedDrafts.length,
+      },
+      draftModule,
+    })
+    const res = createResponse()
+
+    await cleanupDrafts(req as never, res as never)
+
+    expect(draftModule.listAiProductDrafts).toHaveBeenCalledWith(
+      { status: "validation_failed" },
+      expect.objectContaining({ take: 501 })
+    )
+    expect(draftModule.softDeleteAiProductDrafts).toHaveBeenCalledWith([
+      "aipd_failed_1",
+      "aipd_failed_2",
+    ])
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.json).toHaveBeenCalledWith({
+      count: 2,
+      deleted_ids: ["aipd_failed_1", "aipd_failed_2"],
+    })
+  })
+
+  it("refuses bulk cleanup when the queue changes after confirmation", async () => {
+    const draftModule = {
+      listAiProductDrafts: jest.fn().mockResolvedValue([
+        { ...draft, id: "aipd_failed_1", status: "validation_failed" },
+        { ...draft, id: "aipd_failed_2", status: "validation_failed" },
+      ]),
+      softDeleteAiProductDrafts: jest.fn(),
+    }
+    const req = createRequest({
+      body: {
+        status: "validation_failed",
+        expected_count: 1,
+      },
+      draftModule,
+    })
+    const res = createResponse()
+
+    await cleanupDrafts(req as never, res as never)
+
+    expect(draftModule.softDeleteAiProductDrafts).not.toHaveBeenCalled()
+    expect(res.status).toHaveBeenCalledWith(409)
+    expect(res.json).toHaveBeenCalledWith({
+      error: expect.stringContaining("changed"),
+    })
+  })
+
+  it("rejects attempts to bulk-clean actionable statuses", async () => {
+    const draftModule = {
+      listAiProductDrafts: jest.fn(),
+      softDeleteAiProductDrafts: jest.fn(),
+    }
+    const req = createRequest({
+      body: {
+        status: "needs_review",
+        expected_count: 1,
+      },
+      draftModule,
+    })
+    const res = createResponse()
+
+    await cleanupDrafts(req as never, res as never)
+
+    expect(draftModule.listAiProductDrafts).not.toHaveBeenCalled()
+    expect(draftModule.softDeleteAiProductDrafts).not.toHaveBeenCalled()
+    expect(res.status).toHaveBeenCalledWith(400)
   })
 
   it("approves and rejects reviewable drafts with audit events", async () => {
