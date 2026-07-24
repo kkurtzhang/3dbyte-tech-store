@@ -35,6 +35,7 @@ import type {
 } from "../../types"
 
 const limit = 15
+const bulkCleanupLimit = 500
 const statuses = [
   "all",
   "needs_resolution",
@@ -198,7 +199,10 @@ const AiProductDraftsPage = () => {
   )
   const { drafts, count, isLoading } = useAiProductDrafts(query)
   const canBulkCleanup =
-    status === "validation_failed" && !q.trim() && count > 0
+    status === "validation_failed" &&
+    !q.trim() &&
+    count > 0 &&
+    count <= bulkCleanupLimit
 
   const handleBulkCleanup = async () => {
     const confirmed = await prompt({
