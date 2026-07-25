@@ -4,7 +4,9 @@ describe("ResendNotificationProviderModule", () => {
   it("exports a Medusa notification module provider definition", () => {
     expect(ResendNotificationProviderModule).toMatchObject({
       module: "notification",
-      services: [expect.objectContaining({ identifier: "resend" })],
     });
+    expect(ResendNotificationProviderModule.services[0].identifier).toBe(
+      "resend",
+    );
   });
 });
