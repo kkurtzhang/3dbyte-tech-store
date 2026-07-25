@@ -16,6 +16,7 @@ RUN corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
 
 FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY patches ./patches
 COPY apps/storefront-v3/package.json apps/storefront-v3/package.json
 COPY packages/observability/package.json packages/observability/package.json
 COPY packages/shared-config/package.json packages/shared-config/package.json
