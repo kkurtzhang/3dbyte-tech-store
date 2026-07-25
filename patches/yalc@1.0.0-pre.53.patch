@@ -1,0 +1,23 @@
+diff --git a/src/sync-dir.js b/src/sync-dir.js
+index b173774fda0cd0102456eac405267bc5245d377d..af7de7331e15cdc775023ac312c48af96ac0d2a3 100644
+--- a/src/sync-dir.js
++++ b/src/sync-dir.js
+@@ -47,8 +47,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
+ };
+ Object.defineProperty(exports, "__esModule", { value: true });
+ exports.copyDirSafe = void 0;
+-var glob_1 = __importDefault(require("glob"));
+-var util_1 = __importDefault(require("util"));
++var glob_1 = require("glob");
+ var path_1 = require("path");
+ var fs_extra_1 = __importDefault(require("fs-extra"));
+ var copy_1 = require("./copy");
+@@ -59,7 +58,7 @@ if (NODE_MAJOR_VERSION >= 8 && NODE_MAJOR_VERSION < 10) {
+     Symbol.asyncIterator =
+         Symbol.asyncIterator || Symbol('Symbol.asyncIterator');
+ }
+-var globP = util_1.default.promisify(glob_1.default);
++var globP = glob_1.glob;
+ var cache = {};
+ var makeListMap = function (list) {
+     return list.reduce(function (map, item) {

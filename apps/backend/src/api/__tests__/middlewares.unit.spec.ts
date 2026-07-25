@@ -154,9 +154,13 @@ describe("API middleware configuration", () => {
       authTypes: ["session", "bearer"],
       options: { allowUnauthenticated: true },
     });
-    expect(orderReadRoute?.middlewares[1]).toEqual(
-      expect.objectContaining({ orderAccessMiddleware: true }),
-    );
+    expect(
+      (
+        orderReadRoute?.middlewares[1] as {
+          orderAccessMiddleware?: boolean;
+        }
+      )?.orderAccessMiddleware,
+    ).toBe(true);
   });
 
   it("rate limits authenticated account security mutations after authentication", async () => {

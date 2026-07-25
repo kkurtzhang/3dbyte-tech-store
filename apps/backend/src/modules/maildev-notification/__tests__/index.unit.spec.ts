@@ -4,7 +4,9 @@ describe("MaildevNotificationProviderModule", () => {
   it("exports a Medusa notification module provider definition", () => {
     expect(MaildevNotificationProviderModule).toMatchObject({
       module: "notification",
-      services: [expect.objectContaining({ identifier: "maildev" })],
     });
+    expect(MaildevNotificationProviderModule.services[0].identifier).toBe(
+      "maildev",
+    );
   });
 });

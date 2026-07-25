@@ -130,6 +130,13 @@ explicit task authorization; see `apps/cms/CLAUDE.md`.
 - Commit format: `<type>(<scope>): <description>`.
 - `staging` is the staging release path; `main` is production. Use protected PR
   workflows where required and include a concrete test plan.
+- Before squash-merging a PR, refresh its head/base state and require every
+  applicable CI check to be complete and successful. Do not merge while any
+  check is queued, pending, cancelled, timed out, action-required, or failed.
+- For dependency or security changes, rerun the security scan immediately
+  before merge so the result includes current external advisory data.
+- After merging, verify the branch push workflow for the merge commit. Delivery
+  is incomplete until that post-merge CI run is also successful.
 - Do not trigger a manual redeploy unless requested.
 - For Coolify incidents, inspect queue state, public health, containers, and
   current `releaseSha` before proposing an app fix.
