@@ -110,4 +110,29 @@ for dockerfile in \
   fi
 done
 
+for dockerfile in \
+  "${root}/apps/storefront-v3/Dockerfile" \
+  "${root}/docker/backend/Dockerfile.release" \
+  "${root}/docker/cms/Dockerfile" \
+  "${root}/docker/cms/Dockerfile.release" \
+  "${root}/docker/cms/Dockerfile.dev-stage"; do
+  patches_copy_line="$(
+    grep -n -m 1 -F 'COPY patches ./patches' "${dockerfile}" |
+      cut -d: -f1 ||
+      true
+  )"
+  frozen_install_line="$(
+    grep -n -m 1 -F 'pnpm install --frozen-lockfile' "${dockerfile}" |
+      cut -d: -f1 ||
+      true
+  )"
+
+  if [ -z "${patches_copy_line}" ] ||
+    [ -z "${frozen_install_line}" ] ||
+    [ "${patches_copy_line}" -ge "${frozen_install_line}" ]; then
+    echo "${dockerfile#${root}/} must copy patches/ before its frozen pnpm install."
+    exit 1
+  fi
+done
+
 echo "Coolify compose build stability tests passed"

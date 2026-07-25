@@ -10,6 +10,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /opt
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY patches ./patches
 COPY apps/backend/package.json apps/backend/package.json
 COPY packages/observability/package.json packages/observability/package.json
 COPY packages/shared-types/package.json packages/shared-types/package.json
