@@ -121,4 +121,25 @@ describe("normalizeProductResearchPacket", () => {
       ])
     )
   })
+
+  it("caps document search keywords without discarding product keywords", () => {
+    const aiSearchKeywords = Array.from(
+      { length: 23 },
+      (_, index) => `keyword ${index + 1}`
+    )
+    const packet = ProductResearchPacketSchema.parse({
+      ...basePacket,
+      draft_content: {
+        ...basePacket.draft_content,
+        ai_search_keywords: aiSearchKeywords,
+      },
+    })
+
+    const draft = normalizeProductResearchPacket(packet)
+
+    expect(draft.content_draft.ai_search_keywords).toEqual(aiSearchKeywords)
+    expect(draft.product_document_suggestions[0].search_keywords).toEqual(
+      aiSearchKeywords.slice(0, 20)
+    )
+  })
 })
