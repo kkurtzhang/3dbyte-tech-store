@@ -16,6 +16,8 @@ type EvidenceInput = {
   confidence: number
 }
 
+const maxProductDocumentSearchKeywords = 20
+
 function hasEvidence(input: {
   source_url: string
   source_type: ProductResearchPacket["facts"]["material"]["source_type"]
@@ -155,6 +157,10 @@ export function normalizeProductResearchPacket(
   }
 
   const keywords = compactArray(packet.draft_content.ai_search_keywords)
+  const documentSearchKeywords = keywords.slice(
+    0,
+    maxProductDocumentSearchKeywords
+  )
   const contentConfidence = average(
     packet.related_content_suggestions.map((suggestion) => suggestion.confidence)
   )
@@ -203,7 +209,7 @@ export function normalizeProductResearchPacket(
                 : ("supplier_product_page" as const),
         source_label: source.title,
         source_checked_at: source.retrieved_at,
-        search_keywords: keywords,
+        search_keywords: documentSearchKeywords,
         confidence: 0.8,
       })),
     claim_evidence: claimEvidence,
