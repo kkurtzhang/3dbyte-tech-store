@@ -25,12 +25,30 @@ describe("AI product draft lifecycle", () => {
 
   it("only allows approved drafts to be imported", () => {
     expect(() =>
-      assertAiProductDraftCanImport({ id: "aipd_1", status: "needs_review" })
+      assertAiProductDraftCanImport({
+        id: "aipd_1",
+        status: "needs_review",
+        resolved_operation: "create",
+      })
     ).toThrow("Only approved AI product drafts can be imported")
 
     expect(() =>
-      assertAiProductDraftCanImport({ id: "aipd_1", status: "approved" })
+      assertAiProductDraftCanImport({
+        id: "aipd_1",
+        status: "approved",
+        resolved_operation: "create",
+      })
     ).not.toThrow()
+  })
+
+  it("rejects approved legacy drafts without a resolved operation", () => {
+    expect(() =>
+      assertAiProductDraftCanImport({
+        id: "aipd_legacy",
+        status: "approved",
+        resolved_operation: null,
+      })
+    ).toThrow("resolved operation")
   })
 
   it("builds auditable event payloads for status transitions", () => {

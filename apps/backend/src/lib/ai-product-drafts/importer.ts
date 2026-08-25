@@ -139,7 +139,9 @@ function getOperation(draft: ImportableDraft): ImportOperation {
     return draft.resolved_operation
   }
 
-  return "enrich"
+  throw new Error(
+    "Approved AI product draft has no resolved operation; return it to review"
+  )
 }
 
 function getImportTargets(value: unknown) {

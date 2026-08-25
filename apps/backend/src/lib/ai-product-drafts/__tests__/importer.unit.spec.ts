@@ -76,6 +76,27 @@ describe("importAiProductDraft", () => {
     mockUpdateProductsRun.mockResolvedValue({ result: [] })
   })
 
+  it("does not guess enrich when an approved legacy draft has no operation", async () => {
+    const container = {
+      resolve: jest.fn(),
+    }
+
+    await expect(
+      importAiProductDraft({
+        container: container as never,
+        draft: {
+          id: "aipd_legacy",
+          status: "approved",
+          product_id: null,
+          product_handle: null,
+          normalized_draft: normalizedDraft,
+        },
+      })
+    ).rejects.toThrow("resolved operation")
+
+    expect(container.resolve).not.toHaveBeenCalled()
+  })
+
   it("updates product metadata and writes sanitized Strapi drafts only", async () => {
     const productModule = {
       listProducts: jest.fn().mockResolvedValue([
@@ -108,9 +129,19 @@ describe("importAiProductDraft", () => {
       draft: {
         id: "aipd_1",
         status: "approved",
+        resolved_operation: "enrich",
         product_id: "prod_123",
         product_handle: "example-petg",
         normalized_draft: normalizedDraft,
+        approved_snapshot_hash: buildAiProductSnapshotHash({
+          id: "prod_123",
+          title: "Example PETG",
+          handle: "example-petg",
+          metadata: {
+            legacy_flag: true,
+            three_d_printing: { schema_version: 1, material: "PLA" },
+          },
+        }),
       },
     })
 

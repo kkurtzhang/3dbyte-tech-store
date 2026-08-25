@@ -24,6 +24,7 @@ Skill file: `docs/hermes/skills/hermes-product-intake/SKILL.md`
 Required behavior:
 - Capture the requested operation, brand, product name, colour, diameter, spool weight, supplier URL, manufacturer part number, GTIN, supplier SKU, product id, and product handle when available.
 - Prefer `requested_operation: auto`; use `create` or `enrich` only when the user's intent is explicit.
+- Treat top-level `product_id` and `product_handle` as selectors for an existing Medusa product. Omit both for `auto` or `create` research when no existing product has been confirmed; the backend derives a proposed handle during normalization.
 - Ask for missing identity details only when the product cannot be identified.
 - Do not invent product identity, safety, warranty, certification, or compatibility claims.
 - Output structured intake data for `hermes-controlled-product-research`.

@@ -22,6 +22,7 @@ export type AiProductDraftTransition =
 type DraftStatusInput = {
   id: string
   status: string
+  resolved_operation?: "create" | "enrich" | null
 }
 
 type DraftEventInput = {
@@ -88,6 +89,15 @@ export function getAiProductDraftNextStatus(
 export function assertAiProductDraftCanImport(draft: DraftStatusInput) {
   if (draft.status !== "approved") {
     throw new Error("Only approved AI product drafts can be imported")
+  }
+
+  if (
+    draft.resolved_operation !== "create" &&
+    draft.resolved_operation !== "enrich"
+  ) {
+    throw new Error(
+      "Approved AI product draft has no resolved operation; return it to review"
+    )
   }
 }
 

@@ -23,6 +23,11 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     assertAiProductDraftCanImport({
       id: String(draft.id),
       status: String(draft.status),
+      resolved_operation:
+        draft.resolved_operation === "create" ||
+        draft.resolved_operation === "enrich"
+          ? draft.resolved_operation
+          : null,
     })
   } catch (error) {
     return res.status(409).json({
