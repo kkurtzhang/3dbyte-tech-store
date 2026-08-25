@@ -347,23 +347,23 @@ const AiProductDraftsPage = () => {
         title="AI Product Drafts"
         subtitle="Review Hermes product research before importing metadata and draft content."
         actions={
-              canBulkCleanup
-                ? [
-                    {
-                      type: "button",
-                      props: {
-                        children: `Export ${count} failed drafts`,
-                        disabled: isCleaningUp,
-                        isLoading: isExporting,
-                        onClick: handleExport,
-                        variant: "secondary",
-                      },
-                    },
-                    {
-                      type: "button",
-                      props: {
-                        children: `Clean up ${count} failed drafts`,
-                        disabled: isExporting,
+          canBulkCleanup
+            ? [
+                {
+                  type: "button",
+                  props: {
+                    children: `Export ${count} failed drafts`,
+                    disabled: isCleaningUp,
+                    isLoading: isExporting,
+                    onClick: handleExport,
+                    variant: "secondary",
+                  },
+                },
+                {
+                  type: "button",
+                  props: {
+                    children: `Clean up ${count} failed drafts`,
+                    disabled: isExporting,
                     isLoading: isCleaningUp,
                     onClick: handleBulkCleanup,
                     variant: "danger",

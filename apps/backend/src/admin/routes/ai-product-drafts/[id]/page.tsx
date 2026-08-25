@@ -253,7 +253,8 @@ function DraftEventHistory({ events }: { events: AdminAiProductDraftEvent[] }) {
             <div>
               <Heading level="h2">Events</Heading>
               <Text className="text-ui-fg-subtle" size="small">
-                Audit trail for this draft. Select this heading to hide or show it.
+                Audit trail for this draft. Select this heading to hide or show
+                it.
               </Text>
             </div>
             <Badge color="grey" size="xsmall">
