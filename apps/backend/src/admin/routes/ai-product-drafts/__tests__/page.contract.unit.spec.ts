@@ -79,11 +79,22 @@ describe("AI product draft Admin UI contracts", () => {
     expect(detailPageSource).toContain("Enrich the existing product")
   })
 
-  it("defaults to the oldest needs-review queue and offers server sorting", () => {
+  it("defaults to the oldest needs-review queue and renders one sort control", () => {
     expect(listPageSource).toContain('status: "needs_review"')
     expect(listPageSource).toContain('id: "created_at"')
-    expect(listPageSource).toContain("DataTable.SortingMenu")
+    expect(listPageSource.match(/<DataTable\.SortingMenu/g) || []).toHaveLength(
+      0
+    )
     expect(listPageSource).toContain("statusCounts")
+  })
+
+  it("groups queue and table controls with consistent section spacing", () => {
+    expect(listPageSource).toContain(
+      'className="flex flex-col gap-4 px-6 py-4"'
+    )
+    expect(listPageSource).not.toContain(
+      'className="grid gap-3 px-6 pt-4 sm:grid-cols-2 lg:grid-cols-4"'
+    )
   })
 
   it("has explicit list errors, queue empty states, and URL-persisted controls", () => {
