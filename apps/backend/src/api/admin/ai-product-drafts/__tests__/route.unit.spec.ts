@@ -11,6 +11,7 @@ jest.mock("@medusajs/medusa/core-flows", () => ({
 }))
 
 import { POST as intakeDraft } from "../../../integrations/hermes/product-drafts/route"
+import { buildAiProductSnapshotHash } from "../../../../lib/ai-product-drafts/resolution"
 import * as adminDraftRoutes from "../route"
 import { DELETE as cleanupDrafts, GET as listDrafts } from "../route"
 import { DELETE as deleteDraft, GET as getDraft } from "../[id]/route"
@@ -182,6 +183,7 @@ function createRequest({
 const draft = {
   id: "aipd_1",
   status: "needs_review",
+  resolved_operation: "enrich",
   product_id: "prod_123",
   product_handle: "example-petg",
   warnings: [],
@@ -839,6 +841,32 @@ describe("AI product draft routes", () => {
     expect(rejectRes.status).toHaveBeenCalledWith(200)
   })
 
+  it("refuses approval until a draft operation is resolved", async () => {
+    const unresolvedDraft = {
+      ...draft,
+      resolved_operation: null,
+    }
+    const draftModule = {
+      listAiProductDrafts: jest.fn().mockResolvedValue([unresolvedDraft]),
+      updateAiProductDrafts: jest.fn(),
+      createAiProductDraftEvents: jest.fn(),
+    }
+    const req = createRequest({
+      body: {},
+      params: { id: unresolvedDraft.id },
+      draftModule,
+    })
+    const res = createResponse()
+
+    await approveDraft(req as never, res as never)
+
+    expect(draftModule.updateAiProductDrafts).not.toHaveBeenCalled()
+    expect(res.status).toHaveBeenCalledWith(409)
+    expect(res.json).toHaveBeenCalledWith({
+      error: expect.stringContaining("no resolved operation"),
+    })
+  })
+
   it("resolves an ambiguous draft to an existing product before review", async () => {
     const candidate = {
       id: "prod_123",
@@ -1053,6 +1081,12 @@ describe("AI product draft routes", () => {
     const approvedDraft = {
       ...draft,
       status: "approved",
+      approved_snapshot_hash: buildAiProductSnapshotHash({
+        id: "prod_123",
+        title: "Example PETG",
+        handle: "example-petg",
+        metadata: { legacy_flag: true },
+      }),
       normalized_draft: {
         schema_version: 1,
         target_product: {

@@ -70,6 +70,16 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     return res.status(409).json({ error: "Only needs_review drafts can be approved" })
   }
 
+  if (
+    draft.resolved_operation !== "create" &&
+    draft.resolved_operation !== "enrich"
+  ) {
+    return res.status(409).json({
+      error:
+        "This draft has no resolved operation. Repair or resolve it before approval.",
+    })
+  }
+
   const body = getRequestBody(req)
   const notes = typeof body.notes === "string" ? body.notes.trim() : ""
   const proposedChanges = getProposedChanges(draft.proposed_changes)

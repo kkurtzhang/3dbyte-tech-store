@@ -18,6 +18,7 @@ Build Product Research Packet v2 exactly as Medusa expects it.
 - Emit JSON only.
 - Create one stable `request_id` for the logical onboarding job. Reuse it unchanged for validation retries and submission retries.
 - Set `requested_operation` to `auto`, `create`, or `enrich` from intake. Prefer `auto`.
+- Populate top-level `product_id` or `product_handle` only when targeting a confirmed existing Medusa product. Leave both empty for new-product `auto` or `create` packets; do not put a proposed new handle in the target fields.
 - Keep unknown identity fields as empty strings.
 - Keep draft content plain text only.
 - Enforce confidence range `0..1`, maximum list sizes, and source type enums.

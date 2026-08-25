@@ -635,6 +635,92 @@ export function filterDrafts(
   })
 }
 
+const AI_PRODUCT_DRAFT_ORDER_FIELDS = [
+  "product_name",
+  "created_at",
+  "updated_at",
+  "confidence",
+  "warnings",
+  "status",
+  "resolved_operation",
+] as const
+
+type AiProductDraftOrderField = (typeof AI_PRODUCT_DRAFT_ORDER_FIELDS)[number]
+
+export type AiProductDraftOrder = {
+  field: AiProductDraftOrderField
+  descending: boolean
+}
+
+export function parseAiProductDraftOrder(value: unknown): AiProductDraftOrder {
+  const raw = typeof value === "string" ? value.trim() : ""
+  const descending = raw.startsWith("-")
+  const field = (descending ? raw.slice(1) : raw || "created_at") as
+    | AiProductDraftOrderField
+    | string
+
+  if (!AI_PRODUCT_DRAFT_ORDER_FIELDS.includes(field as AiProductDraftOrderField)) {
+    throw new Error(`Unsupported AI product draft order: ${field}`)
+  }
+
+  return { field: field as AiProductDraftOrderField, descending }
+}
+
+function getDraftSortValue(
+  draft: Record<string, unknown>,
+  field: AiProductDraftOrderField
+): string | number {
+  if (field === "product_name") {
+    return String(
+      getRecord(draft.product_input).product_name ||
+        getRecord(getRecord(draft.normalized_draft).target_product).product_title ||
+        draft.product_handle ||
+        draft.id ||
+        ""
+    ).toLowerCase()
+  }
+  if (field === "confidence") {
+    const value = Number(getRecord(draft.confidence_summary).overall)
+    return Number.isFinite(value) ? value : -1
+  }
+  if (field === "warnings") {
+    return Array.isArray(draft.warnings) ? draft.warnings.length : 0
+  }
+  if (field === "created_at" || field === "updated_at") {
+    const timestamp = new Date(String(draft[field] || 0)).getTime()
+    return Number.isFinite(timestamp) ? timestamp : 0
+  }
+
+  return String(draft[field] || "").toLowerCase()
+}
+
+export function sortAiProductDrafts(
+  drafts: Record<string, unknown>[],
+  order: AiProductDraftOrder
+) {
+  return [...drafts].sort((left, right) => {
+    const leftValue = getDraftSortValue(left, order.field)
+    const rightValue = getDraftSortValue(right, order.field)
+    const comparison =
+      typeof leftValue === "number" && typeof rightValue === "number"
+        ? leftValue - rightValue
+        : String(leftValue).localeCompare(String(rightValue))
+    const directed = order.descending ? -comparison : comparison
+
+    return directed || String(left.id || "").localeCompare(String(right.id || ""))
+  })
+}
+
+export function getAiProductDraftStatusCounts(
+  drafts: Record<string, unknown>[]
+): Record<string, number> {
+  return drafts.reduce<Record<string, number>>((counts, draft) => {
+    const status = typeof draft.status === "string" ? draft.status : ""
+    if (status) counts[status] = (counts[status] || 0) + 1
+    return counts
+  }, {})
+}
+
 export function getAdminActorId(req: MedusaRequest) {
   return getString(
     (req as MedusaRequest & { auth_context?: { actor_id?: string } })

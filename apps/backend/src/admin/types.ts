@@ -317,6 +317,7 @@ export type AdminAiProductDraftsResponse = {
   count: number;
   limit: number;
   offset: number;
+  status_counts: Record<string, number>;
 };
 
 export type AdminAiProductDraftResponse = {
@@ -325,6 +326,7 @@ export type AdminAiProductDraftResponse = {
 };
 
 export interface AiProductDraftQueryParams extends FindParams {
+  order?: string;
   q?: string;
   source_agent?: string;
   status?: string;

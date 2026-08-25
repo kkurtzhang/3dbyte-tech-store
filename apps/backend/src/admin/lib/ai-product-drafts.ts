@@ -4,9 +4,29 @@ import type React from "react"
 import type { AdminAiProductDraft } from "../types"
 
 type AiProductDraftListFilters = {
+  order?: string
   q?: string
   source_agent?: string
   status?: string
+}
+
+export const getAiProductDraftErrorMessage = (
+  error: unknown,
+  fallback: string
+): string => {
+  if (!error || typeof error !== "object") return fallback
+
+  const record = error as Record<string, unknown>
+  const response = asRecord(record.response)
+  const data = asRecord(response.data)
+  const body = asRecord(record.body)
+  const message =
+    asTrimmedString(data.error) ||
+    asTrimmedString(body.error) ||
+    asTrimmedString(record.error) ||
+    asTrimmedString(record.message)
+
+  return message || fallback
 }
 
 type BadgeColor = React.ComponentProps<typeof Badge>["color"]

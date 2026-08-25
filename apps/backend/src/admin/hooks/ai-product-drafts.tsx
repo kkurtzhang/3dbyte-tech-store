@@ -59,6 +59,7 @@ export const useAiProductDrafts = (
     drafts: data?.drafts || [],
     limit: data?.limit || query.limit,
     offset: data?.offset || query.offset,
+    statusCounts: data?.status_counts || {},
     ...rest,
   }
 }

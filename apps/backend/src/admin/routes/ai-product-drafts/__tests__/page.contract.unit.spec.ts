@@ -83,7 +83,7 @@ describe("AI product draft Admin UI contracts", () => {
     expect(listPageSource).toContain('status: "needs_review"')
     expect(listPageSource).toContain('id: "created_at"')
     expect(listPageSource).toContain("DataTable.SortingMenu")
-    expect(listPageSource).toContain("status_counts")
+    expect(listPageSource).toContain("statusCounts")
   })
 
   it("has explicit list errors, queue empty states, and URL-persisted controls", () => {

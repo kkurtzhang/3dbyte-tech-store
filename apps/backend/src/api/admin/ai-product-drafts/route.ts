@@ -3,9 +3,12 @@ import { z } from "@medusajs/framework/zod"
 
 import {
   filterDrafts,
+  getAiProductDraftStatusCounts,
   getAiProductDraftModule,
+  parseAiProductDraftOrder,
   parseLimit,
   parseOffset,
+  sortAiProductDrafts,
 } from "./utils"
 
 const BULK_CLEANUP_LIMIT = 500
@@ -17,24 +20,41 @@ const BulkCleanupSchema = z
   .strict()
 
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
+  let order
+  try {
+    order = parseAiProductDraftOrder(req.query.order)
+  } catch (error) {
+    return res.status(400).json({
+      error:
+        error instanceof Error
+          ? error.message
+          : "Unsupported AI product draft order",
+    })
+  }
+
   const draftModule = getAiProductDraftModule(req)
   const drafts = await draftModule.listAiProductDrafts({})
-  const filtered = filterDrafts(drafts, {
+  const queue = filterDrafts(drafts, {
     q: typeof req.query.q === "string" ? req.query.q : undefined,
     source_agent:
       typeof req.query.source_agent === "string"
         ? req.query.source_agent
         : undefined,
+  })
+  const statusCounts = getAiProductDraftStatusCounts(queue)
+  const filtered = filterDrafts(queue, {
     status: typeof req.query.status === "string" ? req.query.status : undefined,
   })
+  const sorted = sortAiProductDrafts(filtered, order)
   const limit = parseLimit(req.query.limit)
   const offset = parseOffset(req.query.offset)
 
   return res.json({
-    drafts: filtered.slice(offset, offset + limit),
+    drafts: sorted.slice(offset, offset + limit),
     count: filtered.length,
     limit,
     offset,
+    status_counts: statusCounts,
   })
 }
 

@@ -129,9 +129,19 @@ describe("importAiProductDraft", () => {
       draft: {
         id: "aipd_1",
         status: "approved",
+        resolved_operation: "enrich",
         product_id: "prod_123",
         product_handle: "example-petg",
         normalized_draft: normalizedDraft,
+        approved_snapshot_hash: buildAiProductSnapshotHash({
+          id: "prod_123",
+          title: "Example PETG",
+          handle: "example-petg",
+          metadata: {
+            legacy_flag: true,
+            three_d_printing: { schema_version: 1, material: "PLA" },
+          },
+        }),
       },
     })
 
