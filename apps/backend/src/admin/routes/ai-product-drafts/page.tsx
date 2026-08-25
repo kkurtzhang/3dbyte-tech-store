@@ -340,46 +340,51 @@ const AiProductDraftsPage = () => {
             : []
         }
       />
-      <div className="grid gap-3 px-6 pt-4 sm:grid-cols-2 lg:grid-cols-4">
-        {queueStatuses.map((queueStatus) => (
-          <button
-            aria-pressed={status === queueStatus}
-            className="border-ui-border-base hover:bg-ui-bg-subtle focus-visible:shadow-borders-focus rounded-lg border p-3 text-left outline-none"
-            key={queueStatus}
-            onClick={() => {
-              setPagination((current) => ({ ...current, pageIndex: 0 }))
-              setStatus(queueStatus)
-            }}
-            type="button"
-          >
-            <Text className="text-ui-fg-subtle" size="small">
-              {labelizeAiProductDraftValue(queueStatus)}
-            </Text>
-            <Text size="large" weight="plus">
-              {statusCounts[queueStatus] || 0}
-            </Text>
-          </button>
-        ))}
-      </div>
       <DataTable instance={table}>
-        <DataTable.Toolbar className="flex flex-col items-stretch justify-between gap-2 px-6 py-4 md:flex-row md:items-center">
-          <div className="flex flex-1 gap-2">
-            <Input
-              aria-label="Search AI product drafts"
-              value={q}
-              onChange={(event) => {
-                setPagination((current) => ({ ...current, pageIndex: 0 }))
-                setQ(event.target.value)
-              }}
-              placeholder="Search product, handle, source, or draft id"
-            />
-            {q ? (
-              <Button onClick={() => setQ("")} size="small" variant="secondary">
-                Clear
-              </Button>
-            ) : null}
+        <div className="flex flex-col gap-4 px-6 py-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {queueStatuses.map((queueStatus) => (
+              <button
+                aria-pressed={status === queueStatus}
+                className="border-ui-border-base hover:bg-ui-bg-subtle focus-visible:shadow-borders-focus rounded-lg border p-3 text-left outline-none"
+                key={queueStatus}
+                onClick={() => {
+                  setPagination((current) => ({ ...current, pageIndex: 0 }))
+                  setStatus(queueStatus)
+                }}
+                type="button"
+              >
+                <Text className="text-ui-fg-subtle" size="small">
+                  {labelizeAiProductDraftValue(queueStatus)}
+                </Text>
+                <Text size="large" weight="plus">
+                  {statusCounts[queueStatus] || 0}
+                </Text>
+              </button>
+            ))}
           </div>
-          <div className="flex gap-2">
+          <DataTable.Toolbar className="flex flex-col items-stretch justify-between gap-3 md:flex-row md:items-center">
+            <div className="flex min-w-0 flex-1 gap-2">
+              <Input
+                aria-label="Search AI product drafts"
+                className="w-full"
+                value={q}
+                onChange={(event) => {
+                  setPagination((current) => ({ ...current, pageIndex: 0 }))
+                  setQ(event.target.value)
+                }}
+                placeholder="Search product, handle, source, or draft id"
+              />
+              {q ? (
+                <Button
+                  onClick={() => setQ("")}
+                  size="small"
+                  variant="secondary"
+                >
+                  Clear
+                </Button>
+              ) : null}
+            </div>
             <select
               aria-label="Filter AI product drafts by status"
               className="rounded-md border border-ui-border-base bg-ui-bg-field px-3 py-2 text-sm"
@@ -395,9 +400,8 @@ const AiProductDraftsPage = () => {
                 </option>
               ))}
             </select>
-            <DataTable.SortingMenu tooltip="Sort drafts" />
-          </div>
-        </DataTable.Toolbar>
+          </DataTable.Toolbar>
+        </div>
         {isError ? (
           <div className="m-6 rounded-lg border border-ui-border-error bg-ui-bg-subtle p-4" role="alert">
             <Text weight="plus">Could not load AI product drafts.</Text>
