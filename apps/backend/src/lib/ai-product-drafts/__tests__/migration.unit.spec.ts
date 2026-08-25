@@ -140,6 +140,34 @@ describe("AI product draft data migration", () => {
     ])
   })
 
+  it("keeps a previously repaired canonical draft when resuming", () => {
+    const plan = buildAiProductDraftMigrationPlan([
+      {
+        id: "aipd_canonical",
+        status: "needs_review",
+        packet_version: 2,
+        resolved_operation: "create",
+        raw_packet: { ...v2Packet, request_id: "request-canonical" },
+        created_at: "2026-07-24T00:00:00.000Z",
+      },
+      {
+        id: "aipd_duplicate",
+        status: "validation_failed",
+        packet_version: 2,
+        raw_packet: { ...v2Packet, request_id: "request-duplicate" },
+        created_at: "2026-07-25T00:00:00.000Z",
+      },
+    ])
+
+    expect(plan.repairs).toEqual([])
+    expect(plan.duplicates).toEqual([
+      expect.objectContaining({
+        draft_id: "aipd_duplicate",
+        canonical_draft_id: "aipd_canonical",
+      }),
+    ])
+  })
+
   it("does not merge enrich drafts that target different existing products", () => {
     const plan = buildAiProductDraftMigrationPlan([
       {
