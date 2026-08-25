@@ -124,17 +124,20 @@ function buildPacketSignature(packet: ProductResearchPacket) {
   return hashValue(signaturePacket)
 }
 
-function getDraftSourceSignature(draft: AiProductDraftMigrationRecord) {
+function getDraftSourceSignatures(draft: AiProductDraftMigrationRecord) {
+  const signatures: string[] = []
   const rawPacket = asRecord(draft.raw_packet)
   if (rawPacket) {
     const parsed = ProductResearchPacketSchema.safeParse(
       sanitizePacketForMigration(rawPacket)
     )
-    if (parsed.success) return buildPacketSignature(parsed.data)
+    if (parsed.success) signatures.push(buildPacketSignature(parsed.data))
   }
 
   const normalizedDraft = asRecord(draft.normalized_draft)
-  return normalizedDraft ? hashValue(normalizedDraft) : null
+  if (normalizedDraft) signatures.push(hashValue(normalizedDraft))
+
+  return [...new Set(signatures)]
 }
 
 export function prepareAiProductDraftMigration(
@@ -212,12 +215,14 @@ export function buildAiProductDraftMigrationPlan(
       ["needs_review", "needs_resolution", "approved", "imported"].includes(
         draft.status
       )
-    const existingSignature = canBeCanonical
-      ? getDraftSourceSignature(draft)
-      : null
+    const existingSignatures = canBeCanonical
+      ? getDraftSourceSignatures(draft)
+      : []
 
-    if (existingSignature && !canonicalBySignature.has(existingSignature)) {
-      canonicalBySignature.set(existingSignature, preparation.draft_id)
+    for (const signature of existingSignatures) {
+      if (!canonicalBySignature.has(signature)) {
+        canonicalBySignature.set(signature, preparation.draft_id)
+      }
     }
 
     if (preparation.kind === "unrecoverable") {
