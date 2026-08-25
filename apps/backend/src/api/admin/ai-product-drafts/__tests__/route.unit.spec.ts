@@ -862,6 +862,25 @@ describe("AI product draft routes", () => {
     })
   })
 
+  it("rejects an unbounded or actionable export request", async () => {
+    const draftModule = {
+      listAiProductDrafts: jest.fn(),
+    }
+    const req = createRequest({
+      query: { status: "needs_review", expected_count: "501" },
+      draftModule,
+    })
+    const res = createResponse()
+
+    await exportFailedDrafts(req as never, res as never)
+
+    expect(draftModule.listAiProductDrafts).not.toHaveBeenCalled()
+    expect(res.status).toHaveBeenCalledWith(400)
+    expect(res.json).toHaveBeenCalledWith({
+      error: expect.stringContaining("validation_failed"),
+    })
+  })
+
   it("refuses bulk cleanup when the queue changes after confirmation", async () => {
     const draftModule = {
       listAiProductDrafts: jest.fn().mockResolvedValue([
