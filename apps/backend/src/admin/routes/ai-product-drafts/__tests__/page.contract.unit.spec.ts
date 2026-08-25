@@ -78,4 +78,25 @@ describe("AI product draft Admin UI contracts", () => {
     expect(detailPageSource).toContain("Create a new unpublished product")
     expect(detailPageSource).toContain("Enrich the existing product")
   })
+
+  it("defaults to the oldest needs-review queue and offers server sorting", () => {
+    expect(listPageSource).toContain('status: "needs_review"')
+    expect(listPageSource).toContain('id: "created_at"')
+    expect(listPageSource).toContain("DataTable.SortingMenu")
+    expect(listPageSource).toContain("status_counts")
+  })
+
+  it("has explicit list errors, queue empty states, and URL-persisted controls", () => {
+    expect(listPageSource).toContain("useSearchParams")
+    expect(listPageSource).toContain("refetch")
+    expect(listPageSource).toContain('role="alert"')
+    expect(listPageSource).toContain("No drafts need review")
+  })
+
+  it("surfaces backend mutation errors, progress, and event metadata", () => {
+    expect(detailPageSource).toContain("getAiProductDraftErrorMessage")
+    expect(detailPageSource).toContain("import_progress")
+    expect(detailPageSource).toContain("event.metadata")
+    expect(detailPageSource).toContain('role="alert"')
+  })
 })
