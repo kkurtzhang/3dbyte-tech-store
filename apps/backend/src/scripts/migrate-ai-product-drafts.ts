@@ -109,6 +109,26 @@ function getSubmittedIdentities(packet: ProductResearchPacket | null) {
     .filter(Boolean)
 }
 
+function getSubmittedSearchTerms(
+  packet: ProductResearchPacket | null,
+  normalizedDraft: Record<string, unknown>
+) {
+  const input = asRecord(packet?.product_input)
+
+  return [
+    input.product_name,
+    input.manufacturer_part_number,
+    input.gtin,
+    input.supplier_sku,
+    asRecord(normalizedDraft.target_product).product_title,
+  ]
+    .map(asString)
+    .filter(
+      (value, index, values) => value && values.indexOf(value) === index
+    )
+    .slice(0, 4)
+}
+
 async function findCurrentCandidates(
   query: QueryGraph,
   packet: ProductResearchPacket | null,
@@ -118,7 +138,7 @@ async function findCurrentCandidates(
     ...getSubmittedIdentities(packet),
     normalizeIdentity(asRecord(normalizedDraft.target_product).product_title),
   ])
-  const searchTerms = [...submittedIdentities].filter(Boolean).slice(0, 4)
+  const searchTerms = getSubmittedSearchTerms(packet, normalizedDraft)
   if (!searchTerms.length) return []
 
   const responses = await Promise.all(
@@ -270,7 +290,8 @@ async function applyRepairs(input: {
     await input.draftModule.updateAiProductDrafts({
       id: preparation.draft_id,
       status: toStatus,
-      requested_operation: packet?.requested_operation || "create",
+      requested_operation:
+        packet?.packet_version === 2 ? packet.requested_operation : "create",
       resolved_operation: needsResolution ? null : "create",
       resolution_status: needsResolution ? "needs_resolution" : "resolved",
       identity_candidates: candidates,
@@ -370,15 +391,27 @@ async function cleanupMigration(input: {
 
     const draftId = asString(event.draft_id)
     const canonicalDraftId = asString(metadata.canonical_draft_id)
-    const [canonical] = await input.draftModule.listAiProductDrafts({
-      id: canonicalDraftId,
-    })
+    const [[canonical], [duplicate]] = await Promise.all([
+      input.draftModule.listAiProductDrafts({ id: canonicalDraftId }),
+      input.draftModule.listAiProductDrafts({ id: draftId }),
+    ])
+    const duplicateProducts = duplicate?.product_id
+      ? await input.productModule.listProducts({ id: duplicate.product_id })
+      : []
     if (
       draftId &&
       canonical &&
+      duplicate &&
       ["needs_review", "needs_resolution", "approved", "imported"].includes(
         asString(canonical.status)
-      )
+      ) &&
+      [
+        "validation_failed",
+        "needs_review",
+        "needs_resolution",
+        "approved",
+      ].includes(asString(duplicate.status)) &&
+      duplicateProducts.length === 0
     ) {
       cleanupIds.push(draftId)
     }
@@ -425,7 +458,9 @@ async function cleanupMigration(input: {
 export default async function migrateAiProductDrafts({ container }: ExecArgs) {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER) as Logger
   const query = container.resolve(ContainerRegistrationKeys.QUERY) as QueryGraph
-  const productModule = container.resolve(Modules.PRODUCT) as ProductModule
+  const productModule = container.resolve(
+    Modules.PRODUCT
+  ) as unknown as ProductModule
   const draftModule = container.resolve(AI_PRODUCT_DRAFT_MODULE) as DraftModule
   const mode = getMode()
 
@@ -438,7 +473,12 @@ export default async function migrateAiProductDrafts({ container }: ExecArgs) {
       runId,
     })
     logger.info(
-      JSON.stringify({ mode, migration_version: MIGRATION_VERSION, run_id: runId, cleaned_ids: cleanedIds })
+      JSON.stringify({
+        mode,
+        migration_version: MIGRATION_VERSION,
+        run_id: runId,
+        cleaned_ids: cleanedIds,
+      })
     )
     return { mode, run_id: runId, cleaned_ids: cleanedIds }
   }

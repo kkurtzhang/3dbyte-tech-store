@@ -106,11 +106,19 @@ function sanitizePacketForMigration(rawPacket: Record<string, unknown>) {
 }
 
 function buildPacketSignature(packet: ProductResearchPacket) {
+  const shouldIgnoreTarget =
+    packet.packet_version === 2 &&
+    (packet.requested_operation === "create" ||
+      packet.requested_operation === "auto")
   const signaturePacket = {
     ...packet,
     ...(packet.packet_version === 2 ? { request_id: undefined } : {}),
-    product_id: "",
-    product_handle: "",
+    ...(shouldIgnoreTarget
+      ? {
+          product_id: "",
+          product_handle: "",
+        }
+      : {}),
   }
 
   return hashValue(signaturePacket)

@@ -4,12 +4,32 @@ import {
   formatAiProductDraftDate,
   getAiProductDraftActionAvailability,
   getAiProductDraftDisplayName,
+  getAiProductDraftErrorMessage,
   getAiProductDraftReviewIssues,
   getAiProductDraftStatusBadgeColor,
   labelizeAiProductDraftValue,
 } from "../ai-product-drafts"
 
 describe("AI product draft admin helpers", () => {
+  it("extracts the server error that explains a failed import", () => {
+    expect(
+      getAiProductDraftErrorMessage(
+        {
+          response: {
+            data: {
+              error: "AI product draft has no target product",
+            },
+          },
+        },
+        "Could not import AI product draft"
+      )
+    ).toBe("AI product draft has no target product")
+
+    expect(
+      getAiProductDraftErrorMessage(null, "Could not import AI product draft")
+    ).toBe("Could not import AI product draft")
+  })
+
   it("formats statuses, badge colors, dates, and list URLs", () => {
     expect(labelizeAiProductDraftValue("needs_review")).toBe("Needs Review")
     expect(getAiProductDraftStatusBadgeColor("needs_review")).toBe("orange")

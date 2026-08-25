@@ -140,6 +140,41 @@ describe("AI product draft data migration", () => {
     ])
   })
 
+  it("does not merge enrich drafts that target different existing products", () => {
+    const plan = buildAiProductDraftMigrationPlan([
+      {
+        id: "aipd_enrich_one",
+        status: "validation_failed",
+        packet_version: 2,
+        raw_packet: {
+          ...v2Packet,
+          request_id: "enrich-one",
+          requested_operation: "enrich",
+          product_handle: "existing-product-one",
+        },
+        created_at: "2026-07-24T00:00:00.000Z",
+      },
+      {
+        id: "aipd_enrich_two",
+        status: "validation_failed",
+        packet_version: 2,
+        raw_packet: {
+          ...v2Packet,
+          request_id: "enrich-two",
+          requested_operation: "enrich",
+          product_handle: "existing-product-two",
+        },
+        created_at: "2026-07-25T00:00:00.000Z",
+      },
+    ])
+
+    expect(plan.repairs.map((entry) => entry.draft_id)).toEqual([
+      "aipd_enrich_one",
+      "aipd_enrich_two",
+    ])
+    expect(plan.duplicates).toEqual([])
+  })
+
   it("leaves malformed legacy packets in validation_failed with a classified reason", () => {
     const prepared = prepareAiProductDraftMigration({
       id: "aipd_invalid_v1",
