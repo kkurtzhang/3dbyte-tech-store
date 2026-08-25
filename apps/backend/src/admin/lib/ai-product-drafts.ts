@@ -1,7 +1,10 @@
 import type { Badge } from "@medusajs/ui"
 import type React from "react"
 
-import type { AdminAiProductDraft } from "../types"
+import type {
+  AdminAiProductDraft,
+  AdminAiProductDraftExportResponse,
+} from "../types"
 
 type AiProductDraftListFilters = {
   order?: string
@@ -91,6 +94,22 @@ const asTrimmedString = (value: unknown): string =>
 
 export const buildAiProductDraftDetailUrl = (id: string): string =>
   `/ai-product-drafts/${encodeURIComponent(id)}`
+
+export const downloadAiProductDraftExport = (
+  exportData: AdminAiProductDraftExportResponse
+) => {
+  const timestamp = exportData.exported_at.replace(/[^0-9]/g, "").slice(0, 14)
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+    type: "application/json",
+  })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement("a")
+
+  anchor.href = url
+  anchor.download = `ai-product-drafts-validation-failed-${timestamp || "export"}.json`
+  anchor.click()
+  window.setTimeout(() => URL.revokeObjectURL(url), 0)
+}
 
 export const getAiProductDraftDisplayName = (
   draft: Pick<

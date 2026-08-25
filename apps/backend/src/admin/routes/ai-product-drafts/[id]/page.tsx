@@ -34,6 +34,7 @@ import {
 import type {
   AdminAiProductDraft,
   AdminAiProductDraftChange,
+  AdminAiProductDraftEvent,
   AdminAiProductDraftImportTargets,
 } from "../../../types"
 
@@ -236,9 +237,31 @@ const AiProductDraftDetailPage = () => {
         </details>
       </Container>
 
-      <Container>
-        <Header title="Events" subtitle="Audit trail for this draft." />
-        <div className="flex flex-col gap-2 px-6 py-4">
+      <DraftEventHistory events={events} />
+
+      <JsonViewSection data={asObject(draft.raw_packet)} />
+    </div>
+  )
+}
+
+function DraftEventHistory({ events }: { events: AdminAiProductDraftEvent[] }) {
+  return (
+    <Container>
+      <details className="group" open>
+        <summary className="focus-visible:shadow-borders-focus cursor-pointer list-none rounded-sm px-6 py-4 outline-none">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <Heading level="h2">Events</Heading>
+              <Text className="text-ui-fg-subtle" size="small">
+                Audit trail for this draft. Select this heading to hide or show it.
+              </Text>
+            </div>
+            <Badge color="grey" size="xsmall">
+              {events.length}
+            </Badge>
+          </div>
+        </summary>
+        <div className="border-ui-border-base flex flex-col gap-2 border-t px-6 py-4">
           {events.length === 0 ? (
             <Text className="text-ui-fg-subtle">No events yet.</Text>
           ) : (
@@ -277,10 +300,8 @@ const AiProductDraftDetailPage = () => {
             ))
           )}
         </div>
-      </Container>
-
-      <JsonViewSection data={asObject(draft.raw_packet)} />
-    </div>
+      </details>
+    </Container>
   )
 }
 

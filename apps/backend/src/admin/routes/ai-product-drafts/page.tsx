@@ -23,9 +23,11 @@ import {
   useAiProductDrafts,
   useCleanupAiProductDrafts,
   useDeleteAiProductDraft,
+  useExportAiProductDrafts,
 } from "../../hooks/ai-product-drafts"
 import {
   buildAiProductDraftDetailUrl,
+  downloadAiProductDraftExport,
   formatAiProductDraftDate,
   getAiProductDraftDisplayName,
   getAiProductDraftStatusBadgeColor,
@@ -221,6 +223,8 @@ const AiProductDraftsPage = () => {
   const prompt = usePrompt()
   const { mutateAsync: cleanupDrafts, isPending: isCleaningUp } =
     useCleanupAiProductDrafts()
+  const { mutateAsync: exportDrafts, isPending: isExporting } =
+    useExportAiProductDrafts()
   const offset = useMemo(
     () => pagination.pageIndex * pagination.pageSize,
     [pagination]
@@ -269,7 +273,7 @@ const AiProductDraftsPage = () => {
   const handleBulkCleanup = async () => {
     const confirmed = await prompt({
       title: "Clean up validation failures?",
-      description: `Soft-delete all ${count} validation-failed drafts currently shown by this filter? No Medusa product data will be changed.`,
+      description: `Soft-delete all ${count} validation-failed drafts? Export them first if you may need the original packets. No Medusa product data will be changed.`,
     })
 
     if (!confirmed) return
@@ -287,6 +291,24 @@ const AiProductDraftsPage = () => {
       toast.error("Unable to clean up failed drafts", {
         description:
           "No drafts were removed. Refresh the table and confirm the cleanup again.",
+      })
+    }
+  }
+
+  const handleExport = async () => {
+    try {
+      const result = await exportDrafts({
+        status: "validation_failed",
+        expected_count: count,
+      })
+      downloadAiProductDraftExport(result)
+      toast.success("Failed drafts exported", {
+        description: `${result.count} validation-failed drafts were downloaded as JSON.`,
+      })
+    } catch {
+      toast.error("Unable to export failed drafts", {
+        description:
+          "No file was downloaded. Refresh the table and try the export again.",
       })
     }
   }
@@ -325,12 +347,23 @@ const AiProductDraftsPage = () => {
         title="AI Product Drafts"
         subtitle="Review Hermes product research before importing metadata and draft content."
         actions={
-          canBulkCleanup
-            ? [
-                {
-                  type: "button",
-                  props: {
-                    children: `Clean up ${count} failed drafts`,
+              canBulkCleanup
+                ? [
+                    {
+                      type: "button",
+                      props: {
+                        children: `Export ${count} failed drafts`,
+                        disabled: isCleaningUp,
+                        isLoading: isExporting,
+                        onClick: handleExport,
+                        variant: "secondary",
+                      },
+                    },
+                    {
+                      type: "button",
+                      props: {
+                        children: `Clean up ${count} failed drafts`,
+                        disabled: isExporting,
                     isLoading: isCleaningUp,
                     onClick: handleBulkCleanup,
                     variant: "danger",

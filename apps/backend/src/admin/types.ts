@@ -374,3 +374,16 @@ export type AdminAiProductDraftCleanupResponse = {
   count: number;
   deleted_ids: string[];
 };
+
+export type AdminAiProductDraftExportParams = {
+  status: "validation_failed";
+  expected_count: number;
+};
+
+export type AdminAiProductDraftExportResponse = {
+  export_version: 1;
+  exported_at: string;
+  status: "validation_failed";
+  count: number;
+  drafts: AdminAiProductDraft[];
+};

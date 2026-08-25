@@ -1,8 +1,10 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { z } from "@medusajs/framework/zod"
 
+import { buildAiProductDraftEvent } from "../../../modules/ai-product-draft/lifecycle"
 import {
   filterDrafts,
+  getAdminActorId,
   getAiProductDraftStatusCounts,
   getAiProductDraftModule,
   parseAiProductDraftOrder,
@@ -87,6 +89,25 @@ export async function DELETE(req: MedusaRequest, res: MedusaResponse) {
         "The validation-failed draft queue changed. Refresh the table and confirm cleanup again.",
     })
   }
+
+  const actorId = getAdminActorId(req)
+  await draftModule.createAiProductDraftEvents(
+    ids.map((draftId) =>
+      buildAiProductDraftEvent({
+        draft_id: draftId,
+        type: "cleanup_requested",
+        actor_type: "admin",
+        actor_id: actorId || null,
+        from_status: "validation_failed",
+        to_status: "validation_failed",
+        metadata: {
+          action: "soft_delete",
+          bulk: true,
+          expected_count: parsed.data.expected_count,
+        },
+      })
+    )
+  )
 
   await draftModule.softDeleteAiProductDrafts(ids)
 
