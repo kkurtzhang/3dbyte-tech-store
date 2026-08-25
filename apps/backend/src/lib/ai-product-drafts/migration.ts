@@ -124,6 +124,19 @@ function buildPacketSignature(packet: ProductResearchPacket) {
   return hashValue(signaturePacket)
 }
 
+function getDraftSourceSignature(draft: AiProductDraftMigrationRecord) {
+  const rawPacket = asRecord(draft.raw_packet)
+  if (rawPacket) {
+    const parsed = ProductResearchPacketSchema.safeParse(
+      sanitizePacketForMigration(rawPacket)
+    )
+    if (parsed.success) return buildPacketSignature(parsed.data)
+  }
+
+  const normalizedDraft = asRecord(draft.normalized_draft)
+  return normalizedDraft ? hashValue(normalizedDraft) : null
+}
+
 export function prepareAiProductDraftMigration(
   draft: AiProductDraftMigrationRecord
 ): AiProductDraftMigrationPreparation {
@@ -193,7 +206,20 @@ export function buildAiProductDraftMigrationPlan(
   const noop: NoopPreparation[] = []
   const canonicalBySignature = new Map<string, string>()
 
-  for (const { preparation } of prepared) {
+  for (const { draft, preparation } of prepared) {
+    const canBeCanonical =
+      preparation.kind === "noop" &&
+      ["needs_review", "needs_resolution", "approved", "imported"].includes(
+        draft.status
+      )
+    const existingSignature = canBeCanonical
+      ? getDraftSourceSignature(draft)
+      : null
+
+    if (existingSignature && !canonicalBySignature.has(existingSignature)) {
+      canonicalBySignature.set(existingSignature, preparation.draft_id)
+    }
+
     if (preparation.kind === "unrecoverable") {
       unrecoverable.push(preparation)
       continue
