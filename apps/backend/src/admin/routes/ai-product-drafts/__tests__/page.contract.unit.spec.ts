@@ -79,12 +79,13 @@ describe("AI product draft Admin UI contracts", () => {
     expect(detailPageSource).toContain("Enrich the existing product")
   })
 
-  it("defaults to the oldest needs-review queue and renders one sort control", () => {
+  it("defaults to the oldest needs-review queue and renders one inline sort control", () => {
     expect(listPageSource).toContain('status: "needs_review"')
     expect(listPageSource).toContain('id: "created_at"')
     expect(listPageSource.match(/<DataTable\.SortingMenu/g) || []).toHaveLength(
-      0
+      1
     )
+    expect(listPageSource).not.toContain("<DataTable.Toolbar")
     expect(listPageSource).toContain("statusCounts")
   })
 
