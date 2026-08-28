@@ -31,8 +31,8 @@ export type AiProductDraftModule = {
     config?: Record<string, unknown>
   ) => Promise<Record<string, unknown>[]>
   createAiProductDraftEvents: (
-    input: Record<string, unknown>
-  ) => Promise<Record<string, unknown>>
+    input: Record<string, unknown> | Record<string, unknown>[]
+  ) => Promise<Record<string, unknown> | Record<string, unknown>[]>
   listAiProductDraftEvents: (
     filters?: Record<string, unknown>,
     config?: Record<string, unknown>

@@ -14,6 +14,7 @@ import { POST as intakeDraft } from "../../../integrations/hermes/product-drafts
 import { buildAiProductSnapshotHash } from "../../../../lib/ai-product-drafts/resolution"
 import * as adminDraftRoutes from "../route"
 import { DELETE as cleanupDrafts, GET as listDrafts } from "../route"
+import { GET as exportFailedDrafts } from "../export/route"
 import { DELETE as deleteDraft, GET as getDraft } from "../[id]/route"
 import { POST as approveDraft } from "../[id]/approve/route"
 import { POST as rejectDraft } from "../[id]/reject/route"
@@ -723,6 +724,7 @@ describe("AI product draft routes", () => {
     ]
     const draftModule = {
       listAiProductDrafts: jest.fn().mockResolvedValue(failedDrafts),
+      createAiProductDraftEvents: jest.fn().mockResolvedValue([]),
       softDeleteAiProductDrafts: jest
         .fn()
         .mockResolvedValue(failedDrafts.map(({ id }) => id)),
@@ -742,6 +744,30 @@ describe("AI product draft routes", () => {
       { status: "validation_failed" },
       expect.objectContaining({ take: 501 })
     )
+    expect(draftModule.createAiProductDraftEvents).toHaveBeenCalledWith([
+      expect.objectContaining({
+        draft_id: "aipd_failed_1",
+        type: "cleanup_requested",
+        actor_type: "admin",
+        actor_id: "user_1",
+        from_status: "validation_failed",
+        to_status: "validation_failed",
+        metadata: expect.objectContaining({
+          action: "soft_delete",
+          bulk: true,
+          expected_count: 2,
+        }),
+      }),
+      expect.objectContaining({
+        draft_id: "aipd_failed_2",
+        type: "cleanup_requested",
+      }),
+    ])
+    expect(
+      draftModule.createAiProductDraftEvents.mock.invocationCallOrder[0]
+    ).toBeLessThan(
+      draftModule.softDeleteAiProductDrafts.mock.invocationCallOrder[0]
+    )
     expect(draftModule.softDeleteAiProductDrafts).toHaveBeenCalledWith([
       "aipd_failed_1",
       "aipd_failed_2",
@@ -750,6 +776,108 @@ describe("AI product draft routes", () => {
     expect(res.json).toHaveBeenCalledWith({
       count: 2,
       deleted_ids: ["aipd_failed_1", "aipd_failed_2"],
+    })
+  })
+
+  it("exports the bounded validation-failed queue before cleanup", async () => {
+    const failedDrafts = [
+      {
+        ...draft,
+        id: "aipd_failed_1",
+        status: "validation_failed",
+        packet_version: 1,
+        source_agent: "hermes",
+        raw_packet: { product_input: { product_name: "Legacy draft" } },
+        validation_errors: [{ path: "product_input", message: "Invalid" }],
+      },
+      {
+        ...draft,
+        id: "aipd_failed_2",
+        status: "validation_failed",
+        packet_version: 1,
+        source_agent: "hermes",
+        raw_packet: { product_input: { product_name: "Another draft" } },
+        validation_errors: [{ path: "sources.0", message: "Invalid date" }],
+      },
+    ]
+    const draftModule = {
+      listAiProductDrafts: jest.fn().mockResolvedValue(failedDrafts),
+    }
+    const req = createRequest({
+      query: {
+        status: "validation_failed",
+        expected_count: String(failedDrafts.length),
+      },
+      draftModule,
+    })
+    const res = createResponse()
+
+    await exportFailedDrafts(req as never, res as never)
+
+    expect(draftModule.listAiProductDrafts).toHaveBeenCalledWith(
+      { status: "validation_failed" },
+      expect.objectContaining({ take: 501 })
+    )
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        export_version: 1,
+        status: "validation_failed",
+        count: 2,
+        exported_at: expect.any(String),
+        drafts: [
+          expect.objectContaining({
+            id: "aipd_failed_1",
+            raw_packet: failedDrafts[0].raw_packet,
+            validation_errors: failedDrafts[0].validation_errors,
+          }),
+          expect.objectContaining({
+            id: "aipd_failed_2",
+            raw_packet: failedDrafts[1].raw_packet,
+            validation_errors: failedDrafts[1].validation_errors,
+          }),
+        ],
+      })
+    )
+  })
+
+  it("refuses an export when the validation-failed queue changes", async () => {
+    const draftModule = {
+      listAiProductDrafts: jest.fn().mockResolvedValue([
+        { ...draft, id: "aipd_failed_1", status: "validation_failed" },
+        { ...draft, id: "aipd_failed_2", status: "validation_failed" },
+      ]),
+    }
+    const req = createRequest({
+      query: { status: "validation_failed", expected_count: "1" },
+      draftModule,
+    })
+    const res = createResponse()
+
+    await exportFailedDrafts(req as never, res as never)
+
+    expect(res.status).toHaveBeenCalledWith(409)
+    expect(res.json).toHaveBeenCalledWith({
+      error: expect.stringContaining("changed"),
+    })
+  })
+
+  it("rejects an unbounded or actionable export request", async () => {
+    const draftModule = {
+      listAiProductDrafts: jest.fn(),
+    }
+    const req = createRequest({
+      query: { status: "needs_review", expected_count: "501" },
+      draftModule,
+    })
+    const res = createResponse()
+
+    await exportFailedDrafts(req as never, res as never)
+
+    expect(draftModule.listAiProductDrafts).not.toHaveBeenCalled()
+    expect(res.status).toHaveBeenCalledWith(400)
+    expect(res.json).toHaveBeenCalledWith({
+      error: expect.stringContaining("validation_failed"),
     })
   })
 

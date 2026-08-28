@@ -57,6 +57,14 @@ describe("AI product draft Admin UI contracts", () => {
     expect(hooksSource).toContain('method: "delete"')
   })
 
+  it("exports validation failures before cleanup and records the guarded count", () => {
+    expect(listPageSource).toContain("useExportAiProductDrafts")
+    expect(listPageSource).toContain("Export")
+    expect(listPageSource).toContain("downloadAiProductDraftExport")
+    expect(listPageSource).toContain("expected_count: count")
+    expect(hooksSource).toContain("/admin/ai-product-drafts/export")
+  })
+
   it("surfaces identity-resolution work in both the list and detail page", () => {
     expect(listPageSource).toContain('"needs_resolution"')
     expect(listPageSource).toContain('header: "Operation"')
@@ -110,5 +118,11 @@ describe("AI product draft Admin UI contracts", () => {
     expect(detailPageSource).toContain("import_progress")
     expect(detailPageSource).toContain("event.metadata")
     expect(detailPageSource).toContain('role="alert"')
+  })
+
+  it("keeps the event history collapsible and expanded by default", () => {
+    expect(detailPageSource).toContain("<DraftEventHistory")
+    expect(detailPageSource).toMatch(/<details[\s\S]*?open[\s\S]*?>/)
+    expect(detailPageSource).toContain("Audit trail for this draft.")
   })
 })

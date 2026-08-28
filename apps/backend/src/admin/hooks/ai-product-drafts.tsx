@@ -15,6 +15,8 @@ import type {
   AdminAiProductDraftCleanupParams,
   AdminAiProductDraftCleanupResponse,
   AdminAiProductDraftDeleteResponse,
+  AdminAiProductDraftExportParams,
+  AdminAiProductDraftExportResponse,
   AdminAiProductDraftImportParams,
   AdminAiProductDraftRejectParams,
   AdminAiProductDraftResolveParams,
@@ -155,6 +157,22 @@ export const useCleanupAiProductDrafts = (
     ...options,
   })
 }
+
+export const useExportAiProductDrafts = (
+  options?: UseMutationOptions<
+    AdminAiProductDraftExportResponse,
+    FetchError,
+    AdminAiProductDraftExportParams
+  >
+) =>
+  useMutation({
+    mutationFn: (query: AdminAiProductDraftExportParams) =>
+      sdk.client.fetch<AdminAiProductDraftExportResponse>(
+        "/admin/ai-product-drafts/export",
+        { query }
+      ),
+    ...options,
+  })
 
 export const useApproveAiProductDraft = (
   id: string,
