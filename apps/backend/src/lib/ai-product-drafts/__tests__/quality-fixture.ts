@@ -1,0 +1,17 @@
+const evidence = { source_ids: ["manual"], evidence_excerpt: "Example H1 hotend: 300 C maximum; compatible with Example P1.", confidence: 0.95, warning: "" }
+export const packetV3 = {
+  packet_version: 3, source_agent: "hermes", request_id: "quality-hotend-1", requested_operation: "auto",
+  product_id: "", product_handle: "",
+  product_input: { brand: "Example", product_name: "Example H1 Hotend", colour: "", diameter_mm: null, spool_weight_g: null, supplier_url: "https://manufacturer.example/h1", manufacturer_part_number: "H1", gtin: "", supplier_sku: "" },
+  source_summary: { official_product_page: "", official_tds: "", official_sds: "", trusted_supplier_pages: [] },
+  classification: { ...evidence, kind: "hotend" },
+  facts: [
+    { ...evidence, field: "max_temperature_c", value: 300, applicability: "known" },
+    { ...evidence, field: "compatible_printers", value: ["Example P1"], applicability: "known" },
+  ],
+  sources: [{ id: "manual", url: "https://manufacturer.example/h1", source_type: "official_manual", product_match: "exact", title: "H1 Manual", retrieved_at: "2026-09-21T00:00:00Z", notes: "" }],
+  draft_content: { short_description: "Example H1 hotend for Example P1, rated to 300 C.", feature_bullets: ["Rated to 300 C"], seo_title: "Example H1 Hotend", seo_description: "Example H1 hotend for Example P1.", ai_search_keywords: ["H1 hotend"] },
+  content_evidence: ["short_description", "feature_bullets", "seo_title", "seo_description", "ai_search_keywords"].map(field => ({ ...evidence, field })),
+  related_content_suggestions: [], warnings: [],
+}
+
