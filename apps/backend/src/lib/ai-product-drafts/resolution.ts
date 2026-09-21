@@ -42,6 +42,7 @@ export type AiProductDraftClaimEvidence = {
   source_url: string
   source_type: string
   confidence: number
+  warning?: string
 }
 
 export type AiProductDraftChange = {
@@ -120,6 +121,7 @@ const normalizeEvidence = (value: unknown): AiProductDraftClaimEvidence | null =
     source_url: sourceUrl,
     source_type: sourceType,
     confidence,
+    warning: asString(record.warning),
   }
 }
 
@@ -241,7 +243,7 @@ export function buildAiProductDraftChangeSet({
         current_value: currentValue,
         proposed_value: proposedValue,
         disposition: missing ? ("missing" as const) : ("conflict" as const),
-        default_selected: missing,
+        default_selected: missing && evidence.confidence >= 0.8 && !evidence.warning,
         evidence,
       },
     ]

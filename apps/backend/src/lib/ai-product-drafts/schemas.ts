@@ -1,4 +1,5 @@
 import { z } from "@medusajs/framework/zod"
+import { ProductKindSchema, ResearchEvidenceSchema, ResearchFactSchema } from "./product-fields"
 
 const nonEmptyTrimmedString = z.string().trim().min(1)
 const optionalTrimmedString = z.string().trim()
@@ -154,9 +155,22 @@ export const ProductResearchPacketV2Schema =
     product_input: ProductInputV2Schema,
   }).strict()
 
+export const ProductResearchPacketV3Schema = ProductResearchPacketV2Schema.omit({ facts: true }).extend({
+  packet_version: z.literal(3),
+  classification: ResearchEvidenceSchema.extend({ kind: ProductKindSchema }).strict(),
+  facts: z.array(ResearchFactSchema).max(40),
+  content_evidence: z.array(ResearchEvidenceSchema.extend({
+    field: z.string().regex(/^(short_description|seo_title|seo_description|feature_bullets\.\d{1,2}|ai_search_keywords\.\d{1,2})$/),
+  }).strict()).max(41),
+  sources: z.array(ProductResearchPacketV1Schema.shape.sources.element.extend({
+    id: nonEmptyTrimmedString.max(80),
+    product_match: z.enum(["exact", "family", "background"]),
+  }).strict()).max(20),
+}).strict()
+
 export const ProductResearchPacketSchema = z.discriminatedUnion(
   "packet_version",
-  [ProductResearchPacketV1Schema, ProductResearchPacketV2Schema]
+  [ProductResearchPacketV1Schema, ProductResearchPacketV2Schema, ProductResearchPacketV3Schema]
 )
 
 const metadataStringArray = z.array(nonEmptyTrimmedString).max(40)
@@ -185,6 +199,12 @@ export const ThreeDPrintingMetadataSchema = z
     schema_version: z.literal(1),
     product_kind: optionalTrimmedString.optional(),
     material: optionalTrimmedString.optional(),
+    voltage_v: z.number().positive().optional(),
+    current_a: z.number().positive().optional(),
+    power_w: z.number().positive().optional(),
+    connector_type: optionalTrimmedString.optional(),
+    dimensions_mm: optionalTrimmedString.optional(),
+    thread: optionalTrimmedString.optional(),
     diameter_mm: z.number().finite().optional(),
     nozzle_diameter_mm: z.number().finite().optional(),
     recommended_nozzle_temp_c: temperatureRange.optional(),
@@ -287,6 +307,8 @@ export const InternalAiProductDraftSchema = z
         z
           .object({
             claim_path: nonEmptyTrimmedString.max(200),
+            warning: optionalTrimmedString.optional(),
+            evidence_excerpt: optionalTrimmedString.optional(),
             value: z.unknown(),
             source_url: urlString,
             source_type: FactSourceTypeSchema,
@@ -308,6 +330,8 @@ export const InternalAiProductDraftSchema = z
   .strict()
 
 export type ProductResearchPacket = z.infer<typeof ProductResearchPacketSchema>
+export type ProductResearchPacketV3 = z.infer<typeof ProductResearchPacketV3Schema>
+export type LegacyProductResearchPacket = Exclude<ProductResearchPacket, ProductResearchPacketV3>
 export type ProductResearchPacketV1 = z.infer<
   typeof ProductResearchPacketV1Schema
 >

@@ -2,7 +2,9 @@ import {
   InternalAiProductDraftSchema,
   type InternalAiProductDraft,
   type ProductResearchPacket,
+  type LegacyProductResearchPacket,
 } from "./schemas"
+import { normalizeV3 } from "./normalizer-v3"
 import {
   normalizeProductResearchPacketWithDeepSeek,
   type DeepSeekProductDraftNormalizerOptions,
@@ -12,7 +14,7 @@ type EvidenceInput = {
   claim_path: string
   value: unknown
   source_url: string
-  source_type: ProductResearchPacket["facts"]["material"]["source_type"]
+  source_type: LegacyProductResearchPacket["facts"]["material"]["source_type"]
   confidence: number
 }
 
@@ -20,7 +22,7 @@ const maxProductDocumentSearchKeywords = 20
 
 function hasEvidence(input: {
   source_url: string
-  source_type: ProductResearchPacket["facts"]["material"]["source_type"]
+  source_type: LegacyProductResearchPacket["facts"]["material"]["source_type"]
 }) {
   return Boolean(input.source_url.trim() && input.source_type.trim())
 }
@@ -61,14 +63,20 @@ function average(values: number[]) {
 export function normalizeProductResearchPacket(
   packet: ProductResearchPacket
 ): InternalAiProductDraft {
-  const warnings = [...packet.warnings]
+  if (packet.packet_version === 3) return normalizeV3(packet).draft
+  const warnings = [...new Set([
+    ...packet.warnings,
+    "Legacy research requires a sourced v3 packet before approval.",
+    ...Object.entries(packet.facts).flatMap(([field, fact]) => fact.warning ? [`${field}: ${fact.warning}`] : []),
+  ])]
+  const isHardware = /hotend|nozzle|build.?plate|sensor|motor|controller|power supply|extruder|cable|heater|thermistor/i.test(packet.product_input.product_name)
   const claimEvidence: EvidenceInput[] = []
   const metadataConfidences: number[] = []
   const threeDPrinting: NonNullable<
     InternalAiProductDraft["metadata"]["three_d_printing"]
   > = {
     schema_version: 1,
-    product_kind: "filament",
+    product_kind: "unknown",
   }
 
   const material = packet.facts.material
@@ -92,7 +100,7 @@ export function normalizeProductResearchPacket(
 
   const nozzleTemp = packet.facts.recommended_nozzle_temp_c
   if (
-    (nozzleTemp.min !== null || nozzleTemp.max !== null) &&
+    !isHardware && (nozzleTemp.min !== null || nozzleTemp.max !== null) &&
     addEvidence(claimEvidence, warnings, {
       claim_path: "metadata.three_d_printing.recommended_nozzle_temp_c",
       value: { min: nozzleTemp.min, max: nozzleTemp.max },
@@ -110,7 +118,7 @@ export function normalizeProductResearchPacket(
 
   const bedTemp = packet.facts.recommended_bed_temp_c
   if (
-    (bedTemp.min !== null || bedTemp.max !== null) &&
+    !isHardware && (bedTemp.min !== null || bedTemp.max !== null) &&
     addEvidence(claimEvidence, warnings, {
       claim_path: "metadata.three_d_printing.recommended_bed_temp_c",
       value: { min: bedTemp.min, max: bedTemp.max },
@@ -128,7 +136,7 @@ export function normalizeProductResearchPacket(
 
   const enclosure = packet.facts.requires_enclosure
   if (
-    enclosure.value !== null &&
+    !isHardware && enclosure.value !== null &&
     addEvidence(claimEvidence, warnings, {
       claim_path: "metadata.three_d_printing.requires_enclosure",
       value: enclosure.value,
@@ -143,7 +151,7 @@ export function normalizeProductResearchPacket(
 
   const drying = packet.facts.drying_recommended
   if (
-    drying.value !== null &&
+    !isHardware && drying.value !== null &&
     addEvidence(claimEvidence, warnings, {
       claim_path: "metadata.three_d_printing.drying_recommended",
       value: drying.value,
@@ -161,9 +169,7 @@ export function normalizeProductResearchPacket(
     0,
     maxProductDocumentSearchKeywords
   )
-  const contentConfidence = average(
-    packet.related_content_suggestions.map((suggestion) => suggestion.confidence)
-  )
+  const contentConfidence = 0 // Legacy copy has no claim-level evidence.
 
   const draft: InternalAiProductDraft = {
     schema_version: 1,
@@ -175,7 +181,7 @@ export function normalizeProductResearchPacket(
     metadata: {
       ai_core: {
         schema_version: 1,
-        product_kind: "filament",
+        product_kind: "unknown",
         ai_search_keywords: keywords,
       },
       three_d_printing: threeDPrinting,
@@ -197,32 +203,32 @@ export function normalizeProductResearchPacket(
             ? ("safety_sheet" as const)
             : source.source_type === "official_tds"
               ? ("datasheet" as const)
-              : ("other" as const),
+              : source.source_type === "official_manual" ? ("manual" as const) : ("other" as const),
         source_url: source.url,
         source_kind:
-          source.source_type === "manufacturer_official"
+          ["manufacturer_official", "official_product_page"].includes(source.source_type)
             ? ("official_product_page" as const)
             : source.source_type === "official_sds"
               ? ("official_safety_sheet" as const)
               : source.source_type === "official_tds"
                 ? ("official_datasheet" as const)
-                : ("supplier_product_page" as const),
+                : source.source_type === "official_manual" ? ("official_manual" as const) : ("supplier_product_page" as const),
         source_label: source.title,
         source_checked_at: source.retrieved_at,
         search_keywords: documentSearchKeywords,
-        confidence: 0.8,
+        confidence: 0,
       })),
     claim_evidence: claimEvidence,
     warnings,
     confidence_summary: {
       overall: average([
         average(metadataConfidences),
-        contentConfidence || 0.75,
-        packet.sources.length ? 0.8 : 0,
+        contentConfidence,
+        0,
       ]),
       metadata: average(metadataConfidences),
-      content: contentConfidence || 0.75,
-      documents: packet.sources.length ? 0.8 : 0,
+      content: contentConfidence,
+      documents: 0,
     },
   }
 
@@ -254,6 +260,7 @@ export async function normalizeProductResearchPacketForDraft(
   packet: ProductResearchPacket,
   options: ProductResearchNormalizationOptions = {}
 ): Promise<ProductResearchNormalizationResult> {
+  if (packet.packet_version === 3) return { draft: normalizeV3(packet).draft, normalizer: "deterministic:v3" }
   const provider = resolveAiProductDraftNormalizerProvider(options.env)
 
   if (provider === "deepseek") {

@@ -108,6 +108,7 @@ function getModelNames(options: DeepSeekProductDraftNormalizerOptions) {
 }
 
 function factConfidences(packet: ProductResearchPacket) {
+  if (packet.packet_version === 3) return packet.facts.map(fact => fact.confidence)
   return [
     packet.facts.material.confidence,
     packet.facts.recommended_nozzle_temp_c.confidence,

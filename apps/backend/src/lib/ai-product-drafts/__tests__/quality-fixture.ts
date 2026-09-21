@@ -11,7 +11,6 @@ export const packetV3 = {
   ],
   sources: [{ id: "manual", url: "https://manufacturer.example/h1", source_type: "official_manual", product_match: "exact", title: "H1 Manual", retrieved_at: "2026-09-21T00:00:00Z", notes: "" }],
   draft_content: { short_description: "Example H1 hotend for Example P1, rated to 300 C.", feature_bullets: ["Rated to 300 C"], seo_title: "Example H1 Hotend", seo_description: "Example H1 hotend for Example P1.", ai_search_keywords: ["H1 hotend"] },
-  content_evidence: ["short_description", "feature_bullets", "seo_title", "seo_description", "ai_search_keywords"].map(field => ({ ...evidence, field })),
+  content_evidence: ["short_description", "feature_bullets.0", "seo_title", "seo_description", "ai_search_keywords.0"].map(field => ({ ...evidence, field })),
   related_content_suggestions: [], warnings: [],
 }
-
