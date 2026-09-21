@@ -1,4 +1,5 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+import { assertReviewedAiProductDraft } from "../../../../../lib/ai-product-drafts/quality"
 
 import {
   importAiProductDraft,
@@ -20,6 +21,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
   if (!draft) return
 
   try {
+    assertReviewedAiProductDraft(draft)
     assertAiProductDraftCanImport({
       id: String(draft.id),
       status: String(draft.status),

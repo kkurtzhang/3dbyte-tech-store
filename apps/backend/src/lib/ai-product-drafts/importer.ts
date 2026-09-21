@@ -6,6 +6,7 @@ import {
 
 import { STRAPI_MODULE } from "../../modules/strapi"
 import { mergeAiProductDraftMetadata } from "./metadata"
+import { assertReviewedAiProductDraft } from "./quality"
 import { buildAiProductSnapshotHash } from "./resolution"
 import {
   InternalAiProductDraftSchema,
@@ -78,6 +79,9 @@ type ImportableDraft = {
   product_handle?: string | null
   product_input?: unknown
   normalized_draft?: unknown
+  raw_packet?: unknown
+  proposed_changes?: unknown
+  snapshot_hash?: unknown
   approved_changes?: unknown
   approved_import_targets?: unknown
   approved_snapshot_hash?: string | null
@@ -490,6 +494,7 @@ export async function importAiProductDraft({
   }
 
   const operation = getOperation(draft)
+  assertReviewedAiProductDraft(draft)
   const normalizedDraft = InternalAiProductDraftSchema.parse(
     draft.normalized_draft
   )
