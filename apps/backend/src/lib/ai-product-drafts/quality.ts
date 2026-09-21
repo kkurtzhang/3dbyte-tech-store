@@ -3,14 +3,15 @@ import { ProductResearchPacketSchema } from "./schemas"
 import { normalizeV3 } from "./normalizer-v3"
 import type { DraftQuality } from "./normalizer-v3"
 
-export type QualityDraft = { raw_packet?: unknown; normalized_draft?: unknown }
+export type QualityDraft = { raw_packet?: unknown; normalized_draft?: unknown; resolved_operation?: unknown; proposed_changes?: unknown; snapshot_hash?: unknown; approved_import_targets?: unknown }
 function canonical(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(canonical)
   if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)).map(([key, nested]) => [key, canonical(nested)]))
   return value
 }
 export function draftReviewHash(draft: QualityDraft) {
-  return createHash("sha256").update(JSON.stringify(canonical(draft))).digest("hex")
+  const { raw_packet, normalized_draft, resolved_operation, proposed_changes, snapshot_hash } = draft
+  return createHash("sha256").update(JSON.stringify(canonical({ raw_packet, normalized_draft, resolved_operation, proposed_changes, snapshot_hash }))).digest("hex")
 }
 export function assessAiProductDraftQuality(input: QualityDraft): DraftQuality {
   const parsed = ProductResearchPacketSchema.safeParse(input.raw_packet)
@@ -32,3 +33,17 @@ export function assertAiProductDraftQuality(draft: QualityDraft) {
   if (!quality.can_approve) throw new Error(`Research required: ${quality.blockers.join(" ")}`)
 }
 
+export function assertReviewedAiProductDraft(draft: QualityDraft) {
+  assertAiProductDraftQuality(draft)
+  const approval = draft.approved_import_targets as Record<string, unknown> | null
+  if (approval?.review_acknowledged !== true || approval.review_hash !== draftReviewHash(draft)) {
+    throw new Error("Research review is missing or outdated. Review and approve the current research before import.")
+  }
+}
+
+export function withDraftQuality<T extends QualityDraft>(draft: T) {
+  const quality = assessAiProductDraftQuality(draft)
+  const approval = draft.approved_import_targets as Record<string, unknown> | null
+  const review_hash = draftReviewHash(draft)
+  return { ...draft, quality, review_hash, review_current: quality.can_approve && approval?.review_acknowledged === true && approval.review_hash === review_hash }
+}

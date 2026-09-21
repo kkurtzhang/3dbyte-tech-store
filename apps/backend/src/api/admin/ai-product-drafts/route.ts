@@ -1,5 +1,6 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { z } from "@medusajs/framework/zod"
+import { withDraftQuality } from "../../../lib/ai-product-drafts/quality"
 
 import { buildAiProductDraftEvent } from "../../../modules/ai-product-draft/lifecycle"
 import {
@@ -52,7 +53,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
   const offset = parseOffset(req.query.offset)
 
   return res.json({
-    drafts: sorted.slice(offset, offset + limit),
+    drafts: sorted.slice(offset, offset + limit).map(withDraftQuality),
     count: filtered.length,
     limit,
     offset,
