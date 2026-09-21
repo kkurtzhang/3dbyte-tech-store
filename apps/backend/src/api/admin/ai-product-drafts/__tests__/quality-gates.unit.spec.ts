@@ -4,6 +4,7 @@ import { normalizeProductResearchPacket } from "../../../../lib/ai-product-draft
 import { ProductResearchPacketSchema } from "../../../../lib/ai-product-drafts/schemas"
 import { draftReviewHash } from "../../../../lib/ai-product-drafts/quality"
 import { packetV3 } from "../../../../lib/ai-product-drafts/__tests__/quality-fixture"
+import { importAiProductDraft } from "../../../../lib/ai-product-drafts/importer"
 
 function harness(draft: Record<string, unknown>, body = {}) {
   const module = {
@@ -20,6 +21,13 @@ const valid = () => ({ id: "aipd_quality", status: "needs_review", resolved_oper
   normalized_draft: normalizeProductResearchPacket(ProductResearchPacketSchema.parse(packetV3)) })
 
 describe("draft quality API gates", () => {
+  it("refuses direct imports of legacy or unreviewed research before resolving services", async () => {
+    for (const draft of [valid(), { ...valid(), raw_packet: { packet_version: 2 } }]) {
+      const container = { resolve: jest.fn(() => { throw new Error("Services must not be reached") }) }
+      await expect(importAiProductDraft({ container, draft: { ...draft, status: "approved" } as never })).rejects.toThrow(/Research|research/)
+      expect(container.resolve).not.toHaveBeenCalled()
+    }
+  })
   it("blocks legacy drafts before any approval write", async () => {
     const h = harness({ ...valid(), raw_packet: { packet_version: 2 } })
     await approve(h.req as never, h.res as never)
