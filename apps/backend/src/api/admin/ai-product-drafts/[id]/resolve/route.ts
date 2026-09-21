@@ -36,6 +36,10 @@ function getCandidates(value: unknown): AiProductDraftCandidate[] {
 }
 
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
+  return withAiDraftLock(req, () => mutateDraft(req, res))
+}
+
+async function mutateDraft(req: MedusaRequest, res: MedusaResponse) {
   const draft = await getDraftById(req, res)
   if (!draft) return
 
@@ -115,3 +119,4 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
   return res.status(200).json({ draft: updated })
 }
+import { withAiDraftLock } from "../../../../../lib/ai-product-drafts/locking"

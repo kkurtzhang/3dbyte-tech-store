@@ -62,6 +62,10 @@ module.exports = defineConfig({
   },
   modules: [
     {
+      resolve: "@medusajs/medusa/locking",
+      options: { providers: [{ resolve: "@medusajs/medusa/locking-postgres", id: "locking-postgres", is_default: true }] },
+    },
+    {
       key: Modules.ORDER,
       options: {
         generateCustomDisplayId: async (

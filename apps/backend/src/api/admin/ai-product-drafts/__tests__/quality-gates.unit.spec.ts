@@ -13,7 +13,7 @@ function harness(draft: Record<string, unknown>, body = {}) {
     updateAiProductDrafts: jest.fn().mockImplementation(async input => ({ ...draft, ...input })),
     createAiProductDraftEvents: jest.fn(),
   }
-  const req = { params: { id: "aipd_quality" }, body, auth_context: { actor_id: "reviewer" }, scope: { resolve: () => module } }
+  const req = { params: { id: "aipd_quality" }, body, auth_context: { actor_id: "reviewer" }, scope: { resolve: (key: string) => key === "locking" ? { execute: async (_key: string, job: () => Promise<unknown>) => job() } : module } }
   const res = { status: jest.fn().mockReturnThis(), json: jest.fn() }
   return { req, res, module }
 }

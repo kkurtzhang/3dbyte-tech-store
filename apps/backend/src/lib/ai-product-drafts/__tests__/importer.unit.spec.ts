@@ -12,62 +12,12 @@ jest.mock("@medusajs/medusa/core-flows", () => ({
 
 import { buildAiProductSnapshotHash } from "../resolution"
 import { importAiProductDraft } from "../importer"
+import { reviewedFixture, normalizedFilamentDraft } from "./reviewed-fixture"
 
-const normalizedDraft = {
-  schema_version: 1,
-  target_product: {
-    product_id: "prod_123",
-    product_handle: "example-petg",
-  },
-  metadata: {
-    ai_core: {
-      schema_version: 1,
-      product_kind: "filament",
-      ai_search_keywords: ["petg"],
-    },
-    three_d_printing: {
-      schema_version: 1,
-      product_kind: "filament",
-      material: "PETG",
-    },
-  },
-  content_draft: {
-    short_description: "<script>alert(1)</script>Source backed PETG.",
-    feature_bullets: ["<b>Functional</b> parts"],
-    seo_title: "Example PETG",
-    seo_description: "Source backed PETG.",
-    ai_search_keywords: ["petg"],
-  },
-  related_content_suggestions: [],
-  product_document_suggestions: [
-    {
-      title: "Example PETG TDS",
-      document_type: "datasheet",
-      source_url: "https://manufacturer.example/tds.pdf",
-      source_kind: "official_datasheet",
-      source_label: "Official TDS",
-      source_checked_at: "2026-06-28T00:00:00.000Z",
-      search_keywords: ["petg"],
-      confidence: 0.9,
-    },
-  ],
-  claim_evidence: [
-    {
-      claim_path: "metadata.three_d_printing.material",
-      value: "PETG",
-      source_url: "https://manufacturer.example/example-petg",
-      source_type: "official_product_page",
-      confidence: 0.96,
-    },
-  ],
-  warnings: [],
-  confidence_summary: {
-    overall: 0.9,
-    metadata: 0.9,
-    content: 0.8,
-    documents: 0.9,
-  },
-}
+const normalizedDraft = normalizedFilamentDraft
+
+const importReviewedDraft = (input: Parameters<typeof importAiProductDraft>[0]) =>
+  importAiProductDraft({ ...input, draft: reviewedFixture(input.draft) as never })
 
 describe("importAiProductDraft", () => {
   beforeEach(() => {
@@ -82,7 +32,7 @@ describe("importAiProductDraft", () => {
     }
 
     await expect(
-      importAiProductDraft({
+      importReviewedDraft({
         container: container as never,
         draft: {
           id: "aipd_legacy",
@@ -124,7 +74,7 @@ describe("importAiProductDraft", () => {
       }),
     }
 
-    const summary = await importAiProductDraft({
+    const summary = await importReviewedDraft({
       container: container as never,
       draft: {
         id: "aipd_1",
@@ -224,7 +174,7 @@ describe("importAiProductDraft", () => {
     }
     const onProgress = jest.fn()
 
-    const summary = await importAiProductDraft({
+    const summary = await importReviewedDraft({
       container: container as never,
       draft: {
         id: "aipd_create",
@@ -272,6 +222,7 @@ describe("importAiProductDraft", () => {
           },
         ],
         metadata: {
+          ai_product_draft_id: "aipd_create",
           three_d_printing: {
             material: "PETG",
           },
@@ -329,7 +280,7 @@ describe("importAiProductDraft", () => {
     }
     const snapshotHash = buildAiProductSnapshotHash(product)
 
-    await importAiProductDraft({
+    await importReviewedDraft({
       container: container as never,
       draft: {
         id: "aipd_enrich",
@@ -402,7 +353,7 @@ describe("importAiProductDraft", () => {
     }
 
     await expect(
-      importAiProductDraft({
+      importReviewedDraft({
         container: container as never,
         draft: {
           id: "aipd_enrich",
@@ -448,7 +399,7 @@ describe("importAiProductDraft", () => {
       }),
     }
 
-    const summary = await importAiProductDraft({
+    const summary = await importReviewedDraft({
       container: container as never,
       draft: {
         id: "aipd_create",

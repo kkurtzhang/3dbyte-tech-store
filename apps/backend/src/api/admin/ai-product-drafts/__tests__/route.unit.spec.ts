@@ -20,6 +20,8 @@ import { POST as approveDraft } from "../[id]/approve/route"
 import { POST as rejectDraft } from "../[id]/reject/route"
 import { POST as importDraft } from "../[id]/import/route"
 import { POST as resolveDraft } from "../[id]/resolve/route"
+import { filamentPacket, normalizedFilamentDraft, reviewedFixture } from "../../../../lib/ai-product-drafts/__tests__/reviewed-fixture"
+import { draftReviewHash, withDraftQuality } from "../../../../lib/ai-product-drafts/quality"
 
 const validPacket = {
   packet_version: 1,
@@ -165,6 +167,7 @@ function createRequest({
     },
     scope: {
       resolve: jest.fn((key: string) => {
+        if (key === "locking") return { execute: async (_key: string, job: () => Promise<unknown>) => job() }
         if (key === "aiProductDraft") return draftModule
         if (key === "query") return queryModule
         if (key === "notification") return notificationModule
@@ -182,6 +185,8 @@ function createRequest({
 }
 
 const draft = {
+  raw_packet: filamentPacket,
+  normalized_draft: normalizedFilamentDraft,
   id: "aipd_1",
   status: "needs_review",
   resolved_operation: "enrich",
@@ -558,7 +563,7 @@ describe("AI product draft routes", () => {
     await getDraft(detailReq as never, detailRes as never)
 
     expect(listRes.json).toHaveBeenCalledWith({
-      drafts: [draft],
+      drafts: [withDraftQuality(draft)],
       count: 1,
       limit: 10,
       offset: 0,
@@ -567,7 +572,7 @@ describe("AI product draft routes", () => {
       },
     })
     expect(detailRes.json).toHaveBeenCalledWith({
-      draft,
+      draft: withDraftQuality(draft),
       events: [{ id: "evt_1" }],
     })
   })
@@ -594,7 +599,7 @@ describe("AI product draft routes", () => {
     await listDrafts(req as never, res as never)
 
     expect(res.json).toHaveBeenCalledWith({
-      drafts: [titleOnlyDraft],
+      drafts: [withDraftQuality(titleOnlyDraft)],
       count: 1,
       limit: 10,
       offset: 0,
@@ -938,7 +943,7 @@ describe("AI product draft routes", () => {
       createAiProductDraftEvents: jest.fn().mockResolvedValue({ id: "evt_1" }),
     }
     const approveReq = createRequest({
-      body: { notes: "Looks good" },
+      body: { notes: "Looks good", review_hash: draftReviewHash(draft), review_acknowledged: true },
       params: { id: "aipd_1" },
       draftModule,
     })
@@ -1123,6 +1128,7 @@ describe("AI product draft routes", () => {
     const req = createRequest({
       body: {
         notes: "Use only reviewed material metadata.",
+        review_hash: draftReviewHash(reviewDraft), review_acknowledged: true,
         selected_change_paths: ["metadata.three_d_printing.material"],
         import_targets: {
           medusa_metadata: true,
@@ -1150,6 +1156,7 @@ describe("AI product draft routes", () => {
           medusa_metadata: true,
           strapi_description_draft: false,
           product_document_drafts: false,
+          review_hash: draftReviewHash(reviewDraft), review_acknowledged: true,
         },
         approved_snapshot_hash: "snapshot_1",
       })
@@ -1170,6 +1177,7 @@ describe("AI product draft routes", () => {
     const req = createRequest({
       body: {
         selected_change_paths: [],
+        review_hash: draftReviewHash(reviewDraft), review_acknowledged: true,
         import_targets: {
           medusa_metadata: false,
           strapi_description_draft: false,
@@ -1206,7 +1214,7 @@ describe("AI product draft routes", () => {
   })
 
   it("imports approved drafts through the guarded import helper", async () => {
-    const approvedDraft = {
+    const approvedDraft = reviewedFixture({
       ...draft,
       status: "approved",
       approved_snapshot_hash: buildAiProductSnapshotHash({
@@ -1245,7 +1253,7 @@ describe("AI product draft routes", () => {
           documents: 0,
         },
       },
-    }
+    })
     const draftModule = {
       listAiProductDrafts: jest.fn().mockResolvedValue([approvedDraft]),
       updateAiProductDrafts: jest.fn().mockResolvedValue({
@@ -1293,7 +1301,7 @@ describe("AI product draft routes", () => {
   })
 
   it("checkpoints a created product before continuing external imports", async () => {
-    const approvedDraft = {
+    const approvedDraft = reviewedFixture({
       ...draft,
       status: "approved",
       product_id: null,
@@ -1332,7 +1340,7 @@ describe("AI product draft routes", () => {
           documents: 0,
         },
       },
-    }
+    })
     mockCreateProductsRun.mockResolvedValue({
       result: [
         {

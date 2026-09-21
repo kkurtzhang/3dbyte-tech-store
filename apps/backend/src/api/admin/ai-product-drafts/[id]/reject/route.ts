@@ -14,6 +14,10 @@ function getRequestBody(req: MedusaRequest): { reason?: unknown } {
 }
 
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
+  return withAiDraftLock(req, () => mutateDraft(req, res))
+}
+
+async function mutateDraft(req: MedusaRequest, res: MedusaResponse) {
   const body = getRequestBody(req)
   const reason = typeof body.reason === "string" ? body.reason.trim() : ""
 
@@ -52,3 +56,4 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
   return res.status(200).json({ draft: updated })
 }
+import { withAiDraftLock } from "../../../../../lib/ai-product-drafts/locking"

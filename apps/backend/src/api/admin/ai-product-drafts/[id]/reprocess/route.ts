@@ -6,6 +6,10 @@ import { buildAiProductDraftEvent } from "../../../../../modules/ai-product-draf
 import { buildResolvedDraftState, getAdminActorId, getAiProductDraftModule, getDraftById, resolveProductCandidates } from "../../utils"
 
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
+  return withAiDraftLock(req, () => mutateDraft(req, res))
+}
+
+async function mutateDraft(req: MedusaRequest, res: MedusaResponse) {
   const previous = await getDraftById(req, res)
   if (!previous) return
   let replacement: ReturnType<typeof prepareReplacement>
@@ -40,3 +44,4 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     actor_type: "admin", actor_id: getAdminActorId(req), from_status: String(previous.status), to_status: String(updated.status), metadata: { packet_version: 3 } }))
   return res.json({ draft: withDraftQuality(updated) })
 }
+import { withAiDraftLock } from "../../../../../lib/ai-product-drafts/locking"

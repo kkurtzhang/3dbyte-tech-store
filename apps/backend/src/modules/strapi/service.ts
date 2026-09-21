@@ -23,6 +23,7 @@ interface ListProductDocumentsOptions {
 }
 
 export interface SyncProductData {
+  metadata?: Record<string, unknown> | null;
   id: string; //medusaProductId
   title: string;
   handle: string;
@@ -133,9 +134,11 @@ class StrapiModuleService {
 
   //===============Product Description Section===============
   async createProductDescription(product: SyncProductData): Promise<any> {
+    // AI import owns the first CMS write; the product.created event must not race it.
+    if (product.metadata?.ai_product_draft_id) return null;
     try {
       // Check if product description already exists
-      const existing = await this.findProductDescription(product.id);
+      const existing = await this.findProductDescriptionForWrite(product.id);
       if (existing) {
         this.logger_.info(
           `Product description already exists for product: ${product.id}`
@@ -309,10 +312,7 @@ class StrapiModuleService {
   async upsertAiProductDescriptionDraft(
     draft: AiProductDescriptionDraftData
   ): Promise<unknown> {
-    const existingResponse = (await this.makeRequest(
-      `product-descriptions?filters[medusa_product_id][$eq]=${encodeURIComponent(draft.medusa_product_id)}&status=draft&pagination[pageSize]=1`
-    )) as { data?: { documentId?: string; id?: string }[] };
-    const existing = existingResponse.data?.[0];
+    const existing = await this.findProductDescriptionForWrite(draft.medusa_product_id);
     const documentId = existing?.documentId || existing?.id;
     const payload = {
       data: {
@@ -341,6 +341,19 @@ class StrapiModuleService {
     )) as { data: unknown };
 
     return result.data;
+  }
+
+  private async findProductDescriptionForWrite(productId: string): Promise<{ documentId?: string; id?: string } | null> {
+    const records: { documentId?: string; id?: string }[] = [];
+    for (const status of ["draft", "published"]) {
+      const response = await this.makeRequest(`product-descriptions?filters[medusa_product_id][$eq]=${encodeURIComponent(productId)}&status=${status}&pagination[pageSize]=2`);
+      if (!Array.isArray(response.data)) throw new Error("Invalid CMS description lookup response");
+      records.push(...response.data);
+    }
+    const ids = new Set(records.map(record => record.documentId || record.id).filter(Boolean));
+    if (ids.size > 1) throw new Error("Multiple CMS descriptions exist for this product. Reconcile their document identities before import.");
+    if (records.length && !ids.size) throw new Error("CMS description has no document identity");
+    return records[0] || null;
   }
 
   async getOutdatedProductDescriptions(): Promise<any[]> {

@@ -2,11 +2,13 @@ import { z } from "@medusajs/framework/zod"
 import { ProductResearchPacketV3Schema } from "./schemas"
 import { draftReviewHash } from "./quality"
 import { normalizeV3 } from "./normalizer-v3"
+import { isHermesProductDraftPayloadTooLarge } from "./security"
 
 const ReplacementSchema = z.object({ packet: ProductResearchPacketV3Schema, review_hash: z.string().length(64) }).strict()
 const identity = (value: unknown) => typeof value === "string" ? value.trim().toLowerCase().replace(/\s+/g, " ") : ""
 
 export function prepareReplacement(draft: Record<string, unknown>, body: unknown) {
+  if (isHermesProductDraftPayloadTooLarge(body)) throw new Error("Product research packet is too large")
   if (!["needs_review", "validation_failed", "needs_resolution", "rejected"].includes(String(draft.status)) ||
       (draft.import_progress && Object.keys(draft.import_progress).length) || draft.imported_at || draft.import_summary) {
     throw new Error("Only unimported, unapproved drafts can have research replaced. Imported work requires a separate audit.")

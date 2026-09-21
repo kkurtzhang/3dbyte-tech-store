@@ -450,7 +450,7 @@ async function createProductShell(
               manage_inventory: false,
             },
           ],
-          ...(Object.keys(metadata).length ? { metadata } : {}),
+          metadata: { ...metadata, ai_product_draft_id: draft.id },
         },
       ],
     },
