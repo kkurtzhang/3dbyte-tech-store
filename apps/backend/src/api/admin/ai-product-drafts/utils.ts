@@ -136,7 +136,7 @@ function toProductCandidate(
   } satisfies AiProductDraftCandidate
 }
 
-async function resolveProductCandidates(
+export async function resolveProductCandidates(
   req: MedusaRequest,
   packet: ProductResearchPacket
 ): Promise<AiProductDraftCandidate[]> {
@@ -317,7 +317,7 @@ async function createHermesDraftIdempotently(
       duplicate: false,
     }
   } catch (error) {
-    if (packet.packet_version !== 2 || !hasPostgresUniqueViolation(error)) {
+    if (packet.packet_version === 1 || !hasPostgresUniqueViolation(error)) {
       throw error
     }
 
@@ -372,7 +372,7 @@ export async function createDraftFromHermesPacket(
   }
 
   const packet = parsedPacket.data
-  const isV2 = packet.packet_version === 2
+  const isV2 = packet.packet_version !== 1
 
   if (isV2) {
     const [existingDraft] = await draftModule.listAiProductDrafts({
