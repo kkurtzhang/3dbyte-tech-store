@@ -43,6 +43,7 @@ export type AiProductDraftClaimEvidence = {
   source_type: string
   confidence: number
   warning?: string
+  evidence_excerpt?: string
 }
 
 export type AiProductDraftChange = {
@@ -122,6 +123,7 @@ const normalizeEvidence = (value: unknown): AiProductDraftClaimEvidence | null =
     source_type: sourceType,
     confidence,
     warning: asString(record.warning),
+    evidence_excerpt: asString(record.evidence_excerpt),
   }
 }
 

@@ -34,6 +34,9 @@ export const getAiProductDraftErrorMessage = (
 
 type BadgeColor = React.ComponentProps<typeof Badge>["color"]
 
+export const getAiProductDraftQualityLabel = (draft: Pick<AdminAiProductDraft, "quality">) =>
+  draft.quality?.can_approve ? "Ready for review" : "Research required"
+
 export const formatAiProductDraftDate = (
   value?: string | Date | null
 ): string => {

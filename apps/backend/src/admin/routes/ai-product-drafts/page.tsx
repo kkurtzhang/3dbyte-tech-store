@@ -30,6 +30,7 @@ import {
   downloadAiProductDraftExport,
   formatAiProductDraftDate,
   getAiProductDraftDisplayName,
+  getAiProductDraftQualityLabel,
   getAiProductDraftStatusBadgeColor,
   labelizeAiProductDraftValue,
 } from "../../lib/ai-product-drafts"
@@ -168,18 +169,18 @@ const columns = [
       ),
   }),
   columnHelper.accessor(
-    (draft) => draft.confidence_summary?.overall,
+    (draft) => getAiProductDraftQualityLabel(draft),
     {
     id: "confidence",
-    header: "Confidence",
-    enableSorting: true,
-    sortLabel: "Confidence",
+    header: "Research quality",
+    enableSorting: false,
+    sortLabel: "Research quality",
     sortAscLabel: "Lowest first",
     sortDescLabel: "Highest first",
     cell: ({ getValue }) => {
       const overall = getValue()
 
-      return typeof overall === "number" ? `${Math.round(overall * 100)}%` : "-"
+      return overall
     },
   }),
   columnHelper.accessor((draft) => draft.warnings?.length || 0, {

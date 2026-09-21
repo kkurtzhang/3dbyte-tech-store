@@ -8,7 +8,7 @@ const listPageSource = fs.readFileSync(
 const detailPageSource = fs.readFileSync(
   path.resolve(__dirname, "../[id]/page.tsx"),
   "utf8"
-)
+) + fs.readFileSync(path.resolve(__dirname, "../[id]/review-actions.tsx"), "utf8")
 const actionMenuSource = fs.readFileSync(
   path.resolve(__dirname, "../../../components/action-menu.tsx"),
   "utf8"
