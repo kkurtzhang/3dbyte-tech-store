@@ -4,8 +4,10 @@ These are native Hermes-runtime skills for AI product draft onboarding. Hermes o
 
 ## Shared Contract
 
-- Canonical packet schema: `docs/hermes/product-research-packet.v2.schema.json`
-- Canonical fixture: `docs/hermes/fixtures/product-research-packet.v2.example.json`
+New research must use v3. See [quality and recovery runbook](quality-recovery-v3.md). V1/v2 remain readable for history, but cannot be approved or imported. Updating these repository files does not install them into the separately operated Hermes runtime.
+
+- Canonical packet schema: `docs/hermes/product-research-packet.v3.schema.json`
+- Canonical fixture: `docs/hermes/fixtures/product-research-packet.v3.example.json`
 - Compatibility-only v1 schema: `docs/hermes/product-research-packet.v1.schema.json`
 - Skill pack: `docs/hermes/skills/*/SKILL.md`
 - Submit endpoint: `POST /integrations/hermes/product-drafts`
@@ -49,19 +51,19 @@ Purpose: extract product facts into source-backed fact envelopes.
 Skill file: `docs/hermes/skills/hermes-evidence-extractor/SKILL.md`
 
 Required behavior:
-- Extract material, nozzle temperature, bed temperature, enclosure requirement, and drying recommendation.
-- Attach source URL, source type, confidence, and warning text where relevant.
+- Classify the product with exact-product source evidence, then extract only category-applicable facts. Follow `quality-recovery-v3.md` for the required facts per category.
+- Attach source IDs, short evidence excerpts, researcher confidence, applicability, and caveats to each fact and every copy field.
 - Downgrade unsupported safety, certification, warranty, food-safety, and compatibility claims into warnings.
 - Leave values empty or null when evidence is missing.
 
 ### hermes-packet-builder
 
-Purpose: produce Product Research Packet v2.
+Purpose: produce Product Research Packet v3.
 
 Skill file: `docs/hermes/skills/hermes-packet-builder/SKILL.md`
 
 Required behavior:
-- Emit JSON matching `product-research-packet.v2.schema.json`.
+- Emit JSON matching `product-research-packet.v3.schema.json`.
 - Generate one stable, non-secret `request_id` per logical onboarding job and reuse it for every retry.
 - Include `requested_operation`; do not invent a product id, handle, part number, GTIN, or supplier SKU.
 - Keep draft content plain text only.

@@ -106,6 +106,15 @@ const useInvalidateAiProductDrafts = (id?: string) => {
   }
 }
 
+export const useReplaceAiProductDraftResearch = (id: string) => {
+  const invalidate = useInvalidateAiProductDrafts(id)
+  return useMutation({
+    mutationFn: (body: { packet: unknown; review_hash?: string }) =>
+      sdk.client.fetch<AdminAiProductDraftActionResponse>(`/admin/ai-product-drafts/${id}/reprocess`, { method: "POST", body }),
+    onSuccess: invalidate,
+  })
+}
+
 export const useDeleteAiProductDraft = (
   id: string,
   options?: UseMutationOptions<

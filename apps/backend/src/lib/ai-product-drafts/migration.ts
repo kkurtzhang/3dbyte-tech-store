@@ -38,7 +38,11 @@ type UnrecoverablePreparation = {
 type NoopPreparation = {
   kind: "noop"
   draft_id: string
-  reason: "already_resolved" | "terminal_status" | "missing_source_data"
+  reason:
+    | "already_resolved"
+    | "terminal_status"
+    | "missing_source_data"
+    | "not_legacy"
 }
 
 export type AiProductDraftMigrationPreparation =
@@ -81,7 +85,9 @@ const hashValue = (value: unknown) =>
     .update(JSON.stringify(canonicalize(value)))
     .digest("hex")
 
-const formatSchemaErrors = (issues: { path: PropertyKey[]; message: string }[]) =>
+const formatSchemaErrors = (
+  issues: { path: PropertyKey[]; message: string }[]
+) =>
   issues.map((issue) => ({
     path: issue.path.map(String).join("."),
     message: issue.message,
@@ -143,6 +149,14 @@ function getDraftSourceSignatures(draft: AiProductDraftMigrationRecord) {
 export function prepareAiProductDraftMigration(
   draft: AiProductDraftMigrationRecord
 ): AiProductDraftMigrationPreparation {
+  // The historical v1/v2 repair must never reinterpret newer evidence contracts.
+  if (
+    Number(draft.packet_version) >= 3 ||
+    Number(asRecord(draft.raw_packet)?.packet_version) >= 3
+  ) {
+    return { kind: "noop", draft_id: draft.id, reason: "not_legacy" }
+  }
+
   if (["imported", "rejected"].includes(draft.status)) {
     return { kind: "noop", draft_id: draft.id, reason: "terminal_status" }
   }

@@ -1,4 +1,6 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+import { withAiDraftLock } from "../../../../../lib/ai-product-drafts/locking"
+import { assertReviewedAiProductDraft } from "../../../../../lib/ai-product-drafts/quality"
 
 import {
   importAiProductDraft,
@@ -16,10 +18,15 @@ import {
 } from "../../utils"
 
 export async function POST(req: MedusaRequest, res: MedusaResponse) {
+  return withAiDraftLock(req, () => mutateDraft(req, res))
+}
+
+async function mutateDraft(req: MedusaRequest, res: MedusaResponse) {
   const draft = await getDraftById(req, res)
   if (!draft) return
 
   try {
+    assertReviewedAiProductDraft(draft)
     assertAiProductDraftCanImport({
       id: String(draft.id),
       status: String(draft.status),
@@ -31,7 +38,8 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     })
   } catch (error) {
     return res.status(409).json({
-      error: error instanceof Error ? error.message : "Draft cannot be imported",
+      error:
+        error instanceof Error ? error.message : "Draft cannot be imported",
     })
   }
 

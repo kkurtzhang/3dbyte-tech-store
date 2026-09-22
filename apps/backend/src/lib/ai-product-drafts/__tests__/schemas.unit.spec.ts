@@ -92,6 +92,8 @@ describe("Product Research Packet schema", () => {
 
     expect(parsed.packet_version).toBe(1)
     expect(parsed.source_agent).toBe("hermes")
+    if (parsed.packet_version !== 1)
+      throw new Error("Expected the legacy fixture")
     expect(parsed.facts.material.value).toBe("PETG")
   })
 
@@ -135,9 +137,9 @@ describe("Product Research Packet schema", () => {
   })
 
   it("keeps v1 packets parseable while distinguishing their contract version", () => {
-    expect(ProductResearchPacketV1Schema.parse(validPacket).packet_version).toBe(
-      1
-    )
+    expect(
+      ProductResearchPacketV1Schema.parse(validPacket).packet_version
+    ).toBe(1)
     expect(
       ProductResearchPacketSchema.parse({
         ...validPacket,

@@ -74,7 +74,9 @@ function getDeepSeekBaseUrl(options: DeepSeekProductDraftNormalizerOptions) {
   ).replace(/\/+$/, "")
 }
 
-function getDeepSeekTemperature(options: DeepSeekProductDraftNormalizerOptions) {
+function getDeepSeekTemperature(
+  options: DeepSeekProductDraftNormalizerOptions
+) {
   const configured = process.env.AI_PRODUCT_DRAFT_TEMPERATURE
   const parsed =
     options.temperature ??
@@ -108,6 +110,8 @@ function getModelNames(options: DeepSeekProductDraftNormalizerOptions) {
 }
 
 function factConfidences(packet: ProductResearchPacket) {
+  if (packet.packet_version === 3)
+    return packet.facts.map((fact) => fact.confidence)
   return [
     packet.facts.material.confidence,
     packet.facts.recommended_nozzle_temp_c.confidence,
@@ -212,7 +216,9 @@ export async function normalizeProductResearchPacketWithDeepSeek(
   const apiKey = getDeepSeekApiKey(options)
 
   if (!apiKey) {
-    throw new Error("DEEPSEEK_API_KEY is required when AI_PRODUCT_DRAFT_NORMALIZER=deepseek")
+    throw new Error(
+      "DEEPSEEK_API_KEY is required when AI_PRODUCT_DRAFT_NORMALIZER=deepseek"
+    )
   }
 
   const fetcher = getFetch(options)
@@ -257,7 +263,8 @@ export async function normalizeProductResearchPacketWithDeepSeek(
           )
         }
 
-        const payload = (await response.json()) as DeepSeekChatCompletionResponse
+        const payload =
+          (await response.json()) as DeepSeekChatCompletionResponse
         const content = payload.choices?.[0]?.message?.content
 
         if (!content) {

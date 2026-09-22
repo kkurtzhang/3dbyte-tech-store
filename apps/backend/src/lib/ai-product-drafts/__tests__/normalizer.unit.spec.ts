@@ -81,7 +81,7 @@ describe("normalizeProductResearchPacket", () => {
     const packet = ProductResearchPacketSchema.parse(basePacket)
     const draft = normalizeProductResearchPacket(packet)
 
-    expect(draft.metadata.ai_core?.product_kind).toBe("filament")
+    expect(draft.metadata.ai_core?.product_kind).toBe("unknown")
     expect(draft.metadata.three_d_printing?.material).toBe("PETG")
     expect(draft.metadata.three_d_printing?.diameter_mm).toBe(1.75)
     expect(draft.metadata.three_d_printing?.recommended_nozzle_temp_c).toEqual({
@@ -116,9 +116,7 @@ describe("normalizeProductResearchPacket", () => {
 
     expect(draft.metadata.three_d_printing?.requires_enclosure).toBeUndefined()
     expect(draft.warnings).toEqual(
-      expect.arrayContaining([
-        expect.stringContaining("requires_enclosure"),
-      ])
+      expect.arrayContaining([expect.stringContaining("requires_enclosure")])
     )
   })
 

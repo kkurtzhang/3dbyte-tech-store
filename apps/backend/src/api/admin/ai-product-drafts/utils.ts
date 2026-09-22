@@ -21,8 +21,12 @@ import { AI_PRODUCT_DRAFT_MODULE } from "../../../modules/ai-product-draft"
 import { buildAiProductDraftEvent } from "../../../modules/ai-product-draft/lifecycle"
 
 export type AiProductDraftModule = {
-  createAiProductDrafts: (input: Record<string, unknown>) => Promise<Record<string, unknown>>
-  updateAiProductDrafts: (input: Record<string, unknown>) => Promise<Record<string, unknown>>
+  createAiProductDrafts: (
+    input: Record<string, unknown>
+  ) => Promise<Record<string, unknown>>
+  updateAiProductDrafts: (
+    input: Record<string, unknown>
+  ) => Promise<Record<string, unknown>>
   softDeleteAiProductDrafts: (
     input: string | string[] | Record<string, unknown>
   ) => Promise<unknown>
@@ -40,10 +44,14 @@ export type AiProductDraftModule = {
 }
 
 type QueryGraph = {
-  graph: (input: Record<string, unknown>) => Promise<{ data: Record<string, unknown>[] }>
+  graph: (
+    input: Record<string, unknown>
+  ) => Promise<{ data: Record<string, unknown>[] }>
 }
 
-export function getAiProductDraftModule(req: MedusaRequest): AiProductDraftModule {
+export function getAiProductDraftModule(
+  req: MedusaRequest
+): AiProductDraftModule {
   return req.scope.resolve(AI_PRODUCT_DRAFT_MODULE) as AiProductDraftModule
 }
 
@@ -82,10 +90,14 @@ export async function getDraftById(req: MedusaRequest, res: MedusaResponse) {
 }
 
 function normalizeIdentity(value: unknown): string {
-  return getString(value).toLowerCase().replace(/[^a-z0-9]+/g, "")
+  return getString(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "")
 }
 
-function getCandidateIdentityValues(candidate: AiProductDraftCandidate): string[] {
+function getCandidateIdentityValues(
+  candidate: AiProductDraftCandidate
+): string[] {
   const metadata = getRecord(candidate.metadata)
   const identity = getRecord(metadata.product_contract_identity)
 
@@ -118,7 +130,9 @@ function isStrongIdentityMatch(
     .filter(Boolean)
   const candidateIdentities = new Set(getCandidateIdentityValues(candidate))
 
-  return submittedIdentities.some((identity) => candidateIdentities.has(identity))
+  return submittedIdentities.some((identity) =>
+    candidateIdentities.has(identity)
+  )
 }
 
 function toProductCandidate(
@@ -136,7 +150,7 @@ function toProductCandidate(
   } satisfies AiProductDraftCandidate
 }
 
-async function resolveProductCandidates(
+export async function resolveProductCandidates(
   req: MedusaRequest,
   packet: ProductResearchPacket
 ): Promise<AiProductDraftCandidate[]> {
@@ -144,17 +158,20 @@ async function resolveProductCandidates(
   const productHandle = packet.product_handle?.trim()
   const query = req.scope.resolve("query") as QueryGraph
   const productInput = getRecord(packet.product_input)
-  const searchTerms = productId || productHandle
-    ? []
-    : [
-        productInput.product_name,
-        productInput.manufacturer_part_number,
-        productInput.gtin,
-        productInput.supplier_sku,
-      ]
-        .map(getString)
-        .filter((value, index, values) => value && values.indexOf(value) === index)
-        .slice(0, 4)
+  const searchTerms =
+    productId || productHandle
+      ? []
+      : [
+          productInput.product_name,
+          productInput.manufacturer_part_number,
+          productInput.gtin,
+          productInput.supplier_sku,
+        ]
+          .map(getString)
+          .filter(
+            (value, index, values) => value && values.indexOf(value) === index
+          )
+          .slice(0, 4)
   const responses =
     productId || productHandle
       ? [
@@ -230,7 +247,9 @@ export function buildResolvedDraftState(input: {
     product_handle: target?.handle || undefined,
     product_title:
       target?.title ||
-      getString(getRecord(input.normalized_draft.target_product).product_title) ||
+      getString(
+        getRecord(input.normalized_draft.target_product).product_title
+      ) ||
       undefined,
   }
   const normalizedDraft = {
@@ -238,7 +257,8 @@ export function buildResolvedDraftState(input: {
     target_product: normalizedTarget,
   }
   const comparisonTarget =
-    target || ({ id: "__new_product__", metadata: {} } satisfies AiProductDraftCandidate)
+    target ||
+    ({ id: "__new_product__", metadata: {} } satisfies AiProductDraftCandidate)
 
   return {
     normalizedDraft,
@@ -262,12 +282,12 @@ function formatValidationErrors(error: unknown) {
     "issues" in error &&
     Array.isArray((error as { issues?: unknown[] }).issues)
   ) {
-    return (error as { issues: { path?: unknown[]; message?: string }[] }).issues.map(
-      (issue) => ({
-        path: issue.path?.join(".") || "",
-        message: issue.message || "Invalid value",
-      })
-    )
+    return (
+      error as { issues: { path?: unknown[]; message?: string }[] }
+    ).issues.map((issue) => ({
+      path: issue.path?.join(".") || "",
+      message: issue.message || "Invalid value",
+    }))
   }
 
   return [{ path: "", message: "Invalid Product Research Packet" }]
@@ -276,7 +296,10 @@ function formatValidationErrors(error: unknown) {
 function formatNormalizerErrors(error: unknown) {
   const errors = formatValidationErrors(error)
 
-  if (errors.length === 1 && errors[0].message === "Invalid Product Research Packet") {
+  if (
+    errors.length === 1 &&
+    errors[0].message === "Invalid Product Research Packet"
+  ) {
     return [
       {
         path: "normalizer",
@@ -317,7 +340,7 @@ async function createHermesDraftIdempotently(
       duplicate: false,
     }
   } catch (error) {
-    if (packet.packet_version !== 2 || !hasPostgresUniqueViolation(error)) {
+    if (packet.packet_version === 1 || !hasPostgresUniqueViolation(error)) {
       throw error
     }
 
@@ -372,7 +395,7 @@ export async function createDraftFromHermesPacket(
   }
 
   const packet = parsedPacket.data
-  const isV2 = packet.packet_version === 2
+  const isV2 = packet.packet_version !== 1
 
   if (isV2) {
     const [existingDraft] = await draftModule.listAiProductDrafts({
@@ -631,7 +654,11 @@ export function filterDrafts(
       draft.source_agent,
       getRecord(draft.product_input).product_name,
       getRecord(getRecord(draft.normalized_draft).target_product).product_title,
-    ].some((value) => String(value || "").toLowerCase().includes(q))
+    ].some((value) =>
+      String(value || "")
+        .toLowerCase()
+        .includes(q)
+    )
   })
 }
 
@@ -659,7 +686,9 @@ export function parseAiProductDraftOrder(value: unknown): AiProductDraftOrder {
     | AiProductDraftOrderField
     | string
 
-  if (!AI_PRODUCT_DRAFT_ORDER_FIELDS.includes(field as AiProductDraftOrderField)) {
+  if (
+    !AI_PRODUCT_DRAFT_ORDER_FIELDS.includes(field as AiProductDraftOrderField)
+  ) {
     throw new Error(`Unsupported AI product draft order: ${field}`)
   }
 
@@ -673,7 +702,8 @@ function getDraftSortValue(
   if (field === "product_name") {
     return String(
       getRecord(draft.product_input).product_name ||
-        getRecord(getRecord(draft.normalized_draft).target_product).product_title ||
+        getRecord(getRecord(draft.normalized_draft).target_product)
+          .product_title ||
         draft.product_handle ||
         draft.id ||
         ""
@@ -707,7 +737,9 @@ export function sortAiProductDrafts(
         : String(leftValue).localeCompare(String(rightValue))
     const directed = order.descending ? -comparison : comparison
 
-    return directed || String(left.id || "").localeCompare(String(right.id || ""))
+    return (
+      directed || String(left.id || "").localeCompare(String(right.id || ""))
+    )
   })
 }
 

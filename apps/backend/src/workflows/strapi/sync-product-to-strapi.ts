@@ -18,6 +18,7 @@ const syncProductToStrapiStep = createStep(
     const strapiModuleService: StrapiModuleService =
       container.resolve(STRAPI_MODULE);
 
+    if (product.metadata?.ai_product_draft_id) return new StepResponse(null);
     await strapiModuleService.createProductDescription(product);
 
     return new StepResponse(null, product.id);
@@ -43,7 +44,7 @@ export const syncProductToStrapiWorkflow = createWorkflow(
     // @ts-ignore
     const { data: products } = useQueryGraphStep({
       entity: "product",
-      fields: ["id", "title", "handle"],
+      fields: ["id", "title", "handle", "metadata"],
       filters: {
         id: input.id,
       },

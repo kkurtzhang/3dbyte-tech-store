@@ -231,6 +231,9 @@ export type AdminSupportTicketMessageResponse = {
 };
 
 export type AdminAiProductDraft = {
+  quality?: { can_approve: boolean; product_kind: string; blockers: string[]; warnings: string[]; supported_facts: number; required_facts: number; supported_content_fields: number; content_fields: number; exact_sources: number };
+  review_hash?: string;
+  review_current?: boolean;
   id: string;
   status: string;
   packet_version?: number | null;
@@ -290,6 +293,8 @@ export type AdminAiProductDraftChange = {
     source_url?: string;
     source_type?: string;
     confidence?: number;
+    warning?: string;
+    evidence_excerpt?: string;
     value?: unknown;
   } | null;
 };
@@ -337,6 +342,8 @@ export type AdminAiProductDraftRejectParams = {
 };
 
 export type AdminAiProductDraftApproveParams = {
+  review_acknowledged: boolean;
+  review_hash?: string;
   notes?: string;
   selected_change_paths: string[];
   import_targets: AdminAiProductDraftImportTargets;

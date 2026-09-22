@@ -34,6 +34,28 @@ export const getAiProductDraftErrorMessage = (
 
 type BadgeColor = React.ComponentProps<typeof Badge>["color"]
 
+export const getAiProductDraftNextStep = (
+  draft: Pick<AdminAiProductDraft, "status" | "quality" | "review_current">
+) => {
+  if (draft.status === "imported")
+    return "Import completed. Audit historical research separately before publishing the product or CMS content."
+  if (draft.status === "approved")
+    return draft.review_current
+      ? "This draft is approved and ready to import."
+      : "Import is blocked: the research approval is missing or outdated. If no import has started, reject this approval, replace the research and review again."
+  if (!draft.quality?.can_approve)
+    return "Obtain fresh, exact-product v3 research and resolve the quality blockers below before approval."
+  if (draft.status === "needs_resolution")
+    return "Choose the matching product or confirm that this should create a separate product."
+  if (draft.status === "needs_review")
+    return "Verify the source evidence, copy and proposed changes, then acknowledge the review before approval."
+  return `This draft is ${draft.status}.`
+}
+
+export const getAiProductDraftQualityLabel = (
+  draft: Pick<AdminAiProductDraft, "quality">
+) => (draft.quality?.can_approve ? "Ready for review" : "Research required")
+
 export const formatAiProductDraftDate = (
   value?: string | Date | null
 ): string => {
@@ -114,7 +136,11 @@ export const downloadAiProductDraftExport = (
 export const getAiProductDraftDisplayName = (
   draft: Pick<
     AdminAiProductDraft,
-    "id" | "normalized_draft" | "product_handle" | "product_id" | "product_input"
+    | "id"
+    | "normalized_draft"
+    | "product_handle"
+    | "product_id"
+    | "product_input"
   >
 ): string => {
   const normalizedTarget = asRecord(
@@ -146,15 +172,12 @@ export const getAiProductDraftActionAvailability = (status: string) => ({
 export const getAiProductDraftReviewIssues = (
   draft: Pick<AdminAiProductDraft, "validation_errors" | "warnings">
 ): string[] => {
-  const warnings = (draft.warnings || [])
-    .map(asTrimmedString)
-    .filter(Boolean)
+  const warnings = (draft.warnings || []).map(asTrimmedString).filter(Boolean)
   const seenMessages = new Set(warnings)
   const validationIssues = (draft.validation_errors || [])
     .map((value) => {
       const entry = asRecord(value)
-      const message =
-        asTrimmedString(entry.message) || asTrimmedString(value)
+      const message = asTrimmedString(entry.message) || asTrimmedString(value)
       const path = asTrimmedString(entry.path)
 
       if (!message || seenMessages.has(message)) {

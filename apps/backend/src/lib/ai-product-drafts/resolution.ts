@@ -1,9 +1,7 @@
 import { createHash } from "node:crypto"
 
 export type AiProductDraftOperation = "create" | "enrich"
-export type AiProductDraftRequestedOperation =
-  | AiProductDraftOperation
-  | "auto"
+export type AiProductDraftRequestedOperation = AiProductDraftOperation | "auto"
 export type AiProductDraftResolutionStatus =
   | "resolved"
   | "needs_resolution"
@@ -42,6 +40,8 @@ export type AiProductDraftClaimEvidence = {
   source_url: string
   source_type: string
   confidence: number
+  warning?: string
+  evidence_excerpt?: string
 }
 
 export type AiProductDraftChange = {
@@ -98,7 +98,9 @@ const getPathValue = (value: unknown, path: string): unknown =>
     return asRecord(current)[segment]
   }, value)
 
-const normalizeEvidence = (value: unknown): AiProductDraftClaimEvidence | null => {
+const normalizeEvidence = (
+  value: unknown
+): AiProductDraftClaimEvidence | null => {
   const record = asRecord(value)
   const claimPath = asString(record.claim_path)
   const sourceUrl = asString(record.source_url)
@@ -120,6 +122,8 @@ const normalizeEvidence = (value: unknown): AiProductDraftClaimEvidence | null =
     source_url: sourceUrl,
     source_type: sourceType,
     confidence,
+    warning: asString(record.warning),
+    evidence_excerpt: asString(record.evidence_excerpt),
   }
 }
 
@@ -229,7 +233,10 @@ export function buildAiProductDraftChangeSet({
     const currentValue = getPathValue(currentState, evidence.claim_path)
     const proposedValue = getPathValue(proposedState, evidence.claim_path)
 
-    if (proposedValue === undefined || valuesEqual(currentValue, proposedValue)) {
+    if (
+      proposedValue === undefined ||
+      valuesEqual(currentValue, proposedValue)
+    ) {
       return []
     }
 
@@ -241,7 +248,8 @@ export function buildAiProductDraftChangeSet({
         current_value: currentValue,
         proposed_value: proposedValue,
         disposition: missing ? ("missing" as const) : ("conflict" as const),
-        default_selected: missing,
+        default_selected:
+          missing && evidence.confidence >= 0.8 && !evidence.warning,
         evidence,
       },
     ]

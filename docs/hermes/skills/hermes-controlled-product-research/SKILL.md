@@ -17,6 +17,8 @@ Gather source evidence with approved Hermes research tools before any product dr
 ## Required Behavior
 
 - Capture URL, title, source type, retrieval timestamp, and notes for every source.
+- Give every source a unique `id` and a `product_match` of `exact`, `family`, or `background`. Only exact-product sources can support approval.
+- Verify the exact variant, part number, dimensions and model year. Never call a reseller page `official_product_page` merely because its title says official.
 - Capture manufacturer part number and GTIN only when an official source states them.
 - Capture supplier SKU only from the identified supplier page.
 - Prefer official manufacturer sources over reseller summaries.
@@ -38,6 +40,8 @@ Return JSON:
   },
   "sources": [
     {
+      "id": "source-1",
+      "product_match": "background",
       "url": "",
       "source_type": "manufacturer_official",
       "title": "",

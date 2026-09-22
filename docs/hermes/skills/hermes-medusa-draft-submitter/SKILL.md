@@ -1,6 +1,6 @@
 # hermes-medusa-draft-submitter
 
-Use this skill only after `hermes-packet-builder` has produced a locally valid Product Research Packet v2.
+Use this skill only after `hermes-packet-builder` has produced a locally valid Product Research Packet v3.
 
 ## Purpose
 
@@ -11,7 +11,7 @@ Submit validated packets to Medusa draft intake so an admin can review them.
 - Method: `POST`
 - Path: `/integrations/hermes/product-drafts`
 - Header: `x-3db-hermes-product-draft-token`
-- Body: Product Research Packet v2 JSON
+- Body: Product Research Packet v3 JSON
 - Transport: configured Medusa API origin over HTTPS
 
 ## Required Behavior

@@ -56,14 +56,14 @@
     "ioredis": "5.8.2",
     "meilisearch": "^0.54.0",
     "node-cron": "^4.2.1",
-    "nodemailer": "9.0.1",
+    "nodemailer": "9.1.1",
     "react-hook-form": "^7.61.1",
     "react-router-dom": "6.30.3",
     "resend": "^6.12.3"
   },
   "devDependencies": {
     "@3dbyte-tech-store/shared-config": "workspace:*",
-    "@faker-js/faker": "^10.1.0",
+    "@faker-js/faker": "^10.5.0",
     "@medusajs/test-utils": "2.15.5",
     "@swc/core": "1.15.6",
     "@swc/jest": "^0.2.36",

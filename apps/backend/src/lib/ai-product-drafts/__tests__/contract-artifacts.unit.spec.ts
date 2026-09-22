@@ -6,6 +6,36 @@ import { ProductResearchPacketSchema } from "../schemas"
 const repoRoot = path.resolve(__dirname, "../../../../../..")
 
 describe("Hermes product draft contract artifacts", () => {
+  it("publishes a typed, quality-valid v3 hotend fixture", () => {
+    const fixture = JSON.parse(
+      readFileSync(
+        path.join(
+          repoRoot,
+          "docs/hermes/fixtures/product-research-packet.v3.example.json"
+        ),
+        "utf8"
+      )
+    )
+    const packet = ProductResearchPacketSchema.parse(fixture)
+    expect(packet.packet_version).toBe(3)
+    const { normalizeV3 } = require("../normalizer-v3")
+    expect(normalizeV3(packet).quality.can_approve).toBe(true)
+    const schema = JSON.parse(
+      readFileSync(
+        path.join(
+          repoRoot,
+          "docs/hermes/product-research-packet.v3.schema.json"
+        ),
+        "utf8"
+      )
+    )
+    expect(schema.required).toEqual(
+      expect.arrayContaining(["classification", "facts", "content_evidence"])
+    )
+    expect(schema.properties.classification.properties.kind.enum).toContain(
+      "hotend"
+    )
+  })
   it("keeps the canonical Hermes packet fixture valid", () => {
     const fixture = JSON.parse(
       readFileSync(
@@ -45,17 +75,25 @@ describe("Hermes product draft contract artifacts", () => {
   it("publishes a JSON Schema contract for Hermes native skills", () => {
     const schema = JSON.parse(
       readFileSync(
-        path.join(repoRoot, "docs/hermes/product-research-packet.v1.schema.json"),
+        path.join(
+          repoRoot,
+          "docs/hermes/product-research-packet.v1.schema.json"
+        ),
         "utf8"
       )
     )
 
-    expect(schema.$id).toBe("https://3dbyte.tech/schemas/hermes/product-research-packet.v1.json")
+    expect(schema.$id).toBe(
+      "https://3dbyte.tech/schemas/hermes/product-research-packet.v1.json"
+    )
     expect(schema.properties.packet_version.const).toBe(1)
 
     const v2Schema = JSON.parse(
       readFileSync(
-        path.join(repoRoot, "docs/hermes/product-research-packet.v2.schema.json"),
+        path.join(
+          repoRoot,
+          "docs/hermes/product-research-packet.v2.schema.json"
+        ),
         "utf8"
       )
     )
@@ -105,7 +143,7 @@ describe("Hermes product draft contract artifacts", () => {
     expect(submitter).not.toContain("POST /admin/ai-product-drafts")
     expect(submitter).toContain("x-3db-hermes-product-draft-token")
     expect(submitter).toContain("Never call Medusa product update routes")
-    expect(submitter).toContain("Product Research Packet v2")
+    expect(submitter).toContain("Product Research Packet v3")
     expect(submitter).toContain("request_id")
     expect(submitter).toContain("needs_resolution")
 
@@ -113,7 +151,7 @@ describe("Hermes product draft contract artifacts", () => {
       path.join(repoRoot, "docs/hermes/skills/hermes-packet-builder/SKILL.md"),
       "utf8"
     )
-    expect(packetBuilder).toContain("product-research-packet.v2.schema.json")
+    expect(packetBuilder).toContain("product-research-packet.v3.schema.json")
     expect(packetBuilder).toContain('"requested_operation": "auto"')
     expect(packetBuilder).toContain("Do not invent")
   })

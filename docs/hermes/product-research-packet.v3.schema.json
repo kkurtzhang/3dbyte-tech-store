@@ -1,0 +1,861 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "packet_version": {
+      "type": "number",
+      "const": 3
+    },
+    "source_agent": {
+      "type": "string",
+      "const": "hermes"
+    },
+    "product_id": {
+      "default": "",
+      "type": "string",
+      "maxLength": 120
+    },
+    "product_handle": {
+      "default": "",
+      "type": "string",
+      "maxLength": 200
+    },
+    "product_input": {
+      "type": "object",
+      "properties": {
+        "brand": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "product_name": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "colour": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "diameter_mm": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "spool_weight_g": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "supplier_url": {
+          "type": "string"
+        },
+        "manufacturer_part_number": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "gtin": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "supplier_sku": {
+          "type": "string",
+          "maxLength": 120
+        }
+      },
+      "required": [
+        "brand",
+        "product_name",
+        "colour",
+        "diameter_mm",
+        "spool_weight_g",
+        "supplier_url",
+        "manufacturer_part_number",
+        "gtin",
+        "supplier_sku"
+      ],
+      "additionalProperties": false
+    },
+    "source_summary": {
+      "type": "object",
+      "properties": {
+        "official_product_page": {
+          "type": "string"
+        },
+        "official_tds": {
+          "type": "string"
+        },
+        "official_sds": {
+          "type": "string"
+        },
+        "trusted_supplier_pages": {
+          "maxItems": 10,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "official_product_page",
+        "official_tds",
+        "official_sds",
+        "trusted_supplier_pages"
+      ],
+      "additionalProperties": false
+    },
+    "draft_content": {
+      "type": "object",
+      "properties": {
+        "short_description": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "feature_bullets": {
+          "maxItems": 8,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 180
+          }
+        },
+        "seo_title": {
+          "type": "string",
+          "maxLength": 70
+        },
+        "seo_description": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "ai_search_keywords": {
+          "maxItems": 30,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 60
+          }
+        }
+      },
+      "required": [
+        "short_description",
+        "feature_bullets",
+        "seo_title",
+        "seo_description",
+        "ai_search_keywords"
+      ],
+      "additionalProperties": false
+    },
+    "related_content_suggestions": {
+      "maxItems": 20,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "handle": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "required": [
+          "handle",
+          "reason",
+          "confidence"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "sources": {
+      "maxItems": 20,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "source_type": {
+            "type": "string",
+            "enum": [
+              "manufacturer_official",
+              "official_product_page",
+              "official_tds",
+              "official_sds",
+              "official_manual",
+              "trusted_supplier",
+              "supplier_product_page",
+              "other"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "retrieved_at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "product_match": {
+            "type": "string",
+            "enum": [
+              "exact",
+              "family",
+              "background"
+            ]
+          }
+        },
+        "required": [
+          "url",
+          "source_type",
+          "title",
+          "retrieved_at",
+          "notes",
+          "id",
+          "product_match"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "warnings": {
+      "maxItems": 30,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 400
+      }
+    },
+    "request_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "requested_operation": {
+      "type": "string",
+      "enum": [
+        "auto",
+        "create",
+        "enrich"
+      ]
+    },
+    "classification": {
+      "type": "object",
+      "properties": {
+        "source_ids": {
+          "maxItems": 10,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        "evidence_excerpt": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "warning": {
+          "default": "",
+          "type": "string",
+          "maxLength": 400
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "filament",
+            "hotend",
+            "nozzle",
+            "build_plate",
+            "extruder",
+            "sensor",
+            "controller",
+            "motor",
+            "fan",
+            "power_supply",
+            "tool",
+            "hardware",
+            "accessory"
+          ]
+        }
+      },
+      "required": [
+        "source_ids",
+        "evidence_excerpt",
+        "confidence",
+        "warning",
+        "kind"
+      ],
+      "additionalProperties": false
+    },
+    "facts": {
+      "maxItems": 40,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source_ids": {
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            }
+          },
+          "evidence_excerpt": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "warning": {
+            "default": "",
+            "type": "string",
+            "maxLength": 400
+          },
+          "field": {
+            "type": "string",
+            "enum": [
+              "material",
+              "diameter_mm",
+              "nozzle_diameter_mm",
+              "recommended_nozzle_temp_c",
+              "recommended_bed_temp_c",
+              "max_temperature_c",
+              "requires_enclosure",
+              "requires_hardened_nozzle",
+              "drying_recommended",
+              "compatible_printers",
+              "compatible_build_surfaces",
+              "voltage_v",
+              "current_a",
+              "power_w",
+              "connector_type",
+              "dimensions_mm",
+              "thread"
+            ]
+          },
+          "applicability": {
+            "type": "string",
+            "enum": [
+              "known",
+              "unknown",
+              "not_applicable"
+            ]
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "min": {
+                    "type": "number",
+                    "minimum": -100,
+                    "maximum": 1000
+                  },
+                  "max": {
+                    "type": "number",
+                    "minimum": -100,
+                    "maximum": 1000
+                  }
+                },
+                "required": [
+                  "min",
+                  "max"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "source_ids",
+          "evidence_excerpt",
+          "confidence",
+          "warning",
+          "field",
+          "applicability",
+          "value"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "applicability": {
+                  "const": "known"
+                }
+              }
+            },
+            "then": {
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "material"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "diameter_mm"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "maximum": 10
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "nozzle_diameter_mm"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "maximum": 10
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "recommended_nozzle_temp_c"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "type": "object",
+                        "properties": {
+                          "min": {
+                            "type": "number",
+                            "minimum": -100,
+                            "maximum": 1000
+                          },
+                          "max": {
+                            "type": "number",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "required": [
+                          "min",
+                          "max"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "recommended_bed_temp_c"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "type": "object",
+                        "properties": {
+                          "min": {
+                            "type": "number",
+                            "minimum": -100,
+                            "maximum": 1000
+                          },
+                          "max": {
+                            "type": "number",
+                            "minimum": -100,
+                            "maximum": 1000
+                          }
+                        },
+                        "required": [
+                          "min",
+                          "max"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "max_temperature_c"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "maximum": 1500
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "requires_enclosure"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "requires_hardened_nozzle"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "drying_recommended"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "compatible_printers"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "minItems": 1,
+                        "maxItems": 30,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 160
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "compatible_build_surfaces"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "minItems": 1,
+                        "maxItems": 30,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 160
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "voltage_v"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "maximum": 1000
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "current_a"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "maximum": 1000
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "power_w"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "maximum": 100000
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "connector_type"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "dimensions_mm"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "thread"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "else": {
+              "properties": {
+                "value": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "content_evidence": {
+      "maxItems": 41,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source_ids": {
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            }
+          },
+          "evidence_excerpt": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "warning": {
+            "default": "",
+            "type": "string",
+            "maxLength": 400
+          },
+          "field": {
+            "type": "string",
+            "pattern": "^(short_description|seo_title|seo_description|feature_bullets\\.\\d{1,2}|ai_search_keywords\\.\\d{1,2})$"
+          }
+        },
+        "required": [
+          "source_ids",
+          "evidence_excerpt",
+          "confidence",
+          "warning",
+          "field"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "packet_version",
+    "source_agent",
+    "product_id",
+    "product_handle",
+    "product_input",
+    "source_summary",
+    "draft_content",
+    "related_content_suggestions",
+    "sources",
+    "warnings",
+    "request_id",
+    "requested_operation",
+    "classification",
+    "facts",
+    "content_evidence"
+  ],
+  "additionalProperties": false,
+  "$id": "https://3dbyte.tech/schemas/hermes/product-research-packet.v3.json",
+  "description": "Product Research Packet v3. Backend validation additionally enforces field-specific value types, range ordering, category applicability, source references and quality gates. Use the v3 runbook before submitting."
+}

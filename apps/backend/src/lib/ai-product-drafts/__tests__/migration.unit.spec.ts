@@ -82,6 +82,26 @@ const v2Packet = {
 }
 
 describe("AI product draft data migration", () => {
+  it("leaves v3 and newer research outside the legacy repair plan", () => {
+    for (const version of [3, 4]) {
+      for (const packet_version of [version, undefined]) {
+        expect(
+          prepareAiProductDraftMigration({
+            id: "aipd_modern",
+            status: "needs_resolution",
+            packet_version,
+            raw_packet: { packet_version: version },
+            normalized_draft: { schema_version: 1 },
+          })
+        ).toEqual({
+          kind: "noop",
+          draft_id: "aipd_modern",
+          reason: "not_legacy",
+        })
+      }
+    }
+  })
+
   it("repairs the invalid target selector on failed v2 create packets without mutating raw evidence", () => {
     const rawPacket = structuredClone(v2Packet)
     const prepared = prepareAiProductDraftMigration({
@@ -106,9 +126,7 @@ describe("AI product draft data migration", () => {
         product_handle: "",
       })
     )
-    expect(rawPacket.product_handle).toBe(
-      "cnc-kitchen-soldering-tips-v2"
-    )
+    expect(rawPacket.product_handle).toBe("cnc-kitchen-soldering-tips-v2")
   })
 
   it("keeps the oldest exact draft and marks only the newer copy for cleanup", () => {
@@ -129,9 +147,7 @@ describe("AI product draft data migration", () => {
       },
     ])
 
-    expect(plan.repairs.map((entry) => entry.draft_id)).toEqual([
-      "aipd_older",
-    ])
+    expect(plan.repairs.map((entry) => entry.draft_id)).toEqual(["aipd_older"])
     expect(plan.duplicates).toEqual([
       expect.objectContaining({
         draft_id: "aipd_newer",

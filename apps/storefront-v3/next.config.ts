@@ -18,6 +18,10 @@ const sourceBackedProductImageHostnames =
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // Next 16.3's CLI checker needs an explicit production scope; Jest uses tsconfig.json.
+  typescript: {
+    tsconfigPath: "tsconfig.build.json",
+  },
   outputFileTracingRoot: path.resolve(dirname, "../.."),
   pageExtensions: ["js", "jsx", "mdx", "ts", "tsx"],
   transpilePackages: [

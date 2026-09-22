@@ -6,6 +6,7 @@ import {
 
 import { STRAPI_MODULE } from "../../modules/strapi"
 import { mergeAiProductDraftMetadata } from "./metadata"
+import { assertReviewedAiProductDraft } from "./quality"
 import { buildAiProductSnapshotHash } from "./resolution"
 import {
   InternalAiProductDraftSchema,
@@ -78,6 +79,9 @@ type ImportableDraft = {
   product_handle?: string | null
   product_input?: unknown
   normalized_draft?: unknown
+  raw_packet?: unknown
+  proposed_changes?: unknown
+  snapshot_hash?: unknown
   approved_changes?: unknown
   approved_import_targets?: unknown
   approved_snapshot_hash?: string | null
@@ -87,9 +91,7 @@ type ImportableDraft = {
 type ImportInput = {
   container: ImportContainer
   draft: ImportableDraft
-  onProgress?: (
-    progress: AiProductDraftImportProgress
-  ) => Promise<void> | void
+  onProgress?: (progress: AiProductDraftImportProgress) => Promise<void> | void
 }
 
 export type AiProductDraftImportSummary = {
@@ -241,7 +243,9 @@ function assertProductMatchesDraft(
     normalizedDraft.target_product.product_handle || draft.product_handle
 
   if (targetProductId && targetProductId !== productId) {
-    throw new Error("AI product draft product_id does not match resolved product")
+    throw new Error(
+      "AI product draft product_id does not match resolved product"
+    )
   }
 
   if (targetProductHandle && targetProductHandle !== productHandle) {
@@ -270,10 +274,7 @@ function setImmutablePath(
   if (!segments.length) return root
 
   const [segment, ...rest] = segments
-  if (
-    !/^[a-zA-Z0-9_]+$/.test(segment) ||
-    UNSAFE_PATH_SEGMENTS.has(segment)
-  ) {
+  if (!/^[a-zA-Z0-9_]+$/.test(segment) || UNSAFE_PATH_SEGMENTS.has(segment)) {
     throw new Error(`Unsafe approved metadata path segment: ${segment}`)
   }
 
@@ -446,14 +447,15 @@ async function createProductShell(
               manage_inventory: false,
             },
           ],
-          ...(Object.keys(metadata).length ? { metadata } : {}),
+          metadata: { ...metadata, ai_product_draft_id: draft.id },
         },
       ],
     },
   })
-  const product = (Array.isArray(result) ? result[0] : null) as
-    | Record<string, unknown>
-    | null
+  const product = (Array.isArray(result) ? result[0] : null) as Record<
+    string,
+    unknown
+  > | null
 
   if (!product || !getString(product.id)) {
     throw new Error("Medusa did not return the created draft product")
@@ -490,6 +492,7 @@ export async function importAiProductDraft({
   }
 
   const operation = getOperation(draft)
+  assertReviewedAiProductDraft(draft)
   const normalizedDraft = InternalAiProductDraftSchema.parse(
     draft.normalized_draft
   )
@@ -539,8 +542,7 @@ export async function importAiProductDraft({
   assertApprovedSnapshotIsCurrent(product, draft, operation, progress)
 
   const productId = getString(product.id)
-  const productHandle =
-    getString(product.handle) || draft.product_handle || ""
+  const productHandle = getString(product.handle) || draft.product_handle || ""
   const productTitle =
     getString(product.title) ||
     normalizedDraft.target_product.product_title ||
@@ -649,8 +651,7 @@ export async function importAiProductDraft({
     ...(isComplete(progress, "strapi_description_draft")
       ? (["strapi_description_draft"] as const)
       : []),
-    ...(isComplete(progress, "product_document_drafts") &&
-    documentDrafts.length
+    ...(isComplete(progress, "product_document_drafts") && documentDrafts.length
       ? (["product_document_drafts"] as const)
       : []),
   ]
