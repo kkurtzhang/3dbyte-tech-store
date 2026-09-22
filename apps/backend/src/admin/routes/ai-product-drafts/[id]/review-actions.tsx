@@ -159,7 +159,7 @@ function DraftChangeReview({
                           )}
                         </a>
                         {typeof change.evidence?.confidence === "number"
-                          ? ` · ${Math.round(change.evidence.confidence * 100)}% confidence`
+                          ? ` · ${Math.round(change.evidence.confidence * 100)}% researcher estimate`
                           : ""}
                       </Text>
                     ) : null}
@@ -218,9 +218,7 @@ export function DraftReviewActions({ draft }: { draft: AdminAiProductDraft }) {
       new Set(
         reviewedChanges
           .filter((change) =>
-            draft.approved_changes
-              ? true
-              : change.default_selected === true
+            draft.approved_changes ? true : change.default_selected === true
           )
           .map((change) => change.path)
       )
@@ -340,7 +338,7 @@ export function DraftReviewActions({ draft }: { draft: AdminAiProductDraft }) {
       {draft.status !== "needs_resolution" ? (
         <DraftChangeReview
           changes={changes}
-          disabled={!actionAvailability.canApprove}
+          disabled={!actionAvailability.canApprove || !draft.quality?.can_approve}
           importTargets={importTargets}
           onImportTargetChange={setImportTarget}
           onToggleChange={toggleChange}
@@ -357,7 +355,10 @@ export function DraftReviewActions({ draft }: { draft: AdminAiProductDraft }) {
           }
         />
         {actionError ? (
-          <div className="mx-6 mt-4 rounded-lg border border-ui-border-error bg-ui-bg-subtle p-3" role="alert">
+          <div
+            className="mx-6 mt-4 rounded-lg border border-ui-border-error bg-ui-bg-subtle p-3"
+            role="alert"
+          >
             <Text weight="plus">The action could not be completed.</Text>
             <Text className="text-ui-fg-subtle" size="small">
               {actionError}
@@ -366,17 +367,27 @@ export function DraftReviewActions({ draft }: { draft: AdminAiProductDraft }) {
         ) : null}
         {actionAvailability.canApprove ? (
           <label className="flex items-start gap-3 px-6 pt-4 text-sm">
-            <Checkbox aria-label="I verified the source evidence" checked={reviewAcknowledged}
+            <Checkbox
+              aria-label="I verified the source evidence"
+              checked={reviewAcknowledged}
               disabled={!draft.quality?.can_approve}
-              onCheckedChange={(checked) => setReviewAcknowledged(checked === true)} />
-            <span>I verified the product and variant, source excerpts, specifications, copy, and documents. Evidence coverage is not a guarantee of accuracy.</span>
+              onCheckedChange={(checked) =>
+                setReviewAcknowledged(checked === true)
+              }
+            />
+            <span>
+              I verified the product and variant, source excerpts,
+              specifications, copy, and documents. Evidence coverage is not a
+              guarantee of accuracy.
+            </span>
           </label>
         ) : null}
         <div className="flex flex-wrap gap-3 px-6 py-4">
           <Button
             disabled={
               !actionAvailability.canApprove ||
-              !draft.quality?.can_approve || !reviewAcknowledged ||
+              !draft.quality?.can_approve ||
+              !reviewAcknowledged ||
               noSelectedWork ||
               isRejecting ||
               isImporting
@@ -389,7 +400,10 @@ export function DraftReviewActions({ draft }: { draft: AdminAiProductDraft }) {
           </Button>
           <Button
             disabled={
-              !actionAvailability.canImport || !draft.review_current || isApproving || isRejecting
+              !actionAvailability.canImport ||
+              !draft.review_current ||
+              isApproving ||
+              isRejecting
             }
             isLoading={isImporting}
             size="small"
@@ -417,9 +431,7 @@ export function DraftReviewActions({ draft }: { draft: AdminAiProductDraft }) {
             />
             <Button
               className="w-fit"
-              disabled={
-                !rejectionReason.trim() || isApproving || isImporting
-              }
+              disabled={!rejectionReason.trim() || isApproving || isImporting}
               isLoading={isRejecting}
               size="small"
               variant="danger"

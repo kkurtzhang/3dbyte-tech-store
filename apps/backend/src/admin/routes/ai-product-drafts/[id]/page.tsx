@@ -28,6 +28,7 @@ import {
   formatAiProductDraftDate,
   getAiProductDraftActionAvailability,
   getAiProductDraftDisplayName,
+  getAiProductDraftNextStep,
   getAiProductDraftErrorMessage,
   getAiProductDraftReviewIssues,
   getAiProductDraftStatusBadgeColor,
@@ -68,7 +69,10 @@ const AiProductDraftDetailPage = () => {
     return (
       <Container>
         <Header title="AI Product Draft" subtitle={`Draft ${id}`} />
-        <div className="m-6 rounded-lg border border-ui-border-error bg-ui-bg-subtle p-4" role="alert">
+        <div
+          className="m-6 rounded-lg border border-ui-border-error bg-ui-bg-subtle p-4"
+          role="alert"
+        >
           <Text weight="plus">Could not load this draft.</Text>
           <Text className="text-ui-fg-subtle" size="small">
             {getAiProductDraftErrorMessage(
@@ -76,7 +80,12 @@ const AiProductDraftDetailPage = () => {
               "Refresh the page or return to the draft queue."
             )}
           </Text>
-          <Button className="mt-3" onClick={() => refetch()} size="small" variant="secondary">
+          <Button
+            className="mt-3"
+            onClick={() => refetch()}
+            size="small"
+            variant="secondary"
+          >
             Try again
           </Button>
         </div>
@@ -159,7 +168,9 @@ const AiProductDraftDetailPage = () => {
               Research quality
             </Text>
             <Text>
-              {draft.quality?.can_approve ? "Ready for review" : "Research required"}
+              {draft.quality?.can_approve
+                ? "Ready for review"
+                : "Research required"}
             </Text>
           </div>
           <div>
@@ -180,7 +191,7 @@ const AiProductDraftDetailPage = () => {
 
       <DraftStateBanner draft={draft} />
       <DraftIdentityResolution draft={draft} />
-      <DraftReviewIssues issues={reviewIssues} />
+      {reviewIssues.length ? <DraftReviewIssues issues={reviewIssues} /> : null}
       <DraftQualityPanel draft={draft} />
       <DraftReviewActions key={draft.review_hash || draft.id} draft={draft} />
       <DraftImportProgress draft={draft} />
@@ -308,18 +319,7 @@ function DraftEventHistory({ events }: { events: AdminAiProductDraftEvent[] }) {
 }
 
 function DraftStateBanner({ draft }: { draft: AdminAiProductDraft }) {
-  const message =
-    draft.status === "needs_resolution"
-      ? "Choose the matching product or confirm that this should create a separate product."
-      : draft.status === "needs_review"
-        ? "Review the proposed changes and destinations before approval."
-        : draft.status === "approved"
-          ? "This draft is approved and ready to import."
-          : draft.status === "validation_failed"
-            ? "This packet could not enter review. Check the warnings and audit event for the exact reason."
-            : draft.status === "imported"
-              ? "Import completed. The audit trail and destination progress are shown below."
-              : `This draft is ${labelizeAiProductDraftValue(draft.status).toLowerCase()}.`
+  const message = getAiProductDraftNextStep(draft)
 
   return (
     <Container>
@@ -342,7 +342,10 @@ function DraftStateBanner({ draft }: { draft: AdminAiProductDraft }) {
 }
 
 function DraftImportProgress({ draft }: { draft: AdminAiProductDraft }) {
-  if (!draft.import_progress && !["approved", "imported"].includes(draft.status)) {
+  if (
+    !draft.import_progress &&
+    !["approved", "imported"].includes(draft.status)
+  ) {
     return null
   }
 
@@ -366,7 +369,10 @@ function DraftImportProgress({ draft }: { draft: AdminAiProductDraft }) {
           const completed = entry.status === "completed"
 
           return (
-            <div className="border-ui-border-base rounded-lg border p-3" key={key}>
+            <div
+              className="border-ui-border-base rounded-lg border p-3"
+              key={key}
+            >
               <Text weight="plus">{label}</Text>
               <Badge color={completed ? "green" : "grey"} size="xsmall">
                 {completed ? "Completed" : "Not completed"}
@@ -445,7 +451,10 @@ function DraftIdentityResolution({ draft }: { draft: AdminAiProductDraft }) {
       />
       <div className="flex flex-col gap-3 px-6 py-4">
         {actionError ? (
-          <div className="rounded-lg border border-ui-border-error bg-ui-bg-subtle p-3" role="alert">
+          <div
+            className="rounded-lg border border-ui-border-error bg-ui-bg-subtle p-3"
+            role="alert"
+          >
             <Text>{actionError}</Text>
           </div>
         ) : null}
@@ -524,6 +533,5 @@ function DraftReviewIssues({ issues }: { issues: string[] }) {
     </Container>
   )
 }
-
 
 export default AiProductDraftDetailPage
