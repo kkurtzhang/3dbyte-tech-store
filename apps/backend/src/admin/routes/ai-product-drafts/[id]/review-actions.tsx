@@ -10,38 +10,24 @@ import {
   usePrompt,
 } from "@medusajs/ui"
 import { useState } from "react"
-import { Link, useParams } from "react-router-dom"
 
 import { Container } from "../../../components/container"
 import { Header } from "../../../components/header"
-import { JsonViewSection } from "../../../components/json-view-section"
 import {
-  useAiProductDraft,
   useApproveAiProductDraft,
   useImportAiProductDraft,
   useRejectAiProductDraft,
-  useResolveAiProductDraft,
 } from "../../../hooks/ai-product-drafts"
 import {
-  formatAiProductDraftDate,
   getAiProductDraftActionAvailability,
-  getAiProductDraftDisplayName,
   getAiProductDraftErrorMessage,
-  getAiProductDraftReviewIssues,
-  getAiProductDraftStatusBadgeColor,
   labelizeAiProductDraftValue,
 } from "../../../lib/ai-product-drafts"
 import type {
   AdminAiProductDraft,
   AdminAiProductDraftChange,
-  AdminAiProductDraftEvent,
   AdminAiProductDraftImportTargets,
 } from "../../../types"
-
-const asObject = (value: unknown): Record<string, unknown> =>
-  value && typeof value === "object" && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {}
 
 const formatReviewValue = (value: unknown) => {
   if (value === undefined) return "Not set"
@@ -338,7 +324,9 @@ export function DraftReviewActions({ draft }: { draft: AdminAiProductDraft }) {
       {draft.status !== "needs_resolution" ? (
         <DraftChangeReview
           changes={changes}
-          disabled={!actionAvailability.canApprove || !draft.quality?.can_approve}
+          disabled={
+            !actionAvailability.canApprove || !draft.quality?.can_approve
+          }
           importTargets={importTargets}
           onImportTargetChange={setImportTarget}
           onToggleChange={toggleChange}

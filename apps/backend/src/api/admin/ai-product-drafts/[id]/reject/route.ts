@@ -1,4 +1,5 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+import { withAiDraftLock } from "../../../../../lib/ai-product-drafts/locking"
 
 import { buildAiProductDraftEvent } from "../../../../../modules/ai-product-draft/lifecycle"
 import {
@@ -56,4 +57,3 @@ async function mutateDraft(req: MedusaRequest, res: MedusaResponse) {
 
   return res.status(200).json({ draft: updated })
 }
-import { withAiDraftLock } from "../../../../../lib/ai-product-drafts/locking"

@@ -1,4 +1,5 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+import { withAiDraftLock } from "../../../../../lib/ai-product-drafts/locking"
 import { assertReviewedAiProductDraft } from "../../../../../lib/ai-product-drafts/quality"
 
 import {
@@ -37,7 +38,8 @@ async function mutateDraft(req: MedusaRequest, res: MedusaResponse) {
     })
   } catch (error) {
     return res.status(409).json({
-      error: error instanceof Error ? error.message : "Draft cannot be imported",
+      error:
+        error instanceof Error ? error.message : "Draft cannot be imported",
     })
   }
 
@@ -131,4 +133,3 @@ async function mutateDraft(req: MedusaRequest, res: MedusaResponse) {
 
   return res.status(200).json({ draft: updated })
 }
-import { withAiDraftLock } from "../../../../../lib/ai-product-drafts/locking"

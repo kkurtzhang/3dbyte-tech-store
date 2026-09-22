@@ -37,7 +37,9 @@ function addEvidence(
   input: EvidenceInput
 ): boolean {
   if (!hasEvidence(input)) {
-    warnings.push(`${input.claim_path} has no source evidence and was not imported`)
+    warnings.push(
+      `${input.claim_path} has no source evidence and was not imported`
+    )
     return false
   }
 
@@ -64,12 +66,19 @@ export function normalizeProductResearchPacket(
   packet: ProductResearchPacket
 ): InternalAiProductDraft {
   if (packet.packet_version === 3) return normalizeV3(packet).draft
-  const warnings = [...new Set([
-    ...packet.warnings,
-    "Legacy research requires a sourced v3 packet before approval.",
-    ...Object.entries(packet.facts).flatMap(([field, fact]) => fact.warning ? [`${field}: ${fact.warning}`] : []),
-  ])]
-  const isHardware = /hotend|nozzle|build.?plate|sensor|motor|controller|power supply|extruder|cable|heater|thermistor/i.test(packet.product_input.product_name)
+  const warnings = [
+    ...new Set([
+      ...packet.warnings,
+      "Legacy research requires a sourced v3 packet before approval.",
+      ...Object.entries(packet.facts).flatMap(([field, fact]) =>
+        fact.warning ? [`${field}: ${fact.warning}`] : []
+      ),
+    ]),
+  ]
+  const isHardware =
+    /hotend|nozzle|build.?plate|sensor|motor|controller|power supply|extruder|cable|heater|thermistor/i.test(
+      packet.product_input.product_name
+    )
   const claimEvidence: EvidenceInput[] = []
   const metadataConfidences: number[] = []
   const threeDPrinting: NonNullable<
@@ -100,7 +109,8 @@ export function normalizeProductResearchPacket(
 
   const nozzleTemp = packet.facts.recommended_nozzle_temp_c
   if (
-    !isHardware && (nozzleTemp.min !== null || nozzleTemp.max !== null) &&
+    !isHardware &&
+    (nozzleTemp.min !== null || nozzleTemp.max !== null) &&
     addEvidence(claimEvidence, warnings, {
       claim_path: "metadata.three_d_printing.recommended_nozzle_temp_c",
       value: { min: nozzleTemp.min, max: nozzleTemp.max },
@@ -118,7 +128,8 @@ export function normalizeProductResearchPacket(
 
   const bedTemp = packet.facts.recommended_bed_temp_c
   if (
-    !isHardware && (bedTemp.min !== null || bedTemp.max !== null) &&
+    !isHardware &&
+    (bedTemp.min !== null || bedTemp.max !== null) &&
     addEvidence(claimEvidence, warnings, {
       claim_path: "metadata.three_d_printing.recommended_bed_temp_c",
       value: { min: bedTemp.min, max: bedTemp.max },
@@ -136,7 +147,8 @@ export function normalizeProductResearchPacket(
 
   const enclosure = packet.facts.requires_enclosure
   if (
-    !isHardware && enclosure.value !== null &&
+    !isHardware &&
+    enclosure.value !== null &&
     addEvidence(claimEvidence, warnings, {
       claim_path: "metadata.three_d_printing.requires_enclosure",
       value: enclosure.value,
@@ -151,7 +163,8 @@ export function normalizeProductResearchPacket(
 
   const drying = packet.facts.drying_recommended
   if (
-    !isHardware && drying.value !== null &&
+    !isHardware &&
+    drying.value !== null &&
     addEvidence(claimEvidence, warnings, {
       claim_path: "metadata.three_d_printing.drying_recommended",
       value: drying.value,
@@ -203,16 +216,22 @@ export function normalizeProductResearchPacket(
             ? ("safety_sheet" as const)
             : source.source_type === "official_tds"
               ? ("datasheet" as const)
-              : source.source_type === "official_manual" ? ("manual" as const) : ("other" as const),
+              : source.source_type === "official_manual"
+                ? ("manual" as const)
+                : ("other" as const),
         source_url: source.url,
-        source_kind:
-          ["manufacturer_official", "official_product_page"].includes(source.source_type)
-            ? ("official_product_page" as const)
-            : source.source_type === "official_sds"
-              ? ("official_safety_sheet" as const)
-              : source.source_type === "official_tds"
-                ? ("official_datasheet" as const)
-                : source.source_type === "official_manual" ? ("official_manual" as const) : ("supplier_product_page" as const),
+        source_kind: [
+          "manufacturer_official",
+          "official_product_page",
+        ].includes(source.source_type)
+          ? ("official_product_page" as const)
+          : source.source_type === "official_sds"
+            ? ("official_safety_sheet" as const)
+            : source.source_type === "official_tds"
+              ? ("official_datasheet" as const)
+              : source.source_type === "official_manual"
+                ? ("official_manual" as const)
+                : ("supplier_product_page" as const),
         source_label: source.title,
         source_checked_at: source.retrieved_at,
         search_keywords: documentSearchKeywords,
@@ -221,11 +240,7 @@ export function normalizeProductResearchPacket(
     claim_evidence: claimEvidence,
     warnings,
     confidence_summary: {
-      overall: average([
-        average(metadataConfidences),
-        contentConfidence,
-        0,
-      ]),
+      overall: average([average(metadataConfidences), contentConfidence, 0]),
       metadata: average(metadataConfidences),
       content: contentConfidence,
       documents: 0,
@@ -260,11 +275,15 @@ export async function normalizeProductResearchPacketForDraft(
   packet: ProductResearchPacket,
   options: ProductResearchNormalizationOptions = {}
 ): Promise<ProductResearchNormalizationResult> {
-  if (packet.packet_version === 3) return { draft: normalizeV3(packet).draft, normalizer: "deterministic:v3" }
+  if (packet.packet_version === 3)
+    return { draft: normalizeV3(packet).draft, normalizer: "deterministic:v3" }
   const provider = resolveAiProductDraftNormalizerProvider(options.env)
 
   if (provider === "deepseek") {
-    const result = await normalizeProductResearchPacketWithDeepSeek(packet, options)
+    const result = await normalizeProductResearchPacketWithDeepSeek(
+      packet,
+      options
+    )
 
     return {
       draft: result.draft,

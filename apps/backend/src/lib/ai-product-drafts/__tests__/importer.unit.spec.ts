@@ -16,8 +16,13 @@ import { reviewedFixture, normalizedFilamentDraft } from "./reviewed-fixture"
 
 const normalizedDraft = normalizedFilamentDraft
 
-const importReviewedDraft = (input: Parameters<typeof importAiProductDraft>[0]) =>
-  importAiProductDraft({ ...input, draft: reviewedFixture(input.draft) as never })
+const importReviewedDraft = (
+  input: Parameters<typeof importAiProductDraft>[0]
+) =>
+  importAiProductDraft({
+    ...input,
+    draft: reviewedFixture(input.draft) as never,
+  })
 
 describe("importAiProductDraft", () => {
   beforeEach(() => {
@@ -205,8 +210,7 @@ describe("importAiProductDraft", () => {
       onProgress,
     })
 
-    const createInput =
-      mockCreateProductsRun.mock.calls[0][0].input.products[0]
+    const createInput = mockCreateProductsRun.mock.calls[0][0].input.products[0]
     expect(createInput).toEqual(
       expect.objectContaining({
         title: "Example PETG",
@@ -434,7 +438,9 @@ describe("importAiProductDraft", () => {
 
     expect(mockCreateProductsRun).not.toHaveBeenCalled()
     expect(mockUpdateProductsRun).not.toHaveBeenCalled()
-    expect(strapiModule.upsertAiProductDescriptionDraft).toHaveBeenCalledTimes(1)
+    expect(strapiModule.upsertAiProductDescriptionDraft).toHaveBeenCalledTimes(
+      1
+    )
     expect(summary.product_id).toBe("prod_new")
   })
 })

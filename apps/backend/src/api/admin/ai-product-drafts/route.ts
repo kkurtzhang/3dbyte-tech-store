@@ -93,40 +93,52 @@ export async function DELETE(req: MedusaRequest, res: MedusaResponse) {
   }
 
   return withAiDraftLocks(req, ids, async () => {
-  // A replacement may have completed while cleanup was waiting for its locks.
-  const current = await draftModule.listAiProductDrafts(
-    { status: parsed.data.status },
-    { select: ["id", "status"], take: BULK_CLEANUP_LIMIT + 1 }
-  )
-  const currentIds = new Set(current.filter((draft) => draft.status === "validation_failed").map((draft) => draft.id))
-  if (currentIds.size !== ids.length || ids.some((id) => !currentIds.has(id))) {
-    return res.status(409).json({ error: "The validation-failed draft queue changed. Refresh the table and confirm cleanup again." })
-  }
-
-  const actorId = getAdminActorId(req)
-  await draftModule.createAiProductDraftEvents(
-    ids.map((draftId) =>
-      buildAiProductDraftEvent({
-        draft_id: draftId,
-        type: "cleanup_requested",
-        actor_type: "admin",
-        actor_id: actorId || null,
-        from_status: "validation_failed",
-        to_status: "validation_failed",
-        metadata: {
-          action: "soft_delete",
-          bulk: true,
-          expected_count: parsed.data.expected_count,
-        },
-      })
+    // A replacement may have completed while cleanup was waiting for its locks.
+    const current = await draftModule.listAiProductDrafts(
+      { status: parsed.data.status },
+      { select: ["id", "status"], take: BULK_CLEANUP_LIMIT + 1 }
     )
-  )
+    const currentIds = new Set(
+      current
+        .filter((draft) => draft.status === "validation_failed")
+        .map((draft) => draft.id)
+    )
+    if (
+      currentIds.size !== ids.length ||
+      ids.some((id) => !currentIds.has(id))
+    ) {
+      return res
+        .status(409)
+        .json({
+          error:
+            "The validation-failed draft queue changed. Refresh the table and confirm cleanup again.",
+        })
+    }
 
-  await draftModule.softDeleteAiProductDrafts(ids)
+    const actorId = getAdminActorId(req)
+    await draftModule.createAiProductDraftEvents(
+      ids.map((draftId) =>
+        buildAiProductDraftEvent({
+          draft_id: draftId,
+          type: "cleanup_requested",
+          actor_type: "admin",
+          actor_id: actorId || null,
+          from_status: "validation_failed",
+          to_status: "validation_failed",
+          metadata: {
+            action: "soft_delete",
+            bulk: true,
+            expected_count: parsed.data.expected_count,
+          },
+        })
+      )
+    )
 
-  return res.status(200).json({
-    count: ids.length,
-    deleted_ids: ids,
-  })
+    await draftModule.softDeleteAiProductDrafts(ids)
+
+    return res.status(200).json({
+      count: ids.length,
+      deleted_ids: ids,
+    })
   })
 }

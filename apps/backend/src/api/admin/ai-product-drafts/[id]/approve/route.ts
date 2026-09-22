@@ -1,5 +1,9 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { assessAiProductDraftQuality, draftReviewHash } from "../../../../../lib/ai-product-drafts/quality"
+import { withAiDraftLock } from "../../../../../lib/ai-product-drafts/locking"
+import {
+  assessAiProductDraftQuality,
+  draftReviewHash,
+} from "../../../../../lib/ai-product-drafts/quality"
 
 import {
   buildAiProductDraftEvent,
@@ -74,7 +78,9 @@ async function mutateDraft(req: MedusaRequest, res: MedusaResponse) {
   if (!draft) return
 
   if (draft.status !== "needs_review") {
-    return res.status(409).json({ error: "Only needs_review drafts can be approved" })
+    return res
+      .status(409)
+      .json({ error: "Only needs_review drafts can be approved" })
   }
 
   if (
@@ -90,11 +96,18 @@ async function mutateDraft(req: MedusaRequest, res: MedusaResponse) {
   const body = getRequestBody(req)
   const quality = assessAiProductDraftQuality(draft)
   if (!quality.can_approve) {
-    return res.status(409).json({ error: "Research required before approval", quality })
+    return res
+      .status(409)
+      .json({ error: "Research required before approval", quality })
   }
   const reviewHash = draftReviewHash(draft)
   if (body.review_acknowledged !== true || body.review_hash !== reviewHash) {
-    return res.status(409).json({ error: "Verify the source evidence and acknowledge the current research before approval." })
+    return res
+      .status(409)
+      .json({
+        error:
+          "Verify the source evidence and acknowledge the current research before approval.",
+      })
   }
   const notes = typeof body.notes === "string" ? body.notes.trim() : ""
   const proposedChanges = getProposedChanges(draft.proposed_changes)
@@ -108,7 +121,11 @@ async function mutateDraft(req: MedusaRequest, res: MedusaResponse) {
           body.selected_change_paths.every(
             (path) => typeof path === "string" && path.trim().length > 0
           )
-        ? [...new Set(body.selected_change_paths.map((path) => String(path).trim()))]
+        ? [
+            ...new Set(
+              body.selected_change_paths.map((path) => String(path).trim())
+            ),
+          ]
         : null
 
   if (!selectedChangePaths) {
@@ -143,7 +160,8 @@ async function mutateDraft(req: MedusaRequest, res: MedusaResponse) {
     submittedSnapshotHash !== currentSnapshotHash
   ) {
     return res.status(409).json({
-      error: "The product changed after this draft was reviewed. Resolve it again.",
+      error:
+        "The product changed after this draft was reviewed. Resolve it again.",
     })
   }
 
@@ -170,8 +188,13 @@ async function mutateDraft(req: MedusaRequest, res: MedusaResponse) {
     status: getAiProductDraftNextStatus("needs_review", "approved"),
     admin_notes: notes || null,
     approved_changes: approvedChanges,
-    approved_import_targets: { ...importTargets, review_hash: reviewHash, review_acknowledged: true },
-    approved_snapshot_hash: submittedSnapshotHash || currentSnapshotHash || null,
+    approved_import_targets: {
+      ...importTargets,
+      review_hash: reviewHash,
+      review_acknowledged: true,
+    },
+    approved_snapshot_hash:
+      submittedSnapshotHash || currentSnapshotHash || null,
     approved_by: actorId || null,
     approved_at: new Date().toISOString(),
   })
@@ -197,4 +220,3 @@ async function mutateDraft(req: MedusaRequest, res: MedusaResponse) {
 
   return res.status(200).json({ draft: updated })
 }
-import { withAiDraftLock } from "../../../../../lib/ai-product-drafts/locking"

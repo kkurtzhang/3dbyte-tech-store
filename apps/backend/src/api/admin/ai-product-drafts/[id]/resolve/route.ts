@@ -1,4 +1,5 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+import { withAiDraftLock } from "../../../../../lib/ai-product-drafts/locking"
 
 import type {
   AiProductDraftCandidate,
@@ -27,7 +28,8 @@ function getCandidates(value: unknown): AiProductDraftCandidate[] {
             id,
             handle:
               typeof record.handle === "string" ? record.handle.trim() : null,
-            title: typeof record.title === "string" ? record.title.trim() : null,
+            title:
+              typeof record.title === "string" ? record.title.trim() : null,
             metadata: getRecord(record.metadata),
           },
         ]
@@ -119,4 +121,3 @@ async function mutateDraft(req: MedusaRequest, res: MedusaResponse) {
 
   return res.status(200).json({ draft: updated })
 }
-import { withAiDraftLock } from "../../../../../lib/ai-product-drafts/locking"

@@ -4,18 +4,20 @@ Use this skill after intake, research, and evidence extraction are complete.
 
 ## Purpose
 
-Build Product Research Packet v2 exactly as Medusa expects it.
+Build Product Research Packet v3 exactly as Medusa expects it.
 
 ## Contract
 
-- Schema: `docs/hermes/product-research-packet.v2.schema.json`
-- Example: `docs/hermes/fixtures/product-research-packet.v2.example.json`
-- Packet version: `2`
+- Schema: `docs/hermes/product-research-packet.v3.schema.json`
+- Example: `docs/hermes/fixtures/product-research-packet.v3.example.json`
+- Packet version: `3`
 - Source agent: `hermes`
 
 ## Required Behavior
 
 - Emit JSON only.
+- Read `docs/hermes/quality-recovery-v3.md`. Include explicit product classification, typed facts, and per-copy-field evidence; do not mechanically upgrade v1/v2 packets.
+- The example is synthetic and must never be submitted as real product research. The JSON outline below is not a valid completed packet.
 - Create one stable `request_id` for the logical onboarding job. Reuse it unchanged for validation retries and submission retries.
 - Set `requested_operation` to `auto`, `create`, or `enrich` from intake. Prefer `auto`.
 - Populate top-level `product_id` or `product_handle` only when targeting a confirmed existing Medusa product. Leave both empty for new-product `auto` or `create` packets; do not put a proposed new handle in the target fields.
@@ -27,11 +29,11 @@ Build Product Research Packet v2 exactly as Medusa expects it.
 
 ## Output
 
-Return a complete Product Research Packet v2:
+Return a complete Product Research Packet v3:
 
 ```json
 {
-  "packet_version": 2,
+  "packet_version": 3,
   "source_agent": "hermes",
   "request_id": "hermes:stable-job-id",
   "requested_operation": "auto",
@@ -39,7 +41,9 @@ Return a complete Product Research Packet v2:
   "product_handle": "",
   "product_input": {},
   "source_summary": {},
-  "facts": {},
+  "classification": {},
+  "facts": [],
+  "content_evidence": [],
   "draft_content": {},
   "related_content_suggestions": [],
   "sources": [],

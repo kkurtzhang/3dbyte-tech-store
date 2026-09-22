@@ -168,9 +168,7 @@ const columns = [
         getValue() || row.original.requested_operation || "pending"
       ),
   }),
-  columnHelper.accessor(
-    (draft) => getAiProductDraftQualityLabel(draft),
-    {
+  columnHelper.accessor((draft) => getAiProductDraftQualityLabel(draft), {
     id: "confidence",
     header: "Research quality",
     enableSorting: false,
@@ -257,14 +255,8 @@ const AiProductDraftsPage = () => {
     }),
     [debouncedQ, offset, order, pagination.pageSize, status]
   )
-  const {
-    drafts,
-    count,
-    statusCounts,
-    isError,
-    isLoading,
-    refetch,
-  } = useAiProductDrafts(query)
+  const { drafts, count, statusCounts, isError, isLoading, refetch } =
+    useAiProductDrafts(query)
   const canBulkCleanup =
     status === "validation_failed" &&
     !q.trim() &&
@@ -440,12 +432,20 @@ const AiProductDraftsPage = () => {
           </div>
         </div>
         {isError ? (
-          <div className="m-6 rounded-lg border border-ui-border-error bg-ui-bg-subtle p-4" role="alert">
+          <div
+            className="m-6 rounded-lg border border-ui-border-error bg-ui-bg-subtle p-4"
+            role="alert"
+          >
             <Text weight="plus">Could not load AI product drafts.</Text>
             <Text className="text-ui-fg-subtle" size="small">
               Refresh the queue or try again.
             </Text>
-            <Button className="mt-3" onClick={() => refetch()} size="small" variant="secondary">
+            <Button
+              className="mt-3"
+              onClick={() => refetch()}
+              size="small"
+              variant="secondary"
+            >
               Try again
             </Button>
           </div>

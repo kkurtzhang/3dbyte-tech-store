@@ -116,9 +116,7 @@ describe("normalizeProductResearchPacket", () => {
 
     expect(draft.metadata.three_d_printing?.requires_enclosure).toBeUndefined()
     expect(draft.warnings).toEqual(
-      expect.arrayContaining([
-        expect.stringContaining("requires_enclosure"),
-      ])
+      expect.arrayContaining([expect.stringContaining("requires_enclosure")])
     )
   })
 

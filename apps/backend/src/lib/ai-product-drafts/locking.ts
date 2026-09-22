@@ -11,8 +11,15 @@ export function withAiDraftLock<T>(req: MedusaRequest, job: () => Promise<T>) {
   })
 }
 
-export function withAiDraftLocks<T>(req: MedusaRequest, ids: string[], job: () => Promise<T>) {
+export function withAiDraftLocks<T>(
+  req: MedusaRequest,
+  ids: string[],
+  job: () => Promise<T>
+) {
   const locking = req.scope.resolve(Modules.LOCKING) as ILockingModule
   const keys = [...new Set(ids)].sort().map((id) => `ai-product-draft:${id}`)
-  return locking.execute(keys, job, { timeout: 10, provider: "locking-postgres" })
+  return locking.execute(keys, job, {
+    timeout: 10,
+    provider: "locking-postgres",
+  })
 }

@@ -50,10 +50,16 @@ export function DraftQualityPanel({ draft }: { draft: AdminAiProductDraft }) {
             Product kind: <strong>{quality?.product_kind || "unknown"}</strong>
           </div>
           <div>
-            Required facts: {quality?.required_facts ? `${quality.supported_facts}/${quality.required_facts}` : "Not assessed"}
+            Required facts:{" "}
+            {quality?.required_facts
+              ? `${quality.supported_facts}/${quality.required_facts}`
+              : "Not assessed"}
           </div>
           <div>
-            Copy evidence: {quality?.content_fields ? `${quality.supported_content_fields}/${quality.content_fields}` : "Not assessed"}
+            Copy evidence:{" "}
+            {quality?.content_fields
+              ? `${quality.supported_content_fields}/${quality.content_fields}`
+              : "Not assessed"}
           </div>
           <div>Exact-product sources: {quality?.exact_sources || 0}</div>
         </div>

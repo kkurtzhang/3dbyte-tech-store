@@ -718,39 +718,62 @@ describe("AI product draft routes", () => {
 
   it("checks single cleanup eligibility only after acquiring the draft lock", async () => {
     const draftModule = {
-      listAiProductDrafts: jest.fn().mockResolvedValue([{ ...draft, status: "validation_failed" }]),
+      listAiProductDrafts: jest
+        .fn()
+        .mockResolvedValue([{ ...draft, status: "validation_failed" }]),
       softDeleteAiProductDrafts: jest.fn(),
     }
     const req = createRequest({ params: { id: draft.id }, draftModule })
     const resolve = req.scope.resolve.getMockImplementation()!
     const execute = jest.fn(async (_key, job) => {
-      draftModule.listAiProductDrafts.mockResolvedValue([{ ...draft, status: "needs_review" }])
+      draftModule.listAiProductDrafts.mockResolvedValue([
+        { ...draft, status: "needs_review" },
+      ])
       return job()
     })
-    req.scope.resolve.mockImplementation((key) => key === "locking" ? { execute } : resolve(key))
+    req.scope.resolve.mockImplementation((key) =>
+      key === "locking" ? { execute } : resolve(key)
+    )
     const res = createResponse()
     await deleteDraft(req as never, res as never)
-    expect(execute).toHaveBeenCalledWith(`ai-product-draft:${draft.id}`, expect.any(Function), expect.any(Object))
+    expect(execute).toHaveBeenCalledWith(
+      `ai-product-draft:${draft.id}`,
+      expect.any(Function),
+      expect.any(Object)
+    )
     expect(draftModule.softDeleteAiProductDrafts).not.toHaveBeenCalled()
     expect(res.status).toHaveBeenCalledWith(409)
   })
 
   it("rechecks the exact bulk cleanup set after locking to protect recovered drafts", async () => {
     const draftModule = {
-      listAiProductDrafts: jest.fn().mockResolvedValue([{ ...draft, status: "validation_failed" }]),
+      listAiProductDrafts: jest
+        .fn()
+        .mockResolvedValue([{ ...draft, status: "validation_failed" }]),
       createAiProductDraftEvents: jest.fn(),
       softDeleteAiProductDrafts: jest.fn(),
     }
-    const req = createRequest({ body: { status: "validation_failed", expected_count: 1 }, draftModule })
+    const req = createRequest({
+      body: { status: "validation_failed", expected_count: 1 },
+      draftModule,
+    })
     const resolve = req.scope.resolve.getMockImplementation()!
     const execute = jest.fn(async (_key, job) => {
-      draftModule.listAiProductDrafts.mockResolvedValue([{ ...draft, id: "aipd_other", status: "validation_failed" }])
+      draftModule.listAiProductDrafts.mockResolvedValue([
+        { ...draft, id: "aipd_other", status: "validation_failed" },
+      ])
       return job()
     })
-    req.scope.resolve.mockImplementation((key) => key === "locking" ? { execute } : resolve(key))
+    req.scope.resolve.mockImplementation((key) =>
+      key === "locking" ? { execute } : resolve(key)
+    )
     const res = createResponse()
     await cleanupDrafts(req as never, res as never)
-    expect(execute).toHaveBeenCalledWith([`ai-product-draft:${draft.id}`], expect.any(Function), expect.any(Object))
+    expect(execute).toHaveBeenCalledWith(
+      [`ai-product-draft:${draft.id}`],
+      expect.any(Function),
+      expect.any(Object)
+    )
     expect(draftModule.softDeleteAiProductDrafts).not.toHaveBeenCalled()
     expect(draftModule.createAiProductDraftEvents).not.toHaveBeenCalled()
     expect(res.status).toHaveBeenCalledWith(409)

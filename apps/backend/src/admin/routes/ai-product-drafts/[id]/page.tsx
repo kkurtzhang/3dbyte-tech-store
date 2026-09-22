@@ -1,14 +1,4 @@
-import {
-  Badge,
-  Button,
-  Checkbox,
-  Heading,
-  Label,
-  Text,
-  Textarea,
-  toast,
-  usePrompt,
-} from "@medusajs/ui"
+import { Badge, Button, Heading, Text, toast, usePrompt } from "@medusajs/ui"
 import { useState } from "react"
 import { Link, useParams } from "react-router-dom"
 import { DraftReviewActions } from "./review-actions"
@@ -19,14 +9,10 @@ import { Header } from "../../../components/header"
 import { JsonViewSection } from "../../../components/json-view-section"
 import {
   useAiProductDraft,
-  useApproveAiProductDraft,
-  useImportAiProductDraft,
-  useRejectAiProductDraft,
   useResolveAiProductDraft,
 } from "../../../hooks/ai-product-drafts"
 import {
   formatAiProductDraftDate,
-  getAiProductDraftActionAvailability,
   getAiProductDraftDisplayName,
   getAiProductDraftNextStep,
   getAiProductDraftErrorMessage,
@@ -36,21 +22,13 @@ import {
 } from "../../../lib/ai-product-drafts"
 import type {
   AdminAiProductDraft,
-  AdminAiProductDraftChange,
   AdminAiProductDraftEvent,
-  AdminAiProductDraftImportTargets,
 } from "../../../types"
 
 const asObject = (value: unknown): Record<string, unknown> =>
   value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {}
-
-const formatReviewValue = (value: unknown) => {
-  if (value === undefined) return "Not set"
-  if (typeof value === "string") return value || "Empty"
-  return JSON.stringify(value, null, 2)
-}
 
 const AiProductDraftDetailPage = () => {
   const { id = "" } = useParams()
