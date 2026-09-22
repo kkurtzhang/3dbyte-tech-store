@@ -2,6 +2,7 @@ import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 
 import { getAiProductDraftModule, getDraftById } from "../utils"
 import { withDraftQuality } from "../../../../lib/ai-product-drafts/quality"
+import { withAiDraftLock } from "../../../../lib/ai-product-drafts/locking"
 
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   const draft = await getDraftById(req, res)
@@ -18,6 +19,10 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
 const CLEANUP_STATUSES = new Set(["validation_failed", "rejected"])
 
 export async function DELETE(req: MedusaRequest, res: MedusaResponse) {
+  return withAiDraftLock(req, () => deleteDraft(req, res))
+}
+
+async function deleteDraft(req: MedusaRequest, res: MedusaResponse) {
   const draft = await getDraftById(req, res)
   if (!draft) return
 

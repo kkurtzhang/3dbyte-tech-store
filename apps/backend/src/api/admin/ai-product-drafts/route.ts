@@ -1,6 +1,7 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { z } from "@medusajs/framework/zod"
 import { withDraftQuality } from "../../../lib/ai-product-drafts/quality"
+import { withAiDraftLocks } from "../../../lib/ai-product-drafts/locking"
 
 import { buildAiProductDraftEvent } from "../../../modules/ai-product-draft/lifecycle"
 import {
@@ -91,6 +92,17 @@ export async function DELETE(req: MedusaRequest, res: MedusaResponse) {
     })
   }
 
+  return withAiDraftLocks(req, ids, async () => {
+  // A replacement may have completed while cleanup was waiting for its locks.
+  const current = await draftModule.listAiProductDrafts(
+    { status: parsed.data.status },
+    { select: ["id", "status"], take: BULK_CLEANUP_LIMIT + 1 }
+  )
+  const currentIds = new Set(current.filter((draft) => draft.status === "validation_failed").map((draft) => draft.id))
+  if (currentIds.size !== ids.length || ids.some((id) => !currentIds.has(id))) {
+    return res.status(409).json({ error: "The validation-failed draft queue changed. Refresh the table and confirm cleanup again." })
+  }
+
   const actorId = getAdminActorId(req)
   await draftModule.createAiProductDraftEvents(
     ids.map((draftId) =>
@@ -115,5 +127,6 @@ export async function DELETE(req: MedusaRequest, res: MedusaResponse) {
   return res.status(200).json({
     count: ids.length,
     deleted_ids: ids,
+  })
   })
 }
