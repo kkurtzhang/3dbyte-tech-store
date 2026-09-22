@@ -20,8 +20,15 @@ import { POST as approveDraft } from "../[id]/approve/route"
 import { POST as rejectDraft } from "../[id]/reject/route"
 import { POST as importDraft } from "../[id]/import/route"
 import { POST as resolveDraft } from "../[id]/resolve/route"
-import { filamentPacket, normalizedFilamentDraft, reviewedFixture } from "../../../../lib/ai-product-drafts/__tests__/reviewed-fixture"
-import { draftReviewHash, withDraftQuality } from "../../../../lib/ai-product-drafts/quality"
+import {
+  filamentPacket,
+  normalizedFilamentDraft,
+  reviewedFixture,
+} from "../../../../lib/ai-product-drafts/__tests__/reviewed-fixture"
+import {
+  draftReviewHash,
+  withDraftQuality,
+} from "../../../../lib/ai-product-drafts/quality"
 
 const validPacket = {
   packet_version: 1,
@@ -167,7 +174,10 @@ function createRequest({
     },
     scope: {
       resolve: jest.fn((key: string) => {
-        if (key === "locking") return { execute: async (_key: string, job: () => Promise<unknown>) => job() }
+        if (key === "locking")
+          return {
+            execute: async (_key: string, job: () => Promise<unknown>) => job(),
+          }
         if (key === "aiProductDraft") return draftModule
         if (key === "query") return queryModule
         if (key === "notification") return notificationModule
@@ -239,7 +249,9 @@ describe("AI product draft routes", () => {
         product_handle: "example-petg",
         raw_packet: expect.objectContaining({ source_agent: "hermes" }),
         normalized_draft: expect.objectContaining({
-          metadata: expect.objectContaining({ three_d_printing: expect.any(Object) }),
+          metadata: expect.objectContaining({
+            three_d_printing: expect.any(Object),
+          }),
         }),
       })
     )
@@ -440,11 +452,13 @@ describe("AI product draft routes", () => {
       createAiProductDraftEvents: jest.fn().mockResolvedValue({ id: "evt_1" }),
     }
     const notificationModule = {
-      createNotifications: jest.fn().mockRejectedValue(
-        new Error(
-          "Could not find a notification provider for channel: feed for notification id noti_1"
-        )
-      ),
+      createNotifications: jest
+        .fn()
+        .mockRejectedValue(
+          new Error(
+            "Could not find a notification provider for channel: feed for notification id noti_1"
+          )
+        ),
     }
     const logger = {
       warn: jest.fn(),
@@ -702,6 +716,46 @@ describe("AI product draft routes", () => {
     })
   })
 
+  it("checks single cleanup eligibility only after acquiring the draft lock", async () => {
+    const draftModule = {
+      listAiProductDrafts: jest.fn().mockResolvedValue([{ ...draft, status: "validation_failed" }]),
+      softDeleteAiProductDrafts: jest.fn(),
+    }
+    const req = createRequest({ params: { id: draft.id }, draftModule })
+    const resolve = req.scope.resolve.getMockImplementation()!
+    const execute = jest.fn(async (_key, job) => {
+      draftModule.listAiProductDrafts.mockResolvedValue([{ ...draft, status: "needs_review" }])
+      return job()
+    })
+    req.scope.resolve.mockImplementation((key) => key === "locking" ? { execute } : resolve(key))
+    const res = createResponse()
+    await deleteDraft(req as never, res as never)
+    expect(execute).toHaveBeenCalledWith(`ai-product-draft:${draft.id}`, expect.any(Function), expect.any(Object))
+    expect(draftModule.softDeleteAiProductDrafts).not.toHaveBeenCalled()
+    expect(res.status).toHaveBeenCalledWith(409)
+  })
+
+  it("rechecks the exact bulk cleanup set after locking to protect recovered drafts", async () => {
+    const draftModule = {
+      listAiProductDrafts: jest.fn().mockResolvedValue([{ ...draft, status: "validation_failed" }]),
+      createAiProductDraftEvents: jest.fn(),
+      softDeleteAiProductDrafts: jest.fn(),
+    }
+    const req = createRequest({ body: { status: "validation_failed", expected_count: 1 }, draftModule })
+    const resolve = req.scope.resolve.getMockImplementation()!
+    const execute = jest.fn(async (_key, job) => {
+      draftModule.listAiProductDrafts.mockResolvedValue([{ ...draft, id: "aipd_other", status: "validation_failed" }])
+      return job()
+    })
+    req.scope.resolve.mockImplementation((key) => key === "locking" ? { execute } : resolve(key))
+    const res = createResponse()
+    await cleanupDrafts(req as never, res as never)
+    expect(execute).toHaveBeenCalledWith([`ai-product-draft:${draft.id}`], expect.any(Function), expect.any(Object))
+    expect(draftModule.softDeleteAiProductDrafts).not.toHaveBeenCalled()
+    expect(draftModule.createAiProductDraftEvents).not.toHaveBeenCalled()
+    expect(res.status).toHaveBeenCalledWith(409)
+  })
+
   it("protects reviewable and imported drafts from cleanup", async () => {
     for (const status of ["needs_review", "approved", "imported"]) {
       const protectedDraft = { ...draft, status }
@@ -943,7 +997,11 @@ describe("AI product draft routes", () => {
       createAiProductDraftEvents: jest.fn().mockResolvedValue({ id: "evt_1" }),
     }
     const approveReq = createRequest({
-      body: { notes: "Looks good", review_hash: draftReviewHash(draft), review_acknowledged: true },
+      body: {
+        notes: "Looks good",
+        review_hash: draftReviewHash(draft),
+        review_acknowledged: true,
+      },
       params: { id: "aipd_1" },
       draftModule,
     })
@@ -1071,7 +1129,9 @@ describe("AI product draft routes", () => {
     }
     const draftModule = {
       listAiProductDrafts: jest.fn().mockResolvedValue([ambiguousDraft]),
-      updateAiProductDrafts: jest.fn().mockImplementation(async (input) => input),
+      updateAiProductDrafts: jest
+        .fn()
+        .mockImplementation(async (input) => input),
       createAiProductDraftEvents: jest.fn().mockResolvedValue({ id: "evt_1" }),
     }
     const req = createRequest({
@@ -1128,7 +1188,8 @@ describe("AI product draft routes", () => {
     const req = createRequest({
       body: {
         notes: "Use only reviewed material metadata.",
-        review_hash: draftReviewHash(reviewDraft), review_acknowledged: true,
+        review_hash: draftReviewHash(reviewDraft),
+        review_acknowledged: true,
         selected_change_paths: ["metadata.three_d_printing.material"],
         import_targets: {
           medusa_metadata: true,
@@ -1156,7 +1217,8 @@ describe("AI product draft routes", () => {
           medusa_metadata: true,
           strapi_description_draft: false,
           product_document_drafts: false,
-          review_hash: draftReviewHash(reviewDraft), review_acknowledged: true,
+          review_hash: draftReviewHash(reviewDraft),
+          review_acknowledged: true,
         },
         approved_snapshot_hash: "snapshot_1",
       })
@@ -1177,7 +1239,8 @@ describe("AI product draft routes", () => {
     const req = createRequest({
       body: {
         selected_change_paths: [],
-        review_hash: draftReviewHash(reviewDraft), review_acknowledged: true,
+        review_hash: draftReviewHash(reviewDraft),
+        review_acknowledged: true,
         import_targets: {
           medusa_metadata: false,
           strapi_description_draft: false,

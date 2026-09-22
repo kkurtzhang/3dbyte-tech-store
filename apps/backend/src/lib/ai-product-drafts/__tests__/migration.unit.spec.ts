@@ -82,6 +82,20 @@ const v2Packet = {
 }
 
 describe("AI product draft data migration", () => {
+  it("leaves v3 and newer research outside the legacy repair plan", () => {
+    for (const version of [3, 4]) {
+      for (const packet_version of [version, undefined]) {
+        expect(prepareAiProductDraftMigration({
+          id: "aipd_modern",
+          status: "needs_resolution",
+          packet_version,
+          raw_packet: { packet_version: version },
+          normalized_draft: { schema_version: 1 },
+        })).toEqual({ kind: "noop", draft_id: "aipd_modern", reason: "not_legacy" })
+      }
+    }
+  })
+
   it("repairs the invalid target selector on failed v2 create packets without mutating raw evidence", () => {
     const rawPacket = structuredClone(v2Packet)
     const prepared = prepareAiProductDraftMigration({
