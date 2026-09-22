@@ -45,7 +45,8 @@ configuration). No advisory exclusions or CI thresholds were changed.
 `CI=true pnpm install --frozen-lockfile` passed. The storefront's 1,064 tests and
 its critical-coverage gate passed. The updated lockfile includes platform-specific
 Next/sharp artifacts, current browserslist data, and Next's SWC helper update.
-Backend tests and the complete PR build/smoke gates must pass before deployment.
+All 612 backend unit tests across 147 suites also passed. The complete PR
+build/smoke gates must pass before deployment.
 
 ### Next 16.3 build compatibility
 
@@ -56,3 +57,9 @@ and `*.test.*` / `*.spec.*` diagnostics. Every reported error is in a test file.
 The upgrade therefore needs an explicit production TS configuration preserving
 that former scope. Keep `strict` and production type checking enabled; run Jest
 and coverage with the unchanged test configuration.
+
+The production build now uses `tsconfig.build.json`, extending the original
+configuration while excluding test fixtures and Jest setup. The local production
+build, including TypeScript validation, passed. Its placeholder publishable key
+cannot enumerate live products for static generation; dynamic product routes
+remain available. Next regenerated its route/root-parameter type references.
