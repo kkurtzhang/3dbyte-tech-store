@@ -46,3 +46,13 @@ configuration). No advisory exclusions or CI thresholds were changed.
 its critical-coverage gate passed. The updated lockfile includes platform-specific
 Next/sharp artifacts, current browserslist data, and Next's SWC helper update.
 Backend tests and the complete PR build/smoke gates must pass before deployment.
+
+### Next 16.3 build compatibility
+
+CI run 35721321808 passed security, unit tests, lint, shared type checks and browser
+smoke. The storefront build failed because the new CLI type-checker includes Jest
+fixtures. Next 16.2's `runTypeCheck.js` explicitly filtered `__tests__`, `__mocks__`
+and `*.test.*` / `*.spec.*` diagnostics. Every reported error is in a test file.
+The upgrade therefore needs an explicit production TS configuration preserving
+that former scope. Keep `strict` and production type checking enabled; run Jest
+and coverage with the unchanged test configuration.
