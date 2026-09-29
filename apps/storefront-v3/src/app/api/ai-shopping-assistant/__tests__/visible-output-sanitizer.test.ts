@@ -1,12 +1,12 @@
 import { TransformStream } from "node:stream/web"
 
-import type { TextStreamPart, ToolSet } from "ai"
-
 import {
   collectEmailAddresses,
   createAssistantVisibleTextTransform,
   createStreamingEmailRedactor,
 } from "../visible-output-sanitizer"
+
+import type { TextStreamPart, ToolSet } from "ai"
 
 describe("visible assistant output sanitization", () => {
   const suppliedEmail = "Ava.Customer+PETG@Example.com"
@@ -69,7 +69,6 @@ describe("visible assistant output sanitization", () => {
     expect(output).toBe("PETG remains suitable for outdoor brackets")
   })
 })
-
 
 describe("assistant text stream boundaries", () => {
   beforeAll(() => {

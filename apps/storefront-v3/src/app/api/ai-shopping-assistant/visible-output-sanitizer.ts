@@ -92,17 +92,39 @@ export function createAssistantVisibleTextTransform<TOOLS extends ToolSet>(
   } = {},
 ) {
   return () => {
-    const redactor = createStreamingEmailRedactor(suppliedEmails)
-    let latestTextChunk: Extract<
-      TextStreamPart<TOOLS>,
-      { type: "text-delta" }
-    > | null = null
+    type TextDelta = Extract<TextStreamPart<TOOLS>, { type: "text-delta" }>
+    const textParts = new Map<
+      string,
+      {
+        redactor: ReturnType<typeof createStreamingEmailRedactor>
+        latestChunk: TextDelta
+      }
+    >()
+
+    const flushTextPart = (
+      id: string,
+      controller: TransformStreamDefaultController<TextStreamPart<TOOLS>>,
+    ) => {
+      const part = textParts.get(id)
+      if (!part) return
+
+      const safeText = part.redactor.flush()
+      if (safeText) {
+        hooks.onText?.(safeText)
+        controller.enqueue({ ...part.latestChunk, text: safeText })
+      }
+      textParts.delete(id)
+    }
 
     return new TransformStream<TextStreamPart<TOOLS>, TextStreamPart<TOOLS>>({
       transform(chunk, controller) {
         if (chunk.type === "text-delta") {
-          latestTextChunk = chunk
-          const safeText = redactor.push(chunk.text)
+          const part = textParts.get(chunk.id) ?? {
+            redactor: createStreamingEmailRedactor(suppliedEmails),
+            latestChunk: chunk,
+          }
+          textParts.set(chunk.id, { ...part, latestChunk: chunk })
+          const safeText = part.redactor.push(chunk.text)
 
           if (safeText) {
             hooks.onText?.(safeText)
@@ -111,16 +133,15 @@ export function createAssistantVisibleTextTransform<TOOLS extends ToolSet>(
           return
         }
 
+        if (chunk.type === "text-end") {
+          // The UI stream closes this part at text-end; later deltas are invalid.
+          flushTextPart(chunk.id, controller)
+        }
+
         controller.enqueue(chunk)
       },
       flush(controller) {
-        const safeText = redactor.flush()
-
-        if (safeText && latestTextChunk) {
-          hooks.onText?.(safeText)
-          controller.enqueue({ ...latestTextChunk, text: safeText })
-        }
-
+        textParts.forEach((_part, id) => flushTextPart(id, controller))
         hooks.onFlush?.()
       },
     })
