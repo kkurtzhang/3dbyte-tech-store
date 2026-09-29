@@ -158,7 +158,7 @@ describe("customer AI eval runner", () => {
         get: (name: string) => {
           const headers: Record<string, string> = {
             "x-3db-ai-guardrails-version": "2026-06-24.1",
-            "x-3db-ai-model": "deepseek-v4-flash",
+            "x-3db-ai-model": "deepseek-flash",
             "x-3db-ai-prompt-version": "7",
             "x-3db-ai-temperature": "0.2",
             "x-3db-langfuse-trace-id": "trace_01HQA",
@@ -212,7 +212,7 @@ describe("customer AI eval runner", () => {
     expect(result.traceId).toBe("trace_01HQA")
     expect(result.diagnostics).toEqual({
       guardrailsVersion: "2026-06-24.1",
-      model: "deepseek-v4-flash",
+      model: "deepseek-flash",
       promptVersion: "7",
       releaseSha: "release-123",
       temperature: "0.2",
@@ -243,7 +243,7 @@ describe("customer AI eval runner", () => {
       return makeRunResult({
         diagnostics: {
           guardrailsVersion: "guardrails-1",
-          model: "deepseek-v4-flash",
+          model: "deepseek-flash",
           promptVersion: "7",
           releaseSha: "release-123",
           temperature: "0.2",
@@ -305,7 +305,7 @@ describe("customer AI eval runner", () => {
         return makeRunResult({
           diagnostics: {
             guardrailsVersion: "guardrails-1",
-            model: "deepseek-v4-flash",
+            model: "deepseek-flash",
             promptVersion: "7",
             releaseSha: "release-123",
             temperature: "0.2",
@@ -337,7 +337,7 @@ describe("customer AI eval runner", () => {
         makeRunResult({
           diagnostics: {
             guardrailsVersion: "guardrails-1",
-            model: "deepseek-v4-flash",
+            model: "deepseek-flash",
             promptVersion: "7",
             releaseSha: "release-123",
             temperature: "0.2",
@@ -350,7 +350,7 @@ describe("customer AI eval runner", () => {
         makeRunResult({
           diagnostics: {
             guardrailsVersion: "guardrails-1",
-            model: "deepseek-v4-flash",
+            model: "deepseek-flash",
             promptVersion: "8",
             releaseSha: "release-456",
             temperature: "0.2",
@@ -386,7 +386,7 @@ describe("customer AI eval runner", () => {
         makeRunResult({
           diagnostics: {
             guardrailsVersion: "unknown",
-            model: "deepseek-v4-flash",
+            model: "deepseek-flash",
             promptVersion: "unknown",
             releaseSha: "unknown",
             temperature: "0.2",
