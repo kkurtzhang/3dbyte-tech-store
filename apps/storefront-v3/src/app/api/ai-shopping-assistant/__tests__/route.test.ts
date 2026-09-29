@@ -1024,7 +1024,7 @@ describe("POST /api/ai-shopping-assistant", () => {
     expect(streamTextMock).not.toHaveBeenCalled()
   })
 
-  it("defaults to V4 Flash and disables DeepSeek thinking mode for tool loops", async () => {
+  it("defaults to the current Flash alias and disables DeepSeek thinking mode for tool loops", async () => {
     configureAiEnv()
     delete process.env.AI_MODEL
     delete process.env.DEEPSEEK_BASE_URL
@@ -1037,7 +1037,7 @@ describe("POST /api/ai-shopping-assistant", () => {
     )
 
     expect(response.status).toBe(200)
-    expect(providerChatModelMock).toHaveBeenCalledWith("deepseek-v4-flash")
+    expect(providerChatModelMock).toHaveBeenCalledWith("deepseek-flash")
 
     const providerConfig = createOpenAIMock.mock.calls[0]?.[0]
     expect(providerConfig).toEqual(
@@ -1052,7 +1052,7 @@ describe("POST /api/ai-shopping-assistant", () => {
     await providerConfig.fetch("https://api.deepseek.com/chat/completions", {
       body: JSON.stringify({
         messages: [{ role: "user", content: "Create a support ticket" }],
-        model: "deepseek-v4-flash",
+        model: "deepseek-flash",
       }),
       headers: { "content-type": "application/json" },
       method: "POST",
@@ -1063,7 +1063,7 @@ describe("POST /api/ai-shopping-assistant", () => {
 
     expect(forwardedBody).toEqual(
       expect.objectContaining({
-        model: "deepseek-v4-flash",
+        model: "deepseek-flash",
         stream_options: { include_usage: true },
         thinking: { type: "disabled" },
       }),
