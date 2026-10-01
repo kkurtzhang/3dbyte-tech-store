@@ -40,7 +40,10 @@ class RedisRateLimitStore implements RateLimitStore {
 
   constructor(redisUrl: string) {
     this.client = new Redis(redisUrl, {
-      enableOfflineQueue: false,
+      // Startup commands must wait for ready without blocking requests indefinitely.
+      enableOfflineQueue: true,
+      connectTimeout: 2_000,
+      commandTimeout: 2_000,
       lazyConnect: true,
       maxRetriesPerRequest: 1,
     })
