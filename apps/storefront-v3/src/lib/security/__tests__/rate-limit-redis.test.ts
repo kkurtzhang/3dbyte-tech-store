@@ -1,4 +1,4 @@
-import { startRedisProtocolServer } from "./redis-protocol-server";
+import { startRedisProtocolServer } from "../__fixtures__/redis-protocol-server";
 
 import type Redis from "ioredis";
 
