@@ -260,7 +260,7 @@ function configureAiEnv() {
   process.env = {
     ...originalEnv,
     AI_PROVIDER: "deepseek",
-    AI_MODEL: "deepseek-v4-flash",
+    AI_MODEL: "deepseek-flash",
     DEEPSEEK_API_KEY: "test-deepseek-key",
     DEEPSEEK_BASE_URL: "https://api.deepseek.com",
     INTERNAL_API_TOKEN: "test-internal-token",
@@ -896,14 +896,14 @@ describe("POST /api/ai-shopping-assistant", () => {
         name: "deepseek",
       }),
     )
-    expect(providerChatModelMock).toHaveBeenCalledWith("deepseek-v4-flash")
+    expect(providerChatModelMock).toHaveBeenCalledWith("deepseek-flash")
     expect(providerModelMock).not.toHaveBeenCalled()
     expect(resolveAssistantSystemPromptMock).toHaveBeenCalledTimes(1)
 
     const streamConfig = streamTextMock.mock.calls[0]?.[0]
     expect(streamConfig.model).toEqual({
       provider: "deepseek.chat",
-      model: "deepseek-v4-flash",
+      model: "deepseek-flash",
     })
     expect(streamConfig.experimental_telemetry).toEqual({
       functionId: "storefront.ai-shopping-assistant",
@@ -912,7 +912,7 @@ describe("POST /api/ai-shopping-assistant", () => {
         chatbot_id: "storefront.shopping-assistant",
         chatbot_surface: "storefront-floating-drawer",
         code_guardrails_version: "2026-06-24.1",
-        model: "deepseek-v4-flash",
+        model: "deepseek-flash",
         provider: "deepseek",
         release_sha: "release_01HQA",
         temperature: 0.2,
@@ -941,7 +941,7 @@ describe("POST /api/ai-shopping-assistant", () => {
         chatbot_id: "storefront.shopping-assistant",
         chatbot_surface: "storefront-floating-drawer",
         code_guardrails_version: "2026-06-24.1",
-        model: "deepseek-v4-flash",
+        model: "deepseek-flash",
         provider: "deepseek",
         langfuse_prompt_label: "staging",
         langfuse_prompt_name: "storefront.ai-shopping-assistant.system",
@@ -1024,7 +1024,7 @@ describe("POST /api/ai-shopping-assistant", () => {
     expect(streamTextMock).not.toHaveBeenCalled()
   })
 
-  it("defaults to V4 Flash and disables DeepSeek thinking mode for tool loops", async () => {
+  it("defaults to the current Flash alias and disables DeepSeek thinking mode for tool loops", async () => {
     configureAiEnv()
     delete process.env.AI_MODEL
     delete process.env.DEEPSEEK_BASE_URL
@@ -1037,7 +1037,7 @@ describe("POST /api/ai-shopping-assistant", () => {
     )
 
     expect(response.status).toBe(200)
-    expect(providerChatModelMock).toHaveBeenCalledWith("deepseek-v4-flash")
+    expect(providerChatModelMock).toHaveBeenCalledWith("deepseek-flash")
 
     const providerConfig = createOpenAIMock.mock.calls[0]?.[0]
     expect(providerConfig).toEqual(
@@ -1052,7 +1052,7 @@ describe("POST /api/ai-shopping-assistant", () => {
     await providerConfig.fetch("https://api.deepseek.com/chat/completions", {
       body: JSON.stringify({
         messages: [{ role: "user", content: "Create a support ticket" }],
-        model: "deepseek-v4-flash",
+        model: "deepseek-flash",
       }),
       headers: { "content-type": "application/json" },
       method: "POST",
@@ -1063,7 +1063,7 @@ describe("POST /api/ai-shopping-assistant", () => {
 
     expect(forwardedBody).toEqual(
       expect.objectContaining({
-        model: "deepseek-v4-flash",
+        model: "deepseek-flash",
         stream_options: { include_usage: true },
         thinking: { type: "disabled" },
       }),
@@ -1098,7 +1098,7 @@ describe("POST /api/ai-shopping-assistant", () => {
           deepseek_cache_hit_ratio: 0.375,
           finish_reason: "unknown",
         }),
-        model: "deepseek-v4-flash",
+        model: "deepseek-flash",
         usageDetails: {
           input_cache_hit_tokens: 120,
           input_cache_miss_tokens: 200,
@@ -1441,7 +1441,7 @@ describe("POST /api/ai-shopping-assistant", () => {
     )
 
     expect(response.headers.get("x-3db-langfuse-trace-id")).toBe("trace_01HQA")
-    expect(response.headers.get("x-3db-ai-model")).toBe("deepseek-v4-flash")
+    expect(response.headers.get("x-3db-ai-model")).toBe("deepseek-flash")
     expect(response.headers.get("x-3db-ai-temperature")).toBe("0.2")
     expect(response.headers.get("x-3db-ai-prompt-version")).toBe("3")
     expect(response.headers.get("x-3db-ai-guardrails-version")).toBe(
@@ -1547,7 +1547,7 @@ describe("POST /api/ai-shopping-assistant", () => {
         {
           body: JSON.stringify({
             messages: [{ role: "user", content: "Which PETG should I buy?" }],
-            model: "deepseek-v4-flash",
+            model: "deepseek-flash",
             stream: true,
           }),
           headers: { "content-type": "application/json" },

@@ -27,7 +27,7 @@ import {
   maskCompleteEmailAddresses,
 } from "./visible-output-sanitizer"
 
-const DEFAULT_AI_MODEL = "deepseek-v4-flash"
+const DEFAULT_AI_MODEL = "deepseek-flash"
 const DEFAULT_AI_ASSISTANT_TEMPERATURE = 0.2
 const DEFAULT_DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 const DEEPSEEK_NON_THINKING_MODE = { type: "disabled" } as const
