@@ -18,9 +18,21 @@ export const metadata: Metadata = {
     "Find downloads, guides, support articles, blog posts, and account-only product files from 3D Byte Tech.",
 };
 
-export const dynamic = "force-dynamic"
+export const dynamic = "force-dynamic";
 
 const primaryResources = [
+  ...(process.env.APP_ENV === "staging"
+    ? [
+        {
+          title: "Knowledge References",
+          description:
+            "Source-backed product facts with explicit unknowns and simulated staging stock.",
+          href: "/references",
+          icon: BookOpen,
+          tone: "bg-sky-500/10 text-sky-700 dark:text-sky-300",
+        },
+      ]
+    : []),
   {
     title: "Download Center",
     description:
@@ -58,19 +70,22 @@ const primaryResources = [
 const secondaryResources = [
   {
     title: "Blog",
-    description: "News, maker notes, product education, and deeper buying context.",
+    description:
+      "News, maker notes, product education, and deeper buying context.",
     href: "/blog",
     icon: Newspaper,
   },
   {
     title: "Warranty and returns",
-    description: "Understand return windows, warranty support, and return steps.",
+    description:
+      "Understand return windows, warranty support, and return steps.",
     href: "/returns",
     icon: ShieldCheck,
   },
   {
     title: "FAQ",
-    description: "Quick answers for shipping, checkout, compatibility, and accounts.",
+    description:
+      "Quick answers for shipping, checkout, compatibility, and accounts.",
     href: "/faq",
     icon: FileText,
   },
@@ -89,9 +104,9 @@ export default function DocsPage() {
               Resource Center
             </h1>
             <p className="mt-4 text-base leading-7 text-muted-foreground md:text-lg">
-              One place for files, how-to content, account downloads, and support
-              paths. Product-specific documents stay easy to find without mixing
-              them into learning articles.
+              One place for files, how-to content, account downloads, and
+              support paths. Product-specific documents stay easy to find
+              without mixing them into learning articles.
             </p>
           </div>
 

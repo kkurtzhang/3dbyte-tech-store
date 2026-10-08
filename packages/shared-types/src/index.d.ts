@@ -1,6 +1,7 @@
 export { default as MedusaSdkClient } from "@medusajs/js-sdk";
 export * from "./meilisearch";
 export * from "./shipping";
+export type { KnowledgeFact, KnowledgeDocumentBody, ApprovedKnowledgeDocument, KnowledgeReferenceCard } from "./knowledge-reference";
 export interface StoreConfig {
     name: string;
     description: string;

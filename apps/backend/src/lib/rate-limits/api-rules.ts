@@ -12,6 +12,19 @@ const actorKey =
   ({ actorId, clientIp }: { actorId?: string; clientIp: string }) =>
     makeRateLimitKey(name, actorId || clientIp);
 
+export const storeKnowledgeReferenceRateLimit = createRateLimitMiddleware({
+  name: "store_knowledge_reference",
+  limit: 30,
+  windowMs: minute,
+  key: ipKey("store_knowledge_reference"),
+});
+export const adminKnowledgeReferenceReadRateLimit = createRateLimitMiddleware({
+  name: "admin_knowledge_reference_read",
+  limit: 60,
+  windowMs: minute,
+  key: actorKey("admin_knowledge_reference_read"),
+});
+
 function positiveIntegerFromEnv(value: string | undefined, fallback: number) {
   const parsed = Number.parseInt(value || "", 10);
 
