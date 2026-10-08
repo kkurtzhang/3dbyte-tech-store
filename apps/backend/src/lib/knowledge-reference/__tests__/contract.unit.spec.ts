@@ -1,6 +1,6 @@
 import { bindKnowledgeReference, referenceCard } from "../contract";
 import { rejectReferenceOffers } from "../offer-guard";
-import { requiredFacts } from "../../ai-product-drafts/product-field-applicability";
+import { requiredFacts } from "../../ai-product-drafts/product-fields";
 
 import {
   now,
@@ -36,7 +36,7 @@ describe("native reference contract", () => {
     const d = approvedKnowledgeDocument(approved(), now)!;
     expect(d.facts[1].value).toBeNull();
     expect(requiredFacts.hotend).toContain("max_temperature_c");
-    expect(requiredFacts.filament_dryer).toContain("voltage_v");
+    expect(requiredFacts.power_supply).toContain("voltage_v");
     expect(bindKnowledgeReference(product(), d, "staging")).toMatchObject({
       catalogue_role: "knowledge_reference",
       knowledge_reference: {
