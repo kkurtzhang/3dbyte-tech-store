@@ -30,6 +30,28 @@ const graphqlPath = lockedConsumer("apps/backend", [
   "@graphql-tools/utils",
 ])
 
+const handlebars = require(lockedConsumer("apps/cms", [
+  "@strapi/strapi", "@strapi/generators", "handlebars",
+]))
+
+test("Handlebars rejects AST block parameter type confusion before emitting executable code", () => {
+  const ast = handlebars.parse("{{#missingHelper}}{{/missingHelper}}")
+  ast.body[0].program.blockParams = { length: "(globalThis.__handlebarsInjected = true, 0)" }
+  assert.throws(() => handlebars.precompile(ast))
+  assert.throws(() => handlebars.compile(ast)({}))
+  assert.equal(globalThis.__handlebarsInjected, undefined)
+})
+
+test("Handlebars deny list applies to an own constructor on Function.prototype", () => {
+  const template = handlebars.compile('{{lookup (lookup fn "__proto__") "constructor"}}')
+  assert.equal(template({ fn: function fixture() {} }, { allowProtoMethodsByDefault: true }), "")
+})
+
+test("Handlebars retains ordinary Strapi generator interpolation and iteration", () => {
+  const template = handlebars.compile("Hello {{name}}:{{#each fields}} {{name}}{{/each}}")
+  assert.equal(template({ name: "fixture", fields: [{name: "title"}, {name: "source"}] }), "Hello fixture: title source")
+})
+
 async function withServer(app, run) {
   const server = http.createServer(app)
   await new Promise((resolve, reject) => {
