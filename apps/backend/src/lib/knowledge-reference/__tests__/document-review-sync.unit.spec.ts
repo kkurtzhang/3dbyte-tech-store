@@ -1,8 +1,18 @@
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import {
+  cp,
+  mkdir,
+  mkdtemp,
+  readFile,
+  rm,
+  symlink,
+  writeFile,
+} from "node:fs/promises";
+import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
+import { transformSync } from "@swc/core";
 import { normalizeStrapiProductDocument } from "../../../modules/product-files/utils/public-documents";
 import { syncPublishedDocumentReview } from "../document-review-sync";
 
@@ -97,6 +107,43 @@ describe("native public document adapter to durable local review", () => {
     const next = await syncPublishedDocumentReview(input);
     expect(next.already_applied).toBe(true);
     expect(next.run_id).toBe(first.run_id);
+  });
+
+  it("executes the durable helper from a compiled Medusa server layout", async () => {
+    const backend = resolve(__dirname, "../../../..");
+    const isolated = join(directory, "operator-root");
+    const compiledDirectory = join(
+      isolated,
+      ".medusa/server/src/lib/knowledge-reference",
+    );
+    await mkdir(compiledDirectory, { recursive: true });
+    await symlink(
+      join(backend, "node_modules"),
+      join(isolated, "node_modules"),
+      "dir",
+    );
+    await cp(
+      join(backend, "scripts/document-review"),
+      join(isolated, "scripts/document-review"),
+      { recursive: true },
+    );
+    const source = await readFile(
+      join(__dirname, "../document-review-sync.ts"),
+      "utf8",
+    );
+    const compiled = transformSync(source, {
+      jsc: { parser: { syntax: "typescript" }, target: "es2021" },
+      module: { type: "commonjs" },
+    }).code;
+    const file = join(compiledDirectory, "document-review-sync.cjs");
+    await writeFile(file, compiled);
+    const nativeRequire = createRequire(join(isolated, "package.json"));
+    const adapter = nativeRequire(file) as {
+      syncPublishedDocumentReview: typeof syncPublishedDocumentReview;
+    };
+    expect(
+      (await adapter.syncPublishedDocumentReview(options())).prepared_documents,
+    ).toBe(1);
   });
   it("withdraws an unpublished scoped document but retains a different native document", async () => {
     const other = normalizeStrapiProductDocument({
