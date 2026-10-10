@@ -40,11 +40,12 @@ const response = () => ({
 });
 const graph = jest.fn(),
   getKnowledgeReference = jest.fn();
+const search = jest.fn();
 const request = (query = {}) => ({
   query,
   scope: {
     resolve: (key: string) =>
-      key === "query" ? { graph } : { getKnowledgeReference },
+      key === "query" ? { graph } : key === "meilisearch" ? { search } : { getKnowledgeReference },
   },
 });
 
@@ -60,6 +61,30 @@ afterEach(() => {
 });
 
 describe("current native reference reads", () => {
+  it("discovers bounded search candidates then returns only live verified citations", async () => {
+    const doc = approvedKnowledgeDocument(approved(), now)!;
+    process.env.KNOWLEDGE_REFERENCE_INDEX_ENABLED = "true";
+    search.mockResolvedValue({ hits: [{ id: doc.product_id, product_id: doc.product_id, variant_id: doc.variant_id, document_id: doc.document_id, revision_hash: doc.revision_hash }], estimatedTotalHits: 1 });
+    graph.mockResolvedValue({ data: [marked()] });
+    getKnowledgeReference.mockResolvedValue(doc);
+    const res = response();
+    await GET(request({ q: "Printer One" }) as never, res as never);
+    expect(search).toHaveBeenCalledWith("Printer One", "knowledge_reference", { limit: 4, offset: 0 });
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ references: [expect.objectContaining({ source_url: doc.source_url, checkout_enabled: false })] }));
+    getKnowledgeReference.mockResolvedValue(null);
+    await GET(request({ q: "Printer One" }) as never, res as never);
+    expect(res.json).toHaveBeenLastCalledWith({ references: [], next_offset: null });
+    delete process.env.KNOWLEDGE_REFERENCE_INDEX_ENABLED;
+  });
+  it("bounds query terms and does not resolve search when disabled", async () => {
+    const res = response();
+    delete process.env.KNOWLEDGE_REFERENCE_INDEX_ENABLED;
+    await GET(request({ q: "Printer" }) as never, res as never);
+    expect(res.status).toHaveBeenCalledWith(503);
+    await GET(request({ q: "x".repeat(121) }) as never, res as never);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(search).not.toHaveBeenCalled();
+  });
   it("prepares an exact read-only native binding preview with unset prices", async () => {
     graph.mockResolvedValue({ data: [product()] });
     const doc = approvedKnowledgeDocument(approved(), now)!;
