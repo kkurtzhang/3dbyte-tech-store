@@ -37,7 +37,7 @@ describe("opt-in approved native reference index", () => {
     expect(await reconcileReferenceIndex(options)).toEqual({ indexed: 0, deleted: 2 });
     expect(meilisearch.indexData).not.toHaveBeenCalled();
   });
-  it.each([[], [""], Array(101).fill("product"), ["product", "product"]])("rejects an invalid explicit product scope before reads", async (productIds) => {
+  it.each([[], [""], Array(101).fill("product"), ["product", "product"]].map(productIds => ({ productIds })))("rejects an invalid explicit product scope before reads", async ({ productIds }) => {
     const { options, query } = setup();
     await expect(reconcileReferenceIndex({ ...options, productIds })).rejects.toThrow();
     expect(query.graph).not.toHaveBeenCalled();

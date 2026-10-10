@@ -176,6 +176,8 @@ export default class MeilisearchModuleService {
         return (
           this.options_.productDocumentIndexName || "product_documents_public"
         );
+      case "knowledge_reference":
+        return this.options_.knowledgeReferenceIndexName || "knowledge_references_staging";
       default:
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,

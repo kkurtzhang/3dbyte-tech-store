@@ -15,7 +15,8 @@ export type MeilisearchIndexType =
   | "brand"
   | "address"
   | "locality"
-  | "product_document";
+  | "product_document"
+  | "knowledge_reference";
 
 export interface MeilisearchModuleConfig {
   host: string;
@@ -26,6 +27,7 @@ export interface MeilisearchModuleConfig {
   addressIndexName: string;
   localityIndexName: string;
   productDocumentIndexName?: string;
+  knowledgeReferenceIndexName?: string;
   settings?: MeilisearchIndexSettings;
 }
 
