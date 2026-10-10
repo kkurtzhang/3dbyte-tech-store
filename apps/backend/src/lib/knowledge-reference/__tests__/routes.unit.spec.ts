@@ -33,6 +33,7 @@ const controller =
   require("../../../../../cms/src/api/product-document/controllers/product-document")
     .default as { knowledgeReference: (ctx: unknown) => Promise<unknown> };
 const originalEnv = process.env.APP_ENV;
+const originalIndexEnabled = process.env.KNOWLEDGE_REFERENCE_INDEX_ENABLED;
 const response = () => ({
   setHeader: jest.fn(),
   status: jest.fn().mockReturnThis(),
@@ -45,7 +46,11 @@ const request = (query = {}) => ({
   query,
   scope: {
     resolve: (key: string) =>
-      key === "query" ? { graph } : key === "meilisearch" ? { search } : { getKnowledgeReference },
+      key === "query"
+        ? { graph }
+        : key === "meilisearch"
+          ? { search }
+          : { getKnowledgeReference },
   },
 });
 
@@ -58,22 +63,51 @@ afterEach(() => {
   jest.restoreAllMocks();
   if (originalEnv === undefined) delete process.env.APP_ENV;
   else process.env.APP_ENV = originalEnv;
+  if (originalIndexEnabled === undefined)
+    delete process.env.KNOWLEDGE_REFERENCE_INDEX_ENABLED;
+  else process.env.KNOWLEDGE_REFERENCE_INDEX_ENABLED = originalIndexEnabled;
 });
 
 describe("current native reference reads", () => {
   it("discovers bounded search candidates then returns only live verified citations", async () => {
     const doc = approvedKnowledgeDocument(approved(), now)!;
     process.env.KNOWLEDGE_REFERENCE_INDEX_ENABLED = "true";
-    search.mockResolvedValue({ hits: [{ id: doc.product_id, product_id: doc.product_id, variant_id: doc.variant_id, document_id: doc.document_id, revision_hash: doc.revision_hash }], estimatedTotalHits: 1 });
+    search.mockResolvedValue({
+      hits: [
+        {
+          id: doc.product_id,
+          product_id: doc.product_id,
+          variant_id: doc.variant_id,
+          document_id: doc.document_id,
+          revision_hash: doc.revision_hash,
+        },
+      ],
+      estimatedTotalHits: 1,
+    });
     graph.mockResolvedValue({ data: [marked()] });
     getKnowledgeReference.mockResolvedValue(doc);
     const res = response();
     await GET(request({ q: "Printer One" }) as never, res as never);
-    expect(search).toHaveBeenCalledWith("Printer One", "knowledge_reference", { limit: 4, offset: 0 });
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ references: [expect.objectContaining({ source_url: doc.source_url, checkout_enabled: false })] }));
+    expect(search).toHaveBeenCalledWith("Printer One", "knowledge_reference", {
+      limit: 4,
+      offset: 0,
+    });
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        references: [
+          expect.objectContaining({
+            source_url: doc.source_url,
+            checkout_enabled: false,
+          }),
+        ],
+      }),
+    );
     getKnowledgeReference.mockResolvedValue(null);
     await GET(request({ q: "Printer One" }) as never, res as never);
-    expect(res.json).toHaveBeenLastCalledWith({ references: [], next_offset: null });
+    expect(res.json).toHaveBeenLastCalledWith({
+      references: [],
+      next_offset: null,
+    });
     delete process.env.KNOWLEDGE_REFERENCE_INDEX_ENABLED;
   });
   it("bounds query terms and does not resolve search when disabled", async () => {

@@ -15,7 +15,14 @@ export default async function ReferencesPage({
 }) {
   if (process.env.APP_ENV !== "staging") notFound();
   const { offset = "0", q = "" } = await searchParams;
-  if (typeof offset !== "string" || !/^\d{1,4}$/.test(offset) || Number(offset) > 5000 || typeof q !== "string" || q.length > 120) notFound();
+  if (
+    typeof offset !== "string" ||
+    !/^\d{1,4}$/.test(offset) ||
+    Number(offset) > 5000 ||
+    typeof q !== "string" ||
+    q.length > 120
+  )
+    notFound();
   let result: {
     references: KnowledgeReferenceCard[];
     next_offset: number | null;
@@ -40,10 +47,26 @@ export default async function ReferencesPage({
         simulated for staging. These references have no checkout offer; the
         store’s test checkout remains available for eligible products.
       </p>
-      <form action="/references" method="get" className="mb-6 flex flex-wrap gap-3">
-        <label htmlFor="reference-query" className="sr-only">Search approved references</label>
-        <input id="reference-query" name="q" type="search" maxLength={120} defaultValue={q} placeholder="Search approved references" className="rounded border p-2" />
-        <button type="submit" className="rounded border px-4 py-2">Search references</button>
+      <form
+        action="/references"
+        method="get"
+        className="mb-6 flex flex-wrap gap-3"
+      >
+        <label htmlFor="reference-query" className="sr-only">
+          Search approved references
+        </label>
+        <input
+          id="reference-query"
+          name="q"
+          type="search"
+          maxLength={120}
+          defaultValue={q}
+          placeholder="Search approved references"
+          className="rounded border p-2"
+        />
+        <button type="submit" className="rounded border px-4 py-2">
+          Search references
+        </button>
       </form>
       <ReferenceCards references={result.references} />
       {result.next_offset !== null && (

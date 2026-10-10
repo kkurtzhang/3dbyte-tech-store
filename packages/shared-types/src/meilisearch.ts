@@ -166,7 +166,8 @@ export interface AiProductMetadataSearchFields {
   rcb_ai_search_keywords?: string[];
 }
 
-export interface MeilisearchProductDocument extends AiProductMetadataSearchFields {
+export interface MeilisearchProductDocument
+  extends AiProductMetadataSearchFields {
   // --- 1. CORE IDENTITY ---
   id: string;
   title: string;

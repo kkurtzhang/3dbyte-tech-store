@@ -42,8 +42,13 @@ afterEach(() => jest.restoreAllMocks());
 it("sends an encoded bounded search term without caching", async () => {
   fetch.mockResolvedValue({ references: [card()], next_offset: null });
   await loadReferencePage(0, "Printer & One");
-  expect(fetch).toHaveBeenCalledWith("/store/knowledge-references?offset=0&q=Printer%20%26%20One", { method: "GET", cache: "no-store" });
-  await expect(loadReferencePage(0, "x".repeat(121))).rejects.toThrow("Invalid reference search");
+  expect(fetch).toHaveBeenCalledWith(
+    "/store/knowledge-references?offset=0&q=Printer%20%26%20One",
+    { method: "GET", cache: "no-store" },
+  );
+  await expect(loadReferencePage(0, "x".repeat(121))).rejects.toThrow(
+    "Invalid reference search",
+  );
 });
 it("loads fresh references without caching and preserves explicit unknown/zero values", async () => {
   fetch.mockResolvedValue({ references: [card()], next_offset: null });

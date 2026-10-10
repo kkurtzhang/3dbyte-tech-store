@@ -35,15 +35,18 @@ export async function GET(
     strapi = req.scope.resolve<StrapiModuleService>(STRAPI_MODULE);
   try {
     if (term.trim()) {
-      if (process.env.KNOWLEDGE_REFERENCE_INDEX_ENABLED !== "true") throw new Error("Reference search disabled.");
-      res.json(await readIndexedReferencePage({
-        query,
-        strapi,
-        meilisearch: req.scope.resolve(MEILISEARCH_MODULE),
-        environment: process.env.APP_ENV,
-        term: term.trim(),
-        offset: Number(offset),
-      }));
+      if (process.env.KNOWLEDGE_REFERENCE_INDEX_ENABLED !== "true")
+        throw new Error("Reference search disabled.");
+      res.json(
+        await readIndexedReferencePage({
+          query,
+          strapi,
+          meilisearch: req.scope.resolve(MEILISEARCH_MODULE),
+          environment: process.env.APP_ENV,
+          term: term.trim(),
+          offset: Number(offset),
+        }),
+      );
       return;
     }
     const { data } = await query.graph({
