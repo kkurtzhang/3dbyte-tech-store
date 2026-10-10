@@ -16,6 +16,11 @@ const repositoryRoot = path.resolve(dirname, "../..");
 const nextPackageRoot = path.dirname(
   createRequire(import.meta.url).resolve("next/package.json"),
 );
+const hasFlagPackageRoot = path.dirname(
+  createRequire(path.join(nextPackageRoot, "package.json")).resolve(
+    "has-flag/package.json",
+  ),
+);
 // Shared worktree dependencies must stay inside the standalone trace and package.
 // An ordinary pnpm/Docker install keeps the existing repository-root layout.
 let tracingRoot = repositoryRoot;
@@ -37,6 +42,12 @@ const nextConfig: NextConfig = {
     tsconfigPath: "tsconfig.build.json",
   },
   outputFileTracingRoot: tracingRoot,
+  // Turbopack retains pnpm's hoisted has-flag alias but can omit its target.
+  outputFileTracingIncludes: {
+    "/*": [
+      `${path.relative(dirname, hasFlagPackageRoot).split(path.sep).join("/")}/**/*`,
+    ],
+  },
   pageExtensions: ["js", "jsx", "mdx", "ts", "tsx"],
   transpilePackages: [
     "@3dbyte-tech-store/observability",
