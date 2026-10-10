@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { access, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
@@ -43,6 +43,22 @@ export interface DocumentReviewResult {
 }
 
 const execute = promisify(execFile);
+async function reviewBridgePath() {
+  // medusa exec can load src/ or .medusa/server/src/ in a full operator checkout.
+  const paths = [
+    resolve(__dirname, "../../../scripts/document-review/bridge.py"),
+    resolve(__dirname, "../../../../../scripts/document-review/bridge.py"),
+  ];
+  for (const path of paths) {
+    try {
+      await access(path);
+      return path;
+    } catch {
+      // Try the repository-side bundle when the caller is compiled.
+    }
+  }
+  throw new Error("The repository-side document review bundle is required.");
+}
 function record(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
@@ -182,7 +198,7 @@ export async function syncPublishedDocumentReview(
       options.pythonExecutable || "python3",
       [
         "-B",
-        resolve(__dirname, "../../../scripts/document-review/bridge.py"),
+        await reviewBridgePath(),
         resolve(options.databasePath),
         resolve(options.captureRoot),
         path,
