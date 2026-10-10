@@ -1,3 +1,5 @@
+import assert from "node:assert/strict"
+
 import {
   ContainerRegistrationKeys,
   Modules,
@@ -124,6 +126,7 @@ describe("migrate-ai-product-drafts script", () => {
     const plan = await migrateAiProductDrafts({
       container: planningHarness.container,
     } as never)
+    assert(plan.mode === "plan", "Expected the default read-only migration plan")
     process.env.AI_PRODUCT_DRAFT_MIGRATION_MODE = "apply"
     process.env.AI_PRODUCT_DRAFT_MIGRATION_CONFIRM = plan.manifest_hash
     const { container, draftModule } = createHarness()

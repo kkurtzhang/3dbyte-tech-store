@@ -88,7 +88,7 @@ describe('account orders page', () => {
       count: 1,
     })
 
-    render(await OrdersPage())
+    render(await OrdersPage({}))
 
     expect(mockListOrders).toHaveBeenCalledWith(
       {

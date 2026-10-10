@@ -67,7 +67,7 @@ function formatPrice(amount: number | null | undefined, currencyCode: string | n
   }).format(amount || 0)
 }
 
-export default async function OrdersPage({ searchParams }: OrdersPageProps = {}) {
+export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   const session = await getSessionAction()
 
   if (!session.success) {

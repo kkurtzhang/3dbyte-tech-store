@@ -35,7 +35,7 @@ type AddressesSearchParams = {
 }
 
 type AddressesPageProps = {
-  searchParams?: Promise<AddressesSearchParams> | AddressesSearchParams
+  searchParams?: Promise<AddressesSearchParams>
 }
 
 function addressToFormAddress(address: CustomerAddress) {
@@ -76,7 +76,7 @@ function isDefaultAddress(address: CustomerAddress) {
 
 export default async function AddressesPage({
   searchParams,
-}: AddressesPageProps = {}) {
+}: AddressesPageProps) {
   const session = await getSessionAction()
 
   if (!session.success) {
