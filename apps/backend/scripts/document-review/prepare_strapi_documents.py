@@ -3,6 +3,7 @@
 Strapi remains the source of truth. This program has no HTTP, model, database,
 upload, publication or index client. PDF extraction requires local Poppler tools.
 """
+
 import argparse
 from datetime import datetime
 import hashlib

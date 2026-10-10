@@ -30,7 +30,7 @@ describe("native public document adapter to durable local review", () => {
     path: "source.txt",
     sha256: sha,
     origin_url: url,
-    mime: "text/plain",
+    mime: "text/plain" as const,
     source_provenance: {
       capture_kind: "original_response",
       capture_sha256: sha,
