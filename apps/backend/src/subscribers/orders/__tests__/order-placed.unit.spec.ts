@@ -106,6 +106,7 @@ describe("orderPlacedHandler", () => {
     process.env = { ...originalEnv };
     process.env.NODE_ENV = "development";
     process.env.ORDER_EMAILS_ENABLED = "true";
+    process.env.MAILDEV_ENABLED = "true";
     process.env.STRIPE_SECRET_KEY = "sk_test_safe";
     delete process.env.RESEND_API_KEY;
     delete process.env.RESEND_FROM_EMAIL;

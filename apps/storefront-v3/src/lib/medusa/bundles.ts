@@ -25,7 +25,8 @@ export type BundleProduct = {
   items: BundleProductItem[]
 }
 
-type ProductWithBundleDiscovery = Record<string, unknown> & {
+type ProductWithBundleDiscovery = {
+  id?: string
   available_in_bundles?: unknown
   bundles?: unknown
   bundle_products?: unknown

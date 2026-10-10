@@ -332,6 +332,7 @@ describe("KarrioFulfillmentService", () => {
     });
     getClient(service).client.createShipment = createShipment;
 
+    const items = [{ quantity: 1, variant: { weight: 0.5 } }];
     const result = await service.createFulfillment(
       {
         selected_rate_id: "rat_live_aramex_priority",
@@ -339,7 +340,7 @@ describe("KarrioFulfillmentService", () => {
         carrier_id: "stale-aramex",
         service_name: "Aramex Priority",
       },
-      [{ quantity: 1, variant: { weight: 0.5 } }],
+      items,
       {
         shipping_address: {
           first_name: "Launch",

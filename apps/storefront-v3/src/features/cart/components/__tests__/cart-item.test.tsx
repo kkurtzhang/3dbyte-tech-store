@@ -1,3 +1,4 @@
+import { createVariantFixture } from "@/test-utils/medusa-fixtures"
 import { render, screen } from "@testing-library/react"
 import { CartItem } from "../cart-item"
 import type { MedusaCartLineItem } from "@/lib/medusa/types"
@@ -35,7 +36,7 @@ const createItem = (overrides: Partial<MedusaCartLineItem> = {}): MedusaCartLine
     title: "Test Product",
     quantity: 1,
     unit_price: 1000,
-    variant: {
+    variant: createVariantFixture({
       id: "variant_1",
       title: "Default Variant",
       preorder_variant: {
@@ -48,7 +49,7 @@ const createItem = (overrides: Partial<MedusaCartLineItem> = {}): MedusaCartLine
         title: "Test Product",
         thumbnail: "/test.jpg",
       },
-    },
+    }),
     ...overrides,
   }) as MedusaCartLineItem
 
@@ -68,7 +69,7 @@ describe("CartItem", () => {
         item={createItem({
           quantity: 3,
           unit_price: 19,
-          variant: {
+          variant: createVariantFixture({
             id: "variant_1",
             title: "Default Variant",
             prices: [{ amount: 49, currency_code: "usd" }],
@@ -82,7 +83,7 @@ describe("CartItem", () => {
               title: "Test Product",
               thumbnail: "/test.jpg",
             },
-          } as MedusaCartLineItem["variant"],
+          }),
         })}
         currencyCode="usd"
       />
@@ -100,7 +101,7 @@ describe("CartItem", () => {
       <CartItem
         item={createItem({
           unit_price: 25,
-          variant: {
+          variant: createVariantFixture({
             id: "variant_sale",
             title: "Default Variant",
             calculated_price: {
@@ -113,7 +114,7 @@ describe("CartItem", () => {
               title: "Test Product",
               thumbnail: "/test.jpg",
             },
-          } as MedusaCartLineItem["variant"],
+          }),
         })}
         currencyCode="usd"
       />
@@ -131,7 +132,7 @@ describe("CartItem", () => {
           metadata: {
             bundle_regular_unit_price: 48.03,
           },
-          variant: {
+          variant: createVariantFixture({
             id: "variant_bundle",
             title: "Default Variant",
             product: {
@@ -139,7 +140,7 @@ describe("CartItem", () => {
               title: "Test Product",
               thumbnail: "/test.jpg",
             },
-          } as MedusaCartLineItem["variant"],
+          }),
         })}
         currencyCode="aud"
       />
@@ -156,7 +157,7 @@ describe("CartItem", () => {
           unit_price: 46.08,
           subtotal: 46.08,
           total: 50.69,
-          variant: {
+          variant: createVariantFixture({
             id: "variant_1",
             title: "Default Variant",
             product: {
@@ -164,7 +165,7 @@ describe("CartItem", () => {
               title: "Test Product",
               thumbnail: "/test.jpg",
             },
-          } as MedusaCartLineItem["variant"],
+          }),
         })}
         currencyCode="usd"
       />
@@ -179,7 +180,7 @@ describe("CartItem", () => {
       <CartItem
         item={createItem({
           thumbnail: "/line-item-thumb.jpg",
-          variant: {
+          variant: createVariantFixture({
             id: "variant_1",
             title: "Default Variant",
             preorder_variant: {
@@ -192,7 +193,7 @@ describe("CartItem", () => {
               title: "Test Product",
               thumbnail: null,
             },
-          } as MedusaCartLineItem["variant"],
+          }),
         })}
         currencyCode="usd"
       />
@@ -205,7 +206,7 @@ describe("CartItem", () => {
     render(
       <CartItem
         item={createItem({
-          variant: {
+          variant: createVariantFixture({
             id: "variant_2",
             title: "Matte Black",
             product: {
@@ -213,7 +214,7 @@ describe("CartItem", () => {
               title: "Test Product",
               thumbnail: "/test.jpg",
             },
-          } as MedusaCartLineItem["variant"],
+          }),
         })}
         currencyCode="usd"
       />
@@ -228,7 +229,7 @@ describe("CartItem", () => {
         item={createItem({
           variant_title: "Power Tool Green",
           subtitle: "Power Tool Green",
-          variant: {
+          variant: createVariantFixture({
             id: "variant_2",
             title: "Default Variant",
             product: {
@@ -236,7 +237,7 @@ describe("CartItem", () => {
               title: "Test Product",
               thumbnail: "/test.jpg",
             },
-          } as MedusaCartLineItem["variant"],
+          }),
         })}
         currencyCode="usd"
       />

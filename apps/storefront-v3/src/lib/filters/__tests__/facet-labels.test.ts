@@ -1,3 +1,5 @@
+export {}
+
 const mockCategoryList = jest.fn()
 const mockCollectionList = jest.fn()
 const mockBrandSearch = jest.fn()

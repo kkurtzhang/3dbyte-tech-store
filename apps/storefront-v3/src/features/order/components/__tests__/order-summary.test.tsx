@@ -1,3 +1,8 @@
+import {
+  createOrderFixture,
+  createVariantFixture,
+  type OrderFixtureInput,
+} from "@/test-utils/medusa-fixtures"
 import { render, screen } from '@testing-library/react'
 import { OrderSummary } from '../order-summary'
 import type { MedusaOrder } from '@/lib/medusa/types'
@@ -10,8 +15,8 @@ jest.mock('@/components/ui/separator', () => ({
   Separator: () => <hr />,
 }))
 
-const createOrder = (overrides: Partial<MedusaOrder> = {}): MedusaOrder =>
-  ({
+const createOrder = (overrides: OrderFixtureInput = {}): MedusaOrder =>
+  createOrderFixture({
     id: 'order_1',
     custom_display_id: '3DB-1777976810295',
     display_id: 9,
@@ -31,7 +36,7 @@ const createOrder = (overrides: Partial<MedusaOrder> = {}): MedusaOrder =>
         metadata: {
           regular_unit_price: 10,
         },
-        variant: {
+        variant: createVariantFixture({
           id: 'variant_1',
           title: 'Default Variant',
           preorder_variant: {
@@ -39,11 +44,11 @@ const createOrder = (overrides: Partial<MedusaOrder> = {}): MedusaOrder =>
             available_date: '2999-01-01T00:00:00.000Z',
             prices: [{ amount: 8, currency_code: 'usd' }],
           },
-        },
+        }),
       },
     ],
     ...overrides,
-  }) as MedusaOrder
+  })
 
 describe('OrderSummary', () => {
   it('shows the customer-facing order number and billing address', () => {
@@ -68,7 +73,7 @@ describe('OrderSummary', () => {
             postal_code: '2529',
             country_code: 'au',
           },
-        } as Partial<MedusaOrder>)}
+        })}
       />
     )
 
@@ -87,7 +92,7 @@ describe('OrderSummary', () => {
         order={createOrder({
           custom_display_id: null,
           display_id: 9,
-        } as Partial<MedusaOrder>)}
+        })}
       />
     )
 
@@ -120,7 +125,7 @@ describe('OrderSummary', () => {
                 regular_unit_price: 25.815,
               },
               variant_title: 'Power Tool Green',
-              variant: {
+              variant: createVariantFixture({
                 id: 'variant_1',
                 title: 'Default Variant',
                 preorder_variant: {
@@ -128,7 +133,7 @@ describe('OrderSummary', () => {
                   available_date: '2999-01-01T00:00:00.000Z',
                   prices: [{ amount: 19, currency_code: 'usd' }],
                 },
-              },
+              }),
             },
           ],
         })}
@@ -150,7 +155,7 @@ describe('OrderSummary', () => {
           shipping_total: 13.255,
           tax_total: 3.105,
           total: 34.155,
-        } as Partial<MedusaOrder>)}
+        })}
       />
     )
 
@@ -181,7 +186,7 @@ describe('OrderSummary', () => {
             country_code: 'au',
           },
           tax_total: 0,
-        } as Partial<MedusaOrder>)}
+        })}
       />
     )
 
@@ -208,7 +213,7 @@ describe('OrderSummary', () => {
                 bundle_quantity: 1,
                 regular_unit_price: 12,
               },
-              variant: {
+              variant: createVariantFixture({
                 id: 'variant_1',
                 title: 'Blue',
                 preorder_variant: {
@@ -216,7 +221,7 @@ describe('OrderSummary', () => {
                   available_date: '2999-01-01T00:00:00.000Z',
                   prices: [{ amount: 8, currency_code: 'usd' }],
                 },
-              },
+              }),
             },
             {
               id: 'item_2',
@@ -230,10 +235,10 @@ describe('OrderSummary', () => {
                 bundle_title: 'Starter Bundle',
                 bundle_quantity: 1,
               },
-              variant: {
+              variant: createVariantFixture({
                 id: 'variant_2',
                 title: 'Default Variant',
-              },
+              }),
             },
           ],
         })}
@@ -264,7 +269,7 @@ describe('OrderSummary', () => {
         order={createOrder({
           billing_address: sameAddress,
           shipping_address: sameAddress,
-        } as Partial<MedusaOrder>)}
+        })}
       />
     )
 
@@ -299,7 +304,7 @@ describe('OrderSummary', () => {
               ],
             },
           ],
-        } as Partial<MedusaOrder>)}
+        })}
       />
     )
 
@@ -320,10 +325,10 @@ describe('OrderSummary', () => {
               unit_price: 19,
               variant_title: 'Power Tool Green',
               subtitle: 'Power Tool Green',
-              variant: {
+              variant: createVariantFixture({
                 id: 'variant_1',
                 title: 'Default Variant',
-              },
+              }),
             },
           ],
         })}
@@ -356,7 +361,7 @@ describe('OrderSummary', () => {
               ],
             },
           ],
-        } as Partial<MedusaOrder>)}
+        })}
       />
     )
 

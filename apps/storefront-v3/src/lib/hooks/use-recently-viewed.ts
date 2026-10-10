@@ -55,9 +55,7 @@ export function useRecentlyViewed() {
         handle: product.handle!,
         title: product.title,
         thumbnail: product.thumbnail || null,
-        // @ts-expect-error - calculated_price and prices may not be in strict Medusa types
         price: product.variants?.[0]?.calculated_price?.calculated_amount || product.variants?.[0]?.prices?.[0]?.amount || 0,
-        // @ts-expect-error - calculated_price and prices may not be in strict Medusa types
         currencyCode: product.variants?.[0]?.calculated_price?.currency_code || product.variants?.[0]?.prices?.[0]?.currency_code || "USD",
         viewedAt: new Date().toISOString(),
       }

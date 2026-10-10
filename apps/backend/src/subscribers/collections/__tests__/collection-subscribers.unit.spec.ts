@@ -13,6 +13,14 @@ import { syncCollectionToStrapiWorkflow } from "../../../workflows/strapi/sync-c
 import { updateCollectionToStrapiWorkflow } from "../../../workflows/strapi/update-collection-to-strapi"
 import { STRAPI_MODULE } from "../../../modules/strapi"
 
+type MockWorkflow = jest.MockedFunction<(container: unknown) => {
+  run: (input: unknown) => Promise<unknown>
+}>
+const { syncCollectionToStrapiWorkflow: mockSyncCollection } =
+  jest.requireMock<{ syncCollectionToStrapiWorkflow: MockWorkflow }>("../../../workflows/strapi/sync-collection-to-strapi")
+const { updateCollectionToStrapiWorkflow: mockUpdateCollection } =
+  jest.requireMock<{ updateCollectionToStrapiWorkflow: MockWorkflow }>("../../../workflows/strapi/update-collection-to-strapi")
+
 describe("collection subscribers", () => {
   const run = jest.fn()
   const deleteCollectionDescription = jest.fn()
@@ -28,8 +36,8 @@ describe("collection subscribers", () => {
 
   beforeEach(() => {
     jest.resetAllMocks()
-    ;(syncCollectionToStrapiWorkflow as jest.Mock).mockReturnValue({ run })
-    ;(updateCollectionToStrapiWorkflow as jest.Mock).mockReturnValue({ run })
+    mockSyncCollection.mockReturnValue({ run })
+    mockUpdateCollection.mockReturnValue({ run })
     container.resolve.mockImplementation((name: string) => {
       if (name === "logger") return logger
       if (name === STRAPI_MODULE) {

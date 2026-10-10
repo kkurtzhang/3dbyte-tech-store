@@ -8,7 +8,7 @@ const toast = jest.fn()
 const setOptions = jest.fn()
 const onVariantChange = jest.fn()
 const priceDisplayMock = jest.fn()
-const mockGetStockStatus = jest.fn(() => ({ status: "preorder", quantity: 0 }))
+const mockGetStockStatus = jest.fn((..._args: unknown[]) => ({ status: "preorder", quantity: 0 }))
 const mockSocialShare = jest.fn()
 
 jest.mock("@/context/cart-context", () => ({

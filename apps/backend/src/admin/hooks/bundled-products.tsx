@@ -51,9 +51,7 @@ const normalizeLinkedEntity = <T,>(
   return value ?? null;
 };
 
-const normalizeBundledProduct = (
-  bundledProduct: AdminBundledProduct
-): AdminBundledProduct => {
+const normalizeBundledProduct = (bundledProduct: AdminBundledProduct) => {
   return {
     ...bundledProduct,
     product: normalizeLinkedEntity(bundledProduct.product),
@@ -63,6 +61,10 @@ const normalizeBundledProduct = (
     })),
   };
 };
+
+export type NormalizedAdminBundledProduct = ReturnType<
+  typeof normalizeBundledProduct
+>;
 
 export const useBundledProducts = (
   query: BundledProductQueryParams,

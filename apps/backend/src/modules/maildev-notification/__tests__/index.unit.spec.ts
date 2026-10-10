@@ -1,3 +1,4 @@
+import NotificationProviderService from "../service";
 import MaildevNotificationProviderModule from "../index";
 
 describe("MaildevNotificationProviderModule", () => {
@@ -5,7 +6,8 @@ describe("MaildevNotificationProviderModule", () => {
     expect(MaildevNotificationProviderModule).toMatchObject({
       module: "notification",
     });
-    expect(MaildevNotificationProviderModule.services[0].identifier).toBe(
+    expect(MaildevNotificationProviderModule.services[0]).toBe(NotificationProviderService);
+    expect(NotificationProviderService.identifier).toBe(
       "maildev",
     );
   });

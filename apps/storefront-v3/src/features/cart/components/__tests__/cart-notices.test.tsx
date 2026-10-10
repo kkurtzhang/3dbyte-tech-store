@@ -1,3 +1,4 @@
+import { createVariantFixture } from "@/test-utils/medusa-fixtures"
 import { render, screen } from "@testing-library/react"
 import type { MedusaCartLineItem } from "@/lib/medusa/cart"
 import { CartNotices, getCompactCartNoticeLines } from "../cart-notices"
@@ -15,12 +16,12 @@ function createLineItem(overrides: Partial<MedusaCartLineItem> = {}) {
     quantity: 1,
     unit_price: 1000,
     metadata: null,
-    variant: {
+    variant: createVariantFixture({
       id: "variant_default",
       title: "Default Variant",
       prices: [{ amount: 1200, currency_code: "usd" }],
       preorder_variant: undefined,
-    },
+    }),
     ...overrides,
   } as MedusaCartLineItem
 }
@@ -41,7 +42,7 @@ describe("CartNotices", () => {
         items={[
           createLineItem({
             id: "line_preorder",
-            variant: {
+            variant: createVariantFixture({
               id: "variant_preorder",
               title: "Default Variant",
               prices: [{ amount: 1200, currency_code: "usd" }],
@@ -50,16 +51,16 @@ describe("CartNotices", () => {
                 available_date: "2999-01-01T00:00:00.000Z",
                 prices: [{ amount: 900, currency_code: "usd" }],
               },
-            },
+            }),
           }),
           createLineItem({
             id: "line_regular",
-            variant: {
+            variant: createVariantFixture({
               id: "variant_regular",
               title: "Default Variant",
               prices: [{ amount: 1200, currency_code: "usd" }],
               preorder_variant: undefined,
-            },
+            }),
           }),
         ]}
       />
@@ -82,12 +83,12 @@ describe("CartNotices", () => {
             id: "line_variant_only",
             subtitle: "Power Tool Green",
             variant_title: "Power Tool Green",
-            variant: {
+            variant: createVariantFixture({
               id: "variant_selected",
               title: "Default Variant",
               prices: [{ amount: 1200, currency_code: "usd" }],
               preorder_variant: undefined,
-            },
+            }),
           }),
         ]}
       />
@@ -103,12 +104,12 @@ describe("CartNotices", () => {
         createLineItem({
           id: "line_variant_title",
           variant_title: "Power Tool Green",
-          variant: {
+          variant: createVariantFixture({
             id: "variant_selected",
             title: "Default Variant",
             prices: [{ amount: 1200, currency_code: "usd" }],
             preorder_variant: undefined,
-          },
+          }),
         }),
       ],
       "usd"
@@ -130,12 +131,12 @@ describe("CartNotices", () => {
           id: "line_subtitle_variant",
           subtitle: "Power Tool Green",
           variant_title: "Default Title",
-          variant: {
+          variant: createVariantFixture({
             id: "variant_selected",
             title: "Default Variant",
             prices: [{ amount: 1200, currency_code: "usd" }],
             preorder_variant: undefined,
-          },
+          }),
         }),
       ],
       "usd"
@@ -155,7 +156,7 @@ describe("CartNotices", () => {
             bundle_title: "Starter Bundle",
             bundle_quantity: 1,
           },
-          variant: {
+          variant: createVariantFixture({
             id: "variant_preorder",
             title: "Default Variant",
             prices: [{ amount: 1200, currency_code: "usd" }],
@@ -164,18 +165,18 @@ describe("CartNotices", () => {
               available_date: "2999-01-01T00:00:00.000Z",
               prices: [{ amount: 900, currency_code: "usd" }],
             },
-          },
+          }),
         }),
         createLineItem({
           id: "line_regular",
           unit_price: 1200,
           metadata: null,
-          variant: {
+          variant: createVariantFixture({
             id: "variant_regular",
             title: "Default Variant",
             prices: [{ amount: 1200, currency_code: "usd" }],
             preorder_variant: undefined,
-          },
+          }),
         }),
       ],
       "usd"
@@ -202,12 +203,12 @@ describe("CartNotices", () => {
         createLineItem({
           id: "line_variant_title",
           variant_title: "Power Tool Green",
-          variant: {
+          variant: createVariantFixture({
             id: "variant_selected",
             title: "Default Variant",
             prices: [{ amount: 1200, currency_code: "usd" }],
             preorder_variant: undefined,
-          },
+          }),
         }),
       ],
       "usd"
@@ -225,12 +226,12 @@ describe("CartNotices", () => {
             id: "line_variant_only",
             subtitle: "Power Tool Green",
             variant_title: "Power Tool Green",
-            variant: {
+            variant: createVariantFixture({
               id: "variant_selected",
               title: "Default Variant",
               prices: [{ amount: 1200, currency_code: "usd" }],
               preorder_variant: undefined,
-            },
+            }),
           }),
         ]}
       />
@@ -248,12 +249,12 @@ describe("CartNotices", () => {
             id: "line_variant_only",
             subtitle: "Power Tool Green",
             variant_title: "Power Tool Green",
-            variant: {
+            variant: createVariantFixture({
               id: "variant_selected",
               title: "Default Variant",
               prices: [{ amount: 1200, currency_code: "usd" }],
               preorder_variant: undefined,
-            },
+            }),
           }),
         ]}
       />
@@ -269,12 +270,12 @@ describe("CartNotices", () => {
           id: "line_variant_title",
           variant_title: "Power Tool Green",
           subtitle: "Power Tool Green",
-          variant: {
+          variant: createVariantFixture({
             id: "variant_selected",
             title: "Default Variant",
             prices: [{ amount: 1200, currency_code: "usd" }],
             preorder_variant: undefined,
-          },
+          }),
         }),
       ],
       "usd"
@@ -297,12 +298,12 @@ describe("CartNotices", () => {
               bundle_title: "Starter Bundle",
               bundle_quantity: 1,
             },
-            variant: {
+            variant: createVariantFixture({
               id: "variant_bundle_selected",
               title: "Default Variant",
               prices: [{ amount: 1200, currency_code: "usd" }],
               preorder_variant: undefined,
-            },
+            }),
           }),
         ]}
       />
@@ -323,12 +324,12 @@ describe("CartNotices", () => {
             bundle_title: "Starter Bundle",
             bundle_quantity: 1,
           },
-          variant: {
+          variant: createVariantFixture({
             id: "variant_bundle_selected",
             title: "Default Variant",
             prices: [{ amount: 1200, currency_code: "usd" }],
             preorder_variant: undefined,
-          },
+          }),
         }),
       ],
       "usd"
@@ -350,11 +351,11 @@ describe("CartNotices", () => {
               bundle_title: "Starter Bundle",
               bundle_quantity: 1,
             },
-            variant: {
+            variant: createVariantFixture({
               id: "variant_bundle_1",
               title: "Default Variant",
               prices: [{ amount: 11, currency_code: "usd" }],
-            },
+            }),
           }),
           createLineItem({
             id: "line_bundle_2",
@@ -364,11 +365,11 @@ describe("CartNotices", () => {
               bundle_title: "Starter Bundle",
               bundle_quantity: 1,
             },
-            variant: {
+            variant: createVariantFixture({
               id: "variant_bundle_2",
               title: "Default Variant",
               prices: [{ amount: 7, currency_code: "usd" }],
-            },
+            }),
           }),
         ]}
       />
@@ -389,11 +390,11 @@ describe("CartNotices", () => {
             bundle_title: "Starter Bundle",
             bundle_quantity: 1,
           },
-          variant: {
+          variant: createVariantFixture({
             id: "variant_bundle_1",
             title: "Default Variant",
             prices: [{ amount: 1100, currency_code: "usd" }],
-          },
+          }),
         }),
       ],
       "usd"
@@ -407,16 +408,16 @@ describe("CartNotices", () => {
       [
         createLineItem({
           id: "line_variant",
-          variant: {
+          variant: createVariantFixture({
             id: "variant_selected",
             title: "Matte Black",
             prices: [{ amount: 1200, currency_code: "usd" }],
             preorder_variant: undefined,
-          },
+          }),
         }),
         createLineItem({
           id: "line_preorder",
-          variant: {
+          variant: createVariantFixture({
             id: "variant_preorder",
             title: "Default Variant",
             prices: [{ amount: 1200, currency_code: "usd" }],
@@ -425,7 +426,7 @@ describe("CartNotices", () => {
               available_date: "2999-01-01T00:00:00.000Z",
               prices: [{ amount: 900, currency_code: "usd" }],
             },
-          },
+          }),
         }),
       ],
       "usd"
@@ -453,11 +454,11 @@ describe("CartNotices", () => {
               bundle_title: "Starter Bundle",
               bundle_quantity: 1,
             },
-            variant: {
+            variant: createVariantFixture({
               id: "variant_bundle_1",
               title: "Default Variant",
               prices: [{ amount: 11, currency_code: "usd" }],
-            },
+            }),
           }),
           createLineItem({
             id: "line_bundle_2",
@@ -467,11 +468,11 @@ describe("CartNotices", () => {
               bundle_title: "Starter Bundle",
               bundle_quantity: 1,
             },
-            variant: {
+            variant: createVariantFixture({
               id: "variant_bundle_2",
               title: "Default Variant",
               prices: [{ amount: 7, currency_code: "usd" }],
-            },
+            }),
           }),
         ]}
       />
@@ -494,7 +495,7 @@ describe("CartNotices", () => {
               bundle_title: "Launch Bundle",
               bundle_quantity: 1,
             },
-            variant: {
+            variant: createVariantFixture({
               id: "variant_bundle_preorder",
               title: "Default Variant",
               prices: [{ amount: 1400, currency_code: "usd" }],
@@ -503,7 +504,7 @@ describe("CartNotices", () => {
                 available_date: "2999-01-01T00:00:00.000Z",
                 prices: [{ amount: 900, currency_code: "usd" }],
               },
-            },
+            }),
           }),
         ]}
       />

@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { logger as frameworkLogger } from "@medusajs/framework/logger";
 
 import MaildevNotificationProviderService from "../service";
 
@@ -8,12 +9,8 @@ jest.mock("nodemailer", () => ({
 
 const sendMail = jest.fn();
 
-const logger = {
-  debug: jest.fn(),
-  error: jest.fn(),
-  info: jest.fn(),
-  warn: jest.fn(),
-};
+const logger = frameworkLogger;
+jest.spyOn(logger, "debug").mockImplementation(() => {});
 
 const options = {
   channels: ["email"],

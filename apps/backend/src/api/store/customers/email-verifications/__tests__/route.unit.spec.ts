@@ -168,7 +168,7 @@ describe("store customer email verification route", () => {
 
   it("confirms a valid token and redirects customers to sign in", async () => {
     const { createCustomerEmailVerificationToken } = await import(
-      "../../../../../lib/customer-verification/tokens"
+      "../../../../../lib/customer-verification/tokens.js"
     );
     const token = createCustomerEmailVerificationToken({
       customerId: "cus_123",
@@ -219,7 +219,7 @@ describe("store customer email verification route", () => {
 
   it("confirms a valid token with a JSON response for storefront verification pages", async () => {
     const { createCustomerEmailVerificationToken } = await import(
-      "../../../../../lib/customer-verification/tokens"
+      "../../../../../lib/customer-verification/tokens.js"
     );
     const token = createCustomerEmailVerificationToken({
       customerId: "cus_123",
@@ -256,7 +256,7 @@ describe("store customer email verification route", () => {
 
   it("does not re-run verification side effects when a token has already been used", async () => {
     const { createCustomerEmailVerificationToken } = await import(
-      "../../../../../lib/customer-verification/tokens"
+      "../../../../../lib/customer-verification/tokens.js"
     );
     const issuedAt = new Date(Date.now() - 60_000);
     const token = createCustomerEmailVerificationToken({
@@ -322,7 +322,7 @@ describe("store customer email verification route", () => {
 
   it("applies a verified pending email change without claiming historical orders", async () => {
     const { createCustomerEmailVerificationToken } = await import(
-      "../../../../../lib/customer-verification/tokens"
+      "../../../../../lib/customer-verification/tokens.js"
     );
     const token = createCustomerEmailVerificationToken({
       customerId: "cus_123",
@@ -406,7 +406,7 @@ describe("store customer email verification route", () => {
 
   it("returns account-settings redirect details for JSON email-change verification", async () => {
     const { createCustomerEmailVerificationToken } = await import(
-      "../../../../../lib/customer-verification/tokens"
+      "../../../../../lib/customer-verification/tokens.js"
     );
     const token = createCustomerEmailVerificationToken({
       customerId: "cus_123",

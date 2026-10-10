@@ -1,4 +1,4 @@
-const mockPermanentRedirect = jest.fn(() => {
+const mockPermanentRedirect = jest.fn((..._args: unknown[]) => {
   throw new Error("NEXT_REDIRECT")
 })
 

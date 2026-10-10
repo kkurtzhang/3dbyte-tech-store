@@ -116,7 +116,7 @@ describe("rate limit middleware", () => {
       delete process.env.REDIS_URL;
       jest.resetModules();
 
-      const { hermesProductDraftRateLimit } = await import("../api-rules");
+      const { hermesProductDraftRateLimit } = await import("../api-rules.js");
       const req = { headers: { "x-forwarded-for": "203.0.113.20" } };
       const res = createResponse();
       const next = jest.fn() as MedusaNextFunction;

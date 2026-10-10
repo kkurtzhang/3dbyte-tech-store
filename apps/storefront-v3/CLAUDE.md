@@ -41,11 +41,15 @@ paths.
 pnpm --filter=@3dbyte-tech-store/storefront-v3 dev
 pnpm --filter=@3dbyte-tech-store/storefront-v3 build
 pnpm --filter=@3dbyte-tech-store/storefront-v3 lint
+pnpm --filter=@3dbyte-tech-store/storefront-v3 type-check
 pnpm --filter=@3dbyte-tech-store/storefront-v3 test
 pnpm --filter=@3dbyte-tech-store/storefront-v3 test:coverage
 pnpm --filter=@3dbyte-tech-store/storefront-v3 test:coverage:critical
 pnpm exec playwright test
 ```
+
+The `type-check` script includes test sources. Release CI uses the production
+TypeScript check in `next build` and runs Jest separately.
 
 For component work, use React Testing Library and user-visible assertions. For
 authentication, account, cart, checkout, order, and search regressions, add the

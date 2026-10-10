@@ -35,6 +35,7 @@
     ".cache",
     "examples",
     "scripts/archive",
-    "src/scripts/archive"
+    "src/scripts/archive",
+    "src/admin"
   ]
 }

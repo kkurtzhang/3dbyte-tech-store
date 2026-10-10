@@ -85,6 +85,7 @@ const mockGetHomepage = getHomepage as jest.MockedFunction<typeof getHomepage>
 function mockCommerceData() {
   mockGetPricingContext.mockResolvedValue({
     region_id: "reg_au",
+      country_code: "au",
     currency_code: "aud",
   })
   mockSearchProducts.mockResolvedValue({
@@ -97,9 +98,16 @@ function mockCommerceData() {
         price: 1299,
         currency_code: "aud",
         on_sale: false,
+        price_aud: 1299,
+        in_stock: true,
+        inventory_quantity: 10,
+        category_ids: [],
+        categories: [],
+        variants: [],
       },
     ],
     totalCount: 1,
+    facets: {},
     error: false,
   })
   mockGetFeaturedCollections.mockResolvedValue([
@@ -107,6 +115,7 @@ function mockCommerceData() {
       id: "pcol_1",
       handle: "hotends",
       title: "Hotends",
+      created_at: "2026-01-01T00:00:00.000Z", updated_at: "2026-01-01T00:00:00.000Z", deleted_at: null, metadata: null,
     },
   ])
   mockGetCollectionDescriptions.mockResolvedValue({

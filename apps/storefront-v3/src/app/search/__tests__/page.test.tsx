@@ -58,6 +58,7 @@ describe("SearchPage", () => {
   beforeEach(() => {
     mockGetPricingContext.mockResolvedValue({
       region_id: "reg_au",
+      country_code: "au",
       currency_code: "aud",
     })
     mockSearchProducts.mockResolvedValue({

@@ -1,3 +1,5 @@
+export {}
+
 const mockFetch = jest.fn()
 const mockCookieSet = jest.fn()
 const mockCookieDelete = jest.fn()

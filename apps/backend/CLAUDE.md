@@ -38,11 +38,16 @@ modules/workflows instead of embedding them in route handlers.
 ```bash
 pnpm --filter=@3dbyte-tech-store/backend dev
 pnpm --filter=@3dbyte-tech-store/backend build
+pnpm --filter=@3dbyte-tech-store/backend type-check
 pnpm --filter=@3dbyte-tech-store/backend test:unit
 pnpm --filter=@3dbyte-tech-store/backend test:integration:http
 pnpm --filter=@3dbyte-tech-store/backend test:integration:modules
 pnpm --filter=@3dbyte-tech-store/backend seed
 ```
+
+The `type-check` script checks the Node backend (including tests), then every
+Admin extension with its strict Vite/bundler configuration. This matches
+Medusa's separate server and Admin compilation boundaries.
 
 Start with the smallest matching Jest suite. Integration tests may require
 PostgreSQL, Redis, Meilisearch, Strapi, or other configured services.

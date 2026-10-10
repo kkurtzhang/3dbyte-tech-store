@@ -1,3 +1,5 @@
+import assert from "node:assert/strict"
+
 import {
   buildQuickViewBundleItems,
   buildQuickViewDetailChips,
@@ -47,13 +49,15 @@ describe("quick-view-product helpers", () => {
   it("merges fetched product data with preview fallbacks when fetched data is thin", () => {
     const previewProduct = buildQuickViewPreviewProduct(preview)
 
+    const previewVariant = previewProduct.variants?.[0]
+    assert(previewVariant)
     const merged = mergeQuickViewProductData(previewProduct, {
       ...previewProduct,
       images: [],
-      thumbnail: undefined,
+      thumbnail: null,
       variants: [
         {
-          ...previewProduct.variants?.[0],
+          ...previewVariant,
           prices: [],
           calculated_price: undefined,
           inventory_quantity: 0,

@@ -31,6 +31,7 @@ describe("BrandsPage", () => {
       count: 1,
     })
     mockGetBrandDescriptions.mockResolvedValue({
+      meta: {},
       data: [
         {
           id: 1,
@@ -81,7 +82,7 @@ describe("BrandsPage", () => {
       ],
       count: 2,
     })
-    mockGetBrandDescriptions.mockResolvedValueOnce({ data: [] })
+    mockGetBrandDescriptions.mockResolvedValueOnce({meta: {},  data: [] })
 
     render(await BrandsPage())
 
@@ -100,7 +101,7 @@ describe("BrandsPage", () => {
       ],
       count: 1,
     })
-    mockGetBrandDescriptions.mockResolvedValueOnce({ data: [] })
+    mockGetBrandDescriptions.mockResolvedValueOnce({meta: {},  data: [] })
 
     render(await BrandsPage())
 

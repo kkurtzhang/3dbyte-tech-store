@@ -29,6 +29,18 @@ const mockAcceptOrderTransferWorkflow =
     typeof acceptOrderTransferWorkflow
   >;
 
+type FixtureQueryRow = {
+  id: string;
+  email?: string;
+  customer_id?: string | null;
+  status?: string;
+  metadata?: Record<string, unknown>;
+  completed_at?: string | null;
+  order_id?: string;
+  change_type?: string;
+  actions?: Array<{ action: string; details: { token: string } }>;
+};
+
 function createDependencies() {
   const customerModule = {
     retrieveCustomer: jest.fn().mockResolvedValue({
@@ -106,7 +118,7 @@ function createDependencies() {
     },
   ];
   const query = {
-    graph: jest.fn(async (input: Record<string, unknown>) => {
+    graph: jest.fn(async (input: Record<string, unknown>): Promise<{ data: FixtureQueryRow[] }> => {
       if (input.entity === "order") {
         return { data: orders };
       }

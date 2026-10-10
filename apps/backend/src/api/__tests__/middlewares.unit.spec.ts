@@ -1,3 +1,5 @@
+import assert from "node:assert/strict";
+
 const mockAuthenticate = jest.fn(
   (
     actorType: string,
@@ -32,11 +34,15 @@ describe("API middleware configuration", () => {
     );
 
   it("allows authenticated but unregistered customers to claim an account", async () => {
-    const { default: configuration } = await import("../middlewares");
+    const { default: configuration } =
+      jest.requireActual<typeof import("../middlewares")>("../middlewares");
+    assert(configuration.routes);
     const claimRoute = configuration.routes.find(
-      (route: { matcher: string }) =>
+      (route) =>
         route.matcher === "/store/customers/claim-account",
     );
+    assert(claimRoute);
+    assert(claimRoute.middlewares);
 
     expect(claimRoute).toBeDefined();
     expect(claimRoute.middlewares[0]).toEqual({
@@ -49,11 +55,15 @@ describe("API middleware configuration", () => {
   });
 
   it("protects and validates the admin identity issue resolution route", async () => {
-    const { default: configuration } = await import("../middlewares");
+    const { default: configuration } =
+      jest.requireActual<typeof import("../middlewares")>("../middlewares");
+    assert(configuration.routes);
     const resolutionRoute = configuration.routes.find(
-      (route: { matcher: string }) =>
+      (route) =>
         route.matcher === "/admin/identity-issues/resolve",
     );
+    assert(resolutionRoute);
+    assert(resolutionRoute.middlewares);
 
     expect(resolutionRoute).toBeDefined();
     expect(resolutionRoute.methods).toEqual(["POST"]);
@@ -68,15 +78,21 @@ describe("API middleware configuration", () => {
   });
 
   it("protects AI product draft reads and cleanup mutations", async () => {
-    const { default: configuration } = await import("../middlewares");
+    const { default: configuration } =
+      jest.requireActual<typeof import("../middlewares")>("../middlewares");
+    assert(configuration.routes);
     const collectionRoute = configuration.routes.find(
-      (route: { matcher: string }) =>
+      (route) =>
         route.matcher === "/admin/ai-product-drafts",
     );
+    assert(collectionRoute);
+    assert(collectionRoute.middlewares);
     const itemRoute = configuration.routes.find(
-      (route: { matcher: string }) =>
+      (route) =>
         route.matcher === "/admin/ai-product-drafts/:id*",
     );
+    assert(itemRoute);
+    assert(itemRoute.middlewares);
 
     expect(collectionRoute?.methods).toEqual(["GET", "DELETE"]);
     expect(collectionRoute?.middlewares[0]).toEqual({
@@ -92,16 +108,22 @@ describe("API middleware configuration", () => {
   });
 
   it("rate limits expensive public storefront lookup routes", async () => {
-    const { default: configuration } = await import("../middlewares");
+    const { default: configuration } =
+      jest.requireActual<typeof import("../middlewares")>("../middlewares");
+    assert(configuration.routes);
 
     const addressAutocompleteRoute = configuration.routes.find(
-      (route: { matcher: string }) =>
+      (route) =>
         route.matcher === "/store/addresses/autocomplete",
     );
+    assert(addressAutocompleteRoute);
+    assert(addressAutocompleteRoute.middlewares);
     const localityAutocompleteRoute = configuration.routes.find(
-      (route: { matcher: string }) =>
+      (route) =>
         route.matcher === "/store/localities/autocomplete",
     );
+    assert(localityAutocompleteRoute);
+    assert(localityAutocompleteRoute.middlewares);
 
     expect(
       hasRateLimit(addressAutocompleteRoute, "store_address_autocomplete"),
@@ -112,25 +134,35 @@ describe("API middleware configuration", () => {
   });
 
   it("rate limits public customer-intent mutation endpoints", async () => {
-    const { default: configuration } = await import("../middlewares");
+    const { default: configuration } =
+      jest.requireActual<typeof import("../middlewares")>("../middlewares");
+    assert(configuration.routes);
 
     const supportRoute = configuration.routes.find(
-      (route: { matcher: string }) =>
+      (route) =>
         route.matcher === "/store/support-tickets",
     );
+    assert(supportRoute);
+    assert(supportRoute.middlewares);
     const newsletterRoute = configuration.routes.find(
-      (route: { matcher: string }) =>
+      (route) =>
         route.matcher === "/store/newsletter/subscribe",
     );
+    assert(newsletterRoute);
+    assert(newsletterRoute.middlewares);
     const waitlistRoute = configuration.routes.find(
-      (route: { matcher: string; methods?: string[] }) =>
+      (route) =>
         route.matcher === "/store/waitlist" && route.methods?.includes("POST"),
     );
+    assert(waitlistRoute);
+    assert(waitlistRoute.middlewares);
     const orderLookupRoute = configuration.routes.find(
-      (route: { matcher: string; methods?: string[] }) =>
+      (route) =>
         route.matcher === "/store/orders/lookup" &&
         route.methods?.includes("POST"),
     );
+    assert(orderLookupRoute);
+    assert(orderLookupRoute.middlewares);
 
     expect(hasRateLimit(supportRoute, "store_support_ticket")).toBe(true);
     expect(hasRateLimit(newsletterRoute, "store_newsletter_subscribe")).toBe(
@@ -141,12 +173,16 @@ describe("API middleware configuration", () => {
   });
 
   it("requires customer ownership or signed proof for direct order reads", async () => {
-    const { default: configuration } = await import("../middlewares");
+    const { default: configuration } =
+      jest.requireActual<typeof import("../middlewares")>("../middlewares");
+    assert(configuration.routes);
     const orderReadRoute = configuration.routes.find(
-      (route: { matcher: string; methods?: string[] }) =>
+      (route) =>
         route.matcher === "/store/orders/:id" &&
         route.methods?.includes("GET"),
     );
+    assert(orderReadRoute);
+    assert(orderReadRoute.middlewares);
 
     expect(orderReadRoute).toBeDefined();
     expect(orderReadRoute?.middlewares[0]).toEqual({
@@ -164,20 +200,28 @@ describe("API middleware configuration", () => {
   });
 
   it("rate limits authenticated account security mutations after authentication", async () => {
-    const { default: configuration } = await import("../middlewares");
+    const { default: configuration } =
+      jest.requireActual<typeof import("../middlewares")>("../middlewares");
+    assert(configuration.routes);
 
     const emailChangeRoute = configuration.routes.find(
-      (route: { matcher: string }) =>
+      (route) =>
         route.matcher === "/store/customers/me/email-change-requests",
     );
+    assert(emailChangeRoute);
+    assert(emailChangeRoute.middlewares);
     const googleLinkRoute = configuration.routes.find(
-      (route: { matcher: string }) =>
+      (route) =>
         route.matcher === "/store/customers/me/google-link-intents",
     );
+    assert(googleLinkRoute);
+    assert(googleLinkRoute.middlewares);
     const setPasswordRoute = configuration.routes.find(
-      (route: { matcher: string }) =>
+      (route) =>
         route.matcher === "/store/customers/me/login-methods/emailpass",
     );
+    assert(setPasswordRoute);
+    assert(setPasswordRoute.middlewares);
 
     expect(emailChangeRoute?.middlewares[0]).toMatchObject({
       actorType: "customer",
@@ -194,17 +238,23 @@ describe("API middleware configuration", () => {
   });
 
   it("rate limits sensitive admin and internal automation endpoints", async () => {
-    const { default: configuration } = await import("../middlewares");
+    const { default: configuration } =
+      jest.requireActual<typeof import("../middlewares")>("../middlewares");
+    assert(configuration.routes);
 
     const meilisearchSyncRoute = configuration.routes.find(
-      (route: { matcher: string; methods?: string[] }) =>
+      (route) =>
         route.matcher === "/admin/meilisearch*" &&
         route.methods?.includes("POST"),
     );
+    assert(meilisearchSyncRoute);
+    assert(meilisearchSyncRoute.middlewares);
     const aiRoute = configuration.routes.find(
-      (route: { matcher: string; methods?: string[] }) =>
+      (route) =>
         route.matcher === "/ai*" && route.methods?.includes("POST"),
     );
+    assert(aiRoute);
+    assert(aiRoute.middlewares);
 
     expect(hasRateLimit(meilisearchSyncRoute, "admin_meilisearch_sync")).toBe(
       true,
