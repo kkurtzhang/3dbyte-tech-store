@@ -7,6 +7,8 @@ import {
   referenceBinding,
   referenceCard,
 } from "../../../lib/knowledge-reference/contract";
+import { MEILISEARCH_MODULE } from "../../../modules/meilisearch";
+import { readIndexedReferencePage } from "../../../lib/knowledge-reference/reference-index";
 export async function GET(
   req: MedusaRequest,
   res: MedusaResponse,
@@ -17,11 +19,14 @@ export async function GET(
     return;
   }
   const offset = req.query.offset ?? "0";
+  const term = req.query.q ?? "";
   if (
     typeof offset !== "string" ||
     !/^\d{1,4}$/.test(offset) ||
     Number(offset) > 5000 ||
-    Object.keys(req.query).some((key) => key !== "offset")
+    typeof term !== "string" ||
+    term.length > 120 ||
+    Object.keys(req.query).some((key) => key !== "offset" && key !== "q")
   ) {
     res.status(400).json({ references: [], error: "Invalid reference page." });
     return;
@@ -29,6 +34,18 @@ export async function GET(
   const query = req.scope.resolve("query"),
     strapi = req.scope.resolve<StrapiModuleService>(STRAPI_MODULE);
   try {
+    if (term.trim()) {
+      if (process.env.KNOWLEDGE_REFERENCE_INDEX_ENABLED !== "true") throw new Error("Reference search disabled.");
+      res.json(await readIndexedReferencePage({
+        query,
+        strapi,
+        meilisearch: req.scope.resolve(MEILISEARCH_MODULE),
+        environment: process.env.APP_ENV,
+        term: term.trim(),
+        offset: Number(offset),
+      }));
+      return;
+    }
     const { data } = await query.graph({
       entity: "product",
       fields: [

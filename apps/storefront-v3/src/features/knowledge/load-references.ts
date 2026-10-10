@@ -5,9 +5,11 @@ import {
 } from "@3dbyte-tech-store/shared-utils/src/knowledge-reference.cjs";
 import { sdk } from "@/lib/medusa/client";
 
-export async function loadReferencePage(offset: number) {
+export async function loadReferencePage(offset: number, term = "") {
+  if (!Number.isInteger(offset) || offset < 0 || offset > 5000 || typeof term !== "string" || term.length > 120) throw new Error("Invalid reference search.");
+  const search = term.trim() ? `&q=${encodeURIComponent(term.trim())}` : "";
   const raw: unknown = await sdk.client.fetch(
-    `/store/knowledge-references?offset=${offset}`,
+    `/store/knowledge-references?offset=${offset}${search}`,
     { method: "GET", cache: "no-store" },
   );
   if (

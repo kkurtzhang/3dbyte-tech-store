@@ -11,17 +11,17 @@ export const metadata = {
 export default async function ReferencesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ offset?: string }>;
+  searchParams: Promise<{ offset?: string; q?: string }>;
 }) {
   if (process.env.APP_ENV !== "staging") notFound();
-  const { offset = "0" } = await searchParams;
-  if (!/^\d{1,4}$/.test(offset) || Number(offset) > 5000) notFound();
+  const { offset = "0", q = "" } = await searchParams;
+  if (typeof offset !== "string" || !/^\d{1,4}$/.test(offset) || Number(offset) > 5000 || typeof q !== "string" || q.length > 120) notFound();
   let result: {
     references: KnowledgeReferenceCard[];
     next_offset: number | null;
   };
   try {
-    result = await loadReferencePage(Number(offset));
+    result = await loadReferencePage(Number(offset), q);
   } catch {
     return (
       <section className="container py-12">
@@ -40,11 +40,16 @@ export default async function ReferencesPage({
         simulated for staging. These references have no checkout offer; the
         store’s test checkout remains available for eligible products.
       </p>
+      <form action="/references" method="get" className="mb-6 flex flex-wrap gap-3">
+        <label htmlFor="reference-query" className="sr-only">Search approved references</label>
+        <input id="reference-query" name="q" type="search" maxLength={120} defaultValue={q} placeholder="Search approved references" className="rounded border p-2" />
+        <button type="submit" className="rounded border px-4 py-2">Search references</button>
+      </form>
       <ReferenceCards references={result.references} />
       {result.next_offset !== null && (
         <Link
           className="mt-6 inline-block underline"
-          href={`/references?offset=${result.next_offset}`}
+          href={`/references?offset=${result.next_offset}${q.trim() ? `&q=${encodeURIComponent(q.trim())}` : ""}`}
         >
           Next references
         </Link>
