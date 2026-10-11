@@ -196,7 +196,7 @@ function DraftChangeReview({
 
 export function DraftReviewActions({ draft }: { draft: AdminAiProductDraft }) {
   const [reviewAcknowledged, setReviewAcknowledged] = useState(false)
-  const actionAvailability = getAiProductDraftActionAvailability(draft.status)
+  const actionAvailability = getAiProductDraftActionAvailability(draft.status, draft)
   const changes = draft.proposed_changes || []
   const reviewedChanges = draft.approved_changes || changes
   const [selectedChangePaths, setSelectedChangePaths] = useState(
@@ -298,7 +298,10 @@ export function DraftReviewActions({ draft }: { draft: AdminAiProductDraft }) {
   const handleReject = async () => {
     try {
       setActionError("")
-      await rejectDraft({ reason: rejectionReason.trim() })
+      await rejectDraft({
+        reason: rejectionReason.trim(),
+        review_hash: draft.review_hash || "",
+      })
       setRejectionReason("")
       toast.success("AI product draft rejected")
     } catch (error) {
@@ -419,7 +422,12 @@ export function DraftReviewActions({ draft }: { draft: AdminAiProductDraft }) {
             />
             <Button
               className="w-fit"
-              disabled={!rejectionReason.trim() || isApproving || isImporting}
+              disabled={
+                !rejectionReason.trim() ||
+                !draft.review_hash ||
+                isApproving ||
+                isImporting
+              }
               isLoading={isRejecting}
               size="small"
               variant="danger"
@@ -431,7 +439,7 @@ export function DraftReviewActions({ draft }: { draft: AdminAiProductDraft }) {
         ) : (
           <div className="border-ui-border-base border-t px-6 py-4">
             <Text className="text-ui-fg-subtle">
-              This draft has reached a terminal state.
+              Rejection is unavailable for this draft. Approved or imported work is protected.
             </Text>
           </div>
         )}

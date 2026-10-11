@@ -23,14 +23,10 @@ async function mutateDraft(req: MedusaRequest, res: MedusaResponse) {
   try {
     replacement = prepareReplacement(previous, req.body)
   } catch (error) {
-    return res
-      .status(409)
-      .json({
-        error:
-          error instanceof Error
-            ? error.message
-            : "Invalid replacement research",
-      })
+    return res.status(409).json({
+      error:
+        error instanceof Error ? error.message : "Invalid replacement research",
+    })
   }
   const { packet, draft: normalized } = replacement
   const candidates = await resolveProductCandidates(req, packet)
@@ -41,12 +37,9 @@ async function mutateDraft(req: MedusaRequest, res: MedusaResponse) {
     candidates,
   })
   if (resolution.resolution_status === "validation_failed")
-    return res
-      .status(409)
-      .json({
-        error:
-          "Replacement research does not resolve to the requested product.",
-      })
+    return res.status(409).json({
+      error: "Replacement research does not resolve to the requested product.",
+    })
   const operation = resolution.operation
   const target = resolution.target
   const state = operation
@@ -57,64 +50,72 @@ async function mutateDraft(req: MedusaRequest, res: MedusaResponse) {
       })
     : null
   const module = getAiProductDraftModule(req)
-  // Save the full prior draft before mutation. Failure here leaves the original untouched.
-  await module.createAiProductDraftEvents(
-    buildAiProductDraftEvent({
-      draft_id: req.params.id,
-      type: "research_replacement_backup",
-      actor_type: "admin",
-      actor_id: getAdminActorId(req),
-      from_status: String(previous.status),
-      metadata: {
-        previous_draft: previous,
-        replacement_request_id: packet.request_id,
+  // Preserve prior research and commit the mutation/completion history together.
+  const updated = await module.withDraftTransaction(async (context) => {
+    await module.createAiProductDraftEvents(
+      buildAiProductDraftEvent({
+        draft_id: req.params.id,
+        type: "research_replacement_backup",
+        actor_type: "admin",
+        actor_id: getAdminActorId(req),
+        from_status: String(previous.status),
+        metadata: {
+          previous_draft: previous,
+          replacement_request_id: packet.request_id,
+        },
+      }),
+      context
+    )
+    const updated = await module.updateAiProductDrafts(
+      {
+        id: req.params.id,
+        status: operation ? "needs_review" : "needs_resolution",
+        packet_version: 3,
+        source_agent: packet.source_agent,
+        request_id: packet.request_id,
+        requested_operation: packet.requested_operation,
+        resolved_operation: operation,
+        resolution_status: resolution.resolution_status,
+        identity_candidates: candidates,
+        raw_packet: packet,
+        product_input: packet.product_input,
+        source_summary: packet.source_summary,
+        normalized_draft: state?.normalizedDraft || normalized,
+        product_id: state?.productId || null,
+        product_handle: state?.productHandle || null,
+        current_snapshot: state?.currentSnapshot || null,
+        snapshot_hash: state?.snapshotHash || null,
+        proposed_changes: state?.proposedChanges || [],
+        sources: packet.sources,
+        warnings: normalized.warnings,
+        confidence_summary: normalized.confidence_summary,
+        validation_errors: [],
+        normalizer: "deterministic:v3",
+        normalizer_trace_id: null,
+        approved_changes: null,
+        approved_import_targets: null,
+        approved_snapshot_hash: null,
+        approved_at: null,
+        approved_by: null,
+        rejected_at: null,
+        rejected_by: null,
+        rejection_reason: null,
       },
-    })
-  )
-  const updated = await module.updateAiProductDrafts({
-    id: req.params.id,
-    status: operation ? "needs_review" : "needs_resolution",
-    packet_version: 3,
-    source_agent: packet.source_agent,
-    request_id: packet.request_id,
-    requested_operation: packet.requested_operation,
-    resolved_operation: operation,
-    resolution_status: resolution.resolution_status,
-    identity_candidates: candidates,
-    raw_packet: packet,
-    product_input: packet.product_input,
-    source_summary: packet.source_summary,
-    normalized_draft: state?.normalizedDraft || normalized,
-    product_id: state?.productId || null,
-    product_handle: state?.productHandle || null,
-    current_snapshot: state?.currentSnapshot || null,
-    snapshot_hash: state?.snapshotHash || null,
-    proposed_changes: state?.proposedChanges || [],
-    sources: packet.sources,
-    warnings: normalized.warnings,
-    confidence_summary: normalized.confidence_summary,
-    validation_errors: [],
-    normalizer: "deterministic:v3",
-    normalizer_trace_id: null,
-    approved_changes: null,
-    approved_import_targets: null,
-    approved_snapshot_hash: null,
-    approved_at: null,
-    approved_by: null,
-    rejected_at: null,
-    rejected_by: null,
-    rejection_reason: null,
+      context
+    )
+    await module.createAiProductDraftEvents(
+      buildAiProductDraftEvent({
+        draft_id: req.params.id,
+        type: "research_replaced",
+        actor_type: "admin",
+        actor_id: getAdminActorId(req),
+        from_status: String(previous.status),
+        to_status: String(updated.status),
+        metadata: { packet_version: 3 },
+      }),
+      context
+    )
+    return updated
   })
-  await module.createAiProductDraftEvents(
-    buildAiProductDraftEvent({
-      draft_id: req.params.id,
-      type: "research_replaced",
-      actor_type: "admin",
-      actor_id: getAdminActorId(req),
-      from_status: String(previous.status),
-      to_status: String(updated.status),
-      metadata: { packet_version: 3 },
-    })
-  )
   return res.json({ draft: withDraftQuality(updated) })
 }

@@ -5,12 +5,19 @@ import {
   getAiProductDraftActionAvailability,
   getAiProductDraftDisplayName,
   getAiProductDraftErrorMessage,
+  getAiProductDraftNextStep,
   getAiProductDraftReviewIssues,
   getAiProductDraftStatusBadgeColor,
   labelizeAiProductDraftValue,
 } from "../ai-product-drafts"
 
 describe("AI product draft admin helpers", () => {
+  it("does not suggest rejecting a protected stale approval", () => {
+    const next = getAiProductDraftNextStep({ status: "approved", review_current: false });
+    expect(next).toContain("requires operator review");
+    expect(next).not.toContain("reject this approval");
+  });
+
   it("extracts the server error that explains a failed import", () => {
     expect(
       getAiProductDraftErrorMessage(
@@ -95,11 +102,11 @@ describe("AI product draft admin helpers", () => {
   })
 
   it.each([
-    ["received", false, false, true, false],
+    ["received", false, false, false, false],
     ["validation_failed", false, false, true, false],
     ["needs_resolution", false, false, true, true],
     ["needs_review", true, false, true, false],
-    ["approved", false, true, true, false],
+    ["approved", false, true, false, false],
     ["rejected", false, false, false, false],
     ["imported", false, false, false, false],
   ])(
@@ -113,6 +120,24 @@ describe("AI product draft admin helpers", () => {
       })
     }
   )
+
+  it.each([
+    { approved_at: "2026-10-10T00:00:00Z" },
+    { imported_at: "2026-10-10T00:00:00Z" },
+    { import_progress: { product_id: "prod_partial" } },
+  ])("does not offer rejection for protected work: %j", (state) => {
+    expect(
+      getAiProductDraftActionAvailability("needs_review", state).canReject,
+    ).toBe(false);
+  });
+
+  it("keeps an empty import-progress object reviewable", () => {
+    expect(
+      getAiProductDraftActionAvailability("needs_review", {
+        import_progress: {},
+      }).canReject,
+    ).toBe(true);
+  });
 
   it("combines warnings and detailed validation errors without duplicates", () => {
     expect(
