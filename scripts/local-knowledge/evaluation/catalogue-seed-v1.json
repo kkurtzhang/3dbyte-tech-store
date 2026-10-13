@@ -4,7 +4,7 @@
   "source_capture_manifest": "catalogue-captures-v1.json",
   "entries": [
     {
-      "key": "catalogue_flowtech_m3101",
+      "reference_id": "catalogue_flowtech_m3101",
       "title": "Micro Swiss FlowTech M3101 K1-family hotend",
       "brand": "Micro Swiss",
       "aliases": [
@@ -157,7 +157,7 @@
       ]
     },
     {
-      "key": "catalogue_orbiter_v25",
+      "reference_id": "catalogue_orbiter_v25",
       "title": "LDO Orbiter v2.5 complete extruder reference",
       "brand": "LDO",
       "aliases": [
@@ -284,7 +284,7 @@
       ]
     },
     {
-      "key": "catalogue_slice_torque_15",
+      "reference_id": "catalogue_slice_torque_15",
       "title": "Slice Engineering 1.5 Nm nozzle torque wrench",
       "brand": "Slice Engineering",
       "aliases": [
@@ -418,7 +418,7 @@
       ]
     },
     {
-      "key": "catalogue_buildtak_pei235",
+      "reference_id": "catalogue_buildtak_pei235",
       "title": "BuildTak PEI sheet 235 x 235 mm reference",
       "brand": "BuildTak",
       "aliases": [
@@ -552,7 +552,7 @@
       ]
     },
     {
-      "key": "catalogue_buildtak_spatula",
+      "reference_id": "catalogue_buildtak_spatula",
       "title": "BuildTak Spatula standard retailer reference",
       "brand": "BuildTak",
       "aliases": [
@@ -671,7 +671,7 @@
       ]
     },
     {
-      "key": "catalogue_fiberlogy_pp750",
+      "reference_id": "catalogue_fiberlogy_pp750",
       "title": "Fiberlogy PP Graphite 1.75 mm 750 g reference",
       "brand": "Fiberlogy",
       "aliases": [

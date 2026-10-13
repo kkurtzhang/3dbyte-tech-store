@@ -26,7 +26,7 @@ def prepared_records(store):
     ]
     records, guides, entities, duplicate_checks = [], [], [], []
     for entry in seed["entries"]:
-        key = entry["key"]
+        key = entry["reference_id"]
         assert key.startswith("catalogue_")
         assert entry["brand"] in {
             "Micro Swiss",

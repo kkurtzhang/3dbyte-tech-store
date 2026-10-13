@@ -110,9 +110,11 @@ class CatalogueReferenceTests(unittest.TestCase):
             self.assertEqual(stock["context_pack"], [])
 
     def test_explicit_group_cannot_override_a_different_named_identity(self):
+        other_groups = catalogue_groups("Orbiter v2.5", self.store)
+        self.assertEqual(len(other_groups), 1)
         reply = Retriever(self.store).answer(
             "What voltage is the FlowTech M3101 heater?",
-            group_key="catalogue_orbiter_v25",
+            group_key=other_groups[0],
         )
         self.assertEqual(reply["status"], "unknown")
         self.assertEqual(reply["reason"], "catalogue_reference_scope_mismatch")
