@@ -1,0 +1,196 @@
+{
+  "measurement": "Deterministic actual-route capability/regression checks; no model quality claim.",
+  "model_generation": false,
+  "paid_calls": 0,
+  "cases": [
+    {
+      "id": "radio_battery",
+      "questions": [
+        "Does the DREMC retailer reference WES2487 include a radio and battery?"
+      ],
+      "status": "unknown",
+      "reason": "exact_model_required",
+      "text": "Local development \u00b7 Official resource links\n\nWhich 3D Sets model and version are you building? Name the model number and body variant so we can link its official guide.",
+      "selected_fields": [],
+      "source_links": [
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_catalogue",
+          "url": "https://3dsets.com/product-category/models/",
+          "title": "3D Sets official model catalogue"
+        }
+      ],
+      "passed": false,
+      "failed_checks": [
+        "status",
+        "required_fields",
+        "no_positive_claim_rendered"
+      ]
+    },
+    {
+      "id": "digital_files",
+      "questions": [
+        "Does DREMC WES2487 include STL model files?"
+      ],
+      "status": "unknown",
+      "reason": "store_kit_not_mapped",
+      "text": "Local development \u00b7 Official resource links\n\nThis store sells physical build kits for 3D Sets models. The selected kit's contents, exclusions and supported model release are not yet verified. Digital model access and its licence are separate; inclusion in a kit is unverified. Name the store kit SKU and model version so we can check the supplier BOM. Store price, stock and delivery also remain unverified.",
+      "selected_fields": [],
+      "source_links": [
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_catalogue",
+          "url": "https://3dsets.com/product-category/models/",
+          "title": "3D Sets official model catalogue"
+        }
+      ],
+      "passed": false,
+      "failed_checks": [
+        "status",
+        "required_fields",
+        "no_positive_claim_rendered"
+      ]
+    },
+    {
+      "id": "separate_purchases",
+      "questions": [
+        "What do I need to buy separately for the DREMC WES2488 reference?"
+      ],
+      "status": "unknown",
+      "reason": "exact_model_required",
+      "text": "Local development \u00b7 Official resource links\n\nWhich 3D Sets model and version are you building? Name the model number and body variant so we can link its official guide.",
+      "selected_fields": [],
+      "source_links": [
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_catalogue",
+          "url": "https://3dsets.com/product-category/models/",
+          "title": "3D Sets official model catalogue"
+        }
+      ],
+      "passed": false,
+      "failed_checks": [
+        "status",
+        "required_fields",
+        "no_positive_claim_rendered"
+      ]
+    },
+    {
+      "id": "included_parts",
+      "questions": [
+        "What exact parts are included in DREMC WES2489?"
+      ],
+      "status": "unknown",
+      "reason": "store_kit_not_mapped",
+      "text": "Local development \u00b7 Official resource links\n\nThis store sells physical build kits for 3D Sets models. The selected kit's contents, exclusions and supported model release are not yet verified. Digital model access and its licence are separate; inclusion in a kit is unverified. Name the store kit SKU and model version so we can check the supplier BOM. Store price, stock and delivery also remain unverified.",
+      "selected_fields": [],
+      "source_links": [
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_catalogue",
+          "url": "https://3dsets.com/product-category/models/",
+          "title": "3D Sets official model catalogue"
+        }
+      ],
+      "passed": false,
+      "failed_checks": [
+        "unknown_fields",
+        "no_positive_claim_rendered"
+      ]
+    },
+    {
+      "id": "exact_version",
+      "questions": [
+        "Which exact model version is verified for DREMC WES2487?"
+      ],
+      "status": "unknown",
+      "reason": "exact_model_required",
+      "text": "Local development \u00b7 Official resource links\n\nWhich 3D Sets model and version are you building? Name the model number and body variant so we can link its official guide.",
+      "selected_fields": [],
+      "source_links": [
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_catalogue",
+          "url": "https://3dsets.com/product-category/models/",
+          "title": "3D Sets official model catalogue"
+        }
+      ],
+      "passed": false,
+      "failed_checks": [
+        "unknown_fields",
+        "no_positive_claim_rendered"
+      ]
+    },
+    {
+      "id": "connector",
+      "questions": [
+        "What battery connector type is verified for DREMC WES2488: XT60 or Tamiya?"
+      ],
+      "status": "unknown",
+      "reason": "exact_model_required",
+      "text": "Local development \u00b7 Official resource links\n\nWhich 3D Sets model and version are you building? Name the model number and body variant so we can link its official guide.",
+      "selected_fields": [],
+      "source_links": [
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_catalogue",
+          "url": "https://3dsets.com/product-category/models/",
+          "title": "3D Sets official model catalogue"
+        }
+      ],
+      "passed": false,
+      "failed_checks": [
+        "unknown_fields",
+        "no_positive_claim_rendered"
+      ]
+    },
+    {
+      "id": "small_servo",
+      "questions": [
+        "How many small servos come in the DREMC WES2489 reference?"
+      ],
+      "status": "unknown",
+      "reason": "exact_model_required",
+      "text": "Local development \u00b7 Official resource links\n\nWhich 3D Sets model and version are you building? Name the model number and body variant so we can link its official guide.",
+      "selected_fields": [],
+      "source_links": [
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_catalogue",
+          "url": "https://3dsets.com/product-category/models/",
+          "title": "3D Sets official model catalogue"
+        }
+      ],
+      "passed": false,
+      "failed_checks": [
+        "unknown_fields",
+        "no_positive_claim_rendered"
+      ]
+    },
+    {
+      "id": "own_store",
+      "questions": [
+        "Does a 3D Byte Tech kit mapped to WES2487 include STLs?"
+      ],
+      "status": "unknown",
+      "reason": "store_kit_not_mapped",
+      "text": "Local development \u00b7 Official resource links\n\nThis store sells physical build kits for 3D Sets models. The selected kit's contents, exclusions and supported model release are not yet verified. Digital model access and its licence are separate; inclusion in a kit is unverified. Name the store kit SKU and model version so we can check the supplier BOM. Store price, stock and delivery also remain unverified.",
+      "selected_fields": [],
+      "source_links": [
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_catalogue",
+          "url": "https://3dsets.com/product-category/models/",
+          "title": "3D Sets official model catalogue"
+        }
+      ],
+      "passed": false,
+      "failed_checks": [
+        "unknown_fields",
+        "no_positive_claim_rendered"
+      ]
+    }
+  ],
+  "passed": 0,
+  "total": 8
+}

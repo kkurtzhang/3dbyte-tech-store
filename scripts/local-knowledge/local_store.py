@@ -155,11 +155,81 @@ class Store:
             "environment": SCOPE,
         }
 
-    def ingest(self, records, actor="codex_local_development"):
+    def _register_local_references(self, entities, records):
+        """Allocate actual local SQLite grouping rows inside the ingest transaction."""
+        by_group = {record.get("group_key"): record for record in records}
+        assert len(by_group) == len(entities)
+        for entity in entities:
+            product, variant = entity["product"], entity["variant"]
+            record = by_group[product["group_key"]]
+            assert product["id"].startswith("local_dev_") and variant["id"].startswith(
+                "local_dev_"
+            )
+            assert (
+                variant["product_id"] == product["id"]
+                and variant["group_key"] == product["group_key"]
+            )
+            assert (
+                record["local_product_id"] == product["id"]
+                and record["local_variant_id"] == variant["id"]
+            )
+            for item in (product, variant):
+                assert (
+                    item["environment"] == SCOPE
+                    and item["price"] is None
+                    and item["physical_stock"] is None
+                    and item["checkout_enabled"] is False
+                )
+            assert (
+                product["staging_product_id"] is None
+                and variant["staging_variant_id"] is None
+            )
+            for table, item in (
+                ("products", product),
+                ("local_reference_variants", variant),
+            ):
+                old = self.db.execute(
+                    "SELECT id,payload FROM " + table + " WHERE group_key=?",
+                    (item["group_key"],),
+                ).fetchone()
+                if old:
+                    assert old["id"] == item["id"] and old["payload"] == canonical(
+                        item
+                    ), "Conflicting local grouping; preserve existing state"
+            self.db.execute(
+                "INSERT OR IGNORE INTO products VALUES(?,?,?)",
+                (product["id"], product["group_key"], canonical(product)),
+            )
+            self.db.execute(
+                "INSERT OR IGNORE INTO local_reference_variants VALUES(?,?,?,?)",
+                (
+                    variant["id"],
+                    product["id"],
+                    variant["group_key"],
+                    canonical(variant),
+                ),
+            )
+            old = self.db.execute(
+                "SELECT * FROM local_record_bindings WHERE record_id=?", (record["id"],)
+            ).fetchone()
+            if old:
+                assert (
+                    old["product_id"] == product["id"]
+                    and old["variant_id"] == variant["id"]
+                    and old["scope"] == SCOPE
+                )
+            self.db.execute(
+                "INSERT OR IGNORE INTO local_record_bindings VALUES(?,?,?,?)",
+                (record["id"], product["id"], variant["id"], SCOPE),
+            )
+
+    def ingest(self, records, actor="codex_local_development", local_references=None):
         verify_boundary()
         created = updated = skipped = 0
         self.db.execute("BEGIN IMMEDIATE")
         try:
+            if local_references is not None:
+                self._register_local_references(local_references, records)
             for r in records:
                 assert (
                     r["environment"] == SCOPE

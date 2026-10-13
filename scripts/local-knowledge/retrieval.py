@@ -9,6 +9,11 @@ from query_constraints import (
     requested_part_fields,
 )
 from nozzle_conditions import nozzle_family
+from retailer_reference import (
+    retailer_groups,
+    answer_retailer_reference,
+    PREFIX as RETAILER_PREFIX,
+)
 from collections import Counter
 import numpy as np
 from local_store import ROOT, Store, digest, SCOPE
@@ -105,6 +110,11 @@ class Retriever:
         ):
             raise ValueError("Invalid bounded local query")
         rows = self.store.rows()
+        scoped_retailers = retailer_groups(
+            question, [json.loads(row["payload"]) for row in rows]
+        )
+        if not group_key and len(scoped_retailers) == 1:
+            group_key = scoped_retailers[0]
         by_id = {r["id"]: r for r in rows}
         expanded = question
         if re.search(r"\b(squishy|rubbery|bendy)\b", question, re.I):
@@ -127,8 +137,18 @@ class Retriever:
         allowed = {
             r["id"]
             for r in rows
-            if not group_key
-            or json.loads(r["payload"]).get("group_key") in (group_key, None)
+            if (
+                not (json.loads(r["payload"]).get("group_key") or "").startswith(
+                    RETAILER_PREFIX
+                )
+                or json.loads(r["payload"]).get("group_key") == group_key
+            )
+            and (
+                json.loads(r["payload"]).get("group_key") == group_key
+                if group_key and group_key.startswith(RETAILER_PREFIX)
+                else not group_key
+                or json.loads(r["payload"]).get("group_key") in (group_key, None)
+            )
         }
         fts = " OR ".join('"' + s + '"' for s in dict.fromkeys(query))
         lexical = []
@@ -231,6 +251,9 @@ class Retriever:
         if not group_key and len(matches) == 1:
             group_key = matches[0]
         persisted_claims = [json.loads(row["payload"]) for row in self.store.rows()]
+        scoped_retailers = retailer_groups(question, persisted_claims)
+        if len(scoped_retailers) == 1:
+            group_key = scoped_retailers[0]
         part_groups = part_reference_groups(question, persisted_claims)
         if not group_key and len(part_groups) == 1:
             group_key = part_groups[0]
@@ -279,6 +302,11 @@ class Retriever:
             and group_key is not None
             and p["status"] == "unknown"
         ]
+        retailer_reply = answer_retailer_reference(
+            self.store, question, group_key, result
+        )
+        if retailer_reply is not None:
+            return retailer_reply
         if live_commerce_requested(q):
             return {
                 **result,

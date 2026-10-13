@@ -1,5 +1,6 @@
 import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 import index from "./three-d-sets-source-index.json";
+import { officialResourceRequested } from "./official-resource-intent";
 
 type Message = {
   role: "user" | "assistant";
@@ -103,6 +104,7 @@ export function resolveThreeDSetsResources(
       }
     : undefined;
   if (
+    !officialResourceRequested(question) &&
     /\b(?:kit|kits|included|inclusions|contents|sku|price|pricing|stock|dispatch|shipping|delivery|stl|stls|files|licen[cs]e|download)\b/i.test(
       question,
     )

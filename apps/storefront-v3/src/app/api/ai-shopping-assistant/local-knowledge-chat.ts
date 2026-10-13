@@ -10,6 +10,8 @@ import {
 } from "./local-knowledge";
 
 import { resolveLocalKnowledgeFocus } from "./local-knowledge-focus";
+import { resolveLocalRetailerFocus } from "./local-retailer-reference-focus";
+import { officialResourceRequested } from "./official-resource-intent";
 import {
   resolveThreeDSetsResources,
   streamThreeDSetsResources,
@@ -115,9 +117,19 @@ export async function handleLocalKnowledgeChat(
         { status: 400 },
       );
     }
-    const resources = resolveThreeDSetsResources(body.messages);
-    if (resources) return streamThreeDSetsResources(resources);
-    const focus = resolveLocalKnowledgeFocus(body.messages);
+    const retailerFocus = resolveLocalRetailerFocus(body.messages);
+    const wantsResource = officialResourceRequested(question);
+    const resources =
+      resolveThreeDSetsResources(body.messages) ??
+      (wantsResource && retailerFocus
+        ? resolveThreeDSetsResources([
+            ...body.messages,
+            { role: "user" as const, content: "3D Sets. " + question },
+          ])
+        : null);
+    if (resources && (!retailerFocus || wantsResource))
+      return streamThreeDSetsResources(resources);
+    const focus = retailerFocus ?? resolveLocalKnowledgeFocus(body.messages);
     const context =
       focus.mode === "clarify"
         ? localClarificationContext(focus.reason, focus.subjects)
