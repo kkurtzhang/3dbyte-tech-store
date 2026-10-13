@@ -38,7 +38,7 @@ def prepared_records(store, plan):
     for entry in plan["entries"]:
         identity = entry["reference_identity"]
         sku = identity["source_sku"]
-        group = entry["reference_key"]
+        group = entry["reference_id"]
         pid = "local_dev_product_" + group
         vid = "local_dev_variant_" + group
         title = "DREMC retailer reference " + sku + " — " + identity["variant_title"]

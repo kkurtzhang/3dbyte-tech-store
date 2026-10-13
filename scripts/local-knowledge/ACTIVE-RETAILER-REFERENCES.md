@@ -64,3 +64,7 @@ Passed: 35 Python tests, 41 focused adapter/focus/RC Jest tests, 8 retailer actu
 All answers here are deterministic source context/resource routing. No language model generation, pretrained embeddings, paid calls, staging writes or guide/FAQ content ingestion occurred. Browser visual inspection remains unavailable in this text task, as recorded in `evaluation/native-reference-browser-capabilities.json`; actual API and component tests do not claim screenshots or full browser interaction.
 
 Native activation and commercial fulfilment still require their separately documented genuine bindings/review and exact claimed facts. Those pending states do not block supported external retailer facts from the expressly authorized local agent-review path.
+
+## Combined integration verification
+
+The retailer activation entry point consumes the integrated plan’s `reference_id`. The tested `afbf02b` milestone remains preserved; the follow-up branch retains its scoped Next React type-peer fix and dependency lockfile. Integration validation uses a copied corpus and owned loopback fixture services, without operating the original preview services or active corpus. The original-branch measurements above retain their provenance; exact combined-head evidence is recorded in the SSD integration artifacts. Native approvals and deployment remain separate pending steps.
