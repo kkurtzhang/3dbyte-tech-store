@@ -4,7 +4,7 @@
   "source_capture_manifest": "followup-products-review-sources-v1.json",
   "entries": [
     {
-      "key": "catalogue_magigoo_pp50",
+      "reference_id": "catalogue_magigoo_pp50",
       "title": "Magigoo PP 50 mL external reference",
       "brand": "Magigoo",
       "aliases": [
@@ -159,7 +159,7 @@
       ]
     },
     {
-      "key": "catalogue_flowtech_cm2_04",
+      "reference_id": "catalogue_flowtech_cm2_04",
       "title": "Micro Swiss FlowTech CM2 M2904-04 0.4 mm nozzle",
       "brand": "Micro Swiss",
       "aliases": [

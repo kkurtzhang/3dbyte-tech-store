@@ -183,7 +183,7 @@
   "preserved_original_draft_fixture_sha256": "990055e0f51f689e37f08410dbdf3f3d3cb795f610e5b7a09cf315c22c4a61e6",
   "original_evaluator_archive_sha256": "a5b2c00be2f6c6c5073fa693fa26541e91a676ded18c91aa07dc4eb2e7cb8352",
   "combined_fixture_sha256": "5963aa92626fda6175fcfbfa25993173c8a2c7392e0f660bb0a8ab4e59f97d95",
-  "followup_seed_sha256": "a894845f111820ea76c4df3225dace17dfb8cc6f46e2718d07832690c3326193",
+  "followup_seed_sha256": "5a06c18f333425c17829a5935d7112b752f21cd2e4e91b457d835bb8f4774a3d",
   "draft_baseline": {
     "passed": 1,
     "total": 7,

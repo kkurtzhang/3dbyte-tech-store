@@ -19,7 +19,7 @@ class CatalogueReferenceTests(unittest.TestCase):
 
     def test_new_rows_have_real_local_bindings_and_honest_review(self):
         original_groups = {
-            entry["key"] for entry in json.loads(SEED.read_text())["entries"]
+            entry["reference_id"] for entry in json.loads(SEED.read_text())["entries"]
         }
         rows = [
             json.loads(r["payload"])
