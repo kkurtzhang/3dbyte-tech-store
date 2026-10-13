@@ -1,0 +1,1786 @@
+{
+  "cases": [
+    {
+      "id": "catalogue_buildtak_pei235",
+      "questions": [
+        "Tell me about BuildTak PEI sheet 235 x 235 mm reference",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "catalogue_buildtak_pei235",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_buildtak_spatula",
+      "questions": [
+        "Tell me about BuildTak Spatula standard retailer reference",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "catalogue_buildtak_spatula",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_fiberlogy_pp750",
+      "questions": [
+        "Tell me about Fiberlogy PP Graphite 1.75 mm 750 g reference",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "catalogue_fiberlogy_pp750",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_flowtech_cm2_04",
+      "questions": [
+        "Tell me about Micro Swiss FlowTech CM2 M2904-04 0.4 mm nozzle",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "catalogue_flowtech_cm2_04",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_flowtech_m3101",
+      "questions": [
+        "Tell me about Micro Swiss FlowTech M3101 K1-family hotend",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "catalogue_flowtech_m3101",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_magigoo_pp50",
+      "questions": [
+        "Tell me about Magigoo PP 50 mL external reference",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "catalogue_magigoo_pp50",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_orbiter_v25",
+      "questions": [
+        "Tell me about LDO Orbiter v2.5 complete extruder reference",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "catalogue_orbiter_v25",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_panchroma_basic_black",
+      "questions": [
+        "Tell me about Polymaker Panchroma Basic PLA Black 1 kg with spool reference",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "catalogue_panchroma_basic_black",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_polymaker_petg_black",
+      "questions": [
+        "Tell me about Polymaker PETG New Formula Black 1 kg reference",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "catalogue_polymaker_petg_black",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_slice_torque_15",
+      "questions": [
+        "Tell me about Slice Engineering 1.5 Nm nozzle torque wrench",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "catalogue_slice_torque_15",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "five_E03",
+      "questions": [
+        "Tell me about Polymaker PolyFlex TPU95-HF Black 1.75mm 1kg",
+        "What drying temperature and hours does it need?"
+      ],
+      "status": "unknown",
+      "required": [],
+      "expected_group": "five_E03",
+      "expected_focus": "focused",
+      "unknown_fields": [
+        "drying_temperature_c",
+        "drying_duration_hours"
+      ]
+    },
+    {
+      "id": "five_E04",
+      "questions": [
+        "Tell me about Polymaker Fiberon PA6-CF20 Black 1.75mm 500g",
+        "What drying temperature and hours does it need?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "five_E04",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "five_E08",
+      "questions": [
+        "Tell me about Magigoo Supergrip 50 mL",
+        "What is its application and release guidance?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "five_E08",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "five_E09",
+      "questions": [
+        "Tell me about Slice Engineering Plastic Repellent Paint 3 mL",
+        "What is its maximum temperature?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "five_E09",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "five_E10",
+      "questions": [
+        "Tell me about E3D V6 Pro Silicone Socks (Pack of 3)",
+        "What hotend is it compatible with?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "five_E10",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "prior_R01",
+      "questions": [
+        "Tell me about Creality levelling nuts and springs \u2014 package reference",
+        "What is its source-listed part number?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "prior_R01",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "prior_R03",
+      "questions": [
+        "Tell me about Creality Ender-3 V3 SE/KE heated bed \u2014 ratings unresolved",
+        "What is its source-listed part number?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "prior_R03",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "prior_R04",
+      "questions": [
+        "Tell me about Creality K1 heat sink \u2014 original assembly reference",
+        "What is its source-listed part number?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "prior_R04",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "prior_R05",
+      "questions": [
+        "Tell me about Creality K1-series hotend cover \u2014 package reference",
+        "What is its source-listed part number?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "prior_R05",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "prior_R06",
+      "questions": [
+        "Tell me about Creality K1-series X-axis carriage \u2014 batch unresolved",
+        "What is its source-listed part number?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "prior_R06",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "prior_R08",
+      "questions": [
+        "Tell me about Creality K1 complete hotend with heat sink \u2014 supplier reference",
+        "What is its source-listed part number?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "prior_R08",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "prior_R09",
+      "questions": [
+        "Tell me about Creality K1 Unicorn heat sink \u2014 supplier reference",
+        "What is its source-listed part number?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "prior_R09",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "prior_R11",
+      "questions": [
+        "Tell me about Creality K1-series buckle-terminal hotend \u2014 supplier reference",
+        "What is its source-listed part number?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "prior_R11",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "prior_R12",
+      "questions": [
+        "Tell me about Creality K2 Plus ceramic hotend \u2014 ratings unresolved",
+        "What is its source-listed part number?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "prior_R12",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "prior_R13",
+      "questions": [
+        "Tell me about Creality K2 Plus hotend cover \u2014 package reference",
+        "What is its source-listed part number?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "prior_R13",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "prior_R14",
+      "questions": [
+        "Tell me about Creality K2 Plus nozzle-wipe module \u2014 package reference",
+        "What is its source-listed part number?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "prior_R14",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "prior_R15",
+      "questions": [
+        "Tell me about Creality K2 Plus toolhead loom \u2014 revision unresolved",
+        "What is its source-listed part number?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "prior_R15",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "prior_R16",
+      "questions": [
+        "Tell me about Creality K2 heater/thermistor breakout board \u2014 revision reference",
+        "What is its source-listed part number?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "prior_R16",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "prior_R17",
+      "questions": [
+        "Tell me about Creality K2 short hotend PCB cable \u2014 supplier reference",
+        "What is its source-listed part number?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "prior_R17",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "prior_R18",
+      "questions": [
+        "Tell me about Creality K2 toolhead nozzle PCB \u2014 supplier reference",
+        "What is its source-listed part number?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_group": "prior_R18",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_fiberlogy_abs",
+      "questions": [
+        "Tell me about Fiberlogy ABS",
+        "What are its manufacturer printing and bed temperatures?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_abs_source",
+          "manufacturer_print_temperature"
+        ]
+      ],
+      "expected_group": "catalogue_c100_fiberlogy_abs",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_fiberlogy_absgf",
+      "questions": [
+        "Tell me about Fiberlogy ABS+GF",
+        "What are its manufacturer printing and bed temperatures?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_absgf_source",
+          "manufacturer_print_temperature"
+        ]
+      ],
+      "expected_group": "catalogue_c100_fiberlogy_absgf",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_fiberlogy_asa",
+      "questions": [
+        "Tell me about Fiberlogy ASA",
+        "What are its manufacturer printing and bed temperatures?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_asa_source",
+          "manufacturer_print_temperature"
+        ]
+      ],
+      "expected_group": "catalogue_c100_fiberlogy_asa",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_fiberlogy_pctg",
+      "questions": [
+        "Tell me about Fiberlogy PCTG",
+        "What are its manufacturer printing and bed temperatures?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_pctg_source",
+          "manufacturer_print_temperature"
+        ]
+      ],
+      "expected_group": "catalogue_c100_fiberlogy_pctg",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_fiberlogy_pctgcf",
+      "questions": [
+        "Tell me about Fiberlogy PCTG+CF10",
+        "What are its manufacturer printing and bed temperatures?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_pctgcf_source",
+          "manufacturer_print_temperature"
+        ]
+      ],
+      "expected_group": "catalogue_c100_fiberlogy_pctgcf",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_fiberlogy_pctggf",
+      "questions": [
+        "Tell me about Fiberlogy PCTG+GF10",
+        "What are its manufacturer printing and bed temperatures?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_pctggf_source",
+          "manufacturer_print_temperature"
+        ]
+      ],
+      "expected_group": "catalogue_c100_fiberlogy_pctggf",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_btt_sfs_v2",
+      "questions": [
+        "Tell me about BIGTREETECH SFS V2.0 filament sensor",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_btt_sfs_v2_source",
+          "detection_length"
+        ]
+      ],
+      "expected_group": "catalogue_c100_btt_sfs_v2",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_btt_skr_mini_e3_v3",
+      "questions": [
+        "Tell me about BIGTREETECH SKR Mini E3 V3.0",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_btt_skr_mini_e3_v3_source",
+          "processor"
+        ]
+      ],
+      "expected_group": "catalogue_c100_btt_skr_mini_e3_v3",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_btt_manta_m8p_v2",
+      "questions": [
+        "Tell me about BIGTREETECH Manta M8P V2.0",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_btt_manta_m8p_v2_source",
+          "processor"
+        ]
+      ],
+      "expected_group": "catalogue_c100_btt_manta_m8p_v2",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_btt_sb2209_stm32",
+      "questions": [
+        "Tell me about BIGTREETECH EBB SB2209 CAN V1.0 STM32",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_btt_sb2209_stm32_source",
+          "processor"
+        ]
+      ],
+      "expected_group": "catalogue_c100_btt_sb2209_stm32",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_btt_ebb36_gen2",
+      "questions": [
+        "Tell me about BIGTREETECH EBB36 Gen2 V1.0",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_btt_ebb36_gen2_source",
+          "processor"
+        ]
+      ],
+      "expected_group": "catalogue_c100_btt_ebb36_gen2",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_bondtech_lgx",
+      "questions": [
+        "Tell me about Bondtech LGX Large Gears Extruder",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_bondtech_lgx_source",
+          "motor_package"
+        ]
+      ],
+      "expected_group": "catalogue_c100_bondtech_lgx",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_bondtech_lgx_lite_v2",
+      "questions": [
+        "Tell me about Bondtech LGX Lite V2 with motor",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_bondtech_lgx_lite_v2_source",
+          "tension_presets"
+        ]
+      ],
+      "expected_group": "catalogue_c100_bondtech_lgx_lite_v2",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_phaetus_dxc",
+      "questions": [
+        "Tell me about Phaetus DXC extruder",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_phaetus_dxc_source",
+          "gear_system"
+        ]
+      ],
+      "expected_group": "catalogue_c100_phaetus_dxc",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_bondtech_lgx_lite_pro",
+      "questions": [
+        "Tell me about Bondtech LGX Lite PRO with motor",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_bondtech_lgx_lite_pro_source",
+          "drive_and_tension"
+        ]
+      ],
+      "expected_group": "catalogue_c100_bondtech_lgx_lite_pro",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_phaetus_rapido2f",
+      "questions": [
+        "Tell me about Phaetus Rapido 2F UHF PT1000",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_phaetus_rapido2f_source",
+          "temperature_sensor"
+        ]
+      ],
+      "expected_group": "catalogue_c100_phaetus_rapido2f",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_phaetus_dragonfly_bms",
+      "questions": [
+        "Tell me about Phaetus Dragonfly BMS hotend",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_phaetus_dragonfly_bms_source",
+          "body_material"
+        ]
+      ],
+      "expected_group": "catalogue_c100_phaetus_dragonfly_bms",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_btt_eddy_duo",
+      "questions": [
+        "Tell me about BIGTREETECH Eddy Duo probe",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_btt_eddy_duo_source",
+          "communication"
+        ]
+      ],
+      "expected_group": "catalogue_c100_btt_eddy_duo",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_ldo_leviathan_v13",
+      "questions": [
+        "Tell me about LDO Leviathan V1.3 controller",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_ldo_leviathan_v13_source",
+          "processor"
+        ]
+      ],
+      "expected_group": "catalogue_c100_ldo_leviathan_v13",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_ldo_nitehawk36",
+      "questions": [
+        "Tell me about LDO Nitehawk-36 toolboard",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_ldo_nitehawk36_source",
+          "processor_driver"
+        ]
+      ],
+      "expected_group": "catalogue_c100_ldo_nitehawk36",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_cartographer_v4",
+      "questions": [
+        "Tell me about Cartographer V4 AIO probe",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_cartographer_v4_source",
+          "communication"
+        ]
+      ],
+      "expected_group": "catalogue_c100_cartographer_v4",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_bondtech_cht_mk8",
+      "questions": [
+        "Tell me about Bondtech CHT MK8 coated brass nozzle",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_bondtech_cht_mk8_source",
+          "material_coating"
+        ]
+      ],
+      "expected_group": "catalogue_c100_bondtech_cht_mk8",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_bondtech_cht_volcano",
+      "questions": [
+        "Tell me about Bondtech CHT Volcano coated brass nozzle",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_bondtech_cht_volcano_source",
+          "material_coating"
+        ]
+      ],
+      "expected_group": "catalogue_c100_bondtech_cht_volcano",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_bondtech_cht_reprap",
+      "questions": [
+        "Tell me about Bondtech CHT RepRap M6 coated brass nozzle",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_bondtech_cht_reprap_source",
+          "manufacturer_family_code"
+        ]
+      ],
+      "expected_group": "catalogue_c100_bondtech_cht_reprap",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_bondtech_cht_bimetal",
+      "questions": [
+        "Tell me about Bondtech CHT BiMetal RepRap M6 nozzle",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_bondtech_cht_bimetal_source",
+          "material_construction"
+        ]
+      ],
+      "expected_group": "catalogue_c100_bondtech_cht_bimetal",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_e3d_roto_motor",
+      "questions": [
+        "Tell me about E3D Roto motor",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_e3d_roto_motor_source",
+          "motor_type"
+        ]
+      ],
+      "expected_group": "catalogue_c100_e3d_roto_motor",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_btt_skr_pico",
+      "questions": [
+        "Tell me about BIGTREETECH SKR Pico V1.0",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_btt_skr_pico_source",
+          "processor"
+        ]
+      ],
+      "expected_group": "catalogue_c100_btt_skr_pico",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_e3d_revo_six_cold",
+      "questions": [
+        "Tell me about E3D Revo Six coldside kit",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_e3d_revo_six_cold_source",
+          "coldside_contents"
+        ]
+      ],
+      "expected_group": "catalogue_c100_e3d_revo_six_cold",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_e3d_obxidian_a1",
+      "questions": [
+        "Tell me about E3D High Flow ObXidian A1 hotend",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_e3d_obxidian_a1_source",
+          "coating"
+        ]
+      ],
+      "expected_group": "catalogue_c100_e3d_obxidian_a1",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_bondtech_lgx_gear",
+      "questions": [
+        "Tell me about Bondtech LGX Primary Double Gear",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_bondtech_lgx_gear_source",
+          "manufacturer_part_number"
+        ]
+      ],
+      "expected_group": "catalogue_c100_bondtech_lgx_gear",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_fiberlogy_pa12cf",
+      "questions": [
+        "Tell me about Fiberlogy PA12+CF15",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_pa12cf_source",
+          "composition"
+        ]
+      ],
+      "expected_group": "catalogue_c100_fiberlogy_pa12cf",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_fiberlogy_pa12gf",
+      "questions": [
+        "Tell me about Fiberlogy PA12+GF15",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_pa12gf_source",
+          "reinforcement"
+        ]
+      ],
+      "expected_group": "catalogue_c100_fiberlogy_pa12gf",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_fiberlogy_bvoh",
+      "questions": [
+        "Tell me about Fiberlogy BVOH soluble support",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_bvoh_source",
+          "support_removal"
+        ]
+      ],
+      "expected_group": "catalogue_c100_fiberlogy_bvoh",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_fiberlogy_fiberflex30d",
+      "questions": [
+        "Tell me about Fiberlogy FiberFlex 30D TPU",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_fiberflex30d_source",
+          "shore_hardness"
+        ]
+      ],
+      "expected_group": "catalogue_c100_fiberlogy_fiberflex30d",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_fiberlogy_fiberflex40d",
+      "questions": [
+        "Tell me about Fiberlogy FiberFlex 40D TPU",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_fiberflex40d_source",
+          "shore_hardness"
+        ]
+      ],
+      "expected_group": "catalogue_c100_fiberlogy_fiberflex40d",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_fiberlogy_easyabs",
+      "questions": [
+        "Tell me about Fiberlogy Easy ABS",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_easyabs_source",
+          "print_temperature"
+        ]
+      ],
+      "expected_group": "catalogue_c100_fiberlogy_easyabs",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_carbonx_abscf",
+      "questions": [
+        "Tell me about 3DXTECH CarbonX ABS+CF10",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_carbonx_abscf_source",
+          "reinforcement"
+        ]
+      ],
+      "expected_group": "catalogue_c100_carbonx_abscf",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_thermax_pei1010",
+      "questions": [
+        "Tell me about 3DXTECH ThermaX PEI 1010",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_thermax_pei1010_source",
+          "glass_transition_temperature"
+        ]
+      ],
+      "expected_group": "catalogue_c100_thermax_pei1010",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_thermax_pei9085",
+      "questions": [
+        "Tell me about 3DXTECH ThermaX PEI 9085",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_thermax_pei9085_source",
+          "glass_transition_temperature"
+        ]
+      ],
+      "expected_group": "catalogue_c100_thermax_pei9085",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_carbonx_pei9085cf",
+      "questions": [
+        "Tell me about 3DXTECH CarbonX PEI 9085+CF15",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_carbonx_pei9085cf_source",
+          "composition"
+        ]
+      ],
+      "expected_group": "catalogue_c100_carbonx_pei9085cf",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_pythonflex98a",
+      "questions": [
+        "Tell me about FormFutura Python Flex TPU 98A",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_pythonflex98a_source",
+          "grade_hardness"
+        ]
+      ],
+      "expected_group": "catalogue_c100_pythonflex98a",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_aquasolve_pva",
+      "questions": [
+        "Tell me about FormFutura AquaSolve PVA",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_aquasolve_pva_source",
+          "print_temperature"
+        ]
+      ],
+      "expected_group": "catalogue_c100_aquasolve_pva",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_colorfabb_varioshore",
+      "questions": [
+        "Tell me about colorFabb varioShore TPU legacy 92A foaming grade",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_colorfabb_varioshore_source",
+          "base_hardness"
+        ]
+      ],
+      "expected_group": "catalogue_c100_colorfabb_varioshore",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_colorfabb_tpu85a",
+      "questions": [
+        "Tell me about colorFabb TPU 85A",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_colorfabb_tpu85a_source",
+          "print_temperature"
+        ]
+      ],
+      "expected_group": "catalogue_c100_colorfabb_tpu85a",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_colorfabb_tpu95a",
+      "questions": [
+        "Tell me about colorFabb TPU 95A",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_colorfabb_tpu95a_source",
+          "print_temperature"
+        ]
+      ],
+      "expected_group": "catalogue_c100_colorfabb_tpu95a",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_magigoo_original",
+      "questions": [
+        "Tell me about Magigoo Original adhesive",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_magigoo_original_source",
+          "material_scope"
+        ]
+      ],
+      "expected_group": "catalogue_c100_magigoo_original",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_magigoo_pa",
+      "questions": [
+        "Tell me about Magigoo PA adhesive",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_magigoo_pa_source",
+          "polyamide_scope"
+        ]
+      ],
+      "expected_group": "catalogue_c100_magigoo_pa",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_magigoo_flex",
+      "questions": [
+        "Tell me about Magigoo Flex adhesive",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_magigoo_flex_source",
+          "flexible_material_scope"
+        ]
+      ],
+      "expected_group": "catalogue_c100_magigoo_flex",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_magigoo_ht",
+      "questions": [
+        "Tell me about Magigoo Pro HT adhesive",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_magigoo_ht_source",
+          "high_temperature_material_scope"
+        ]
+      ],
+      "expected_group": "catalogue_c100_magigoo_ht",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_magigoo_pc",
+      "questions": [
+        "Tell me about Magigoo PC adhesive",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_magigoo_pc_source",
+          "polycarbonate_scope"
+        ]
+      ],
+      "expected_group": "catalogue_c100_magigoo_pc",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_sunlu_s2",
+      "questions": [
+        "Tell me about SUNLU FilaDryer S2",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_sunlu_s2_source",
+          "advertised_temperature"
+        ]
+      ],
+      "expected_group": "catalogue_c100_sunlu_s2",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_esun_ebox_lite",
+      "questions": [
+        "Tell me about eSUN eBOX Lite",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_esun_ebox_lite_source",
+          "spool_and_filament_capacity"
+        ]
+      ],
+      "expected_group": "catalogue_c100_esun_ebox_lite",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_creality_spacepi_plus",
+      "questions": [
+        "Tell me about Creality SpacePi Plus dryer",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_creality_spacepi_plus_source",
+          "capacity_chambers"
+        ]
+      ],
+      "expected_group": "catalogue_c100_creality_spacepi_plus",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_ldo_heatinsert",
+      "questions": [
+        "Tell me about LDO M3 heatset insert tool kit",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_ldo_heatinsert_source",
+          "insert_size"
+        ]
+      ],
+      "expected_group": "catalogue_c100_ldo_heatinsert",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_slice_boron",
+      "questions": [
+        "Tell me about Slice Engineering boron nitride paste",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_slice_boron_source",
+          "thermal_conductivity"
+        ]
+      ],
+      "expected_group": "catalogue_c100_slice_boron",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_slice_desiccant",
+      "questions": [
+        "Tell me about Slice Engineering filament drying desiccant",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_slice_desiccant_source",
+          "desiccant_material"
+        ]
+      ],
+      "expected_group": "catalogue_c100_slice_desiccant",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_cnc_ts100",
+      "questions": [
+        "Tell me about CNC Kitchen TS100/101 adapter tips set",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_cnc_ts100_source",
+          "cartridge_thread"
+        ]
+      ],
+      "expected_group": "catalogue_c100_cnc_ts100",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_cnc_deburrer",
+      "questions": [
+        "Tell me about CNC Kitchen deburrer with three blades",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_cnc_deburrer_source",
+          "body_blades"
+        ]
+      ],
+      "expected_group": "catalogue_c100_cnc_deburrer",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_creality_spacepi",
+      "questions": [
+        "Tell me about Creality SpacePi single-spool dryer",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_creality_spacepi_source",
+          "capacity_chambers"
+        ]
+      ],
+      "expected_group": "catalogue_c100_creality_spacepi",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_creality_spacepi_x4",
+      "questions": [
+        "Tell me about Creality SpacePi X4 dryer",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_creality_spacepi_x4_source",
+          "capacity_chambers"
+        ]
+      ],
+      "expected_group": "catalogue_c100_creality_spacepi_x4",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_creality_spacepi_x4l",
+      "questions": [
+        "Tell me about Creality SpacePi X4L dryer",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_creality_spacepi_x4l_source",
+          "capacity_chambers"
+        ]
+      ],
+      "expected_group": "catalogue_c100_creality_spacepi_x4l",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_sunlu_e2",
+      "questions": [
+        "Tell me about SUNLU FilaDryer E2 dryer and annealer",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_sunlu_e2_source",
+          "advertised_temperature"
+        ]
+      ],
+      "expected_group": "catalogue_c100_sunlu_e2",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_bambu_liquid_glue",
+      "questions": [
+        "Tell me about Bambu Lab liquid build-plate glue",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_bambu_liquid_glue_source",
+          "package_volume"
+        ]
+      ],
+      "expected_group": "catalogue_c100_bambu_liquid_glue",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_printdry_sc225",
+      "questions": [
+        "Tell me about PrintDry smart vacuum filament container SC225",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_printdry_sc225_source",
+          "automatic_vacuum"
+        ]
+      ],
+      "expected_group": "catalogue_c100_printdry_sc225",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_printdry_lsk2003",
+      "questions": [
+        "Tell me about PrintDry LSK2003 large-spool extension",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_printdry_lsk2003_source",
+          "spool_capacity"
+        ]
+      ],
+      "expected_group": "catalogue_c100_printdry_lsk2003",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_printdry_evc208",
+      "questions": [
+        "Tell me about PrintDry EVC208-5 vacuum containers with electric pump",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_printdry_evc208_source",
+          "maximum_spool_dimensions"
+        ]
+      ],
+      "expected_group": "catalogue_c100_printdry_evc208",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_printdry_fc305",
+      "questions": [
+        "Tell me about PrintDry large non-vacuum filament container",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_printdry_fc305_source",
+          "container_type"
+        ]
+      ],
+      "expected_group": "catalogue_c100_printdry_fc305",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_eibos_polyphemus",
+      "questions": [
+        "Tell me about EIBOS Polyphemus rotating filament dryer",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_eibos_polyphemus_source",
+          "spool_rotation"
+        ]
+      ],
+      "expected_group": "catalogue_c100_eibos_polyphemus",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_cnc_cleaning_wires",
+      "questions": [
+        "Tell me about CNC Kitchen nozzle-cleaning wires 12-piece set",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_cnc_cleaning_wires_source",
+          "wire_material"
+        ]
+      ],
+      "expected_group": "catalogue_c100_cnc_cleaning_wires",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "catalogue_c100_ldo_leviathan_expansion",
+      "questions": [
+        "Tell me about LDO Leviathan expansion board",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_ldo_leviathan_expansion_source",
+          "stepper_drivers"
+        ]
+      ],
+      "expected_group": "catalogue_c100_ldo_leviathan_expansion",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "ambiguity_100",
+      "questions": [
+        "SUNLU FilaDryer S2",
+        "What about Magigoo?",
+        "What are its specifications?"
+      ],
+      "status": "unknown",
+      "required": [],
+      "expected_focus": "clarify",
+      "expected_group": null
+    },
+    {
+      "id": "ambiguity_101",
+      "questions": [
+        "SUNLU FilaDryer S2",
+        "What about LGX?",
+        "What are its specifications?"
+      ],
+      "status": "unknown",
+      "required": [],
+      "expected_focus": "clarify",
+      "expected_group": null
+    },
+    {
+      "id": "ambiguity_102",
+      "questions": [
+        "SUNLU FilaDryer S2",
+        "What about FlowTech?",
+        "What are its specifications?"
+      ],
+      "status": "unknown",
+      "required": [],
+      "expected_focus": "clarify",
+      "expected_group": null
+    },
+    {
+      "id": "ambiguity_103",
+      "questions": [
+        "SUNLU FilaDryer S2",
+        "What about SpacePi?",
+        "What are its specifications?"
+      ],
+      "status": "unknown",
+      "required": [],
+      "expected_focus": "clarify",
+      "expected_group": null
+    },
+    {
+      "id": "ambiguity_104",
+      "questions": [
+        "SUNLU FilaDryer S2",
+        "What about Eddy?",
+        "What are its specifications?"
+      ],
+      "status": "unknown",
+      "required": [],
+      "expected_focus": "clarify",
+      "expected_group": null
+    },
+    {
+      "id": "ambiguity_105",
+      "questions": [
+        "SUNLU FilaDryer S2",
+        "What about Fiberlogy nylon?",
+        "What are its specifications?"
+      ],
+      "status": "unknown",
+      "required": [],
+      "expected_focus": "clarify",
+      "expected_group": null
+    },
+    {
+      "id": "ambiguity_106",
+      "questions": [
+        "SUNLU FilaDryer S2",
+        "What about colorFabb TPU?",
+        "What are its specifications?"
+      ],
+      "status": "unknown",
+      "required": [],
+      "expected_focus": "clarify",
+      "expected_group": null
+    },
+    {
+      "id": "ambiguity_107",
+      "questions": [
+        "SUNLU FilaDryer S2",
+        "What about EBB SB2209 RP2040?",
+        "What are its specifications?"
+      ],
+      "status": "unknown",
+      "required": [],
+      "expected_focus": "clarify",
+      "expected_group": null
+    },
+    {
+      "id": "ambiguity_108",
+      "questions": [
+        "SUNLU FilaDryer S2",
+        "What about SKR Mini E3 V3.0.1?",
+        "What are its specifications?"
+      ],
+      "status": "unknown",
+      "required": [],
+      "expected_focus": "clarify",
+      "expected_group": null
+    },
+    {
+      "id": "ambiguity_109",
+      "questions": [
+        "SUNLU FilaDryer S2",
+        "What about Bondtech LGX Lite V2 mirrored?",
+        "What are its specifications?"
+      ],
+      "status": "unknown",
+      "required": [],
+      "expected_focus": "clarify",
+      "expected_group": null
+    },
+    {
+      "id": "ambiguity_110",
+      "questions": [
+        "SUNLU FilaDryer S2",
+        "What about colorFabb varioShore TPU Prosthetic?",
+        "What are its specifications?"
+      ],
+      "status": "unknown",
+      "required": [],
+      "expected_focus": "clarify",
+      "expected_group": null
+    },
+    {
+      "id": "switch_111",
+      "questions": [
+        "TPU95-HF",
+        "Instead, tell me about SUNLU FilaDryer S2",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_sunlu_s2"
+    },
+    {
+      "id": "switch_112",
+      "questions": [
+        "SUNLU FilaDryer S2",
+        "Instead, tell me about Magigoo PP",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_magigoo_pp50"
+    },
+    {
+      "id": "switch_113",
+      "questions": [
+        "4007010136",
+        "Instead, tell me about SUNLU FilaDryer E2",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_sunlu_e2"
+    },
+    {
+      "id": "switch_114",
+      "questions": [
+        "Magigoo PC",
+        "Instead, tell me about 4001040056",
+        "What is its source-listed part number?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_focus": "focused",
+      "expected_group": "prior_R03"
+    },
+    {
+      "id": "switch_115",
+      "questions": [
+        "WES2487",
+        "Instead, tell me about Magigoo PC",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_magigoo_pc"
+    },
+    {
+      "id": "unknown_116",
+      "questions": [
+        "SUNLU FilaDryer S2",
+        "What is its dated reference AUD price?"
+      ],
+      "status": "unknown",
+      "required": [],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_sunlu_s2"
+    },
+    {
+      "id": "unknown_117",
+      "questions": [
+        "SUNLU FilaDryer S2",
+        "Is it in stock and available for delivery?"
+      ],
+      "status": "unknown",
+      "required": [],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_sunlu_s2"
+    },
+    {
+      "id": "unknown_118",
+      "questions": [
+        "Creality SpacePi X4",
+        "What is its dated reference AUD price?"
+      ],
+      "status": "unknown",
+      "required": [],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_creality_spacepi_x4"
+    },
+    {
+      "id": "unknown_119",
+      "questions": [
+        "Creality SpacePi X4",
+        "Is it in stock and available for delivery?"
+      ],
+      "status": "unknown",
+      "required": [],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_creality_spacepi_x4"
+    },
+    {
+      "id": "official_build_guide_link_only",
+      "questions": [
+        "WES2487 Sandy official build guide"
+      ],
+      "status": "source_links",
+      "required_reason": "official_build_guide_link_only"
+    },
+    {
+      "id": "official_faq_link_only",
+      "questions": [
+        "3D Sets WES2487 FAQ"
+      ],
+      "status": "source_links",
+      "required_reason": "official_faq_link_only"
+    },
+    {
+      "id": "new_topic_122",
+      "questions": [
+        "SUNLU FilaDryer S2",
+        "Tell me about Revo Mini",
+        "What are its specifications?"
+      ],
+      "status": "unknown",
+      "expected_focus": "clarify",
+      "expected_group": null
+    },
+    {
+      "id": "new_topic_123",
+      "questions": [
+        "SUNLU FilaDryer S2",
+        "Tell me about 3DLAC Plus",
+        "What are its specifications?"
+      ],
+      "status": "unknown",
+      "expected_focus": "clarify",
+      "expected_group": null
+    },
+    {
+      "id": "new_topic_124",
+      "questions": [
+        "SUNLU FilaDryer S2",
+        "Manta M8P V2.1",
+        "What are its specifications?"
+      ],
+      "status": "unknown",
+      "expected_focus": "clarify",
+      "expected_group": null
+    },
+    {
+      "id": "new_topic_125",
+      "questions": [
+        "SUNLU FilaDryer S2",
+        "LGX Lite V2.1",
+        "What are its specifications?"
+      ],
+      "status": "unknown",
+      "expected_focus": "clarify",
+      "expected_group": null
+    },
+    {
+      "id": "latest_explicit_126",
+      "questions": [
+        "WES2487",
+        "What are this SUNLU FilaDryer S2's specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_sunlu_s2_source",
+          "advertised_temperature"
+        ]
+      ],
+      "expected_focus": "direct",
+      "expected_group": "catalogue_c100_sunlu_s2"
+    },
+    {
+      "id": "latest_explicit_127",
+      "questions": [
+        "Sandy build guide",
+        "What are this SUNLU FilaDryer S2's specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_sunlu_s2_source",
+          "advertised_temperature"
+        ]
+      ],
+      "expected_focus": "direct",
+      "expected_group": "catalogue_c100_sunlu_s2"
+    }
+  ]
+}

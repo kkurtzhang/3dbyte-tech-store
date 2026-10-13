@@ -1,0 +1,99 @@
+{
+  "task": "Conservative multi-turn focus for the existing 100 counted source references",
+  "completed_at": "2026-10-13T17:37:32.061333+00:00",
+  "source_thread_id": "01a11a2a-4478-70c8-863c-bd4818f820e5",
+  "branch": "feat/knowledge-100-focus-20261013",
+  "milestone_commit": "1132c55ef07ac376216c18ed7123c680f3585d09",
+  "verified_runtime_commit": "9be6eed9",
+  "independent_integration_commit": "eb2e79f8959aae786c2fcdbaa040ad412b3005d2",
+  "verification_workspace": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100-focus",
+  "counts": {
+    "counted_references": 100,
+    "held_rc_references": 3,
+    "new_products_added": 0,
+    "aud_price_gaps": 14
+  },
+  "verification": {
+    "jest_passed": 193,
+    "fixture_gated_skipped": 2,
+    "actual_offline_route_evidence_passed": 128,
+    "actual_offline_route_identity_passed": 128,
+    "focus_coverage": {
+      "lines": {
+        "total": 100,
+        "covered": 95,
+        "skipped": 0,
+        "pct": 95
+      },
+      "statements": {
+        "total": 111,
+        "covered": 106,
+        "skipped": 0,
+        "pct": 95.49
+      },
+      "functions": {
+        "total": 30,
+        "covered": 29,
+        "skipped": 0,
+        "pct": 96.66
+      },
+      "branches": {
+        "total": 99,
+        "covered": 88,
+        "skipped": 0,
+        "pct": 88.88
+      },
+      "branchesTrue": {
+        "total": 0,
+        "covered": 0,
+        "skipped": 0,
+        "pct": "Unknown"
+      }
+    },
+    "source_and_test_types": "passed; .next/dev excluded",
+    "typescript_eslint": "not configured; five ignored-file warnings, not a lint pass",
+    "ruff": "passed",
+    "prettier": "passed",
+    "registry_reproducibility": "passed"
+  },
+  "preservation": {
+    "checked_files": 1588,
+    "changed": [],
+    "added": [],
+    "deleted": [],
+    "original_roots_unchanged": true,
+    "copied_database_rows_unchanged": true,
+    "compared_tables": 15
+  },
+  "native_writes": 0,
+  "model_calls": 0,
+  "services_started": 0,
+  "dependency_installs": 0,
+  "pushed": false,
+  "visual_evaluation": false,
+  "limitations": [
+    "Six Fiberlogy backend intents require temperature/settings wording; generic specifications returns unknown.",
+    "Canonical TPU95-HF drying values remain unknown.",
+    "Independent integration backend and security fixes remain owned by the integration worker."
+  ],
+  "artifacts": {
+    "reports/focus-final-v2.json": {
+      "sha256": "ed36323556f9bc18fe20c122543d4105a80ba81fdc3a6e8dcdf88f14409e87e7"
+    },
+    "reports/coverage-v2/coverage-summary.json": {
+      "sha256": "7134bbdc0c245d0e80c03c7afd2c35d2f30dc3a2383cd090b4a7c2bb752a7fb6"
+    },
+    "reports/route-final-evidence.json": {
+      "sha256": "aba41eb0757bd68373385d9deab6e644ac82b044cfa2c0571821193001b02342"
+    },
+    "reports/route-final-identities.json": {
+      "sha256": "1cff861a76b45098a136ae65ab9b5bba80e2e5ef993e82bd8bd490f689571179"
+    },
+    "reports/route-final-streams.json": {
+      "sha256": "36269efb81a0400c6ebd04a802b25665512c70618b68904f3e7888d9ebf3db4a"
+    },
+    "reports/preservation-final.json": {
+      "sha256": "24c7c9fb7ab1e99b7cb882bed8c42d46c7ff094e29cb56df983e96cac1cd20e0"
+    }
+  }
+}
