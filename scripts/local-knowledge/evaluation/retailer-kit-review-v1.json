@@ -98,7 +98,7 @@
   ],
   "records": [
     {
-      "record_key": "retailer_dremc_WES2487",
+      "review_record_id": "retailer_dremc_WES2487",
       "scope": "third_party_retailer_and_supplier_observations",
       "review_status": "agent_reviewed_local_evidence_not_native_approval",
       "retailer_observation": {
@@ -549,7 +549,7 @@
       }
     },
     {
-      "record_key": "retailer_dremc_WES2488",
+      "review_record_id": "retailer_dremc_WES2488",
       "scope": "third_party_retailer_and_supplier_observations",
       "review_status": "agent_reviewed_local_evidence_not_native_approval",
       "retailer_observation": {
@@ -1030,7 +1030,7 @@
       }
     },
     {
-      "record_key": "retailer_dremc_WES2489",
+      "review_record_id": "retailer_dremc_WES2489",
       "scope": "third_party_retailer_and_supplier_observations",
       "review_status": "agent_reviewed_local_evidence_not_native_approval",
       "retailer_observation": {

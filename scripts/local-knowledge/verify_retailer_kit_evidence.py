@@ -36,7 +36,7 @@ def verify(review):
         return errors
     retailer = json.loads(documents["retailer_variant_data"])
     for record in review["records"]:
-        key = record["record_key"]
+        key = record["review_record_id"]
         observed = record["retailer_observation"]
         variant = retailer["variants"][
             int(record["retailer_identity_evidence"]["variant_pointer"].split("/")[-1])
