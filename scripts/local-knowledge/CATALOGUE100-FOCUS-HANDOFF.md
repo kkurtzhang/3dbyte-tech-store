@@ -80,3 +80,23 @@ These gaps are among the 70 additions, not permission to add products or infer p
 | Fiberlogy Easy ABS | AUD scope and net package mapping remain unverified. |
 | FormFutura Python Flex TPU 98A | X3D product URL returned 404; historical snippets are not current offers. |
 | FormFutura AquaSolve PVA | X3D product URL returned 404; historical diameter/price offers are not current. |
+
+
+## Independent combined integration
+
+Follow-up branch `integration/security-knowledge-focus100-20261013` starts from `eb2e79f8959aae786c2fcdbaa040ad412b3005d2` and integrates the five pinned source commits through `362325631dd41a2d3e1a241c1b02ee3ab82fcbf1`. The one conflict in `local-catalogue-subjects.ts` is resolved with the complete generated 100-reference registry. Existing backend held/adjacent-identity safeguards, explicit seed discovery, source-preservation corrections, dependency remediation and scoped React type fix are retained.
+
+Three additional committed regressions preserve the exact reported questions: E3D Roto motor followed by “What about its specifications?”; the same sequence after an older Magigoo PP subject; and Fiberlogy ASA followed by that pronoun question. All three now retain the correct exact group. The two motor routes answer from motor evidence. The ASA generic-specifications route remains unknown because of the separately tracked backend intent gap; its manufacturer printing/bed-temperature route passes. No source facts or expected prices were changed to make tests pass.
+
+Fresh combined verification:
+
+- 196 Jest regressions pass; two optional fixture cases skip in the ordinary suite and actual route coverage runs separately. The two focus modules have 94.44% line and 90.27% branch coverage.
+- 131 actual offline chat-route identity checks and 131 source-evidence checks pass: the 128 source cases plus the three integration cases. Seven batches stay at or below 20 requests without changing the rate limiter.
+- All five workspace type commands pass, including generated storefront development/production types, backend admin and all three React peer regressions. The source milestone’s limited type-check does not describe this fresh combined result.
+- 22 expansion Python tests, full local-knowledge Ruff F/E9, the two new Python utilities’ formatting and changed handwritten TypeScript formatting pass. No TypeScript ESLint pass is claimed; the inherited configuration limitation remains.
+- Registry regeneration is byte-identical against the original pinned snapshot and ledger. Independent SQL checks confirm 100 counted references (30 baseline +70 additions),103 stored references/variants,150 active records,962 active claims and247 retained historical reviews. Each registry entry’s source-record revisions and source URLs match SQL.
+- All 15 private tables match both the copied source snapshot (apart from rebased private source paths) and the pre-test baseline. All460 copied source files match the previous fixture;613 active citations and231 text/226 available raw captures verify. Five historical unavailable raw captures remain unused. The22 original source pins, six focus evidence pins and71 previous integration artifacts remain unchanged.
+
+The final exact-head source archive, local SQLite snapshot, patches, logs and readiness report are stored under `/Volumes/MINI-M1/Codex/3dbyte-tech-store/artifacts/security-knowledge-integration-20261013/focus100`. The SQLite snapshot requires its byte-identical sources under the new private `focus100-fixture/catalogue100` directory.
+
+The Gitleaks exception proposal remains unapplied. The exact-head scan result is reported in that artifact directory and must not be represented as a clean release gate. Braces and previous dependency-audit limitations remain unresolved; no external audit/re-review retry occurred. Six Fiberlogy generic specifications/wording fixes remain with the KB worker. Native binding, canonical native review, production build/release validation and publication remain outside this local integration. Preview stays off; no service, dependency install, native write, push, merge or deployment occurred.
