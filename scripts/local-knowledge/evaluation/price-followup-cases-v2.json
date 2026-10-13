@@ -1,0 +1,471 @@
+{
+  "cases": [
+    {
+      "id": "sunlu_s2_dated",
+      "questions": [
+        "What is the dated reference price for SUNLU S2?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_sunlu_s2_source",
+          "dated_reference_price"
+        ]
+      ],
+      "expected_group": "catalogue_c100_sunlu_s2",
+      "expected_focus": "direct",
+      "expected_amount_aud": "149.00"
+    },
+    {
+      "id": "cnc_ts100_dated",
+      "questions": [
+        "What is the dated reference price for CNC Kitchen TS100/101 adapter tips set?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_cnc_ts100_source",
+          "dated_reference_price"
+        ]
+      ],
+      "expected_group": "catalogue_c100_cnc_ts100",
+      "expected_focus": "direct",
+      "expected_amount_aud": "47.95"
+    },
+    {
+      "id": "creality_spacepi_x4_dated",
+      "questions": [
+        "What is the dated reference price for Creality SpacePi X4?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_creality_spacepi_x4_source",
+          "dated_reference_price"
+        ]
+      ],
+      "expected_group": "catalogue_c100_creality_spacepi_x4",
+      "expected_focus": "direct",
+      "expected_amount_aud": "269.00"
+    },
+    {
+      "id": "btt_ebb36_gen2_dated",
+      "questions": [
+        "What is the dated reference price for BIGTREETECH EBB36 Gen2 V1.0?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_btt_ebb36_gen2_source",
+          "dated_reference_price"
+        ]
+      ],
+      "expected_group": "catalogue_c100_btt_ebb36_gen2",
+      "expected_focus": "direct",
+      "expected_amount_aud": "65.65"
+    },
+    {
+      "id": "e3d_revo_six_cold_dated",
+      "questions": [
+        "What is the dated reference price for Revo Six coldside?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_e3d_revo_six_cold_source",
+          "dated_reference_price"
+        ]
+      ],
+      "expected_group": "catalogue_c100_e3d_revo_six_cold",
+      "expected_focus": "direct",
+      "expected_amount_aud": "69.90"
+    },
+    {
+      "id": "fiberlogy_asa_dated",
+      "questions": [
+        "What is the dated reference price for Fiberlogy ASA?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_asa_source",
+          "dated_reference_price"
+        ]
+      ],
+      "expected_group": "catalogue_c100_fiberlogy_asa",
+      "expected_focus": "direct",
+      "expected_amount_aud": "61.15"
+    },
+    {
+      "id": "fiberlogy_fiberflex30d_dated",
+      "questions": [
+        "What is the dated reference price for FiberFlex 30D?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_fiberflex30d_source",
+          "dated_reference_price"
+        ]
+      ],
+      "expected_group": "catalogue_c100_fiberlogy_fiberflex30d",
+      "expected_focus": "direct",
+      "expected_amount_aud": "83.60"
+    },
+    {
+      "id": "fiberlogy_easyabs_dated",
+      "questions": [
+        "What is the dated reference price for Easy ABS?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_easyabs_source",
+          "dated_reference_price"
+        ]
+      ],
+      "expected_group": "catalogue_c100_fiberlogy_easyabs",
+      "expected_focus": "direct",
+      "expected_amount_aud": "41.00"
+    },
+    {
+      "id": "pythonflex98a_dated",
+      "questions": [
+        "What is the dated reference price for PythonFlex 98A?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_pythonflex98a_source",
+          "dated_reference_price"
+        ]
+      ],
+      "expected_group": "catalogue_c100_pythonflex98a",
+      "expected_focus": "direct",
+      "expected_amount_aud": "69.99"
+    },
+    {
+      "id": "aquasolve_pva_dated",
+      "questions": [
+        "What is the dated reference price for AquaSolve PVA?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_aquasolve_pva_source",
+          "dated_reference_price"
+        ]
+      ],
+      "expected_group": "catalogue_c100_aquasolve_pva",
+      "expected_focus": "direct",
+      "expected_amount_aud": "72.99"
+    },
+    {
+      "id": "eibos_polyphemus_dated",
+      "questions": [
+        "What is the dated reference price for EIBOS Polyphemus?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_eibos_polyphemus_source",
+          "dated_reference_price"
+        ]
+      ],
+      "expected_group": "catalogue_c100_eibos_polyphemus",
+      "expected_focus": "direct",
+      "expected_amount_aud": "231.00"
+    },
+    {
+      "id": "btt_sfs_v2_dated",
+      "questions": [
+        "What is the dated reference price for SFS V2.0?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_btt_sfs_v2_source",
+          "dated_reference_price"
+        ]
+      ],
+      "expected_group": "catalogue_c100_btt_sfs_v2",
+      "expected_focus": "direct",
+      "expected_amount_aud": "33.45"
+    },
+    {
+      "id": "cnc_deburrer_unknown",
+      "questions": [
+        "CNC Kitchen deburrer dated reference price"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "dated_reference_price"
+      ]
+    },
+    {
+      "id": "printdry_fc305_unknown",
+      "questions": [
+        "PrintDry FC305 dated reference price"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "dated_reference_price"
+      ]
+    },
+    {
+      "id": "sunlu_s2_live",
+      "questions": [
+        "SUNLU S2 current price"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "store_sale_price"
+      ]
+    },
+    {
+      "id": "cnc_ts100_live",
+      "questions": [
+        "CNC Kitchen TS100/101 adapter tips set current price"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "store_sale_price"
+      ]
+    },
+    {
+      "id": "creality_spacepi_x4_live",
+      "questions": [
+        "Creality SpacePi X4 current price"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "store_sale_price"
+      ]
+    },
+    {
+      "id": "btt_ebb36_gen2_live",
+      "questions": [
+        "BIGTREETECH EBB36 Gen2 V1.0 current price"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "store_sale_price"
+      ]
+    },
+    {
+      "id": "e3d_revo_six_cold_live",
+      "questions": [
+        "Revo Six coldside current price"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "store_sale_price"
+      ]
+    },
+    {
+      "id": "fiberlogy_asa_live",
+      "questions": [
+        "Fiberlogy ASA current price"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "store_sale_price"
+      ]
+    },
+    {
+      "id": "fiberlogy_fiberflex30d_live",
+      "questions": [
+        "FiberFlex 30D current price"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "store_sale_price"
+      ]
+    },
+    {
+      "id": "fiberlogy_easyabs_live",
+      "questions": [
+        "Easy ABS current price"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "store_sale_price"
+      ]
+    },
+    {
+      "id": "pythonflex98a_live",
+      "questions": [
+        "PythonFlex 98A current price"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "store_sale_price"
+      ]
+    },
+    {
+      "id": "aquasolve_pva_live",
+      "questions": [
+        "AquaSolve PVA current price"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "store_sale_price"
+      ]
+    },
+    {
+      "id": "eibos_polyphemus_live",
+      "questions": [
+        "EIBOS Polyphemus current price"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "store_sale_price"
+      ]
+    },
+    {
+      "id": "btt_sfs_v2_live",
+      "questions": [
+        "SFS V2.0 current price"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "store_sale_price"
+      ]
+    },
+    {
+      "id": "eibos_polyphemus_historical_guard",
+      "questions": [
+        "EIBOS Polyphemus current dated reference price"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "current_external_reference_price"
+      ]
+    },
+    {
+      "id": "btt_sfs_v2_historical_guard",
+      "questions": [
+        "SFS V2.0 current dated reference price"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "current_external_reference_price"
+      ]
+    },
+    {
+      "id": "abs_specs_0",
+      "questions": [
+        "What are the specifications for Fiberlogy ABS?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_abs_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_abs_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "direct",
+      "expected_group": "catalogue_c100_fiberlogy_abs"
+    },
+    {
+      "id": "absgf_specs_0",
+      "questions": [
+        "What are the specifications for Fiberlogy ABS+GF?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_absgf_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_absgf_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "direct",
+      "expected_group": "catalogue_c100_fiberlogy_absgf"
+    },
+    {
+      "id": "asa_specs_0",
+      "questions": [
+        "What are the specifications for Fiberlogy ASA?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_asa_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_asa_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "direct",
+      "expected_group": "catalogue_c100_fiberlogy_asa"
+    },
+    {
+      "id": "pctg_specs_0",
+      "questions": [
+        "What are the specifications for Fiberlogy PCTG?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_pctg_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_pctg_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "direct",
+      "expected_group": "catalogue_c100_fiberlogy_pctg"
+    },
+    {
+      "id": "pctgcf_specs_0",
+      "questions": [
+        "What are the specifications for Fiberlogy PCTG+CF10?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_pctgcf_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_pctgcf_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "direct",
+      "expected_group": "catalogue_c100_fiberlogy_pctgcf"
+    },
+    {
+      "id": "pctggf_specs_0",
+      "questions": [
+        "What are the specifications for Fiberlogy PCTG+GF10?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_pctggf_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_pctggf_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "direct",
+      "expected_group": "catalogue_c100_fiberlogy_pctggf"
+    }
+  ],
+  "fixture_note": "Uses the existing exact-reference names for EBB36 Gen2 V1.0 and CNC Kitchen TS100/101 adapter tips set. Initial abbreviated-query captures are preserved; focus aliases are unchanged."
+}

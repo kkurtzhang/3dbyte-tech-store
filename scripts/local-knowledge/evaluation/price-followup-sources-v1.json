@@ -1,0 +1,106 @@
+[
+  {
+    "key": "sunlu_s2_page",
+    "url": "https://www.jaycar.com.au/sunlu-s2-filament-dryer-box/p/TL5012"
+  },
+  {
+    "key": "jaycar_terms",
+    "url": "https://help.jaycar.com.au/hc/en-us/articles/22466779698713-Terms-conditions"
+  },
+  {
+    "key": "cnc_ts100_page",
+    "url": "https://shapeshop.com.au/cnc-kitchen/337-cnc-kitchen-ts100101-soldering-adapter-tips-set-4262391010129.html"
+  },
+  {
+    "key": "cnc_deburrer_page",
+    "url": "https://shapeshop.com.au/cnc-kitchen/349-cnc-kitchen-deburrer-with-3-blades-4262391011713.html"
+  },
+  {
+    "key": "cnc_deburrer_manufacturer",
+    "url": "https://cnckitchen.store/products/entgrater-deburrer"
+  },
+  {
+    "key": "creality_x4_page",
+    "url": "https://store.creality.com/au/products/creality-spacepi-x4"
+  },
+  {
+    "key": "creality_x4_json",
+    "url": "https://store.creality.com/au/products/creality-spacepi-x4.js"
+  },
+  {
+    "key": "creality_tax_faq",
+    "url": "https://store.creality.com/au/pages/faq"
+  },
+  {
+    "key": "printdry_vendor_page",
+    "url": "https://cubictech.com.au/collections/vendors?q=printdry"
+  },
+  {
+    "key": "eibos_page",
+    "url": "https://www.addlabs.au/products/eibos-3d-filament-dryer-polyphemus"
+  },
+  {
+    "key": "eibos_json",
+    "url": "https://www.addlabs.au/products/eibos-3d-filament-dryer-polyphemus.js"
+  },
+  {
+    "key": "btt_sfs_page",
+    "url": "https://store.dremc.com.au/products/bigtreetech-sfs-v2-0-smart-filament-sensor-detection-module"
+  },
+  {
+    "key": "btt_sfs_json",
+    "url": "https://store.dremc.com.au/products/bigtreetech-sfs-v2-0-smart-filament-sensor-detection-module.js"
+  },
+  {
+    "key": "ebb36_page",
+    "url": "https://store.dremc.com.au/products/bigtreetech-ebb-36-42-gen-2-can-bus-for-klipper-hotend-tool-head?variant=46504017035433"
+  },
+  {
+    "key": "ebb36_json",
+    "url": "https://store.dremc.com.au/products/bigtreetech-ebb-36-42-gen-2-can-bus-for-klipper-hotend-tool-head.js"
+  },
+  {
+    "key": "revo_six_page",
+    "url": "https://store.dremc.com.au/products/e3d-revo-coldside-packs?variant=43781865799849"
+  },
+  {
+    "key": "revo_six_json",
+    "url": "https://store.dremc.com.au/products/e3d-revo-coldside-packs.js"
+  },
+  {
+    "key": "asa_page",
+    "url": "https://www.proforged3d.com.au/products/fiberlogy-asa-natural-1-75mm-750g"
+  },
+  {
+    "key": "asa_json",
+    "url": "https://www.proforged3d.com.au/products/fiberlogy-asa-natural-1-75mm-750g.js"
+  },
+  {
+    "key": "flex30d_page",
+    "url": "https://www.proforged3d.com.au/products/fiberlogy-fiberflex-30d-black-1-75mm-850g"
+  },
+  {
+    "key": "flex30d_json",
+    "url": "https://www.proforged3d.com.au/products/fiberlogy-fiberflex-30d-black-1-75mm-850g.js"
+  },
+  {
+    "key": "easyabs_page",
+    "url": "https://fuse3d.com.au/easy-abs-transparent-navy-blue/"
+  },
+  {
+    "key": "pythonflex_page",
+    "url": "https://www.austic.com.au/python-flex-black-3d-printer-filament/"
+  },
+  {
+    "key": "pythonflex_variant",
+    "url": "https://www.austic.com.au/remote/v1/product-attributes/19952?attribute%5B234%5D=161&attribute%5B235%5D=151"
+  },
+  {
+    "key": "aquasolve_page",
+    "url": "https://www.austic.com.au/aquasolve-pva-1-75mm-natural-300-gram/"
+  },
+  {
+    "key": "aquasolve_manufacturer",
+    "url": "https://b2b.formfutura.com/aquasolve-pva"
+  }
+]

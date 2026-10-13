@@ -1,0 +1,749 @@
+{
+  "version": 2,
+  "observations": [
+    {
+      "key": "sunlu_s2",
+      "amount_aud": "149.00",
+      "currency": "AUD",
+      "observed_date": "2026-10-13",
+      "classification": "dated_current_page",
+      "identity": "SUNLU S2, Jaycar TL5012, one unit",
+      "retailer": "Jaycar",
+      "statement": "Dated external reference observed 2026-10-13: Jaycar AUD 149.00, tax included, for SUNLU S2, Jaycar TL5012, one unit. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established.",
+      "evidence": {
+        "price": [
+          {
+            "local_source_id": "local_source_price_sunlu_s2_page_fallback_11c11f03d9f8",
+            "source_url": "https://www.jaycar.com.au/sunlu-s2-filament-dryer-box/p/TL5012",
+            "quote": "L39: Qty 1 - 1\nL40: \nL41: $149.00 / Unit",
+            "start_char": 14842,
+            "end_char": 14882
+          }
+        ],
+        "identity": [
+          {
+            "local_source_id": "local_source_price_sunlu_s2_page_fallback_11c11f03d9f8",
+            "source_url": "https://www.jaycar.com.au/sunlu-s2-filament-dryer-box/p/TL5012",
+            "quote": "L23: # Sunlu S2 Filament Dryer Box",
+            "start_char": 14532,
+            "end_char": 14566
+          },
+          {
+            "local_source_id": "local_source_price_sunlu_s2_page_fallback_11c11f03d9f8",
+            "source_url": "https://www.jaycar.com.au/sunlu-s2-filament-dryer-box/p/TL5012",
+            "quote": "L25:   * CAT.NO: TL5012",
+            "start_char": 14573,
+            "end_char": 14596
+          }
+        ],
+        "currency_tax": [
+          {
+            "local_source_id": "local_source_price_sunlu_s2_page_fallback_11c11f03d9f8",
+            "source_url": "https://www.jaycar.com.au/sunlu-s2-filament-dryer-box/p/TL5012",
+            "quote": "$AUD",
+            "start_char": 20562,
+            "end_char": 20566
+          },
+          {
+            "local_source_id": "local_source_price_jaycar_terms_d52ea1582c4b",
+            "source_url": "https://help.jaycar.com.au/hc/en-us/articles/22466779698713-Terms-conditions",
+            "quote": "The prices throughout this site include GST (US, Canadian, and UK site excluded).",
+            "start_char": 215,
+            "end_char": 296
+          }
+        ]
+      },
+      "expected_prior_revision": "50d0330954553108b3728e1bc112eae70cf0584647c73bb073c36b799b26841a"
+    },
+    {
+      "key": "cnc_ts100",
+      "amount_aud": "47.95",
+      "currency": "AUD",
+      "observed_date": "2026-10-13",
+      "classification": "dated_current_page",
+      "identity": "CNC Kitchen TS100/101 soldering adapter and tips set; retailer EAN 4262391010129",
+      "retailer": "ShapeShop",
+      "statement": "Dated external reference observed 2026-10-13: ShapeShop AUD 47.95, tax included, for CNC Kitchen TS100/101 soldering adapter and tips set; retailer EAN 4262391010129. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established.",
+      "evidence": {
+        "price": [
+          {
+            "local_source_id": "local_source_price_cnc_ts100_page_fallback_2c23c578ab58",
+            "source_url": "https://shapeshop.com.au/cnc-kitchen/337-cnc-kitchen-ts100101-soldering-adapter-tips-set-4262391010129.html",
+            "quote": "<meta itemprop=\"price\" content=\"47.95\">",
+            "start_char": 147629,
+            "end_char": 147668
+          }
+        ],
+        "identity": [
+          {
+            "local_source_id": "local_source_price_cnc_ts100_page_fallback_2c23c578ab58",
+            "source_url": "https://shapeshop.com.au/cnc-kitchen/337-cnc-kitchen-ts100101-soldering-adapter-tips-set-4262391010129.html",
+            "quote": "EAN13</dt>\n              <dd class=\"value\">4262391010129",
+            "start_char": 171405,
+            "end_char": 171461
+          },
+          {
+            "local_source_id": "local_source_price_cnc_ts100_page_fallback_2c23c578ab58",
+            "source_url": "https://shapeshop.com.au/cnc-kitchen/337-cnc-kitchen-ts100101-soldering-adapter-tips-set-4262391010129.html",
+            "quote": "<h1 class=\"h1\" itemprop=\"name\">CNC Kitchen TS100/101 Soldering Adapter + Tips Set</h1>",
+            "start_char": 147176,
+            "end_char": 147262
+          }
+        ],
+        "currency_tax": [
+          {
+            "local_source_id": "local_source_price_cnc_ts100_page_fallback_2c23c578ab58",
+            "source_url": "https://shapeshop.com.au/cnc-kitchen/337-cnc-kitchen-ts100101-soldering-adapter-tips-set-4262391010129.html",
+            "quote": "<meta itemprop=\"priceCurrency\" content=\"AUD\">",
+            "start_char": 147575,
+            "end_char": 147620
+          },
+          {
+            "local_source_id": "local_source_price_cnc_ts100_page_fallback_2c23c578ab58",
+            "source_url": "https://shapeshop.com.au/cnc-kitchen/337-cnc-kitchen-ts100101-soldering-adapter-tips-set-4262391010129.html",
+            "quote": "inc GST",
+            "start_char": 2134,
+            "end_char": 2141
+          }
+        ]
+      },
+      "expected_prior_revision": "978e0622dc913ead2bdc89114dffa51c57cbca7f44b3370fb8a68a00f2dcfa5c"
+    },
+    {
+      "key": "creality_spacepi_x4",
+      "amount_aud": "269.00",
+      "currency": "AUD",
+      "observed_date": "2026-10-13",
+      "classification": "dated_current_page",
+      "identity": "standalone Creality SpacePi X4, SKU 4005010107",
+      "retailer": "Creality AU",
+      "statement": "Dated external reference observed 2026-10-13: Creality AU AUD 269.00, tax included, for standalone Creality SpacePi X4, SKU 4005010107. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established.",
+      "evidence": {
+        "price": [
+          {
+            "local_source_id": "local_source_price_creality_x4_page_4a58bd62d435",
+            "source_url": "https://store.creality.com/au/products/creality-spacepi-x4",
+            "quote": "\"price\":269,\"priceCurrency\":\"AUD\",\"sku\":\"4005010107\"",
+            "start_char": 55571,
+            "end_char": 55623
+          }
+        ],
+        "identity": [
+          {
+            "local_source_id": "local_source_price_creality_x4_page_4a58bd62d435",
+            "source_url": "https://store.creality.com/au/products/creality-spacepi-x4",
+            "quote": "\"name\":\"Creality SpacePi X4\",\"offers\"",
+            "start_char": 55471,
+            "end_char": 55508
+          }
+        ],
+        "currency_tax": [
+          {
+            "local_source_id": "local_source_price_creality_tax_faq_504a9ef59cc0",
+            "source_url": "https://store.creality.com/au/pages/faq",
+            "quote": "Prices on the Creality Australia store include 10% GST (Goods and Services Tax), so no additional GST is added at checkout.",
+            "start_char": 548148,
+            "end_char": 548271
+          }
+        ]
+      },
+      "expected_prior_revision": "427cd8d60053f56dae48a15875e44b95d06e1d3cd3136a16f5f1e48475d369c4"
+    },
+    {
+      "key": "btt_ebb36_gen2",
+      "amount_aud": "65.65",
+      "currency": "AUD",
+      "observed_date": "2026-10-13",
+      "classification": "dated_current_page",
+      "identity": "EBB36 Gen 2 V1.0; selected variant 46504017035433, SKU 1030000188",
+      "retailer": "DREMC",
+      "statement": "Dated external reference observed 2026-10-13: DREMC AUD 65.65, tax included, for EBB36 Gen 2 V1.0; selected variant 46504017035433, SKU 1030000188. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established.",
+      "evidence": {
+        "price": [
+          {
+            "local_source_id": "local_source_price_ebb36_json_bf52c4786d4f",
+            "source_url": "https://store.dremc.com.au/products/bigtreetech-ebb-36-42-gen-2-can-bus-for-klipper-hotend-tool-head.js",
+            "quote": "6565",
+            "json_pointer": "/variants/1/price"
+          }
+        ],
+        "identity": [
+          {
+            "local_source_id": "local_source_price_ebb36_json_bf52c4786d4f",
+            "source_url": "https://store.dremc.com.au/products/bigtreetech-ebb-36-42-gen-2-can-bus-for-klipper-hotend-tool-head.js",
+            "quote": "46504017035433",
+            "json_pointer": "/variants/1/id"
+          },
+          {
+            "local_source_id": "local_source_price_ebb36_json_bf52c4786d4f",
+            "source_url": "https://store.dremc.com.au/products/bigtreetech-ebb-36-42-gen-2-can-bus-for-klipper-hotend-tool-head.js",
+            "quote": "EBB36 Gen 2 V1.0",
+            "json_pointer": "/variants/1/title"
+          },
+          {
+            "local_source_id": "local_source_price_ebb36_json_bf52c4786d4f",
+            "source_url": "https://store.dremc.com.au/products/bigtreetech-ebb-36-42-gen-2-can-bus-for-klipper-hotend-tool-head.js",
+            "quote": "1030000188",
+            "json_pointer": "/variants/1/sku"
+          },
+          {
+            "local_source_id": "local_source_price_ebb36_json_bf52c4786d4f",
+            "source_url": "https://store.dremc.com.au/products/bigtreetech-ebb-36-42-gen-2-can-bus-for-klipper-hotend-tool-head.js",
+            "quote": "Bigtreetech EBB 36/42 Gen 2 Can Bus / USB for Klipper Hotend Tool Head",
+            "json_pointer": "/title"
+          }
+        ],
+        "currency_tax": [
+          {
+            "local_source_id": "local_source_price_ebb36_page_0da7c20a4900",
+            "source_url": "https://store.dremc.com.au/products/bigtreetech-ebb-36-42-gen-2-can-bus-for-klipper-hotend-tool-head?variant=46504017035433",
+            "quote": "<meta property=\"product:price:currency\" content=\"AUD\">",
+            "start_char": 1984,
+            "end_char": 2038
+          },
+          {
+            "local_source_id": "local_source_price_ebb36_page_0da7c20a4900",
+            "source_url": "https://store.dremc.com.au/products/bigtreetech-ebb-36-42-gen-2-can-bus-for-klipper-hotend-tool-head?variant=46504017035433",
+            "quote": "Include GST",
+            "start_char": 469111,
+            "end_char": 469122
+          }
+        ]
+      },
+      "expected_prior_revision": "90c518f4b6e8614bf1c2abe5ecc40714d270c17e087ad27d6598e6a89a230a54"
+    },
+    {
+      "key": "e3d_revo_six_cold",
+      "amount_aud": "69.90",
+      "currency": "AUD",
+      "observed_date": "2026-10-13",
+      "classification": "dated_current_page",
+      "identity": "Revo Six 24V coldside pack only; variant 43781865799849, SKU REVO-SIX-24V-COLD",
+      "retailer": "DREMC",
+      "statement": "Dated external reference observed 2026-10-13: DREMC AUD 69.90, tax included, for Revo Six 24V coldside pack only; variant 43781865799849, SKU REVO-SIX-24V-COLD. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established.",
+      "evidence": {
+        "price": [
+          {
+            "local_source_id": "local_source_price_revo_six_json_d9566f25058b",
+            "source_url": "https://store.dremc.com.au/products/e3d-revo-coldside-packs.js",
+            "quote": "6990",
+            "json_pointer": "/variants/1/price"
+          }
+        ],
+        "identity": [
+          {
+            "local_source_id": "local_source_price_revo_six_json_d9566f25058b",
+            "source_url": "https://store.dremc.com.au/products/e3d-revo-coldside-packs.js",
+            "quote": "43781865799849",
+            "json_pointer": "/variants/1/id"
+          },
+          {
+            "local_source_id": "local_source_price_revo_six_json_d9566f25058b",
+            "source_url": "https://store.dremc.com.au/products/e3d-revo-coldside-packs.js",
+            "quote": "Revo Six",
+            "json_pointer": "/variants/1/title"
+          },
+          {
+            "local_source_id": "local_source_price_revo_six_json_d9566f25058b",
+            "source_url": "https://store.dremc.com.au/products/e3d-revo-coldside-packs.js",
+            "quote": "REVO-SIX-24V-COLD",
+            "json_pointer": "/variants/1/sku"
+          },
+          {
+            "local_source_id": "local_source_price_revo_six_json_d9566f25058b",
+            "source_url": "https://store.dremc.com.au/products/e3d-revo-coldside-packs.js",
+            "quote": "E3D Revo Coldside Packs",
+            "json_pointer": "/title"
+          }
+        ],
+        "currency_tax": [
+          {
+            "local_source_id": "local_source_price_revo_six_page_5b9a0d3d96b6",
+            "source_url": "https://store.dremc.com.au/products/e3d-revo-coldside-packs?variant=43781865799849",
+            "quote": "<meta property=\"product:price:currency\" content=\"AUD\">",
+            "start_char": 1727,
+            "end_char": 1781
+          },
+          {
+            "local_source_id": "local_source_price_revo_six_page_5b9a0d3d96b6",
+            "source_url": "https://store.dremc.com.au/products/e3d-revo-coldside-packs?variant=43781865799849",
+            "quote": "Include GST",
+            "start_char": 535572,
+            "end_char": 535583
+          }
+        ]
+      },
+      "expected_prior_revision": "2a7d517171d2ba9d37c394cc4ec79a6f964b5a0892cf632a5170d7cdac213bdd"
+    },
+    {
+      "key": "fiberlogy_asa",
+      "amount_aud": "61.15",
+      "currency": "AUD",
+      "observed_date": "2026-10-13",
+      "classification": "dated_current_page",
+      "identity": "Fiberlogy ASA Natural 1.75 mm 750 g; variant 52806275957015, SKU MISC-FIL-FIB-102",
+      "retailer": "Proforged3D",
+      "statement": "Dated external reference observed 2026-10-13: Proforged3D AUD 61.15, tax included, for Fiberlogy ASA Natural 1.75 mm 750 g; variant 52806275957015, SKU MISC-FIL-FIB-102. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established.",
+      "evidence": {
+        "price": [
+          {
+            "local_source_id": "local_source_price_asa_json_bfb0e88adcbb",
+            "source_url": "https://www.proforged3d.com.au/products/fiberlogy-asa-natural-1-75mm-750g.js",
+            "quote": "6115",
+            "json_pointer": "/variants/0/price"
+          }
+        ],
+        "identity": [
+          {
+            "local_source_id": "local_source_price_asa_json_bfb0e88adcbb",
+            "source_url": "https://www.proforged3d.com.au/products/fiberlogy-asa-natural-1-75mm-750g.js",
+            "quote": "52806275957015",
+            "json_pointer": "/variants/0/id"
+          },
+          {
+            "local_source_id": "local_source_price_asa_json_bfb0e88adcbb",
+            "source_url": "https://www.proforged3d.com.au/products/fiberlogy-asa-natural-1-75mm-750g.js",
+            "quote": "Default Title",
+            "json_pointer": "/variants/0/title"
+          },
+          {
+            "local_source_id": "local_source_price_asa_json_bfb0e88adcbb",
+            "source_url": "https://www.proforged3d.com.au/products/fiberlogy-asa-natural-1-75mm-750g.js",
+            "quote": "MISC-FIL-FIB-102",
+            "json_pointer": "/variants/0/sku"
+          },
+          {
+            "local_source_id": "local_source_price_asa_json_bfb0e88adcbb",
+            "source_url": "https://www.proforged3d.com.au/products/fiberlogy-asa-natural-1-75mm-750g.js",
+            "quote": "Fiberlogy ASA Natural 1.75mm 750g",
+            "json_pointer": "/title"
+          }
+        ],
+        "currency_tax": [
+          {
+            "local_source_id": "local_source_price_asa_page_10b816e09443",
+            "source_url": "https://www.proforged3d.com.au/products/fiberlogy-asa-natural-1-75mm-750g",
+            "quote": "<meta property=\"og:price:currency\" content=\"AUD\">",
+            "start_char": 1750,
+            "end_char": 1799
+          },
+          {
+            "local_source_id": "local_source_price_asa_page_10b816e09443",
+            "source_url": "https://www.proforged3d.com.au/products/fiberlogy-asa-natural-1-75mm-750g",
+            "quote": "Taxes included.",
+            "start_char": 366513,
+            "end_char": 366528
+          }
+        ]
+      },
+      "expected_prior_revision": "8866ffcfe1d55a013040cea9ba0286e6fc841a32d430571026c1bf1e0bd30b62"
+    },
+    {
+      "key": "fiberlogy_fiberflex30d",
+      "amount_aud": "83.60",
+      "currency": "AUD",
+      "observed_date": "2026-10-13",
+      "classification": "dated_current_page",
+      "identity": "Fiberlogy FiberFlex 30D Black 1.75 mm 850 g; variant 49497186042135, SKU MISC-FIL-FIB-014",
+      "retailer": "Proforged3D",
+      "statement": "Dated external reference observed 2026-10-13: Proforged3D AUD 83.60, tax included, for Fiberlogy FiberFlex 30D Black 1.75 mm 850 g; variant 49497186042135, SKU MISC-FIL-FIB-014. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established.",
+      "evidence": {
+        "price": [
+          {
+            "local_source_id": "local_source_price_flex30d_json_e3433217662c",
+            "source_url": "https://www.proforged3d.com.au/products/fiberlogy-fiberflex-30d-black-1-75mm-850g.js",
+            "quote": "8360",
+            "json_pointer": "/variants/0/price"
+          }
+        ],
+        "identity": [
+          {
+            "local_source_id": "local_source_price_flex30d_json_e3433217662c",
+            "source_url": "https://www.proforged3d.com.au/products/fiberlogy-fiberflex-30d-black-1-75mm-850g.js",
+            "quote": "49497186042135",
+            "json_pointer": "/variants/0/id"
+          },
+          {
+            "local_source_id": "local_source_price_flex30d_json_e3433217662c",
+            "source_url": "https://www.proforged3d.com.au/products/fiberlogy-fiberflex-30d-black-1-75mm-850g.js",
+            "quote": "Default Title",
+            "json_pointer": "/variants/0/title"
+          },
+          {
+            "local_source_id": "local_source_price_flex30d_json_e3433217662c",
+            "source_url": "https://www.proforged3d.com.au/products/fiberlogy-fiberflex-30d-black-1-75mm-850g.js",
+            "quote": "MISC-FIL-FIB-014",
+            "json_pointer": "/variants/0/sku"
+          },
+          {
+            "local_source_id": "local_source_price_flex30d_json_e3433217662c",
+            "source_url": "https://www.proforged3d.com.au/products/fiberlogy-fiberflex-30d-black-1-75mm-850g.js",
+            "quote": "Fiberlogy FiberFlex 30D Black 1.75mm 850g",
+            "json_pointer": "/title"
+          }
+        ],
+        "currency_tax": [
+          {
+            "local_source_id": "local_source_price_flex30d_page_5b3242932edf",
+            "source_url": "https://www.proforged3d.com.au/products/fiberlogy-fiberflex-30d-black-1-75mm-850g",
+            "quote": "<meta property=\"og:price:currency\" content=\"AUD\">",
+            "start_char": 1814,
+            "end_char": 1863
+          },
+          {
+            "local_source_id": "local_source_price_flex30d_page_5b3242932edf",
+            "source_url": "https://www.proforged3d.com.au/products/fiberlogy-fiberflex-30d-black-1-75mm-850g",
+            "quote": "Taxes included.",
+            "start_char": 365828,
+            "end_char": 365843
+          }
+        ]
+      },
+      "expected_prior_revision": "167b617764f18f48a12e7204374a2563672514a9156d6ea25534fa460dba890d"
+    },
+    {
+      "key": "fiberlogy_easyabs",
+      "amount_aud": "41.00",
+      "currency": "AUD",
+      "observed_date": "2026-10-13",
+      "classification": "dated_current_page",
+      "identity": "Fiberlogy Easy ABS transparent navy blue 1.75 mm 750 g, SKU EABS-NBLUETR-175-075; retailer manufacturer number 5902560996524",
+      "retailer": "Fuse3D",
+      "statement": "Dated external reference observed 2026-10-13: Fuse3D AUD 41.00, tax included, for Fiberlogy Easy ABS transparent navy blue 1.75 mm 750 g, SKU EABS-NBLUETR-175-075; retailer manufacturer number 5902560996524. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established.",
+      "evidence": {
+        "price": [
+          {
+            "local_source_id": "local_source_price_easyabs_page_8c16c8a447d8",
+            "source_url": "https://fuse3d.com.au/easy-abs-transparent-navy-blue/",
+            "quote": "\"with_tax\":{\"formatted\":\"$41.00\",\"value\":41,\"currency\":\"AUD\"},\"tax_label\":\"GST\"",
+            "start_char": 3389,
+            "end_char": 3468
+          }
+        ],
+        "identity": [
+          {
+            "local_source_id": "local_source_price_easyabs_page_8c16c8a447d8",
+            "source_url": "https://fuse3d.com.au/easy-abs-transparent-navy-blue/",
+            "quote": "\"sku\":\"EABS-NBLUETR-175-075\"",
+            "start_char": 3228,
+            "end_char": 3256
+          },
+          {
+            "local_source_id": "local_source_price_easyabs_page_8c16c8a447d8",
+            "source_url": "https://fuse3d.com.au/easy-abs-transparent-navy-blue/",
+            "quote": "5902560996524",
+            "start_char": 110595,
+            "end_char": 110608
+          },
+          {
+            "local_source_id": "local_source_price_easyabs_page_8c16c8a447d8",
+            "source_url": "https://fuse3d.com.au/easy-abs-transparent-navy-blue/",
+            "quote": "Net Weight:</td>\n<td style=\"width: 65.7778%; height: 18px;\">&nbsp;750g",
+            "start_char": 111534,
+            "end_char": 111604
+          }
+        ],
+        "currency_tax": [
+          {
+            "local_source_id": "local_source_price_easyabs_page_8c16c8a447d8",
+            "source_url": "https://fuse3d.com.au/easy-abs-transparent-navy-blue/",
+            "quote": "\"currency\":\"AUD\"},\"tax_label\":\"GST\"",
+            "start_char": 3433,
+            "end_char": 3468
+          }
+        ]
+      },
+      "expected_prior_revision": "ba918d2cd2e82885bb87fd2be2b37df2b609e431031e2161b3b7a930e13ae8c2"
+    },
+    {
+      "key": "pythonflex98a",
+      "amount_aud": "69.99",
+      "currency": "AUD",
+      "observed_date": "2026-10-13",
+      "classification": "dated_current_page",
+      "identity": "FormFutura PythonFlex 98A Black 1.75 mm 500 g; SKU 175PYTFLX-B-0500, retailer GTIN 8718924479315; selected variant 34417",
+      "retailer": "AUSTiC",
+      "statement": "Dated external reference observed 2026-10-13: AUSTiC AUD 69.99, tax included, for FormFutura PythonFlex 98A Black 1.75 mm 500 g; SKU 175PYTFLX-B-0500, retailer GTIN 8718924479315; selected variant 34417. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established.",
+      "evidence": {
+        "price": [
+          {
+            "local_source_id": "local_source_price_pythonflex_variant_e4e2c99b0908",
+            "source_url": "https://www.austic.com.au/remote/v1/product-attributes/19952?attribute%5B234%5D=161&attribute%5B235%5D=151",
+            "quote": "69.99",
+            "json_pointer": "/data/price/with_tax/value"
+          }
+        ],
+        "identity": [
+          {
+            "local_source_id": "local_source_price_pythonflex_variant_e4e2c99b0908",
+            "source_url": "https://www.austic.com.au/remote/v1/product-attributes/19952?attribute%5B234%5D=161&attribute%5B235%5D=151",
+            "quote": "175PYTFLX-B-0500",
+            "json_pointer": "/data/sku"
+          },
+          {
+            "local_source_id": "local_source_price_pythonflex_variant_e4e2c99b0908",
+            "source_url": "https://www.austic.com.au/remote/v1/product-attributes/19952?attribute%5B234%5D=161&attribute%5B235%5D=151",
+            "quote": "8718924479315",
+            "json_pointer": "/data/gtin"
+          },
+          {
+            "local_source_id": "local_source_price_pythonflex_variant_e4e2c99b0908",
+            "source_url": "https://www.austic.com.au/remote/v1/product-attributes/19952?attribute%5B234%5D=161&attribute%5B235%5D=151",
+            "quote": "34417",
+            "json_pointer": "/data/v3_variant_id"
+          },
+          {
+            "local_source_id": "local_source_price_pythonflex_page_e44cd7e5fa24",
+            "source_url": "https://www.austic.com.au/python-flex-black-3d-printer-filament/",
+            "quote": "id=\"attribute_rectangle__234_161\"\n            name=\"attribute[234]\"\n            value=\"161\"\n                checked\n                data-default\n            \n        >\n        <label class=\"form-option\" for=\"attribute_rectangle__234_161\" data-product-attribute-value=\"161\">\n            <span class=\"form-option-variant\">1.75 mm",
+            "start_char": 259702,
+            "end_char": 260029
+          },
+          {
+            "local_source_id": "local_source_price_pythonflex_page_e44cd7e5fa24",
+            "source_url": "https://www.austic.com.au/python-flex-black-3d-printer-filament/",
+            "quote": "id=\"attribute_rectangle__235_151\"\n            name=\"attribute[235]\"\n            value=\"151\"\n            \n        >\n        <label class=\"form-option\" for=\"attribute_rectangle__235_151\" data-product-attribute-value=\"151\">\n            <span class=\"form-option-variant\">500 gram",
+            "start_char": 261824,
+            "end_char": 262099
+          }
+        ],
+        "currency_tax": [
+          {
+            "local_source_id": "local_source_price_pythonflex_variant_e4e2c99b0908",
+            "source_url": "https://www.austic.com.au/remote/v1/product-attributes/19952?attribute%5B234%5D=161&attribute%5B235%5D=151",
+            "quote": "AUD",
+            "json_pointer": "/data/price/with_tax/currency"
+          },
+          {
+            "local_source_id": "local_source_price_pythonflex_variant_e4e2c99b0908",
+            "source_url": "https://www.austic.com.au/remote/v1/product-attributes/19952?attribute%5B234%5D=161&attribute%5B235%5D=151",
+            "quote": "GST 10%",
+            "json_pointer": "/data/price/tax_label"
+          }
+        ]
+      },
+      "expected_prior_revision": "6b5427131af4dcb93565da1a19fc6b95ffc5d8e1bc59ed4026898fbed7d1c442"
+    },
+    {
+      "key": "aquasolve_pva",
+      "amount_aud": "72.99",
+      "currency": "AUD",
+      "observed_date": "2026-10-13",
+      "classification": "dated_current_page",
+      "identity": "FormFutura AquaSolve PVA natural 1.75 mm 300 g; retailer SKU 175AQSOPVA-TRNS-0300; manufacturer AQSV-175NTRL-00300, EAN 8718924471388",
+      "retailer": "AUSTiC",
+      "statement": "Dated external reference observed 2026-10-13: AUSTiC AUD 72.99, tax included, for FormFutura AquaSolve PVA natural 1.75 mm 300 g; retailer SKU 175AQSOPVA-TRNS-0300; manufacturer AQSV-175NTRL-00300, EAN 8718924471388. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established.",
+      "evidence": {
+        "price": [
+          {
+            "local_source_id": "local_source_price_aquasolve_page_79d8e251165e",
+            "source_url": "https://www.austic.com.au/aquasolve-pva-1-75mm-natural-300-gram/",
+            "quote": "\"with_tax\":{\"formatted\":\"$72.99\",\"value\":72.99,\"currency\":\"AUD\"},\"tax_label\":\"GST 10%\"",
+            "start_char": 16722,
+            "end_char": 16808
+          }
+        ],
+        "identity": [
+          {
+            "local_source_id": "local_source_price_aquasolve_page_79d8e251165e",
+            "source_url": "https://www.austic.com.au/aquasolve-pva-1-75mm-natural-300-gram/",
+            "quote": "\"sku\":\"175AQSOPVA-TRNS-0300\"",
+            "start_char": 16553,
+            "end_char": 16581
+          },
+          {
+            "local_source_id": "local_source_price_aquasolve_manufacturer_9c760986c697",
+            "source_url": "https://b2b.formfutura.com/aquasolve-pva",
+            "quote": "data-product-tracking-info=\"{&#34;item_id&#34;: &#34;8718924471388&#34;, &#34;item_name&#34;: &#34;[AQSV-175NTRL-00300] AquaSolve - PVA (1.75mm, 300 gram)",
+            "start_char": 94104,
+            "end_char": 94258
+          }
+        ],
+        "currency_tax": [
+          {
+            "local_source_id": "local_source_price_aquasolve_page_79d8e251165e",
+            "source_url": "https://www.austic.com.au/aquasolve-pva-1-75mm-natural-300-gram/",
+            "quote": "\"currency\":\"AUD\"},\"tax_label\":\"GST 10%\"",
+            "start_char": 16769,
+            "end_char": 16808
+          }
+        ]
+      },
+      "expected_prior_revision": "733aadd0accb85b1be6fe57902b34acbabb44e007109f679355a986ab95d8407"
+    },
+    {
+      "key": "eibos_polyphemus",
+      "amount_aud": "231.00",
+      "currency": "AUD",
+      "observed_date": "2026-10-13",
+      "classification": "historical_only",
+      "identity": "retailer-described EIBOS Polyphemus 3KG 80c with 3KG extension; no equivalence to another hardware revision asserted",
+      "retailer": "Add Labs",
+      "statement": "Historical cached Add Labs listing, retrieved 2026-10-13; provider crawl age: 2 months ago. AUD 231.00, tax included, for retailer-described EIBOS Polyphemus 3KG 80c with 3KG extension; no equivalence to another hardware revision asserted. Current external price is unknown. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established.",
+      "evidence": {
+        "price": [
+          {
+            "local_source_id": "local_source_price_eibos_page_fallback_41d5b5de8e8f",
+            "source_url": "https://www.addlabs.au/products/eibos-3d-filament-dryer-polyphemus",
+            "quote": "$231.00 AUD",
+            "start_char": 533,
+            "end_char": 544
+          }
+        ],
+        "identity": [
+          {
+            "local_source_id": "local_source_price_eibos_page_fallback_41d5b5de8e8f",
+            "source_url": "https://www.addlabs.au/products/eibos-3d-filament-dryer-polyphemus",
+            "quote": "# EIBOS 3D Filament Dryer Polyphemus 3KG 80c",
+            "start_char": 443,
+            "end_char": 487
+          },
+          {
+            "local_source_id": "local_source_price_eibos_page_fallback_41d5b5de8e8f",
+            "source_url": "https://www.addlabs.au/products/eibos-3d-filament-dryer-polyphemus",
+            "quote": "Introducing Polyphemus - Including Filament Dryer Polyphemus 3KG Extension",
+            "start_char": 1955,
+            "end_char": 2029
+          }
+        ],
+        "currency_tax": [
+          {
+            "local_source_id": "local_source_price_eibos_page_fallback_41d5b5de8e8f",
+            "source_url": "https://www.addlabs.au/products/eibos-3d-filament-dryer-polyphemus",
+            "quote": "Taxes included.",
+            "start_char": 592,
+            "end_char": 607
+          }
+        ]
+      },
+      "provider_reported_crawl": "2 months ago",
+      "expected_prior_revision": "cd54f5e3814cde95b63abc6bc9f7c8daaadb9d022ecff2e0338f9e42e666139f"
+    },
+    {
+      "key": "btt_sfs_v2",
+      "amount_aud": "33.45",
+      "currency": "AUD",
+      "observed_date": "2026-10-13",
+      "classification": "historical_only",
+      "identity": "BIGTREETECH SFS V2.0, SKU 1060000630; current URL now describes V2.1, not equivalent",
+      "retailer": "DREMC",
+      "statement": "Historical cached DREMC listing, retrieved 2026-10-13; provider crawl age: last month. AUD 33.45, tax included, for BIGTREETECH SFS V2.0, SKU 1060000630; current URL now describes V2.1, not equivalent. Current external price is unknown. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established.",
+      "evidence": {
+        "price": [
+          {
+            "local_source_id": "local_source_price_btt_sfs_page_fallback_41d5b5de8e8f",
+            "source_url": "https://store.dremc.com.au/products/bigtreetech-sfs-v2-0-smart-filament-sensor-detection-module",
+            "quote": "$33.45 AUD",
+            "start_char": 1066,
+            "end_char": 1076
+          }
+        ],
+        "identity": [
+          {
+            "local_source_id": "local_source_price_btt_sfs_page_fallback_41d5b5de8e8f",
+            "source_url": "https://store.dremc.com.au/products/bigtreetech-sfs-v2-0-smart-filament-sensor-detection-module",
+            "quote": "# Bigtreetech SFS V2.0 Smart Filament Sensor Detection Module",
+            "start_char": 942,
+            "end_char": 1003
+          },
+          {
+            "local_source_id": "local_source_price_btt_sfs_page_fallback_41d5b5de8e8f",
+            "source_url": "https://store.dremc.com.au/products/bigtreetech-sfs-v2-0-smart-filament-sensor-detection-module",
+            "quote": "BIGTREETECHSKU: 1060000630",
+            "start_char": 1005,
+            "end_char": 1031
+          },
+          {
+            "local_source_id": "local_source_price_btt_sfs_json_ee772d515b24",
+            "source_url": "https://store.dremc.com.au/products/bigtreetech-sfs-v2-0-smart-filament-sensor-detection-module.js",
+            "quote": "Bigtreetech SFS V2.1 Smart Filament Sensor Detection Module",
+            "json_pointer": "/title"
+          }
+        ],
+        "currency_tax": [
+          {
+            "local_source_id": "local_source_price_btt_sfs_page_fallback_41d5b5de8e8f",
+            "source_url": "https://store.dremc.com.au/products/bigtreetech-sfs-v2-0-smart-filament-sensor-detection-module",
+            "quote": "Include GST",
+            "start_char": 1081,
+            "end_char": 1092
+          }
+        ]
+      },
+      "provider_reported_crawl": "last month",
+      "expected_prior_revision": "c3c209c97e904785d2b2f21f86dd988d50a54fcbe74d17110112c0ad55fdd0f1"
+    },
+    {
+      "key": "cnc_deburrer",
+      "amount_aud": "29.95",
+      "currency": "AUD",
+      "observed_date": "2026-10-13",
+      "classification": "retailer_identity_unresolved",
+      "identity": "CNC Kitchen deburrer with three blades; retailer EAN 4262391011713 conflicts with manufacturer EAN 4262391010099",
+      "retailer": "ShapeShop",
+      "statement": "Retailer-described observation retrieved 2026-10-13: ShapeShop AUD 29.95, GST included, for CNC Kitchen deburrer with three blades; retailer EAN 4262391011713 conflicts with manufacturer EAN 4262391010099. Exact manufacturer identity remains unresolved; this amount is not assigned to the canonical product. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established.",
+      "evidence": {
+        "price": [
+          {
+            "local_source_id": "local_source_price_cnc_deburrer_page_fallback_fba36776584a",
+            "source_url": "https://shapeshop.com.au/cnc-kitchen/349-cnc-kitchen-deburrer-with-3-blades-4262391011713.html",
+            "quote": "<meta itemprop=\"price\" content=\"29.95\">",
+            "start_char": 146984,
+            "end_char": 147023
+          }
+        ],
+        "identity": [
+          {
+            "local_source_id": "local_source_price_cnc_deburrer_page_fallback_fba36776584a",
+            "source_url": "https://shapeshop.com.au/cnc-kitchen/349-cnc-kitchen-deburrer-with-3-blades-4262391011713.html",
+            "quote": "<h1 class=\"h1\" itemprop=\"name\">CNC Kitchen Deburrer with 3 Blades</h1>",
+            "start_char": 146547,
+            "end_char": 146617
+          },
+          {
+            "local_source_id": "local_source_price_cnc_deburrer_page_fallback_fba36776584a",
+            "source_url": "https://shapeshop.com.au/cnc-kitchen/349-cnc-kitchen-deburrer-with-3-blades-4262391011713.html",
+            "quote": "EAN13</dt>\n              <dd class=\"value\">4262391011713",
+            "start_char": 168317,
+            "end_char": 168373
+          },
+          {
+            "local_source_id": "local_source_price_cnc_deburrer_manufacturer_16c16d4538de",
+            "source_url": "https://cnckitchen.store/products/entgrater-deburrer",
+            "quote": "\"barcode\":\"4262391010099\"",
+            "start_char": 212073,
+            "end_char": 212098
+          }
+        ],
+        "currency_tax": [
+          {
+            "local_source_id": "local_source_price_cnc_deburrer_page_fallback_fba36776584a",
+            "source_url": "https://shapeshop.com.au/cnc-kitchen/349-cnc-kitchen-deburrer-with-3-blades-4262391011713.html",
+            "quote": "<meta itemprop=\"priceCurrency\" content=\"AUD\">",
+            "start_char": 146930,
+            "end_char": 146975
+          },
+          {
+            "local_source_id": "local_source_price_cnc_deburrer_page_fallback_fba36776584a",
+            "source_url": "https://shapeshop.com.au/cnc-kitchen/349-cnc-kitchen-deburrer-with-3-blades-4262391011713.html",
+            "quote": "inc GST",
+            "start_char": 2058,
+            "end_char": 2065
+          }
+        ]
+      },
+      "expected_prior_revision": "d5ece90a53e15c8bf42fa944f17324ec09a49415e84765ca17b23a2131a1c930"
+    }
+  ],
+  "holds": [
+    {
+      "key": "printdry_fc305",
+      "reason": "No verified exact AUD single large non-vacuum container observation. Earlier AUD 129.95 kit cannot be mapped to this canonical package."
+    }
+  ],
+  "source_manifests": [
+    "price-source-captures-v2.json",
+    "price-source-fallbacks-v1.json"
+  ],
+  "source_scope": "Dated external evidence only; anonymous page/JSON retrievals and independently archived cached search results. No checkout, native commerce update, physical stock or shipping verification."
+}
