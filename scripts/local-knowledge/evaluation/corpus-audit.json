@@ -1,0 +1,243 @@
+{
+  "checked_at": "2026-10-13T07:06:21.769474+00:00",
+  "stats": {
+    "products": 20,
+    "records": 53,
+    "documents": 38,
+    "guides": 15,
+    "variants": 20,
+    "sources": 70,
+    "claims": 249,
+    "supported_claims": 91,
+    "unknown_claims": 104,
+    "local_editorial_decisions": 109,
+    "environment": "local_development",
+    "native_approvals": 0
+  },
+  "claim_status_counts": {
+    "supported": 91,
+    "unknown": 104,
+    "editorial_inference": 54
+  },
+  "groups": [
+    {
+      "group_key": "five_E03",
+      "title": "Polymaker PolyFlex TPU95-HF Black 1.75mm 1kg",
+      "document_count": 3,
+      "unknown_fields": [
+        "ams_compatibility",
+        "bed_temperature_c",
+        "drying_duration_hours",
+        "drying_temperature_c",
+        "nozzle_temperature_c",
+        "printing_speed_mm_s",
+        "shore_hardness_a",
+        "universal_printer_compatibility"
+      ]
+    },
+    {
+      "group_key": "five_E04",
+      "title": "Polymaker Fiberon PA6-CF20 Black 1.75mm 500g",
+      "document_count": 3,
+      "unknown_fields": [
+        "bed_temperature_c",
+        "esd_safe",
+        "heated_chamber_requirement",
+        "printing_speed_mm_s",
+        "universal_printer_compatibility"
+      ]
+    },
+    {
+      "group_key": "five_E08",
+      "title": "Magigoo Supergrip 50 mL",
+      "document_count": 3,
+      "unknown_fields": [
+        "application_count",
+        "certification",
+        "universal_build_surface_compatibility"
+      ]
+    },
+    {
+      "group_key": "five_E09",
+      "title": "Slice Engineering Plastic Repellent Paint 3 mL",
+      "document_count": 3,
+      "unknown_fields": [
+        "application_count",
+        "internal_unclogging"
+      ]
+    },
+    {
+      "group_key": "five_E10",
+      "title": "E3D V6 Pro Silicone Socks (Pack of 3)",
+      "document_count": 2,
+      "unknown_fields": [
+        "gtin",
+        "maximum_temperature_c",
+        "universal_hotend_compatibility"
+      ]
+    },
+    {
+      "group_key": "prior_R01",
+      "title": "Creality levelling nuts and springs \u2014 package reference",
+      "document_count": 2,
+      "unknown_fields": [
+        "spring_material",
+        "thread_and_dimensions",
+        "verified_fitment"
+      ]
+    },
+    {
+      "group_key": "prior_R03",
+      "title": "Creality Ender-3 V3 SE/KE heated bed \u2014 ratings unresolved",
+      "document_count": 2,
+      "unknown_fields": [
+        "component_material",
+        "dimensions_connector_and_package",
+        "heater_power_w",
+        "max_operating_temperature_c",
+        "voltage_v"
+      ]
+    },
+    {
+      "group_key": "prior_R04",
+      "title": "Creality K1 heat sink \u2014 original assembly reference",
+      "document_count": 1,
+      "unknown_fields": [
+        "package_quantity_and_hardware",
+        "verified_fitment_and_geometry"
+      ]
+    },
+    {
+      "group_key": "prior_R05",
+      "title": "Creality K1-series hotend cover \u2014 package reference",
+      "document_count": 1,
+      "unknown_fields": [
+        "package_contents",
+        "verified_fitment"
+      ]
+    },
+    {
+      "group_key": "prior_R06",
+      "title": "Creality K1-series X-axis carriage \u2014 batch unresolved",
+      "document_count": 1,
+      "unknown_fields": [
+        "bearing_and_package",
+        "mounting_inserts_and_batch",
+        "verified_fitment"
+      ]
+    },
+    {
+      "group_key": "prior_R08",
+      "title": "Creality K1 complete hotend with heat sink \u2014 supplier reference",
+      "document_count": 2,
+      "unknown_fields": [
+        "connector_and_pcb_compatibility",
+        "drop_in_active_cooling_or_filament_change_guarantee",
+        "heater_power_w",
+        "max_operating_temperature_c",
+        "voltage_v"
+      ]
+    },
+    {
+      "group_key": "prior_R09",
+      "title": "Creality K1 Unicorn heat sink \u2014 supplier reference",
+      "document_count": 1,
+      "unknown_fields": [
+        "package_quantity_and_batch",
+        "verified_fitment_and_mounting"
+      ]
+    },
+    {
+      "group_key": "prior_R11",
+      "title": "Creality K1-series buckle-terminal hotend \u2014 supplier reference",
+      "document_count": 2,
+      "unknown_fields": [
+        "heater_power_w",
+        "max_operating_temperature_c",
+        "selected_public_connector_orifice_and_package",
+        "tool_free_or_universal_speed_guarantee",
+        "voltage_v"
+      ]
+    },
+    {
+      "group_key": "prior_R12",
+      "title": "Creality K2 Plus ceramic hotend \u2014 ratings unresolved",
+      "document_count": 3,
+      "unknown_fields": [
+        "heater_power_w",
+        "max_operating_temperature_c",
+        "package_orifice_thermistor_and_sock",
+        "voltage_v"
+      ]
+    },
+    {
+      "group_key": "prior_R13",
+      "title": "Creality K2 Plus hotend cover \u2014 package reference",
+      "document_count": 1,
+      "unknown_fields": [
+        "package_contents",
+        "verified_fitment_and_material"
+      ]
+    },
+    {
+      "group_key": "prior_R14",
+      "title": "Creality K2 Plus nozzle-wipe module \u2014 package reference",
+      "document_count": 2,
+      "unknown_fields": [
+        "module_and_pad_quantities",
+        "mounting_screws_and_other_hardware",
+        "verified_fitment"
+      ]
+    },
+    {
+      "group_key": "prior_R15",
+      "title": "Creality K2 Plus toolhead loom \u2014 revision unresolved",
+      "document_count": 1,
+      "unknown_fields": [
+        "connector_pinout_length_and_revision",
+        "drag_chain_and_hardware_included",
+        "manufacturer_revision_equivalence",
+        "verified_fitment"
+      ]
+    },
+    {
+      "group_key": "prior_R16",
+      "title": "Creality K2 heater/thermistor breakout board \u2014 revision reference",
+      "document_count": 2,
+      "unknown_fields": [
+        "connector_colour_and_batch",
+        "package_mounting_hardware",
+        "predecessor_equivalence",
+        "verified_all_model_fitment"
+      ]
+    },
+    {
+      "group_key": "prior_R17",
+      "title": "Creality K2 short hotend PCB cable \u2014 supplier reference",
+      "document_count": 1,
+      "unknown_fields": [
+        "connector_ends_pinout_and_length",
+        "verified_fitment_and_quantity"
+      ]
+    },
+    {
+      "group_key": "prior_R18",
+      "title": "Creality K2 toolhead nozzle PCB \u2014 supplier reference",
+      "document_count": 2,
+      "unknown_fields": [
+        "board_revision_connectors_and_hardware",
+        "verified_all_model_fitment"
+      ]
+    }
+  ],
+  "source_versions": 70,
+  "historical_raw_unavailable": 5,
+  "all_active_evidence_versions_available": true,
+  "native_approvals": 0,
+  "guide_review": "Agent local-development decisions; user/native approval not claimed.",
+  "coverage_limitations": [
+    "Only 20 reference groups; these do not establish store SKUs or physical stock.",
+    "Unselected supplier packages and hardware revisions remain unresolved.",
+    "No model generation or LLM answer-quality measurements."
+  ]
+}

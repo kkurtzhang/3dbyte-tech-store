@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 
 import {
   AssistantProductCard,
+  AssistantSourceLinks,
   ShoppingAssistantDrawer,
 } from "../shopping-assistant-drawer"
 
@@ -339,5 +340,19 @@ describe("ShoppingAssistantDrawer", () => {
     expect(
       screen.queryByRole("button", { name: /add to cart/i }),
     ).not.toBeInTheDocument()
+  })
+})
+
+
+describe("AssistantSourceLinks", () => {
+  it("renders the cited source URL and ignores unsafe or duplicate links", () => {
+    render(<AssistantSourceLinks parts={[
+      { type: "source-url", url: "https://help.prusa3d.com/article/under-extrusion_2007", title: "Prusa source" },
+      { type: "source-url", url: "https://help.prusa3d.com/article/under-extrusion_2007", title: "duplicate" },
+      { type: "source-url", url: "javascript:alert(1)", title: "unsafe" },
+    ]} />)
+    expect(screen.getByRole("navigation", { name: "Evidence sources" })).toBeInTheDocument()
+    expect(screen.getAllByRole("link")).toHaveLength(1)
+    expect(screen.getByRole("link", { name: "Prusa source" })).toHaveAttribute("href", "https://help.prusa3d.com/article/under-extrusion_2007")
   })
 })

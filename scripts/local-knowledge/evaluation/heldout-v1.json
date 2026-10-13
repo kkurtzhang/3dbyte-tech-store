@@ -1,0 +1,212 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-13T07:06:21.769474+00:00",
+  "frozen_before_execution": true,
+  "purpose": "First-pass deterministic retrieval and evidence checks; no LLM quality claim. Questions become regression cases after execution/fixes.",
+  "prior_regressions_excluded": [
+    "project-chat-current-corpus-regression",
+    "project-chat-followup-first-check",
+    "project-scope-after-conditions",
+    "nozzle-condition-project-regression"
+  ],
+  "environment": "local_development",
+  "model_generation": false,
+  "cases": [
+    {
+      "id": "H01",
+      "area": "part_identity_and_package",
+      "questions": [
+        "What does Creality part 4007010136 contain in its manufacturer package?"
+      ],
+      "expected_status": "source_grounded_context",
+      "required_rendered_evidence": [
+        {
+          "record_key": "prior_R01_E01",
+          "field": "manufacturer_package",
+          "record_revision": "c36e8b9799babb209807550fdc6cd16ecd119d5fb841f7d8c0c90d2b31959d9c",
+          "claim_id": "local_claim_455d19da07962ed40ee0f77e2defaf6e",
+          "statement_sha256": "0ac9a1f73c375722104ffdf23e986d5cdc07f85c84dd14748c5637d8f10e1a82",
+          "citations": [
+            {
+              "local_source_id": "local_source_earlier_E01",
+              "source_url": "https://mvip.creality.com/en/goods/goodsDetail/1945",
+              "source_sha256": "029c9eb9b5bd7052dc411bb2dbc0dd8278bcec8ee18232feb484fa42cbca9460",
+              "excerpt_sha256": "1679867c278e549e2c51cbd053c1e2752458fd2a1d762dd79033818c5f1d6fd4",
+              "json_pointer": null,
+              "start_char": 147,
+              "end_char": 184
+            }
+          ]
+        }
+      ],
+      "required_unknown_fields": []
+    },
+    {
+      "id": "H02",
+      "area": "package_exclusion",
+      "questions": [
+        "Is a linear bearing supplied with carriage 3203010897 according to the AU retailer?"
+      ],
+      "expected_status": "source_grounded_context",
+      "required_rendered_evidence": [
+        {
+          "record_key": "prior_R06_S10",
+          "field": "retailer_bearing_exclusion",
+          "record_revision": "c05a76af438626069c2ad53faa035a66f33202a58a2326cb1186e5241518b82b",
+          "claim_id": "local_claim_3a568c6133f40f577ac68737d097f70f",
+          "statement_sha256": "abe89075a70ce3d69c47c5e90e32dc118460f6d2443a8aee6305bb3ff555e9c0",
+          "citations": [
+            {
+              "local_source_id": "local_source_earlier_S10",
+              "source_url": "https://store.dremc.com.au/products/creality-k1-series-x-axis-toolhead-carriage",
+              "source_sha256": "399107ab7ccf8cba5d97bc9f846f2baba3d2f2b83c9042c15749e304efe6fb92",
+              "excerpt_sha256": "17ba6f673b8d55aaa506e23c7ac122ddc77ecff645221d4313b8114e4c20acbf",
+              "json_pointer": null,
+              "start_char": 1367,
+              "end_char": 1404
+            }
+          ]
+        }
+      ],
+      "required_unknown_fields": []
+    },
+    {
+      "id": "H03",
+      "area": "followup_entity_replacement",
+      "questions": [
+        "PA6-CF20 has a humidity storage target.",
+        "Instead I am selecting a Revo brass nozzle.",
+        "Does its HeatBreak arrive integrated, or as a separate loose part?"
+      ],
+      "expected_status": "source_grounded_context",
+      "required_rendered_evidence": [
+        {
+          "record_key": "N11",
+          "field": "revo_assembly",
+          "record_revision": "70b8b54b8fac794c3afcbd3fc545b995f0a6540be1329c3de20ea9aac6ff5d7a",
+          "claim_id": "local_claim_9f33388053739ef2d19a7f8abae87d0e",
+          "statement_sha256": "2cece8cd8822193f540eb2ed9c568b9fe80c9c7de18f8113a0be227cb93d454e",
+          "citations": [
+            {
+              "local_source_id": "local_source_nozzle_revo-brass_63c237a9d722",
+              "source_url": "https://e3d-online.com/products/revo-nozzles",
+              "source_sha256": "63c237a9d7220a226310bfdbc87ff4a3f866e8d59a8bddbb36f496e1668d87c4",
+              "excerpt_sha256": "80dce42c8874cd844df24ffc6824527b976ffbb38d0b7b276ce29c89ec523b30",
+              "json_pointer": null,
+              "start_char": 3711,
+              "end_char": 3756
+            }
+          ]
+        }
+      ],
+      "required_unknown_fields": []
+    },
+    {
+      "id": "H04",
+      "area": "conflicting_model_scope",
+      "questions": [
+        "The retailer labels adapter board 4004010288 K2 Plus, but the manufacturer names K2 Pro. Is the board verified to fit both revisions?"
+      ],
+      "expected_status": "unknown",
+      "required_rendered_evidence": [],
+      "required_unknown_fields": [
+        "verified_all_model_fitment"
+      ]
+    },
+    {
+      "id": "H05",
+      "area": "unsupported_electrical_spec",
+      "questions": [
+        "What voltage and heater wattage are verified for heated bed 4001040056?"
+      ],
+      "expected_status": "unknown",
+      "required_rendered_evidence": [],
+      "required_unknown_fields": [
+        "voltage_v",
+        "heater_power_w"
+      ]
+    },
+    {
+      "id": "H06",
+      "area": "current_commerce_with_local_reference",
+      "questions": [
+        "The local record local_dev_product_five_E03 has a simulated quantity of 7. Can you dispatch two tomorrow?"
+      ],
+      "expected_status": "unknown",
+      "required_rendered_evidence": [],
+      "required_unknown_fields": [
+        "physical_stock",
+        "delivery_estimate"
+      ]
+    },
+    {
+      "id": "H07",
+      "area": "json_pointer_identity_citation",
+      "questions": [
+        "Cite the manufacturer SKU of the selected black 1kg TPU95-HF, using the source excerpt."
+      ],
+      "expected_status": "source_grounded_context",
+      "required_rendered_evidence": [
+        {
+          "record_key": "five_e03_identity",
+          "field": "manufacturer_sku",
+          "record_revision": "ce18be4ca581afe99b4c3b35caf1a55bbf226f997fb1111827f79133e8915e8d",
+          "claim_id": "local_claim_48fd560740e218244a26bfc4d4a724fe",
+          "statement_sha256": "c884100333604f1d2288046aae0b43d2084fa932a5545c771b445c209d85874d",
+          "citations": [
+            {
+              "local_source_id": "local_source_five_tpu-shop-json",
+              "source_url": "https://shop.polymaker.com/products/polyflex-tpu95-hf.js",
+              "source_sha256": "29c8bd3df81b1a8a4acdd60a7ce36807e138dd966ba8f62d2e4b0f217584a71b",
+              "excerpt_sha256": "c884100333604f1d2288046aae0b43d2084fa932a5545c771b445c209d85874d",
+              "json_pointer": "/variants/0/sku",
+              "start_char": null,
+              "end_char": null
+            }
+          ]
+        }
+      ],
+      "required_unknown_fields": []
+    },
+    {
+      "id": "H08",
+      "area": "material_vs_operating_limit",
+      "questions": [
+        "The K2 Plus ceramic hotend 4001030145 contains a hardened steel tip. Does that establish its maximum operating temperature and heater power?"
+      ],
+      "expected_status": "unknown",
+      "required_rendered_evidence": [],
+      "required_unknown_fields": [
+        "max_operating_temperature_c",
+        "heater_power_w"
+      ]
+    }
+  ],
+  "historical_unavailable_versions": [
+    {
+      "local_source_id": "local_source_new_mag",
+      "source_url": "https://magigoo.com/products/magigoo-supergrip-test",
+      "source_sha256": "14863f6177e33c96dff2b89a409bebd39cf69579e94f7f28cbb793e6fbd89c83"
+    },
+    {
+      "local_source_id": "local_source_new_pa",
+      "source_url": "https://shop.polymaker.com/products/fiberon-pa6-cf20?variant=43596329287737",
+      "source_sha256": "74467ff38ba6236300e5577499b51e15e3ce1f1cdaea9aac74b4212af3c9fbb4"
+    },
+    {
+      "local_source_id": "local_source_new_prp",
+      "source_url": "https://www.sliceengineering.com/products/plastic-repellent-paint",
+      "source_sha256": "2cb423ec009a5f872a355401a5963290dbe35dec11459f8fd2d6d432489208d3"
+    },
+    {
+      "local_source_id": "local_source_new_sock",
+      "source_url": "https://e3d-online.com/products/v6-socks-pro-pack-of-3",
+      "source_sha256": "a0a8a0a37bf9054c0017d48fedd10fbe64a5e6ffae633e8832735d24129b3277"
+    },
+    {
+      "local_source_id": "local_source_new_tpu",
+      "source_url": "https://shop.polymaker.com/products/polyflex-tpu95-hf?variant=39574341779513",
+      "source_sha256": "b529c84f433c3ac75a512dabd1cd461bd50951c609c884658ff74e0e97652883"
+    }
+  ]
+}

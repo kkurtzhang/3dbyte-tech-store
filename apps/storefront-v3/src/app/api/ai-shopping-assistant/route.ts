@@ -869,6 +869,11 @@ function shouldExposeLangfuseTraceHeader(req: Request) {
 }
 
 export async function POST(req: Request): Promise<Response> {
+  if (process.env.AI_ASSISTANT_LOCAL_KNOWLEDGE === "1") {
+    const { handleLocalKnowledgeChat } = await import("./local-knowledge-chat")
+    return handleLocalKnowledgeChat(req)
+  }
+
   const ip = getClientIp(req.headers)
   const rate = await checkRateLimit(`ai-shopping-assistant:${ip}`, 12, 60_000)
 

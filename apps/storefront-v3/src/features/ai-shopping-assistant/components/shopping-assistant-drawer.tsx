@@ -35,6 +35,10 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 
+import { AssistantSourceLinks } from "./assistant-source-links"
+
+export { AssistantSourceLinks } from "./assistant-source-links"
+
 const ASSISTANT_SESSION_STORAGE_KEY = "3db:ai-assistant-session-id"
 const ASSISTANT_CHATBOT_ID = "storefront.shopping-assistant"
 const ASSISTANT_SURFACE = "storefront-floating-drawer"
@@ -567,7 +571,10 @@ export function ShoppingAssistantDrawer({
                   }`}
                 >
                   {message.role === "assistant" ? (
-                    <FormattedAssistantMessage content={content} />
+                    <>
+                      <FormattedAssistantMessage content={content} />
+                      <AssistantSourceLinks parts={message.parts} />
+                    </>
                   ) : (
                     <span className="whitespace-pre-wrap">{content}</span>
                   )}
