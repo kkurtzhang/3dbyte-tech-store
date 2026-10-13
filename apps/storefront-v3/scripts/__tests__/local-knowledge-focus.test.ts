@@ -98,7 +98,7 @@ describe("public part reference focus", () => {
     const result = resolveLocalKnowledgeFocus([user("What does Creality part 4007010136 contain in its manufacturer package?")]);
     expect(result.mode).toBe("direct");
     expect(result.subjects).toEqual(["Creality part 4007010136"]);
-    expect(result.groupKey).toBeUndefined();
+    expect(result.groupKey).toBe("prior_R01");
   });
   it("carries the replacement part identity without inferring a physical SKU", () => {
     const result = resolveLocalKnowledgeFocus([user("Part 4007010136."), user("Instead I need 4001040056."), user("What is its voltage?")]);

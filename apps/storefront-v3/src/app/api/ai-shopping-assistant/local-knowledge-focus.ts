@@ -1,5 +1,5 @@
 import {
-  catalogueSubjects,
+  matchReferenceSubjects,
   type CatalogueGroupKey,
 } from "./local-catalogue-subjects";
 
@@ -8,50 +8,7 @@ type Message = {
   content?: string;
   parts?: Array<{ type: string; text?: string }>;
 };
-type GroupKey =
-  | "five_E03"
-  | "five_E04"
-  | "five_E08"
-  | "five_E09"
-  | "five_E10"
-  | CatalogueGroupKey;
-type Subject = { name: string; pattern: RegExp; groupKey?: GroupKey };
-
-// These identify corpus reference groups/families, never physical supplier variants.
-// Public part identities in the current corpus. These do not select a store SKU.
-const referenceParts = ["2101020285", "2102013424", "3103110660", "3201011488", "3201011519", "3203010897", "3203010968", "4001030132", "4001030145", "4001030147", "4001040056", "4004010266", "4004010278", "4004010288", "4006030075", "4007010136"];
-const subjects: Subject[] = [
-  ...catalogueSubjects,
-  ...referenceParts.map((part) => ({
-    name: "Creality part " + part,
-    pattern: new RegExp("\\b" + part + "\\b"),
-  })),
-  { name: "TPU95-HF", pattern: /\btpu95[\s-]*hf\b/i, groupKey: "five_E03" },
-  {
-    name: "PA6-CF20",
-    pattern: /\bpa6[\s-]*cf20\b|\bpolymide\s+pa6[\s-]*cf\b/i,
-    groupKey: "five_E04",
-  },
-  { name: "Supergrip", pattern: /\bsupergrip\b/i, groupKey: "five_E08" },
-  {
-    name: "Plastic Repellent Paint",
-    pattern: /\bplastic repellent paint\b|\bprp\b/i,
-    groupKey: "five_E09",
-  },
-  {
-    name: "V6 Pro socks",
-    pattern: /\bv6\b.*\bpro\b.*\bsocks?\b|\bv6\b.*\bsocks?\b.*\bpro\b/i,
-    groupKey: "five_E10",
-  },
-  {
-    name: "V6 hardened-steel nozzle",
-    pattern: /\bv6\b.*\bhardened[\s-]+steel\b.*\bnozzles?\b/i,
-  },
-  { name: "Revo brass nozzle", pattern: /\brevo\b.*\bbrass\b.*\bnozzles?\b/i },
-  { name: "ASA", pattern: /\basa\b/i },
-  { name: "PETG", pattern: /\bpetg\b/i },
-  { name: "PLA", pattern: /\bpla\b/i },
-];
+type GroupKey = CatalogueGroupKey;
 const privateContext =
   /\b(?:order|cart|customer|cus)_[a-z0-9_]+|[^\s@]+@[^\s@]+\.[^\s@]+|\b(?:my order|track my|my account)\b/i;
 const switchSubject = /\b(?:what about|instead|switch to|rather than)\b/i;
@@ -65,21 +22,6 @@ function text(message: Message): string {
       .join("") ??
     ""
   ).trim();
-}
-function mentions(question: string): Subject[] {
-  const named = subjects.filter((subject) => subject.pattern.test(question));
-  const namedPlaGrade = named.some((subject) => subject.groupKey === "catalogue_panchroma_basic_black");
-  const namedPetgGrade = named.some((subject) => subject.groupKey === "catalogue_polymaker_petg_black");
-  const matched = named.filter((subject) =>
-    !(namedPlaGrade && subject.name === "PLA") && !(namedPetgGrade && subject.name === "PETG"),
-  );
-  // A named CM2 nozzle should not inherit the generic FlowTech hotend alias.
-  const namedCm2 = matched.some(
-    (subject) => subject.groupKey === "catalogue_flowtech_cm2_04",
-  );
-  return namedCm2 && !/\bm3101\b/i.test(question)
-    ? matched.filter((subject) => subject.groupKey !== "catalogue_flowtech_m3101")
-    : matched;
 }
 function topic(question: string): string | undefined {
   if (/\b(?:dry|drying|dryer)\b/i.test(question)) return "drying";
@@ -105,7 +47,8 @@ export function resolveLocalKnowledgeFocus(
 ): LocalKnowledgeFocus {
   const users = messages.filter((message) => message.role === "user");
   const latest = text(users[users.length - 1]);
-  const named = mentions(latest);
+  const { subjects: named, uncertain } = matchReferenceSubjects(latest);
+  if (uncertain) return { mode: "clarify", question: latest, subjects: named.map((subject) => subject.name), reason: "unverified_or_ambiguous_reference" };
   const pronounMatch = latest.match(anaphora);
   const conjunction = pronounMatch?.[0].toLowerCase() === "that" &&
     /\b(?:prove|confirm|show|mean|suggest|establish)\s*$/i.test(
@@ -121,7 +64,7 @@ export function resolveLocalKnowledgeFocus(
     ["its", "their", "this", "these", "those"].includes(
       (pronounMatch?.[0] || "").toLowerCase(),
     ) &&
-    /^(?:e3d|polymaker|magigoo)?$/i.test(
+    /^(?:[a-z0-9]+\s*){0,3}$/i.test(
       latest.slice(pronoun + (pronounMatch?.[0].length || 0), firstName).trim(),
     );
   const direct = (): LocalKnowledgeFocus => ({
@@ -141,9 +84,9 @@ export function resolveLocalKnowledgeFocus(
   for (const message of users.slice(0, -1).reverse()) {
     const previous = text(message);
     // An intervening private context or unrecognised explicit switch ends focus.
-    if (privateContext.test(previous)) break;
-    const candidates = mentions(previous);
-    if (candidates.length > 1)
+    if (privateContext.test(previous) || /\b(?:WES248[789]|3d\s*sets|sandy|landy|sakura|buggster|skippy|triton)\b/i.test(previous)) break;
+    const { subjects: candidates, uncertain: ambiguous } = matchReferenceSubjects(previous);
+    if (ambiguous || candidates.length > 1)
       return {
         mode: "clarify",
         question: latest,

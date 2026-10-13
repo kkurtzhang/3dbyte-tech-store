@@ -56,7 +56,7 @@ it("keeps guide and FAQ requests link-only and kit attribution unresolved",()=>{
   expect(kit?.text).toContain("West3D");expect(kit?.text).toContain("unresolved");
 });
 it("accepts a verified new group through the adapter allowlist",async()=>{
-  const fetcher=jest.fn(async()=>new Response("{}",{status:503}));
+  const fetcher=jest.fn(async(_input: RequestInfo | URL)=>new Response("{}",{status:503}));
   await expect(retrieveLocalKnowledge("What specifications are recorded for SUNLU FilaDryer S2?",{baseUrl:"http://127.0.0.1:8873"},fetcher,undefined,"catalogue_c100_sunlu_s2")).rejects.toThrow("Local knowledge unavailable");
   expect(fetcher).toHaveBeenCalledTimes(1);
   expect(String(fetcher.mock.calls[0]?.[0])).toContain("group=catalogue_c100_sunlu_s2");

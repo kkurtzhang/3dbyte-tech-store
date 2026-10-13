@@ -1,3 +1,4 @@
+import { hasReferenceContext } from "./local-catalogue-subjects";
 import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 import index from "./three-d-sets-source-index.json";
 import { officialResourceRequested } from "./official-resource-intent";
@@ -49,6 +50,8 @@ export function resolveThreeDSetsResources(
   if (
     !domain &&
     !models.length &&
+    !hasReferenceContext(question) &&
+    !/\b(?:instead|switch to|what about|rather than)\b/i.test(question) &&
     /\b(?:it|its|this|that|these|those)\b/i.test(question)
   ) {
     const previous = users[users.length - 2];
@@ -113,9 +116,10 @@ export function resolveThreeDSetsResources(
       ...base,
       status: "unknown",
       reason: "store_kit_not_mapped",
-      text: "This store sells physical build kits for 3D Sets models. The selected kit's contents, exclusions and supported model release are not yet verified. Digital model access and its licence are separate; inclusion in a kit is unverified. Name the store kit SKU and model version so we can check the supplier BOM. Store price, stock and delivery also remain unverified.",
+      text: "The captured retailer kit references use 3DMakerParts in listing titles but West3D in vendor metadata. Original-brand attribution is unresolved, and these three references remain outside the 100 counted products. The selected physical kit's contents, exclusions and supported model release are not yet verified. Digital model access and its licence are separate; inclusion in a kit is unverified. Name the store kit SKU and model version so we can check the supplier BOM. Store price, stock and delivery also remain unverified.",
       links: product ? [product] : [catalogue],
       unknownFields: [
+        "original_manufacturer_attribution",
         "store_kit_sku",
         "kit_revision",
         "included_contents",

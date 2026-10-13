@@ -1,3 +1,4 @@
+import { hasReferenceContext } from "./local-catalogue-subjects";
 import type { LocalKnowledgeFocus } from "./local-knowledge-focus";
 import index from "./three-d-sets-source-index.json";
 
@@ -27,6 +28,7 @@ export function resolveLocalRetailerFocus(
   let focused = false;
   if (
     !named.length &&
+    !hasReferenceContext(latest) &&
     /\b(?:it|its|that|this|they|their|those|these)\b/i.test(latest) &&
     !/\b(?:instead|switch to|what about|rather than)\b/i.test(latest)
   ) {

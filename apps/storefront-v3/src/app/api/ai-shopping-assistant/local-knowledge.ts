@@ -163,10 +163,7 @@ export async function retrieveLocalKnowledge(
     url.searchParams.set(
       "group",
       z
-        .enum([
-          "five_E03", "five_E04", "five_E08", "five_E09", "five_E10",
-          ...catalogueGroupKeys,
-        ])
+        .enum(catalogueGroupKeys)
         .parse(groupKey),
     );
   const response = await fetcher(url.toString(), {
@@ -189,10 +186,7 @@ export function createLocalKnowledgeTool(
   const inputSchema = z.object({
     question: z.string().trim().min(1).max(500),
     groupKey: z
-      .enum([
-          "five_E03", "five_E04", "five_E08", "five_E09", "five_E10",
-          ...catalogueGroupKeys,
-        ])
+      .enum(catalogueGroupKeys)
       .optional(),
   });
   const execute = (input: z.infer<typeof inputSchema>) => {
