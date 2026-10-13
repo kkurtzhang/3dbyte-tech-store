@@ -1,0 +1,820 @@
+{
+  "environment": "local_development",
+  "version": 1,
+  "source_capture_manifest": "catalogue-captures-v1.json",
+  "entries": [
+    {
+      "key": "catalogue_flowtech_m3101",
+      "title": "Micro Swiss FlowTech M3101 K1-family hotend",
+      "brand": "Micro Swiss",
+      "aliases": [
+        "\\bflowtech\\b",
+        "\\bm3101\\b"
+      ],
+      "source_scope": "Current official M3101 manufacturer package for K1 / K1 Max / K1C / K1 SE. DREMC M3101 listing is an independently dated retailer observation; actual AU received-package revision/adapters remain unverified.",
+      "facts": [
+        {
+          "field": "manufacturer_part_number",
+          "value": "M3101",
+          "proofs": [
+            {
+              "source_key": "flowtech_official",
+              "quote": "M3101",
+              "json_pointer": "/variants/0/sku"
+            }
+          ],
+          "query_pattern": "identity|part number|mpn|sku"
+        },
+        {
+          "field": "manufacturer_model_support",
+          "value": "Official M3101 lists Creality K1, K1 Max, K1C and K1 SE; this does not prove other models or every board revision.",
+          "proofs": [
+            {
+              "source_key": "flowtech_official",
+              "quote": "Fits\nCreality K1\nCreality K1 Max\nCreality K1C\nCreality K1 SE"
+            }
+          ],
+          "query_pattern": "printers?|models?|support|fit|compatib"
+        },
+        {
+          "field": "official_heater",
+          "value": "Current official heater core: 24 V, 60 W.",
+          "proofs": [
+            {
+              "source_key": "flowtech_official",
+              "quote": "24V - 60W"
+            }
+          ],
+          "query_pattern": "voltage|watt|heater|electrical"
+        },
+        {
+          "field": "official_default_nozzle",
+          "value": "Current official package lists one FlowTech brass-plated 0.4 mm nozzle.",
+          "proofs": [
+            {
+              "source_key": "flowtech_official",
+              "quote": "1x FlowTech™ Brass Plated 0.4mm Nozzle"
+            }
+          ],
+          "query_pattern": "nozzle|package|included|box|contents"
+        },
+        {
+          "field": "nozzle_system",
+          "value": "Manufacturer describes a nozzle and thermal break combined into one permanently sealed assembly; its listed replacements belong to FlowTech.",
+          "proofs": [
+            {
+              "source_key": "flowtech_official",
+              "quote": "combines nozzle and thermal break into one permanently sealed assembly"
+            }
+          ],
+          "query_pattern": "nozzle|system|interface"
+        },
+        {
+          "field": "official_current_adapters",
+          "value": "Current official package lists hardware for older and newer K1 printers plus breakout-board adapter cables; actual AU package revision is unverified.",
+          "proofs": [
+            {
+              "source_key": "flowtech_official",
+              "quote": "Hardware for Older K1 Printers"
+            },
+            {
+              "source_key": "flowtech_official",
+              "quote": "Hardware for New K1 Printers"
+            },
+            {
+              "source_key": "flowtech_official",
+              "quote": "Adapter cables for newer Creality K1 PCBA breakout board"
+            }
+          ],
+          "query_pattern": "official.*(?:adapter|hardware)|manufacturer.*(?:adapter|hardware)"
+        },
+        {
+          "field": "aud_reference_observation",
+          "value": "DREMC listed AUD119.95 including GST in a capture on 13 October 2026; shipping extra/calculated separately. Dated external reference only, not a live 3D Byte Tech offer or stock confirmation.",
+          "proofs": [
+            {
+              "source_key": "flowtech_au_page",
+              "quote": "$119.95"
+            },
+            {
+              "source_key": "flowtech_au_page",
+              "quote": "Include GST"
+            },
+            {
+              "source_key": "flowtech_au_page",
+              "quote": "Shipping calculated"
+            }
+          ],
+          "query_pattern": "(?:dated|reference|observed|captured|listing).*(?:aud|price)|(?:aud|price).*(?:reference|observed|captured|dated)"
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "au_received_adapter_bundle",
+          "query_pattern": "(?:au|australian|dremc|received|my).*(?:adapter|hardware|revision|included|package)|(?:adapter|revision).*(?:au|australian|dremc|received)"
+        },
+        {
+          "field": "nozzle_interchangeability",
+          "query_pattern": "v6|revo|unicorn|any nozzle|every nozzle|all nozzle|interchange"
+        },
+        {
+          "field": "default_nozzle_abrasive_rating",
+          "query_pattern": "abrasive|carbon|glass.?fibre|fiber|cf20"
+        },
+        {
+          "field": "store_sale_price",
+          "query_pattern": "price|cost|how much"
+        },
+        {
+          "field": "physical_stock",
+          "query_pattern": "stock|available|availability"
+        },
+        {
+          "field": "delivery_estimate",
+          "query_pattern": "ship|deliver|dispatch"
+        },
+        {
+          "field": "actual_store_package_contents",
+          "query_pattern": "(?:your|our|3d byte|3dbyte|store).*(?:package|contents|included|bundle)"
+        }
+      ],
+      "guides": [
+        {
+          "field": "selection_guidance",
+          "value": "Choose this by the M3101 identity, printer model and board/package revision. The current official heater and default nozzle are documented, but they do not prove the adapters in a particular Australian shipment. Use the named FlowTech nozzle family as the selection starting point; V6/Revo/Unicorn interchangeability and the supplied brass nozzle’s abrasive suitability remain unverified.",
+          "proofs": [
+            {
+              "source_key": "flowtech_official",
+              "quote": "Fits\nCreality K1\nCreality K1 Max\nCreality K1C\nCreality K1 SE"
+            },
+            {
+              "source_key": "flowtech_official",
+              "quote": "1x FlowTech™ Brass Plated 0.4mm Nozzle"
+            }
+          ],
+          "query_pattern": "choose|choice|buy|select|guidance|consider|recommend|planning"
+        }
+      ]
+    },
+    {
+      "key": "catalogue_orbiter_v25",
+      "title": "LDO Orbiter v2.5 complete extruder reference",
+      "brand": "LDO",
+      "aliases": [
+        "\\borbiter\\s*v?2[.]5\\b",
+        "\\bldo-obt-v2[.]5\\b"
+      ],
+      "source_scope": "Official designer Orbiter v2.5 family page distinguishes complete new extruder from v2.0 upgrade kit. DREMC LDO-OBT-V2.5 describes complete assembly; exact calibration/weight/machine mounting are not resolved.",
+      "facts": [
+        {
+          "field": "retailer_sku",
+          "value": "DREMC listing SKU LDO-OBT-V2.5.",
+          "proofs": [
+            {
+              "source_key": "orbiter_au",
+              "quote": "LDO-OBT-V2.5",
+              "json_pointer": "/variants/0/sku"
+            }
+          ],
+          "query_pattern": "identity|sku|part number"
+        },
+        {
+          "field": "complete_assembly_reference",
+          "value": "DREMC describes an assembled complete Orbiter v2.5 extruder with LDO-36STH20-1004AH stepper motor; this is not the separately described upgrade kit.",
+          "proofs": [
+            {
+              "source_key": "orbiter_au",
+              "quote": "Assembled completed Orbiter V2.5 Extruder with LDO-36STH20-1004AH high temperature pancake stepper motor"
+            }
+          ],
+          "query_pattern": "complete|assembly|motor|upgrade|kit|included"
+        },
+        {
+          "field": "upgrade_kit_scope",
+          "value": "The designer limits the separate v2.0-to-v2.5 upgrade kit to genuine LDO Orbiter v2.0 extruders; this restriction describes the upgrade kit, not a complete-extruder mounting guarantee.",
+          "proofs": [
+            {
+              "source_key": "orbiter_official",
+              "quote": "The kit is only compatible with genuine LDO Orbiter v2.0 extruders!"
+            }
+          ],
+          "query_pattern": "upgrade|genuine|clone"
+        },
+        {
+          "field": "calibration_required",
+          "value": "The designer advises new extrusion calibration because drive-gear cutting can change effective rotation distance and steps/mm.",
+          "proofs": [
+            {
+              "source_key": "orbiter_official",
+              "quote": "so a new extrusion calibration is advisable"
+            }
+          ],
+          "query_pattern": "calibrat|rotation|steps"
+        },
+        {
+          "field": "aud_reference_observation",
+          "value": "DREMC listed AUD105.45 including GST in a capture on 13 October 2026; shipping extra/calculated separately. Dated external reference only, not a live 3D Byte Tech offer or stock confirmation.",
+          "proofs": [
+            {
+              "source_key": "orbiter_au_page",
+              "quote": "$105.45"
+            },
+            {
+              "source_key": "orbiter_au_page",
+              "quote": "Include GST"
+            },
+            {
+              "source_key": "orbiter_au_page",
+              "quote": "Shipping calculated"
+            }
+          ],
+          "query_pattern": "(?:dated|reference|observed|captured|listing).*(?:aud|price)|(?:aud|price).*(?:reference|observed|captured|dated)"
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "calibrated_rotation_distance",
+          "query_pattern": "exact.*rotation|rotation.*(?:exact|distance|setting)|4[.]69|4[.]637"
+        },
+        {
+          "field": "complete_assembly_weight_g",
+          "query_pattern": "weight|20\\s*g|grams"
+        },
+        {
+          "field": "exact_printer_mounting_fit",
+          "query_pattern": "fit|mount|compatib.*(?:printer|voron|ender|k1)"
+        },
+        {
+          "field": "store_sale_price",
+          "query_pattern": "price|cost|how much"
+        },
+        {
+          "field": "physical_stock",
+          "query_pattern": "stock|available|availability"
+        },
+        {
+          "field": "delivery_estimate",
+          "query_pattern": "ship|deliver|dispatch"
+        },
+        {
+          "field": "actual_store_package_contents",
+          "query_pattern": "(?:your|our|3d byte|3dbyte|store).*(?:package|contents|included|bundle)"
+        }
+      ],
+      "guides": [
+        {
+          "field": "selection_guidance",
+          "value": "First choose between a complete extruder and a conversion kit. The captured DREMC SKU describes a complete motor-equipped assembly; the designer’s separate upgrade kit requires a genuine LDO v2.0 donor. Recalibrate extrusion after the change. The designer lists a 4.69 baseline while another AU page lists 4.637; neither establishes the exact calibrated value for a particular assembly.",
+          "proofs": [
+            {
+              "source_key": "orbiter_au",
+              "quote": "Assembled completed Orbiter V2.5 Extruder with LDO-36STH20-1004AH high temperature pancake stepper motor"
+            },
+            {
+              "source_key": "orbiter_official",
+              "quote": "rotation distance: 4.69"
+            },
+            {
+              "source_key": "orbiter_other_au",
+              "quote": "4.637 mm"
+            }
+          ],
+          "query_pattern": "choose|complete.*upgrade|upgrade.*complete|guidance|buy|consider"
+        }
+      ]
+    },
+    {
+      "key": "catalogue_slice_torque_15",
+      "title": "Slice Engineering 1.5 Nm nozzle torque wrench",
+      "brand": "Slice Engineering",
+      "aliases": [
+        "\\bslice(?: engineering)?.*\\b(?:torque|wrench)\\b",
+        "\\bp-ntw-ac-0015\\b"
+      ],
+      "source_scope": "Current official P-NTW-AC-0015 tool has 1.5 Nm preset torque, 6 mm hex and listed 7 mm adapter. Phaser listing is dated external reference; its actual adapter bundle is not established.",
+      "facts": [
+        {
+          "field": "manufacturer_part_number",
+          "value": "P-NTW-AC-0015.",
+          "proofs": [
+            {
+              "source_key": "slice_official_sku",
+              "quote": "P-NTW-AC-0015",
+              "json_pointer": "/variants/0/sku"
+            }
+          ],
+          "query_pattern": "sku|part number|identity"
+        },
+        {
+          "field": "preset_torque",
+          "value": "Preset torque: 1.5 Nm.",
+          "proofs": [
+            {
+              "source_key": "slice_official",
+              "quote": "Torque\n1.5 Nm"
+            }
+          ],
+          "query_pattern": "torque|preset|newton"
+        },
+        {
+          "field": "native_hex",
+          "value": "Official native nozzle hex: 6 mm.",
+          "proofs": [
+            {
+              "source_key": "slice_official",
+              "quote": "6 mm (1/4\") hex"
+            }
+          ],
+          "query_pattern": "hex|size|socket|adapter"
+        },
+        {
+          "field": "official_adapter",
+          "value": "Official current listing includes a 7 mm nozzle-hex adapter; this does not verify the Australian retailer bundle.",
+          "proofs": [
+            {
+              "source_key": "slice_official",
+              "quote": "included 7 mm adapter"
+            }
+          ],
+          "query_pattern": "official.*adapter|manufacturer.*adapter|hex|socket|size"
+        },
+        {
+          "field": "minimum_nozzle_rating",
+          "value": "Manufacturer excludes nozzles rated below 1.5 Nm; a 1.0 Nm nozzle is outside this tool’s stated scope.",
+          "proofs": [
+            {
+              "source_key": "slice_official",
+              "quote": "not intended for use on nozzles rated to less than 1.5 Nm of torque"
+            }
+          ],
+          "query_pattern": "1[.]0|below|less than|rated|suitable|safe"
+        },
+        {
+          "field": "aud_reference_observation",
+          "value": "Phaser FPV listed AUD55.95 including GST in a capture on 13 October 2026; shipping extra/calculated separately. Dated external reference only, not a live 3D Byte Tech offer or stock confirmation.",
+          "proofs": [
+            {
+              "source_key": "slice_au",
+              "quote": "$55.95"
+            },
+            {
+              "source_key": "slice_au",
+              "quote": "GST included"
+            },
+            {
+              "source_key": "slice_au",
+              "quote": "Shipping calculated at checkout."
+            }
+          ],
+          "query_pattern": "(?:dated|reference|observed|captured|listing).*(?:aud|price)|(?:aud|price).*(?:reference|observed|captured|dated)"
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "au_adapter_inclusion",
+          "query_pattern": "(?:au|australian|phaser|my).*(?:adapter|bundle|included|package)|adapter.*(?:au|australian|phaser)"
+        },
+        {
+          "field": "universal_hotend_compatibility",
+          "query_pattern": "every|any hotend|all hotend|universal"
+        },
+        {
+          "field": "store_sale_price",
+          "query_pattern": "price|cost|how much"
+        },
+        {
+          "field": "physical_stock",
+          "query_pattern": "stock|available|availability"
+        },
+        {
+          "field": "delivery_estimate",
+          "query_pattern": "ship|deliver|dispatch"
+        },
+        {
+          "field": "actual_store_package_contents",
+          "query_pattern": "(?:your|our|3d byte|3dbyte|store).*(?:package|contents|included|bundle)"
+        }
+      ],
+      "guides": [
+        {
+          "field": "selection_guidance",
+          "value": "Check two independent conditions before choosing this wrench: the nozzle’s permitted torque and its hex size. The tool is preset to 1.5 Nm with a native 6 mm hex; the official current bundle lists a 7 mm adapter. Do not select it for a nozzle rated below 1.5 Nm. Confirm the retailer’s adapter bundle separately; the tool does not establish universal hotend compatibility.",
+          "proofs": [
+            {
+              "source_key": "slice_official",
+              "quote": "Torque\n1.5 Nm"
+            },
+            {
+              "source_key": "slice_official",
+              "quote": "not intended for use on nozzles rated to less than 1.5 Nm of torque"
+            },
+            {
+              "source_key": "slice_official",
+              "quote": "6 mm (1/4\") hex"
+            }
+          ],
+          "query_pattern": "choose|choice|buy|select|guidance|consider|recommend|planning"
+        }
+      ]
+    },
+    {
+      "key": "catalogue_buildtak_pei235",
+      "title": "BuildTak PEI sheet 235 x 235 mm reference",
+      "brand": "BuildTak",
+      "aliases": [
+        "\\bbuildtak\\b.*\\bpei\\b",
+        "\\bpttapepei235\\b"
+      ],
+      "source_scope": "BuildTak PEI surface family with official 235 x 235 option and nominal 0.010-inch sheet. B3D stock code ptTapePEI235 is a retailer surface reference, not a whole FlexPlate system or universal printer/material fit.",
+      "facts": [
+        {
+          "field": "sheet_material",
+          "value": "Official BuildTak surface material: Ultem 1000 PEI.",
+          "proofs": [
+            {
+              "source_key": "buildtak_pei_official",
+              "quote": "premium Ultem 1000 PEI"
+            }
+          ],
+          "query_pattern": "material|ultem|made"
+        },
+        {
+          "field": "sheet_dimensions",
+          "value": "Official option and captured B3D listing identify a 235 x 235 mm surface; measure the actual bed before selecting it.",
+          "proofs": [
+            {
+              "source_key": "buildtak_pei_official",
+              "quote": "9.25\" x 9.25\" (235*235) (Creality Ender 3)"
+            },
+            {
+              "source_key": "buildtak_pei_au",
+              "quote": "235x235mm"
+            }
+          ],
+          "query_pattern": "size|dimension|235|bed fit"
+        },
+        {
+          "field": "nominal_sheet_thickness",
+          "value": "Manufacturer describes nominal surface thickness 0.010 inch; this is not total FlexPlate thickness.",
+          "proofs": [
+            {
+              "source_key": "buildtak_pei_official",
+              "quote": "both are 0.010″"
+            }
+          ],
+          "query_pattern": "thick|0[.]010"
+        },
+        {
+          "field": "adhesive_revision_warning",
+          "value": "Current manufacturer notice says adhesive changes are ongoing and removal may be harder; older retailer no-cleanup wording does not resolve the supplied adhesive revision.",
+          "proofs": [
+            {
+              "source_key": "buildtak_pei_official",
+              "quote": "Adhesive changes are still undergoing. Removal may be more difficult"
+            },
+            {
+              "source_key": "buildtak_pei_au",
+              "quote": "no-cleanup BuildTak Original adhesive"
+            }
+          ],
+          "query_pattern": "adhesive|remov|cleanup|clean.?up"
+        },
+        {
+          "field": "aud_reference_observation",
+          "value": "B3D listed AUD32.60 including GST in a capture on 13 October 2026; shipping charge unverified; page marks prices/stock updated 2 Oct. Dated external reference only, not a live 3D Byte Tech offer or stock confirmation.",
+          "proofs": [
+            {
+              "source_key": "buildtak_pei_au",
+              "quote": "$32.60"
+            },
+            {
+              "source_key": "buildtak_pei_au",
+              "quote": "GST inc."
+            },
+            {
+              "source_key": "buildtak_pei_au",
+              "quote": "Prices + Stock updated\n2 Oct @ 16:31"
+            }
+          ],
+          "query_pattern": "(?:dated|reference|observed|captured|listing).*(?:aud|price)|(?:aud|price).*(?:reference|observed|captured|dated)"
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "adhesive_cleanup_guarantee",
+          "query_pattern": "guarantee|no.?cleanup|residue.?free"
+        },
+        {
+          "field": "whole_flexplate_bundle_included",
+          "query_pattern": "whole|complete.*flexplate|flexplate.*included|magnet.*included"
+        },
+        {
+          "field": "universal_flexible_material_fit",
+          "query_pattern": "tpu|flexible|every material|all material"
+        },
+        {
+          "field": "store_sale_price",
+          "query_pattern": "price|cost|how much"
+        },
+        {
+          "field": "physical_stock",
+          "query_pattern": "stock|available|availability"
+        },
+        {
+          "field": "delivery_estimate",
+          "query_pattern": "ship|deliver|dispatch"
+        },
+        {
+          "field": "actual_store_package_contents",
+          "query_pattern": "(?:your|our|3d byte|3dbyte|store).*(?:package|contents|included|bundle)"
+        }
+      ],
+      "guides": [
+        {
+          "field": "selection_guidance",
+          "value": "Treat this as a replacement PEI print surface and check the 235 x 235 mm dimensions against the actual bed. The nominal 0.010-inch surface specification is not a complete magnetic FlexPlate bundle. Plan for adhesive-version uncertainty: the current manufacturer warns removal may be harder, so the retailer’s no-cleanup wording is not a reliable guarantee for the supplied sheet.",
+          "proofs": [
+            {
+              "source_key": "buildtak_pei_official",
+              "quote": "premium Ultem 1000 PEI"
+            },
+            {
+              "source_key": "buildtak_pei_official",
+              "quote": "Adhesive changes are still undergoing. Removal may be more difficult"
+            },
+            {
+              "source_key": "buildtak_pei_au",
+              "quote": "235x235mm"
+            }
+          ],
+          "query_pattern": "choose|choice|buy|select|guidance|consider|recommend|planning"
+        }
+      ]
+    },
+    {
+      "key": "catalogue_buildtak_spatula",
+      "title": "BuildTak Spatula standard retailer reference",
+      "brand": "BuildTak",
+      "aliases": [
+        "\\bbuildtak\\b.*\\bspatula\\b",
+        "\\btlspatulabt\\b"
+      ],
+      "source_scope": "Official spatula family lists 132 mm and 250 mm blades. B3D tlSpatulaBT listing does not bind its supplied blade length or official MPN; related long-version listing is separate.",
+      "facts": [
+        {
+          "field": "blade_material",
+          "value": "Manufacturer specifies a stainless-steel blade.",
+          "proofs": [
+            {
+              "source_key": "buildtak_spatula_official",
+              "quote": "stainless steel blade"
+            }
+          ],
+          "query_pattern": "blade|material|metal|steel"
+        },
+        {
+          "field": "handle_material",
+          "value": "Manufacturer specifies a plastic handle with a rubber grip.",
+          "proofs": [
+            {
+              "source_key": "buildtak_spatula_official",
+              "quote": "plastic handle with a non-slip, ergonomic rubber grip"
+            }
+          ],
+          "query_pattern": "handle|grip"
+        },
+        {
+          "field": "official_blade_choices",
+          "value": "Official family offers 132 mm and 250 mm blade options; these do not identify the blade length in B3D stock code tlSpatulaBT.",
+          "proofs": [
+            {
+              "source_key": "buildtak_spatula_official",
+              "quote": "132mm (blade) Spatula"
+            },
+            {
+              "source_key": "buildtak_spatula_official",
+              "quote": "250mm (blade) Spatula"
+            }
+          ],
+          "query_pattern": "official.*length|manufacturer.*length|options|choices"
+        },
+        {
+          "field": "aud_reference_observation",
+          "value": "B3D listed AUD39.95 including GST in a capture on 13 October 2026; shipping charge unverified; page marks prices/stock updated 2 Oct. Dated external reference only, not a live 3D Byte Tech offer or stock confirmation.",
+          "proofs": [
+            {
+              "source_key": "buildtak_spatula_au",
+              "quote": "$39.95"
+            },
+            {
+              "source_key": "buildtak_spatula_au",
+              "quote": "GST inc."
+            },
+            {
+              "source_key": "buildtak_spatula_au",
+              "quote": "Prices + Stock updated\n2 Oct @ 16:31"
+            }
+          ],
+          "query_pattern": "(?:dated|reference|observed|captured|listing).*(?:aud|price)|(?:aud|price).*(?:reference|observed|captured|dated)"
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "au_blade_length",
+          "query_pattern": "(?:au|australian|b3d|bilby|my|this|exact).*(?:blade|length|132|250)|(?:blade|length).*(?:au|b3d|bilby|exact)|is.*250"
+        },
+        {
+          "field": "manufacturer_part_number",
+          "query_pattern": "part number|mpn"
+        },
+        {
+          "field": "scratch_free_guarantee",
+          "query_pattern": "scratch|damage.?free|guarantee"
+        },
+        {
+          "field": "store_sale_price",
+          "query_pattern": "price|cost|how much"
+        },
+        {
+          "field": "physical_stock",
+          "query_pattern": "stock|available|availability"
+        },
+        {
+          "field": "delivery_estimate",
+          "query_pattern": "ship|deliver|dispatch"
+        },
+        {
+          "field": "actual_store_package_contents",
+          "query_pattern": "(?:your|our|3d byte|3dbyte|store).*(?:package|contents|included|bundle)"
+        }
+      ],
+      "guides": [
+        {
+          "field": "selection_guidance",
+          "value": "Choose the removal tool by the actual blade-length variant and access around the print. The manufacturer describes a thin stainless blade and rubber-grip plastic handle, with 132 mm and 250 mm options. The captured B3D standard listing and its related long-version listing are separate references; confirm the supplied length rather than inferring it from the family page. A thin blade is not a scratch-free guarantee.",
+          "proofs": [
+            {
+              "source_key": "buildtak_spatula_official",
+              "quote": "stainless steel blade"
+            },
+            {
+              "source_key": "buildtak_spatula_official",
+              "quote": "132mm (blade) Spatula"
+            },
+            {
+              "source_key": "buildtak_spatula_official",
+              "quote": "250mm (blade) Spatula"
+            }
+          ],
+          "query_pattern": "choose|choice|buy|select|guidance|consider|recommend|planning"
+        }
+      ]
+    },
+    {
+      "key": "catalogue_fiberlogy_pp750",
+      "title": "Fiberlogy PP Graphite 1.75 mm 750 g reference",
+      "brand": "Fiberlogy",
+      "aliases": [
+        "\\bfiberlogy\\b.*\\bpp\\b",
+        "\\bmisc-fil-fib-078\\b"
+      ],
+      "source_scope": "ProForged3D legacy Graphite 1.75 mm 750 g listing versus current official Fiberlogy PP material-family page. Current family printing guidance is conditional context; legacy spool applicability, AMS fit and exact manufacturer MPN remain unverified.",
+      "facts": [
+        {
+          "field": "retailer_spool_identity",
+          "value": "Captured retailer variant identifies Fiberlogy PP Graphite, 1.75 mm, 750 g, retailer SKU MISC-FIL-FIB-078; this is not an official manufacturer MPN.",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_au",
+              "quote": "Fiberlogy PP Graphite 1.75mm 750g",
+              "json_pointer": "/title"
+            },
+            {
+              "source_key": "fiberlogy_au",
+              "quote": "MISC-FIL-FIB-078",
+              "json_pointer": "/variants/0/sku"
+            }
+          ],
+          "query_pattern": "identity|spool|diameter|weight|colour|color|sku"
+        },
+        {
+          "field": "current_family_nozzle_guidance",
+          "value": "Current official PP family lists 220–250°C printing temperature; applicability to the legacy 750 g spool is not established.",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_official",
+              "quote": "Printing temperature: 220–250°C"
+            }
+          ],
+          "query_pattern": "current|family|guidance|nozzle temperature"
+        },
+        {
+          "field": "current_family_drying_guidance",
+          "value": "Current official PP family lists drying at 50°C for 4 hours; this is conditional family context, not a verified setting for the legacy spool.",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_official",
+              "quote": "Drying conditions: 50°C / 4 hours"
+            }
+          ],
+          "query_pattern": "current.*dry|family.*dry|drying guidance"
+        },
+        {
+          "field": "current_family_surface_guidance",
+          "value": "Current official PP family lists smooth PEI or glass with PP packing tape, or a PP powder-coated plate; it does not recommend bare generic PEI universally.",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_official",
+              "quote": "Build surface: Smooth PEI + packing tape (PP); Glass + packing tape (PP); Powder-coated plate – PP"
+            }
+          ],
+          "query_pattern": "surface|tape|glass|pei|adhesion"
+        },
+        {
+          "field": "aud_reference_observation",
+          "value": "ProForged3D listed AUD70.75 including GST in a capture on 13 October 2026; shipping extra/calculated separately; authoritative live price remains unknown. Dated external reference only, not a live 3D Byte Tech offer or stock confirmation.",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_au_page",
+              "quote": "$70.75"
+            },
+            {
+              "source_key": "fiberlogy_au_page",
+              "quote": "Taxes included."
+            },
+            {
+              "source_key": "fiberlogy_au_page",
+              "quote": "calculated at checkout."
+            }
+          ],
+          "query_pattern": "(?:dated|reference|observed|captured|listing).*(?:aud|price)|(?:aud|price).*(?:reference|observed|captured|dated)"
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "legacy_spool_settings_applicability",
+          "query_pattern": "legacy.*(?:dry|temperature|settings|apply)|(?:apply|same|verified|guarantee).*(?:750|legacy)|750.*(?:dry|temperature|settings)|(?:dry|temperature).*750"
+        },
+        {
+          "field": "ams_spool_compatibility",
+          "query_pattern": "ams|automatic|spool fit"
+        },
+        {
+          "field": "exact_manufacturer_mpn",
+          "query_pattern": "official.*(?:sku|part)|manufacturer.*(?:sku|mpn)|3s-pp"
+        },
+        {
+          "field": "food_medical_chemical_certification",
+          "query_pattern": "food|medical|orthos|prosthe|chemical|certif"
+        },
+        {
+          "field": "store_sale_price",
+          "query_pattern": "price|cost|how much"
+        },
+        {
+          "field": "physical_stock",
+          "query_pattern": "stock|available|availability"
+        },
+        {
+          "field": "delivery_estimate",
+          "query_pattern": "ship|deliver|dispatch"
+        },
+        {
+          "field": "actual_store_package_contents",
+          "query_pattern": "(?:your|our|3d byte|3dbyte|store).*(?:package|contents|included|bundle)"
+        }
+      ],
+      "guides": [
+        {
+          "field": "selection_guidance",
+          "value": "For PP, plan the adhesion surface as well as the temperature profile. The current manufacturer family page pairs smooth PEI or glass with PP tape and lists 50°C / 4 h drying and 220–250°C printing. Treat these as current family guidance while confirming the legacy Graphite 750 g spool’s own instructions. Do not infer AMS spool compatibility, exact manufacturer MPN or food/medical/chemical certification from the material name.",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_official",
+              "quote": "Printing temperature: 220–250°C"
+            },
+            {
+              "source_key": "fiberlogy_official",
+              "quote": "Drying conditions: 50°C / 4 hours"
+            },
+            {
+              "source_key": "fiberlogy_official",
+              "quote": "Build surface: Smooth PEI + packing tape (PP); Glass + packing tape (PP); Powder-coated plate – PP"
+            }
+          ],
+          "query_pattern": "choose|choice|buy|select|guidance|consider|recommend|planning"
+        }
+      ],
+      "unverified_research_notes": {
+        "reported_earlier_indexed_aud": "72.50",
+        "raw_primary_capture_for_earlier_indexed_value": null,
+        "verified_dated_capture_aud": "70.75",
+        "authoritative_live_price": null,
+        "status": "unverified_research_lead_not_an_accepted_factual_claim"
+      }
+    }
+  ],
+  "retailer_own_brand_excluded": true,
+  "live_offers": false,
+  "native_export": false
+}

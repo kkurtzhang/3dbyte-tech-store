@@ -1,0 +1,182 @@
+{
+  "version": 1,
+  "frozen_before_activation": true,
+  "cases": [
+    {
+      "id": "flowtech_m3101_manufacturer_model_support",
+      "question": "Which printers does the official Micro Swiss FlowTech M3101 support?",
+      "group": "catalogue_flowtech_m3101",
+      "field": "manufacturer_model_support",
+      "status": "source_grounded_context",
+      "record_key": "catalogue_flowtech_m3101_source"
+    },
+    {
+      "id": "flowtech_m3101_official_heater",
+      "question": "What voltage and wattage is the official FlowTech M3101 heater?",
+      "group": "catalogue_flowtech_m3101",
+      "field": "official_heater",
+      "status": "source_grounded_context",
+      "record_key": "catalogue_flowtech_m3101_source"
+    },
+    {
+      "id": "flowtech_m3101_official_default_nozzle",
+      "question": "What nozzle is included in the current official FlowTech M3101 package?",
+      "group": "catalogue_flowtech_m3101",
+      "field": "official_default_nozzle",
+      "status": "source_grounded_context",
+      "record_key": "catalogue_flowtech_m3101_source"
+    },
+    {
+      "id": "flowtech_m3101_au_received_adapter_bundle",
+      "question": "Does my Australian DREMC FlowTech M3101 shipment include every current adapter?",
+      "group": "catalogue_flowtech_m3101",
+      "field": "au_received_adapter_bundle",
+      "status": "unknown",
+      "record_key": "catalogue_flowtech_m3101_source"
+    },
+    {
+      "id": "flowtech_m3101_nozzle_interchangeability",
+      "question": "Can I use a V6 nozzle in FlowTech M3101?",
+      "group": "catalogue_flowtech_m3101",
+      "field": "nozzle_interchangeability",
+      "status": "unknown",
+      "record_key": "catalogue_flowtech_m3101_source"
+    },
+    {
+      "id": "orbiter_v25_selection_guidance",
+      "question": "How should I choose between a complete Orbiter v2.5 and its upgrade kit?",
+      "group": "catalogue_orbiter_v25",
+      "field": "selection_guidance",
+      "status": "source_grounded_context",
+      "record_key": "catalogue_orbiter_v25_guide"
+    },
+    {
+      "id": "orbiter_v25_upgrade_kit_scope",
+      "question": "Which genuine donor does the Orbiter v2.5 upgrade kit require?",
+      "group": "catalogue_orbiter_v25",
+      "field": "upgrade_kit_scope",
+      "status": "source_grounded_context",
+      "record_key": "catalogue_orbiter_v25_source"
+    },
+    {
+      "id": "orbiter_v25_calibrated_rotation_distance",
+      "question": "What exact rotation distance should I use for Orbiter v2.5?",
+      "group": "catalogue_orbiter_v25",
+      "field": "calibrated_rotation_distance",
+      "status": "unknown",
+      "record_key": "catalogue_orbiter_v25_source"
+    },
+    {
+      "id": "orbiter_v25_aud_reference_observation",
+      "question": "What is the dated reference AUD price for Orbiter v2.5?",
+      "group": "catalogue_orbiter_v25",
+      "field": "aud_reference_observation",
+      "status": "source_grounded_context",
+      "record_key": "catalogue_orbiter_v25_source"
+    },
+    {
+      "id": "orbiter_v25_store_sale_price",
+      "question": "What is your current sale price for Orbiter v2.5?",
+      "group": "catalogue_orbiter_v25",
+      "field": "store_sale_price",
+      "status": "unknown",
+      "record_key": "catalogue_orbiter_v25_source"
+    },
+    {
+      "id": "slice_torque_15_preset_torque",
+      "question": "What preset torque does the Slice 1.5 Nm nozzle wrench have?",
+      "group": "catalogue_slice_torque_15",
+      "field": "preset_torque",
+      "status": "source_grounded_context",
+      "record_key": "catalogue_slice_torque_15_source"
+    },
+    {
+      "id": "slice_torque_15_minimum_nozzle_rating",
+      "question": "Is the Slice torque wrench suitable for a nozzle rated to 1.0 Nm?",
+      "group": "catalogue_slice_torque_15",
+      "field": "minimum_nozzle_rating",
+      "status": "source_grounded_context",
+      "record_key": "catalogue_slice_torque_15_source"
+    },
+    {
+      "id": "slice_torque_15_au_adapter_inclusion",
+      "question": "Does the Australian Phaser Slice torque wrench include the 7 mm adapter?",
+      "group": "catalogue_slice_torque_15",
+      "field": "au_adapter_inclusion",
+      "status": "unknown",
+      "record_key": "catalogue_slice_torque_15_source"
+    },
+    {
+      "id": "buildtak_pei235_sheet_material",
+      "question": "What material and nominal thickness is the BuildTak PEI sheet?",
+      "group": "catalogue_buildtak_pei235",
+      "field": "sheet_material",
+      "status": "source_grounded_context",
+      "record_key": "catalogue_buildtak_pei235_source"
+    },
+    {
+      "id": "buildtak_pei235_sheet_dimensions",
+      "question": "What are the dimensions of the BuildTak PEI 235 sheet?",
+      "group": "catalogue_buildtak_pei235",
+      "field": "sheet_dimensions",
+      "status": "source_grounded_context",
+      "record_key": "catalogue_buildtak_pei235_source"
+    },
+    {
+      "id": "buildtak_pei235_adhesive_cleanup_guarantee",
+      "question": "Does BuildTak PEI guarantee no-cleanup adhesive removal?",
+      "group": "catalogue_buildtak_pei235",
+      "field": "adhesive_cleanup_guarantee",
+      "status": "unknown",
+      "record_key": "catalogue_buildtak_pei235_source"
+    },
+    {
+      "id": "buildtak_spatula_blade_material",
+      "question": "What is the BuildTak Spatula blade made from?",
+      "group": "catalogue_buildtak_spatula",
+      "field": "blade_material",
+      "status": "source_grounded_context",
+      "record_key": "catalogue_buildtak_spatula_source"
+    },
+    {
+      "id": "buildtak_spatula_au_blade_length",
+      "question": "Is the exact B3D BuildTak Spatula blade 250 mm long?",
+      "group": "catalogue_buildtak_spatula",
+      "field": "au_blade_length",
+      "status": "unknown",
+      "record_key": "catalogue_buildtak_spatula_source"
+    },
+    {
+      "id": "fiberlogy_pp750_current_family_surface_guidance",
+      "question": "What does the current Fiberlogy PP family say about the build surface and tape?",
+      "group": "catalogue_fiberlogy_pp750",
+      "field": "current_family_surface_guidance",
+      "status": "source_grounded_context",
+      "record_key": "catalogue_fiberlogy_pp750_source"
+    },
+    {
+      "id": "fiberlogy_pp750_current_family_drying_guidance",
+      "question": "What drying guidance does the current Fiberlogy PP family provide?",
+      "group": "catalogue_fiberlogy_pp750",
+      "field": "current_family_drying_guidance",
+      "status": "source_grounded_context",
+      "record_key": "catalogue_fiberlogy_pp750_source"
+    },
+    {
+      "id": "fiberlogy_pp750_legacy_spool_settings_applicability",
+      "question": "Are those drying settings verified for legacy Fiberlogy PP Graphite 750 g?",
+      "group": "catalogue_fiberlogy_pp750",
+      "field": "legacy_spool_settings_applicability",
+      "status": "unknown",
+      "record_key": "catalogue_fiberlogy_pp750_source"
+    },
+    {
+      "id": "fiberlogy_pp750_ams_spool_compatibility",
+      "question": "Does Fiberlogy PP Graphite 750 g fit AMS?",
+      "group": "catalogue_fiberlogy_pp750",
+      "field": "ams_spool_compatibility",
+      "status": "unknown",
+      "record_key": "catalogue_fiberlogy_pp750_source"
+    }
+  ]
+}

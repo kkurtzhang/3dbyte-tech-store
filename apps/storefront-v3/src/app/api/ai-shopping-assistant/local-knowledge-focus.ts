@@ -1,15 +1,27 @@
+import {
+  catalogueSubjects,
+  type CatalogueGroupKey,
+} from "./local-catalogue-subjects";
+
 type Message = {
   role: "user" | "assistant";
   content?: string;
   parts?: Array<{ type: string; text?: string }>;
 };
-type GroupKey = "five_E03" | "five_E04" | "five_E08" | "five_E09" | "five_E10";
+type GroupKey =
+  | "five_E03"
+  | "five_E04"
+  | "five_E08"
+  | "five_E09"
+  | "five_E10"
+  | CatalogueGroupKey;
 type Subject = { name: string; pattern: RegExp; groupKey?: GroupKey };
 
 // These identify corpus reference groups/families, never physical supplier variants.
 // Public part identities in the current corpus. These do not select a store SKU.
 const referenceParts = ["2101020285", "2102013424", "3103110660", "3201011488", "3201011519", "3203010897", "3203010968", "4001030132", "4001030145", "4001030147", "4001040056", "4004010266", "4004010278", "4004010288", "4006030075", "4007010136"];
 const subjects: Subject[] = [
+  ...catalogueSubjects,
   ...referenceParts.map((part) => ({
     name: "Creality part " + part,
     pattern: new RegExp("\\b" + part + "\\b"),
@@ -104,7 +116,7 @@ export function resolveLocalKnowledgeFocus(
     reason: "explicit_latest_question",
   });
   if (
-    switchSubject.test(latest) ||
+    (switchSubject.test(latest) && (named.length > 0 || pronoun < 0)) ||
     pronoun < 0 ||
     explicitlyNamedNoun ||
     (firstName >= 0 && firstName < pronoun)

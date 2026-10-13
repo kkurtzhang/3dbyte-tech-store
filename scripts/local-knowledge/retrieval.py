@@ -14,6 +14,7 @@ from retailer_reference import (
     answer_retailer_reference,
     PREFIX as RETAILER_PREFIX,
 )
+from catalogue_reference import catalogue_groups, answer_catalogue_reference, PREFIX as CATALOGUE_PREFIX
 from collections import Counter
 import numpy as np
 from local_store import ROOT, Store, digest, SCOPE
@@ -115,6 +116,9 @@ class Retriever:
         )
         if not group_key and len(scoped_retailers) == 1:
             group_key = scoped_retailers[0]
+        direct_catalogue = catalogue_groups(question, self.store)
+        if not group_key and len(direct_catalogue) == 1:
+            group_key = direct_catalogue[0]
         by_id = {r["id"]: r for r in rows}
         expanded = question
         if re.search(r"\b(squishy|rubbery|bendy)\b", question, re.I):
@@ -139,13 +143,13 @@ class Retriever:
             for r in rows
             if (
                 not (json.loads(r["payload"]).get("group_key") or "").startswith(
-                    RETAILER_PREFIX
+                    (RETAILER_PREFIX, CATALOGUE_PREFIX)
                 )
                 or json.loads(r["payload"]).get("group_key") == group_key
             )
             and (
                 json.loads(r["payload"]).get("group_key") == group_key
-                if group_key and group_key.startswith(RETAILER_PREFIX)
+                if group_key and group_key.startswith((RETAILER_PREFIX, CATALOGUE_PREFIX))
                 else not group_key
                 or json.loads(r["payload"]).get("group_key") in (group_key, None)
             )
@@ -254,6 +258,9 @@ class Retriever:
         scoped_retailers = retailer_groups(question, persisted_claims)
         if len(scoped_retailers) == 1:
             group_key = scoped_retailers[0]
+        scoped_catalogue = catalogue_groups(question, self.store)
+        if not group_key and len(scoped_catalogue) == 1:
+            group_key = scoped_catalogue[0]
         part_groups = part_reference_groups(question, persisted_claims)
         if not group_key and len(part_groups) == 1:
             group_key = part_groups[0]
@@ -302,6 +309,17 @@ class Retriever:
             and group_key is not None
             and p["status"] == "unknown"
         ]
+        if len(scoped_catalogue) > 1 and not group_key:
+            return {**result, "status": "unknown", "reason": "ambiguous_catalogue_references",
+                    "unknown_fields": ["conversation_subject"], "context_pack": [],
+                    "answer": "Name one exact product reference before asking for scoped package facts."}
+        if group_key and group_key.startswith(CATALOGUE_PREFIX) and scoped_catalogue and group_key not in scoped_catalogue:
+            return {**result, "status": "unknown", "reason": "catalogue_reference_scope_mismatch",
+                    "unknown_fields": ["reference_identity"], "context_pack": [],
+                    "answer": "The selected reference does not match the product named in the question."}
+        catalogue_reply = answer_catalogue_reference(self.store, question, group_key, result)
+        if catalogue_reply is not None:
+            return catalogue_reply
         retailer_reply = answer_retailer_reference(
             self.store, question, group_key, result
         )

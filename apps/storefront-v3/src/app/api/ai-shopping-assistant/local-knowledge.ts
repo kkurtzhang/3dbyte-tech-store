@@ -1,5 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
+import { catalogueGroupKeys } from "./local-catalogue-subjects";
 
 // This contract deliberately cannot be used as an ApprovedKnowledgeDocument.
 const localId = z.string().regex(/^local_dev_[a-zA-Z0-9_]+$/);
@@ -162,7 +163,10 @@ export async function retrieveLocalKnowledge(
     url.searchParams.set(
       "group",
       z
-        .enum(["five_E03", "five_E04", "five_E08", "five_E09", "five_E10"])
+        .enum([
+          "five_E03", "five_E04", "five_E08", "five_E09", "five_E10",
+          ...catalogueGroupKeys,
+        ])
         .parse(groupKey),
     );
   const response = await fetcher(url.toString(), {
@@ -185,7 +189,10 @@ export function createLocalKnowledgeTool(
   const inputSchema = z.object({
     question: z.string().trim().min(1).max(500),
     groupKey: z
-      .enum(["five_E03", "five_E04", "five_E08", "five_E09", "five_E10"])
+      .enum([
+          "five_E03", "five_E04", "five_E08", "five_E09", "five_E10",
+          ...catalogueGroupKeys,
+        ])
       .optional(),
   });
   const execute = (input: z.infer<typeof inputSchema>) => {

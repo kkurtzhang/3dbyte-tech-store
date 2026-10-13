@@ -1,5 +1,7 @@
 # Local knowledge chat preview
 
+The latest six-product expansion, current counts and offline validation are documented in [CATALOGUE-EXPANSION.md](CATALOGUE-EXPANSION.md). Preview services are stopped.
+
 This branch adds a development-only source retrieval path to the existing storefront chatbot. It uses the existing dedicated SQLite corpus on the external SSD, FTS5 and corpus-trained LSA vectors. It makes no language-model calls and does not provide live store prices, stock, delivery dates or native approval.
 
 ## Before and after
@@ -70,7 +72,7 @@ Choose a new report basename: prior results are not overwritten. After authorize
 
 `evaluation/heldout-v1.json` was frozen before its first execution. Its hash pins eight previously unused questions and expected claim revisions, source versions and excerpt hashes. First pass: **4/8**. After fixing part focus and persisted unknown handling: **8/8**. All **7** citation rejection checks passed in both runs: five unavailable historical versions plus altered character and JSON-pointer excerpts. These cases are now regressions; the second run is not independent held-out quality evidence.
 
-The corpus has 20 local reference groups/variants, 38 source documents, 15 guides, 249 active claims and 70 source-version observations. Claims comprise 91 supported facts, 104 explicit unknowns and 54 editorial inferences. All active evidence versions are available; five historical raw response versions are unavailable and were not reconstructed. Original approved packets remain separate. Local IDs and simulated quantities are not Medusa products or actual physical stock.
+At the original preview milestone, the corpus had 20 local reference groups/variants, 38 source documents, 15 guides, 249 active claims and 70 source-version observations. Claims comprise 91 supported facts, 104 explicit unknowns and 54 editorial inferences. All active evidence versions are available; five historical raw response versions are unavailable and were not reconstructed. Original approved packets remain separate. Local IDs and simulated quantities are not Medusa products or actual physical stock.
 
 Validation: 22 adapter/focus Jest tests, 46 existing route/drawer tests, 12 Python tests, full storefront TypeScript check, configured ESLint gate and Ruff F/E9 checks. ESLint currently covers JavaScript only. No Python static type checker or browser visual check was run. Committed compact evidence receipts preserve the first pass and later regression result.
 
