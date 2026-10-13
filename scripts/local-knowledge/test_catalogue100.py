@@ -1,8 +1,9 @@
 """Meaningful duplicate, evidence and commerce-boundary checks for expansion batches."""
 
 import copy
+import json
 import unittest
-from activate_catalogue100 import validate_entries
+from activate_catalogue100 import validate_entries, seed_paths
 from catalogue100_capture import allowed_url
 
 
@@ -20,6 +21,14 @@ class Catalogue100ValidationTests(unittest.TestCase):
             ],
         )
         self.ledger = {"entries": []}
+
+    def test_committed_receipt_is_not_a_product_batch(self):
+        paths = seed_paths()
+        self.assertEqual(len(paths), 4)
+        self.assertNotIn("catalogue100-receipt-v1.json", [p.name for p in paths])
+        entries = [e for path in paths for e in json.loads(path.read_text())["entries"]]
+        self.assertEqual(len(entries), 70)
+        self.assertEqual(len({e["canonical_key"] for e in entries}), 70)
 
     def test_accepts_distinct_original_brand(self):
         validate_entries([self.entry], self.ledger)

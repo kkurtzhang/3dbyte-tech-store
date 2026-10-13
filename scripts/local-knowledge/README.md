@@ -1,6 +1,6 @@
 # Local knowledge chat preview
 
-The [100-product expansion](CATALOGUE100-HANDOFF.md) is complete in the separate `20261013-catalogue100` SSD corpus: 100 verified canonical identities, with three additional legacy kits held outside the count. Its inventory, immutable snapshot and verification receipt are linked there. Use that root explicitly; the original v1 corpus below remains preserved.
+The [100-product expansion](CATALOGUE100-HANDOFF.md) is complete in the separate `20261013-catalogue100` SSD corpus: 100 source-backed local product/family knowledge references, with three additional legacy kits held outside the count. Its inventory, immutable snapshot and verification receipt are linked there. Its direct named-query coverage is verified; the multi-turn subject gap is documented in the handoff. Preview remains off, and the original v1 corpus below remains preserved.
 
 The consolidated [V1-HANDOFF.md](V1-HANDOFF.md) records the completed bounded evidence scope, 66 source-specific preparations, supplier provenance decisions and exact remaining native/release prerequisites. The active corpus is preserved and preview remains off.
 

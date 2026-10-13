@@ -15,6 +15,7 @@ from retailer_reference import (
     PREFIX as RETAILER_PREFIX,
 )
 from catalogue_reference import catalogue_groups, answer_catalogue_reference, PREFIX as CATALOGUE_PREFIX
+from catalogue_identity import unverified_catalogue_identity
 from customer_coverage import answer_customer_coverage
 from v1_guidance import answer_v1_guidance
 from collections import Counter
@@ -280,6 +281,18 @@ class Retriever:
             "staging_native_approval_claim_allowed": False,
             "llm_calls_authorized": False,
         }
+        if unverified_catalogue_identity(question, self.store):
+            return {
+                **result,
+                "hits": [],
+                "group_key": None,
+                "status": "unknown",
+                "reason": "unverified_catalogue_identity",
+                "unknown_fields": ["reference_identity"],
+                "context_pack": [],
+                "unresolved_group_fields": [],
+                "answer": "This held or adjacent product identity has no verified reference in the current catalogue. Facts from another grade, model or guide cannot establish its specifications.",
+            }
         result["context_pack"] = [
             {
                 "claim_id": h["claim_id"],

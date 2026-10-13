@@ -4,8 +4,7 @@ import copy
 import json
 import re
 import sqlite3
-from pathlib import Path
-from activate_catalogue100 import ACTOR, load_ledger
+from activate_catalogue100 import ACTOR, load_ledger, seed_paths
 from local_store import ROOT, Store, clock, digest
 from retrieval import Retriever
 
@@ -41,9 +40,7 @@ def main():
             store.db.backup(db)
         finally:
             db.close()
-        for seed_path in sorted(
-            (Path(__file__).parent / "evaluation").glob("catalogue100-*.json")
-        ):
+        for seed_path in seed_paths():
             seed = json.loads(seed_path.read_text())
             changed = False
             for entry in seed["entries"]:

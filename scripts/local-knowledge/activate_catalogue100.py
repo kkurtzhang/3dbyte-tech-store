@@ -12,6 +12,19 @@ ACTOR = "codex_local_catalogue100_source_review"
 OWN_BRANDS = {"dremc", "proforged3d", "west3d", "x3d"}
 
 
+SEED_NAMES = (
+    "catalogue100-materials-01.json",
+    "catalogue100-hardware-01.json",
+    "catalogue100-materials-02.json",
+    "catalogue100-accessories-01.json",
+)
+
+
+def seed_paths():
+    """Return reviewed product batches, excluding receipts and other evidence JSON."""
+    return [Path(__file__).parent / "evaluation" / name for name in SEED_NAMES]
+
+
 def load_ledger():
     active = ROOT / "reports/canonical-ledger-current.json"
     path = (

@@ -6,12 +6,12 @@ import sqlite3
 import unittest
 from pathlib import Path
 from unittest.mock import patch
-from activate_catalogue100 import ACTOR, load_ledger, validate_entries
+from activate_catalogue100 import ACTOR, load_ledger, validate_entries, seed_paths
 from catalogue_reference import catalogue_groups
 from local_store import ROOT, Store
 from retrieval import Retriever
 
-SEEDS = sorted((Path(__file__).parent / "evaluation").glob("catalogue100-*.json"))
+SEEDS = seed_paths()
 
 
 @unittest.skipUnless(
@@ -162,9 +162,17 @@ class Catalogue100CorpusTests(unittest.TestCase):
         self.assertEqual(self.store.stats()["native_approvals"], 0)
 
     def test_baseline_records_sources_and_reviews_preserved(self):
+        receipt = json.loads(
+            (
+                Path(__file__).parent / "evaluation/catalogue100-receipt-v1.json"
+            ).read_text()
+        )
+        pin = receipt["preservation"]["original_v1_snapshot"]
+        self.assertEqual(
+            hashlib.sha256(Path(pin["path"]).read_bytes()).hexdigest(), pin["sha256"]
+        )
         original = sqlite3.connect(
-            ROOT.parent
-            / "20261013/exports/guide-citation-final-local-snapshot-v1.sqlite3"
+            "file:" + pin["path"] + "?mode=ro&immutable=1", uri=True
         )
         original.row_factory = sqlite3.Row
         try:
@@ -182,7 +190,22 @@ class Catalogue100CorpusTests(unittest.TestCase):
                     for row in self.store.db.execute("SELECT * FROM " + table)
                 }
                 for row in rows:
-                    self.assertIn(tuple(row), current, table)
+                    if table == "sources":
+                        local = self.store.db.execute(
+                            "SELECT * FROM sources WHERE id=?", (row["id"],)
+                        ).fetchone()
+                        self.assertIsNotNone(local)
+                        self.assertEqual(tuple(row)[:-1], tuple(local)[:-1])
+                        historical, relocated = (
+                            json.loads(row["payload"]),
+                            json.loads(local["payload"]),
+                        )
+                        for field in ("raw_path", "text_path"):
+                            historical.pop(field)
+                            relocated.pop(field)
+                        self.assertEqual(historical, relocated)
+                    else:
+                        self.assertIn(tuple(row), current, table)
         finally:
             original.close()
 
@@ -214,6 +237,39 @@ class Catalogue100CorpusTests(unittest.TestCase):
                 )
                 self.assertEqual(result["status"], "unknown")
                 self.assertEqual(result["context_pack"], [])
+
+    def test_held_and_adjacent_identities_cannot_fall_back_to_unrelated_guides(self):
+        for name in (
+            "Fiberlogy PA12 unfilled",
+            "3DLAC Plus 100 mL",
+            "BIGTREETECH Eddy USB",
+            "E3D Revo Prusa Mini coldside",
+        ):
+            with self.subTest(name=name):
+                result = self.retriever.answer(
+                    "What specifications are recorded for " + name + "?"
+                )
+                self.assertEqual(result["status"], "unknown")
+                self.assertEqual(result["context_pack"], [])
+                self.assertEqual(result["hits"], [])
+
+    def test_cosmetic_options_do_not_split_functional_identity(self):
+        cases = {
+            "Fiberlogy PCTG+CF10 black 1.75 mm 1 kg": "fiberlogy_pctgcf",
+            "Fiberlogy PCTG+GF10 blue 2.85 mm": "fiberlogy_pctggf",
+            "Fiberlogy Easy ABS transparent 750 g": "fiberlogy_easyabs",
+            "Fiberlogy ABS black 1.75 mm": "fiberlogy_abs",
+            "colorFabb TPU 85A orange 750 g": "colorfabb_tpu85a",
+            "colorFabb TPU 95A black 1 kg": "colorfabb_tpu95a",
+            "Bondtech CHT MK8 coated brass nozzle 0.6 mm": "bondtech_cht_mk8",
+            "Bondtech CHT Volcano coated brass nozzle 0.4 mm": "bondtech_cht_volcano",
+            "Magigoo PA adhesive 120 mL": "magigoo_pa",
+        }
+        for name, key in cases.items():
+            with self.subTest(name=name):
+                self.assertEqual(
+                    catalogue_groups(name, self.store), ["catalogue_c100_" + key]
+                )
 
     def test_explicit_wrong_identity_does_not_override_named_product(self):
         result = self.retriever.answer(
