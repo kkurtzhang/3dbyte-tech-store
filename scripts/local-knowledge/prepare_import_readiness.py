@@ -24,6 +24,8 @@ OFFICIAL_PRODUCT_URLS = {
     "https://mvip.creality.com/en/goods/goodsDetail/1945",
     "https://mvip.creality.com/en/goods/goodsDetail/2185",
     "https://mvip.creality.com/en/goods/goodsDetail/2427",
+    # Reviewed K2 Plus heating-block sales page; same existing source form.
+    "https://mvip.creality.com/en/goods/goodsDetail/2309",
 }
 CDN_TDS = "https://cdn.shopify.com/s/files/1/0548/7299/7945/files/PolyFlex_TPU95_HF_TDS_EN_V5.4.pdf"
 ORIGIN_ID = "local_source_new_tpu_0b40819ee2bb"

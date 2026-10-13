@@ -1,5 +1,7 @@
 # Local knowledge chat preview
 
+The consolidated [V1-HANDOFF.md](V1-HANDOFF.md) records the completed bounded evidence scope, 66 source-specific preparations, supplier provenance decisions and exact remaining native/release prerequisites. The active corpus is preserved and preview remains off.
+
 The existing-guide citation repairs are now active locally. See [GUIDE-CITATION-ACTIVATION.md](GUIDE-CITATION-ACTIVATION.md) for 29 revised guides, immutable old/new hashes, qualified equivalent evidence and offline verification. Native approvals remain zero; previews remain stopped.
 
 The bounded evidence follow-up is documented in [EVIDENCE-RECONCILIATION.md](EVIDENCE-RECONCILIATION.md): all four combined claims have source-specific preparations, nine genuine source-form holds have exact reasons, and editorial guidance/citation repairs are separately labelled.
