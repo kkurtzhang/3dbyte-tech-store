@@ -14,14 +14,19 @@ from pathlib import Path
 SNAPSHOT_SHA256 = "cbea3dda56d181d4706900bd26c893e520057dfccbc8f76911c6813b223bdf22"
 LEDGER_SHA256 = "abc084f2339b15a0a88182c7a4903492096448b184ece2c20a92c9b612738bf3"
 HERE = Path(__file__).resolve().parent
-TARGET = HERE.parents[1] / "apps/storefront-v3/src/app/api/ai-shopping-assistant/local-product-registry.generated.ts"
+TARGET = (
+    HERE.parents[1]
+    / "apps/storefront-v3/src/app/api/ai-shopping-assistant/local-product-registry.generated.ts"
+)
 
 
 def build(snapshot, ledger_path):
     for path, expected in [(snapshot, SNAPSHOT_SHA256), (ledger_path, LEDGER_SHA256)]:
         if hashlib.sha256(path.read_bytes()).hexdigest() != expected:
             raise ValueError(f"Pinned milestone hash mismatch: {path.name}")
-    policy = json.loads((HERE / "evaluation/catalogue100-focus-policy-v1.json").read_text())
+    policy = json.loads(
+        (HERE / "evaluation/catalogue100-focus-policy-v1.json").read_text()
+    )
     ledger = json.loads(ledger_path.read_text())
     entries = []
     with sqlite3.connect(snapshot.as_uri() + "?mode=ro&immutable=1", uri=True) as db:
@@ -30,29 +35,74 @@ def build(snapshot, ledger_path):
             if not entry["counted"]:
                 continue
             group = entry.get("group_key", entry["key"])
-            rows = db.execute("SELECT * FROM records WHERE active=1 AND group_key=? ORDER BY record_key", (group,)).fetchall()
+            rows = db.execute(
+                "SELECT * FROM records WHERE active=1 AND group_key=? ORDER BY record_key",
+                (group,),
+            ).fetchall()
             if not rows:
                 raise ValueError(f"Missing active source records: {group}")
             payloads = [json.loads(row["payload"]) for row in rows]
             baseline = policy["baseline"].get(group, {})
-            aliases = baseline.get("aliases", [alias for record in payloads for alias in record.get("reference_aliases", [])])
+            aliases = baseline.get(
+                "aliases",
+                [
+                    alias
+                    for record in payloads
+                    for alias in record.get("reference_aliases", [])
+                ],
+            )
             aliases = policy["alias_overrides"].get(group, aliases)
             part = baseline.get("public_part_reference")
-            if part and not any(part in str(claim.get("value")) and claim["status"] == "supported" for record in payloads for claim in record["claims"]):
+            if part and not any(
+                part in str(claim.get("value")) and claim["status"] == "supported"
+                for record in payloads
+                for claim in record["claims"]
+            ):
                 raise ValueError(f"Part reference is not source-backed: {part}")
             title_pattern = re.escape(entry["title"]).replace(r"\ ", r"\s+")
             # JSON regexes must be valid in both Python and JavaScript.
             aliases = list(dict.fromkeys([title_pattern, *aliases]))
             for alias in aliases:
                 re.compile(alias, re.I)
-            sources = sorted({citation["source_url"] for record in payloads for claim in record["claims"] if claim["status"] == "supported" for citation in claim.get("citations", [])})
+            sources = sorted(
+                {
+                    citation["source_url"]
+                    for record in payloads
+                    for claim in record["claims"]
+                    if claim["status"] == "supported"
+                    for citation in claim.get("citations", [])
+                }
+            )
             if not sources:
                 raise ValueError(f"No supported source evidence: {group}")
-            entries.append({"groupKey": group, "canonicalKey": entry["canonical_key"], "sourceTitle": entry["title"], "name": baseline.get("name", entry["title"]), "aliases": aliases, "sourceRecords": [{"key": row["record_key"], "revision": row["revision"]} for row in rows], "sourceUrls": sources})
+            entries.append(
+                {
+                    "groupKey": group,
+                    "canonicalKey": entry["canonical_key"],
+                    "sourceTitle": entry["title"],
+                    "name": baseline.get("name", entry["title"]),
+                    "aliases": aliases,
+                    "sourceRecords": [
+                        {"key": row["record_key"], "revision": row["revision"]}
+                        for row in rows
+                    ],
+                    "sourceUrls": sources,
+                }
+            )
     if len(entries) != 100 or len({entry["groupKey"] for entry in entries}) != 100:
         raise ValueError("Expected exactly 100 distinct counted references")
-    registry = {"milestoneCommit": "1132c55ef07ac376216c18ed7123c680f3585d09", "snapshotSha256": SNAPSHOT_SHA256, "ledgerSha256": LEDGER_SHA256, "scope": "Source-reference routing only; not commerce, stock, supplier variants, native approvals or verified original-brand attribution. Three unresolved RC retailer references are excluded.", "entries": entries}
-    return "// Generated by scripts/local-knowledge/generate_focus_registry.py; edit the reviewed policy, not this file.\nexport const referenceRegistry = " + json.dumps(registry, indent=2, ensure_ascii=False) + " as const;\n"
+    registry = {
+        "milestoneCommit": "1132c55ef07ac376216c18ed7123c680f3585d09",
+        "snapshotSha256": SNAPSHOT_SHA256,
+        "ledgerSha256": LEDGER_SHA256,
+        "scope": "Source-reference routing only; not commerce, stock, supplier variants, native approvals or verified original-brand attribution. Three unresolved RC retailer references are excluded.",
+        "entries": entries,
+    }
+    return (
+        "// Generated by scripts/local-knowledge/generate_focus_registry.py; edit the reviewed policy, not this file.\nexport const referenceRegistry = "
+        + json.dumps(registry, indent=2, ensure_ascii=False)
+        + " as const;\n"
+    )
 
 
 def main():

@@ -48,13 +48,20 @@ export function resolveLocalKnowledgeFocus(
   const users = messages.filter((message) => message.role === "user");
   const latest = text(users[users.length - 1]);
   const { subjects: named, uncertain } = matchReferenceSubjects(latest);
-  if (uncertain) return { mode: "clarify", question: latest, subjects: named.map((subject) => subject.name), reason: "unverified_or_ambiguous_reference" };
+  if (uncertain)
+    return {
+      mode: "clarify",
+      question: latest,
+      subjects: named.map((subject) => subject.name),
+      reason: "unverified_or_ambiguous_reference",
+    };
   const pronounMatch = latest.match(anaphora);
-  const conjunction = pronounMatch?.[0].toLowerCase() === "that" &&
+  const conjunction =
+    pronounMatch?.[0].toLowerCase() === "that" &&
     /\b(?:prove|confirm|show|mean|suggest|establish)\s*$/i.test(
       latest.slice(0, pronounMatch.index),
     );
-  const pronoun = conjunction ? -1 : pronounMatch?.index ?? -1;
+  const pronoun = conjunction ? -1 : (pronounMatch?.index ?? -1);
   const firstName = named.length
     ? Math.min(...named.map((subject) => latest.search(subject.pattern)))
     : -1;
@@ -84,8 +91,15 @@ export function resolveLocalKnowledgeFocus(
   for (const message of users.slice(0, -1).reverse()) {
     const previous = text(message);
     // An intervening private context or unrecognised explicit switch ends focus.
-    if (privateContext.test(previous) || /\b(?:WES248[789]|3d\s*sets|sandy|landy|sakura|buggster|skippy|triton)\b/i.test(previous)) break;
-    const { subjects: candidates, uncertain: ambiguous } = matchReferenceSubjects(previous);
+    if (
+      privateContext.test(previous) ||
+      /\b(?:WES248[789]|3d\s*sets|sandy|landy|sakura|buggster|skippy|triton)\b/i.test(
+        previous,
+      )
+    )
+      break;
+    const { subjects: candidates, uncertain: ambiguous } =
+      matchReferenceSubjects(previous);
     if (ambiguous || candidates.length > 1)
       return {
         mode: "clarify",
@@ -116,7 +130,8 @@ export function resolveLocalKnowledgeFocus(
         reason: "named_previous_user_subject",
       };
     }
-    if (switchSubject.test(previous)) break;
+    // An unfamiliar newer user topic must not resurrect an older product.
+    if (switchSubject.test(previous) || !anaphora.test(previous)) break;
   }
   return {
     mode: "clarify",

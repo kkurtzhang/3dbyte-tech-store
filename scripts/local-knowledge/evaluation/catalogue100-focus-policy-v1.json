@@ -22,13 +22,15 @@
     "catalogue_flowtech_cm2_04": {
       "name": "FlowTech CM2 M2904-04 nozzle",
       "aliases": [
-        "\\bflowtech\\b.*\\bcm2\\b|\\bcm2\\b.*\\bflowtech\\b|\\bm2904-04\\b"
+        "\\bflowtech\\s+cm2\\b",
+        "\\bcm2\\s+flowtech\\b",
+        "\\bm2904-04\\b"
       ]
     },
     "catalogue_flowtech_m3101": {
       "name": "Micro Swiss FlowTech M3101",
       "aliases": [
-        "\\bm3101\\b"
+        "\\b(?:flowtech\\s+)?m3101\\b"
       ]
     },
     "catalogue_orbiter_v25": {
@@ -40,25 +42,29 @@
     "catalogue_slice_torque_15": {
       "name": "Slice torque wrench",
       "aliases": [
-        "\\bslice(?: engineering)?.*\\b(?:torque|wrench)\\b|\\bp-ntw-ac-0015\\b"
+        "\\bslice(?:\\s+engineering)?\\s+(?:1[.]5\\s*nm\\s+)?(?:nozzle\\s+)?torque\\s+wrench\\b",
+        "\\bp-ntw-ac-0015\\b"
       ]
     },
     "catalogue_buildtak_pei235": {
       "name": "BuildTak PEI 235 sheet",
       "aliases": [
-        "\\bbuildtak\\b.*\\bpei\\b|\\bpttapepei235\\b"
+        "\\bbuildtak\\s+pei\\b",
+        "\\bpttapepei235\\b"
       ]
     },
     "catalogue_buildtak_spatula": {
       "name": "BuildTak Spatula",
       "aliases": [
-        "\\bbuildtak\\b.*\\bspatula\\b|\\btlspatulabt\\b"
+        "\\bbuildtak\\s+spatula\\b",
+        "\\btlspatulabt\\b"
       ]
     },
     "catalogue_fiberlogy_pp750": {
       "name": "Fiberlogy PP Graphite 750 g",
       "aliases": [
-        "\\bfiberlogy\\b.*\\bpp\\b|\\bmisc-fil-fib-078\\b"
+        "\\bfiberlogy\\s+pp\\b",
+        "\\bmisc-fil-fib-078\\b"
       ]
     },
     "five_E03": {
@@ -77,7 +83,7 @@
     "five_E08": {
       "name": "Supergrip",
       "aliases": [
-        "\\bsupergrip\\b"
+        "\\b(?:magigoo\\s+)?supergrip\\b"
       ]
     },
     "five_E09": {

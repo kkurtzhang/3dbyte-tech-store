@@ -206,7 +206,6 @@
   "retailer_examples": [
     {
       "retailer": "DREMC",
-      "listing_brand_name": "3DMakerParts",
       "retailer_vendor_metadata": "West3D",
       "manufacturer_attribution": "unresolved_title_vendor_mapping",
       "retailer_sku": "WES2487",
@@ -224,11 +223,14 @@
       "connector_type": null,
       "kit_revision": null,
       "inclusions_review_status": "supplier_BOM_review_pending",
-      "native_approval": null
+      "native_approval": null,
+      "listing_title_brand_name": "3DMakerParts",
+      "original_brand_verified": false,
+      "canonical_counted": false,
+      "attribution_note": "3DMakerParts occurs in the captured title; retailer vendor metadata says West3D. The original brand and exact mapping remain unresolved."
     },
     {
       "retailer": "DREMC",
-      "listing_brand_name": "3DMakerParts",
       "retailer_vendor_metadata": "West3D",
       "manufacturer_attribution": "unresolved_title_vendor_mapping",
       "retailer_sku": "WES2488",
@@ -246,11 +248,14 @@
       "connector_type": null,
       "kit_revision": null,
       "inclusions_review_status": "supplier_BOM_review_pending",
-      "native_approval": null
+      "native_approval": null,
+      "listing_title_brand_name": "3DMakerParts",
+      "original_brand_verified": false,
+      "canonical_counted": false,
+      "attribution_note": "3DMakerParts occurs in the captured title; retailer vendor metadata says West3D. The original brand and exact mapping remain unresolved."
     },
     {
       "retailer": "DREMC",
-      "listing_brand_name": "3DMakerParts",
       "retailer_vendor_metadata": "West3D",
       "manufacturer_attribution": "unresolved_title_vendor_mapping",
       "retailer_sku": "WES2489",
@@ -268,7 +273,11 @@
       "connector_type": null,
       "kit_revision": null,
       "inclusions_review_status": "supplier_BOM_review_pending",
-      "native_approval": null
+      "native_approval": null,
+      "listing_title_brand_name": "3DMakerParts",
+      "original_brand_verified": false,
+      "canonical_counted": false,
+      "attribution_note": "3DMakerParts occurs in the captured title; retailer vendor metadata says West3D. The original brand and exact mapping remain unresolved."
     }
   ]
 }

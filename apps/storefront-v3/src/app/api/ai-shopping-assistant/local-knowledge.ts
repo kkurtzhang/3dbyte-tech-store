@@ -160,12 +160,7 @@ export async function retrieveLocalKnowledge(
   url.searchParams.set("q", query);
   url.searchParams.set("mode", "hybrid");
   if (groupKey)
-    url.searchParams.set(
-      "group",
-      z
-        .enum(catalogueGroupKeys)
-        .parse(groupKey),
-    );
+    url.searchParams.set("group", z.enum(catalogueGroupKeys).parse(groupKey));
   const response = await fetcher(url.toString(), {
     cache: "no-store",
     redirect: "error",
@@ -185,9 +180,7 @@ export function createLocalKnowledgeTool(
 ) {
   const inputSchema = z.object({
     question: z.string().trim().min(1).max(500),
-    groupKey: z
-      .enum(catalogueGroupKeys)
-      .optional(),
+    groupKey: z.enum(catalogueGroupKeys).optional(),
   });
   const execute = (input: z.infer<typeof inputSchema>) => {
     const parsed = inputSchema.parse(input);

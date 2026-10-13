@@ -12,7 +12,8 @@ export const referenceRegistry = {
       "name": "BuildTak PEI 235 sheet",
       "aliases": [
         "BuildTak\\s+PEI\\s+sheet\\s+235\\s+x\\s+235\\s+mm\\s+reference",
-        "\\bbuildtak\\b.*\\bpei\\b|\\bpttapepei235\\b"
+        "\\bbuildtak\\s+pei\\b",
+        "\\bpttapepei235\\b"
       ],
       "sourceRecords": [
         {
@@ -36,7 +37,8 @@ export const referenceRegistry = {
       "name": "BuildTak Spatula",
       "aliases": [
         "BuildTak\\s+Spatula\\s+standard\\s+retailer\\s+reference",
-        "\\bbuildtak\\b.*\\bspatula\\b|\\btlspatulabt\\b"
+        "\\bbuildtak\\s+spatula\\b",
+        "\\btlspatulabt\\b"
       ],
       "sourceRecords": [
         {
@@ -60,7 +62,8 @@ export const referenceRegistry = {
       "name": "Fiberlogy PP Graphite 750 g",
       "aliases": [
         "Fiberlogy\\s+PP\\s+Graphite\\s+1\\.75\\s+mm\\s+750\\s+g\\s+reference",
-        "\\bfiberlogy\\b.*\\bpp\\b|\\bmisc-fil-fib-078\\b"
+        "\\bfiberlogy\\s+pp\\b",
+        "\\bmisc-fil-fib-078\\b"
       ],
       "sourceRecords": [
         {
@@ -85,7 +88,9 @@ export const referenceRegistry = {
       "name": "FlowTech CM2 M2904-04 nozzle",
       "aliases": [
         "Micro\\s+Swiss\\s+FlowTech\\s+CM2\\s+M2904\\-04\\s+0\\.4\\s+mm\\s+nozzle",
-        "\\bflowtech\\b.*\\bcm2\\b|\\bcm2\\b.*\\bflowtech\\b|\\bm2904-04\\b"
+        "\\bflowtech\\s+cm2\\b",
+        "\\bcm2\\s+flowtech\\b",
+        "\\bm2904-04\\b"
       ],
       "sourceRecords": [
         {
@@ -111,7 +116,7 @@ export const referenceRegistry = {
       "name": "Micro Swiss FlowTech M3101",
       "aliases": [
         "Micro\\s+Swiss\\s+FlowTech\\s+M3101\\s+K1\\-family\\s+hotend",
-        "\\bm3101\\b"
+        "\\b(?:flowtech\\s+)?m3101\\b"
       ],
       "sourceRecords": [
         {
@@ -237,7 +242,8 @@ export const referenceRegistry = {
       "name": "Slice torque wrench",
       "aliases": [
         "Slice\\s+Engineering\\s+1\\.5\\s+Nm\\s+nozzle\\s+torque\\s+wrench",
-        "\\bslice(?: engineering)?.*\\b(?:torque|wrench)\\b|\\bp-ntw-ac-0015\\b"
+        "\\bslice(?:\\s+engineering)?\\s+(?:1[.]5\\s*nm\\s+)?(?:nozzle\\s+)?torque\\s+wrench\\b",
+        "\\bp-ntw-ac-0015\\b"
       ],
       "sourceRecords": [
         {
@@ -325,7 +331,7 @@ export const referenceRegistry = {
       "name": "Supergrip",
       "aliases": [
         "Magigoo\\s+Supergrip\\s+50\\s+mL",
-        "\\bsupergrip\\b"
+        "\\b(?:magigoo\\s+)?supergrip\\b"
       ],
       "sourceRecords": [
         {

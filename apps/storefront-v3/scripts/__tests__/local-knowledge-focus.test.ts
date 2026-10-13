@@ -92,22 +92,32 @@ describe("explicit named noun after possessive", () => {
   });
 });
 
-
 describe("public part reference focus", () => {
   it("keeps a named part before its package pronoun", () => {
-    const result = resolveLocalKnowledgeFocus([user("What does Creality part 4007010136 contain in its manufacturer package?")]);
+    const result = resolveLocalKnowledgeFocus([
+      user(
+        "What does Creality part 4007010136 contain in its manufacturer package?",
+      ),
+    ]);
     expect(result.mode).toBe("direct");
     expect(result.subjects).toEqual(["Creality part 4007010136"]);
     expect(result.groupKey).toBe("prior_R01");
   });
   it("carries the replacement part identity without inferring a physical SKU", () => {
-    const result = resolveLocalKnowledgeFocus([user("Part 4007010136."), user("Instead I need 4001040056."), user("What is its voltage?")]);
+    const result = resolveLocalKnowledgeFocus([
+      user("Part 4007010136."),
+      user("Instead I need 4001040056."),
+      user("What is its voltage?"),
+    ]);
     expect(result.mode).toBe("focused");
     expect(result.subjects).toEqual(["Creality part 4001040056"]);
     expect(result.question).not.toContain("4007010136");
   });
   it("clarifies a follow-up to two distinct part references", () => {
-    const result = resolveLocalKnowledgeFocus([user("Compare 4001030132 and 4001030147."), user("Will it fit?")]);
+    const result = resolveLocalKnowledgeFocus([
+      user("Compare 4001030132 and 4001030147."),
+      user("Will it fit?"),
+    ]);
     expect(result.mode).toBe("clarify");
   });
 });
