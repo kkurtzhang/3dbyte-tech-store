@@ -7,6 +7,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 from activate_catalogue100 import ACTOR, load_ledger, validate_entries, seed_paths
+from activate_price_followup import ACTOR as PRICE_ACTOR
 from catalogue_reference import catalogue_groups
 from local_store import ROOT, Store
 from retrieval import Retriever
@@ -24,6 +25,10 @@ class Catalogue100CorpusTests(unittest.TestCase):
         cls.retriever = Retriever(cls.store)
         cls.ledger = load_ledger()
         cls.entries = [e for p in SEEDS for e in json.loads(p.read_text())["entries"]]
+        packet = Path(__file__).parent / "evaluation/price-followup-reviewed-v2.json"
+        cls.price_reviews = {
+            item["key"]: item for item in json.loads(packet.read_text())["observations"]
+        }
 
     @classmethod
     def tearDownClass(cls):
@@ -96,12 +101,39 @@ class Catalogue100CorpusTests(unittest.TestCase):
                 has_price = any(
                     f["field"] == "dated_reference_price" for f in e["facts"]
                 )
+                record = json.loads(
+                    self.store.db.execute(
+                        "SELECT payload FROM records WHERE group_key=?",
+                        ("catalogue_c100_" + e["key"],),
+                    ).fetchone()[0]
+                )
+                if record.get("price_observations"):
+                    reviewed = self.price_reviews[e["key"]]
+                    self.assertEqual(
+                        record["price_observations"],
+                        [
+                            {
+                                **reviewed,
+                                "prior_record_revision": reviewed[
+                                    "expected_prior_revision"
+                                ],
+                            }
+                        ],
+                    )
+                    has_price = (
+                        reviewed["classification"] != "retailer_identity_unresolved"
+                    )
+                    if has_price:
+                        self.assertIn(reviewed["statement"], result["answer"])
                 self.assertEqual(
                     result["status"],
                     "source_grounded_context" if has_price else "unknown",
                 )
                 if has_price:
-                    self.assertIn("not a live", result["answer"])
+                    self.assertTrue(
+                        "not a live" in result["answer"]
+                        or "No live 3D Byte" in result["answer"]
+                    )
                     self.assertEqual(
                         {c["group_key"] for c in result["context_pack"]},
                         {"catalogue_c100_" + e["key"]},
@@ -148,7 +180,28 @@ class Catalogue100CorpusTests(unittest.TestCase):
         ):
             record = json.loads(row["payload"])
             basis = record["factual_decision_basis"]
-            self.assertEqual(basis["reviewer_actor"], ACTOR)
+            actor = ACTOR
+            if record.get("price_observations"):
+                actor = PRICE_ACTOR
+                reviewed = self.price_reviews[
+                    row["group_key"].removeprefix("catalogue_c100_")
+                ]
+                historical = self.store.db.execute(
+                    "SELECT payload FROM revisions WHERE record_id=? AND revision=?",
+                    (row["id"], reviewed["expected_prior_revision"]),
+                ).fetchone()
+                self.assertIsNotNone(historical)
+                prior = json.loads(historical[0])["factual_decision_basis"]
+                self.assertEqual(basis["prior_factual_basis"], prior)
+                self.assertEqual(prior["reviewer_actor"], ACTOR)
+                previous_review = self.store.db.execute(
+                    "SELECT actor,decision FROM editorial_decisions WHERE record_id=? AND revision=?",
+                    (row["id"], reviewed["expected_prior_revision"]),
+                ).fetchone()
+                self.assertEqual(
+                    tuple(previous_review), (ACTOR, "accepted_for_local_development")
+                )
+            self.assertEqual(basis["reviewer_actor"], actor)
             self.assertFalse(basis["user_factual_review_claimed"])
             self.assertFalse(basis["native_reviewer_event"])
             self.assertIsNone(record["staging_native_id"])
@@ -158,7 +211,7 @@ class Catalogue100CorpusTests(unittest.TestCase):
                 "SELECT actor,decision FROM editorial_decisions WHERE record_id=? AND revision=? ORDER BY id DESC",
                 (row["id"], row["revision"]),
             ).fetchone()
-            self.assertEqual(tuple(review), (ACTOR, "accepted_for_local_development"))
+            self.assertEqual(tuple(review), (actor, "accepted_for_local_development"))
         self.assertEqual(self.store.stats()["native_approvals"], 0)
 
     def test_baseline_records_sources_and_reviews_preserved(self):
