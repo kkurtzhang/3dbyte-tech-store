@@ -67,7 +67,12 @@ function text(message: Message): string {
   ).trim();
 }
 function mentions(question: string): Subject[] {
-  const matched = subjects.filter((subject) => subject.pattern.test(question));
+  const named = subjects.filter((subject) => subject.pattern.test(question));
+  const namedPlaGrade = named.some((subject) => subject.groupKey === "catalogue_panchroma_basic_black");
+  const namedPetgGrade = named.some((subject) => subject.groupKey === "catalogue_polymaker_petg_black");
+  const matched = named.filter((subject) =>
+    !(namedPlaGrade && subject.name === "PLA") && !(namedPetgGrade && subject.name === "PETG"),
+  );
   // A named CM2 nozzle should not inherit the generic FlowTech hotend alias.
   const namedCm2 = matched.some(
     (subject) => subject.groupKey === "catalogue_flowtech_cm2_04",
@@ -102,7 +107,11 @@ export function resolveLocalKnowledgeFocus(
   const latest = text(users[users.length - 1]);
   const named = mentions(latest);
   const pronounMatch = latest.match(anaphora);
-  const pronoun = pronounMatch?.index ?? -1;
+  const conjunction = pronounMatch?.[0].toLowerCase() === "that" &&
+    /\b(?:prove|confirm|show|mean|suggest|establish)\s*$/i.test(
+      latest.slice(0, pronounMatch.index),
+    );
+  const pronoun = conjunction ? -1 : pronounMatch?.index ?? -1;
   const firstName = named.length
     ? Math.min(...named.map((subject) => latest.search(subject.pattern)))
     : -1;

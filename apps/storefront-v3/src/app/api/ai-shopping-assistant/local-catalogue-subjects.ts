@@ -1,5 +1,7 @@
 // Public reference identities only; these never select a commerce supplier variant.
 const catalogueIds = {
+  panchromaPla: "catalogue_panchroma_basic_black",
+  polymakerPetg: "catalogue_polymaker_petg_black",
   magigooPp: "catalogue_magigoo_pp50",
   flowtechCm2: "catalogue_flowtech_cm2_04",
   flowtech: "catalogue_flowtech_m3101",
@@ -11,6 +13,16 @@ const catalogueIds = {
 } as const;
 
 export const catalogueSubjects = [
+  {
+    name: "Panchroma Basic PLA Black",
+    pattern: /\bpanchroma\s+basic(?:\s+pla)?\b|\bca19006\b/i,
+    groupKey: catalogueIds.panchromaPla,
+  },
+  {
+    name: "Polymaker PETG New Formula Black",
+    pattern: /\bpolymaker\s+(?:new\s+formula\s+)?petg\b|\bpb05001\b/i,
+    groupKey: catalogueIds.polymakerPetg,
+  },
   {
     name: "Magigoo PP 50 mL",
     pattern: /\bmagigoo\s+(?:glide\s+)?pp\b|\b5350583999921\b/i,
@@ -54,6 +66,8 @@ export const catalogueSubjects = [
   },
 ] as const;
 export const catalogueGroupKeys = [
+  catalogueIds.panchromaPla,
+  catalogueIds.polymakerPetg,
   catalogueIds.magigooPp,
   catalogueIds.flowtechCm2,
   catalogueIds.flowtech,

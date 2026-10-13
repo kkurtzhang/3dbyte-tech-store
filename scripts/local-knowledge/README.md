@@ -1,6 +1,8 @@
 # Local knowledge chat preview
 
-The newest offline coverage and two-product follow-up is documented in [COVERAGE-FOLLOWUP.md](COVERAGE-FOLLOWUP.md).
+The finite v1 coverage gate is complete at 30/30 cases. See [V1-COVERAGE-PLAN.md](V1-COVERAGE-PLAN.md) for the completion criterion, bounded additions, verification and separate native-import readiness. Preview services remain stopped.
+
+The preceding offline coverage and two-product follow-up is documented in [COVERAGE-FOLLOWUP.md](COVERAGE-FOLLOWUP.md).
 
 The latest six-product expansion, current counts and offline validation are documented in [CATALOGUE-EXPANSION.md](CATALOGUE-EXPANSION.md). Preview services are stopped.
 
@@ -45,7 +47,7 @@ env -i PATH="$NODE_DIR:/usr/bin:/bin" TMPDIR="$KB/tmp" \
   node node_modules/next/dist/bin/next dev --webpack -H 127.0.0.1 -p 3005
 ```
 
-The owned services may already be running on ports 8873 and 3005. Reuse them; do not stop unrelated processes or start duplicate listeners.
+Preview services on ports 8873 and 3005 are stopped at the current milestone. Use the offline checks in `V1-COVERAGE-PLAN.md`; starting a preview again requires renewed authorization. Do not stop unrelated processes or start duplicate listeners.
 
 Preview an actual AI SDK response:
 

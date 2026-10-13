@@ -92,6 +92,42 @@ def run(name, route_results, fixture=FIXTURE):
                 "local_scope": ctx["environment"] == "local_development"
                 and ctx["staging_native_eligible"] is False,
             }
+            if case.get("required_reason"):
+                index = json.loads(
+                    (
+                        Path(__file__).resolve().parents[2]
+                        / "apps/storefront-v3/src/app/api/ai-shopping-assistant/three-d-sets-source-index.json"
+                    ).read_text()
+                )
+                checks["resource_reason"] = ctx.get("reason") == case["required_reason"]
+                checks["official_links_only"] = (
+                    ctx.get("source_usage") == index["source_usage"]
+                    and not ids
+                    and not ctx.get("context_pack")
+                )
+                allowed_urls = {index["catalogue_url"], index["faq"]["url"]}
+
+                def collect_urls(value):
+                    if isinstance(value, dict):
+                        for key, item in value.items():
+                            if key in (
+                                "url",
+                                "product_url",
+                                "guide_url",
+                            ) and isinstance(item, str):
+                                allowed_urls.add(item)
+                            else:
+                                collect_urls(item)
+                    elif isinstance(value, list):
+                        for item in value:
+                            collect_urls(item)
+                    elif isinstance(value, str) and value.startswith("https://"):
+                        allowed_urls.add(value)
+
+                collect_urls(index)
+                checks["official_link_registry"] = bool(links) and all(
+                    link["url"] in allowed_urls for link in links
+                )
             if case["status"] == "unknown":
                 checks["no_positive_claim_rendered"] = not ids and not links
             results.append(

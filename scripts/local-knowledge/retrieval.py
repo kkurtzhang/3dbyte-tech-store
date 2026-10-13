@@ -16,6 +16,7 @@ from retailer_reference import (
 )
 from catalogue_reference import catalogue_groups, answer_catalogue_reference, PREFIX as CATALOGUE_PREFIX
 from customer_coverage import answer_customer_coverage
+from v1_guidance import answer_v1_guidance
 from collections import Counter
 import numpy as np
 from local_store import ROOT, Store, digest, SCOPE
@@ -329,6 +330,9 @@ class Retriever:
         coverage_reply = answer_customer_coverage(self.store, question, group_key, result)
         if coverage_reply is not None:
             return coverage_reply
+        v1_reply = answer_v1_guidance(self.store, question, group_key, result)
+        if v1_reply is not None:
+            return v1_reply
         if live_commerce_requested(q):
             return {
                 **result,

@@ -1,0 +1,468 @@
+{
+  "version": 1,
+  "scope": "Source-backed reference-only first-release content; no live commerce or model-generation claim",
+  "category_count": 6,
+  "must_answer_case_count": 30,
+  "completion_criterion": "All 30 fixed cases pass actual offline route, scope, source-version/excerpt and rendering checks; every positive is byte-verified, every declared unknown stays null, official guide links stay link-only. Product accumulation stops when these gates pass.",
+  "native_import_readiness_separate": true,
+  "cases": [
+    {
+      "id": "F01",
+      "category": "filament_choice",
+      "questions": [
+        "For an outdoor large part, why consider ASA and what enclosure constraint does Prusa mention?"
+      ],
+      "status": "source_grounded_context",
+      "role": "must_answer_source_context",
+      "required": [
+        [
+          "N06",
+          "asa_outdoors"
+        ],
+        [
+          "N06",
+          "asa_machine"
+        ]
+      ]
+    },
+    {
+      "id": "F02",
+      "category": "filament_choice",
+      "questions": [
+        "For a flexible bumper versus a stiff part, how do TPU95-HF and PA6-CF20 differ?"
+      ],
+      "status": "source_grounded_context",
+      "role": "must_answer_source_context",
+      "required": [
+        [
+          "N01",
+          "flexible_material"
+        ],
+        [
+          "N01",
+          "stiff_composite"
+        ]
+      ]
+    },
+    {
+      "id": "F03",
+      "category": "filament_choice",
+      "questions": [
+        "What nozzle temperature range does current Panchroma Basic PLA recommend?"
+      ],
+      "status": "source_grounded_context",
+      "role": "must_answer_source_context",
+      "required": [
+        [
+          "catalogue_panchroma_basic_black_source",
+          "manufacturer_nozzle_temperature"
+        ]
+      ]
+    },
+    {
+      "id": "F04",
+      "category": "filament_choice",
+      "questions": [
+        "What nozzle and bed temperature ranges does the current Polymaker PETG new formula recommend?"
+      ],
+      "status": "source_grounded_context",
+      "role": "must_answer_source_context",
+      "required": [
+        [
+          "catalogue_polymaker_petg_black_source",
+          "manufacturer_nozzle_temperature"
+        ],
+        [
+          "catalogue_polymaker_petg_black_source",
+          "manufacturer_bed_temperature"
+        ]
+      ]
+    },
+    {
+      "id": "F05",
+      "category": "filament_choice",
+      "questions": [
+        "Does an ASA material label certify a UL94 electrical enclosure?"
+      ],
+      "status": "unknown",
+      "role": "unknown_by_design",
+      "unknown_fields": [
+        "fire_classification",
+        "electrical_enclosure_certification"
+      ]
+    },
+    {
+      "id": "D01",
+      "category": "drying_storage",
+      "questions": [
+        "What drying and storage humidity conditions does the PA6-CF20 TDS specify?"
+      ],
+      "status": "source_grounded_context",
+      "role": "must_answer_source_context",
+      "required": [
+        [
+          "N02",
+          "pa_drying"
+        ],
+        [
+          "N02",
+          "pa_storage"
+        ]
+      ]
+    },
+    {
+      "id": "D02",
+      "category": "drying_storage",
+      "questions": [
+        "Can the SUNLU S4 reproduce the PA6-CF20 TDS 100C drying cycle?"
+      ],
+      "status": "source_grounded_context",
+      "role": "must_answer_source_context",
+      "required": [
+        [
+          "N02",
+          "s4_cycle_limit"
+        ]
+      ]
+    },
+    {
+      "id": "D03",
+      "category": "drying_storage",
+      "questions": [
+        "What conditional drying cycle does the current Panchroma Basic PLA page specify?"
+      ],
+      "status": "source_grounded_context",
+      "role": "must_answer_source_context",
+      "required": [
+        [
+          "catalogue_panchroma_basic_black_source",
+          "manufacturer_drying"
+        ]
+      ]
+    },
+    {
+      "id": "D04",
+      "category": "drying_storage",
+      "questions": [
+        "What canonical drying temperature and duration should I use for TPU95-HF?"
+      ],
+      "status": "unknown",
+      "role": "unknown_by_design",
+      "unknown_fields": [
+        "drying_temperature_c",
+        "drying_duration_hours"
+      ]
+    },
+    {
+      "id": "D05",
+      "category": "drying_storage",
+      "questions": [
+        "Is the canonical drying temperature and duration resolved for current Polymaker PETG?"
+      ],
+      "status": "unknown",
+      "role": "unknown_by_design",
+      "unknown_fields": [
+        "drying_temperature_c",
+        "drying_duration_hours"
+      ]
+    },
+    {
+      "id": "B01",
+      "category": "bed_adhesion",
+      "questions": [
+        "Why can PETG damage Prusa smooth PEI and what separation layer does Prusa mention?"
+      ],
+      "status": "source_grounded_context",
+      "role": "must_answer_source_context",
+      "required": [
+        [
+          "N07",
+          "smooth_pei"
+        ],
+        [
+          "N07",
+          "glue_layer"
+        ]
+      ]
+    },
+    {
+      "id": "B02",
+      "category": "bed_adhesion",
+      "questions": [
+        "How does the manufacturer describe applying Supergrip on a cold plate?"
+      ],
+      "status": "source_grounded_context",
+      "role": "must_answer_source_context",
+      "required": [
+        [
+          "N04",
+          "application"
+        ]
+      ]
+    },
+    {
+      "id": "B03",
+      "category": "bed_adhesion",
+      "questions": [
+        "What does the retailer warn about using Magigoo PP with PLA?"
+      ],
+      "status": "source_grounded_context",
+      "role": "must_answer_source_context",
+      "required": [
+        [
+          "catalogue_magigoo_pp50_source",
+          "retailer_non_pp_warning"
+        ]
+      ]
+    },
+    {
+      "id": "B04",
+      "category": "bed_adhesion",
+      "questions": [
+        "Can I clean Prusa satin or textured sheets with acetone?"
+      ],
+      "status": "source_grounded_context",
+      "role": "must_answer_source_context",
+      "required": [
+        [
+          "N15",
+          "sheet_acetone_limit"
+        ]
+      ]
+    },
+    {
+      "id": "B05",
+      "category": "bed_adhesion",
+      "questions": [
+        "Is Supergrip certified compatible with every brand of coated PEI surface?"
+      ],
+      "status": "unknown",
+      "role": "unknown_by_design",
+      "unknown_fields": [
+        "universal_build_surface_compatibility"
+      ]
+    },
+    {
+      "id": "H01",
+      "category": "nozzle_hotend",
+      "questions": [
+        "For K1C 2025, should I distinguish the buckle terminal from the older hotend connector?"
+      ],
+      "status": "source_grounded_context",
+      "role": "must_answer_source_context",
+      "required": [
+        [
+          "G01",
+          "k1_connector"
+        ]
+      ]
+    },
+    {
+      "id": "H02",
+      "category": "nozzle_hotend",
+      "questions": [
+        "Can an E3D Revo brass nozzle fit an E3D V6-style heater block?"
+      ],
+      "status": "source_grounded_context",
+      "role": "must_answer_source_context",
+      "required": [
+        [
+          "N11",
+          "revo_not_v6"
+        ]
+      ]
+    },
+    {
+      "id": "H03",
+      "category": "nozzle_hotend",
+      "questions": [
+        "Does a 0.2 mm hardened nozzle meet PA6-CF20 minimum nozzle diameter?"
+      ],
+      "status": "source_grounded_context",
+      "role": "must_answer_source_context",
+      "required": [
+        [
+          "N13",
+          "hardware_minimum"
+        ]
+      ]
+    },
+    {
+      "id": "H04",
+      "category": "nozzle_hotend",
+      "questions": [
+        "What is the manufacturer nozzle-only temperature rating for M2904-04?"
+      ],
+      "status": "source_grounded_context",
+      "role": "must_answer_source_context",
+      "required": [
+        [
+          "catalogue_flowtech_cm2_04_source",
+          "manufacturer_nozzle_temperature_rating"
+        ]
+      ]
+    },
+    {
+      "id": "H05",
+      "category": "nozzle_hotend",
+      "questions": [
+        "Are all hardened steel nozzles interchangeable with any K1 hotend?"
+      ],
+      "status": "unknown",
+      "role": "unknown_by_design",
+      "unknown_fields": [
+        "universal_nozzle_interchangeability",
+        "exact_nozzle_hotend_variant_fitment"
+      ]
+    },
+    {
+      "id": "T01",
+      "category": "maintenance_troubleshooting",
+      "questions": [
+        "What can explain stringing during travel and why compare another spool before deciding the cause?"
+      ],
+      "status": "source_grounded_context",
+      "role": "must_answer_source_context",
+      "required": [
+        [
+          "N08",
+          "travel_strands"
+        ],
+        [
+          "N08",
+          "spool_comparison"
+        ]
+      ]
+    },
+    {
+      "id": "T02",
+      "category": "maintenance_troubleshooting",
+      "questions": [
+        "What profile and gear/idler checks does Prusa discuss for under-extrusion?"
+      ],
+      "status": "source_grounded_context",
+      "role": "must_answer_source_context",
+      "required": [
+        [
+          "N09",
+          "profile_scope"
+        ],
+        [
+          "N09",
+          "gear_idler"
+        ]
+      ]
+    },
+    {
+      "id": "T03",
+      "category": "maintenance_troubleshooting",
+      "questions": [
+        "My Prusa MK3S prints PLA in a fully closed enclosure and stops extruding. Is the enclosure relevant?"
+      ],
+      "status": "source_grounded_context",
+      "role": "must_answer_source_context",
+      "required": [
+        [
+          "N12",
+          "pla_closed_enclosure"
+        ]
+      ]
+    },
+    {
+      "id": "T04",
+      "category": "maintenance_troubleshooting",
+      "questions": [
+        "Does Plastic Repellent Paint establish an internal nozzle unclogging procedure?"
+      ],
+      "status": "unknown",
+      "role": "unknown_by_design",
+      "unknown_fields": [
+        "internal_unclogging"
+      ]
+    },
+    {
+      "id": "T05",
+      "category": "maintenance_troubleshooting",
+      "questions": [
+        "Does stringing prove that my filament is wet?"
+      ],
+      "status": "unknown",
+      "role": "unknown_by_design",
+      "unknown_fields": [
+        "confirmed_moisture_fault"
+      ]
+    },
+    {
+      "id": "R01",
+      "category": "physical_kit_guidance",
+      "questions": [
+        "What must I buy separately for the captured DREMC WES2487 retailer reference?"
+      ],
+      "status": "source_grounded_context",
+      "role": "must_answer_source_context",
+      "required": [
+        [
+          "retailer_dremc_WES2487",
+          "retailer_shared_radio_battery_exclusion"
+        ],
+        [
+          "retailer_dremc_WES2487",
+          "retailer_shared_printed_stl_exclusion"
+        ]
+      ]
+    },
+    {
+      "id": "R02",
+      "category": "physical_kit_guidance",
+      "questions": [
+        "Compare 3DMakerParts supplier BOMs for Landy and Buggy/Buggster/Sandy belts and shock lengths."
+      ],
+      "status": "source_grounded_context",
+      "role": "must_answer_source_context",
+      "required": [
+        [
+          "N14",
+          "family_belts"
+        ],
+        [
+          "N14",
+          "family_shocks"
+        ]
+      ]
+    },
+    {
+      "id": "R03",
+      "category": "physical_kit_guidance",
+      "questions": [
+        "Do exact DREMC WES2488 included parts guarantee 85 mm shocks for this model revision?"
+      ],
+      "status": "unknown",
+      "role": "unknown_by_design",
+      "unknown_fields": [
+        "exact_model_release_compatibility"
+      ]
+    },
+    {
+      "id": "R04",
+      "category": "physical_kit_guidance",
+      "questions": [
+        "Where is the public Sandy build guide for WES2487?"
+      ],
+      "status": "source_links",
+      "role": "official_link_only",
+      "required_reason": "official_build_guide_link_only"
+    },
+    {
+      "id": "R05",
+      "category": "physical_kit_guidance",
+      "questions": [
+        "Does our store WES2487 kit include free STL access?"
+      ],
+      "status": "unknown",
+      "role": "unknown_by_design",
+      "unknown_fields": [
+        "store_digital_access_included"
+      ]
+    }
+  ]
+}

@@ -38,6 +38,7 @@ def prepared_records(store, seed_path=SEED):
             "BuildTak",
             "Fiberlogy",
             "Magigoo",
+            "Polymaker",
         }
         related_children = {
             item["group_key"]
@@ -236,7 +237,9 @@ def activate(name, seed_path=SEED):
                     )
                 }
                 for s in sources
+                if s.get("id")
             ],
+            "failed_capture_attempts": [s for s in sources if not s.get("id")],
             "native_approvals": 0,
             "staging_writes": 0,
             "paid_calls": 0,
