@@ -135,7 +135,7 @@ function validate(plan) {
     mismatched.knowledge_content.variant_id = null;
     assert.equal(cms.knowledgeRevision(mismatched), null);
     cases.push({
-      reference_key: entry.reference_key,
+      reference_id: entry.reference_id,
       structure_accepted_with_partial_facts: true,
       fact_count: parsed.facts.length,
       local_structure_revision_sha256: revision,

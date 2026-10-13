@@ -1,13 +1,13 @@
 {
   "fixture_only": true,
-  "source_plan_sha256": "ce384e5f079a8ab00110e9166fac106b1c31de37ca7a0ffe9cc78c3157ccc026",
+  "source_plan_sha256": "eca9715b2acb812151f3345d18abe3e487db798923a7b21ad04c4e7e6be39887",
   "native_contract": {
     "fixture_only": true,
     "native_changes": 0,
     "reviewer_approvals_created": 0,
     "cases": [
       {
-        "reference_key": "retailer_dremc_WES2487",
+        "reference_id": "retailer_dremc_WES2487",
         "structure_accepted_with_partial_facts": true,
         "fact_count": 18,
         "local_structure_revision_sha256": "d1c9068580e1a08b77f86657e944114441da8d7b28d1403330ef099e7a8f07d5",
@@ -19,7 +19,7 @@
         "native_ids_and_approvals_created": 0
       },
       {
-        "reference_key": "retailer_dremc_WES2488",
+        "reference_id": "retailer_dremc_WES2488",
         "structure_accepted_with_partial_facts": true,
         "fact_count": 18,
         "local_structure_revision_sha256": "113cf1cfd3913eb4caa947bbbaa772e10190f3c12fd7e3ba15a25f3aad88ca6d",
@@ -31,7 +31,7 @@
         "native_ids_and_approvals_created": 0
       },
       {
-        "reference_key": "retailer_dremc_WES2489",
+        "reference_id": "retailer_dremc_WES2489",
         "structure_accepted_with_partial_facts": true,
         "fact_count": 18,
         "local_structure_revision_sha256": "cfa067f00a88ec3e6328b8c03aeecd54ee70f31aa44af30d7a38e703eae0db34",
@@ -91,5 +91,5 @@
   "active_knowledge_corpus_changed": false,
   "synthetic_publication_projection_only": true,
   "physical_possession_required_for_reference_only": false,
-  "artifact_location": "Existing SSD workspace exports/retailer-native-contract-fixture-v1"
+  "artifact_location": "Private SSD integration fixture exports/integrated-retailer-contract-v2"
 }

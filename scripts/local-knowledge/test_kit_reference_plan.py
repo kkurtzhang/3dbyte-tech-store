@@ -3,7 +3,7 @@
 import json
 import unittest
 
-from prepare_kit_reference_plan import build_plan
+from prepare_kit_reference_plan import HERE, build_plan
 from verify_retailer_kit_evidence import REVIEW
 
 
@@ -85,6 +85,12 @@ class ReferencePlanTests(unittest.TestCase):
         self.review["records"][2]["unknowns"]["small_servo_quantity"] = 1
         with self.assertRaises(ValueError):
             build_plan(self.review)
+
+    def test_committed_plan_matches_current_verified_evidence(self):
+        committed = json.loads(
+            (HERE / "evaluation/retailer-reference-mapping-plan.json").read_text()
+        )
+        self.assertEqual(committed, build_plan(self.review))
 
     def test_repeated_offline_preparation_has_stable_logical_keys_and_body(self):
         self.assertEqual(build_plan(self.review), build_plan(self.review))

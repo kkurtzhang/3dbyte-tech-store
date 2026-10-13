@@ -8,11 +8,11 @@
   "native_staging_ids_invented": false,
   "physical_possession_required_for_reference_only": false,
   "guide_faq_content_ingested": false,
-  "source_review_sha256": "b9f3199b9eee0d67c9c4e4685bf647d347f2215c30a0d594156c8a5f5bd81a41",
+  "source_review_sha256": "db23dade604073e67aefb10778501253ed1eea7cc163e783e3a95442dbd165ac",
   "retailer_source_sha256": "1858c9a0f00d199a97a4d90de329be59340ea089de2cfc3b7a80367999b43f2f",
   "entries": [
     {
-      "reference_key": "retailer_dremc_WES2487",
+      "reference_id": "retailer_dremc_WES2487",
       "reference_identity": {
         "retailer": "DREMC",
         "source_sku": "WES2487",
@@ -412,7 +412,7 @@
       }
     },
     {
-      "reference_key": "retailer_dremc_WES2488",
+      "reference_id": "retailer_dremc_WES2488",
       "reference_identity": {
         "retailer": "DREMC",
         "source_sku": "WES2488",
@@ -812,7 +812,7 @@
       }
     },
     {
-      "reference_key": "retailer_dremc_WES2489",
+      "reference_id": "retailer_dremc_WES2489",
       "reference_identity": {
         "retailer": "DREMC",
         "source_sku": "WES2489",

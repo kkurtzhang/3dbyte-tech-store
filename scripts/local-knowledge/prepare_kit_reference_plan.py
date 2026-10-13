@@ -184,7 +184,7 @@ def build_plan(review):
         )
         entries.append(
             {
-                "reference_key": "retailer_dremc_" + sku,
+                "reference_id": "retailer_dremc_" + sku,
                 "reference_identity": {
                     "retailer": "DREMC",
                     "source_sku": sku,
