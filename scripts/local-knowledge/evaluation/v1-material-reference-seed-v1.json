@@ -4,7 +4,7 @@
   "source_capture_manifest": "v1-gap-review-captures-v1.json",
   "entries": [
     {
-      "key": "catalogue_panchroma_basic_black",
+      "reference_id": "catalogue_panchroma_basic_black",
       "title": "Polymaker Panchroma Basic PLA Black 1 kg with spool reference",
       "brand": "Polymaker",
       "aliases": [
@@ -174,7 +174,7 @@
       ]
     },
     {
-      "key": "catalogue_polymaker_petg_black",
+      "reference_id": "catalogue_polymaker_petg_black",
       "title": "Polymaker PETG New Formula Black 1 kg reference",
       "brand": "Polymaker",
       "aliases": [

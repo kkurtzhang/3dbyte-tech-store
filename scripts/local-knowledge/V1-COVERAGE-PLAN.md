@@ -60,7 +60,7 @@ Braces/security/deployment readiness belongs to the parent integration and is re
 
 - **56 Python tests** and **82 local-chat Jest tests across eight suites** pass, including exact-grade conflicts, dated price/variant scope, byte drift, unchanged replay, follow-up resolution and preparation-policy boundaries.
 - **30/30** final route/source/rendering checks pass. Immutable captures verify raw/text SHA-256, excerpt offsets or JSON pointers.
-- Ruff F/E9 and source/test TypeScript pass. Canonical storefront type checking remains blocked by the pre-existing generated `.next/dev` layout React 18/19 peer mismatch; the parent integration owns its scoped fix.
+- At the source milestone, Ruff F/E9 and source/test TypeScript passed, while canonical storefront type checking was blocked by the generated `.next/dev` layout React 18/19 peer mismatch. The combined integration retains the scoped React type-peer fix and verifies canonical types with both generated production and development declarations included.
 - Existing ESLint exits zero but ignores all three changed TypeScript files because its configuration covers JavaScript only. TypeScript lint coverage is not claimed.
 - Ports **3005 and 8873 have no listeners**. No service restart, native approval, staging write, dependency/access change, paid/model call, push, merge or deployment occurred.
 
