@@ -30,7 +30,13 @@ class ImportReadinessTests(unittest.TestCase):
             "single_source_candidate_fragments",
             "reference_shell_plans",
         ]:
-            self.assertEqual(replay[key], original[key])
+            if key == "record_inventory":
+                self.assertEqual(
+                    [r for r in replay[key] if r["kind"] == "source_document"],
+                    [r for r in original[key] if r["kind"] == "source_document"],
+                )
+            else:
+                self.assertEqual(replay[key], original[key])
 
     def test_reviewed_product_sources_are_resolved_but_manual_and_image_scope_stays_held(
         self,

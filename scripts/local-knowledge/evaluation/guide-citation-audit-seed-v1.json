@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "actor": "codex_local_guide_citation_review",
+  "text_additions": [
+    {"record_key":"G02","field":"k2_boards","source_id":"local_source_earlier_S24","quote":"Creality K2 Series Heater/Thermistor Breakout Board"},
+    {"record_key":"G02","field":"k2_boards","source_id":"local_source_earlier_S26","quote":"Creality K2/K2 Pro/K2 Plus Toolhead Nozzle PCB Board"},
+    {"record_key":"N01","field":"stiff_composite","source_id":"local_source_new_pa_e57ddf10b14f","quote":"designed for exceptional mechanical strength, stiffness, and heat resistance"},
+    {"record_key":"N05","field":"feed_path","source_id":"local_source_new_tpu_0b40819ee2bb","quote":"reduce print speed if the flexible filament buckles or feeds inconsistently"},
+    {"record_key":"N05","field":"exterior_paint","source_id":"local_source_new_prp_19ca1a0228d3","quote":"Once heated, the solution cures to form a dry, transparent coating"},
+    {"record_key":"N08","field":"travel_strands","source_id":"local_source_troubleshooting_stringing_2dae7c23185a","quote":"very high printing temperatures and/or using incorrect retraction settings"},
+    {"record_key":"N08","field":"spool_comparison","source_id":"local_source_troubleshooting_stringing_2dae7c23185a","quote":"The filament might have gathered moisture, which will cause a lot of stringing."},
+    {"record_key":"N09","field":"missing_layers","source_id":"local_source_troubleshooting_under-extrusion_473226a44a27","quote":"recently did any changes to your printer"},
+    {"record_key":"N09","field":"missing_layers","source_id":"local_source_troubleshooting_under-extrusion_473226a44a27","quote":"First layer calibration too close"},
+    {"record_key":"N10","field":"moisture_symptoms","source_id":"local_source_troubleshooting_drying_f3948af25f3b","quote":"Some filaments are naturally more stringy than others."}
+  ],
+  "existing_fact_proof_additions": [
+    {"record_key":"catalogue_buildtak_pei235_guide","field":"selection_guidance","source_record":"catalogue_buildtak_pei235_source","source_field":"nominal_sheet_thickness"},
+    {"record_key":"catalogue_buildtak_spatula_guide","field":"selection_guidance","source_record":"catalogue_buildtak_spatula_source","source_field":"handle_material"},
+    {"record_key":"catalogue_flowtech_cm2_04_guide","field":"selection_guidance","source_record":"catalogue_flowtech_cm2_04_source","source_field":"manufacturer_part_number"},
+    {"record_key":"catalogue_flowtech_m3101_guide","field":"selection_guidance","source_record":"catalogue_flowtech_m3101_source","source_field":"official_heater"},
+    {"record_key":"catalogue_magigoo_pp50_guide","field":"selection_guidance","source_record":"catalogue_magigoo_pp50_source","source_field":"retailer_package_identity"},
+    {"record_key":"catalogue_magigoo_pp50_guide","field":"selection_guidance","source_record":"catalogue_magigoo_pp50_source","source_field":"current_cooling_release"},
+    {"record_key":"catalogue_orbiter_v25_guide","field":"selection_guidance","source_record":"catalogue_orbiter_v25_source","source_field":"upgrade_kit_scope"},
+    {"record_key":"catalogue_orbiter_v25_guide","field":"selection_guidance","source_record":"catalogue_orbiter_v25_source","source_field":"calibration_required"},
+    {"record_key":"catalogue_panchroma_basic_black_guide","field":"selection_guidance","source_record":"catalogue_panchroma_basic_black_source","source_field":"manufacturer_variant_identity"},
+    {"record_key":"catalogue_polymaker_petg_black_guide","field":"selection_guidance","source_record":"catalogue_polymaker_petg_black_source","source_field":"current_storage_context"},
+    {"record_key":"catalogue_polymaker_petg_black_guide","field":"selection_guidance","source_record":"catalogue_polymaker_petg_black_source","source_field":"legacy_grade_distinction"},
+    {"record_key":"catalogue_slice_torque_15_guide","field":"selection_guidance","source_record":"catalogue_slice_torque_15_source","source_field":"official_adapter"}
+  ],
+  "value_edits": [
+    {"record_key":"N15","field":"sheet_cold_ipa","old":"roughly90%","new":"roughly 90%"}
+  ],
+  "review_boundary": "Source facts remain source-dependent and own navigation is separate; same products, grades, versions, conditions and unknowns. No native/user approval claim."
+}

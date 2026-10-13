@@ -65,12 +65,12 @@ class V1CoverageTests(unittest.TestCase):
         )
         self.assertEqual(known["status"], "source_grounded_context")
         self.assertIn("prohibits acetone", known["answer"])
-        self.assertTrue(
-            all(
-                claim["editorial_basis"]["reviewer_actor"] == ACTOR
-                for claim in known["context_pack"]
-            )
-        )
+        for claim in known["context_pack"]:
+            decision = self.store.db.execute(
+                "SELECT actor FROM editorial_decisions WHERE record_id=? AND revision=? ORDER BY id DESC LIMIT 1",
+                (claim["record_id"], claim["record_revision"]),
+            ).fetchone()
+            self.assertEqual(claim["editorial_basis"]["reviewer_actor"], decision[0])
         for claim in known["context_pack"]:
             for citation in claim["citations"]:
                 self.assertIsNotNone(self.store.cite(citation))

@@ -1,5 +1,7 @@
 # Local knowledge chat preview
 
+The existing-guide citation repairs are now active locally. See [GUIDE-CITATION-ACTIVATION.md](GUIDE-CITATION-ACTIVATION.md) for 29 revised guides, immutable old/new hashes, qualified equivalent evidence and offline verification. Native approvals remain zero; previews remain stopped.
+
 The bounded evidence follow-up is documented in [EVIDENCE-RECONCILIATION.md](EVIDENCE-RECONCILIATION.md): all four combined claims have source-specific preparations, nine genuine source-form holds have exact reasons, and editorial guidance/citation repairs are separately labelled.
 
 The offline native-import follow-up is documented in [IMPORT-READINESS.md](IMPORT-READINESS.md), including the blocker matrix, 64 prepared source fragments, 33 primary reference plans and the legitimate native workflow. Native actions remain unauthorized.

@@ -223,6 +223,83 @@ class Store:
                 (record["id"], product["id"], variant["id"], SCOPE),
             )
 
+    def verified_citation_repair(self, row, baseline_revision):
+        """Verify a scope-preserving guide revision against its retained original and real event."""
+        current = json.loads(row["payload"])
+        if (
+            digest({k: v for k, v in current.items() if k != "revision"})
+            != row["revision"]
+            or current.get("environment") != SCOPE
+        ):
+            return False
+        repair = current.get("citation_repair", {})
+        actor = "codex_local_guide_citation_review"
+        if (
+            current.get("kind") != "editorial_guide"
+            or repair.get("baseline_revision") != baseline_revision
+            or repair.get("reviewer_actor") != actor
+            or current.get("native_approval") is not None
+            or current.get("staging_native_id") is not None
+            or current.get("staging_export_allowed") is not False
+        ):
+            return False
+        prior = self.db.execute(
+            "SELECT payload FROM revisions WHERE record_id=? AND revision=? ORDER BY id DESC LIMIT 1",
+            (current["id"], baseline_revision),
+        ).fetchone()
+        event = self.db.execute(
+            "SELECT id FROM editorial_decisions WHERE record_id=? AND revision=? AND actor=? AND scope=? AND decision='accepted_for_local_development'",
+            (current["id"], row["revision"], actor, SCOPE),
+        ).fetchone()
+        if not prior or not event:
+            return False
+        baseline = json.loads(prior[0])
+        if digest(baseline) != baseline_revision:
+            return False
+        for key in [
+            "id",
+            "record_key",
+            "kind",
+            "group_key",
+            "local_product_id",
+            "local_variant_id",
+            "explicit_unknowns",
+        ]:
+            if current.get(key) != baseline.get(key):
+                return False
+        prefix = "Original store guidance with source-dependent facts and separate selection/navigation commentary. "
+        if current.get("source_scope") != prefix + baseline.get("source_scope", ""):
+            return False
+        prior_claims = {c["field"]: c for c in baseline["claims"]}
+        if {c["field"] for c in current["claims"]} != set(prior_claims):
+            return False
+        for claim in current["claims"]:
+            old_claim = prior_claims[claim["field"]]
+            expected_value = old_claim["value"]
+            expected_text = old_claim["text"]
+            if current["record_key"] == "N15" and claim["field"] == "sheet_cold_ipa":
+                expected_value = expected_value.replace("roughly90%", "roughly 90%")
+                expected_text = expected_text.replace("roughly90%", "roughly 90%")
+            expected_claim = {k: v for k, v in old_claim.items() if k != "citations"}
+            expected_claim.update(value=expected_value, text=expected_text)
+            if {k: v for k, v in claim.items() if k != "citations"} != expected_claim:
+                return False
+            if not {canonical(c) for c in old_claim["citations"]}.issubset(
+                {canonical(c) for c in claim["citations"]}
+            ):
+                return False
+            if claim["status"] != "unknown" and not all(
+                self.cite(c) for c in claim["citations"]
+            ):
+                return False
+        basis = current["factual_decision_basis"]
+        return (
+            basis.get("reviewer_actor") == actor
+            and basis.get("user_factual_review_claimed") is False
+            and basis.get("native_reviewer_event") is False
+            and basis.get("prior_factual_basis") == baseline["factual_decision_basis"]
+        )
+
     def ingest(self, records, actor="codex_local_development", local_references=None):
         verify_boundary()
         created = updated = skipped = 0
@@ -241,6 +318,14 @@ class Store:
                 old = self.db.execute(
                     "SELECT revision,payload FROM records WHERE id=?", (r["id"],)
                 ).fetchone()
+                if (
+                    old
+                    and old["revision"] != revision
+                    and self.verified_citation_repair(old, revision)
+                ):
+                    # A replay of the exact superseded packet cannot silently undo reviewed citation repairs.
+                    skipped += 1
+                    continue
                 if old and old["revision"] == revision:
                     skipped += 1
                     continue

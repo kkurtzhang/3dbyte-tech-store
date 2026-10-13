@@ -1,0 +1,497 @@
+{
+  "created_at": "2026-10-13T14:10:56.567598+00:00",
+  "branch": "fix/knowledge-guide-citations-20261013",
+  "base_commit": "20ecb975e6e21c15b330ff25385f1abc3bf7ad6b",
+  "scope": "Local activation of existing-guide citation repairs and qualified evidence reconciliation",
+  "activation": {
+    "guides_revised": 29,
+    "positive_statements_reviewed": 75,
+    "targeted_repair_sets": 7,
+    "citation_edit_sets": 30,
+    "guides_with_added_citations": 18,
+    "local_review_events_created": 29,
+    "reviewer_actor": "codex_local_guide_citation_review",
+    "native_approvals_created": 0,
+    "new_user_approval_claimed": false
+  },
+  "guide_revisions": [
+    {
+      "record_key": "G01",
+      "old_revision": "98d7ff972bcc2b0886792d94ff9116e251f4edb05c56318879129d4b1e26aa2c",
+      "new_revision": "5b51ae2708641c5c60d35b13638cd0e06e66d6e95b68da766abc858874b86a99",
+      "review_event_id": 140,
+      "reviewed_at": "2026-10-13T13:30:10.693160+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "G02",
+      "old_revision": "6275c268f05a174832552fbd4f5ebb66adbb90b84a721a50243415f335d59904",
+      "new_revision": "22390cbdfab03f4ee8427cde8e7f45ee93462da81b534df01b94bc0667358c0d",
+      "review_event_id": 141,
+      "reviewed_at": "2026-10-13T13:30:10.697851+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "G03",
+      "old_revision": "9a5dcd56f8932f08a92a60104547a3412b915ed5b91e12c139bca8967ac76a83",
+      "new_revision": "177b89b0c01b72e9435816942f073835963b627caf096373d34a91b29a219fd1",
+      "review_event_id": 142,
+      "reviewed_at": "2026-10-13T13:30:10.701390+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "G04",
+      "old_revision": "c3ab0592d0440c2d72b8adee614dee11c1d07ca8d90474224942e91fd6783350",
+      "new_revision": "d766c5127ec9e0c59c831693840d21ea71ea543ec255280b05cf47bf25dfa20a",
+      "review_event_id": 143,
+      "reviewed_at": "2026-10-13T13:30:10.710616+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "N01",
+      "old_revision": "e99d47f0515ff1d12f4f5dc1697e8ff66de8df907d7ae924453740f7333f5014",
+      "new_revision": "7b0f2d15788461e229e6a2783291808cb25b3f2fd33d501f1b38b48aa088658f",
+      "review_event_id": 144,
+      "reviewed_at": "2026-10-13T13:30:10.717363+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "N02",
+      "old_revision": "5020862e452064bc9e558ae00fdac2822a4f5932b8b0f62c6755baa5571700b8",
+      "new_revision": "2749e2e893dca152f3dc79766ded2bb47b6ccfea05133b0ef220669ce79c88cb",
+      "review_event_id": 145,
+      "reviewed_at": "2026-10-13T13:30:10.722341+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "N03",
+      "old_revision": "f6d957f4f99e70021cc3b3f853a1cf443415a19094c7a73aa15aa040a0810c21",
+      "new_revision": "0ae5ac41cd5d68d2462c616d83bdbc794fe5751993a51fe26fbde48a6787e3f2",
+      "review_event_id": 146,
+      "reviewed_at": "2026-10-13T13:30:10.727101+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "N04",
+      "old_revision": "ba2c3fe201ab0aaa0491bc2969c65533cdc309be5e442fe18667d6c82d200a37",
+      "new_revision": "71fd23b2ab14c0725e94666410ff8abbc6fc7b8cc6e4bbeb2fe7b62f3889d9f9",
+      "review_event_id": 147,
+      "reviewed_at": "2026-10-13T13:30:10.730377+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "N05",
+      "old_revision": "a216c404b8ccab6787baabbc1d327fe1942c5be18570e48eac7cb8110e851c8d",
+      "new_revision": "3831fb253792cd0c62f0546d93b472402b0abcc4037d5b647e905b1706a83649",
+      "review_event_id": 148,
+      "reviewed_at": "2026-10-13T13:30:10.734958+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "N07",
+      "old_revision": "ce7ed68d9fc74d4010ebca8b442d5cf12d1f64df4126796c405fbad9d13fdbf9",
+      "new_revision": "d2a70fdd12bd0a83e432d09a19176abcb4115603d4a538c3a9eb6ee1d3eeb9ba",
+      "review_event_id": 149,
+      "reviewed_at": "2026-10-13T13:30:10.738215+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "N08",
+      "old_revision": "e8fd292249beb81e842cfc897c4007604af428563c9fe08f23ee59e7f3621033",
+      "new_revision": "1a7e8f0117113a9c949f4e6eb8d291110d24402e7ce8a4de0537a6f40c01206f",
+      "review_event_id": 150,
+      "reviewed_at": "2026-10-13T13:30:10.743303+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "N09",
+      "old_revision": "8900f79c35dcf58011ffec6116e0ed1d3dda13637fcf4b0a8da7e57586314e10",
+      "new_revision": "8998bef390cdcba1622bfa80c4142f4865497799378536f3530bedf73cde5f22",
+      "review_event_id": 151,
+      "reviewed_at": "2026-10-13T13:30:10.748457+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "N10",
+      "old_revision": "140e6d6c7be3ed20bd46ceaec45a79469aa83a4137ed684323ac0110b60e8675",
+      "new_revision": "75c957cd5f03266349a823552ec7a01adf15965614e5b3c5853634d892c889c6",
+      "review_event_id": 152,
+      "reviewed_at": "2026-10-13T13:30:10.753653+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "N06",
+      "old_revision": "7de6cc6479f5db97017f9406843ff6486f26e638809973315a2f04366a30e7fa",
+      "new_revision": "485cc24d12754904a141f52b299b8f42693a5753dce4f288cb41eb7a00d80367",
+      "review_event_id": 153,
+      "reviewed_at": "2026-10-13T13:30:10.757864+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "N11",
+      "old_revision": "70b8b54b8fac794c3afcbd3fc545b995f0a6540be1329c3de20ea9aac6ff5d7a",
+      "new_revision": "b0b84ab87d3820c9a514568ca1932d464c7cda5ba7e4ace86983f8af0b2a35d8",
+      "review_event_id": 154,
+      "reviewed_at": "2026-10-13T13:30:10.762044+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "catalogue_flowtech_m3101_guide",
+      "old_revision": "528410b742d04a002bef9cf3b6b2e04f24d2e3b392d12a371b383ed8229f1b63",
+      "new_revision": "3c0ffea740bf32c04b0fa3906f0d98128e41557fd77b4325330d7b115e7069df",
+      "review_event_id": 155,
+      "reviewed_at": "2026-10-13T13:30:10.762850+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "catalogue_orbiter_v25_guide",
+      "old_revision": "4fc3e071d4907dace9e32b568dcc5ad5a1a450e78f25e8a1bcc6c40948976ea1",
+      "new_revision": "5f60523ec2cb0606795d540f5fe13728b909bda9221a0623a990c14ed0497cf3",
+      "review_event_id": 156,
+      "reviewed_at": "2026-10-13T13:30:10.764061+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "catalogue_slice_torque_15_guide",
+      "old_revision": "e7e89c0c4b3dcf6b95b05ec23f62dbb22f45a997778fcca7cbcaacd22c192253",
+      "new_revision": "b1f018f17e6548832d1cbe701814aa85c76d6b22f64aed7d2274d6c90bc31198",
+      "review_event_id": 157,
+      "reviewed_at": "2026-10-13T13:30:10.765875+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "catalogue_buildtak_pei235_guide",
+      "old_revision": "f041dece8682dbf15e03af42681f6e7812be8b684e7aa42cef5807e1635f22dc",
+      "new_revision": "136ed30d74ac018fd1468e28dba3ca5f3932e283bd0d86e2c06d62bdb116e428",
+      "review_event_id": 158,
+      "reviewed_at": "2026-10-13T13:30:10.768075+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "catalogue_buildtak_spatula_guide",
+      "old_revision": "cfd4a8ccf087f6fe24174c43b248bd3d25821f2f688283f29df2e35e7568655e",
+      "new_revision": "9af26517b097d8fde72e51c990821170526ae1320aeb2e766cea80f2c70f9364",
+      "review_event_id": 159,
+      "reviewed_at": "2026-10-13T13:30:10.769886+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "catalogue_fiberlogy_pp750_guide",
+      "old_revision": "d9929df34f0930bb85fc7ea69daca975096f55c06eae14470af565110c61a96a",
+      "new_revision": "ea1342984100ef59a4caea46933079f6dfd95e683f37992d50df284be8b7e425",
+      "review_event_id": 160,
+      "reviewed_at": "2026-10-13T13:30:10.771696+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "N12",
+      "old_revision": "69182fc19ad93cf7e42771509c454219bda0b899a612b698d67eb35b0c030e4f",
+      "new_revision": "760869252bf8668d301635bd430bfd449c5b17811057815cc10af3e193d5e121",
+      "review_event_id": 161,
+      "reviewed_at": "2026-10-13T13:30:10.775612+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "N13",
+      "old_revision": "6e4374c9291e07aebca566d94698dec8b09346187008f71b47a9a6ac9033d6c0",
+      "new_revision": "2cac17ee14647fcbc4f5aaa0b7b9a57349c49f8107f7e34dec6076428a66534b",
+      "review_event_id": 162,
+      "reviewed_at": "2026-10-13T13:30:10.778725+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "N14",
+      "old_revision": "654da947c30bbae749853ce558057f22fe94a511eed181510cb5d0e500c84e34",
+      "new_revision": "36ac6181c9dd21033fbab122109b0fc0fbcf783d8a8481b07de47dba2a2fbb50",
+      "review_event_id": 163,
+      "reviewed_at": "2026-10-13T13:30:10.779891+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "catalogue_magigoo_pp50_guide",
+      "old_revision": "8b3b1fa7582ab7140dee76360aa6244e75ab352bf90513974ce2eb34bdbb91c0",
+      "new_revision": "890490c056ab8ed787cbd5ead9d5d771ae8e5a24afa71c0cdd0293873b57cb64",
+      "review_event_id": 164,
+      "reviewed_at": "2026-10-13T13:30:10.782592+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "catalogue_flowtech_cm2_04_guide",
+      "old_revision": "b82fd139c8abaa8dd24fd2517677c1bab73d6d1eac323e41c13f9dac456b8bdd",
+      "new_revision": "8c2df62d06beb6adc30b444078d0d0715757e424842988871379035a7e1e6d4c",
+      "review_event_id": 165,
+      "reviewed_at": "2026-10-13T13:30:10.784248+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "catalogue_panchroma_basic_black_guide",
+      "old_revision": "f21b3387866bb528c40cf90d764741763f4bf875de834c346297f0cda398a851",
+      "new_revision": "33c5c52b19b21e4d22fc700236bb505be730481f2684bc8e9ac7c0c72ac4d289",
+      "review_event_id": 166,
+      "reviewed_at": "2026-10-13T13:30:10.796683+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "catalogue_polymaker_petg_black_guide",
+      "old_revision": "86b28ab95d40fead666cc1a58c41acdaaaaee15c1ebc67a3652c9a5ba85ade4f",
+      "new_revision": "905b92e80f34f87e7adc3351c7b4192592793ecbe771c4d73b23dee9d85b3a80",
+      "review_event_id": 167,
+      "reviewed_at": "2026-10-13T13:30:10.803444+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    },
+    {
+      "record_key": "N15",
+      "old_revision": "58e558200b5f4b33c53da23c68b97269ee4e6de84696d082d5e1912f87e204a4",
+      "new_revision": "6f87b40ada8dd20396c48e52ba8c2c7c074a9483ae677b3eaa8e377a7305af74",
+      "review_event_id": 168,
+      "reviewed_at": "2026-10-13T13:30:10.811005+00:00",
+      "reviewer_actor": "codex_local_guide_citation_review"
+    }
+  ],
+  "new_source_versions": [
+    {
+      "id": "local_source_guide_selector_retailer_d5352d60ed46611f",
+      "source_url": "https://store.dremc.com.au/products/creality-k2-unicorn-nozzle-for-k2-series-creality-hi",
+      "captured_at": "2026-10-10T22:20:42.117048Z",
+      "derived_at": "2026-10-13T13:28:01.782360+00:00",
+      "derived_from_local_source_id": "local_source_earlier_S27",
+      "sha256": "fcb47bc81c4d65b28a32526c71c4abcf1311731dd7153f5587be1101fdd8d83f",
+      "text_sha256": "011985a88cf9fff14729ba8feb78ce39b2b98d0183a5f6740e21a3290f889f09"
+    },
+    {
+      "id": "local_source_guide_selector_manufacturer_5f7c36445c922c4e",
+      "source_url": "https://store.creality.com/products/unicorn-k2-plus-quick-swap-nozzle-kit",
+      "captured_at": "2026-10-10T22:24:09.150456Z",
+      "derived_at": "2026-10-13T13:28:01.801073+00:00",
+      "derived_from_local_source_id": "local_source_earlier_S28",
+      "sha256": "8c5c2ede6aed2f99031c458ab5d9fef202b0afa6733716c7b168b787a2b1a6c1",
+      "text_sha256": "020e407d101cabf2c0c59a57cd85f5a47dcc51e92b2ede03819f6849ced4c7bd"
+    },
+    {
+      "id": "local_source_guide_diagram_7c2bed3a32a5fcfc",
+      "source_url": "https://cdn.shopify.com/s/files/1/0893/0603/8637/files/e2cecfd31ff5e6c344f77dba83767463.jpg?v=1741691536",
+      "captured_at": "2026-10-10T22:21:23.576357Z",
+      "derived_at": "2026-10-13T13:28:01.805149+00:00",
+      "derived_from_local_source_id": "local_source_earlier_K2IMAGE6",
+      "sha256": "6a1030971425599b71585edc7f6648b7b1e379e754c19b01d3c1d1c204a17b5a",
+      "text_sha256": "0b3e8d817a38aa40ecbc90c5b421b0be36b5f710a97243376550cfce758d773f"
+    },
+    {
+      "id": "local_source_guide_equivalent_k2_hotend_e0df8cf55452",
+      "source_url": "https://mvip.creality.com/en/goods/goodsDetail/2309",
+      "captured_at": "2026-10-13T13:19:20.349494+00:00",
+      "derived_at": null,
+      "derived_from_local_source_id": null,
+      "sha256": "e0df8cf554521629cb47b9d712b5d549baace28e325c7e08a18b11106d395a0e",
+      "text_sha256": "7365db5fbbef3ba5e7a81797d4be477f6b85bafb2e5158f32282a8792cddd0c8"
+    },
+    {
+      "id": "local_source_guide_equivalent_pad_supplier_55a3bfffd344",
+      "source_url": "https://makerlab.ph/products/creality-nozzle-wiper-adhesive-tape-for-k2-plus-4004010278",
+      "captured_at": "2026-10-13T13:44:13.438296+00:00",
+      "derived_at": null,
+      "derived_from_local_source_id": null,
+      "sha256": "55a3bfffd344df509cb04e6ee602acbae815da770d02d2a653ce09403e98d99b",
+      "text_sha256": "d96ad46ae98bee03af7febcbb9f0de0327b91ba5eb09aed75d68b1e350926be1"
+    },
+    {
+      "id": "local_source_guide_equivalent_adapter_supplier_72465088b385",
+      "source_url": "https://www.firstshop.co.za/products/creality-k2-k2-pro-k2-plus-hotend-adapter-board-4004010288-406732",
+      "captured_at": "2026-10-13T13:44:15.036959+00:00",
+      "derived_at": null,
+      "derived_from_local_source_id": null,
+      "sha256": "72465088b385fdae874691c904bb11e4ff76c7e16af055a2aa3bc77c56fc3a12",
+      "text_sha256": "6e6fb82c0fe965778a909c6bf556cf6c3b86214038846207ac8612487f860ee6"
+    },
+    {
+      "id": "local_source_guide_pad_supplier_lf_7cfcaa45726bddc1",
+      "source_url": "https://makerlab.ph/products/creality-nozzle-wiper-adhesive-tape-for-k2-plus-4004010278",
+      "captured_at": "2026-10-13T13:44:13.438296+00:00",
+      "derived_at": "2026-10-13T13:59:42.637528+00:00",
+      "derived_from_local_source_id": "local_source_guide_equivalent_pad_supplier_55a3bfffd344",
+      "sha256": "55a3bfffd344df509cb04e6ee602acbae815da770d02d2a653ce09403e98d99b",
+      "text_sha256": "d30ede3fda33eb31f6b512adebd0be66249fe4aaff2bc951e353d95497bb2f4a"
+    }
+  ],
+  "current_local_stats": {
+    "products": 33,
+    "records": 80,
+    "documents": 51,
+    "guides": 29,
+    "variants": 33,
+    "sources": 117,
+    "claims": 469,
+    "supported_claims": 170,
+    "unknown_claims": 226,
+    "local_editorial_decisions": 168,
+    "environment": "local_development",
+    "native_approvals": 0
+  },
+  "preservation": {
+    "metadata_unchanged": 1,
+    "products_unchanged": 33,
+    "local_reference_variants_unchanged": 33,
+    "local_record_bindings_unchanged": 61,
+    "prior_sources_unchanged": 110,
+    "prior_editorial_decisions_unchanged": 139,
+    "prior_revisions_unchanged": 59,
+    "prior_available_raw_versions_verified": 105,
+    "prior_unavailable_raw_versions_retained": [
+      "local_source_new_tpu",
+      "local_source_new_pa",
+      "local_source_new_mag",
+      "local_source_new_prp",
+      "local_source_new_sock"
+    ],
+    "prior_text_files_verified": 110,
+    "source_document_rows_unchanged": 51,
+    "original_guide_revisions_retained": 29,
+    "positive_guide_statements_with_verified_citations": 75,
+    "prior_claim_payloads_retained": 756,
+    "prior_reconciliation_artifacts_hash_verified": [
+      "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/exports/v1-final-local-snapshot-v1.sqlite3",
+      "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/evidence-reconciliation-contract-v1.json",
+      "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/evidence-reconciliation-v1.json",
+      "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/import-readiness-plan-final-v1.json",
+      "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/v1-staged-import-preparation-manifest-v1.json",
+      "scripts/local-knowledge/evaluation/evidence-reconciliation-seed-v1.json"
+    ]
+  },
+  "frozen_v1_evidence": {
+    "database_snapshot": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/exports/v1-final-local-snapshot-v1.sqlite3",
+      "sha256": "640c3182e4a21ee93c642d3008bf96d7937a87f456da71e5a100148515a23385"
+    },
+    "import_manifest": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/v1-staged-import-preparation-manifest-v1.json",
+      "sha256": "faea64c1c99a7161e091da91f0a2cc499efea83f32b567b2379f3e4596a613ba"
+    }
+  },
+  "preparation_snapshot": {
+    "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/exports/guide-citation-preparation-v1-before.sqlite3",
+    "sha256": "640c3182e4a21ee93c642d3008bf96d7937a87f456da71e5a100148515a23385"
+  },
+  "before_activation_snapshot": {
+    "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/exports/guide-citation-activation-v1-before.sqlite3",
+    "sha256": "9d8da18d3081ba404884dc2e898ee09a71e24560b5492a583b6ebc4ac9aa6dab"
+  },
+  "final_local_snapshot": {
+    "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/exports/guide-citation-final-local-snapshot-v1.sqlite3",
+    "sha256": "f70dfb47695b554e11ac13e7b47ab773b86b25441c813d71e085e6560dd685c1"
+  },
+  "reports": {
+    "guide-citation-activation-v1.json": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/guide-citation-activation-v1.json",
+      "sha256": "4971a56b621c5f27497b4579dac2dac839c354dbab15f0f24125a3680d9946b2"
+    },
+    "guide-citation-statement-audit-v1.json": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/guide-citation-statement-audit-v1.json",
+      "sha256": "3a0002cee00ee1a43bd32d34feb66876caeee81f789bff881f96fef230ef5cb5"
+    },
+    "guide-citation-preservation-v1.json": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/guide-citation-preservation-v1.json",
+      "sha256": "ff17ce8a23017fc45ad54f29795104517a928be2966cc1e27182239707e830e8"
+    },
+    "guide-equivalent-evidence-plan-v2.json": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/guide-equivalent-evidence-plan-v2.json",
+      "sha256": "9f5433b16198ff42f5753d4561347458b606b602a15a3151ac3af73fdaa4246f"
+    },
+    "guide-citation-import-readiness-v1.json": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/guide-citation-import-readiness-v1.json",
+      "sha256": "1d2614dfc249460b1639682d028453cf094c3ded56c12d19beac28d8793d2575"
+    }
+  },
+  "equivalent_evidence": {
+    "exact_official_field_matches": 2,
+    "qualified_or_existing_supplier_field_matches": 6,
+    "supplier_independence_established": false,
+    "complete_component_material_text_equivalent_found": false,
+    "original_source_form_holds_preserved": 9,
+    "source_form_policy_changed": false,
+    "active_source_documents_changed": 0
+  },
+  "verification": {
+    "python": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/guide-citation-python-final-v2.log",
+      "sha256": "e90071462360193c2198810e77aa015ba2e0935f52c1bb6ab2d35dc895aa8c88",
+      "passed": 77,
+      "failed": 0
+    },
+    "jest": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/guide-citation-jest-v1.json",
+      "sha256": "d17ffe770370cfb43b8abdd53b71cf39eeb441ba6e3c9bfc3260900450ae72e0",
+      "passed": 82,
+      "suites": 8
+    },
+    "customer_coverage": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/guide-citation-coverage-v1.json",
+      "sha256": "dd1b7d296fa70ed1c393922a6078980378245e12c1cf425bb644ad48f12f2183",
+      "passed": 30,
+      "total": 30
+    },
+    "actual_route_streams": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/guide-citation-streams-v1.json",
+      "sha256": "acbabcae6a788b75fc6645f57e26abd07d434ac309bdef654b45493927109ed6"
+    },
+    "native_pure_contract": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/guide-citation-import-contract-v1.json",
+      "sha256": "1b20c54f8a2d817d42430251b4fd4655591a23c8f7cd5b027bab276ac9c8249f",
+      "structure_fixtures": 64,
+      "supported_facts": 155,
+      "nullable_fact_occurrences": 344,
+      "primary_documents": 33,
+      "schema_required_fields_and_canonical_hash_mapping_passed": true,
+      "group_consistent_alternative_bindings_passed": true,
+      "unbound_pending_private_and_public_projection_approval_rejected": true,
+      "unsupported_unknown_promotion_and_source_kind_rejected": true,
+      "priced_shell_and_wrong_environment_binding_rejected": true,
+      "native_ids_approvals_or_writes_created": 0
+    },
+    "ruff_F_E9": "passed",
+    "ruff_format": "passed",
+    "git_diff_check": "passed",
+    "ports": [
+      {
+        "port": 3005,
+        "no_listener": true
+      },
+      {
+        "port": 8873,
+        "no_listener": true
+      }
+    ],
+    "retrieval_index": {
+      "method": "TF-IDF + truncated SVD latent semantic analysis",
+      "dimensions": 64,
+      "corpus_fingerprint": "4adc05e96d7465e0596e69770d455b2a6a9735529030829e31ae485599bf8a12",
+      "training_rows": 469,
+      "model_or_api_calls": 0
+    },
+    "TypeScript_runtime_changes": false,
+    "type_check_limit": "Prior unchanged source/test type check passed; canonical generated React18/19 type mismatch remains parent-owned. No new TypeScript compile is claimed."
+  },
+  "recovered_failures": [
+    {
+      "log": {
+        "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/guide-citation-python-v1.log",
+        "sha256": "22139de142ccd2807a45ab31e6bb6316909bb1a1552f59f243eafd2f2158869a"
+      },
+      "cause": "Stale vector fingerprint after actual guide revisions. Refreshed index and added refresh to activation workflow."
+    },
+    {
+      "log": {
+        "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/guide-citation-python-final-v1.log",
+        "sha256": "50917c22e246ccb29f219d16ab98fe899afe2fec6a74a7915534cfba3173cbf2"
+      },
+      "cause": "Test assumed two supplier captures needed LF normalization; only one did. Test now derives expected normalization from captured bytes."
+    }
+  ],
+  "remaining": "Source-specific equivalent projections are prepared only. Native bindings, real canonical review, action authorization and parent release gates remain. Broader bounded local evidence work may continue.",
+  "services_started": false,
+  "staging_or_shared_database_writes": 0,
+  "dependency_changes": false,
+  "new_credentials_or_access": false,
+  "paid_or_generation_model_calls": 0,
+  "three_d_sets_build_guides_and_faqs": "official_link_only",
+  "native_or_release_gates_changed": false
+}

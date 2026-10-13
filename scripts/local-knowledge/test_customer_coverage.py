@@ -26,7 +26,11 @@ class CoverageFollowupTests(unittest.TestCase):
         self.assertEqual(sum(c["status"] == "editorial_inference" for c in rows), 6)
         self.assertEqual(sum(c["status"] == "unknown" for c in rows), 8)
         for claim in rows:
-            self.assertEqual(claim["editorial_basis"]["reviewer_actor"], ACTOR)
+            decision = self.store.db.execute(
+                "SELECT actor FROM editorial_decisions WHERE record_id=? AND revision=? ORDER BY id DESC LIMIT 1",
+                (claim["record_id"], claim["record_revision"]),
+            ).fetchone()
+            self.assertEqual(claim["editorial_basis"]["reviewer_actor"], decision[0])
             self.assertFalse(claim["editorial_basis"]["user_factual_review_claimed"])
             self.assertFalse(claim["editorial_basis"]["native_reviewer_event"])
             self.assertTrue(all(self.store.cite(c) for c in claim["citations"]))

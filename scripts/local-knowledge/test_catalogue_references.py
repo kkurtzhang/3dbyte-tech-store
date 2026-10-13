@@ -47,7 +47,13 @@ class CatalogueReferenceTests(unittest.TestCase):
                 "SELECT actor,decision FROM editorial_decisions WHERE record_id=? ORDER BY id DESC",
                 (claim["record_id"],),
             ).fetchone()
-            self.assertEqual(tuple(decision), (ACTOR, "accepted_for_local_development"))
+            self.assertEqual(
+                tuple(decision),
+                (
+                    claim["editorial_basis"]["reviewer_actor"],
+                    "accepted_for_local_development",
+                ),
+            )
 
     def test_replay_does_not_duplicate_identity_or_review_events(self):
         before = self.store.stats()

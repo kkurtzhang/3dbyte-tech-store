@@ -164,13 +164,33 @@ def frozen_v1_evidence(store):
         if hashlib.sha256(path.read_bytes()).hexdigest() != item["sha256"]:
             raise ValueError("Frozen v1 artifact changed; do not replace it")
     original = json.loads(Path(evidence["import_manifest"]["path"]).read_text())
-    actual = dict(
-        store.db.execute("SELECT record_key,revision FROM records WHERE active=1")
-    )
-    if actual != {
+    expected = {
         r["record_key"]: r["local_revision"] for r in original["record_inventory"]
-    }:
-        raise ValueError("Active record revisions differ from the frozen v1 scope")
+    }
+    actual = {
+        r["record_key"]: dict(r)
+        for r in store.db.execute(
+            "SELECT record_key,revision,payload FROM records WHERE active=1"
+        )
+    }
+    if set(actual) != set(expected):
+        raise ValueError("Active record scope differs from the frozen v1 inventory")
+    supersessions = []
+    for key, revision in expected.items():
+        row = actual[key]
+        if row["revision"] != revision:
+            if not store.verified_citation_repair(row, revision):
+                raise ValueError(
+                    "Unverified scope or factual revision differs from frozen v1"
+                )
+            supersessions.append(
+                {
+                    "record_key": key,
+                    "baseline_revision": revision,
+                    "active_revision": row["revision"],
+                }
+            )
+    evidence["verified_local_guide_supersessions"] = supersessions
     return evidence
 
 
