@@ -1,0 +1,506 @@
+{
+  "source_commit": "1132c55ef07ac376216c18ed7123c680f3585d09",
+  "snapshot_sha256": "cbea3dda56d181d4706900bd26c893e520057dfccbc8f76911c6813b223bdf22",
+  "cases": [
+    {
+      "key": "buildtak:pei-sheet",
+      "group": "catalogue_buildtak_pei235",
+      "name": "BuildTak PEI sheet 235 x 235 mm reference"
+    },
+    {
+      "key": "buildtak:spatula",
+      "group": "catalogue_buildtak_spatula",
+      "name": "BuildTak Spatula standard retailer reference"
+    },
+    {
+      "key": "fiberlogy:pp",
+      "group": "catalogue_fiberlogy_pp750",
+      "name": "Fiberlogy PP Graphite 1.75 mm 750 g reference"
+    },
+    {
+      "key": "micro-swiss:flowtech-cm2-nozzle",
+      "group": "catalogue_flowtech_cm2_04",
+      "name": "Micro Swiss FlowTech CM2 M2904-04 0.4 mm nozzle"
+    },
+    {
+      "key": "micro-swiss:flowtech-m3101",
+      "group": "catalogue_flowtech_m3101",
+      "name": "Micro Swiss FlowTech M3101 K1-family hotend"
+    },
+    {
+      "key": "magigoo:pp",
+      "group": "catalogue_magigoo_pp50",
+      "name": "Magigoo PP 50 mL external reference"
+    },
+    {
+      "key": "ldo:orbiter-v2.5",
+      "group": "catalogue_orbiter_v25",
+      "name": "LDO Orbiter v2.5 complete extruder reference"
+    },
+    {
+      "key": "polymaker:panchroma-basic-pla",
+      "group": "catalogue_panchroma_basic_black",
+      "name": "Polymaker Panchroma Basic PLA Black 1 kg with spool reference"
+    },
+    {
+      "key": "polymaker:petg-new-formula",
+      "group": "catalogue_polymaker_petg_black",
+      "name": "Polymaker PETG New Formula Black 1 kg reference"
+    },
+    {
+      "key": "slice:torque-wrench-1.5nm",
+      "group": "catalogue_slice_torque_15",
+      "name": "Slice Engineering 1.5 Nm nozzle torque wrench"
+    },
+    {
+      "key": "polymaker:polyflex-tpu95-hf",
+      "group": "five_E03",
+      "name": "Polymaker PolyFlex TPU95-HF Black 1.75mm 1kg"
+    },
+    {
+      "key": "polymaker:fiberon-pa6-cf20",
+      "group": "five_E04",
+      "name": "Polymaker Fiberon PA6-CF20 Black 1.75mm 500g"
+    },
+    {
+      "key": "magigoo:supergrip",
+      "group": "five_E08",
+      "name": "Magigoo Supergrip 50 mL"
+    },
+    {
+      "key": "slice:plastic-repellent-paint",
+      "group": "five_E09",
+      "name": "Slice Engineering Plastic Repellent Paint 3 mL"
+    },
+    {
+      "key": "e3d:v6-pro-socks",
+      "group": "five_E10",
+      "name": "E3D V6 Pro Silicone Socks (Pack of 3)"
+    },
+    {
+      "key": "prior_R01",
+      "group": "prior_R01",
+      "name": "Creality levelling nuts and springs \u2014 package reference"
+    },
+    {
+      "key": "prior_R03",
+      "group": "prior_R03",
+      "name": "Creality Ender-3 V3 SE/KE heated bed \u2014 ratings unresolved"
+    },
+    {
+      "key": "prior_R04",
+      "group": "prior_R04",
+      "name": "Creality K1 heat sink \u2014 original assembly reference"
+    },
+    {
+      "key": "prior_R05",
+      "group": "prior_R05",
+      "name": "Creality K1-series hotend cover \u2014 package reference"
+    },
+    {
+      "key": "prior_R06",
+      "group": "prior_R06",
+      "name": "Creality K1-series X-axis carriage \u2014 batch unresolved"
+    },
+    {
+      "key": "prior_R08",
+      "group": "prior_R08",
+      "name": "Creality K1 complete hotend with heat sink \u2014 supplier reference"
+    },
+    {
+      "key": "prior_R09",
+      "group": "prior_R09",
+      "name": "Creality K1 Unicorn heat sink \u2014 supplier reference"
+    },
+    {
+      "key": "prior_R11",
+      "group": "prior_R11",
+      "name": "Creality K1-series buckle-terminal hotend \u2014 supplier reference"
+    },
+    {
+      "key": "prior_R12",
+      "group": "prior_R12",
+      "name": "Creality K2 Plus ceramic hotend \u2014 ratings unresolved"
+    },
+    {
+      "key": "prior_R13",
+      "group": "prior_R13",
+      "name": "Creality K2 Plus hotend cover \u2014 package reference"
+    },
+    {
+      "key": "prior_R14",
+      "group": "prior_R14",
+      "name": "Creality K2 Plus nozzle-wipe module \u2014 package reference"
+    },
+    {
+      "key": "prior_R15",
+      "group": "prior_R15",
+      "name": "Creality K2 Plus toolhead loom \u2014 revision unresolved"
+    },
+    {
+      "key": "prior_R16",
+      "group": "prior_R16",
+      "name": "Creality K2 heater/thermistor breakout board \u2014 revision reference"
+    },
+    {
+      "key": "prior_R17",
+      "group": "prior_R17",
+      "name": "Creality K2 short hotend PCB cable \u2014 supplier reference"
+    },
+    {
+      "key": "prior_R18",
+      "group": "prior_R18",
+      "name": "Creality K2 toolhead nozzle PCB \u2014 supplier reference"
+    },
+    {
+      "key": "fiberlogy:abs",
+      "group": "catalogue_c100_fiberlogy_abs",
+      "name": "Fiberlogy ABS"
+    },
+    {
+      "key": "fiberlogy:abs-gf",
+      "group": "catalogue_c100_fiberlogy_absgf",
+      "name": "Fiberlogy ABS+GF"
+    },
+    {
+      "key": "fiberlogy:asa",
+      "group": "catalogue_c100_fiberlogy_asa",
+      "name": "Fiberlogy ASA"
+    },
+    {
+      "key": "fiberlogy:pctg",
+      "group": "catalogue_c100_fiberlogy_pctg",
+      "name": "Fiberlogy PCTG"
+    },
+    {
+      "key": "fiberlogy:pctg-cf10",
+      "group": "catalogue_c100_fiberlogy_pctgcf",
+      "name": "Fiberlogy PCTG+CF10"
+    },
+    {
+      "key": "fiberlogy:pctg-gf10",
+      "group": "catalogue_c100_fiberlogy_pctggf",
+      "name": "Fiberlogy PCTG+GF10"
+    },
+    {
+      "key": "bigtreetech:btt_sfs_v2",
+      "group": "catalogue_c100_btt_sfs_v2",
+      "name": "BIGTREETECH SFS V2.0 filament sensor"
+    },
+    {
+      "key": "bigtreetech:btt_skr_mini_e3_v3",
+      "group": "catalogue_c100_btt_skr_mini_e3_v3",
+      "name": "BIGTREETECH SKR Mini E3 V3.0"
+    },
+    {
+      "key": "bigtreetech:btt_manta_m8p_v2",
+      "group": "catalogue_c100_btt_manta_m8p_v2",
+      "name": "BIGTREETECH Manta M8P V2.0"
+    },
+    {
+      "key": "bigtreetech:btt_sb2209_stm32",
+      "group": "catalogue_c100_btt_sb2209_stm32",
+      "name": "BIGTREETECH EBB SB2209 CAN V1.0 STM32"
+    },
+    {
+      "key": "bigtreetech:btt_ebb36_gen2",
+      "group": "catalogue_c100_btt_ebb36_gen2",
+      "name": "BIGTREETECH EBB36 Gen2 V1.0"
+    },
+    {
+      "key": "bondtech:bondtech_lgx",
+      "group": "catalogue_c100_bondtech_lgx",
+      "name": "Bondtech LGX Large Gears Extruder"
+    },
+    {
+      "key": "bondtech:bondtech_lgx_lite_v2",
+      "group": "catalogue_c100_bondtech_lgx_lite_v2",
+      "name": "Bondtech LGX Lite V2 with motor"
+    },
+    {
+      "key": "phaetus:phaetus_dxc",
+      "group": "catalogue_c100_phaetus_dxc",
+      "name": "Phaetus DXC extruder"
+    },
+    {
+      "key": "bondtech:bondtech_lgx_lite_pro",
+      "group": "catalogue_c100_bondtech_lgx_lite_pro",
+      "name": "Bondtech LGX Lite PRO with motor"
+    },
+    {
+      "key": "phaetus:phaetus_rapido2f",
+      "group": "catalogue_c100_phaetus_rapido2f",
+      "name": "Phaetus Rapido 2F UHF PT1000"
+    },
+    {
+      "key": "phaetus:phaetus_dragonfly_bms",
+      "group": "catalogue_c100_phaetus_dragonfly_bms",
+      "name": "Phaetus Dragonfly BMS hotend"
+    },
+    {
+      "key": "bigtreetech:btt_eddy_duo",
+      "group": "catalogue_c100_btt_eddy_duo",
+      "name": "BIGTREETECH Eddy Duo probe"
+    },
+    {
+      "key": "ldo:ldo_leviathan_v13",
+      "group": "catalogue_c100_ldo_leviathan_v13",
+      "name": "LDO Leviathan V1.3 controller"
+    },
+    {
+      "key": "ldo:ldo_nitehawk36",
+      "group": "catalogue_c100_ldo_nitehawk36",
+      "name": "LDO Nitehawk-36 toolboard"
+    },
+    {
+      "key": "cartographer3d:cartographer_v4",
+      "group": "catalogue_c100_cartographer_v4",
+      "name": "Cartographer V4 AIO probe"
+    },
+    {
+      "key": "bondtech:bondtech_cht_mk8",
+      "group": "catalogue_c100_bondtech_cht_mk8",
+      "name": "Bondtech CHT MK8 coated brass nozzle"
+    },
+    {
+      "key": "bondtech:bondtech_cht_volcano",
+      "group": "catalogue_c100_bondtech_cht_volcano",
+      "name": "Bondtech CHT Volcano coated brass nozzle"
+    },
+    {
+      "key": "bondtech:bondtech_cht_reprap",
+      "group": "catalogue_c100_bondtech_cht_reprap",
+      "name": "Bondtech CHT RepRap M6 coated brass nozzle"
+    },
+    {
+      "key": "bondtech:bondtech_cht_bimetal",
+      "group": "catalogue_c100_bondtech_cht_bimetal",
+      "name": "Bondtech CHT BiMetal RepRap M6 nozzle"
+    },
+    {
+      "key": "e3d:e3d_roto_motor",
+      "group": "catalogue_c100_e3d_roto_motor",
+      "name": "E3D Roto motor"
+    },
+    {
+      "key": "bigtreetech:btt_skr_pico",
+      "group": "catalogue_c100_btt_skr_pico",
+      "name": "BIGTREETECH SKR Pico V1.0"
+    },
+    {
+      "key": "e3d:e3d_revo_six_cold",
+      "group": "catalogue_c100_e3d_revo_six_cold",
+      "name": "E3D Revo Six coldside kit"
+    },
+    {
+      "key": "e3d:e3d_obxidian_a1",
+      "group": "catalogue_c100_e3d_obxidian_a1",
+      "name": "E3D High Flow ObXidian A1 hotend"
+    },
+    {
+      "key": "bondtech:bondtech_lgx_gear",
+      "group": "catalogue_c100_bondtech_lgx_gear",
+      "name": "Bondtech LGX Primary Double Gear"
+    },
+    {
+      "key": "fiberlogy:pa12-cf15",
+      "group": "catalogue_c100_fiberlogy_pa12cf",
+      "name": "Fiberlogy PA12+CF15"
+    },
+    {
+      "key": "fiberlogy:pa12-gf15",
+      "group": "catalogue_c100_fiberlogy_pa12gf",
+      "name": "Fiberlogy PA12+GF15"
+    },
+    {
+      "key": "fiberlogy:bvoh",
+      "group": "catalogue_c100_fiberlogy_bvoh",
+      "name": "Fiberlogy BVOH soluble support"
+    },
+    {
+      "key": "fiberlogy:fiberflex-30d",
+      "group": "catalogue_c100_fiberlogy_fiberflex30d",
+      "name": "Fiberlogy FiberFlex 30D TPU"
+    },
+    {
+      "key": "fiberlogy:fiberflex-40d",
+      "group": "catalogue_c100_fiberlogy_fiberflex40d",
+      "name": "Fiberlogy FiberFlex 40D TPU"
+    },
+    {
+      "key": "fiberlogy:easy-abs",
+      "group": "catalogue_c100_fiberlogy_easyabs",
+      "name": "Fiberlogy Easy ABS"
+    },
+    {
+      "key": "3dxtech:carbonx-abs-cf10",
+      "group": "catalogue_c100_carbonx_abscf",
+      "name": "3DXTECH CarbonX ABS+CF10"
+    },
+    {
+      "key": "3dxtech:thermax-pei1010",
+      "group": "catalogue_c100_thermax_pei1010",
+      "name": "3DXTECH ThermaX PEI 1010"
+    },
+    {
+      "key": "3dxtech:thermax-pei9085",
+      "group": "catalogue_c100_thermax_pei9085",
+      "name": "3DXTECH ThermaX PEI 9085"
+    },
+    {
+      "key": "3dxtech:carbonx-pei9085-cf15",
+      "group": "catalogue_c100_carbonx_pei9085cf",
+      "name": "3DXTECH CarbonX PEI 9085+CF15"
+    },
+    {
+      "key": "formfutura:python-flex-98a",
+      "group": "catalogue_c100_pythonflex98a",
+      "name": "FormFutura Python Flex TPU 98A"
+    },
+    {
+      "key": "formfutura:aquasolve-pva",
+      "group": "catalogue_c100_aquasolve_pva",
+      "name": "FormFutura AquaSolve PVA"
+    },
+    {
+      "key": "colorfabb:varioshore-tpu-legacy92a",
+      "group": "catalogue_c100_colorfabb_varioshore",
+      "name": "colorFabb varioShore TPU legacy 92A foaming grade"
+    },
+    {
+      "key": "colorfabb:tpu85a",
+      "group": "catalogue_c100_colorfabb_tpu85a",
+      "name": "colorFabb TPU 85A"
+    },
+    {
+      "key": "colorfabb:tpu95a",
+      "group": "catalogue_c100_colorfabb_tpu95a",
+      "name": "colorFabb TPU 95A"
+    },
+    {
+      "key": "magigoo:magigoo_original",
+      "group": "catalogue_c100_magigoo_original",
+      "name": "Magigoo Original adhesive"
+    },
+    {
+      "key": "magigoo:magigoo_pa",
+      "group": "catalogue_c100_magigoo_pa",
+      "name": "Magigoo PA adhesive"
+    },
+    {
+      "key": "magigoo:magigoo_flex",
+      "group": "catalogue_c100_magigoo_flex",
+      "name": "Magigoo Flex adhesive"
+    },
+    {
+      "key": "magigoo:magigoo_ht",
+      "group": "catalogue_c100_magigoo_ht",
+      "name": "Magigoo Pro HT adhesive"
+    },
+    {
+      "key": "magigoo:magigoo_pc",
+      "group": "catalogue_c100_magigoo_pc",
+      "name": "Magigoo PC adhesive"
+    },
+    {
+      "key": "sunlu:sunlu_s2",
+      "group": "catalogue_c100_sunlu_s2",
+      "name": "SUNLU FilaDryer S2"
+    },
+    {
+      "key": "esun:esun_ebox_lite",
+      "group": "catalogue_c100_esun_ebox_lite",
+      "name": "eSUN eBOX Lite"
+    },
+    {
+      "key": "creality:creality_spacepi_plus",
+      "group": "catalogue_c100_creality_spacepi_plus",
+      "name": "Creality SpacePi Plus dryer"
+    },
+    {
+      "key": "ldo:ldo_heatinsert",
+      "group": "catalogue_c100_ldo_heatinsert",
+      "name": "LDO M3 heatset insert tool kit"
+    },
+    {
+      "key": "slice-engineering:slice_boron",
+      "group": "catalogue_c100_slice_boron",
+      "name": "Slice Engineering boron nitride paste"
+    },
+    {
+      "key": "slice-engineering:slice_desiccant",
+      "group": "catalogue_c100_slice_desiccant",
+      "name": "Slice Engineering filament drying desiccant"
+    },
+    {
+      "key": "cnc-kitchen:cnc_ts100",
+      "group": "catalogue_c100_cnc_ts100",
+      "name": "CNC Kitchen TS100/101 adapter tips set"
+    },
+    {
+      "key": "cnc-kitchen:cnc_deburrer",
+      "group": "catalogue_c100_cnc_deburrer",
+      "name": "CNC Kitchen deburrer with three blades"
+    },
+    {
+      "key": "creality:creality_spacepi",
+      "group": "catalogue_c100_creality_spacepi",
+      "name": "Creality SpacePi single-spool dryer"
+    },
+    {
+      "key": "creality:creality_spacepi_x4",
+      "group": "catalogue_c100_creality_spacepi_x4",
+      "name": "Creality SpacePi X4 dryer"
+    },
+    {
+      "key": "creality:creality_spacepi_x4l",
+      "group": "catalogue_c100_creality_spacepi_x4l",
+      "name": "Creality SpacePi X4L dryer"
+    },
+    {
+      "key": "sunlu:sunlu_e2",
+      "group": "catalogue_c100_sunlu_e2",
+      "name": "SUNLU FilaDryer E2 dryer and annealer"
+    },
+    {
+      "key": "bambu-lab:bambu_liquid_glue",
+      "group": "catalogue_c100_bambu_liquid_glue",
+      "name": "Bambu Lab liquid build-plate glue"
+    },
+    {
+      "key": "printdry:printdry_sc225",
+      "group": "catalogue_c100_printdry_sc225",
+      "name": "PrintDry smart vacuum filament container SC225"
+    },
+    {
+      "key": "printdry:printdry_lsk2003",
+      "group": "catalogue_c100_printdry_lsk2003",
+      "name": "PrintDry LSK2003 large-spool extension"
+    },
+    {
+      "key": "printdry:printdry_evc208",
+      "group": "catalogue_c100_printdry_evc208",
+      "name": "PrintDry EVC208-5 vacuum containers with electric pump"
+    },
+    {
+      "key": "printdry:printdry_fc305",
+      "group": "catalogue_c100_printdry_fc305",
+      "name": "PrintDry large non-vacuum filament container"
+    },
+    {
+      "key": "eibos:eibos_polyphemus",
+      "group": "catalogue_c100_eibos_polyphemus",
+      "name": "EIBOS Polyphemus rotating filament dryer"
+    },
+    {
+      "key": "cnc-kitchen:cnc_cleaning_wires",
+      "group": "catalogue_c100_cnc_cleaning_wires",
+      "name": "CNC Kitchen nozzle-cleaning wires 12-piece set"
+    },
+    {
+      "key": "ldo:ldo_leviathan_expansion",
+      "group": "catalogue_c100_ldo_leviathan_expansion",
+      "name": "LDO Leviathan expansion board"
+    }
+  ]
+}
