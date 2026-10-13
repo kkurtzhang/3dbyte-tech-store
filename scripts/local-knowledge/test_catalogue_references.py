@@ -4,7 +4,7 @@ import copy
 import json
 import unittest
 from unittest.mock import patch
-from activate_catalogue_references import ACTOR, prepared_records
+from activate_catalogue_references import ACTOR, SEED, prepared_records
 from catalogue_reference import catalogue_groups
 from local_store import Store
 from retrieval import Retriever
@@ -18,12 +18,13 @@ class CatalogueReferenceTests(unittest.TestCase):
         self.store.close()
 
     def test_new_rows_have_real_local_bindings_and_honest_review(self):
+        original_groups = {
+            entry["key"] for entry in json.loads(SEED.read_text())["entries"]
+        }
         rows = [
             json.loads(r["payload"])
             for r in self.store.rows()
-            if (json.loads(r["payload"]).get("group_key") or "").startswith(
-                "catalogue_"
-            )
+            if json.loads(r["payload"]).get("group_key") in original_groups
         ]
         self.assertEqual(len(rows), 80)
         self.assertEqual(sum(c["status"] == "supported" for c in rows), 32)

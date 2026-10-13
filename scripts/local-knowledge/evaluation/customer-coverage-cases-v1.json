@@ -1,0 +1,12 @@
+{
+  "measurement": "New customer intent coverage through actual deterministic local chat; no LLM-quality claim.",
+  "cases": [
+    {"id":"pla_enclosure","questions":["My Prusa MK3S prints PLA in a fully closed enclosure and stops extruding halfway through a long print. Is the enclosure relevant?"],"status":"source_grounded_context","required":[["N12","pla_closed_enclosure"]]},
+    {"id":"heatcreep_followup","questions":["I print PLA on a Prusa MK3S in a closed enclosure.","Could heat creep explain it, or does that prove the spool is wet?"],"status":"source_grounded_context","required":[["N12","diagnostic_scope"]]},
+    {"id":"dry_vs_anneal","questions":["For Fiberon PA6-CF20, is drying the spool for 16 hours the same operation as annealing the printed part?"],"status":"source_grounded_context","required":[["N13","drying_versus_annealing"]]},
+    {"id":"small_nozzle","questions":["My PA6-CF20 setup has a 0.2 mm hardened nozzle. Does that meet the manufacturer's minimum diameter requirement?"],"status":"source_grounded_context","required":[["N13","hardware_minimum"]]},
+    {"id":"supplier_bom_choice","questions":["Compare the 3DMakerParts supplier BOMs for Landy and Buggy/Buggster/Sandy: are the belt families and shock lengths different?"],"status":"source_grounded_context","required":[["N14","family_belts"],["N14","family_shocks"]]},
+    {"id":"kit_binding_remains_unknown","questions":["Do the exact included parts in DREMC WES2488 guarantee 85 mm shocks for my current model revision?"],"status":"unknown","unknown_fields":["exact_model_release_compatibility"]},
+    {"id":"unknown_load_rating","questions":["If I anneal PA6-CF20 as described, does that certify the load rating of my finished bracket?"],"status":"unknown","unknown_fields":["finished_part_load_rating"]}
+  ]
+}

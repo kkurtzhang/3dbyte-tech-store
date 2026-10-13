@@ -1,0 +1,334 @@
+{
+  "environment": "local_development",
+  "version": 1,
+  "source_capture_manifest": "followup-products-review-sources-v1.json",
+  "entries": [
+    {
+      "key": "catalogue_magigoo_pp50",
+      "title": "Magigoo PP 50 mL external reference",
+      "brand": "Magigoo",
+      "aliases": [
+        "\\bmagigoo\\s+(?:glide\\s+)?pp\\b",
+        "\\b5350583999921\\b"
+      ],
+      "source_scope": "DREMC Magigoo PP 50 mL retailer identity/SKU versus current Magigoo PP page using Glide PP wording. Current family application guidance is conditional; exact legacy bottle/formula mapping, grade and plate compatibility remain unverified.",
+      "facts": [
+        {
+          "field": "retailer_package_identity",
+          "value": "Captured DREMC reference: Magigoo PP 50 mL, retailer SKU 5350583999921. This code is not established as an official manufacturer MPN.",
+          "proofs": [
+            {
+              "source_key": "magigoo_pp_au",
+              "quote": "Magigoo PP 50ml 3D Printing Adhesive",
+              "json_pointer": "/title"
+            },
+            {
+              "source_key": "magigoo_pp_au",
+              "quote": "5350583999921",
+              "json_pointer": "/variants/0/sku"
+            }
+          ],
+          "query_pattern": "identity|sku|bottle|volume|50"
+        },
+        {
+          "field": "current_family_material_scope",
+          "value": "Current official PP page describes an adhesive for polypropylene and PP composites. It does not establish suitability for every filled grade or for PLA/PETG/nylon.",
+          "proofs": [
+            {
+              "source_key": "magigoo_pp_official",
+              "quote": "Polypropylene (PP) and PP composite filaments"
+            }
+          ],
+          "query_pattern": "material|polypropylene|composite|intended|pp filament"
+        },
+        {
+          "field": "current_application_cold_plate",
+          "value": "Current family guidance says to activate the nib on a cold build plate and spread a thin, even stripe; transfer of that procedure to the exact retailer bottle revision is unverified.",
+          "proofs": [
+            {
+              "source_key": "magigoo_pp_official",
+              "quote": "Press the nib against the cold build plate"
+            },
+            {
+              "source_key": "magigoo_pp_official",
+              "quote": "Spread one thin stripe back and forth"
+            }
+          ],
+          "query_pattern": "current.*appl|family.*appl|cold|layer|stripe"
+        },
+        {
+          "field": "current_cooling_release",
+          "value": "Current family guidance says to let the bed cool completely before removal. This is not a guaranteed release time or damage-free promise for an unspecified plate.",
+          "proofs": [
+            {
+              "source_key": "magigoo_pp_official",
+              "quote": "Let the bed cool completely"
+            }
+          ],
+          "query_pattern": "cool|release|remov"
+        },
+        {
+          "field": "retailer_non_pp_warning",
+          "value": "DREMC warns that using this PP adhesive with non-PP filaments may cause excessive adhesion and damage the build surface; retain this as a scoped retailer caution.",
+          "proofs": [
+            {
+              "source_key": "magigoo_pp_au",
+              "quote": "Using this product with other than PP type filaments might cause over adhesion and damage your build surface."
+            }
+          ],
+          "query_pattern": "pla|petg|nylon|non.pp|other material|all filament"
+        },
+        {
+          "field": "aud_reference_observation",
+          "value": "DREMC listing captured 13 October 2026: AUD39.95 including GST, shipping calculated separately. Dated external reference only, not a live 3D Byte Tech offer, stock or delivery confirmation.",
+          "proofs": [
+            {
+              "source_key": "magigoo_pp_au_page",
+              "quote": "$39.95 AUD"
+            },
+            {
+              "source_key": "magigoo_pp_au_page",
+              "quote": "Include GST"
+            },
+            {
+              "source_key": "magigoo_pp_au_page",
+              "quote": "Shipping calculated"
+            }
+          ],
+          "query_pattern": "(?:dated|reference|observed|captured).*(?:aud|price)|(?:aud|price).*(?:dated|reference|observed|captured)"
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "current_family_legacy_bottle_mapping",
+          "query_pattern": "legacy|formula|same.*(?:bottle|glide)|(?:apply|instructions).*(?:my|50 ml|50ml|50 mL)|(?:my|50 ml|50ml).*(?:apply|instructions)"
+        },
+        {
+          "field": "exact_fiberlogy_grade_compatibility",
+          "query_pattern": "fiberlogy|graphite|750"
+        },
+        {
+          "field": "exact_plate_compatibility",
+          "query_pattern": "bare|every.*plate|glass.*fit|pei.*fit|plate.*compatib"
+        },
+        {
+          "field": "official_manufacturer_mpn",
+          "query_pattern": "official.*(?:mpn|part number)|manufacturer.*(?:mpn|sku)|is.*5350583999921.*mpn"
+        },
+        {
+          "field": "release_damage_guarantee",
+          "query_pattern": "guarantee|damage.free|scratch.free|always release"
+        },
+        {
+          "field": "store_sale_price",
+          "query_pattern": "price|cost|how much"
+        },
+        {
+          "field": "physical_stock",
+          "query_pattern": "stock|available|availability"
+        },
+        {
+          "field": "delivery_estimate",
+          "query_pattern": "ship|deliver|dispatch"
+        },
+        {
+          "field": "actual_store_package_contents",
+          "query_pattern": "(?:your|our|3d byte|3dbyte|store).*(?:package|included|contents|bundle)"
+        }
+      ],
+      "guides": [
+        {
+          "field": "selection_guidance",
+          "value": "Choose this adhesive by its PP material scope rather than the Magigoo brand alone. The captured DREMC bottle is 50 mL; the current manufacturer page uses Glide PP wording and describes thin application on a cold plate followed by cooling before removal. The listing warns that non-PP use may over-adhere and damage a plate. Confirm the exact bottle revision, filament grade and plate combination; the references do not prove compatibility with the legacy Fiberlogy 750 g spool or a damage-free release.",
+          "proofs": [
+            {
+              "source_key": "magigoo_pp_official",
+              "quote": "Polypropylene (PP) and PP composite filaments"
+            },
+            {
+              "source_key": "magigoo_pp_official",
+              "quote": "Press the nib against the cold build plate"
+            },
+            {
+              "source_key": "magigoo_pp_au",
+              "quote": "Using this product with other than PP type filaments might cause over adhesion and damage your build surface."
+            }
+          ],
+          "query_pattern": "choose|choice|buy|select|consider|guidance|recommend"
+        }
+      ]
+    },
+    {
+      "key": "catalogue_flowtech_cm2_04",
+      "title": "Micro Swiss FlowTech CM2 M2904-04 0.4 mm nozzle",
+      "brand": "Micro Swiss",
+      "aliases": [
+        "\\bflowtech\\b.*\\bcm2\\b|\\bcm2\\b.*\\bflowtech\\b",
+        "\\bm2904-04\\b"
+      ],
+      "source_scope": "Exact 0.4 mm M2904-04 FlowTech CM2 variant matched in official and DREMC JSON. Manufacturer nozzle-only temperature rating and listed FlowTech hotend fit do not rate an entire printer, other nozzle interfaces or every abrasive grade.",
+      "facts": [
+        {
+          "field": "manufacturer_part_number",
+          "value": "M2904-04 is the official 0.4 mm FlowTech CM2 variant, also matched by the captured AU listing.",
+          "proofs": [
+            {
+              "source_key": "cm2_official",
+              "quote": "M2904-04",
+              "json_pointer": "/variants/0/sku"
+            },
+            {
+              "source_key": "cm2_official",
+              "quote": ".4mm",
+              "json_pointer": "/variants/0/title"
+            },
+            {
+              "source_key": "cm2_au",
+              "quote": "M2904-04",
+              "json_pointer": "/variants/0/sku"
+            }
+          ],
+          "query_pattern": "identity|mpn|sku|diameter|orifice|0[.]4"
+        },
+        {
+          "field": "body_material",
+          "value": "Manufacturer describes a Copper Chromium Zirconium nozzle body with electroless nickel plating.",
+          "proofs": [
+            {
+              "source_key": "cm2_official",
+              "quote": "Copper Chromium Zirconium body"
+            },
+            {
+              "source_key": "cm2_official",
+              "quote": "Plated with an Electroless Nickel Plating"
+            }
+          ],
+          "query_pattern": "body|material|copper|plating"
+        },
+        {
+          "field": "tip_material",
+          "value": "Manufacturer describes an M2 hardened high-speed-steel insert; this is a different nozzle construction from the current official M3101 package’s brass-plated default nozzle.",
+          "proofs": [
+            {
+              "source_key": "cm2_official",
+              "quote": "M2 Hardened High Speed Steel insert"
+            },
+            {
+              "source_key": "parent_hotend_official",
+              "quote": "1x FlowTech™ Brass Plated 0.4mm Nozzle"
+            }
+          ],
+          "query_pattern": "tip|steel|hardened|material|brass"
+        },
+        {
+          "field": "manufacturer_nozzle_temperature_rating",
+          "value": "The manufacturer lists a 450°C maximum for this nozzle family only. It does not establish a 450°C hotend, thermistor, printer or filament rating.",
+          "proofs": [
+            {
+              "source_key": "cm2_official",
+              "quote": "Max Temperature:\n450°C"
+            }
+          ],
+          "query_pattern": "nozzle.*temperature|temperature.*nozzle|rated|rating|maximum"
+        },
+        {
+          "field": "official_hotend_fit",
+          "value": "The official CM2 FlowTech fit list includes the M3101 FlowTech hotend for K1 / K1 Max / K1C; this does not establish fit in the original stock K1 hotend or V6/Revo/Unicorn interfaces.",
+          "proofs": [
+            {
+              "source_key": "cm2_official",
+              "quote": "FlowTech™ Hotend for Creality K1 / K1 Max / K1C (M3101)"
+            }
+          ],
+          "query_pattern": "fit|compatib|m3101|k1"
+        },
+        {
+          "field": "aud_reference_observation",
+          "value": "DREMC listing captured 13 October 2026: AUD44.45 including GST, shipping calculated separately. Dated external reference only, not a live 3D Byte Tech offer, stock or delivery confirmation.",
+          "proofs": [
+            {
+              "source_key": "cm2_au_page",
+              "quote": "$44.45 AUD"
+            },
+            {
+              "source_key": "cm2_au_page",
+              "quote": "Include GST"
+            },
+            {
+              "source_key": "cm2_au_page",
+              "quote": "Shipping calculated"
+            }
+          ],
+          "query_pattern": "(?:dated|reference|observed|captured).*(?:aud|price)|(?:aud|price).*(?:dated|reference|observed|captured)"
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "other_nozzle_interface_fit",
+          "query_pattern": "v6|revo|unicorn|stock.*(?:k1|hotend)|original.*(?:k1|hotend)|every hotend|any hotend"
+        },
+        {
+          "field": "whole_hotend_450c_capability",
+          "query_pattern": "450.*(?:hotend|printer|m3101)|(?:hotend|printer|m3101).*450|entire.*rating|raise.*temperature"
+        },
+        {
+          "field": "all_abrasive_grade_suitability",
+          "query_pattern": "every.*(?:abrasive|material)|all.*abrasive|fiberon|pa6|cf20"
+        },
+        {
+          "field": "different_orifice_binding",
+          "query_pattern": "0[.]6|0[.]8|1[.]0|m2904-06|m2904-08|m2904-10|high.flow|\\bcht\\b"
+        },
+        {
+          "field": "store_sale_price",
+          "query_pattern": "price|cost|how much"
+        },
+        {
+          "field": "physical_stock",
+          "query_pattern": "stock|available|availability"
+        },
+        {
+          "field": "delivery_estimate",
+          "query_pattern": "ship|deliver|dispatch"
+        },
+        {
+          "field": "actual_store_package_contents",
+          "query_pattern": "(?:your|our|3d byte|3dbyte|store).*(?:package|included|contents|bundle)"
+        }
+      ],
+      "guides": [
+        {
+          "field": "selection_guidance",
+          "value": "Select the exact M2904-04 0.4 mm FlowTech CM2 variant by its opening and proprietary hotend fit. Its hardened M2 insert differs from the hotend’s default brass-plated nozzle. The nozzle’s listed 450°C maximum does not raise the M3101 hotend’s manufacturer 300°C limit. Keep original-stock K1, V6/Revo/Unicorn interchangeability and every-material abrasive suitability unresolved. Other CM2 diameters and CHT versions require separate identity binding.",
+          "proofs": [
+            {
+              "source_key": "cm2_official",
+              "quote": "M2 Hardened High Speed Steel insert"
+            },
+            {
+              "source_key": "cm2_official",
+              "quote": "Max Temperature:\n450°C"
+            },
+            {
+              "source_key": "cm2_official",
+              "quote": "FlowTech™ Hotend for Creality K1 / K1 Max / K1C (M3101)"
+            },
+            {
+              "source_key": "parent_hotend_official",
+              "quote": "300°C Max Temperature:"
+            },
+            {
+              "source_key": "parent_hotend_official",
+              "quote": "1x FlowTech™ Brass Plated 0.4mm Nozzle"
+            }
+          ],
+          "query_pattern": "choose|choice|buy|select|consider|guidance|recommend"
+        }
+      ],
+      "generic_parent_reference_group": "catalogue_flowtech_m3101"
+    }
+  ],
+  "retailer_own_brand_excluded": true,
+  "live_offers": false,
+  "native_export": false
+}

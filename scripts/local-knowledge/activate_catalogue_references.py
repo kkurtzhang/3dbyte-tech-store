@@ -11,8 +11,11 @@ SEED = Path(__file__).resolve().parent / "evaluation/catalogue-seed-v1.json"
 ACTOR = "codex_local_catalogue_source_review"
 
 
-def prepared_records(store):
-    seed = json.loads(SEED.read_text())
+def prepared_records(store, seed_path=SEED):
+    seed_path = Path(seed_path).resolve()
+    if not seed_path.is_relative_to(SEED.parent.resolve()):
+        raise ValueError("Seed must be in the repository evaluation directory")
+    seed = json.loads(seed_path.read_text())
     assert seed["environment"] == SCOPE and seed["retailer_own_brand_excluded"]
     assert not seed["live_offers"] and not seed["native_export"]
     manifest = json.loads(
@@ -34,11 +37,19 @@ def prepared_records(store):
             "Slice Engineering",
             "BuildTak",
             "Fiberlogy",
+            "Magigoo",
         }
+        related_children = {
+            item["group_key"]
+            for row in store.db.execute("SELECT payload FROM records WHERE active=1")
+            if (item := json.loads(row[0])).get("generic_parent_reference_group") == key
+        }
+        # A separately reviewed related nozzle is not the hotend identity it fits.
         duplicates = [
             p["id"]
             for p in old_products
             if p["group_key"] != key
+            and p["group_key"] not in related_children
             and any(
                 re.search(pattern, p["title"], re.I) for pattern in entry["aliases"]
             )
@@ -133,6 +144,15 @@ def prepared_records(store):
             "native_approval": None,
             "source_scope": entry["source_scope"],
             "reference_aliases": entry["aliases"],
+            **(
+                {
+                    "generic_parent_reference_group": entry[
+                        "generic_parent_reference_group"
+                    ]
+                }
+                if entry.get("generic_parent_reference_group")
+                else {}
+            ),
             "factual_decision_basis": basis,
             "explicit_unknowns": {x["field"]: None for x in entry["unknowns"]},
         }
@@ -160,7 +180,7 @@ def prepared_records(store):
     return records, guides, entities, duplicate_checks, manifest
 
 
-def activate(name):
+def activate(name, seed_path=SEED):
     output = ROOT / "reports" / name
     if Path(name).name != name or not name.endswith(".json") or output.exists():
         raise ValueError("New JSON report basename required")
@@ -181,7 +201,9 @@ def activate(name):
             store.db.backup(target)
         finally:
             target.close()
-        records, guides, entities, duplicates, sources = prepared_records(store)
+        records, guides, entities, duplicates, sources = prepared_records(
+            store, seed_path
+        )
         document_result = store.ingest(records, actor=ACTOR, local_references=entities)
         guide_result = store.ingest(guides, actor=ACTOR, local_references=entities)
         for key, revision in previous.items():
@@ -248,4 +270,8 @@ def activate(name):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--report", required=True)
-    activate(parser.parse_args().report)
+    parser.add_argument("--seed", default=SEED.name)
+    args = parser.parse_args()
+    if Path(args.seed).name != args.seed:
+        raise ValueError("Seed basename required")
+    activate(args.report, SEED.parent / args.seed)

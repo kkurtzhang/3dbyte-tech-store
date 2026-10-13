@@ -1,5 +1,7 @@
 # Local knowledge chat preview
 
+The newest offline coverage and two-product follow-up is documented in [COVERAGE-FOLLOWUP.md](COVERAGE-FOLLOWUP.md).
+
 The latest six-product expansion, current counts and offline validation are documented in [CATALOGUE-EXPANSION.md](CATALOGUE-EXPANSION.md). Preview services are stopped.
 
 This branch adds a development-only source retrieval path to the existing storefront chatbot. It uses the existing dedicated SQLite corpus on the external SSD, FTS5 and corpus-trained LSA vectors. It makes no language-model calls and does not provide live store prices, stock, delivery dates or native approval.

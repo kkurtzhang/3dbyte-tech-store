@@ -1,0 +1,272 @@
+{
+  "measurement": "Actual offline route plus persisted retrieval for preserved draft and two new identities. Component fixture bytes remain unchanged.",
+  "cases": [
+    {
+      "id": "pla_enclosure",
+      "questions": [
+        "My Prusa MK3S prints PLA in a fully closed enclosure and stops extruding halfway through a long print. Is the enclosure relevant?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "N12",
+          "pla_closed_enclosure"
+        ]
+      ]
+    },
+    {
+      "id": "heatcreep_followup",
+      "questions": [
+        "I print PLA on a Prusa MK3S in a closed enclosure.",
+        "Could heat creep explain it, or does that prove the spool is wet?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "N12",
+          "diagnostic_scope"
+        ]
+      ]
+    },
+    {
+      "id": "dry_vs_anneal",
+      "questions": [
+        "For Fiberon PA6-CF20, is drying the spool for 16 hours the same operation as annealing the printed part?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "N13",
+          "drying_versus_annealing"
+        ]
+      ]
+    },
+    {
+      "id": "small_nozzle",
+      "questions": [
+        "My PA6-CF20 setup has a 0.2 mm hardened nozzle. Does that meet the manufacturer's minimum diameter requirement?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "N13",
+          "hardware_minimum"
+        ]
+      ]
+    },
+    {
+      "id": "supplier_bom_choice",
+      "questions": [
+        "Compare the 3DMakerParts supplier BOMs for Landy and Buggy/Buggster/Sandy: are the belt families and shock lengths different?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "N14",
+          "family_belts"
+        ],
+        [
+          "N14",
+          "family_shocks"
+        ]
+      ]
+    },
+    {
+      "id": "kit_binding_remains_unknown",
+      "questions": [
+        "Do the exact included parts in DREMC WES2488 guarantee 85 mm shocks for my current model revision?"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "exact_model_release_compatibility"
+      ]
+    },
+    {
+      "id": "unknown_load_rating",
+      "questions": [
+        "If I anneal PA6-CF20 as described, does that certify the load rating of my finished bracket?"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "finished_part_load_rating"
+      ]
+    },
+    {
+      "id": "pp_identity",
+      "questions": [
+        "What is the captured retailer bottle identity for Magigoo PP 50 mL?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_magigoo_pp50_source",
+          "retailer_package_identity"
+        ]
+      ]
+    },
+    {
+      "id": "pp_family",
+      "questions": [
+        "What material scope does the current Magigoo PP family describe?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_magigoo_pp50_source",
+          "current_family_material_scope"
+        ]
+      ]
+    },
+    {
+      "id": "pp_application",
+      "questions": [
+        "What current family application guidance does Magigoo PP give for a cold plate?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_magigoo_pp50_source",
+          "current_application_cold_plate"
+        ]
+      ]
+    },
+    {
+      "id": "pp_pla_warning",
+      "questions": [
+        "What does the retailer warn about using Magigoo PP with PLA?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_magigoo_pp50_source",
+          "retailer_non_pp_warning"
+        ]
+      ]
+    },
+    {
+      "id": "pp_legacy_mapping",
+      "questions": [
+        "Is my legacy Magigoo PP 50 mL bottle the same formula as Glide PP?"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "current_family_legacy_bottle_mapping"
+      ]
+    },
+    {
+      "id": "pp_exact_grade",
+      "questions": [
+        "Is Magigoo PP compatibility with legacy Fiberlogy Graphite 750 g verified?"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "exact_fiberlogy_grade_compatibility"
+      ]
+    },
+    {
+      "id": "pp_price",
+      "questions": [
+        "What dated reference AUD price was observed for Magigoo PP?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_magigoo_pp50_source",
+          "aud_reference_observation"
+        ]
+      ]
+    },
+    {
+      "id": "pp_live_price",
+      "questions": [
+        "What is your current sale price for Magigoo PP?"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "store_sale_price"
+      ]
+    },
+    {
+      "id": "cm2_identity",
+      "questions": [
+        "What diameter and manufacturer part number identify M2904-04?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_flowtech_cm2_04_source",
+          "manufacturer_part_number"
+        ]
+      ]
+    },
+    {
+      "id": "cm2_tip",
+      "questions": [
+        "What is the hardened tip material of the FlowTech CM2 nozzle?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_flowtech_cm2_04_source",
+          "tip_material"
+        ]
+      ]
+    },
+    {
+      "id": "cm2_fit",
+      "questions": [
+        "Does the M2904-04 FlowTech CM2 nozzle fit the M3101 FlowTech hotend?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_flowtech_cm2_04_source",
+          "official_hotend_fit"
+        ]
+      ]
+    },
+    {
+      "id": "cm2_whole_rating",
+      "questions": [
+        "Does a FlowTech CM2 nozzle raise the entire hotend temperature rating to 450C?"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "whole_hotend_450c_capability"
+      ]
+    },
+    {
+      "id": "cm2_other_interface",
+      "questions": [
+        "Can I put the FlowTech CM2 M2904-04 nozzle into a V6 hotend?"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "other_nozzle_interface_fit"
+      ]
+    },
+    {
+      "id": "cm2_dated_price",
+      "questions": [
+        "What dated reference AUD price was observed for M2904-04?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_flowtech_cm2_04_source",
+          "aud_reference_observation"
+        ]
+      ]
+    },
+    {
+      "id": "cm2_variant",
+      "questions": [
+        "Does this M2904-04 reference also identify the 0.6 mm CM2 nozzle?"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "different_orifice_binding"
+      ]
+    }
+  ]
+}

@@ -11,6 +11,7 @@ import {
 
 import { resolveLocalKnowledgeFocus } from "./local-knowledge-focus";
 import { resolveLocalRetailerFocus } from "./local-retailer-reference-focus";
+import { supplierBomComparisonRequested } from "./supplier-bom-intent";
 import { officialResourceRequested } from "./official-resource-intent";
 import {
   resolveThreeDSetsResources,
@@ -127,7 +128,11 @@ export async function handleLocalKnowledgeChat(
             { role: "user" as const, content: "3D Sets. " + question },
           ])
         : null);
-    if (resources && (!retailerFocus || wantsResource))
+    if (
+      resources &&
+      (!retailerFocus || wantsResource) &&
+      !supplierBomComparisonRequested(question)
+    )
       return streamThreeDSetsResources(resources);
     const focus = retailerFocus ?? resolveLocalKnowledgeFocus(body.messages);
     const context =

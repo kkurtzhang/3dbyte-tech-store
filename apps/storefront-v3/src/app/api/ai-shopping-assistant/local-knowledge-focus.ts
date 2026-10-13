@@ -67,7 +67,14 @@ function text(message: Message): string {
   ).trim();
 }
 function mentions(question: string): Subject[] {
-  return subjects.filter((subject) => subject.pattern.test(question));
+  const matched = subjects.filter((subject) => subject.pattern.test(question));
+  // A named CM2 nozzle should not inherit the generic FlowTech hotend alias.
+  const namedCm2 = matched.some(
+    (subject) => subject.groupKey === "catalogue_flowtech_cm2_04",
+  );
+  return namedCm2 && !/\bm3101\b/i.test(question)
+    ? matched.filter((subject) => subject.groupKey !== "catalogue_flowtech_m3101")
+    : matched;
 }
 function topic(question: string): string | undefined {
   if (/\b(?:dry|drying|dryer)\b/i.test(question)) return "drying";

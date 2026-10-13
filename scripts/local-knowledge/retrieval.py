@@ -15,6 +15,7 @@ from retailer_reference import (
     PREFIX as RETAILER_PREFIX,
 )
 from catalogue_reference import catalogue_groups, answer_catalogue_reference, PREFIX as CATALOGUE_PREFIX
+from customer_coverage import answer_customer_coverage
 from collections import Counter
 import numpy as np
 from local_store import ROOT, Store, digest, SCOPE
@@ -325,6 +326,9 @@ class Retriever:
         )
         if retailer_reply is not None:
             return retailer_reply
+        coverage_reply = answer_customer_coverage(self.store, question, group_key, result)
+        if coverage_reply is not None:
+            return coverage_reply
         if live_commerce_requested(q):
             return {
                 **result,

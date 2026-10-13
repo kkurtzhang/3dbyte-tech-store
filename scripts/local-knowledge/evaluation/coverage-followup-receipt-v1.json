@@ -1,0 +1,251 @@
+{
+  "environment": "local_development",
+  "base_commit": "c9e6c17665284a0e144c45fe6f86691398d8671b",
+  "branch": "fix/knowledge-coverage-followup-20261013",
+  "before": {
+    "products": 29,
+    "records": 68,
+    "documents": 47,
+    "guides": 21,
+    "variants": 29,
+    "sources": 88,
+    "claims": 383,
+    "supported_claims": 144,
+    "unknown_claims": 179,
+    "local_editorial_decisions": 125,
+    "environment": "local_development",
+    "native_approvals": 0
+  },
+  "after": {
+    "products": 31,
+    "records": 75,
+    "documents": 49,
+    "guides": 26,
+    "variants": 31,
+    "sources": 98,
+    "claims": 428,
+    "supported_claims": 156,
+    "unknown_claims": 204,
+    "local_editorial_decisions": 134,
+    "environment": "local_development",
+    "native_approvals": 0
+  },
+  "new_product_identities": 2,
+  "new_source_documents": 2,
+  "new_guides": 5,
+  "new_supported_facts": 12,
+  "new_unknown_claims": 25,
+  "new_editorial_claims": 8,
+  "new_source_versions": 10,
+  "preserved_prior_record_revisions": 68,
+  "sources_consulted": [
+    {
+      "id": "local_source_catalogue_flowtech_official_6b5771d204e8",
+      "source_url": "https://store.micro-swiss.com/products/micro-swiss-flowtech-hotend-for-creality-k1-k1-max.js",
+      "sha256": "6b5771d204e8b43ec5d11935cf6999cb7610594cb18b3cd2596cd508ab09a7cd",
+      "text_sha256": "e634cef998259dba6c2533200a8af54af54ef0424e9359dab94c2fe7c2f02250",
+      "captured_at": "2026-10-13T10:04:43.638333+00:00"
+    },
+    {
+      "id": "local_source_coverage_polymaker_annealing_b1e3ea1648dc",
+      "source_url": "https://wiki.polymaker.com/printing-tips/post-processing/annealing",
+      "sha256": "b1e3ea1648dc22274f9b2856aae4b25d38cc3fdac3dd508aa5f8bb668d89dcea",
+      "text_sha256": "e8dc495b5fc5155af461b3864b59f2f9e8e99f9a4dbad46bd10c5eb20c0ab9e3",
+      "captured_at": "2026-10-13T09:41:03.446604+00:00"
+    },
+    {
+      "id": "local_source_coverage_prusa_heat_creep_ebbd7f8d1952",
+      "source_url": "https://help.prusa3d.com/article/extrusion-stopped-mid-print-heat-creep_1948",
+      "sha256": "ebbd7f8d1952892ecfe9262e553aac627958d819a57ab417be4dde992ceb28b6",
+      "text_sha256": "5dca6a9dec1b57d9510ed1353f611aaa803d00976d1682b0de90bca9179a7389",
+      "captured_at": "2026-10-13T09:41:02.385743+00:00"
+    },
+    {
+      "id": "local_source_coverage_supplier_1508133208_3a9d44bf986f",
+      "source_url": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSuP7sOs7YcksDub19YNV6CW42fZsIbm_ek2tLsfw0R8viqZ74uNQgjqtfSKPqf9BbAW2oPxOxdrXC0/pubhtml/sheet?headers=false&gid=1508133208",
+      "sha256": "3a9d44bf986f6bd94c3acb757709f9965fc313f88a66c7201830c604540bdc7f",
+      "text_sha256": "a318abcc9cc094f28ce2d03c98f0b3556b27f913261752e486744e745cda6895",
+      "captured_at": "2026-10-13T07:40:28.858915+00:00"
+    },
+    {
+      "id": "local_source_coverage_supplier_18408003_1121adf89b2b",
+      "source_url": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSuP7sOs7YcksDub19YNV6CW42fZsIbm_ek2tLsfw0R8viqZ74uNQgjqtfSKPqf9BbAW2oPxOxdrXC0/pubhtml/sheet?headers=false&gid=18408003",
+      "sha256": "1121adf89b2bd63c83d9090964f0fb2d2856fd53595e4279aa5147a42ca85c4e",
+      "text_sha256": "96e744b931b3e55f28c6a97e810d11d1fe229fe368fc662c7db65c3bbdcc0813",
+      "captured_at": "2026-10-13T07:40:29.442748+00:00"
+    },
+    {
+      "id": "local_source_five_pa-shop",
+      "source_url": "https://shop.polymaker.com/products/fiberon-pa6-cf20?variant=43596329287737",
+      "sha256": "cc844a7a4a7eb02285e2792a63bf5ab7b976d90c2e792f9e2d61fd3baa867c57",
+      "text_sha256": "9866d22802a8895d4a4c33f67a81cd87fd3a4856fa2887e326bf1fcd3b30b6df",
+      "captured_at": "2026-10-11T03:11:53.934044+00:00"
+    },
+    {
+      "id": "local_source_five_pa-tds",
+      "source_url": "https://fiberon.polymaker.com/wp-content/uploads/TDS_FIBERON-PA6-CF20_V1.1_EN.pdf",
+      "sha256": "f065e0e27b44344da381f7edde481da7dd126b1b9d3da4ed0b5054862256b8b4",
+      "text_sha256": "06448cee6929357f4412622e74a2ba8e420cf1159b317d6c5be5e6da4343220c",
+      "captured_at": "2026-10-11T03:11:51.946146+00:00"
+    },
+    {
+      "id": "local_source_followup_cm2_au_fa9e30a35577",
+      "source_url": "https://store.dremc.com.au/products/micro-swiss-cm2-nozzle-for-flowtech%E2%84%A2-hotend.js",
+      "sha256": "fa9e30a355774487194964744f0eb679ac9ba8cbdd545656eee5bbfe5dadf4fd",
+      "text_sha256": "ff50125cf088735581126b30e4bcee2bfe4c83709e15c9610f2dc77941710fff",
+      "captured_at": "2026-10-13T10:36:08.922059+00:00"
+    },
+    {
+      "id": "local_source_followup_cm2_au_page_18c865afff35",
+      "source_url": "https://store.dremc.com.au/products/micro-swiss-cm2-nozzle-for-flowtech%E2%84%A2-hotend",
+      "sha256": "18c865afff35242634bef92606e78c0dfb381363b5e57b2939831f5baacda8d7",
+      "text_sha256": "376c43f542bbc8d47cbeba59b23f9f4bbe84cb84e014ea5bb28c1f2ad85ccd61",
+      "captured_at": "2026-10-13T10:36:09.663831+00:00"
+    },
+    {
+      "id": "local_source_followup_cm2_official_2af7455fe266",
+      "source_url": "https://store.micro-swiss.com/products/micro-swiss-cm2-nozzle-for-flowtech-hotend.js",
+      "sha256": "2af7455fe266e36270e82b8450b918e881cf65e061c5140832fe5203ee518494",
+      "text_sha256": "e752e66effece9a03109a9df030246d20f8270a87de79d3dbb18eba13af20473",
+      "captured_at": "2026-10-13T10:36:08.413608+00:00"
+    },
+    {
+      "id": "local_source_followup_magigoo_pp_au_a99cd55cf7a1",
+      "source_url": "https://store.dremc.com.au/products/magigoo-pp-50ml.js",
+      "sha256": "a99cd55cf7a101401c6f9f8332bc3326aec9e78135e7ab323743aaafbd156c77",
+      "text_sha256": "58bbae2aeee0ad1c693eef65441bb0f8b6f1256cfa8e61b4d7c4fcb1816c3222",
+      "captured_at": "2026-10-13T10:36:07.988053+00:00"
+    },
+    {
+      "id": "local_source_followup_magigoo_pp_au_page_00e329acd801",
+      "source_url": "https://store.dremc.com.au/products/magigoo-pp-50ml",
+      "sha256": "00e329acd801c4cd4778a39d760eea3633390c9cafb7118934d7eae389d35cb1",
+      "text_sha256": "e38930b817bfb1dd6e7603ef05a4edc805b655876231a2186f4f96ae4e30b4b6",
+      "captured_at": "2026-10-13T10:36:08.678377+00:00"
+    },
+    {
+      "id": "local_source_followup_magigoo_pp_official_cd873237048e",
+      "source_url": "https://magigoo.com/products/magigoo-pp/",
+      "sha256": "cd873237048e124d23db31b2f13130a898d722abf329dde44d773664d4fe4ee8",
+      "text_sha256": "d11199e87f9005d0179f509f28896d46e36a4da598a6fed86473688ec0e1851c",
+      "captured_at": "2026-10-13T10:36:08.643456+00:00"
+    }
+  ],
+  "new_source_ids": [
+    "local_source_coverage_polymaker_annealing_b1e3ea1648dc",
+    "local_source_coverage_prusa_heat_creep_ebbd7f8d1952",
+    "local_source_coverage_supplier_1508133208_3a9d44bf986f",
+    "local_source_coverage_supplier_18408003_1121adf89b2b",
+    "local_source_followup_cm2_au_fa9e30a35577",
+    "local_source_followup_cm2_au_page_18c865afff35",
+    "local_source_followup_cm2_official_2af7455fe266",
+    "local_source_followup_magigoo_pp_au_a99cd55cf7a1",
+    "local_source_followup_magigoo_pp_au_page_00e329acd801",
+    "local_source_followup_magigoo_pp_official_cd873237048e"
+  ],
+  "new_records": [
+    {
+      "id": "local_dev_guide_N12",
+      "record_key": "N12",
+      "revision": "69182fc19ad93cf7e42771509c454219bda0b899a612b698d67eb35b0c030e4f"
+    },
+    {
+      "id": "local_dev_guide_N13",
+      "record_key": "N13",
+      "revision": "6e4374c9291e07aebca566d94698dec8b09346187008f71b47a9a6ac9033d6c0"
+    },
+    {
+      "id": "local_dev_guide_N14",
+      "record_key": "N14",
+      "revision": "654da947c30bbae749853ce558057f22fe94a511eed181510cb5d0e500c84e34"
+    },
+    {
+      "id": "local_dev_document_catalogue_magigoo_pp50",
+      "record_key": "catalogue_magigoo_pp50_source",
+      "revision": "820c1a4e8fe9e23137335103ebdb4bbed28e3a8710446d69ca8405fc25eb5593"
+    },
+    {
+      "id": "local_dev_guide_catalogue_magigoo_pp50",
+      "record_key": "catalogue_magigoo_pp50_guide",
+      "revision": "8b3b1fa7582ab7140dee76360aa6244e75ab352bf90513974ce2eb34bdbb91c0"
+    },
+    {
+      "id": "local_dev_document_catalogue_flowtech_cm2_04",
+      "record_key": "catalogue_flowtech_cm2_04_source",
+      "revision": "f8d53dab709667fa74b8f0c924c84e8fe6dc7e93b7b3829f3623cf0efea60c11"
+    },
+    {
+      "id": "local_dev_guide_catalogue_flowtech_cm2_04",
+      "record_key": "catalogue_flowtech_cm2_04_guide",
+      "revision": "b82fd139c8abaa8dd24fd2517677c1bab73d6d1eac323e41c13f9dac456b8bdd"
+    }
+  ],
+  "preserved_original_draft_fixture_sha256": "990055e0f51f689e37f08410dbdf3f3d3cb795f610e5b7a09cf315c22c4a61e6",
+  "original_evaluator_archive_sha256": "a5b2c00be2f6c6c5073fa693fa26541e91a676ded18c91aa07dc4eb2e7cb8352",
+  "combined_fixture_sha256": "5963aa92626fda6175fcfbfa25993173c8a2c7392e0f660bb0a8ab4e59f97d95",
+  "followup_seed_sha256": "a894845f111820ea76c4df3225dace17dfb8cc6f46e2718d07832690c3326193",
+  "draft_baseline": {
+    "passed": 1,
+    "total": 7,
+    "mode": "actual pre-guide offline route and current six-product corpus"
+  },
+  "draft_final": {
+    "passed": 7,
+    "total": 7
+  },
+  "new_product_baseline": {
+    "passed": 0,
+    "total": 15,
+    "mode": "recovered isolated actual pre-activation snapshot, final route code; original capture failed at503; not independent heldout evidence"
+  },
+  "baseline_recovery": {
+    "kind": "isolated_copy_of_real_pre_activation_snapshot",
+    "source_backup": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/exports/followup-catalogue-activation-v1-before.sqlite3",
+    "source_sha256": "20d660044e048d6df165c334e431807a0f4d4ad6816bf29c7e649a9e3bf91b4d",
+    "clone_database_sha256": "20d660044e048d6df165c334e431807a0f4d4ad6816bf29c7e649a9e3bf91b4d",
+    "active_database_restored_or_deleted": false,
+    "recovered_after_initial_capture_returned_503": true,
+    "uses_final_route_code": true,
+    "not_an_independent_heldout_measurement": true
+  },
+  "new_product_final": {
+    "passed": 15,
+    "total": 15
+  },
+  "combined_final": {
+    "passed": 22,
+    "total": 22,
+    "transport": "actual chat handler plus real persisted Python retrieval over stdin/stdout; no HTTP listener or generation model"
+  },
+  "python_tests": {
+    "passed": 50,
+    "failed": 0
+  },
+  "jest_tests": {
+    "passed": 78,
+    "failed": 0,
+    "suites": 7
+  },
+  "ruff_F_E9": "passed",
+  "source_and_test_types": "passed",
+  "canonical_types": "pre-existing generated .next/dev layout React 18/19 peer mismatch; parent integration owns fix",
+  "configured_eslint": "exit0; six changed TypeScript files ignored by JavaScript-only configuration",
+  "native_approvals": 0,
+  "user_factual_review_claimed": false,
+  "staging_writes": 0,
+  "paid_or_generation_model_calls": 0,
+  "dependency_changes": false,
+  "new_credentials_access": false,
+  "preview_listeners": [
+    {
+      "port": 3005,
+      "no_listener": true
+    },
+    {
+      "port": 8873,
+      "no_listener": true
+    }
+  ],
+  "three_d_sets_guides_faqs": "link-only, no copied/embedded/indexed build content",
+  "known_historical_capture_loss": "five unavailable old raw versions preserved as unavailable, not reconstructed or actively cited"
+}

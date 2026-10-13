@@ -8,6 +8,7 @@ PREFIX = "catalogue_"
 
 def catalogue_groups(question, store):
     groups = set()
+    matched = []
     for row in store.db.execute("SELECT payload FROM records WHERE active=1"):
         record = json.loads(row[0])
         group = record.get("group_key") or ""
@@ -16,6 +17,26 @@ def catalogue_groups(question, store):
             for pattern in record.get("reference_aliases", [])
         ):
             groups.add(group)
+            matched.append(record)
+    for record in matched:
+        parent = record.get("generic_parent_reference_group")
+        if parent not in groups:
+            continue
+        identities = [
+            json.loads(row["payload"])["value"]
+            for row in store.rows()
+            if json.loads(row["payload"]).get("group_key") == parent
+            and json.loads(row["payload"])["field"] == "manufacturer_part_number"
+        ]
+        explicit_parent = any(
+            re.search(r"\b" + re.escape(value) + r"\b", question, re.I)
+            for value in identities
+            if value
+        )
+        if not explicit_parent or re.search(
+            r"\bfit\b|compatible|compatibility", question, re.I
+        ):
+            groups.discard(parent)
     return sorted(groups)
 
 

@@ -1,5 +1,7 @@
 // Public reference identities only; these never select a commerce supplier variant.
 const catalogueIds = {
+  magigooPp: "catalogue_magigoo_pp50",
+  flowtechCm2: "catalogue_flowtech_cm2_04",
   flowtech: "catalogue_flowtech_m3101",
   orbiter: "catalogue_orbiter_v25",
   sliceTorque: "catalogue_slice_torque_15",
@@ -9,6 +11,16 @@ const catalogueIds = {
 } as const;
 
 export const catalogueSubjects = [
+  {
+    name: "Magigoo PP 50 mL",
+    pattern: /\bmagigoo\s+(?:glide\s+)?pp\b|\b5350583999921\b/i,
+    groupKey: catalogueIds.magigooPp,
+  },
+  {
+    name: "FlowTech CM2 M2904-04 nozzle",
+    pattern: /\bflowtech\b.*\bcm2\b|\bcm2\b.*\bflowtech\b|\bm2904-04\b/i,
+    groupKey: catalogueIds.flowtechCm2,
+  },
   {
     name: "Micro Swiss FlowTech M3101",
     pattern: /\bflowtech\b|\bm3101\b/i,
@@ -42,6 +54,8 @@ export const catalogueSubjects = [
   },
 ] as const;
 export const catalogueGroupKeys = [
+  catalogueIds.magigooPp,
+  catalogueIds.flowtechCm2,
   catalogueIds.flowtech,
   catalogueIds.orbiter,
   catalogueIds.sliceTorque,
