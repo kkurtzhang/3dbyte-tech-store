@@ -1,0 +1,1216 @@
+{
+  "schema_version": 1,
+  "environment": "local_development",
+  "fixture_only": true,
+  "intended_native_scope": "staging",
+  "native_apply_authorized": false,
+  "native_approval_created": false,
+  "native_staging_ids_invented": false,
+  "physical_possession_required_for_reference_only": false,
+  "guide_faq_content_ingested": false,
+  "source_review_sha256": "b9f3199b9eee0d67c9c4e4685bf647d347f2215c30a0d594156c8a5f5bd81a41",
+  "retailer_source_sha256": "1858c9a0f00d199a97a4d90de329be59340ea089de2cfc3b7a80367999b43f2f",
+  "entries": [
+    {
+      "reference_key": "retailer_dremc_WES2487",
+      "reference_identity": {
+        "retailer": "DREMC",
+        "source_sku": "WES2487",
+        "source_variant_id": "46730415767721",
+        "variant_title": "Buggy / Buggster / Sandy",
+        "source_namespace": "dremc_shopify",
+        "exact_claimed_identity": "captured retailer variant, not a verified store fulfilment kit"
+      },
+      "source_sidecar": {
+        "source_id": "retailer_variant_data",
+        "raw_path": "sources/immutable/1858c9a0f00d199a97a4d90de329be59340ea089de2cfc3b7a80367999b43f2f.raw",
+        "raw_sha256": "1858c9a0f00d199a97a4d90de329be59340ea089de2cfc3b7a80367999b43f2f",
+        "field_evidence": [
+          {
+            "field": "retailer_source_sku",
+            "json_pointer": "/variants/0/sku",
+            "excerpt_sha256": "003a30ddbc8e791cb44656d63e7169eb07f0f54d82b549eb234a99b9e615faff",
+            "interpretation": "Exact raw JSON value"
+          },
+          {
+            "field": "retailer_source_variant_id",
+            "json_pointer": "/variants/0/id",
+            "excerpt_sha256": "5fbc11e20dda811fca6deb6287243469648831a59e52d29132a2e9b598ab6947",
+            "interpretation": "Exact raw JSON value"
+          },
+          {
+            "field": "retailer_variant_title",
+            "json_pointer": "/variants/0/title",
+            "excerpt_sha256": "6f340e4342c69230206cfaea3bec943690a0c8c4188e66ddaa7493771bf83f1f",
+            "interpretation": "Exact raw JSON value"
+          },
+          {
+            "field": "retailer_listing_title",
+            "json_pointer": "/title",
+            "excerpt_sha256": "bf110d09850dbfb473006063db77d2214592fe50ec941499cc995d5f9aec6975",
+            "interpretation": "Exact raw JSON value"
+          },
+          {
+            "field": "retailer_vendor_metadata",
+            "json_pointer": "/vendor",
+            "excerpt_sha256": "bc3a0de56de1f5c3991146d6c147ff2c29cf10836c7cff83c15c89fd694565d9",
+            "interpretation": "Exact raw JSON value"
+          },
+          {
+            "field": "retailer_shared_radio_battery_exclusion",
+            "json_pointer": "/description",
+            "excerpt_sha256": "e4d25d3849337eb081d285a6f754a6ef2f8c5e73e7658680ae3f90ccaae42e59",
+            "interpretation": "Exact derived plain-text excerpt from shared retailer listing description"
+          },
+          {
+            "field": "retailer_shared_printed_stl_exclusion",
+            "json_pointer": "/description",
+            "excerpt_sha256": "0cc26a6480261055cc1882b9eed078dd65cf3f6463a8b632e44b1caad8886e3f",
+            "interpretation": "Exact derived plain-text excerpt from shared retailer listing description"
+          }
+        ]
+      },
+      "native_binding": {
+        "product_id": null,
+        "variant_id": null,
+        "document_id": null,
+        "product_handle": null,
+        "current_exact_binding_verified": false
+      },
+      "reference_policy": {
+        "intended_scope": "staging",
+        "catalogue_role": "knowledge_reference",
+        "required_product_status": "draft",
+        "required_variant_count": 1,
+        "required_variant_prices": [],
+        "checkout_enabled": false,
+        "price": null,
+        "physical_stock": null,
+        "physical_possession_required": false,
+        "native_writes_authorized": false
+      },
+      "simulation_metadata_template": {
+        "version": 1,
+        "scope": "staging",
+        "real_stock": false,
+        "product_id": null,
+        "variant_id": null,
+        "initial_quantity": 0,
+        "quantity_is_controlled_test_example": true
+      },
+      "observed_retail_offer_only": {
+        "price_aud": 224.95,
+        "available_at_capture": true,
+        "checked_at": "2026-10-13T07:39:00.258312+00:00",
+        "copy_to_native_reference_price_or_inventory": false
+      },
+      "native_record_template": {
+        "documentId": null,
+        "medusa_product_id": null,
+        "product_handle": null,
+        "product_title": "Retailer reference: DREMC WES2487 — Buggy / Buggster / Sandy",
+        "title": "Retailer reference: DREMC WES2487 — Buggy / Buggster / Sandy — captured retailer identity",
+        "document_type": "other",
+        "source_url": "https://store.dremc.com.au/products/3dsets-com-rc-vehicle-kits-by-3dmakerparts.js",
+        "source_kind": "supplier_product_page",
+        "source_label": "DREMC retailer variant metadata and shared listing note",
+        "source_checked_at": "2026-10-13T07:39:00.258312+00:00",
+        "version": "capture-20261013-1858c9a0f00d",
+        "language": "en",
+        "is_public": false,
+        "publishedAt": null,
+        "knowledge_content": {
+          "version": 1,
+          "variant_id": null,
+          "source_sha256": "1858c9a0f00d199a97a4d90de329be59340ea089de2cfc3b7a80367999b43f2f",
+          "text": "Scope: captured DREMC retailer identity for source SKU WES2487. Shared listing exclusions are retailer statements. Exact supplier BOM contents/version and actual store fulfilment remain unresolved.\n\nWES2487\n\n46730415767721\n\nBuggy / Buggster / Sandy\n\n3DSets.com RC Vehicle Kits by 3DMakerParts\n\nWest3D\n\nRadio Transmitter, Receiver, and Battery are not included\n\nPrinted Parts and STL are also not included",
+          "facts": [
+            {
+              "field": "retailer_source_sku",
+              "label": "Retailer source SKU",
+              "value": "WES2487",
+              "evidence_excerpt": "WES2487"
+            },
+            {
+              "field": "retailer_source_variant_id",
+              "label": "Retailer source variant ID",
+              "value": "46730415767721",
+              "evidence_excerpt": "46730415767721"
+            },
+            {
+              "field": "retailer_variant_title",
+              "label": "Retailer variant title",
+              "value": "Buggy / Buggster / Sandy",
+              "evidence_excerpt": "Buggy / Buggster / Sandy"
+            },
+            {
+              "field": "retailer_listing_title",
+              "label": "Retailer listing title",
+              "value": "3DSets.com RC Vehicle Kits by 3DMakerParts",
+              "evidence_excerpt": "3DSets.com RC Vehicle Kits by 3DMakerParts"
+            },
+            {
+              "field": "retailer_vendor_metadata",
+              "label": "Retailer vendor metadata; not verified manufacturer",
+              "value": "West3D",
+              "evidence_excerpt": "West3D"
+            },
+            {
+              "field": "retailer_shared_radio_battery_exclusion",
+              "label": "Shared listing note: radio/battery exclusion",
+              "value": "Retailer shared listing note excludes transmitter, receiver and battery.",
+              "evidence_excerpt": "Radio Transmitter, Receiver, and Battery are not included"
+            },
+            {
+              "field": "retailer_shared_printed_stl_exclusion",
+              "label": "Shared listing note: printed parts/STLs exclusion",
+              "value": "Retailer shared listing note excludes printed model parts and STLs.",
+              "evidence_excerpt": "Printed Parts and STL are also not included"
+            },
+            {
+              "field": "kit_manufacturer",
+              "label": "Verified kit manufacturer",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "exact_kit_included_contents",
+              "label": "Exact selected kit included contents",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "exact_kit_excluded_contents",
+              "label": "Exact selected kit excluded contents",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "exact_model_release_compatibility",
+              "label": "Exact model release compatibility",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "kit_revision",
+              "label": "Kit revision",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "supplier_bom_revision",
+              "label": "Supplier BOM revision",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "esc_battery_connector_type",
+              "label": "ESC battery connector type",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "small_servo_quantity",
+              "label": "Small-servo quantity for exact selected kit",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "store_kit_sku",
+              "label": "Actual store kit SKU",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "store_digital_access_included",
+              "label": "Actual store kit digital access inclusion",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "physical_stock",
+              "label": "Actual physical stock",
+              "value": null,
+              "evidence_excerpt": ""
+            }
+          ]
+        },
+        "knowledge_review": {
+          "status": "pending",
+          "document_id": null,
+          "product_id": null,
+          "variant_id": null,
+          "revision_hash": null,
+          "reviewed_at": null,
+          "valid_until": null
+        }
+      },
+      "local_contract_fixture": {
+        "namespace": "local_development_fixture_only",
+        "native_record_for_structure_check": {
+          "documentId": "local_dev_fixture_doc_dremc_wes2487",
+          "medusa_product_id": "local_dev_fixture_product_dremc_wes2487",
+          "product_handle": "local-fixture-dremc-wes2487",
+          "product_title": "Retailer reference: DREMC WES2487 — Buggy / Buggster / Sandy",
+          "title": "Retailer reference: DREMC WES2487 — Buggy / Buggster / Sandy — captured retailer identity",
+          "document_type": "other",
+          "source_url": "https://store.dremc.com.au/products/3dsets-com-rc-vehicle-kits-by-3dmakerparts.js",
+          "source_kind": "supplier_product_page",
+          "source_label": "DREMC retailer variant metadata and shared listing note",
+          "source_checked_at": "2026-10-13T07:39:00.258312+00:00",
+          "version": "capture-20261013-1858c9a0f00d",
+          "language": "en",
+          "is_public": false,
+          "publishedAt": null,
+          "knowledge_content": {
+            "version": 1,
+            "variant_id": "local_dev_fixture_variant_dremc_wes2487",
+            "source_sha256": "1858c9a0f00d199a97a4d90de329be59340ea089de2cfc3b7a80367999b43f2f",
+            "text": "Scope: captured DREMC retailer identity for source SKU WES2487. Shared listing exclusions are retailer statements. Exact supplier BOM contents/version and actual store fulfilment remain unresolved.\n\nWES2487\n\n46730415767721\n\nBuggy / Buggster / Sandy\n\n3DSets.com RC Vehicle Kits by 3DMakerParts\n\nWest3D\n\nRadio Transmitter, Receiver, and Battery are not included\n\nPrinted Parts and STL are also not included",
+            "facts": [
+              {
+                "field": "retailer_source_sku",
+                "label": "Retailer source SKU",
+                "value": "WES2487",
+                "evidence_excerpt": "WES2487"
+              },
+              {
+                "field": "retailer_source_variant_id",
+                "label": "Retailer source variant ID",
+                "value": "46730415767721",
+                "evidence_excerpt": "46730415767721"
+              },
+              {
+                "field": "retailer_variant_title",
+                "label": "Retailer variant title",
+                "value": "Buggy / Buggster / Sandy",
+                "evidence_excerpt": "Buggy / Buggster / Sandy"
+              },
+              {
+                "field": "retailer_listing_title",
+                "label": "Retailer listing title",
+                "value": "3DSets.com RC Vehicle Kits by 3DMakerParts",
+                "evidence_excerpt": "3DSets.com RC Vehicle Kits by 3DMakerParts"
+              },
+              {
+                "field": "retailer_vendor_metadata",
+                "label": "Retailer vendor metadata; not verified manufacturer",
+                "value": "West3D",
+                "evidence_excerpt": "West3D"
+              },
+              {
+                "field": "retailer_shared_radio_battery_exclusion",
+                "label": "Shared listing note: radio/battery exclusion",
+                "value": "Retailer shared listing note excludes transmitter, receiver and battery.",
+                "evidence_excerpt": "Radio Transmitter, Receiver, and Battery are not included"
+              },
+              {
+                "field": "retailer_shared_printed_stl_exclusion",
+                "label": "Shared listing note: printed parts/STLs exclusion",
+                "value": "Retailer shared listing note excludes printed model parts and STLs.",
+                "evidence_excerpt": "Printed Parts and STL are also not included"
+              },
+              {
+                "field": "kit_manufacturer",
+                "label": "Verified kit manufacturer",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "exact_kit_included_contents",
+                "label": "Exact selected kit included contents",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "exact_kit_excluded_contents",
+                "label": "Exact selected kit excluded contents",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "exact_model_release_compatibility",
+                "label": "Exact model release compatibility",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "kit_revision",
+                "label": "Kit revision",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "supplier_bom_revision",
+                "label": "Supplier BOM revision",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "esc_battery_connector_type",
+                "label": "ESC battery connector type",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "small_servo_quantity",
+                "label": "Small-servo quantity for exact selected kit",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "store_kit_sku",
+                "label": "Actual store kit SKU",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "store_digital_access_included",
+                "label": "Actual store kit digital access inclusion",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "physical_stock",
+                "label": "Actual physical stock",
+                "value": null,
+                "evidence_excerpt": ""
+              }
+            ]
+          },
+          "knowledge_review": {
+            "status": "pending",
+            "document_id": null,
+            "product_id": null,
+            "variant_id": null,
+            "revision_hash": null,
+            "reviewed_at": null,
+            "valid_until": null
+          }
+        },
+        "synthetic_publication_for_review_projection_only": true,
+        "reviewer_approval_created": false
+      },
+      "source_fields_ready_for_factual_review": true,
+      "factual_user_approval": null,
+      "native_apply_ready": false,
+      "reference_only_remaining_requirements": [
+        "Current exact native draft product/variant/document binding or specifically authorized creation of this selected retailer-reference identity.",
+        "Genuine factual review of this exact scoped document; then native review matching the final canonical revision and required publication metadata.",
+        "Parent-coordinated staging activation/release verification; prices remain empty and checkout disabled."
+      ],
+      "commercial_only_requirements": [
+        "Actual store SKU and supplier fulfilment package/BOM/kit revision.",
+        "Verified actual included/excluded contents, connector and optional-servo quantities.",
+        "Exact supported model release/body/gearbox options and digital access/licence scope.",
+        "Commerce price, real inventory, shipping and fulfilment settings."
+      ],
+      "supplier_bom_disposition": "Retain as separate family-scoped local observations. It is not explicitly SKU/revision bound and is not relabelled to a native approved source kind.",
+      "rollback_plan": {
+        "local": "Withdraw only the three fixture document IDs; preserve canary, capture/chunk history and replay receipt. Reimport with a newer local snapshot to restore.",
+        "future_native": "Capture before-state and returned IDs/revisions; unpublish or remove only the exact reference binding through the agreed path after separate authorization. Do not delete products or clear unrelated metadata."
+      }
+    },
+    {
+      "reference_key": "retailer_dremc_WES2488",
+      "reference_identity": {
+        "retailer": "DREMC",
+        "source_sku": "WES2488",
+        "source_variant_id": "46730415800489",
+        "variant_title": "Landy",
+        "source_namespace": "dremc_shopify",
+        "exact_claimed_identity": "captured retailer variant, not a verified store fulfilment kit"
+      },
+      "source_sidecar": {
+        "source_id": "retailer_variant_data",
+        "raw_path": "sources/immutable/1858c9a0f00d199a97a4d90de329be59340ea089de2cfc3b7a80367999b43f2f.raw",
+        "raw_sha256": "1858c9a0f00d199a97a4d90de329be59340ea089de2cfc3b7a80367999b43f2f",
+        "field_evidence": [
+          {
+            "field": "retailer_source_sku",
+            "json_pointer": "/variants/1/sku",
+            "excerpt_sha256": "ff591a316c479d3688e401563c8d9d2963b84519b3e669d51c271c24fd4b40aa",
+            "interpretation": "Exact raw JSON value"
+          },
+          {
+            "field": "retailer_source_variant_id",
+            "json_pointer": "/variants/1/id",
+            "excerpt_sha256": "a6c0d1f272eb49c369847488cbd213e8f4eef0cac6fae224a7fa6ff61991dec8",
+            "interpretation": "Exact raw JSON value"
+          },
+          {
+            "field": "retailer_variant_title",
+            "json_pointer": "/variants/1/title",
+            "excerpt_sha256": "42e6c7029029431346e49924250da314080489a1e4f0becd15f76c0aee442c8e",
+            "interpretation": "Exact raw JSON value"
+          },
+          {
+            "field": "retailer_listing_title",
+            "json_pointer": "/title",
+            "excerpt_sha256": "bf110d09850dbfb473006063db77d2214592fe50ec941499cc995d5f9aec6975",
+            "interpretation": "Exact raw JSON value"
+          },
+          {
+            "field": "retailer_vendor_metadata",
+            "json_pointer": "/vendor",
+            "excerpt_sha256": "bc3a0de56de1f5c3991146d6c147ff2c29cf10836c7cff83c15c89fd694565d9",
+            "interpretation": "Exact raw JSON value"
+          },
+          {
+            "field": "retailer_shared_radio_battery_exclusion",
+            "json_pointer": "/description",
+            "excerpt_sha256": "e4d25d3849337eb081d285a6f754a6ef2f8c5e73e7658680ae3f90ccaae42e59",
+            "interpretation": "Exact derived plain-text excerpt from shared retailer listing description"
+          },
+          {
+            "field": "retailer_shared_printed_stl_exclusion",
+            "json_pointer": "/description",
+            "excerpt_sha256": "0cc26a6480261055cc1882b9eed078dd65cf3f6463a8b632e44b1caad8886e3f",
+            "interpretation": "Exact derived plain-text excerpt from shared retailer listing description"
+          }
+        ]
+      },
+      "native_binding": {
+        "product_id": null,
+        "variant_id": null,
+        "document_id": null,
+        "product_handle": null,
+        "current_exact_binding_verified": false
+      },
+      "reference_policy": {
+        "intended_scope": "staging",
+        "catalogue_role": "knowledge_reference",
+        "required_product_status": "draft",
+        "required_variant_count": 1,
+        "required_variant_prices": [],
+        "checkout_enabled": false,
+        "price": null,
+        "physical_stock": null,
+        "physical_possession_required": false,
+        "native_writes_authorized": false
+      },
+      "simulation_metadata_template": {
+        "version": 1,
+        "scope": "staging",
+        "real_stock": false,
+        "product_id": null,
+        "variant_id": null,
+        "initial_quantity": 0,
+        "quantity_is_controlled_test_example": true
+      },
+      "observed_retail_offer_only": {
+        "price_aud": 244.95,
+        "available_at_capture": true,
+        "checked_at": "2026-10-13T07:39:00.258312+00:00",
+        "copy_to_native_reference_price_or_inventory": false
+      },
+      "native_record_template": {
+        "documentId": null,
+        "medusa_product_id": null,
+        "product_handle": null,
+        "product_title": "Retailer reference: DREMC WES2488 — Landy",
+        "title": "Retailer reference: DREMC WES2488 — Landy — captured retailer identity",
+        "document_type": "other",
+        "source_url": "https://store.dremc.com.au/products/3dsets-com-rc-vehicle-kits-by-3dmakerparts.js",
+        "source_kind": "supplier_product_page",
+        "source_label": "DREMC retailer variant metadata and shared listing note",
+        "source_checked_at": "2026-10-13T07:39:00.258312+00:00",
+        "version": "capture-20261013-1858c9a0f00d",
+        "language": "en",
+        "is_public": false,
+        "publishedAt": null,
+        "knowledge_content": {
+          "version": 1,
+          "variant_id": null,
+          "source_sha256": "1858c9a0f00d199a97a4d90de329be59340ea089de2cfc3b7a80367999b43f2f",
+          "text": "Scope: captured DREMC retailer identity for source SKU WES2488. Shared listing exclusions are retailer statements. Exact supplier BOM contents/version and actual store fulfilment remain unresolved.\n\nWES2488\n\n46730415800489\n\nLandy\n\n3DSets.com RC Vehicle Kits by 3DMakerParts\n\nWest3D\n\nRadio Transmitter, Receiver, and Battery are not included\n\nPrinted Parts and STL are also not included",
+          "facts": [
+            {
+              "field": "retailer_source_sku",
+              "label": "Retailer source SKU",
+              "value": "WES2488",
+              "evidence_excerpt": "WES2488"
+            },
+            {
+              "field": "retailer_source_variant_id",
+              "label": "Retailer source variant ID",
+              "value": "46730415800489",
+              "evidence_excerpt": "46730415800489"
+            },
+            {
+              "field": "retailer_variant_title",
+              "label": "Retailer variant title",
+              "value": "Landy",
+              "evidence_excerpt": "Landy"
+            },
+            {
+              "field": "retailer_listing_title",
+              "label": "Retailer listing title",
+              "value": "3DSets.com RC Vehicle Kits by 3DMakerParts",
+              "evidence_excerpt": "3DSets.com RC Vehicle Kits by 3DMakerParts"
+            },
+            {
+              "field": "retailer_vendor_metadata",
+              "label": "Retailer vendor metadata; not verified manufacturer",
+              "value": "West3D",
+              "evidence_excerpt": "West3D"
+            },
+            {
+              "field": "retailer_shared_radio_battery_exclusion",
+              "label": "Shared listing note: radio/battery exclusion",
+              "value": "Retailer shared listing note excludes transmitter, receiver and battery.",
+              "evidence_excerpt": "Radio Transmitter, Receiver, and Battery are not included"
+            },
+            {
+              "field": "retailer_shared_printed_stl_exclusion",
+              "label": "Shared listing note: printed parts/STLs exclusion",
+              "value": "Retailer shared listing note excludes printed model parts and STLs.",
+              "evidence_excerpt": "Printed Parts and STL are also not included"
+            },
+            {
+              "field": "kit_manufacturer",
+              "label": "Verified kit manufacturer",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "exact_kit_included_contents",
+              "label": "Exact selected kit included contents",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "exact_kit_excluded_contents",
+              "label": "Exact selected kit excluded contents",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "exact_model_release_compatibility",
+              "label": "Exact model release compatibility",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "kit_revision",
+              "label": "Kit revision",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "supplier_bom_revision",
+              "label": "Supplier BOM revision",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "esc_battery_connector_type",
+              "label": "ESC battery connector type",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "small_servo_quantity",
+              "label": "Small-servo quantity for exact selected kit",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "store_kit_sku",
+              "label": "Actual store kit SKU",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "store_digital_access_included",
+              "label": "Actual store kit digital access inclusion",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "physical_stock",
+              "label": "Actual physical stock",
+              "value": null,
+              "evidence_excerpt": ""
+            }
+          ]
+        },
+        "knowledge_review": {
+          "status": "pending",
+          "document_id": null,
+          "product_id": null,
+          "variant_id": null,
+          "revision_hash": null,
+          "reviewed_at": null,
+          "valid_until": null
+        }
+      },
+      "local_contract_fixture": {
+        "namespace": "local_development_fixture_only",
+        "native_record_for_structure_check": {
+          "documentId": "local_dev_fixture_doc_dremc_wes2488",
+          "medusa_product_id": "local_dev_fixture_product_dremc_wes2488",
+          "product_handle": "local-fixture-dremc-wes2488",
+          "product_title": "Retailer reference: DREMC WES2488 — Landy",
+          "title": "Retailer reference: DREMC WES2488 — Landy — captured retailer identity",
+          "document_type": "other",
+          "source_url": "https://store.dremc.com.au/products/3dsets-com-rc-vehicle-kits-by-3dmakerparts.js",
+          "source_kind": "supplier_product_page",
+          "source_label": "DREMC retailer variant metadata and shared listing note",
+          "source_checked_at": "2026-10-13T07:39:00.258312+00:00",
+          "version": "capture-20261013-1858c9a0f00d",
+          "language": "en",
+          "is_public": false,
+          "publishedAt": null,
+          "knowledge_content": {
+            "version": 1,
+            "variant_id": "local_dev_fixture_variant_dremc_wes2488",
+            "source_sha256": "1858c9a0f00d199a97a4d90de329be59340ea089de2cfc3b7a80367999b43f2f",
+            "text": "Scope: captured DREMC retailer identity for source SKU WES2488. Shared listing exclusions are retailer statements. Exact supplier BOM contents/version and actual store fulfilment remain unresolved.\n\nWES2488\n\n46730415800489\n\nLandy\n\n3DSets.com RC Vehicle Kits by 3DMakerParts\n\nWest3D\n\nRadio Transmitter, Receiver, and Battery are not included\n\nPrinted Parts and STL are also not included",
+            "facts": [
+              {
+                "field": "retailer_source_sku",
+                "label": "Retailer source SKU",
+                "value": "WES2488",
+                "evidence_excerpt": "WES2488"
+              },
+              {
+                "field": "retailer_source_variant_id",
+                "label": "Retailer source variant ID",
+                "value": "46730415800489",
+                "evidence_excerpt": "46730415800489"
+              },
+              {
+                "field": "retailer_variant_title",
+                "label": "Retailer variant title",
+                "value": "Landy",
+                "evidence_excerpt": "Landy"
+              },
+              {
+                "field": "retailer_listing_title",
+                "label": "Retailer listing title",
+                "value": "3DSets.com RC Vehicle Kits by 3DMakerParts",
+                "evidence_excerpt": "3DSets.com RC Vehicle Kits by 3DMakerParts"
+              },
+              {
+                "field": "retailer_vendor_metadata",
+                "label": "Retailer vendor metadata; not verified manufacturer",
+                "value": "West3D",
+                "evidence_excerpt": "West3D"
+              },
+              {
+                "field": "retailer_shared_radio_battery_exclusion",
+                "label": "Shared listing note: radio/battery exclusion",
+                "value": "Retailer shared listing note excludes transmitter, receiver and battery.",
+                "evidence_excerpt": "Radio Transmitter, Receiver, and Battery are not included"
+              },
+              {
+                "field": "retailer_shared_printed_stl_exclusion",
+                "label": "Shared listing note: printed parts/STLs exclusion",
+                "value": "Retailer shared listing note excludes printed model parts and STLs.",
+                "evidence_excerpt": "Printed Parts and STL are also not included"
+              },
+              {
+                "field": "kit_manufacturer",
+                "label": "Verified kit manufacturer",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "exact_kit_included_contents",
+                "label": "Exact selected kit included contents",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "exact_kit_excluded_contents",
+                "label": "Exact selected kit excluded contents",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "exact_model_release_compatibility",
+                "label": "Exact model release compatibility",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "kit_revision",
+                "label": "Kit revision",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "supplier_bom_revision",
+                "label": "Supplier BOM revision",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "esc_battery_connector_type",
+                "label": "ESC battery connector type",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "small_servo_quantity",
+                "label": "Small-servo quantity for exact selected kit",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "store_kit_sku",
+                "label": "Actual store kit SKU",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "store_digital_access_included",
+                "label": "Actual store kit digital access inclusion",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "physical_stock",
+                "label": "Actual physical stock",
+                "value": null,
+                "evidence_excerpt": ""
+              }
+            ]
+          },
+          "knowledge_review": {
+            "status": "pending",
+            "document_id": null,
+            "product_id": null,
+            "variant_id": null,
+            "revision_hash": null,
+            "reviewed_at": null,
+            "valid_until": null
+          }
+        },
+        "synthetic_publication_for_review_projection_only": true,
+        "reviewer_approval_created": false
+      },
+      "source_fields_ready_for_factual_review": true,
+      "factual_user_approval": null,
+      "native_apply_ready": false,
+      "reference_only_remaining_requirements": [
+        "Current exact native draft product/variant/document binding or specifically authorized creation of this selected retailer-reference identity.",
+        "Genuine factual review of this exact scoped document; then native review matching the final canonical revision and required publication metadata.",
+        "Parent-coordinated staging activation/release verification; prices remain empty and checkout disabled."
+      ],
+      "commercial_only_requirements": [
+        "Actual store SKU and supplier fulfilment package/BOM/kit revision.",
+        "Verified actual included/excluded contents, connector and optional-servo quantities.",
+        "Exact supported model release/body/gearbox options and digital access/licence scope.",
+        "Commerce price, real inventory, shipping and fulfilment settings."
+      ],
+      "supplier_bom_disposition": "Retain as separate family-scoped local observations. It is not explicitly SKU/revision bound and is not relabelled to a native approved source kind.",
+      "rollback_plan": {
+        "local": "Withdraw only the three fixture document IDs; preserve canary, capture/chunk history and replay receipt. Reimport with a newer local snapshot to restore.",
+        "future_native": "Capture before-state and returned IDs/revisions; unpublish or remove only the exact reference binding through the agreed path after separate authorization. Do not delete products or clear unrelated metadata."
+      }
+    },
+    {
+      "reference_key": "retailer_dremc_WES2489",
+      "reference_identity": {
+        "retailer": "DREMC",
+        "source_sku": "WES2489",
+        "source_variant_id": "46730423664809",
+        "variant_title": "Sakura",
+        "source_namespace": "dremc_shopify",
+        "exact_claimed_identity": "captured retailer variant, not a verified store fulfilment kit"
+      },
+      "source_sidecar": {
+        "source_id": "retailer_variant_data",
+        "raw_path": "sources/immutable/1858c9a0f00d199a97a4d90de329be59340ea089de2cfc3b7a80367999b43f2f.raw",
+        "raw_sha256": "1858c9a0f00d199a97a4d90de329be59340ea089de2cfc3b7a80367999b43f2f",
+        "field_evidence": [
+          {
+            "field": "retailer_source_sku",
+            "json_pointer": "/variants/2/sku",
+            "excerpt_sha256": "e1e5ad92ed490d6f7cda0a9c00a87d4970574720b0247cac006d39058a8c7eb7",
+            "interpretation": "Exact raw JSON value"
+          },
+          {
+            "field": "retailer_source_variant_id",
+            "json_pointer": "/variants/2/id",
+            "excerpt_sha256": "d28bc06e3094fd87d90ab291e8586a99ca05ca80172e0dbe9bef772a92a8bc22",
+            "interpretation": "Exact raw JSON value"
+          },
+          {
+            "field": "retailer_variant_title",
+            "json_pointer": "/variants/2/title",
+            "excerpt_sha256": "95c0d6e7a0e1ecf1dbd33ed89fedff8b1ffb3dbfb7c6288a6c47f0bec35e3124",
+            "interpretation": "Exact raw JSON value"
+          },
+          {
+            "field": "retailer_listing_title",
+            "json_pointer": "/title",
+            "excerpt_sha256": "bf110d09850dbfb473006063db77d2214592fe50ec941499cc995d5f9aec6975",
+            "interpretation": "Exact raw JSON value"
+          },
+          {
+            "field": "retailer_vendor_metadata",
+            "json_pointer": "/vendor",
+            "excerpt_sha256": "bc3a0de56de1f5c3991146d6c147ff2c29cf10836c7cff83c15c89fd694565d9",
+            "interpretation": "Exact raw JSON value"
+          },
+          {
+            "field": "retailer_shared_radio_battery_exclusion",
+            "json_pointer": "/description",
+            "excerpt_sha256": "e4d25d3849337eb081d285a6f754a6ef2f8c5e73e7658680ae3f90ccaae42e59",
+            "interpretation": "Exact derived plain-text excerpt from shared retailer listing description"
+          },
+          {
+            "field": "retailer_shared_printed_stl_exclusion",
+            "json_pointer": "/description",
+            "excerpt_sha256": "0cc26a6480261055cc1882b9eed078dd65cf3f6463a8b632e44b1caad8886e3f",
+            "interpretation": "Exact derived plain-text excerpt from shared retailer listing description"
+          }
+        ]
+      },
+      "native_binding": {
+        "product_id": null,
+        "variant_id": null,
+        "document_id": null,
+        "product_handle": null,
+        "current_exact_binding_verified": false
+      },
+      "reference_policy": {
+        "intended_scope": "staging",
+        "catalogue_role": "knowledge_reference",
+        "required_product_status": "draft",
+        "required_variant_count": 1,
+        "required_variant_prices": [],
+        "checkout_enabled": false,
+        "price": null,
+        "physical_stock": null,
+        "physical_possession_required": false,
+        "native_writes_authorized": false
+      },
+      "simulation_metadata_template": {
+        "version": 1,
+        "scope": "staging",
+        "real_stock": false,
+        "product_id": null,
+        "variant_id": null,
+        "initial_quantity": 0,
+        "quantity_is_controlled_test_example": true
+      },
+      "observed_retail_offer_only": {
+        "price_aud": 249.0,
+        "available_at_capture": true,
+        "checked_at": "2026-10-13T07:39:00.258312+00:00",
+        "copy_to_native_reference_price_or_inventory": false
+      },
+      "native_record_template": {
+        "documentId": null,
+        "medusa_product_id": null,
+        "product_handle": null,
+        "product_title": "Retailer reference: DREMC WES2489 — Sakura",
+        "title": "Retailer reference: DREMC WES2489 — Sakura — captured retailer identity",
+        "document_type": "other",
+        "source_url": "https://store.dremc.com.au/products/3dsets-com-rc-vehicle-kits-by-3dmakerparts.js",
+        "source_kind": "supplier_product_page",
+        "source_label": "DREMC retailer variant metadata and shared listing note",
+        "source_checked_at": "2026-10-13T07:39:00.258312+00:00",
+        "version": "capture-20261013-1858c9a0f00d",
+        "language": "en",
+        "is_public": false,
+        "publishedAt": null,
+        "knowledge_content": {
+          "version": 1,
+          "variant_id": null,
+          "source_sha256": "1858c9a0f00d199a97a4d90de329be59340ea089de2cfc3b7a80367999b43f2f",
+          "text": "Scope: captured DREMC retailer identity for source SKU WES2489. Shared listing exclusions are retailer statements. Exact supplier BOM contents/version and actual store fulfilment remain unresolved.\n\nWES2489\n\n46730423664809\n\nSakura\n\n3DSets.com RC Vehicle Kits by 3DMakerParts\n\nWest3D\n\nRadio Transmitter, Receiver, and Battery are not included\n\nPrinted Parts and STL are also not included",
+          "facts": [
+            {
+              "field": "retailer_source_sku",
+              "label": "Retailer source SKU",
+              "value": "WES2489",
+              "evidence_excerpt": "WES2489"
+            },
+            {
+              "field": "retailer_source_variant_id",
+              "label": "Retailer source variant ID",
+              "value": "46730423664809",
+              "evidence_excerpt": "46730423664809"
+            },
+            {
+              "field": "retailer_variant_title",
+              "label": "Retailer variant title",
+              "value": "Sakura",
+              "evidence_excerpt": "Sakura"
+            },
+            {
+              "field": "retailer_listing_title",
+              "label": "Retailer listing title",
+              "value": "3DSets.com RC Vehicle Kits by 3DMakerParts",
+              "evidence_excerpt": "3DSets.com RC Vehicle Kits by 3DMakerParts"
+            },
+            {
+              "field": "retailer_vendor_metadata",
+              "label": "Retailer vendor metadata; not verified manufacturer",
+              "value": "West3D",
+              "evidence_excerpt": "West3D"
+            },
+            {
+              "field": "retailer_shared_radio_battery_exclusion",
+              "label": "Shared listing note: radio/battery exclusion",
+              "value": "Retailer shared listing note excludes transmitter, receiver and battery.",
+              "evidence_excerpt": "Radio Transmitter, Receiver, and Battery are not included"
+            },
+            {
+              "field": "retailer_shared_printed_stl_exclusion",
+              "label": "Shared listing note: printed parts/STLs exclusion",
+              "value": "Retailer shared listing note excludes printed model parts and STLs.",
+              "evidence_excerpt": "Printed Parts and STL are also not included"
+            },
+            {
+              "field": "kit_manufacturer",
+              "label": "Verified kit manufacturer",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "exact_kit_included_contents",
+              "label": "Exact selected kit included contents",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "exact_kit_excluded_contents",
+              "label": "Exact selected kit excluded contents",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "exact_model_release_compatibility",
+              "label": "Exact model release compatibility",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "kit_revision",
+              "label": "Kit revision",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "supplier_bom_revision",
+              "label": "Supplier BOM revision",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "esc_battery_connector_type",
+              "label": "ESC battery connector type",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "small_servo_quantity",
+              "label": "Small-servo quantity for exact selected kit",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "store_kit_sku",
+              "label": "Actual store kit SKU",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "store_digital_access_included",
+              "label": "Actual store kit digital access inclusion",
+              "value": null,
+              "evidence_excerpt": ""
+            },
+            {
+              "field": "physical_stock",
+              "label": "Actual physical stock",
+              "value": null,
+              "evidence_excerpt": ""
+            }
+          ]
+        },
+        "knowledge_review": {
+          "status": "pending",
+          "document_id": null,
+          "product_id": null,
+          "variant_id": null,
+          "revision_hash": null,
+          "reviewed_at": null,
+          "valid_until": null
+        }
+      },
+      "local_contract_fixture": {
+        "namespace": "local_development_fixture_only",
+        "native_record_for_structure_check": {
+          "documentId": "local_dev_fixture_doc_dremc_wes2489",
+          "medusa_product_id": "local_dev_fixture_product_dremc_wes2489",
+          "product_handle": "local-fixture-dremc-wes2489",
+          "product_title": "Retailer reference: DREMC WES2489 — Sakura",
+          "title": "Retailer reference: DREMC WES2489 — Sakura — captured retailer identity",
+          "document_type": "other",
+          "source_url": "https://store.dremc.com.au/products/3dsets-com-rc-vehicle-kits-by-3dmakerparts.js",
+          "source_kind": "supplier_product_page",
+          "source_label": "DREMC retailer variant metadata and shared listing note",
+          "source_checked_at": "2026-10-13T07:39:00.258312+00:00",
+          "version": "capture-20261013-1858c9a0f00d",
+          "language": "en",
+          "is_public": false,
+          "publishedAt": null,
+          "knowledge_content": {
+            "version": 1,
+            "variant_id": "local_dev_fixture_variant_dremc_wes2489",
+            "source_sha256": "1858c9a0f00d199a97a4d90de329be59340ea089de2cfc3b7a80367999b43f2f",
+            "text": "Scope: captured DREMC retailer identity for source SKU WES2489. Shared listing exclusions are retailer statements. Exact supplier BOM contents/version and actual store fulfilment remain unresolved.\n\nWES2489\n\n46730423664809\n\nSakura\n\n3DSets.com RC Vehicle Kits by 3DMakerParts\n\nWest3D\n\nRadio Transmitter, Receiver, and Battery are not included\n\nPrinted Parts and STL are also not included",
+            "facts": [
+              {
+                "field": "retailer_source_sku",
+                "label": "Retailer source SKU",
+                "value": "WES2489",
+                "evidence_excerpt": "WES2489"
+              },
+              {
+                "field": "retailer_source_variant_id",
+                "label": "Retailer source variant ID",
+                "value": "46730423664809",
+                "evidence_excerpt": "46730423664809"
+              },
+              {
+                "field": "retailer_variant_title",
+                "label": "Retailer variant title",
+                "value": "Sakura",
+                "evidence_excerpt": "Sakura"
+              },
+              {
+                "field": "retailer_listing_title",
+                "label": "Retailer listing title",
+                "value": "3DSets.com RC Vehicle Kits by 3DMakerParts",
+                "evidence_excerpt": "3DSets.com RC Vehicle Kits by 3DMakerParts"
+              },
+              {
+                "field": "retailer_vendor_metadata",
+                "label": "Retailer vendor metadata; not verified manufacturer",
+                "value": "West3D",
+                "evidence_excerpt": "West3D"
+              },
+              {
+                "field": "retailer_shared_radio_battery_exclusion",
+                "label": "Shared listing note: radio/battery exclusion",
+                "value": "Retailer shared listing note excludes transmitter, receiver and battery.",
+                "evidence_excerpt": "Radio Transmitter, Receiver, and Battery are not included"
+              },
+              {
+                "field": "retailer_shared_printed_stl_exclusion",
+                "label": "Shared listing note: printed parts/STLs exclusion",
+                "value": "Retailer shared listing note excludes printed model parts and STLs.",
+                "evidence_excerpt": "Printed Parts and STL are also not included"
+              },
+              {
+                "field": "kit_manufacturer",
+                "label": "Verified kit manufacturer",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "exact_kit_included_contents",
+                "label": "Exact selected kit included contents",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "exact_kit_excluded_contents",
+                "label": "Exact selected kit excluded contents",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "exact_model_release_compatibility",
+                "label": "Exact model release compatibility",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "kit_revision",
+                "label": "Kit revision",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "supplier_bom_revision",
+                "label": "Supplier BOM revision",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "esc_battery_connector_type",
+                "label": "ESC battery connector type",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "small_servo_quantity",
+                "label": "Small-servo quantity for exact selected kit",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "store_kit_sku",
+                "label": "Actual store kit SKU",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "store_digital_access_included",
+                "label": "Actual store kit digital access inclusion",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "physical_stock",
+                "label": "Actual physical stock",
+                "value": null,
+                "evidence_excerpt": ""
+              }
+            ]
+          },
+          "knowledge_review": {
+            "status": "pending",
+            "document_id": null,
+            "product_id": null,
+            "variant_id": null,
+            "revision_hash": null,
+            "reviewed_at": null,
+            "valid_until": null
+          }
+        },
+        "synthetic_publication_for_review_projection_only": true,
+        "reviewer_approval_created": false
+      },
+      "source_fields_ready_for_factual_review": true,
+      "factual_user_approval": null,
+      "native_apply_ready": false,
+      "reference_only_remaining_requirements": [
+        "Current exact native draft product/variant/document binding or specifically authorized creation of this selected retailer-reference identity.",
+        "Genuine factual review of this exact scoped document; then native review matching the final canonical revision and required publication metadata.",
+        "Parent-coordinated staging activation/release verification; prices remain empty and checkout disabled."
+      ],
+      "commercial_only_requirements": [
+        "Actual store SKU and supplier fulfilment package/BOM/kit revision.",
+        "Verified actual included/excluded contents, connector and optional-servo quantities.",
+        "Exact supported model release/body/gearbox options and digital access/licence scope.",
+        "Commerce price, real inventory, shipping and fulfilment settings."
+      ],
+      "supplier_bom_disposition": "Retain as separate family-scoped local observations. It is not explicitly SKU/revision bound and is not relabelled to a native approved source kind.",
+      "rollback_plan": {
+        "local": "Withdraw only the three fixture document IDs; preserve canary, capture/chunk history and replay receipt. Reimport with a newer local snapshot to restore.",
+        "future_native": "Capture before-state and returned IDs/revisions; unpublish or remove only the exact reference binding through the agreed path after separate authorization. Do not delete products or clear unrelated metadata."
+      }
+    }
+  ],
+  "local_fixtures_are_not_native_bindings": true
+}

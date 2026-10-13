@@ -1,0 +1,95 @@
+{
+  "fixture_only": true,
+  "source_plan_sha256": "ce384e5f079a8ab00110e9166fac106b1c31de37ca7a0ffe9cc78c3157ccc026",
+  "native_contract": {
+    "fixture_only": true,
+    "native_changes": 0,
+    "reviewer_approvals_created": 0,
+    "cases": [
+      {
+        "reference_key": "retailer_dremc_WES2487",
+        "structure_accepted_with_partial_facts": true,
+        "fact_count": 18,
+        "local_structure_revision_sha256": "d1c9068580e1a08b77f86657e944114441da8d7b28d1403330ef099e7a8f07d5",
+        "unbound_native_record_rejected": true,
+        "pending_private_and_public_projection_approval_rejected": true,
+        "unapproved_card_rejected": true,
+        "unsupported_unknown_promotion_rejected": true,
+        "invalid_source_kind_rejected": true,
+        "native_ids_and_approvals_created": 0
+      },
+      {
+        "reference_key": "retailer_dremc_WES2488",
+        "structure_accepted_with_partial_facts": true,
+        "fact_count": 18,
+        "local_structure_revision_sha256": "113cf1cfd3913eb4caa947bbbaa772e10190f3c12fd7e3ba15a25f3aad88ca6d",
+        "unbound_native_record_rejected": true,
+        "pending_private_and_public_projection_approval_rejected": true,
+        "unapproved_card_rejected": true,
+        "unsupported_unknown_promotion_rejected": true,
+        "invalid_source_kind_rejected": true,
+        "native_ids_and_approvals_created": 0
+      },
+      {
+        "reference_key": "retailer_dremc_WES2489",
+        "structure_accepted_with_partial_facts": true,
+        "fact_count": 18,
+        "local_structure_revision_sha256": "cfa067f00a88ec3e6328b8c03aeecd54ee70f31aa44af30d7a38e703eae0db34",
+        "unbound_native_record_rejected": true,
+        "pending_private_and_public_projection_approval_rejected": true,
+        "unapproved_card_rejected": true,
+        "unsupported_unknown_promotion_rejected": true,
+        "invalid_source_kind_rejected": true,
+        "native_ids_and_approvals_created": 0
+      }
+    ],
+    "references": 3,
+    "tested_actual_shared_parser_and_cms_backend_contracts": true,
+    "limit": "Local fixture IDs validate shape only. No approved reviewer event, published native record, server/API or staging database transaction was fabricated or exercised."
+  },
+  "local_coordinator_cases": [
+    {
+      "case": "actual_coordinator_import_and_idempotent_replay",
+      "passed": true
+    },
+    {
+      "case": "close_reopen_persists_identical_local_review",
+      "passed": true
+    },
+    {
+      "case": "duplicate_document_atomic_rejection",
+      "passed": true
+    },
+    {
+      "case": "source_hash_drift_atomic_rejection",
+      "passed": true
+    },
+    {
+      "case": "scope_only_withdrawal_preserves_canary_and_immutable_history",
+      "passed": true
+    },
+    {
+      "case": "reversible_local_restore_never_grants_native_approval_or_retrieval",
+      "passed": true
+    }
+  ],
+  "cases_passed": 6,
+  "prepared_reference_documents": 3,
+  "unrelated_canary": 1,
+  "final_stats": {
+    "documents": 4,
+    "runs": 4,
+    "archived_captures": 5,
+    "source_observations": 4,
+    "historical_chunks": 4,
+    "active_review_chunks": 4,
+    "retrieval_eligible_chunks": 0
+  },
+  "native_ids_or_approvals_created": 0,
+  "network_or_model_calls": 0,
+  "staging_writes": 0,
+  "active_knowledge_corpus_changed": false,
+  "synthetic_publication_projection_only": true,
+  "physical_possession_required_for_reference_only": false,
+  "artifact_location": "Existing SSD workspace exports/retailer-native-contract-fixture-v1"
+}
