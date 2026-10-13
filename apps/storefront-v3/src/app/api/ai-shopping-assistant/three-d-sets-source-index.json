@@ -1,0 +1,274 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-10-13T07:21:22Z",
+  "environment": "local_development",
+  "staging_native_eligible": false,
+  "source_usage": {
+    "guide": "link_only",
+    "faq": "link_only",
+    "guide_content_ingested": false,
+    "faq_content_ingested": false,
+    "paid_model_files_fetched": false,
+    "guide_embeddings_created": false
+  },
+  "catalogue_url": "https://3dsets.com/product-category/models/",
+  "faq": {
+    "url": "https://3dsets.com/blog/faq/",
+    "published_date": "2021-06-23",
+    "technical_override_allowed": false,
+    "usage": "link_only"
+  },
+  "terms_url": "https://3dsets.com/terms-and-conditions/",
+  "models": [
+    {
+      "model_key": "sandy",
+      "model_number": 11,
+      "name": "Sandy",
+      "category": "rc_car",
+      "publisher_product_url": "https://3dsets.com/product/model-11-sandy/",
+      "product_release": null,
+      "guides": [
+        {
+          "guide_revision": "1.0",
+          "url": "https://docs.google.com/presentation/d/1xb7YkoKhJmHLQ6zAjSLmep7UbICcW2iVI0if_n4BRAo/edit?usp=sharing",
+          "publisher_link_label": "Model 11 Sandy v1.0",
+          "usage": "link_only",
+          "content_stored": false
+        }
+      ],
+      "conflicts": [
+        "Publisher page has inconsistent printer-size wording; printer requirement is not resolved in this index."
+      ],
+      "store_kit": {
+        "product_id": null,
+        "sku": null,
+        "kit_revision": null,
+        "included_contents": null,
+        "excluded_contents": null,
+        "supported_model_release": null,
+        "digital_access_included": null,
+        "price": null,
+        "physical_stock": null
+      },
+      "factual_confidence": "verified_source_link_metadata",
+      "rights_status": "link_only_no_manual_reuse",
+      "native_approval": null
+    },
+    {
+      "model_key": "max_4x4",
+      "model_number": 15,
+      "name": "Max 4x4",
+      "category": "rc_van",
+      "publisher_product_url": "https://3dsets.com/product/model-15-max-4x4/",
+      "product_release": "1.0.4",
+      "guides": [
+        {
+          "guide_revision": "1.0",
+          "url": "https://docs.google.com/presentation/d/1OPdA7gILPTr8mYTYsyyxNx8Bb04e2XtsOvvrGy_pgWI/edit?usp=sharing",
+          "publisher_link_label": "Model 15: Max Team",
+          "usage": "link_only",
+          "content_stored": false
+        }
+      ],
+      "conflicts": [
+        "Publisher link label says Max Team; delegated research reports the target title Max 4x4. Do not silently equate Max Team with Max 4x4.",
+        "Product release 1.0.4 and reported guide revision 1.0 are distinct. Gearbox-option and kit-revision applicability are unresolved."
+      ],
+      "store_kit": {
+        "product_id": null,
+        "sku": null,
+        "kit_revision": null,
+        "included_contents": null,
+        "excluded_contents": null,
+        "supported_model_release": null,
+        "digital_access_included": null,
+        "price": null,
+        "physical_stock": null
+      },
+      "factual_confidence": "verified_source_link_metadata",
+      "rights_status": "link_only_no_manual_reuse",
+      "native_approval": null
+    },
+    {
+      "model_key": "rancher_hardtop",
+      "model_number": 2,
+      "name": "Rancher 4x4 Hardtop",
+      "category": "rc_car",
+      "publisher_product_url": "https://3dsets.com/product/model-2-rancher-4x4-hardtop/",
+      "product_release": "1.4.1",
+      "guides": [
+        {
+          "guide_revision": "1.4.0",
+          "url": "https://docs.google.com/presentation/d/1TPakk-fk8ZjwPB7mf682rypnMfzJaZjJMphjNpYfCGk/edit?usp=sharing",
+          "publisher_link_label": "Model 2: Rancher 4x4 Hardtop v1.4.0",
+          "usage": "link_only",
+          "content_stored": false
+        },
+        {
+          "guide_revision": "1.3.2",
+          "url": "https://docs.google.com/presentation/d/1efrWbdka1HBKklFfKKETao6EAzMzaLn4NoRnkBS0U2A/edit?usp=sharing",
+          "publisher_link_label": "Model 2: Rancher 4x4 Hardtop v1.3.2",
+          "usage": "link_only",
+          "content_stored": false
+        },
+        {
+          "guide_revision": "1.3.0",
+          "url": "https://docs.google.com/presentation/d/1Mh6q3hwNZabtZgQo-YFHflY6zLEAEQfzbP8dKxDUR0U/edit?usp=sharing",
+          "publisher_link_label": "Model 2: Rancher 4x4 Hardtop v1.3.0",
+          "usage": "link_only",
+          "content_stored": false
+        },
+        {
+          "guide_revision": "1.2.0",
+          "url": "https://docs.google.com/presentation/d/19MlSlucQxepXkD4r08RYlK0V6O9-AzdWvU0i-WGh23I/edit?usp=sharing",
+          "publisher_link_label": "Model 2: Rancher 4x4 Hardtop v1.2.0",
+          "usage": "link_only",
+          "content_stored": false
+        },
+        {
+          "guide_revision": "1.1.0",
+          "url": "https://docs.google.com/presentation/d/1O7X-xXAoCm0jF7n4dtuO4-5UDQgKYnkqAn__-sdz4Mo/edit?usp=sharing",
+          "publisher_link_label": "Model 2: Rancher 4x4 Hardtop v1.1.0",
+          "usage": "link_only",
+          "content_stored": false
+        }
+      ],
+      "conflicts": [
+        "Product release 1.4.1 differs from the latest linked guide revision 1.4.0. Kit applicability is unverified."
+      ],
+      "store_kit": {
+        "product_id": null,
+        "sku": null,
+        "kit_revision": null,
+        "included_contents": null,
+        "excluded_contents": null,
+        "supported_model_release": null,
+        "digital_access_included": null,
+        "price": null,
+        "physical_stock": null
+      },
+      "factual_confidence": "verified_source_link_metadata",
+      "rights_status": "link_only_no_manual_reuse",
+      "native_approval": null
+    },
+    {
+      "model_key": "skippy",
+      "model_number": null,
+      "name": "Skippy Boat & Trailer",
+      "category": "jet_boat",
+      "publisher_product_url": "https://3dsets.com/product/3d-sets-skippy-boat-trailer/",
+      "product_release": null,
+      "guides": [],
+      "conflicts": [],
+      "store_kit": {
+        "product_id": null,
+        "sku": null,
+        "kit_revision": null,
+        "included_contents": null,
+        "excluded_contents": null,
+        "supported_model_release": null,
+        "digital_access_included": null,
+        "price": null,
+        "physical_stock": null
+      },
+      "factual_confidence": "verified_source_link_metadata",
+      "rights_status": "link_only_no_manual_reuse",
+      "native_approval": null
+    },
+    {
+      "model_key": "triton",
+      "model_number": null,
+      "name": "Triton Racer",
+      "category": "jet_boat",
+      "publisher_product_url": "https://3dsets.com/product/3d-sets-triton-racer/",
+      "product_release": null,
+      "guides": [],
+      "conflicts": [],
+      "store_kit": {
+        "product_id": null,
+        "sku": null,
+        "kit_revision": null,
+        "included_contents": null,
+        "excluded_contents": null,
+        "supported_model_release": null,
+        "digital_access_included": null,
+        "price": null,
+        "physical_stock": null
+      },
+      "factual_confidence": "verified_source_link_metadata",
+      "rights_status": "link_only_no_manual_reuse",
+      "native_approval": null
+    }
+  ],
+  "unverified_categories": [
+    "jet_aircraft"
+  ],
+  "retailer_examples": [
+    {
+      "retailer": "DREMC",
+      "listing_brand_name": "3DMakerParts",
+      "retailer_vendor_metadata": "West3D",
+      "manufacturer_attribution": "unresolved_title_vendor_mapping",
+      "retailer_sku": "WES2487",
+      "retailer_variant_id": "46730415767721",
+      "variant_title": "Buggy / Buggster / Sandy",
+      "observed_price_aud": 224.95,
+      "observed_available": true,
+      "observed_at": "2026-10-13T07:21:22Z",
+      "source_url": "https://store.dremc.com.au/products/3dsets-com-rc-vehicle-kits-by-3dmakerparts.js",
+      "listing_url": "https://store.dremc.com.au/products/3dsets-com-rc-vehicle-kits-by-3dmakerparts",
+      "store_identity": null,
+      "store_price": null,
+      "store_stock": null,
+      "exact_model_release_compatibility": null,
+      "connector_type": null,
+      "kit_revision": null,
+      "inclusions_review_status": "supplier_BOM_review_pending",
+      "native_approval": null
+    },
+    {
+      "retailer": "DREMC",
+      "listing_brand_name": "3DMakerParts",
+      "retailer_vendor_metadata": "West3D",
+      "manufacturer_attribution": "unresolved_title_vendor_mapping",
+      "retailer_sku": "WES2488",
+      "retailer_variant_id": "46730415800489",
+      "variant_title": "Landy",
+      "observed_price_aud": 244.95,
+      "observed_available": true,
+      "observed_at": "2026-10-13T07:21:22Z",
+      "source_url": "https://store.dremc.com.au/products/3dsets-com-rc-vehicle-kits-by-3dmakerparts.js",
+      "listing_url": "https://store.dremc.com.au/products/3dsets-com-rc-vehicle-kits-by-3dmakerparts",
+      "store_identity": null,
+      "store_price": null,
+      "store_stock": null,
+      "exact_model_release_compatibility": null,
+      "connector_type": null,
+      "kit_revision": null,
+      "inclusions_review_status": "supplier_BOM_review_pending",
+      "native_approval": null
+    },
+    {
+      "retailer": "DREMC",
+      "listing_brand_name": "3DMakerParts",
+      "retailer_vendor_metadata": "West3D",
+      "manufacturer_attribution": "unresolved_title_vendor_mapping",
+      "retailer_sku": "WES2489",
+      "retailer_variant_id": "46730423664809",
+      "variant_title": "Sakura",
+      "observed_price_aud": 249.0,
+      "observed_available": true,
+      "observed_at": "2026-10-13T07:21:22Z",
+      "source_url": "https://store.dremc.com.au/products/3dsets-com-rc-vehicle-kits-by-3dmakerparts.js",
+      "listing_url": "https://store.dremc.com.au/products/3dsets-com-rc-vehicle-kits-by-3dmakerparts",
+      "store_identity": null,
+      "store_price": null,
+      "store_stock": null,
+      "exact_model_release_compatibility": null,
+      "connector_type": null,
+      "kit_revision": null,
+      "inclusions_review_status": "supplier_BOM_review_pending",
+      "native_approval": null
+    }
+  ]
+}

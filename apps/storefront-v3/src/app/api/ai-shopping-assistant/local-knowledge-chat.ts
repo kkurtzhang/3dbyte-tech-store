@@ -10,6 +10,10 @@ import {
 } from "./local-knowledge";
 
 import { resolveLocalKnowledgeFocus } from "./local-knowledge-focus";
+import {
+  resolveThreeDSetsResources,
+  streamThreeDSetsResources,
+} from "./three-d-sets-resources";
 
 const requestSchema = z.object({
   messages: z
@@ -111,6 +115,8 @@ export async function handleLocalKnowledgeChat(
         { status: 400 },
       );
     }
+    const resources = resolveThreeDSetsResources(body.messages);
+    if (resources) return streamThreeDSetsResources(resources);
     const focus = resolveLocalKnowledgeFocus(body.messages);
     const context =
       focus.mode === "clarify"
