@@ -160,6 +160,8 @@ def atom_candidate(store, plan, row, atom):
         c for c in candidates if c["local_group_key"] == atom["target_group_key"]
     )
     found = copy.deepcopy(prototype)
+    # Reviews of prototype facts do not apply to a different source fragment.
+    found.pop("derived_preparation_review", None)
     found["candidate_key"] = row["record_key"] + "__" + atom["source_id"]
     found["selected_for_reference_card"] = False
     body = found["native_template"]

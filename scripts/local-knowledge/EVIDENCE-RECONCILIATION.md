@@ -66,3 +66,5 @@ The full report contains `prepared_native_plan`, consumable by the existing offl
 ## Combined-store provenance
 
 The saved source manifest remains hash-pinned and unchanged. Reconciliation rebuilds the base preparation from the current isolated store, then requires exact equality of all facts, source proofs, primary selections and native permission fields. Only preparation time, local statistics, existing local-event metadata and source-file locations are excluded from that comparison. Current local event IDs, actors and revisions therefore stay tied to their actual SQLite history. Evidence or permission drift fails closed. The diagram inspection is attributed to the prior source milestone; reproducing this report does not claim a fresh visual inspection.
+
+A new source fragment carries preparation-review entries only for its own source-specific facts. Prototype review entries are not inherited; the eight atoms therefore have exactly seven new preparation entries plus one already-prepared fact. These are evidence-preparation annotations, not SQLite or native approval events.

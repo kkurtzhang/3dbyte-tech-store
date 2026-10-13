@@ -41,6 +41,27 @@ class ReconciliationProvenanceTests(unittest.TestCase):
                 )
         self.assertEqual(plan["local_stats"], self.before)
 
+    def test_new_fragment_reviews_only_its_own_projected_facts(self):
+        candidates = self.report["prepared_native_plan"][
+            "single_source_candidate_fragments"
+        ]
+        self.assertEqual(
+            sum(len(c.get("derived_preparation_review", [])) for c in candidates), 7
+        )
+        for candidate in candidates:
+            fields = {f["field"] for f in candidate["native_template"]["facts"]}
+            proofs = {
+                p["field"]: p["citations"]
+                for p in candidate["source_sidecar"]["field_proofs"]
+            }
+            for review in candidate.get("derived_preparation_review", []):
+                self.assertIn(review["field"], fields)
+                self.assertEqual(
+                    {p["local_source_id"] for p in proofs[review["field"]]},
+                    {candidate["source_sidecar"]["local_source_id"]},
+                )
+                self.assertFalse(review["native_review_event"])
+
     def test_rebuilt_evidence_drift_is_rejected(self):
         changed = copy.deepcopy(build_readiness(self.store))
         facts = changed["single_source_candidate_fragments"][0]["native_template"][
