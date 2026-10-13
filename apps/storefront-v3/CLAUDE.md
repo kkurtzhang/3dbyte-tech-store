@@ -51,6 +51,12 @@ pnpm exec playwright test
 The `type-check` script includes test sources. Release CI uses the production
 TypeScript check in `next build` and runs Jest separately.
 
+The root `pnpm.packageExtensions` entry binds the pinned Next package to this
+storefront's React type peers. This keeps its nested declarations aligned with
+React 19 while backend and CMS retain their React 18 types. The installed-consumer
+regression runs before `tsc` in `type-check`; preserve generated production and dev
+layout checks when verifying a change.
+
 For component work, use React Testing Library and user-visible assertions. For
 authentication, account, cart, checkout, order, and search regressions, add the
 narrowest useful unit/integration test and use Playwright when browser state or
