@@ -425,6 +425,40 @@ def stable_preparation_fields(manifest):
     return value
 
 
+def preparation_matches_pinned(store, current, pinned):
+    """Permit only independently verified local guide supersessions in the inventory."""
+    current = stable_preparation_fields(current)
+    pinned = stable_preparation_fields(pinned)
+    supersessions = current["frozen_v1_evidence"].pop(
+        "verified_local_guide_supersessions", []
+    )
+    inventory = {r["record_key"]: r for r in current["record_inventory"]}
+    baseline = {r["record_key"]: r for r in pinned["record_inventory"]}
+    seen = set()
+    for item in supersessions:
+        key = item["record_key"]
+        if key in seen or key not in inventory or key not in baseline:
+            return False
+        seen.add(key)
+        active, prior = inventory[key], baseline[key]
+        row = store.db.execute(
+            "SELECT revision,payload FROM records WHERE record_key=? AND active=1",
+            (key,),
+        ).fetchone()
+        if (
+            row is None
+            or active["kind"] != "editorial_guide"
+            or prior["kind"] != "editorial_guide"
+            or active["local_revision"] != item["active_revision"]
+            or row["revision"] != item["active_revision"]
+            or prior["local_revision"] != item["baseline_revision"]
+            or not store.verified_citation_repair(row, item["baseline_revision"])
+        ):
+            return False
+        active["local_revision"] = prior["local_revision"]
+    return current == pinned
+
+
 def build_reconciliation(store):
     receipt = json.loads(BASE_RECEIPT.read_text())
     base = receipt["manifest"]
@@ -432,7 +466,7 @@ def build_reconciliation(store):
         raise ValueError("Prior readiness artifact changed")
     pinned = json.loads(Path(base["path"]).read_text())
     original = build_readiness(store)
-    if stable_preparation_fields(original) != stable_preparation_fields(pinned):
+    if not preparation_matches_pinned(store, original, pinned):
         raise ValueError(
             "Current preparation differs from pinned source evidence or gates"
         )

@@ -22,7 +22,7 @@ def baseline_records():
 
     if sha(snapshot["path"]) != snapshot["sha256"]:
         raise ValueError("Preserved baseline snapshot changed")
-    db = sqlite3.connect("file:" + snapshot["path"] + "?mode=ro", uri=True)
+    db = sqlite3.connect("file:" + snapshot["path"] + "?mode=ro&immutable=1", uri=True)
     try:
         return {
             key: {"revision": revision, "record": json.loads(payload)}

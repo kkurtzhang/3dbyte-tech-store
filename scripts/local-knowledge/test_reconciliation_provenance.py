@@ -80,6 +80,46 @@ class ReconciliationProvenanceTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "differs from pinned"):
                 build_reconciliation(self.store)
 
+    def test_verified_guide_revisions_keep_the_pinned_source_plan(self):
+        plan = self.report["prepared_native_plan"]
+        supersessions = plan["frozen_v1_evidence"]["verified_local_guide_supersessions"]
+        self.assertEqual(len(supersessions), 29)
+        inventory = {r["record_key"]: r for r in plan["record_inventory"]}
+        for item in supersessions:
+            self.assertEqual(
+                inventory[item["record_key"]]["local_revision"], item["active_revision"]
+            )
+            self.assertEqual(inventory[item["record_key"]]["kind"], "editorial_guide")
+
+    def test_source_document_revision_drift_is_rejected(self):
+        changed = copy.deepcopy(build_readiness(self.store))
+        row = next(
+            r for r in changed["record_inventory"] if r["kind"] == "source_document"
+        )
+        row["local_revision"] = "unreviewed-source-revision"
+        with patch("reconcile_evidence.build_readiness", return_value=changed):
+            with self.assertRaisesRegex(ValueError, "differs from pinned"):
+                build_reconciliation(self.store)
+
+    def test_forged_guide_inventory_revision_is_rejected(self):
+        changed = copy.deepcopy(build_readiness(self.store))
+        row = next(
+            r for r in changed["record_inventory"] if r["kind"] == "editorial_guide"
+        )
+        row["local_revision"] = "unreviewed-guide-revision"
+        with patch("reconcile_evidence.build_readiness", return_value=changed):
+            with self.assertRaisesRegex(ValueError, "differs from pinned"):
+                build_reconciliation(self.store)
+
+    def test_supersession_label_cannot_replace_verified_local_review(self):
+        changed = copy.deepcopy(build_readiness(self.store))
+        with patch("reconcile_evidence.build_readiness", return_value=changed):
+            with patch.object(
+                self.store, "verified_citation_repair", return_value=False
+            ):
+                with self.assertRaisesRegex(ValueError, "differs from pinned"):
+                    build_reconciliation(self.store)
+
     def test_diagram_inspection_is_attributed_to_prior_source_review(self):
         visual = self.report["diagram_origin_and_visual_review"]
         self.assertEqual(visual["inspection_scope"], "prior_source_milestone_review")

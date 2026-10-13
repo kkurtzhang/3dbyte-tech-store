@@ -51,7 +51,15 @@ Validation against the repaired guides:
 
 The initial regression run detected a stale retrieval fingerprint after the actual revisions. The local TF-IDF/SVD index was refreshed and activation now refreshes it after changes. The final index covers 469 rows and matches fingerprint `4adc05e96d7465e0596e69770d455b2a6a9735529030829e31ae485599bf8a12`. A later test incorrectly assumed both supplier captures needed newline normalization; the test now derives that expectation from captured bytes. Earlier failing logs remain preserved beside the passing result.
 
-No TypeScript runtime or dependency changed. Prior source/test type checks remain applicable; the separate canonical generated React 18/19 type mismatch remains parent-owned. No fresh full TypeScript compile, browser visual check, native API call or LLM quality evaluation is claimed.
+The source milestone did not change TypeScript runtime code or dependencies and did not repeat the full TypeScript compile. Its React 18/19 limitation is historical: the combined integration retains the scoped React peer fix and passes the canonical backend, storefront and shared-package type checks, including generated Next.js development/production types and all three installed-consumer regressions. No browser visual check, native API call or LLM quality evaluation is claimed.
+
+### Combined integration from `0a7249df`
+
+The follow-up branch `integration/security-knowledge-guide-citations-20261013` applies source milestone `85b41486` in a fresh private fixture. It creates 29 actual local review events, taking this integration's distinct review history from 136 to **165**. The source milestone's 168-event history above is retained as source evidence; three historical events are not fabricated in the integration. All 29 resulting guide revisions match the source receipt.
+
+The reconciliation builder now accepts only guide supersessions verified against the current database, preserved baseline payload and matching local review event. Only those guide inventory revision hashes are normalized for comparison with the pinned preparation; every source fact, source-document revision and native gate still has to match. Regression tests reject forged guide inventory revisions, missing verified reviews, changed source revisions, changed facts and changed authorization. The frozen source export is opened read-only and immutable after its pinned hash passes.
+
+Fresh combined validation passes **87 Python tests**, **82 Jest tests**, **30/30 customer coverage cases**, both the **64-fragment / 155-fact** ordinary plan and **65-fragment / 162-fact** reconciliation plan, and full types. The exact local event IDs, before/after data preservation, source-byte hashes, prepared equivalents and final source scan are recorded under the external SSD integration artifact directory `artifacts/security-knowledge-integration-20261013/guide-citations`. Earlier reports and snapshots remain unchanged. Services remain off; native review, actual bindings, action authorization and release gates remain pending.
 
 ## Reproduce and continue
 
