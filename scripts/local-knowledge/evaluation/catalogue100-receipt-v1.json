@@ -1,0 +1,211 @@
+{
+  "completed_at": "2026-10-13T16:48:33.087844+00:00",
+  "task": "Expand local manufacturer knowledge to 100 valid distinct canonical products.",
+  "source_thread_id": "01a11a2a-4478-70c8-863c-bd4818f820e5",
+  "human_authorization": "keep building knowledge base until we have 100 products; delegated 13 October 2026 15:52 UTC",
+  "branch": "feat/knowledge-100-products-20261013",
+  "base_commit": "588279c3ac2d067b06c8e11b365dd0d6d7cfaa21",
+  "workspace": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100",
+  "environment": "local_development",
+  "counts": {
+    "researched": 72,
+    "accepted_new": 70,
+    "held_new": 2,
+    "duplicates_added": 0,
+    "legacy_pending": 3,
+    "verified_baseline": 30,
+    "verified_final": 100
+  },
+  "new_categories": {
+    "accessories": 24,
+    "hardware": 25,
+    "filament": 21
+  },
+  "corpus": {
+    "products": 103,
+    "records": 150,
+    "documents": 121,
+    "guides": 29,
+    "variants": 103,
+    "sources": 231,
+    "claims": 962,
+    "supported_claims": 366,
+    "unknown_claims": 523,
+    "local_editorial_decisions": 247,
+    "environment": "local_development",
+    "native_approvals": 0
+  },
+  "new_supported_claims": 196,
+  "new_dated_aud_references": 56,
+  "new_products_without_verified_aud_price": 14,
+  "new_verified_source_versions": 114,
+  "source_integrity": {
+    "available_verified_versions": 226,
+    "active_citations_verified": 613,
+    "unusable_legacy_versions_retained": [
+      "local_source_new_tpu",
+      "local_source_new_pa",
+      "local_source_new_mag",
+      "local_source_new_prp",
+      "local_source_new_sock"
+    ],
+    "unusable_legacy_versions_cited_by_active_claims": 0
+  },
+  "preservation": {
+    "original_v1_snapshot": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/exports/guide-citation-final-local-snapshot-v1.sqlite3",
+      "sha256": "f70dfb47695b554e11ac13e7b47ab773b86b25441c813d71e085e6560dd685c1"
+    },
+    "original_v1_all_tables_equal_snapshot": {
+      "metadata": true,
+      "products": true,
+      "sources": true,
+      "records": true,
+      "editorial_decisions": true,
+      "claims": true,
+      "claim_fts": true,
+      "claim_fts_data": true,
+      "claim_fts_idx": true,
+      "claim_fts_content": true,
+      "claim_fts_docsize": true,
+      "claim_fts_config": true,
+      "revisions": true,
+      "local_reference_variants": true,
+      "local_record_bindings": true
+    },
+    "all_80_baseline_records_and_original_product_source_review_history_preserved_in_expansion": true
+  },
+  "deliverables": {
+    "inventory": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100/exports/catalogue100-inventory-v1.csv",
+      "sha256": "ffd6dc372566f045e45fd9b090171b4b77a29424be27c81e067f8d6aa1c48888"
+    },
+    "canonical_ledger": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100/exports/catalogue100-canonical-ledger-v1.json",
+      "sha256": "abc084f2339b15a0a88182c7a4903492096448b184ece2c20a92c9b612738bf3"
+    },
+    "snapshot": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100/exports/catalogue100-final-local-snapshot-v1.sqlite3",
+      "sha256": "cbea3dda56d181d4706900bd26c893e520057dfccbc8f76911c6813b223bdf22"
+    }
+  },
+  "verification": {
+    "expansion_python": {
+      "passed": 19,
+      "log": {
+        "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100/logs/corpus-tests-accepted.log",
+        "sha256": "d534e2f927e7c85c1f2d5666bd39647b03501bcf5993cd383ec2b632af495e6b"
+      },
+      "coverage": "70 product routes; 140 current-price/stock negatives; 70 dated-price questions; exact citations; dedup; preserved history; adjacent-model unknowns."
+    },
+    "baseline_python": {
+      "passed": 81,
+      "log": {
+        "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100/logs/baseline-tests.log",
+        "sha256": "0e251ed5db2fa0cf6d90ef25b96f9f817e2f4d4bb2b007d0f832d29150d5ced5"
+      }
+    },
+    "actual_route": {
+      "passed": 78,
+      "total": 78,
+      "report": {
+        "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100/reports/route-final-coverage-v1.json",
+        "sha256": "2d775b73e17c8ea62408f87132ff020d0919e446e09208eba6d1c0a31993bec0"
+      },
+      "fixtures": {
+        "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100/reports/route-final-cases-v1.json",
+        "sha256": "fd14791d28f7325c768351a5e83ecc93464c614f47ef2ab6167a61c68a57487f"
+      },
+      "streams": {
+        "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100/reports/route-final-streams-v1.json",
+        "sha256": "074f8185977caacc1300ef53f0a88b9e69d3f86558160a7399a71db1f8cd6fd7"
+      },
+      "scope": "70 positive named-product questions; four wrong-model questions and four live-price questions return unknown; actual handler with subprocess retrieval, no sockets or model."
+    },
+    "existing_jest_cases": {
+      "passed": 59,
+      "skipped_optional_fixture": 1,
+      "report": {
+        "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100/reports/jest-route-1.json",
+        "sha256": "d377e9006188df11f0dada400ece14b4d77380ddb79f3904d605f92baa0ca300"
+      },
+      "note": "The first 35-case integration run reached the unchanged 30/min request limit. Its other 59 cases passed; bounded reruns passed, and all final streams were independently validated."
+    },
+    "typescript": "Source/test tsc --noEmit passed with established config excluding .next/dev generated types; full generated React18/19 release type limitation remains parent-owned. No TypeScript runtime changes.",
+    "typecheck_config": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100/tmp/typecheck-source-and-tests.json",
+      "sha256": "02c1e1be6c6833799780d4fa66a9399bc35cd1efb40162ca7a1ffc8564f6fae3"
+    },
+    "typecheck_log": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100/logs/typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "python_syntax": "AST parse passed for all five new modules",
+    "ruff_F_E9": "passed",
+    "ports": [
+      {
+        "port": 3005,
+        "no_listener": true
+      },
+      {
+        "port": 8873,
+        "no_listener": true
+      }
+    ]
+  },
+  "batch_receipts": [
+    {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100/reports/activation-materials-01.json",
+      "sha256": "9deb7b40f3ee2efc4af088259bb6cb0c9cbd6ec5ea0fa9ddca91a56b59d2bd84"
+    },
+    {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100/reports/activation-hardware-01.json",
+      "sha256": "03eca58b4795caef5d35c201b98e849fc99b8f8a1e1ca3aa41c9f215fd170b1c"
+    },
+    {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100/reports/activation-materials-02.json",
+      "sha256": "be91c7038e8aa0261cdd258e2baf3a4c4cffb536134228610b3614cee56362bc"
+    },
+    {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100/reports/activation-accessories-01.json",
+      "sha256": "d37669291576fbc96b697a816891f4e57950a999e0a70763cc1ebb6800c1f6a8"
+    },
+    {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100/reports/routing-repair-v1.json",
+      "sha256": "733c2d56b5daf248c5079a1f46dcfacf12701d23e22cd05552a754dbfe641bc3"
+    },
+    {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100/reports/sibling-scope-review-v1.json",
+      "sha256": "2c93016a0f76d722c75c6a6505663529c6a1bc869ecee74d74bcbd70bfd746c1"
+    }
+  ],
+  "source_manifests": [
+    {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100/reports/sources-materials-01.json",
+      "sha256": "0126d7c59422ef2e07f572408fc0dae686737fa5d80476a5db93a46a3a4922c0"
+    },
+    {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100/reports/sources-hardware-01.json",
+      "sha256": "1b6dc9932615d6fb2bfd537388f96720e7f62671f4e2ad5abc2dda6a36dbcb37"
+    },
+    {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100/reports/sources-remainder-01.json",
+      "sha256": "5c7449549dfc2d8a96fd4f6963960ec41c9a2e891034cc0732bce2ff0306e24b"
+    },
+    {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100/reports/sources-followup-01.json",
+      "sha256": "fa911d2abaa998a0aadc604f4cb05e317816f1f6c801b536c999fb9c3912c63f"
+    }
+  ],
+  "limits": {
+    "services_started": false,
+    "preview_started": false,
+    "dependencies_installed": false,
+    "paid_model_calls": 0,
+    "native_writes": 0,
+    "native_approvals": 0,
+    "credentials_or_access_expanded": false,
+    "push_merge_deploy": false
+  },
+  "remaining_scope": "Local goal complete. Three legacy kit attributions and two unused new candidates remain held. No native store binding/publication or new multi-turn frontend subject registry is claimed; new named direct queries are verified. Existing release/native preflight gates are unchanged."
+}

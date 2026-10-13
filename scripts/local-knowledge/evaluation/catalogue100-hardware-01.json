@@ -1,0 +1,1326 @@
+{
+  "batch_id": "hardware-01",
+  "source_manifests": [
+    "sources-hardware-01.json",
+    "sources-remainder-01.json"
+  ],
+  "entries": [
+    {
+      "key": "btt_sfs_v2",
+      "canonical_key": "bigtreetech:btt_sfs_v2",
+      "title": "BIGTREETECH SFS V2.0 filament sensor",
+      "brand": "BIGTREETECH",
+      "category": "hardware",
+      "manufacturer_product_url": "https://bigtree-tech.com/it/blogs/news/new-release-bigtreetech-sfs-v2-0",
+      "distinctness_reason": "SFS V2.0 manufacturer reference. The captured AU listing now says V2.1, so revision equivalence and its price are unknown.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "(?:bigtreetech\\s+)?sfs\\s*v?2\\.0"
+      ],
+      "facts": [
+        {
+          "field": "detection_length",
+          "value": "BIGTREETECH manufacturer source: The theoretical detection length is 2.88 mm; this is not a measured accuracy guarantee.",
+          "query_pattern": "detection|length|spec|feature",
+          "proofs": [
+            {
+              "source_key": "btt_sfs_v2_official",
+              "quote": "The theoretical detection length is 2.88mm, more precise."
+            }
+          ]
+        },
+        {
+          "field": "filament_diameter",
+          "value": "BIGTREETECH manufacturer source: The specification lists 1.75 mm filament.",
+          "query_pattern": "filament|diameter|spec|feature",
+          "proofs": [
+            {
+              "source_key": "btt_sfs_v2_official",
+              "quote": "Filament Diameter\n1.75mm"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "SFS V2.0 manufacturer reference. The captured AU listing now says V2.1, so revision equivalence and its price are unknown.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        },
+        {
+          "field": "dated_reference_price",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "reason": "The captured Australian page selects a different revision or variant; its price is not attributed to this reference."
+        }
+      ]
+    },
+    {
+      "key": "btt_skr_mini_e3_v3",
+      "canonical_key": "bigtreetech:btt_skr_mini_e3_v3",
+      "title": "BIGTREETECH SKR Mini E3 V3.0",
+      "brand": "BIGTREETECH",
+      "category": "hardware",
+      "manufacturer_product_url": "https://raw.githubusercontent.com/bigtreetech/docs/master/docs/SKR%20MINI%20E3.md",
+      "distinctness_reason": "V3.0 board only; not V3.0.1 or a display compatibility promise.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "skr\\s*mini\\s*e3\\s*v?3(?:\\.0)?"
+      ],
+      "facts": [
+        {
+          "field": "processor",
+          "value": "BIGTREETECH manufacturer source: Uses the STM32G0B1RET6 MCU.",
+          "query_pattern": "processor|spec|feature",
+          "proofs": [
+            {
+              "source_key": "btt_skr_mini_e3_v3_official",
+              "quote": "Adopts STMicroelectronics G0 series MCU STM32G0B1RET6"
+            }
+          ]
+        },
+        {
+          "field": "fan_outputs",
+          "value": "BIGTREETECH manufacturer source: Adds a third PWM controlled cooling fan output.",
+          "query_pattern": "fan|outputs|spec|feature",
+          "proofs": [
+            {
+              "source_key": "btt_skr_mini_e3_v3_official",
+              "quote": "Added a third PWM controlled cooling fan output"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, DREMC displayed AUD 73.50, including GST, for Bigtreetech SKR Mini E3 V3.0 32 Bit Control Board for Ender 3/Ender 5/CR-10 Series and the selected variant shown in the citation. This is a dated external reference, not a live 3D Byte offer; shipping, landed cost and physical availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "btt_skr_mini_e3_v3_au",
+              "quote": "Bigtreetech SKR Mini E3 V3.0 32 Bit Control Board for Ender 3/Ender 5/CR-10 Series\n2 reviews\nSave 0\nBIGTREETECH\nSKU:\n1060000511\n\u2713 Copied\nPrice:\nSale price\n$73.50 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "V3.0 board only; not V3.0.1 or a display compatibility promise.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        },
+        {
+          "field": "unverified_nearby_model",
+          "query_pattern": "v?3\\.0\\.1",
+          "reason": "SKR Mini E3 V3.0.1 is not the documented V3.0 board; revision-specific specifications and firmware compatibility are unknown."
+        }
+      ]
+    },
+    {
+      "key": "btt_manta_m8p_v2",
+      "canonical_key": "bigtreetech:btt_manta_m8p_v2",
+      "title": "BIGTREETECH Manta M8P V2.0",
+      "brand": "BIGTREETECH",
+      "category": "hardware",
+      "manufacturer_product_url": "https://raw.githubusercontent.com/bigtreetech/docs/master/docs/M8P-V2_0.md",
+      "distinctness_reason": "M8P V2.0 board; compute modules and drivers are not implied included.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "manta\\s*m8p\\s*v?2(?:\\.0)?"
+      ],
+      "facts": [
+        {
+          "field": "processor",
+          "value": "BIGTREETECH manufacturer source: STM32H723ZET6 ARM Cortex-M7, running at 550 MHz.",
+          "query_pattern": "processor|spec|feature",
+          "proofs": [
+            {
+              "source_key": "btt_manta_m8p_v2_official",
+              "quote": "Uses a 32-bit STM32H723ZET6 ARM Cortex-M7 MCU running at 550MHz."
+            }
+          ]
+        },
+        {
+          "field": "input_power",
+          "value": "BIGTREETECH manufacturer source: The power chip accepts 12/24 V DC input; this does not define every output rail.",
+          "query_pattern": "input|power|spec|feature",
+          "proofs": [
+            {
+              "source_key": "btt_manta_m8p_v2_official",
+              "quote": "The TPS5450-5A power chip supports 12/24V DC input"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, DREMC displayed AUD 135.00, including GST, for Bigtreetech Manta M8P v2.0 Control Board Klipper and the selected variant shown in the citation. This is a dated external reference, not a live 3D Byte offer; shipping, landed cost and physical availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "btt_manta_m8p_v2_au",
+              "quote": "Bigtreetech Manta M8P v2.0 Control Board Klipper\n1 review\nSave 0\nBIGTREETECH\nSKU:\n1020000442\n\u2713 Copied\nPrice:\nSale price\n$135.00 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "M8P V2.0 board; compute modules and drivers are not implied included.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        }
+      ]
+    },
+    {
+      "key": "btt_sb2209_stm32",
+      "canonical_key": "bigtreetech:btt_sb2209_stm32",
+      "title": "BIGTREETECH EBB SB2209 CAN V1.0 STM32",
+      "brand": "BIGTREETECH",
+      "category": "hardware",
+      "manufacturer_product_url": "https://raw.githubusercontent.com/bigtreetech/docs/master/docs/EBB%202240%202209%20CAN.md",
+      "distinctness_reason": "STM32 SB2209 CAN V1.0 only; separate from RP2040 and USB revisions.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "(?:ebb\\s+)?sb2209(?:\\s+can)?(?:\\s+v1\\.0)?(?:\\s+stm32)?"
+      ],
+      "facts": [
+        {
+          "field": "processor",
+          "value": "BIGTREETECH manufacturer source: STM32G0B1CBT6 Cortex-M0+ at 64 MHz for the STM32 model.",
+          "query_pattern": "processor|spec|feature",
+          "proofs": [
+            {
+              "source_key": "btt_sb2209_stm32_official",
+              "quote": "Arm\u00ae 32-bit Cortex\u00ae-M0+ CPU STM32G0B1CBT6 64MHz"
+            }
+          ]
+        },
+        {
+          "field": "onboard_accelerometer",
+          "value": "BIGTREETECH manufacturer source: The on-board sensor is ADXL345.",
+          "query_pattern": "onboard|accelerometer|spec|feature",
+          "proofs": [
+            {
+              "source_key": "btt_sb2209_stm32_official",
+              "quote": "| On-board sensor                         | ADXL345"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, DREMC displayed AUD 69.95, including GST, for Bigtreetech EBB SB2209 CAN V1.0 for Voron StealthBurner and the selected variant shown in the citation. This is a dated external reference, not a live 3D Byte offer; shipping, landed cost and physical availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "btt_sb2209_stm32_au",
+              "quote": "Bigtreetech EBB SB2209 CAN V1.0 for Voron StealthBurner\n1 review\nSave 0\nBIGTREETECH\nSKU:\n1020000425+1060000637\n\u2713 Copied\nOption:\nEBB SB2209 CAN V1.0\nEBB SB2209 CAN V1.0\nEBB SB2209\uff08RP2040)\n3M CAN Cable Only\nEBB SB0000 Fan PCB Only\nPrice:\nSale price\n$69.95 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "STM32 SB2209 CAN V1.0 only; separate from RP2040 and USB revisions.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        },
+        {
+          "field": "unverified_nearby_model",
+          "query_pattern": "rp2040|sb2209\\s*usb",
+          "reason": "RP2040 and USB SB2209 models are outside this STM32 CAN V1.0 reference; their processor, pinout and specifications are not verified here."
+        }
+      ]
+    },
+    {
+      "key": "btt_ebb36_gen2",
+      "canonical_key": "bigtreetech:btt_ebb36_gen2",
+      "title": "BIGTREETECH EBB36 Gen2 V1.0",
+      "brand": "BIGTREETECH",
+      "category": "hardware",
+      "manufacturer_product_url": "https://raw.githubusercontent.com/bigtreetech/docs/master/docs/EBB36_GEN2.md",
+      "distinctness_reason": "EBB36 Gen2 V1.0 only. AU page currently defaults to EBB42; its selected price cannot establish an EBB36 offer.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "ebb\\s*36\\s*gen\\s*2"
+      ],
+      "facts": [
+        {
+          "field": "processor",
+          "value": "BIGTREETECH manufacturer source: ARM Cortex-M0+ STM32G0B1CBT6 at 64 MHz.",
+          "query_pattern": "processor|spec|feature",
+          "proofs": [
+            {
+              "source_key": "btt_ebb36_gen2_official",
+              "quote": "Main control chip: ARM Cortex-M0+ STM32G0B1CBT6, 64MHz."
+            }
+          ]
+        },
+        {
+          "field": "fan_outputs",
+          "value": "BIGTREETECH manufacturer source: Three PWM-controllable fan outputs with short-circuit and thermal protection.",
+          "query_pattern": "fan|outputs|spec|feature",
+          "proofs": [
+            {
+              "source_key": "btt_ebb36_gen2_official",
+              "quote": "Three PWM-controllable fan outputs with short-circuit and thermal protection."
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "EBB36 Gen2 V1.0 only. AU page currently defaults to EBB42; its selected price cannot establish an EBB36 offer.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        },
+        {
+          "field": "dated_reference_price",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "reason": "The captured Australian page selects a different revision or variant; its price is not attributed to this reference."
+        }
+      ]
+    },
+    {
+      "key": "bondtech_lgx",
+      "canonical_key": "bondtech:bondtech_lgx",
+      "title": "Bondtech LGX Large Gears Extruder",
+      "brand": "Bondtech",
+      "category": "hardware",
+      "manufacturer_product_url": "https://www.bondtech.se/product/lgx-large-gears-extruder/",
+      "distinctness_reason": "Full LGX extruder; distinct from Lite V2 and Lite PRO.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "(?:bondtech\\s+)?lgx(?!\\s*(?:lite|primary|gear))"
+      ],
+      "facts": [
+        {
+          "field": "motor_package",
+          "value": "Bondtech manufacturer source: The official package includes a custom NEMA17 25 mm pancake stepper motor.",
+          "query_pattern": "motor|package|spec|feature",
+          "proofs": [
+            {
+              "source_key": "bondtech_lgx_official",
+              "quote": "1x Custom Nema17 25mm pancake stepper motor;"
+            }
+          ]
+        },
+        {
+          "field": "interfaces",
+          "value": "Bondtech manufacturer source: The official package lists both Bowden and direct-drive interface plugs; the latter is described for Slice Engineering hotends.",
+          "query_pattern": "interfaces|spec|feature",
+          "proofs": [
+            {
+              "source_key": "bondtech_lgx_official",
+              "quote": "1x Bowden Interface Plug (with threaded metal push-fit);\n1x Direct Drive Interface Plug (for Slice Engineering hotends);"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, DREMC displayed AUD 174.95, including GST, for Bondtech LGX\u2122 Large Gears eXtruder and the selected variant shown in the citation. This is a dated external reference, not a live 3D Byte offer; shipping, landed cost and physical availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "bondtech_lgx_au",
+              "quote": "Bondtech LGX\u2122 Large Gears eXtruder\nNo reviews\nSave 0\nBondtech\nSKU:\nEXT-LGX\n\u2713 Copied\nPrice:\nSale price\n$174.95 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "Full LGX extruder; distinct from Lite V2 and Lite PRO.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        }
+      ]
+    },
+    {
+      "key": "bondtech_lgx_lite_v2",
+      "canonical_key": "bondtech:bondtech_lgx_lite_v2",
+      "title": "Bondtech LGX Lite V2 with motor",
+      "brand": "Bondtech",
+      "category": "hardware",
+      "manufacturer_product_url": "https://www.bondtech.se/product/lgx-lite-v2-large-gears-extruder/",
+      "distinctness_reason": "LGX Lite V2 with motor; not Lite PRO, mirrored model or bare extruder.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "lgx\\s*lite\\s*v?2"
+      ],
+      "facts": [
+        {
+          "field": "tension_presets",
+          "value": "Bondtech manufacturer source: Three lever presets: open, rigid and flexible.",
+          "query_pattern": "tension|presets|spec|feature",
+          "proofs": [
+            {
+              "source_key": "bondtech_lgx_lite_v2_official",
+              "quote": "filament tension lever with 3 presets (open; rigid; flexible)."
+            }
+          ]
+        },
+        {
+          "field": "filament_diameter",
+          "value": "Bondtech manufacturer source: Supports 1.75 mm filament only.",
+          "query_pattern": "filament|diameter|spec|feature",
+          "proofs": [
+            {
+              "source_key": "bondtech_lgx_lite_v2_official",
+              "quote": "This extruder only supports\n1.75 mm\nsize filament."
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, DREMC displayed AUD 144.95, including GST, for Bondtech LGX\u00ae Lite Extruder V2 (with extruder motor) and the selected variant shown in the citation. This is a dated external reference, not a live 3D Byte offer; shipping, landed cost and physical availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "bondtech_lgx_lite_v2_au",
+              "quote": "Bondtech LGX\u00ae Lite Extruder V2 (with extruder motor)\n3 reviews\nSave 0\nBondtech\nSKU:\nEXT01LGX41003\n\u2713 Copied\nPrice:\nSale price\n$144.95 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "LGX Lite V2 with motor; not Lite PRO, mirrored model or bare extruder.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        },
+        {
+          "field": "unverified_nearby_model",
+          "query_pattern": "mirrored",
+          "reason": "The mirrored extruder is outside this normal LGX Lite V2 reference; motor, mounting and handedness are not established."
+        }
+      ]
+    },
+    {
+      "key": "phaetus_dxc",
+      "canonical_key": "phaetus:phaetus_dxc",
+      "title": "Phaetus DXC extruder",
+      "brand": "Phaetus",
+      "category": "hardware",
+      "manufacturer_product_url": "https://www.phaetus.com/en-us/products/dxc-extruder",
+      "distinctness_reason": "DXC model family; retailer SKU and packaging image identifiers conflict, so an exact MPN/revision is unknown.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "(?:phaetus\\s+)?dxc"
+      ],
+      "facts": [
+        {
+          "field": "gear_system",
+          "value": "Phaetus manufacturer source: The manufacturer describes a helical gear system; advertised wear percentages are not imported as measured performance.",
+          "query_pattern": "gear|system|spec|feature",
+          "proofs": [
+            {
+              "source_key": "phaetus_dxc_official",
+              "quote": "Helical Gear System"
+            }
+          ]
+        },
+        {
+          "field": "pressure_control",
+          "value": "Phaetus manufacturer source: An adaptive rocking arm adjusts pressure based on filament hardness.",
+          "query_pattern": "pressure|control|spec|feature",
+          "proofs": [
+            {
+              "source_key": "phaetus_dxc_official",
+              "quote": "Adaptive Rocking Arm\nautomatically adjusts pressure based on filament hardness"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, DREMC displayed AUD 76.45, including GST, for Phaetus DXC Extruder for Creality K1 Series / DIY 3D Printers and the selected variant shown in the citation. This is a dated external reference, not a live 3D Byte offer; shipping, landed cost and physical availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "phaetus_dxc_au",
+              "quote": "Phaetus DXC Extruder for Creality K1 Series / DIY 3D Printers\n1 review\nSave 0\nPhaetus\nSKU:\n6973090165529\n\u2713 Copied\nPrice:\nSale price\n$76.45 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "DXC model family; retailer SKU and packaging image identifiers conflict, so an exact MPN/revision is unknown.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        }
+      ]
+    },
+    {
+      "key": "bondtech_lgx_lite_pro",
+      "canonical_key": "bondtech:bondtech_lgx_lite_pro",
+      "title": "Bondtech LGX Lite PRO with motor",
+      "brand": "Bondtech",
+      "category": "hardware",
+      "manufacturer_product_url": "https://www.bondtech.se/product/lgx-lite-pro-extruder/",
+      "distinctness_reason": "LGX Lite PRO, materially distinct steel-drive model from Lite V2.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "lgx\\s*lite\\s*pro"
+      ],
+      "facts": [
+        {
+          "field": "drive_and_tension",
+          "value": "Bondtech manufacturer source: Steel drive train and five lever presets: open, rigid, hard rigid/semi flexible, flexible and soft flexible.",
+          "query_pattern": "drive|and|tension|spec|feature",
+          "proofs": [
+            {
+              "source_key": "bondtech_lgx_lite_pro_official",
+              "quote": "Steel Drive Train, maintenance windows and filament tension lever with 5 presets (open, rigid, hard rigid/semi flexible, flexible, soft flexible )."
+            }
+          ]
+        },
+        {
+          "field": "filament_diameter",
+          "value": "Bondtech manufacturer source: Supports 1.75 mm filament only.",
+          "query_pattern": "filament|diameter|spec|feature",
+          "proofs": [
+            {
+              "source_key": "bondtech_lgx_lite_pro_official",
+              "quote": "This extruder only supports 1.75 mm size filament."
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, DREMC displayed AUD 214.45, including GST, for Bondtech LGX Lite PRO eXtruder (with extruder motor) and the selected variant shown in the citation. This is a dated external reference, not a live 3D Byte offer; shipping, landed cost and physical availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "bondtech_lgx_lite_pro_au",
+              "quote": "Bondtech LGX Lite PRO eXtruder (with extruder motor)\n1 review\nSave 0\nBondtech\nSKU:\nEXT01LGX41012\n\u2713 Copied\nPrice:\nSale price\n$214.45 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "LGX Lite PRO, materially distinct steel-drive model from Lite V2.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        }
+      ]
+    },
+    {
+      "key": "phaetus_rapido2f",
+      "canonical_key": "phaetus:phaetus_rapido2f",
+      "title": "Phaetus Rapido 2F UHF PT1000",
+      "brand": "Phaetus",
+      "category": "hardware",
+      "manufacturer_product_url": "https://www.phaetus.com/en-us/products/rapido-2f",
+      "distinctness_reason": "Rapido 2F UHF hardware; separate from earlier Rapido and other hotends. AU kit assembly and full temperature limits need verification.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "rapido\\s*(?:hotend\\s*)?2f"
+      ],
+      "facts": [
+        {
+          "field": "temperature_sensor",
+          "value": "Phaetus manufacturer source: Uses a detachable PT1000 temperature sensor.",
+          "query_pattern": "temperature|sensor|spec|feature",
+          "proofs": [
+            {
+              "source_key": "phaetus_rapido2f_official",
+              "quote": "The detachable PT1000 temperature sensor"
+            }
+          ]
+        },
+        {
+          "field": "flow_variant",
+          "value": "Phaetus manufacturer source: The manufacturer page selects UHF; selected heater/nozzle configuration determines usable conditions.",
+          "query_pattern": "flow|variant|spec|feature",
+          "proofs": [
+            {
+              "source_key": "phaetus_rapido2f_official",
+              "quote": "Flow rate:\nUHF"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, DREMC displayed AUD 174.45, including GST, for Phaetus Rapido Hotend 2F - UHF w/ PT1000 Thermistor and the selected variant shown in the citation. This is a dated external reference, not a live 3D Byte offer; shipping, landed cost and physical availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "phaetus_rapido2f_au",
+              "quote": "Phaetus Rapido Hotend 2F - UHF w/ PT1000 Thermistor\n1 review\nSave 0\nPhaetus\nSKU:\n6973090164652\n\u2713 Copied\nColour:\nBlack\nBlack\nPrice:\nSale price\n$174.45 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "Rapido 2F UHF hardware; separate from earlier Rapido and other hotends. AU kit assembly and full temperature limits need verification.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        }
+      ]
+    },
+    {
+      "key": "phaetus_dragonfly_bms",
+      "canonical_key": "phaetus:phaetus_dragonfly_bms",
+      "title": "Phaetus Dragonfly BMS hotend",
+      "brand": "Phaetus",
+      "category": "hardware",
+      "manufacturer_product_url": "https://www.phaetus.com/en-us/collections/best-selling-products/products/dragonfly-hotend-bms",
+      "distinctness_reason": "Dragonfly BMS model, distinct mounting design from BMO. Component ratings do not establish installed maximum temperature.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "dragonfly\\s*(?:hotend\\s*)?bms"
+      ],
+      "facts": [
+        {
+          "field": "body_material",
+          "value": "Phaetus manufacturer source: The hotend is mainly composed of copper alloy material.",
+          "query_pattern": "body|material|spec|feature",
+          "proofs": [
+            {
+              "source_key": "phaetus_dragonfly_bms_official",
+              "quote": "The hotend is mainly composed of copper alloy material"
+            }
+          ]
+        },
+        {
+          "field": "filament_path_finish",
+          "value": "Phaetus manufacturer source: The manufacturer labels the filament path Ra \u2264 0.3; this is a manufacturer surface-finish statement.",
+          "query_pattern": "filament|path|finish|spec|feature",
+          "proofs": [
+            {
+              "source_key": "phaetus_dragonfly_bms_official",
+              "quote": "Ra \u2264 0.3 Smooth Filament Path"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, DREMC displayed AUD 95.95, including GST, for Phaetus Dragonfly Hotend BMS and the selected variant shown in the citation. This is a dated external reference, not a live 3D Byte offer; shipping, landed cost and physical availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "phaetus_dragonfly_bms_au",
+              "quote": "Phaetus Dragonfly Hotend BMS\nNo reviews\nSave 0\nPhaetus\nSKU:\nWGC000319\n\u2713 Copied\nColour:\nBlack\nBlack\nBlue\nPrice:\nSale price\n$95.95 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "Dragonfly BMS model, distinct mounting design from BMO. Component ratings do not establish installed maximum temperature.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        }
+      ]
+    },
+    {
+      "key": "btt_eddy_duo",
+      "canonical_key": "bigtreetech:btt_eddy_duo",
+      "title": "BIGTREETECH Eddy Duo probe",
+      "brand": "BIGTREETECH",
+      "category": "hardware",
+      "manufacturer_product_url": "https://raw.githubusercontent.com/bigtreetech/docs/master/docs/Eddy.md",
+      "distinctness_reason": "Eddy Duo communication model; not Eddy Coil or legacy Eddy USB.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "eddy\\s*duo"
+      ],
+      "facts": [
+        {
+          "field": "communication",
+          "value": "BIGTREETECH manufacturer source: Eddy Duo supports USB and CAN; switching requires appropriate firmware.",
+          "query_pattern": "communication|spec|feature",
+          "proofs": [
+            {
+              "source_key": "btt_eddy_duo_official",
+              "quote": "Eddy Duo supports two communication methods: USB and CAN."
+            }
+          ]
+        },
+        {
+          "field": "ambient_temperature",
+          "value": "BIGTREETECH manufacturer source: The Eddy family specification lists an ambient operating temperature of at most 60 \u00b0C.",
+          "query_pattern": "ambient|temperature|spec|feature",
+          "proofs": [
+            {
+              "source_key": "btt_eddy_duo_official",
+              "quote": "**\u226460\u2103 Ambient**"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, DREMC displayed AUD 39.95, including GST, for Bigtreetech Eddy Sensor and the selected variant shown in the citation. This is a dated external reference, not a live 3D Byte offer; shipping, landed cost and physical availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "btt_eddy_duo_au",
+              "quote": "Bigtreetech Eddy Sensor\n2 reviews\nSave 0\nBIGTREETECH\nSKU:\n1060000710\n\u2713 Copied\nOptions:\nEddy Duo (USB or CAN)\nEddy Coil\nEddy Duo (USB or CAN)\nPrice:\nSale price\n$39.95 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "Eddy Duo communication model; not Eddy Coil or legacy Eddy USB.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        }
+      ]
+    },
+    {
+      "key": "ldo_leviathan_v13",
+      "canonical_key": "ldo:ldo_leviathan_v13",
+      "title": "LDO Leviathan V1.3 controller",
+      "brand": "LDO",
+      "category": "hardware",
+      "manufacturer_product_url": "https://ldomotion.com/guides/voron-leviathan-v1-3",
+      "distinctness_reason": "Leviathan V1.3 controller. Old V1.2/STM32F446 retailer prose is not applied to this revision.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "leviathan\\s*v?1\\.3"
+      ],
+      "facts": [
+        {
+          "field": "processor",
+          "value": "LDO manufacturer source: V1.3 firmware guide selects STM32H743.",
+          "query_pattern": "processor|spec|feature",
+          "proofs": [
+            {
+              "source_key": "ldo_leviathan_v13_official",
+              "quote": "Processor model: STM32H743"
+            }
+          ]
+        },
+        {
+          "field": "clock_reference",
+          "value": "LDO manufacturer source: V1.3 firmware guide selects a 25 MHz crystal.",
+          "query_pattern": "clock|reference|spec|feature",
+          "proofs": [
+            {
+              "source_key": "ldo_leviathan_v13_official",
+              "quote": "Clock Reference: 25 MHz crystal"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, DREMC displayed AUD 185.00, including GST, for LDO Leviathan V1.3 3D Printer Control Board and the selected variant shown in the citation. This is a dated external reference, not a live 3D Byte offer; shipping, landed cost and physical availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "ldo_leviathan_v13_au",
+              "quote": "LDO Leviathan V1.3 3D Printer Control Board\n1 review\nSave 0\nLDO\nSKU:\nLDO-LEVIATHAN-1.3\n\u2713 Copied\nPrice:\nSale price\n$185.00 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "Leviathan V1.3 controller. Old V1.2/STM32F446 retailer prose is not applied to this revision.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        }
+      ]
+    },
+    {
+      "key": "ldo_nitehawk36",
+      "canonical_key": "ldo:ldo_nitehawk36",
+      "title": "LDO Nitehawk-36 toolboard",
+      "brand": "LDO",
+      "category": "hardware",
+      "manufacturer_product_url": "https://docs.ldomotors.com/en/Toolboard/nitehawk-36",
+      "distinctness_reason": "Nitehawk-36 family with Rev C retailer package; not Nitehawk-SB or a CAN board.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "nitehawk[-\\s]*36"
+      ],
+      "facts": [
+        {
+          "field": "processor_driver",
+          "value": "LDO manufacturer source: RP2040 MCU and TMC2209 stepper driver.",
+          "query_pattern": "processor|driver|spec|feature",
+          "proofs": [
+            {
+              "source_key": "ldo_nitehawk36_official",
+              "quote": "Nitehawk-36 by LDO is a toolboard featuring RP2040 MCU, TMC2209 stepper drive, ADXL345 accelerometer, and USB port."
+            }
+          ]
+        },
+        {
+          "field": "accelerometer_communication",
+          "value": "LDO manufacturer source: ADXL345 accelerometer and a USB connection, as described in the manufacturer introduction.",
+          "query_pattern": "accelerometer|communication|spec|feature",
+          "proofs": [
+            {
+              "source_key": "ldo_nitehawk36_official",
+              "quote": "Nitehawk-36 by LDO is a toolboard featuring RP2040 MCU, TMC2209 stepper drive, ADXL345 accelerometer, and USB port."
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, DREMC displayed AUD 80.00, including GST, for NiteHawk 36 Toolhead by LDO (Rev C) and the selected variant shown in the citation. This is a dated external reference, not a live 3D Byte offer; shipping, landed cost and physical availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "ldo_nitehawk36_au",
+              "quote": "NiteHawk 36 Toolhead by LDO (Rev C)\n3 reviews\nSave 0\nLDO\nSKU:\nLDO-NH36-KIT\n\u2713 Copied\nPrice:\nSale price\n$80.00 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "Nitehawk-36 family with Rev C retailer package; not Nitehawk-SB or a CAN board.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        }
+      ]
+    },
+    {
+      "key": "cartographer_v4",
+      "canonical_key": "cartographer3d:cartographer_v4",
+      "title": "Cartographer V4 AIO probe",
+      "brand": "Cartographer3D",
+      "category": "hardware",
+      "manufacturer_product_url": "https://cartographer3d.com/products/cartographer-v4-aio-standard",
+      "distinctness_reason": "V4 AIO family counted once. Captured AU selected Standard edition at AUD75.45; low-profile geometry and other prices are not the selected offer.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "cartographer(?:\\s*probe)?\\s*v?4"
+      ],
+      "facts": [
+        {
+          "field": "communication",
+          "value": "Cartographer3D manufacturer source: V4 works with USB and CAN setups.",
+          "query_pattern": "communication|spec|feature",
+          "proofs": [
+            {
+              "source_key": "cartographer_v4_official",
+              "quote": "THIS PROBE WORKS WITH BOTH USB and CAN SETUPS."
+            }
+          ]
+        },
+        {
+          "field": "default_firmware",
+          "value": "Cartographer3D manufacturer source: The manufacturer states USB firmware is shipped by default and can be changed to CAN.",
+          "query_pattern": "default|firmware|spec|feature",
+          "proofs": [
+            {
+              "source_key": "cartographer_v4_official",
+              "quote": "will be flashed with USB Firmware by default, you can change this to CAN easily"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, DREMC displayed AUD 75.45, including GST, for Cartographer Probe v4 - CAN & USB and the selected variant shown in the citation. This is a dated external reference, not a live 3D Byte offer; shipping, landed cost and physical availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "cartographer_v4_au",
+              "quote": "Cartographer Probe v4 - CAN & USB\nNo reviews\nSave 0\nCartographer3D\nSKU:\nC-PROBE-V4-ADXL-ST\n\u2713 Copied\nOptions:\nStandard Edition (USB)\nStandard Edition (USB)\nLow Profile (USB)\nPrice:\nSale price\n$75.45 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "V4 AIO family counted once. Captured AU selected Standard edition at AUD75.45; low-profile geometry and other prices are not the selected offer.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        }
+      ]
+    },
+    {
+      "key": "bondtech_cht_mk8",
+      "canonical_key": "bondtech:bondtech_cht_mk8",
+      "title": "Bondtech CHT MK8 coated brass nozzle",
+      "brand": "Bondtech",
+      "category": "hardware",
+      "manufacturer_product_url": "https://www.bondtech.se/product/bondtech-cht-mk8-coated-brass-nozzle/",
+      "distinctness_reason": "MK8 brass interface family, counted once across bore sizes; separate from Volcano, RepRap M6 and BiMetal materials.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "cht\\s*mk8"
+      ],
+      "facts": [
+        {
+          "field": "material_coating",
+          "value": "Bondtech manufacturer source: Brass nozzle with nickel-coated surface.",
+          "query_pattern": "material|coating|spec|feature",
+          "proofs": [
+            {
+              "source_key": "bondtech_cht_mk8_official",
+              "quote": "Brass nozzle with Nickel coated surface"
+            }
+          ]
+        },
+        {
+          "field": "interface_dimensions",
+          "value": "Bondtech manufacturer source: MK8 M6\u00d71\u00d75\u00d713 nozzle standard is stated; not interchangeable with all M6 nozzles.",
+          "query_pattern": "interface|dimensions|spec|feature",
+          "proofs": [
+            {
+              "source_key": "bondtech_cht_mk8_official",
+              "quote": "MK8 (M6\u00d71\u00d75\u00d713)"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, DREMC displayed AUD 33.95, including GST, for Bondtech CHT\u00ae MK8 Coated Brass Nozzle and the selected variant shown in the citation. This is a dated external reference, not a live 3D Byte offer; shipping, landed cost and physical availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "bondtech_cht_mk8_au",
+              "quote": "Bondtech CHT\u00ae MK8 Coated Brass Nozzle\n1 review\nSave 0\nBondtech\nSKU:\n600-C-CHT-MK8-175-40\n\u2713 Copied\nNozzle size:\n0.4mm\n0.4mm\n0.6mm\n0.8mm\n1.0mm\n1.4mm\n1.8mm\nPrice:\nSale price\n$33.95 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "MK8 brass interface family, counted once across bore sizes; separate from Volcano, RepRap M6 and BiMetal materials.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        }
+      ]
+    },
+    {
+      "key": "bondtech_cht_volcano",
+      "canonical_key": "bondtech:bondtech_cht_volcano",
+      "title": "Bondtech CHT Volcano coated brass nozzle",
+      "brand": "Bondtech",
+      "category": "hardware",
+      "manufacturer_product_url": "https://www.bondtech.se/product/bondtech-cht-volcano-coated-brass-nozzle/",
+      "distinctness_reason": "Volcano long interface brass family, counted once across bore sizes; distinct from MK8 and RepRap M6.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "cht\\s*(?:vol\\s*)?volcano"
+      ],
+      "facts": [
+        {
+          "field": "material_coating",
+          "value": "Bondtech manufacturer source: Brass nozzle with nickel-coated surface.",
+          "query_pattern": "material|coating|spec|feature",
+          "proofs": [
+            {
+              "source_key": "bondtech_cht_volcano_official",
+              "quote": "Brass nozzle with Nickel coated surface"
+            }
+          ]
+        },
+        {
+          "field": "interface_dimensions",
+          "value": "Bondtech manufacturer source: Volcano M6\u00d71\u00d714.5\u00d721 nozzle standard is stated.",
+          "query_pattern": "interface|dimensions|spec|feature",
+          "proofs": [
+            {
+              "source_key": "bondtech_cht_volcano_official",
+              "quote": "Volcano (M6\u00d71\u00d714.5\u00d721)"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, DREMC displayed AUD 38.95, including GST, for Bondtech CHT\u00ae Vol Volcano M6 Coated Brass Nozzle and the selected variant shown in the citation. This is a dated external reference, not a live 3D Byte offer; shipping, landed cost and physical availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "bondtech_cht_volcano_au",
+              "quote": "Bondtech CHT\u00ae Vol Volcano M6 Coated Brass Nozzle\nNo reviews\nSave 0\nBondtech\nSKU:\n600-C-CHT-VOL-175-40\n\u2713 Copied\nNozzle Size:\n0.4mm\n0.4mm\n0.6mm\n0.8mm\n1.0mm\n1.2mm\nPrice:\nSale price\n$38.95 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "Volcano long interface brass family, counted once across bore sizes; distinct from MK8 and RepRap M6.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        }
+      ]
+    },
+    {
+      "key": "bondtech_cht_reprap",
+      "canonical_key": "bondtech:bondtech_cht_reprap",
+      "title": "Bondtech CHT RepRap M6 coated brass nozzle",
+      "brand": "Bondtech",
+      "category": "hardware",
+      "manufacturer_product_url": "https://www.bondtech.se/product/bondtech-cht-coated-brass-nozzle/",
+      "distinctness_reason": "RepRap M6 coated brass family across bores; not MK8, Volcano or hardened BiMetal. Bore-specific flow and abrasive restrictions remain scoped.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "cht\\s*(?:reprap\\s*)?m6\\s*(?:coated\\s*)?brass|cht\\s*reprap(?!\\s*(?:v6|bi))"
+      ],
+      "facts": [
+        {
+          "field": "manufacturer_family_code",
+          "value": "Bondtech manufacturer source: Official family SKU 600-C-CHT-MOS-175; bore-specific retailer suffixes are separate variants.",
+          "query_pattern": "manufacturer|family|code|spec|feature",
+          "proofs": [
+            {
+              "source_key": "bondtech_cht_reprap_official",
+              "quote": "SKU:\n600-C-CHT-MOS-175"
+            }
+          ]
+        },
+        {
+          "field": "tool_size",
+          "value": "Bondtech manufacturer source: Requires a 6 mm wrench.",
+          "query_pattern": "tool|size|spec|feature",
+          "proofs": [
+            {
+              "source_key": "bondtech_cht_reprap_official",
+              "quote": "Requires 6mm wrench"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, DREMC displayed AUD 33.95, including GST, for Bondtech CHT\u00ae V6 RepRap M6 Coated Brass Nozzle and the selected variant shown in the citation. This is a dated external reference, not a live 3D Byte offer; shipping, landed cost and physical availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "bondtech_cht_reprap_au",
+              "quote": "Bondtech CHT\u00ae V6 RepRap M6 Coated Brass Nozzle\n4 reviews\nSave 0\nBondtech\nSKU:\n600-C-CHT-MOS-175-25\n\u2713 Copied\nNozzle Size:\n0.25mm\n0.25mm\n0.4mm\n0.5mm\n0.6mm\n0.8mm\n1.0mm\n1.4mm\n1.8mm\n5 Pack [Mixed Sizes]\nPrice:\nSale price\n$33.95 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "RepRap M6 coated brass family across bores; not MK8, Volcano or hardened BiMetal. Bore-specific flow and abrasive restrictions remain scoped.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        }
+      ]
+    },
+    {
+      "key": "bondtech_cht_bimetal",
+      "canonical_key": "bondtech:bondtech_cht_bimetal",
+      "title": "Bondtech CHT BiMetal RepRap M6 nozzle",
+      "brand": "Bondtech",
+      "category": "hardware",
+      "manufacturer_product_url": "https://www.bondtech.se/product/bondtech-cht-bimetal-reprap-coated-nozzle/",
+      "distinctness_reason": "BiMetal material construction distinct from brass RepRap family; counted once across bore sizes. A 0.4 mm listing does not inherit larger-bore fibre-filled recommendations.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "cht\\s*bimetal"
+      ],
+      "facts": [
+        {
+          "field": "material_construction",
+          "value": "Bondtech manufacturer source: Copper body with hardened-steel inserts and nickel coating.",
+          "query_pattern": "material|construction|spec|feature",
+          "proofs": [
+            {
+              "source_key": "bondtech_cht_bimetal_official",
+              "quote": "Copper body\n;\nHardened Steel inserts\n;\nNickel Coating"
+            }
+          ]
+        },
+        {
+          "field": "tool_size",
+          "value": "Bondtech manufacturer source: Requires a 6 mm wrench.",
+          "query_pattern": "tool|size|spec|feature",
+          "proofs": [
+            {
+              "source_key": "bondtech_cht_bimetal_official",
+              "quote": "Requires 6mm wrench"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, DREMC displayed AUD 63.45, including GST, for Bondtech CHT BiMetal RepRap V6 Coated Nozzle - Hardened Vanadium Steel and the selected variant shown in the citation. This is a dated external reference, not a live 3D Byte offer; shipping, landed cost and physical availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "bondtech_cht_bimetal_au",
+              "quote": "Bondtech CHT BiMetal RepRap V6 Coated Nozzle - Hardened Vanadium Steel\nNo reviews\nSave 0\nBondtech\nSKU:\n600-A-CHT-MOS-175-40\n\u2713 Copied\nNozzle Size:\n0.4mm\n0.4mm\n0.5mm\n0.6mm\n0.8mm\n1.0mm\n4 Pack [Mixed Sizes]\nPrice:\nSale price\n$63.45 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "BiMetal material construction distinct from brass RepRap family; counted once across bore sizes. A 0.4 mm listing does not inherit larger-bore fibre-filled recommendations.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        }
+      ]
+    },
+    {
+      "key": "e3d_roto_motor",
+      "canonical_key": "e3d:e3d_roto_motor",
+      "title": "E3D Roto motor",
+      "brand": "E3D",
+      "category": "hardware",
+      "manufacturer_product_url": "https://e3d-online.com/products/roto-motor",
+      "distinctness_reason": "Replacement motor component, not a complete extruder. Captured AU variant is without cable.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "(?:e3d\\s*)?roto\\s*motor"
+      ],
+      "facts": [
+        {
+          "field": "motor_type",
+          "value": "E3D manufacturer source: Custom E3D NEMA14 spare motor for the Revo Roto extruder.",
+          "query_pattern": "motor|type|spec|feature",
+          "proofs": [
+            {
+              "source_key": "e3d_roto_motor_official",
+              "quote": "A spare custom E3D NEMA 14 Motor for use with the Revo Roto Extruder."
+            }
+          ]
+        },
+        {
+          "field": "gear_compatibility",
+          "value": "E3D manufacturer source: The pinion is pre-attached for the Roto gearbox and is not compatible with third-party extruders.",
+          "query_pattern": "gear|compatibility|spec|feature",
+          "proofs": [
+            {
+              "source_key": "e3d_roto_motor_official",
+              "quote": "This comes with the pinion gear pre-attached specifically for the roto gearbox and is therefore not compatible with 3\nrd\nparty extruders."
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, DREMC displayed AUD 54.45, including GST, for Roto Motor - Without cable and the selected variant shown in the citation. This is a dated external reference, not a live 3D Byte offer; shipping, landed cost and physical availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "e3d_roto_motor_au",
+              "quote": "Roto Motor - Without cable\nNo reviews\nSave 0\nE3D\nSKU:\nROTO-MOTOR-AS\n\u2713 Copied\nPrice:\nSale price\n$54.45 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "Replacement motor component, not a complete extruder. Captured AU variant is without cable.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        }
+      ]
+    },
+    {
+      "key": "btt_skr_pico",
+      "canonical_key": "bigtreetech:btt_skr_pico",
+      "title": "BIGTREETECH SKR Pico V1.0",
+      "brand": "BIGTREETECH",
+      "category": "hardware",
+      "manufacturer_product_url": "https://raw.githubusercontent.com/bigtreetech/docs/master/docs/SKR%20Pico.md",
+      "distinctness_reason": "SKR Pico V1.0 controller; host configuration and wiring required.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "skr\\s*pico"
+      ],
+      "facts": [
+        {
+          "field": "processor",
+          "value": "BIGTREETECH manufacturer source: Raspberry Pi ARM Cortex-M0+ RP2040 MCU.",
+          "query_pattern": "processor|spec|feature",
+          "proofs": [
+            {
+              "source_key": "btt_skr_pico_official",
+              "quote": "With Raspberry Pi ARM Cortex-M0+ MCU RP2040."
+            }
+          ]
+        },
+        {
+          "field": "motor_driver",
+          "value": "BIGTREETECH manufacturer source: On-board TMC2209 in UART mode.",
+          "query_pattern": "motor|driver|spec|feature",
+          "proofs": [
+            {
+              "source_key": "btt_skr_pico_official",
+              "quote": "UART mode of the on-board TMC2209"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, DREMC displayed AUD 60.45, including GST, for BTT SKR Pico V1.0 Control Board Compatible with Raspberry PI for Voron V0 and the selected variant shown in the citation. This is a dated external reference, not a live 3D Byte offer; shipping, landed cost and physical availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "btt_skr_pico_au",
+              "quote": "BTT SKR Pico V1.0 Control Board Compatible with Raspberry PI for Voron V0\nNo reviews\nSave 0\nBIGTREETECH\nSKU:\n1020000327\n\u2713 Copied\nPrice:\nSale price\n$60.45 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "SKR Pico V1.0 controller; host configuration and wiring required.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        }
+      ]
+    },
+    {
+      "key": "e3d_revo_six_cold",
+      "canonical_key": "e3d:e3d_revo_six_cold",
+      "title": "E3D Revo Six coldside kit",
+      "brand": "E3D",
+      "category": "hardware",
+      "manufacturer_product_url": "https://e3d-online.com/products/revo-six-coldside-kits?variant=41629420191803",
+      "distinctness_reason": "Revo Six coldside family; not a complete hotend or the Prusa Mini coldside currently selected on the AU page.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "revo\\s*six\\s*cold(?:side)?"
+      ],
+      "facts": [
+        {
+          "field": "coldside_contents",
+          "value": "E3D manufacturer source: The kit describes a replacement Revo heatsink and mounting items; it is a coldside kit.",
+          "query_pattern": "coldside|contents|spec|feature",
+          "proofs": [
+            {
+              "source_key": "e3d_revo_six_cold_official",
+              "quote": "Coldside\nkit includes a drop-in replacement\nRevo\nheatsink plus everything you need to securely mount the new setup to your printer."
+            }
+          ]
+        },
+        {
+          "field": "voltage_options",
+          "value": "E3D manufacturer source: The manufacturer offers 12 V and 24 V choices.",
+          "query_pattern": "voltage|options|spec|feature",
+          "proofs": [
+            {
+              "source_key": "e3d_revo_six_cold_official",
+              "quote": "Voltage\n12V\nVariant sold out or unavailable\n24V"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "Revo Six coldside family; not a complete hotend or the Prusa Mini coldside currently selected on the AU page.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        },
+        {
+          "field": "dated_reference_price",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "reason": "The captured Australian page selects a different revision or variant; its price is not attributed to this reference."
+        }
+      ]
+    },
+    {
+      "key": "e3d_obxidian_a1",
+      "canonical_key": "e3d:e3d_obxidian_a1",
+      "title": "E3D High Flow ObXidian A1 hotend",
+      "brand": "E3D",
+      "category": "hardware",
+      "manufacturer_product_url": "https://e3d-online.com/products/high-flow-obxidian-a1",
+      "distinctness_reason": "A1 hotend interface family, counted once across bore sizes. Do not apply to H2 or infer an unconditional 70% flow gain.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "(?:high\\s*flow\\s*)?obxidian(?:\u2122|\u00ae)?(?:\\s*hotend)?(?:\\s*for\\s*bambu\\s*lab)?\\s*a1"
+      ],
+      "facts": [
+        {
+          "field": "coating",
+          "value": "E3D manufacturer source: Uses E3DLC coating; manufacturer attributes reduced plastic buildup to the coating.",
+          "query_pattern": "coating|spec|feature",
+          "proofs": [
+            {
+              "source_key": "e3d_obxidian_a1_official",
+              "quote": "the innovative E3DLC\u2122 coating reduces buildup on the nozzle and makes cleaning much easier."
+            }
+          ]
+        },
+        {
+          "field": "model_scope",
+          "value": "E3D manufacturer source: Current manufacturer title names Bambu Lab A1, A1 Mini and A2L; received revision compatibility remains unverified.",
+          "query_pattern": "model|scope|spec|feature",
+          "proofs": [
+            {
+              "source_key": "e3d_obxidian_a1_official",
+              "quote": "High Flow ObXidian\u00ae HotEnd for Bambu Lab A1, A1 Mini & A2L"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, DREMC displayed AUD 145.95, including GST, for E3D High Flow ObXidian\u2122 HotEnd for Bambu Lab A1, A1 Mini & A2L and the selected variant shown in the citation. This is a dated external reference, not a live 3D Byte offer; shipping, landed cost and physical availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "e3d_obxidian_a1_au",
+              "quote": "E3D High Flow ObXidian\u2122 HotEnd for Bambu Lab A1, A1 Mini & A2L\nNo reviews\nSave 0\nE3D\nSKU:\nBAMBU-HF-OBX-A1-0400-SPK\n\u2713 Copied\nOption:\n0.4mm\n0.4mm\n0.6mm\nPrice:\nSale price\n$145.95 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "A1 hotend interface family, counted once across bore sizes. Do not apply to H2 or infer an unconditional 70% flow gain.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        }
+      ]
+    },
+    {
+      "key": "bondtech_lgx_gear",
+      "canonical_key": "bondtech:bondtech_lgx_gear",
+      "title": "Bondtech LGX Primary Double Gear",
+      "brand": "Bondtech",
+      "category": "hardware",
+      "manufacturer_product_url": "https://www.bondtech.se/product/lgx-primary-gear/",
+      "distinctness_reason": "Replacement polymer primary gear component, not a full extruder or Lite PRO steel-drive replacement.",
+      "source_scope": "Manufacturer model facts; separately cited selected Australian retailer variants; no live offers or native bindings.",
+      "aliases": [
+        "lgx\\s*(?:primary\\s*)?(?:double\\s*)?gear"
+      ],
+      "facts": [
+        {
+          "field": "manufacturer_part_number",
+          "value": "Bondtech manufacturer source: Manufacturer SKU 15070, EAN 7350011413799.",
+          "query_pattern": "manufacturer|part|number|spec|feature",
+          "proofs": [
+            {
+              "source_key": "bondtech_lgx_gear_official",
+              "quote": "EAN13:\n7350011413799\nSKU:\n15070"
+            }
+          ]
+        },
+        {
+          "field": "material",
+          "value": "Bondtech manufacturer source: PBT GF20 technical polymer replacement primary gear for Bondtech LGX extruders.",
+          "query_pattern": "material|spec|feature",
+          "proofs": [
+            {
+              "source_key": "bondtech_lgx_gear_official",
+              "quote": "Spare part made of a technical polymer called PBT GF20, with higher mechanical and working temperature resistance than POM, to replace a primary gear on Bondtech LGX\u2122 Large Gears eXtruders."
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, DREMC displayed AUD 12.95, including GST, for LGX\u00ae Primary Double Gear and the selected variant shown in the citation. This is a dated external reference, not a live 3D Byte offer; shipping, landed cost and physical availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "bondtech_lgx_gear_au",
+              "quote": "LGX\u00ae Primary Double Gear\nNo reviews\nSave 0\nBondtech\nSKU:\n15070\n\u2713 Copied\nPrice:\nSale price\n$12.95 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "exact_revision_fit_and_compatibility",
+          "query_pattern": "pin|firmware|guarantee|fit|compatible|revision|kit|package|include|limit|maximum|abrasive|carbon|voltage",
+          "reason": "Replacement polymer primary gear component, not a full extruder or Lite PRO steel-drive replacement.  Exact received revision, firmware, wiring, included package and printer fit remain unverified beyond explicitly scoped manufacturer claims."
+        }
+      ]
+    }
+  ]
+}

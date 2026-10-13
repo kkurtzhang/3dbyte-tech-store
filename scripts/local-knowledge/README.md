@@ -1,5 +1,7 @@
 # Local knowledge chat preview
 
+The [100-product expansion](CATALOGUE100-HANDOFF.md) is complete in the separate `20261013-catalogue100` SSD corpus: 100 verified canonical identities, with three additional legacy kits held outside the count. Its inventory, immutable snapshot and verification receipt are linked there. Use that root explicitly; the original v1 corpus below remains preserved.
+
 The consolidated [V1-HANDOFF.md](V1-HANDOFF.md) records the completed bounded evidence scope, 66 source-specific preparations, supplier provenance decisions and exact remaining native/release prerequisites. The active corpus is preserved and preview remains off.
 
 The existing-guide citation repairs are now active locally. See [GUIDE-CITATION-ACTIVATION.md](GUIDE-CITATION-ACTIVATION.md) for 29 revised guides, immutable old/new hashes, qualified equivalent evidence and offline verification. Native approvals remain zero; previews remain stopped.
@@ -12,7 +14,7 @@ The finite v1 coverage gate is complete at 30/30 cases. See [V1-COVERAGE-PLAN.md
 
 The preceding offline coverage and two-product follow-up is documented in [COVERAGE-FOLLOWUP.md](COVERAGE-FOLLOWUP.md).
 
-The latest six-product expansion, current counts and offline validation are documented in [CATALOGUE-EXPANSION.md](CATALOGUE-EXPANSION.md). Preview services are stopped.
+The earlier six-product expansion, its counts and offline validation are documented in [CATALOGUE-EXPANSION.md](CATALOGUE-EXPANSION.md). Preview services are stopped.
 
 This branch adds a development-only source retrieval path to the existing storefront chatbot. It uses the existing dedicated SQLite corpus on the external SSD, FTS5 and corpus-trained LSA vectors. It makes no language-model calls and does not provide live store prices, stock, delivery dates or native approval.
 

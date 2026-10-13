@@ -1,0 +1,1367 @@
+{
+  "batch_id": "accessories-01",
+  "source_manifests": [
+    "sources-remainder-01.json",
+    "sources-followup-01.json"
+  ],
+  "entries": [
+    {
+      "key": "magigoo_original",
+      "title": "Magigoo Original adhesive",
+      "brand": "Magigoo",
+      "category": "accessories",
+      "canonical_key": "magigoo:magigoo_original",
+      "manufacturer_product_url": "https://magigoo.com/products/magigoo-original",
+      "distinctness_reason": "Original general-purpose formulation; distinct from material-specific PA, PC, Flex, HT, PP and Supergrip.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "magigoo\\s*original"
+      ],
+      "facts": [
+        {
+          "field": "material_scope",
+          "value": "Magigoo manufacturer source: Designed and tested on glass build plates for PLA, ABS, PETG, HIPS and TPU.",
+          "query_pattern": "material|scope|feature|specification",
+          "proofs": [
+            {
+              "source_key": "magigoo_original_product",
+              "quote": "designed and extensively tested on glass build plates for the most commonly printed plastics: PLA, ABS, PETG, HIPS and TPU."
+            }
+          ]
+        },
+        {
+          "field": "cooling_release",
+          "value": "Magigoo manufacturer source: The thermally activated layer is intended to hold while hot and release after cooling.",
+          "query_pattern": "cooling|release|feature|specification",
+          "proofs": [
+            {
+              "source_key": "magigoo_original_product",
+              "quote": "keeping parts firmly in place while the bed is hot and releasing them cleanly once it cools"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured Australian source displayed AUD 31.00 for Magigoo Original 50ml. This is a dated external reference, not a live 3D Byte offer. GST, shipping, landed cost, availability and exact received package are unverified unless separately stated in the citation.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "magigoo_original_au",
+              "quote": "Magigoo Original 50ml\nSale price\n$31.00 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "Plate-specific instructions and material requirements still apply. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        }
+      ]
+    },
+    {
+      "key": "magigoo_pa",
+      "title": "Magigoo PA adhesive",
+      "brand": "Magigoo",
+      "category": "accessories",
+      "canonical_key": "magigoo:magigoo_pa",
+      "manufacturer_product_url": "https://magigoo.com/products/magigoo-pro-pa-the-3d-printing-adhesive-for-polyamide-nylon-copy",
+      "distinctness_reason": "PA formulation, counted once across package volumes.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "magigoo\\s*(?:pro\\s*)?pa\\b"
+      ],
+      "facts": [
+        {
+          "field": "polyamide_scope",
+          "value": "Magigoo manufacturer source: PA6 adhesion is specifically described; follow the filament specification for bed conditions.",
+          "query_pattern": "polyamide|scope|feature|specification",
+          "proofs": [
+            {
+              "source_key": "magigoo_pa_official",
+              "quote": "PA6\nOptimised\nBed Temperature:\nPer filament spec\nProvides strong adhesion for PA6 filaments"
+            }
+          ]
+        },
+        {
+          "field": "reinforced_polyamide",
+          "value": "Magigoo manufacturer source: The page lists glass- or carbon-fibre-reinforced PA as compatible.",
+          "query_pattern": "reinforced|polyamide|feature|specification",
+          "proofs": [
+            {
+              "source_key": "magigoo_pa_official",
+              "quote": "Fibre-reinforced PA (GF/CF)\nCompatible"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured Australian source displayed AUD 39.95 for Magigoo PA 3D Printing Adhesive for Polyamide (Nylon) 50ml. This is a dated external reference, not a live 3D Byte offer. GST, shipping, landed cost, availability and exact received package are unverified unless separately stated in the citation.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "magigoo_original_au",
+              "quote": "Magigoo PA 3D Printing Adhesive for Polyamide (Nylon) 50ml\nSale price\n$39.95 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "No universal adhesion or material/plate combination is guaranteed. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        }
+      ]
+    },
+    {
+      "key": "magigoo_flex",
+      "title": "Magigoo Flex adhesive",
+      "brand": "Magigoo",
+      "category": "accessories",
+      "canonical_key": "magigoo:magigoo_flex",
+      "manufacturer_product_url": "https://magigoo.com/products/magigoo-pro-flex-the-3d-printing-adhesive-for-flexible-materials-copy",
+      "distinctness_reason": "Flexible-material adhesive formulation, not a PA adhesive despite incorrect retailer copy elsewhere.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "magigoo\\s*(?:pro\\s*)?flex"
+      ],
+      "facts": [
+        {
+          "field": "flexible_material_scope",
+          "value": "Magigoo manufacturer source: The product describes first-layer adhesion and easy removal for flexible TPU filaments.",
+          "query_pattern": "flexible|material|scope|feature|specification",
+          "proofs": [
+            {
+              "source_key": "magigoo_flex_official",
+              "quote": "Designed for reliable first-layer adhesion with flexible TPU filaments while allowing easy part removal after printing."
+            }
+          ]
+        },
+        {
+          "field": "water_cleanup",
+          "value": "Magigoo manufacturer source: The page states water cleanup.",
+          "query_pattern": "water|cleanup|feature|specification",
+          "proofs": [
+            {
+              "source_key": "magigoo_flex_official",
+              "quote": "Cleans with water"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured Australian source displayed AUD 42.00 for Magigoo Flex 3D Printing Adhesive 50ml for Flexible Materials. This is a dated external reference, not a live 3D Byte offer. GST, shipping, landed cost, availability and exact received package are unverified unless separately stated in the citation.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "magigoo_original_au",
+              "quote": "Magigoo Flex 3D Printing Adhesive 50ml for Flexible Materials\nSale price\n$42.00 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "Conflicting copied compatibility text is not applied; precise polymer/plate suitability needs confirmation. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        }
+      ]
+    },
+    {
+      "key": "magigoo_ht",
+      "title": "Magigoo Pro HT adhesive",
+      "brand": "Magigoo",
+      "category": "accessories",
+      "canonical_key": "magigoo:magigoo_ht",
+      "manufacturer_product_url": "https://magigoo.com/products/magigoo-pro-ht-build-plate-adhesive-for-high-temperature-thermoplastic-filaments-copy",
+      "distinctness_reason": "High-temperature adhesive formulation distinct from standard polymers.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "magigoo\\s*(?:pro\\s*)?ht"
+      ],
+      "facts": [
+        {
+          "field": "high_temperature_material_scope",
+          "value": "Magigoo manufacturer source: The product describes adhesion for PEEK filaments.",
+          "query_pattern": "high|temperature|material|scope|feature|specification",
+          "proofs": [
+            {
+              "source_key": "magigoo_ht_official",
+              "quote": "Designed for reliable first-layer adhesion with PEEK filaments while allowing easy part removal after printing."
+            }
+          ]
+        },
+        {
+          "field": "pekk_scope",
+          "value": "Magigoo manufacturer source: The product describes use with PEKK at elevated printing temperatures.",
+          "query_pattern": "pekk|scope|feature|specification",
+          "proofs": [
+            {
+              "source_key": "magigoo_ht_official",
+              "quote": "Suitable for PEKK filaments, providing reliable adhesion at elevated printing temperatures."
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured Australian source displayed AUD 72.00 for Magigoo Pro HT 3D Printing Adhesive for High Temperature Materials 50ml. This is a dated external reference, not a live 3D Byte offer. GST, shipping, landed cost, availability and exact received package are unverified unless separately stated in the citation.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "magigoo_original_au",
+              "quote": "Magigoo Pro HT 3D Printing Adhesive for High Temperature Materials 50ml\nSale price\n$72.00 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "Exact operating temperature and material/plate combination are not generalized from the material family. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        }
+      ]
+    },
+    {
+      "key": "magigoo_pc",
+      "title": "Magigoo PC adhesive",
+      "brand": "Magigoo",
+      "category": "accessories",
+      "canonical_key": "magigoo:magigoo_pc",
+      "manufacturer_product_url": "https://magigoo.com/products/magigoo-pro-pc-the-3d-printing-adhesive-for-polycarbonate-copy",
+      "distinctness_reason": "Polycarbonate-specific adhesive formulation.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "magigoo\\s*(?:pro\\s*)?pc\\b"
+      ],
+      "facts": [
+        {
+          "field": "polycarbonate_scope",
+          "value": "Magigoo manufacturer source: Designed for polycarbonate filament adhesion with part removal after printing.",
+          "query_pattern": "polycarbonate|scope|feature|specification",
+          "proofs": [
+            {
+              "source_key": "magigoo_pc_product",
+              "quote": "Designed for reliable first-layer adhesion with polycarbonate filaments while allowing easy part removal after printing."
+            }
+          ]
+        },
+        {
+          "field": "water_cleanup",
+          "value": "Magigoo manufacturer source: The page states water cleanup.",
+          "query_pattern": "water|cleanup|feature|specification",
+          "proofs": [
+            {
+              "source_key": "magigoo_pc_product",
+              "quote": "Cleans with water"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured Australian source displayed AUD 39.95 for Magigoo PC 3D Printing Adhesive for Polycarbonate (PC) 50ml. This is a dated external reference, not a live 3D Byte offer. GST, shipping, landed cost, availability and exact received package are unverified unless separately stated in the citation.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "magigoo_original_au",
+              "quote": "Magigoo PC 3D Printing Adhesive for Polycarbonate (PC) 50ml\nSale price\n$39.95 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "Non-PC uses can have different adhesion; exact plate suitability and removal conditions must follow its instructions. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        }
+      ]
+    },
+    {
+      "key": "sunlu_s2",
+      "title": "SUNLU FilaDryer S2",
+      "brand": "SUNLU",
+      "category": "accessories",
+      "canonical_key": "sunlu:sunlu_s2",
+      "manufacturer_product_url": "https://www.sunlu.com/products/filadryer-s2-filament-dryer",
+      "distinctness_reason": "S2 dryer, separate from the E2 engineering dryer/annealer.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "(?:sunlu\\s*)?(?:filadryer\\s*)?s2\\s*(?:filament\\s*)?dryer|sunlu\\s*s2",
+        "\\bSUNLU\\ FilaDryer\\ S2\\b"
+      ],
+      "facts": [
+        {
+          "field": "advertised_temperature",
+          "value": "SUNLU manufacturer source: Current official S2 page advertises a maximum temperature of 70 \u00b0C.",
+          "query_pattern": "advertised|temperature|feature|specification",
+          "proofs": [
+            {
+              "source_key": "sunlu_s2_official",
+              "quote": "SUNLU Official FilaDryer S2, maximum temperature 70\u00b0C, built-in circulating fan"
+            }
+          ]
+        },
+        {
+          "field": "working_power",
+          "value": "SUNLU manufacturer source: Current specification lists maximum working power 48 W.",
+          "query_pattern": "working|power|feature|specification",
+          "proofs": [
+            {
+              "source_key": "sunlu_s2_official",
+              "quote": "Max Working Power(W)\uff1a\n48"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "The unavailable AU capture does not establish its hardware revision, electrical version or current price. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        },
+        {
+          "field": "dated_reference_price",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "reason": "A matching AUD price could not be verified from the captured source bytes for this precise model/package. Historical snippets or another selected variant are not assigned as its offer."
+        }
+      ]
+    },
+    {
+      "key": "esun_ebox_lite",
+      "title": "eSUN eBOX Lite",
+      "brand": "eSUN",
+      "category": "accessories",
+      "canonical_key": "esun:esun_ebox_lite",
+      "manufacturer_product_url": "https://www.esun3d.com/ebox-lite",
+      "distinctness_reason": "eBOX Lite dryer/storage model.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "(?:esun\\s*)?ebox\\s*lite"
+      ],
+      "facts": [
+        {
+          "field": "spool_and_filament_capacity",
+          "value": "eSUN manufacturer source: Describes 0.5 kg and 1 kg spools, subject to actual spool fit, and 1.75/2.85/3.0 mm filament.",
+          "query_pattern": "spool|and|filament|capacity|feature|specification",
+          "proofs": [
+            {
+              "source_key": "esun_ebox_lite_official",
+              "quote": "easily accommodating 0.5KG and 1KG filament spools. It can be widely used with various filaments of 1.75mm, 2.85mm, and 3.0mm diameters."
+            }
+          ]
+        },
+        {
+          "field": "air_circulation",
+          "value": "eSUN manufacturer source: Uses a turbo fan to create an internal heat cycle.",
+          "query_pattern": "air|circulation|feature|specification",
+          "proofs": [
+            {
+              "source_key": "esun_ebox_lite_official",
+              "quote": "Equipped with a long-life and low-noise turbo fan, it creates an efficient internal heat cycle."
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured Australian source displayed AUD 79.95 for eSun eBox Lite. This is a dated external reference, not a live 3D Byte offer. GST, shipping, landed cost, availability and exact received package are unverified unless separately stated in the citation.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "esun_ebox_lite_au",
+              "quote": "eSun eBox Lite Filament Storage Box\nby\nESUN\nOriginal price\n$79.95\n-\nOriginal price\n$79.95\nOriginal price\n$79.95\n$79.95\n-\n$79.95\nCurrent price\n$79.95"
+            },
+            {
+              "source_key": "esun_ebox_lite_au",
+              "quote": "\"priceCurrency\": \"AUD\""
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "Weight conflicts and suitability for severely wet or high-temperature materials remain unknown. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        }
+      ]
+    },
+    {
+      "key": "creality_spacepi_plus",
+      "title": "Creality SpacePi Plus dryer",
+      "brand": "Creality",
+      "category": "accessories",
+      "canonical_key": "creality:creality_spacepi_plus",
+      "manufacturer_product_url": "https://store.creality.com/au/products/creality-space-pi-filament-dryer-plus",
+      "distinctness_reason": "Two-spool single-chamber model, functionally distinct from single-spool SpacePi and four-spool models.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "(?:creality\\s*)?space\\s*pi\\s*(?:dryer\\s*)?plus"
+      ],
+      "facts": [
+        {
+          "field": "capacity_chambers",
+          "value": "Creality manufacturer source: The comparison page specifies two spools in one heating chamber.",
+          "query_pattern": "capacity|chambers|feature|specification",
+          "proofs": [
+            {
+              "source_key": "creality_spacepi_plus_official",
+              "quote": "Creality SpacePi Plus\nTwo Rolls Capacity, Double Drying\nBUY NOW\n45\u201370\u2103 Drying Temp\n1\u201348h Timing\n2 Spool Capacity\nSingle Heating Chamber"
+            }
+          ]
+        },
+        {
+          "field": "drying_temperature",
+          "value": "Creality manufacturer source: The model-specific comparison states a 45\u201370 \u00b0C drying range.",
+          "query_pattern": "drying|temperature|feature|specification",
+          "proofs": [
+            {
+              "source_key": "creality_spacepi_plus_official",
+              "quote": "Creality SpacePi Plus\nTwo Rolls Capacity, Double Drying\nBUY NOW\n45\u201370\u2103 Drying Temp\n1\u201348h Timing\n2 Spool Capacity\nSingle Heating Chamber"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured Australian source displayed AUD 149.00 for Creality SpacePi Plus. This is a dated external reference, not a live 3D Byte offer. GST, shipping, landed cost, availability and exact received package are unverified unless separately stated in the citation.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "creality_spacepi_plus_au",
+              "quote": "Creality Space Pi Filament Dryer Plus\nTwo Rolls Capacity Design; Double PTC 360\u00b0 Hot-air Heating.\n4.78\n/\n36\nreviews\n$149.00 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "Earlier AUD129 research differs from the captured AUD149 page; current offer remains unknown. Minimum timer setting differs across sources. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        }
+      ]
+    },
+    {
+      "key": "ldo_heatinsert",
+      "title": "LDO M3 heatset insert tool kit",
+      "brand": "LDO",
+      "category": "accessories",
+      "canonical_key": "ldo:ldo_heatinsert",
+      "manufacturer_product_url": "https://docs.ldomotors.com/guides/heatset_insert_tool_guide",
+      "distinctness_reason": "M3 insertion-tool kit; functionally distinct from CNC Kitchen cartridge/tip set.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "ldo\\s*(?:m3\\s*)?heat\\s*(?:set|insert)(?:\\s*insert)?\\s*tool"
+      ],
+      "facts": [
+        {
+          "field": "insert_size",
+          "value": "LDO manufacturer source: Designed for M3 brass inserts.",
+          "query_pattern": "insert|size|feature|specification",
+          "proofs": [
+            {
+              "source_key": "ldo_heatinsert_official",
+              "quote": "The heatset tool we provide is designed to be used with M3 brass inserts"
+            }
+          ]
+        },
+        {
+          "field": "adjustable_tongue",
+          "value": "LDO manufacturer source: Its tongue can be adjusted to the height of the insert.",
+          "query_pattern": "adjustable|tongue|feature|specification",
+          "proofs": [
+            {
+              "source_key": "ldo_heatinsert_official",
+              "quote": "The tool has a tongue that can be adjusted according to the height of the insert to be used."
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured Australian source displayed AUD 13.95 for LDO M3 tool kit with 50 M3x5x4 inserts. This is a dated external reference, not a live 3D Byte offer. GST, shipping, landed cost, availability and exact received package are unverified unless separately stated in the citation.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "ldo_heatinsert_au",
+              "quote": "LDO Heat Insert Tool Kit (includes 50pc M3x5x4 heat set inserts)\n1 review\nSave 0\nLDO\nSKU:\nLDO-HITK\n\u2713 Copied\nPrice:\nSale price\n$13.95 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "Individual iron fit requires checking the manufacturer dimensions. AU kit is separately labelled 50 inserts; no universal soldering-iron promise. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        }
+      ]
+    },
+    {
+      "key": "slice_boron",
+      "title": "Slice Engineering boron nitride paste",
+      "brand": "Slice Engineering",
+      "category": "accessories",
+      "canonical_key": "slice-engineering:slice_boron",
+      "manufacturer_product_url": "https://www.sliceengineering.com/products/boron-nitride-paste",
+      "distinctness_reason": "Thermal interface paste; distinct from plastic-repellent paint.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "(?:slice(?:\\s*engineering)?\\s*)?boron\\s*nitride\\s*paste"
+      ],
+      "facts": [
+        {
+          "field": "thermal_conductivity",
+          "value": "Slice Engineering manufacturer source: Manufacturer states thermal conductivity 31.4 W/mK at 100 \u00b0C.",
+          "query_pattern": "thermal|conductivity|feature|specification",
+          "proofs": [
+            {
+              "source_key": "slice_boron_official",
+              "quote": "maintaining a thermal conductivity of 31.4 W/mK at 100\u00b0C."
+            }
+          ]
+        },
+        {
+          "field": "electrical_condition",
+          "value": "Slice Engineering manufacturer source: Electrical non-conductivity is stated only when dehydrated at 100 \u00b0C.",
+          "query_pattern": "electrical|condition|feature|specification",
+          "proofs": [
+            {
+              "source_key": "slice_boron_official",
+              "quote": "Electrical Conductivity\nNon-conductive when dehydrated at 100\u00b0C"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured Australian source displayed AUD 20.95 for Slice boron nitride paste 5 cc. This is a dated external reference, not a live 3D Byte offer. GST, shipping, landed cost, availability and exact received package are unverified unless separately stated in the citation.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "slice_boron_au",
+              "quote": "Slice Engineering Boron Nitride Paste\n5cc\n$20.95 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "850 \u00b0C air versus older 1000+ \u00b0C ratings are not an unqualified maximum; installed component limits remain unknown. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        }
+      ]
+    },
+    {
+      "key": "slice_desiccant",
+      "title": "Slice Engineering filament drying desiccant",
+      "brand": "Slice Engineering",
+      "category": "accessories",
+      "canonical_key": "slice-engineering:slice_desiccant",
+      "manufacturer_product_url": "https://www.sliceengineering.com/products/filament-drying-desiccant",
+      "distinctness_reason": "Activated-alumina canister product; package count does not create separate identities.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "slice(?:\\s*engineering)?\\s*(?:filament\\s*drying\\s*)?desiccant"
+      ],
+      "facts": [
+        {
+          "field": "desiccant_material",
+          "value": "Slice Engineering manufacturer source: Activated alumina desiccant.",
+          "query_pattern": "desiccant|material|feature|specification",
+          "proofs": [
+            {
+              "source_key": "slice_desiccant_official",
+              "quote": "Material\nActivated Alumina"
+            }
+          ]
+        },
+        {
+          "field": "canister_dimensions_mass",
+          "value": "Slice Engineering manufacturer source: The official canister is 51 mm diameter by 60 mm, containing 80 g of desiccant.",
+          "query_pattern": "canister|dimensions|mass|feature|specification",
+          "proofs": [
+            {
+              "source_key": "slice_desiccant_official",
+              "quote": "Dimensions\n\u00d8 51 x 60 mm\nRoHS\nRoHS 3 (2015/863/EU) Compliant\nREACH\nREACH (EC 1907/2006) (01/17/2023, 233 SVHC) Compliant\nDesiccant Mass Per Canister\n80 g"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured Australian source displayed AUD 29.99 for Slice reusable filament drying desiccant; pack quantity unverified. This is a dated external reference, not a live 3D Byte offer. GST, shipping, landed cost, availability and exact received package are unverified unless separately stated in the citation.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "slice_desiccant_au",
+              "quote": "Slice Engineering Reusable Filament Drying Desiccant\nSale price\n$29.99 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "Recharge recipes conflict; AU pack quantity is not proven to equal the official two-pack. Certification text in the excerpt is not generalized to a finished assembly. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        }
+      ]
+    },
+    {
+      "key": "cnc_ts100",
+      "title": "CNC Kitchen TS100/101 adapter tips set",
+      "brand": "CNC Kitchen",
+      "category": "accessories",
+      "canonical_key": "cnc-kitchen:cnc_ts100",
+      "manufacturer_product_url": "https://cnckitchen.store/products/ts100-101-adapter-tips-set-m2-x-m3-m4-m5-m6-1-4-m8-100-lead-and-cadmium-free",
+      "distinctness_reason": "Cartridge and insert-tip set; distinct from the LDO M3 tool.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "cnc\\s*kitchen\\s*ts\\s*100|ts\\s*100[/\\s]*101\\s*(?:adapter\\s*)?tips"
+      ],
+      "facts": [
+        {
+          "field": "cartridge_thread",
+          "value": "CNC Kitchen manufacturer source: TS100/TS101 cartridge with M5 copper thread.",
+          "query_pattern": "cartridge|thread|feature|specification",
+          "proofs": [
+            {
+              "source_key": "cnc_ts100_official",
+              "quote": "TS100, TS101\nCartridge with M5 Copper Thread"
+            }
+          ]
+        },
+        {
+          "field": "metric_tip_sizes",
+          "value": "CNC Kitchen manufacturer source: Metric tip range: M2, M2.5, M3, M4, M5, M6 and M8.",
+          "query_pattern": "metric|tip|sizes|feature|specification",
+          "proofs": [
+            {
+              "source_key": "cnc_ts100_official",
+              "quote": "Metric: M2, M2.5, M3, M4, M5, M6, M8"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "AU shop returned no source bytes, so its reported price is unverified here; exact iron fit and maximum temperature remain unknown. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        },
+        {
+          "field": "dated_reference_price",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "reason": "A matching AUD price could not be verified from the captured source bytes for this precise model/package. Historical snippets or another selected variant are not assigned as its offer."
+        }
+      ]
+    },
+    {
+      "key": "cnc_deburrer",
+      "title": "CNC Kitchen deburrer with three blades",
+      "brand": "CNC Kitchen",
+      "category": "accessories",
+      "canonical_key": "cnc-kitchen:cnc_deburrer",
+      "manufacturer_product_url": "https://cnckitchen.store/products/entgrater-deburrer",
+      "distinctness_reason": "Deburring hand tool, distinct from cleaning wires and heat-insert tools.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "cnc\\s*kitchen\\s*deburr"
+      ],
+      "facts": [
+        {
+          "field": "body_blades",
+          "value": "CNC Kitchen manufacturer source: Aluminium deburrer with three titanium-coated blades.",
+          "query_pattern": "body|blades|feature|specification",
+          "proofs": [
+            {
+              "source_key": "cnc_deburrer_official",
+              "quote": "CNC Kitchen Aluminium Deburrer\n\ud83d\udcaa 3x high durable titanium coated blade"
+            }
+          ]
+        },
+        {
+          "field": "blade_storage",
+          "value": "CNC Kitchen manufacturer source: Extra blades can be stored in the aluminium bar.",
+          "query_pattern": "blade|storage|feature|specification",
+          "proofs": [
+            {
+              "source_key": "cnc_deburrer_official",
+              "quote": "Storage of extra blades in aluminium bar"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "Official TC-DB-1/EAN and AU reported EAN differ; exact SKU revision and current AUD price remain unresolved. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        },
+        {
+          "field": "dated_reference_price",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "reason": "A matching AUD price could not be verified from the captured source bytes for this precise model/package. Historical snippets or another selected variant are not assigned as its offer."
+        }
+      ]
+    },
+    {
+      "key": "creality_spacepi",
+      "title": "Creality SpacePi single-spool dryer",
+      "brand": "Creality",
+      "category": "accessories",
+      "canonical_key": "creality:creality_spacepi",
+      "manufacturer_product_url": "https://www.creality.com/products/creality-space-pi-filament-dryer",
+      "distinctness_reason": "Single-spool dryer, distinct from two-spool Plus and four-spool models.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "(?:creality\\s*)?space\\s*pi(?!\\s*(?:plus|x4|dryer\\s*plus))"
+      ],
+      "facts": [
+        {
+          "field": "capacity_chambers",
+          "value": "Creality manufacturer source: One spool in one heating chamber.",
+          "query_pattern": "capacity|chambers|feature|specification",
+          "proofs": [
+            {
+              "source_key": "creality_spacepi_official",
+              "quote": "Creality SpacePi\nQuick Swap. Always Dry.\nBUY NOW\n45\u201370\u2103 Drying Temp\n1\u201348h Timing\n1 Spool Capacity\nSingle Heating Chamber"
+            }
+          ]
+        },
+        {
+          "field": "drying_temperature",
+          "value": "Creality manufacturer source: Model comparison states a 45\u201370 \u00b0C drying range.",
+          "query_pattern": "drying|temperature|feature|specification",
+          "proofs": [
+            {
+              "source_key": "creality_spacepi_official",
+              "quote": "Creality SpacePi\nQuick Swap. Always Dry.\nBUY NOW\n45\u201370\u2103 Drying Temp\n1\u201348h Timing\n1 Spool Capacity\nSingle Heating Chamber"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured Australian source displayed AUD 129.95 for Creality SpacePi single-spool dryer. This is a dated external reference, not a live 3D Byte offer. GST, shipping, landed cost, availability and exact received package are unverified unless separately stated in the citation.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "creality_spacepi_au",
+              "quote": "Creality Space Pi Filament Dryer\nSave 19%\nCreality\nModel:\nSpace Pi Filament Dryer Box\nPrice:\nSale price\n$129.95 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "Minimum timer 0 versus 1 hour differs across pages; received electrical revision unknown. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        }
+      ]
+    },
+    {
+      "key": "creality_spacepi_x4",
+      "title": "Creality SpacePi X4 dryer",
+      "brand": "Creality",
+      "category": "accessories",
+      "canonical_key": "creality:creality_spacepi_x4",
+      "manufacturer_product_url": "https://www.creality.com/products/creality-spacepi-x4",
+      "distinctness_reason": "X4 dual-chamber model, distinct from X4L functional/electrical model.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "(?:creality\\s*)?space\\s*pi\\s*x4(?!l)"
+      ],
+      "facts": [
+        {
+          "field": "capacity_chambers",
+          "value": "Creality manufacturer source: Four spools with dual independent heating chambers.",
+          "query_pattern": "capacity|chambers|feature|specification",
+          "proofs": [
+            {
+              "source_key": "creality_spacepi_x4_official",
+              "quote": "Creality SpacePi X4\nDry More, Create More\nBUY NOW\n45\u201385\u2103 Drying Temp\n1\u201348h Timing\n4 Spool Capacity\nDual Independent Heating Chambers\n360W Power Consumption\nActive Dehumidification"
+            }
+          ]
+        },
+        {
+          "field": "active_dehumidification",
+          "value": "Creality manufacturer source: The comparison page lists active dehumidification for X4.",
+          "query_pattern": "active|dehumidification|feature|specification",
+          "proofs": [
+            {
+              "source_key": "creality_spacepi_x4_official",
+              "quote": "Creality SpacePi X4\nDry More, Create More\nBUY NOW\n45\u201385\u2103 Drying Temp\n1\u201348h Timing\n4 Spool Capacity\nDual Independent Heating Chambers\n360W Power Consumption\nActive Dehumidification"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "Manufacturer 85 \u00b0C versus reseller 80 \u00b0C remains a revision conflict. Captured AU page selects X4L, so no X4 price is taken from it. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        },
+        {
+          "field": "dated_reference_price",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "reason": "A matching AUD price could not be verified from the captured source bytes for this precise model/package. Historical snippets or another selected variant are not assigned as its offer."
+        }
+      ]
+    },
+    {
+      "key": "creality_spacepi_x4l",
+      "title": "Creality SpacePi X4L dryer",
+      "brand": "Creality",
+      "category": "accessories",
+      "canonical_key": "creality:creality_spacepi_x4l",
+      "manufacturer_product_url": "https://www.creality.com/products/creality-spacepi-x4l",
+      "distinctness_reason": "X4L model; not merely a cosmetic X4 variant.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "(?:creality\\s*)?space\\s*pi\\s*x4l"
+      ],
+      "facts": [
+        {
+          "field": "capacity_chambers",
+          "value": "Creality manufacturer source: Four-spool model with dual independent heating chambers.",
+          "query_pattern": "capacity|chambers|feature|specification",
+          "proofs": [
+            {
+              "source_key": "creality_spacepi_x4l_official",
+              "quote": "Dual Independent Heating Chambers\n4 Spools"
+            }
+          ]
+        },
+        {
+          "field": "product_dimensions",
+          "value": "Creality manufacturer source: Model parameter table lists 382\u00d7290\u00d7270 mm.",
+          "query_pattern": "product|dimensions|feature|specification",
+          "proofs": [
+            {
+              "source_key": "creality_spacepi_x4l_official",
+              "quote": "Product Size\n:\n382*290*270mm"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured Australian source displayed AUD 209.00 for Creality SpacePi X4L. This is a dated external reference, not a live 3D Byte offer. GST, shipping, landed cost, availability and exact received package are unverified unless separately stated in the citation.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "creality_spacepi_x4_au",
+              "quote": "Creality SpacePi X4L\n$209.00 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "Model-table 75 \u00b0C/340 W versus conflicting marketing 85 \u00b0C/360 W is unresolved; current delivered electrical model unknown. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        }
+      ]
+    },
+    {
+      "key": "sunlu_e2",
+      "title": "SUNLU FilaDryer E2 dryer and annealer",
+      "brand": "SUNLU",
+      "category": "accessories",
+      "canonical_key": "sunlu:sunlu_e2",
+      "manufacturer_product_url": "https://www.sunlu.com/products/filadryer-e2-filament-dryer",
+      "distinctness_reason": "E2 engineering dryer/annealer distinct from S2.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "(?:sunlu\\s*)?filadryer\\s*e2|sunlu\\s*e2"
+      ],
+      "facts": [
+        {
+          "field": "advertised_temperature",
+          "value": "SUNLU manufacturer source: Manufacturer advertises a maximum temperature of 110 \u00b0C.",
+          "query_pattern": "advertised|temperature|feature|specification",
+          "proofs": [
+            {
+              "source_key": "sunlu_e2_official",
+              "quote": "featuring a maximum temperature of 110\u00b0C"
+            }
+          ]
+        },
+        {
+          "field": "drying_annealing",
+          "value": "SUNLU manufacturer source: The manufacturer describes dual drying and annealing functions.",
+          "query_pattern": "drying|annealing|feature|specification",
+          "proofs": [
+            {
+              "source_key": "sunlu_e2_official",
+              "quote": "dual drying-and-annealing functions"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured Australian source displayed AUD 579.00 for SUNLU FilaDryer E2. This is a dated external reference, not a live 3D Byte offer. GST, shipping, landed cost, availability and exact received package are unverified unless separately stated in the citation.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "sunlu_e2_au",
+              "quote": "Sunlu FilaDryer E2 Filament Dryer & Annealer\n$579.00 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "Power, weight and capacity conflict across official material; AU electrical revision and any material-specific annealing recipe are unknown. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        }
+      ]
+    },
+    {
+      "key": "bambu_liquid_glue",
+      "title": "Bambu Lab liquid build-plate glue",
+      "brand": "Bambu Lab",
+      "category": "accessories",
+      "canonical_key": "bambu-lab:bambu_liquid_glue",
+      "manufacturer_product_url": "https://au.store.bambulab.com/collections/build-plates-and-sheets/products/liquid-glue-for-build-plate",
+      "distinctness_reason": "Liquid adhesive product, not the solid glue stick or a plate.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "bambu(?:\\s*lab)?\\s*liquid\\s*glue",
+        "\\bBambu\\ Lab\\ liquid\\ build\\-plate\\ glue\\b"
+      ],
+      "facts": [
+        {
+          "field": "package_volume",
+          "value": "Bambu Lab manufacturer source: Official package volume is 60 mL.",
+          "query_pattern": "package|volume|feature|specification",
+          "proofs": [
+            {
+              "source_key": "bambu_liquid_glue_official",
+              "quote": "Package volume\n60 mL"
+            }
+          ]
+        },
+        {
+          "field": "water_cleanup",
+          "value": "Bambu Lab manufacturer source: After printing, clean the build plate and bottom of the model with water.",
+          "query_pattern": "water|cleanup|feature|specification",
+          "proofs": [
+            {
+              "source_key": "bambu_liquid_glue_official",
+              "quote": "clean the build plate and the bottom of the model with water."
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured Australian source displayed AUD 28.95 for Bambu Lab liquid glue. This is a dated external reference, not a live 3D Byte offer. GST, shipping, landed cost, availability and exact received package are unverified unless separately stated in the citation.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "bambu_liquid_glue_au",
+              "quote": "Bambu Lab Liquid Glue for Build Plate (PLA/ABS/PETG)\n$28.95 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "Plate-specific restrictions override generic compatible-material lists; received package and exact MPN remain unverified. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        }
+      ]
+    },
+    {
+      "key": "printdry_sc225",
+      "title": "PrintDry smart vacuum filament container SC225",
+      "brand": "PrintDry",
+      "category": "accessories",
+      "canonical_key": "printdry:printdry_sc225",
+      "manufacturer_product_url": "https://www.printdry.com/product/smart-vacuum-container/",
+      "distinctness_reason": "Integrated-pump smart vacuum storage, distinct from external-pump containers and thermal dryers.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "printdry\\s*(?:smart\\s*vacuum|sc225)"
+      ],
+      "facts": [
+        {
+          "field": "automatic_vacuum",
+          "value": "PrintDry manufacturer source: Integrated re-sealing sensor monitors vacuum and automatically activates the pump when vacuum drops.",
+          "query_pattern": "automatic|vacuum|feature|specification",
+          "proofs": [
+            {
+              "source_key": "printdry_sc225_official",
+              "quote": "integrated a re-sealing sensor inside, which constantly monitors the vacuum level and will automatically activate the vacuum pump once the vacuum level drops."
+            }
+          ]
+        },
+        {
+          "field": "spool_capacity",
+          "value": "PrintDry manufacturer source: Official page says up to three spools; exact spool fit must be checked.",
+          "query_pattern": "spool|capacity|feature|specification",
+          "proofs": [
+            {
+              "source_key": "printdry_sc225_official",
+              "quote": "Hold\nUp To\n3 Spools"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured Australian source displayed AUD 189.95 for PrintDry smart vacuum container. This is a dated external reference, not a live 3D Byte offer. GST, shipping, landed cost, availability and exact received package are unverified unless separately stated in the citation.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "printdry_sc225_au",
+              "quote": "Current price\n$189.95\n|\n/\nPrintDry Smart Vacuum Filament Container"
+            },
+            {
+              "source_key": "printdry_sc225_au",
+              "quote": "Country\nAustralia\n(AUD $)"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "AU package, exact spool dimensions and any drying capability are unverified. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        }
+      ]
+    },
+    {
+      "key": "printdry_lsk2003",
+      "title": "PrintDry LSK2003 large-spool extension",
+      "brand": "PrintDry",
+      "category": "accessories",
+      "canonical_key": "printdry:printdry_lsk2003",
+      "manufacturer_product_url": "https://www.printdry.com/product/large-spool-kit-dryer-pro/",
+      "distinctness_reason": "PRO/PRO3/PRO4 extension kit; dryer excluded, not a standalone dryer.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "printdry\\s*(?:lsk2003|large\\s*spool(?:\\s*extension|\\s*kit)?)"
+      ],
+      "facts": [
+        {
+          "field": "spool_capacity",
+          "value": "PrintDry manufacturer source: Extension supports up to 5 kg filament spools with maximum 300 mm/12-inch outside diameter.",
+          "query_pattern": "spool|capacity|feature|specification",
+          "proofs": [
+            {
+              "source_key": "printdry_lsk2003_official",
+              "quote": "To dry and feed up to 5Kg filament spool with max 300mm or 12\u201d spool outside diameter."
+            }
+          ]
+        },
+        {
+          "field": "package_contents",
+          "value": "PrintDry manufacturer source: Package includes one plastic tray and one long metal shaft.",
+          "query_pattern": "package|contents|feature|specification",
+          "proofs": [
+            {
+              "source_key": "printdry_lsk2003_official",
+              "quote": "Package includes:\nPlastic tray x1\nLong metal shaft x1"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured Australian source displayed AUD 75.95 for PrintDry large-spool extension kit. This is a dated external reference, not a live 3D Byte offer. GST, shipping, landed cost, availability and exact received package are unverified unless separately stated in the citation.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "printdry_lsk2003_au",
+              "quote": "Large Spool Kit (double-wall)for PrintDry Filament Dryer PRO/PRO3\nby\nPrintDry\nOriginal price\n$75.95\n-\nOriginal price\n$75.95\nOriginal price\n$75.95\n$75.95\n-\n$75.95\nCurrent price\n$75.95"
+            },
+            {
+              "source_key": "printdry_lsk2003_au",
+              "quote": "\"priceCurrency\": \"AUD\""
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "No universal spool-heating recipe is inferred; actual printer feeding geometry requires checking. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        }
+      ]
+    },
+    {
+      "key": "printdry_evc208",
+      "title": "PrintDry EVC208-5 vacuum containers with electric pump",
+      "brand": "PrintDry",
+      "category": "accessories",
+      "canonical_key": "printdry:printdry_evc208",
+      "manufacturer_product_url": "https://www.printdry.com/product/electricc-vacuum-sealed-filament-container-package-of-5/",
+      "distinctness_reason": "External electric-pump container kit, distinct from integrated SC225 storage.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "printdry\\s*(?:evc208(?:-5)?|vacuum\\s*(?:sealed\\s*)?(?:filament\\s*)?containers?)"
+      ],
+      "facts": [
+        {
+          "field": "maximum_spool_dimensions",
+          "value": "PrintDry manufacturer source: Maximum spool size is 205 mm outside diameter by 85 mm height.",
+          "query_pattern": "maximum|spool|dimensions|feature|specification",
+          "proofs": [
+            {
+              "source_key": "printdry_evc208_official",
+              "quote": "Filament spool size (max)\n205 (OD) x 85 (H) mm"
+            }
+          ]
+        },
+        {
+          "field": "pump_battery_charging",
+          "value": "PrintDry manufacturer source: Electric pump specification: 1200 mAh lithium battery, Type-C charging at 5 V DC and 1 A.",
+          "query_pattern": "pump|battery|charging|feature|specification",
+          "proofs": [
+            {
+              "source_key": "printdry_evc208_official",
+              "quote": "Electric Pump\nLithium Battery: 1200mah\nType-C charging: 5VDC and 1A"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured Australian source displayed AUD 199.95 for PrintDry five containers with electric pump. This is a dated external reference, not a live 3D Byte offer. GST, shipping, landed cost, availability and exact received package are unverified unless separately stated in the citation.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "printdry_evc208_au",
+              "quote": "PrintDry Vacuum Sealed Filament Container Set of 5 with Electric Pump\nby\nPrintDry\nOriginal price\n$199.95\n-\nOriginal price\n$199.95\nOriginal price\n$199.95\n$199.95\n-\n$199.95\nCurrent price\n$199.95"
+            },
+            {
+              "source_key": "printdry_evc208_au",
+              "quote": "\"priceCurrency\": \"AUD\""
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "Product page AUD199.95 versus earlier collection AUD149.95 is a current-offer conflict; exact package and tax status require verification. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        }
+      ]
+    },
+    {
+      "key": "printdry_fc305",
+      "title": "PrintDry large non-vacuum filament container",
+      "brand": "PrintDry",
+      "category": "accessories",
+      "canonical_key": "printdry:printdry_fc305",
+      "manufacturer_product_url": "https://www.printdry.com/product/printdry-large-filament-container/",
+      "distinctness_reason": "Large non-vacuum storage format; distinct from pump-assisted containers.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "printdry\\s*(?:fc305(?:-2)?|large\\s*(?:non.vacuum\\s*)?filament\\s*container)"
+      ],
+      "facts": [
+        {
+          "field": "container_type",
+          "value": "PrintDry manufacturer source: Non-vacuum filament container.",
+          "query_pattern": "container|type|feature|specification",
+          "proofs": [
+            {
+              "source_key": "printdry_fc305_official",
+              "quote": "Non-vacuum filament container."
+            }
+          ]
+        },
+        {
+          "field": "maximum_spool_dimensions",
+          "value": "PrintDry manufacturer source: Accommodates a spool up to 305 mm outside diameter and 150 mm thickness.",
+          "query_pattern": "maximum|spool|dimensions|feature|specification",
+          "proofs": [
+            {
+              "source_key": "printdry_fc305_official",
+              "quote": "can store a spool of max 305 mm(12\u2033) outside diameter and 150 mm(5.8\u2033) thickness."
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "Official two-large/two-regular bundle does not prove the same AU package; exact MPN/quantity matching remains unresolved. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        },
+        {
+          "field": "dated_reference_price",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "reason": "A matching AUD price could not be verified from the captured source bytes for this precise model/package. Historical snippets or another selected variant are not assigned as its offer."
+        }
+      ]
+    },
+    {
+      "key": "eibos_polyphemus",
+      "title": "EIBOS Polyphemus rotating filament dryer",
+      "brand": "EIBOS",
+      "category": "accessories",
+      "canonical_key": "eibos:eibos_polyphemus",
+      "manufacturer_product_url": "https://shop.eibos3d.com/collections/eibos-prodect/products/pre-order-eibos-3d-filament-dryer-polyphemus",
+      "distinctness_reason": "Rotating-heating dryer family, counted once across revisions and extension packages.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "(?:eibos\\s*)?polyphemus"
+      ],
+      "facts": [
+        {
+          "field": "spool_rotation",
+          "value": "EIBOS manufacturer source: Motor-driven 360-degree rotation and heating are described; uniformity marketing numbers are not guaranteed.",
+          "query_pattern": "spool|rotation|feature|specification",
+          "proofs": [
+            {
+              "source_key": "eibos_polyphemus_official",
+              "quote": "360\u00b0 automatic rotation and heating"
+            }
+          ]
+        },
+        {
+          "field": "timer_power",
+          "value": "EIBOS manufacturer source: The source lists 30 minutes\u201324 hours or unlimited, and rated power 130 W.",
+          "query_pattern": "timer|power|feature|specification",
+          "proofs": [
+            {
+              "source_key": "eibos_polyphemus_official",
+              "quote": "30mins-24H or Unlimited\nHumidity Range: 10%-99%\nRated Power: 130W"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "70/80 \u00b0C variants, AU 3 kg extension package and electrical revision remain unverified; displayed relative humidity is not filament water content. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        },
+        {
+          "field": "dated_reference_price",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "reason": "A matching AUD price could not be verified from the captured source bytes for this precise model/package. Historical snippets or another selected variant are not assigned as its offer."
+        }
+      ]
+    },
+    {
+      "key": "cnc_cleaning_wires",
+      "title": "CNC Kitchen nozzle-cleaning wires 12-piece set",
+      "brand": "CNC Kitchen",
+      "category": "accessories",
+      "canonical_key": "cnc-kitchen:cnc_cleaning_wires",
+      "manufacturer_product_url": "https://cnckitchen.store/products/nozzle-cleaning-wires-12-pcs",
+      "distinctness_reason": "Mechanical nozzle-cleaning wire set, counted once as a kit.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "cnc\\s*kitchen\\s*(?:nozzle\\s*)?cleaning\\s*wires",
+        "\\bCNC\\ Kitchen\\ nozzle\\-cleaning\\ wires\\ 12\\-piece\\ set\\b"
+      ],
+      "facts": [
+        {
+          "field": "wire_material",
+          "value": "CNC Kitchen manufacturer source: High-strength piano wire with black oxidized surface finish.",
+          "query_pattern": "wire|material|feature|specification",
+          "proofs": [
+            {
+              "source_key": "cnc_cleaning_wires_official",
+              "quote": "Made of high strength piano wire\n\ud83d\udda4 Black oxidized surface finish"
+            }
+          ]
+        },
+        {
+          "field": "tip_shape",
+          "value": "CNC Kitchen manufacturer source: Blunt tips are described.",
+          "query_pattern": "tip|shape|feature|specification",
+          "proofs": [
+            {
+              "source_key": "cnc_cleaning_wires_official",
+              "quote": "Blunt tip for safety"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured Australian source displayed AUD 29.95 for CNC Kitchen nozzle-cleaning wire set. This is a dated external reference, not a live 3D Byte offer. GST, shipping, landed cost, availability and exact received package are unverified unless separately stated in the citation.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "cnc_cleaning_wires_au",
+              "quote": "CNC Kitchen Nozzle Cleaning Wires\nRegular price\n$29.95 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "Title says 12 pieces but headline says 12 diameters while details list eleven unique diameters including two 0.35 mm wires; do not claim twelve unique diameters. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        }
+      ]
+    },
+    {
+      "key": "ldo_leviathan_expansion",
+      "title": "LDO Leviathan expansion board",
+      "brand": "LDO",
+      "category": "hardware",
+      "canonical_key": "ldo:ldo_leviathan_expansion",
+      "manufacturer_product_url": "https://raw.githubusercontent.com/MotorDynamicsLab/LeviathanExt/master/README.md",
+      "distinctness_reason": "Expansion PCB for the Leviathan controller; not a standalone replacement mainboard.",
+      "source_scope": "Exact manufacturer model facts and separately attributed dated external offers; no live store commerce, physical stock or native product bindings.",
+      "aliases": [
+        "leviathan\\s*(?:mcu\\s*)?(?:expansion|extension)"
+      ],
+      "facts": [
+        {
+          "field": "stepper_drivers",
+          "value": "LDO manufacturer source: Adds two integrated TMC5160 stepper drivers.",
+          "query_pattern": "stepper|drivers|feature|specification",
+          "proofs": [
+            {
+              "source_key": "ldo_leviathan_expansion_official",
+              "quote": "2x Integrated TMC5160 stepper drivers."
+            }
+          ]
+        },
+        {
+          "field": "fan_and_sensor_ports",
+          "value": "LDO manufacturer source: Adds two protected fan ports with selectable 12/24 V and tachometer inputs, plus two thermistor ports with 2.2 k\u03a9 pullups.",
+          "query_pattern": "fan|and|sensor|ports|feature|specification",
+          "proofs": [
+            {
+              "source_key": "ldo_leviathan_expansion_official",
+              "quote": "2x Fan ports with flyback protection, 12V/24V selectable voltage, and tachometer inputs. \n- 2x Thermistor ports with 2k2 ohm pullup resistors."
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured Australian source displayed AUD 85.00 for LDO Leviathan expansion board. This is a dated external reference, not a live 3D Byte offer. GST, shipping, landed cost, availability and exact received package are unverified unless separately stated in the citation.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "ldo_leviathan_expansion_au",
+              "quote": "LDO Leviathan MCU Expansion Board\nNo reviews\nSave 0\nLDO\nSKU:\nLDO-LEVIATHAN-EB\n\u2713 Copied\nPrice:\nSale price\n$85.00 AUD\n\u24d8\nInclude GST"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_exact_revision_and_fit",
+          "query_pattern": "conflict|revision|guarantee|universal|certif|exact.*fit|current.*offer",
+          "reason": "Host revision, firmware and actual wiring must be verified. Received revision, electrical suitability, package and fit remain unverified beyond the explicitly scoped sources."
+        }
+      ]
+    }
+  ]
+}
