@@ -73,9 +73,17 @@ These optional fields do not block the 33 supported partial reference preparatio
 | Binding and visibility verification | Approved published DTO readback, read-only knowledge-reference preview, then authorized metadata binding preserving existing metadata. Reference-only shells remain nonphysical, unpriced and outside checkout. |
 | Parent release gates | Integration with the parent's security/deployment branch, applicable CI/type gates, approved index activation, deployed revision/health/data and browser verification remain separate. This evidence task neither checks off nor bypasses them. |
 
-The source baseline remains Medusa 2.15.5 / Strapi 5.48.1; no upgrade or dependency change occurred. Prior source/test types passed, while the canonical generated React 18/19 type mismatch remains parent-owned. Live installed/deployed compatibility must be read back at the authorized native step; local source versions do not prove it.
+The source baseline remains Medusa 2.15.5 / Strapi 5.48.1; no upgrade or dependency change occurred. The source milestone’s generated React 18/19 limitation is historical. The combined integration retains the scoped React peer fix and its passing canonical full-type evidence from the completed citation milestone. Live installed/deployed compatibility must be read back at the authorized native step; local source versions do not prove it.
 
 Production generation integration and a genuine LLM quality evaluation are separate engineering/evaluation work, outside this bounded evidence task. The current deterministic route does not establish LLM answer quality. A model evaluation needs an agreed compatible runtime or explicitly authorized paid execution and fresh evaluation questions; no model runtime, service or paid call was started here.
+
+## Combined integration provenance
+
+The source counts and receipt above describe `588279c3`. The combined follow-up starts from the preserved citation-integration milestone `73861bb2` on `integration/security-knowledge-evidence-handoff-20261013`. Its own corpus has **165 actual local review events**, and this preparation creates none. The source milestone’s additional three historical events are not copied or invented.
+
+The source builder originally coupled its pinned report lookup and full candidate comparison to its own workspace path and review-event history. The combined builder reads the exact hash-pinned historical report from its receipt, rebuilds through the existing pinned fact/gate verifier using this store’s real events and paths, and verifies all nine original source-form holds against the historical report. It then checks that adding the new official alternative changes none of the 65 prior candidate payloads. Prior source-review attribution corrections remain intact.
+
+Fresh checks pass **93 Python tests**, including six focused handoff regressions, **66 native pure-contract fixtures** with 164 facts and 33 unchanged primary selections, Ruff and diff checks. The prior **82 Jest tests, 30/30 route coverage and full canonical type checks** are retained from `73861bb2`; unchanged application tests were not repeated. Corpus/table preservation, exact final head, snapshot hashes and remaining blockers are recorded under the SSD integration artifact directory `artifacts/security-knowledge-integration-20261013/evidence-handoff`. Native actions and publication remain with the parent.
 
 ## Verification and next action
 

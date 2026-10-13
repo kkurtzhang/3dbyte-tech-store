@@ -1,10 +1,11 @@
 """Final preparations preserve original evidence, attribution and inactive native gates."""
 
-import json
 import unittest
-from local_store import ROOT, Store, digest
+from unittest.mock import patch
+from local_store import Store, digest
 from prepare_import_readiness import reviewed_source_kind
-from prepare_v1_handoff import build_handoff, OFFICIAL_SOURCE_ID
+from prepare_v1_handoff import build_handoff, OFFICIAL_SOURCE_ID, prepare_official
+from reconcile_evidence import build_reconciliation
 
 
 class V1HandoffTests(unittest.TestCase):
@@ -90,7 +91,7 @@ class V1HandoffTests(unittest.TestCase):
         )
 
     def test_original_holds_and_prepared_candidates_remain_intact(self):
-        old = json.loads((ROOT / "reports/evidence-reconciliation-v1.json").read_text())
+        old = build_reconciliation(self.store)
         self.assertEqual(
             self.report["original_source_form_holds"], old["source_type_gaps"]
         )
@@ -106,6 +107,29 @@ class V1HandoffTests(unittest.TestCase):
         self.assertEqual(plan["offline_structural_candidate_count"], 66)
         self.assertEqual(plan["supported_fact_count"], 164)
         self.assertEqual(plan["native_import_eligible_count"], 0)
+
+    def test_current_local_review_events_are_not_source_branch_history(self):
+        for candidate in self.report["prepared_native_plan"][
+            "single_source_candidate_fragments"
+        ]:
+            event = candidate["source_review"]["existing_local_event"]
+            row = self.store.db.execute(
+                "SELECT * FROM editorial_decisions WHERE id=?", (event["id"],)
+            ).fetchone()
+            self.assertEqual(row["record_id"], candidate["local_record_id"])
+            self.assertEqual(row["revision"], candidate["local_record_revision"])
+            for key, value in event.items():
+                self.assertEqual(row[key], value)
+
+    def test_official_projection_cannot_change_prior_candidate(self):
+        def drift(store, plan):
+            result = prepare_official(store, plan)
+            plan["single_source_candidate_fragments"][0]["apply_authorized"] = True
+            return result
+
+        with patch("prepare_v1_handoff.prepare_official", side_effect=drift):
+            with self.assertRaisesRegex(ValueError, "Existing reconciled candidates"):
+                build_handoff(self.store)
 
     def test_exact_url_review_does_not_relax_other_source_forms(self):
         self.assertEqual(

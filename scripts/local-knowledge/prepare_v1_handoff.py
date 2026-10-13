@@ -7,17 +7,15 @@ from pathlib import Path
 from urllib.parse import urlparse
 from local_store import ROOT, Store, clock, digest
 from prepare_import_readiness import (
-    build_readiness,
     source_review,
     reviewed_source_kind,
 )
 from prepare_guide_equivalents import product_description
 from reconcile_evidence import (
-    SEED,
     atom_candidate,
     checked_citations,
     checked_source,
-    decompose,
+    build_reconciliation,
     record_claim,
     refresh_candidate,
     sha,
@@ -211,38 +209,30 @@ def build_handoff(store):
         "guide-citation-activation-receipt-v1.json",
         "guide-equivalent-evidence-plan-v2.json",
     )
-    reconciliation_path = ROOT / "reports/evidence-reconciliation-v1.json"
     receipt = json.loads(
         (HERE / "evaluation/evidence-reconciliation-receipt-v1.json").read_text()
     )
-    # Find the pinned full report without relying on the order of receipt fields.
-    refs = []
-
-    def collect(value):
-        if isinstance(value, dict):
-            if value.get("path") == str(reconciliation_path) and value.get("sha256"):
-                refs.append(value)
-            for item in value.values():
-                collect(item)
-        elif isinstance(value, list):
-            for item in value:
-                collect(item)
-
-    collect(receipt)
-    if len(refs) != 1 or sha(reconciliation_path) != refs[0]["sha256"]:
+    prior_ref = receipt["report"]
+    if sha(prior_ref["path"]) != prior_ref["sha256"]:
         raise ValueError("Pinned reconciliation report required")
-    original = json.loads(reconciliation_path.read_text())
-    plan = build_readiness(store)
-    decompose(store, json.loads(SEED.read_text()), plan)
+    historical = json.loads(Path(prior_ref["path"]).read_text())
+    # Rebuild through the pinned fact/gate checks using this store's real review
+    # events and paths. A different checkout's history is not local provenance.
+    original = build_reconciliation(store)
+    if original["source_type_gaps"] != historical["source_type_gaps"]:
+        raise ValueError("Original source-form holds must remain unchanged")
+    plan = copy.deepcopy(original["prepared_native_plan"])
     prior_candidates = {
-        c["candidate_key"]: digest(c)
-        for c in original["prepared_native_plan"]["single_source_candidate_fragments"]
-    }
-    if prior_candidates != {
         c["candidate_key"]: digest(c) for c in plan["single_source_candidate_fragments"]
-    }:
-        raise ValueError("Existing reconciled candidates must remain unchanged")
+    }
     official = prepare_official(store, plan)
+    retained = {
+        c["candidate_key"]: digest(c)
+        for c in plan["single_source_candidate_fragments"]
+        if c["candidate_key"] in prior_candidates
+    }
+    if prior_candidates != retained:
+        raise ValueError("Existing reconciled candidates must remain unchanged")
     suppliers = supplier_provenance(store, previous, plan)
     candidates = plan["single_source_candidate_fragments"]
     plan.update(
@@ -294,7 +284,9 @@ def build_handoff(store):
         "prepared_at": clock(),
         "actor": ACTOR,
         "current_corpus": store.stats(),
-        "prior_reconciliation": refs[0],
+        "prior_reconciliation": prior_ref,
+        "local_review_provenance": original["local_review_provenance"],
+        "base_preparation_evidence_and_gates_match_pinned_manifest": True,
         "prior_equivalent_report": previous_ref,
         "official_equivalent_reconciliation": official,
         "supplier_provenance": suppliers,
