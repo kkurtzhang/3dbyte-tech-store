@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "preparation_actor": "codex_local_evidence_reconciliation",
+  "decompositions": [
+    {"record_key":"catalogue_buildtak_pei235_source","field":"sheet_dimensions","commentary":"Measure the actual bed before selecting a surface.","atoms":[
+      {"field":"manufacturer_sheet_dimensions","value":"Manufacturer option identifies a 235 x 235 mm PEI surface.","source_id":"local_source_catalogue_buildtak_pei_official_5fd72b4cc428","proof_indexes":[0],"target_group_key":"catalogue_buildtak_pei235"},
+      {"field":"retailer_sheet_dimensions","value":"Captured B3D listing identifies a 235 x 235 mm surface.","source_id":"local_source_catalogue_buildtak_pei_au_c40ab68b7127","proof_indexes":[1],"target_group_key":"catalogue_buildtak_pei235"}
+    ]},
+    {"record_key":"catalogue_buildtak_pei235_source","field":"adhesive_revision_warning","commentary":"Confirm the supplied adhesive revision; do not promise cleanup behaviour from another source or batch.","atoms":[
+      {"field":"manufacturer_adhesive_notice","value":"Manufacturer notice reports ongoing adhesive changes and warns removal may be more difficult.","source_id":"local_source_catalogue_buildtak_pei_official_5fd72b4cc428","proof_indexes":[0],"target_group_key":"catalogue_buildtak_pei235"},
+      {"field":"retailer_adhesive_wording","value":"Captured retailer description uses no-cleanup BuildTak Original adhesive wording; the supplied revision is not established.","source_id":"local_source_catalogue_buildtak_pei_au_c40ab68b7127","proof_indexes":[1],"target_group_key":"catalogue_buildtak_pei235"}
+    ]},
+    {"record_key":"catalogue_flowtech_cm2_04_source","field":"manufacturer_part_number","commentary":"Match exact variant identities separately; agreement does not establish a received package or native binding.","atoms":[
+      {"field":"manufacturer_variant_sku","value":"Manufacturer .4mm FlowTech CM2 variant SKU is M2904-04.","source_id":"local_source_followup_cm2_official_2af7455fe266","proof_indexes":[0,1],"target_group_key":"catalogue_flowtech_cm2_04"},
+      {"field":"retailer_variant_sku","value":"Captured DREMC variant SKU is M2904-04.","source_id":"local_source_followup_cm2_au_fa9e30a35577","proof_indexes":[2],"target_group_key":"catalogue_flowtech_cm2_04"}
+    ]},
+    {"record_key":"catalogue_flowtech_cm2_04_source","field":"tip_material","commentary":"Keep each component's material statement with its own product; the comparison is editorial selection context.","atoms":[
+      {"field":"manufacturer_cm2_insert","value":"CM2 manufacturer describes an M2 hardened high-speed-steel insert.","source_id":"local_source_followup_cm2_official_2af7455fe266","proof_indexes":[0],"target_group_key":"catalogue_flowtech_cm2_04"},
+      {"field":"official_default_nozzle","value":"Current official package lists one FlowTech brass-plated 0.4 mm nozzle.","source_id":"local_source_catalogue_flowtech_official_6b5771d204e8","proof_indexes":[1],"target_group_key":"catalogue_flowtech_m3101"}
+    ]}
+  ],
+  "guide_navigation": {
+    "G01":"Identify the printer revision and connector before selecting a replacement.",
+    "G02":"Choose the component role first, then confirm its identifiers.",
+    "G03":"Ask which iron interface and package the customer needs; leave the generic draft unbound.",
+    "G04":"Ask for the diameter and package before binding the generic nozzle reference.",
+    "N01":"Start with the part's design goal, then check the named material's listed requirements.",
+    "N02":"Ask for the exact material, dryer and spool before selecting a process.",
+    "N03":"Compare each component's stated limits separately before choosing a combination.",
+    "N04":"Identify the plate and adhesive before choosing an application path.",
+    "N05":"Separate the reported symptom from the product the customer is considering.",
+    "N06":"Ask about the use case, then inspect the exact grade and machine setup.",
+    "N07":"Ask which sheet is installed before suggesting an adhesion or removal path.",
+    "N08":"Collect the machine, material and profile details before choosing a troubleshooting branch.",
+    "N09":"Review recent changes and the feed path before selecting a cause to investigate.",
+    "N10":"Ask for material, dryer and spool details; leave a diagnosis open until checked.",
+    "N11":"Identify the nozzle family before comparing the selected component's specifications.",
+    "N12":"Keep a possible cause separate from a confirmed diagnosis.",
+    "N13":"Ask which operation is intended before comparing process settings.",
+    "N14":"Keep supplier-family observations separate from the exact selected kit.",
+    "N15":"Identify the sheet and proposed cleaning or removal tool before proceeding.",
+    "catalogue_buildtak_pei235_guide":"Confirm dimensions and the supplied revision before selecting a surface.",
+    "catalogue_buildtak_spatula_guide":"Ask which tool variant and access the customer needs.",
+    "catalogue_fiberlogy_pp750_guide":"Confirm the exact spool instructions before choosing a material profile.",
+    "catalogue_flowtech_cm2_04_guide":"Select the exact nozzle variant and intended interface before comparing specifications.",
+    "catalogue_flowtech_m3101_guide":"Confirm the exact assembly and received package before treating a family match as sufficient.",
+    "catalogue_magigoo_pp50_guide":"Ask for the adhesive revision, material and plate before choosing an application path.",
+    "catalogue_orbiter_v25_guide":"Choose a complete assembly or conversion path before checking the relevant setup instructions.",
+    "catalogue_panchroma_basic_black_guide":"Confirm the exact grade and package before choosing a profile.",
+    "catalogue_polymaker_petg_black_guide":"Confirm the formula and package; leave conflicting settings unresolved.",
+    "catalogue_slice_torque_15_guide":"Check the selected nozzle and tool requirements separately before choosing the tool."
+  },
+  "guide_text_proof_repairs": [
+    {"record_key":"G02","field":"k2_boards","proofs":[{"source_id":"local_source_earlier_E09","quote":"Hot End Adapter Board_37×12×1.6_1"}]},
+    {"record_key":"G02","field":"k2_short_cable","proofs":[{"source_id":"local_source_earlier_S23","quote":"3103110752 / 3103110894 / 4006030075"}]},
+    {"record_key":"G03","field":"cnc_weller","proofs":[{"source_id":"local_source_earlier_S05","quote":"WES50/51"}]},
+    {"record_key":"N15","field":"sheet_scraper_scope","proofs":[{"source_id":"local_source_v1_prusa_satin_853ed9f60748","quote":"Not scratch-resistant!"},{"source_id":"local_source_v1_prusa_textured_2759b2bdc735","quote":"Not scratch-resistant."}]},
+    {"record_key":"catalogue_panchroma_basic_black_guide","field":"selection_guidance","proofs":[{"source_id":"local_source_v1_pla_official_page_bounded5m_e501b9fee390","quote":"Drying Settings: 55˚C for 6h\n(Only if the material has absorbed moisture)"}]}
+  ],
+  "selector_variants":[
+    {"sku":"4008030090","retailer_title":"0.2mm (1pc)","manufacturer_title":"Nozzle (0.2mm*1)"},
+    {"sku":"4008030074","retailer_title":"0.4mm (1pc)","manufacturer_title":"Nozzle (0.4mm*1)"},
+    {"sku":"4008030073","retailer_title":"0.6mm (1pc)","manufacturer_title":"Nozzle (0.6mm*1)"},
+    {"sku":"4008030091","retailer_title":"0.8mm (1pc)","manufacturer_title":"Nozzle (0.8mm*1)"}
+  ]
+}

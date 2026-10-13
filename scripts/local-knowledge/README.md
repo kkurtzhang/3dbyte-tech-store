@@ -1,5 +1,7 @@
 # Local knowledge chat preview
 
+The bounded evidence follow-up is documented in [EVIDENCE-RECONCILIATION.md](EVIDENCE-RECONCILIATION.md): all four combined claims have source-specific preparations, nine genuine source-form holds have exact reasons, and editorial guidance/citation repairs are separately labelled.
+
 The offline native-import follow-up is documented in [IMPORT-READINESS.md](IMPORT-READINESS.md), including the blocker matrix, 64 prepared source fragments, 33 primary reference plans and the legitimate native workflow. Native actions remain unauthorized.
 
 The finite v1 coverage gate is complete at 30/30 cases. See [V1-COVERAGE-PLAN.md](V1-COVERAGE-PLAN.md) for the completion criterion, bounded additions, verification and separate native-import readiness. Preview services remain stopped.
