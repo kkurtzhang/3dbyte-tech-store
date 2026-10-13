@@ -52,7 +52,7 @@ CMS placement is an optional product decision: the existing blog supports drafts
 
 The selected 33 partial reference products have no additional factual prerequisite from these optional gaps. Native progress genuinely awaits the actual target/IDs, a real final canonical-review event, explicit native-action authorization and parent release gates. The nine source-form holds and any richer guide publication are optional evidence/design decisions. Guide citation activation/selector normalization could be scoped as another reversible local task; this milestone preserves the active v1 corpus and delivers its prepared changes honestly.
 
-**68 Python tests**, including six new reconciliation regressions, and **65 actual shared/CMS/backend pure contract checks** pass. The derived preparation bodies retain all unknowns, pending review and null native IDs. Wrong SKU/title pairs, missing evidence, unsupported null promotion, unsupported source kinds, pending approval projections, priced shells and wrong-environment binding are rejected. Ruff F/E9 and formatting checks pass. No TypeScript runtime source changed; the prior source/test type result and parent-owned canonical React peer limitation remain separate.
+**68 Python tests**, including six new reconciliation regressions, and **65 actual shared/CMS/backend pure contract checks** pass. The derived preparation bodies retain all unknowns, pending review and null native IDs. Wrong SKU/title pairs, missing evidence, unsupported null promotion, unsupported source kinds, pending approval projections, priced shells and wrong-environment binding are rejected. Ruff F/E9 and formatting checks pass. No TypeScript runtime source changed. The combined integration preserves the scoped React type-peer fix and verifies full canonical types separately from the source milestone.
 
 Reproduce from the repository root using the cleared Python/SSD environment in [IMPORT-READINESS.md](IMPORT-READINESS.md):
 
@@ -62,3 +62,7 @@ python3 -B -m unittest discover -s scripts/local-knowledge -p 'test_*.py'
 ```
 
 The full report contains `prepared_native_plan`, consumable by the existing offline `validate_import_readiness.cjs` function. New report basenames are required. The receipt verifies every SQLite table against the preserved v1 backup and prior artifact hashes. All artifacts/logs/temp stay on the external SSD; ports 3005/8873 remain stopped. No products/claims/source versions were added to the active store, and no new local/native approval, service, credential/access, dependency, model call, staging/shared DB write, push, merge or deployment occurred.
+
+## Combined-store provenance
+
+The saved source manifest remains hash-pinned and unchanged. Reconciliation rebuilds the base preparation from the current isolated store, then requires exact equality of all facts, source proofs, primary selections and native permission fields. Only preparation time, local statistics, existing local-event metadata and source-file locations are excluded from that comparison. Current local event IDs, actors and revisions therefore stay tied to their actual SQLite history. Evidence or permission drift fails closed. The diagram inspection is attributed to the prior source milestone; reproducing this report does not claim a fresh visual inspection.

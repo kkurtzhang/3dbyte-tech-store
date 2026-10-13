@@ -7,7 +7,11 @@ import json
 import re
 from pathlib import Path
 from local_store import ROOT, Store, clock
-from prepare_import_readiness import strapi_record, reviewed_source_kind
+from prepare_import_readiness import (
+    build_readiness,
+    strapi_record,
+    reviewed_source_kind,
+)
 
 SEED = Path(__file__).parent / "evaluation/evidence-reconciliation-seed-v1.json"
 BASE_RECEIPT = Path(__file__).parent / "evaluation/import-readiness-receipt-v1.json"
@@ -406,12 +410,30 @@ def editorial_guides(store, seed):
     return result
 
 
+def stable_preparation_fields(manifest):
+    """Exclude local history/location metadata; retain every fact and native gate."""
+    value = copy.deepcopy(manifest)
+    for field in ("prepared_at", "local_stats"):
+        value.pop(field, None)
+    for candidate in value["single_source_candidate_fragments"]:
+        candidate["source_review"].pop("existing_local_event", None)
+        for field in ("raw_path", "text_path"):
+            candidate["source_sidecar"].pop(field, None)
+        candidate.get("source_kind_origin_proof", {}).pop("raw_path", None)
+    return value
+
+
 def build_reconciliation(store):
     receipt = json.loads(BASE_RECEIPT.read_text())
     base = receipt["manifest"]
     if sha(base["path"]) != base["sha256"]:
         raise ValueError("Prior readiness artifact changed")
-    original = json.loads(Path(base["path"]).read_text())
+    pinned = json.loads(Path(base["path"]).read_text())
+    original = build_readiness(store)
+    if stable_preparation_fields(original) != stable_preparation_fields(pinned):
+        raise ValueError(
+            "Current preparation differs from pinned source evidence or gates"
+        )
     seed = json.loads(SEED.read_text())
     plan = copy.deepcopy(original)
     mixed = decompose(store, seed, plan)
@@ -465,7 +487,9 @@ def build_reconciliation(store):
         "image_raw_sha256": image["sha256"],
         "parent_product_url": parent["source_url"],
         "parent_raw_sha256": parent["sha256"],
-        "inspection": "Archived pixels viewed in this task: separate titanium/copper/hardened-SKD11 labels and 350°C resistance headline corroborate prior scoped observations.",
+        "inspection": "Prior source-milestone archived-pixel inspection recorded separate titanium/copper/hardened-SKD11 labels and a 350°C resistance headline corroborating scoped observations.",
+        "inspection_scope": "prior_source_milestone_review",
+        "fresh_visual_inspection_claimed": False,
         "operating_temperature_limit_established": False,
         "native_source_kind": None,
     }
@@ -483,6 +507,8 @@ def build_reconciliation(store):
         "prepared_at": clock(),
         "preparation_actor": AGENT,
         "base_manifest": base,
+        "base_preparation_evidence_and_gates_match_pinned_manifest": True,
+        "local_review_provenance": "Current store event IDs, actors and revisions; no source-branch history is substituted",
         "seed_sha256": sha(SEED),
         "source_type_gaps": gaps,
         "multi_source_reconciliation": mixed,
