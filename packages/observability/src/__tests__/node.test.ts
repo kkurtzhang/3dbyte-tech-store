@@ -11,7 +11,10 @@ jest.mock("@langfuse/otel", () => ({
   LangfuseSpanProcessor: langfuseSpanProcessorMock,
 }));
 
-import { buildSpanProcessorsAsync } from "../node";
+import {
+  buildSpanProcessorsAsync,
+  createNodeAutoInstrumentations,
+} from "../node";
 import type { TracingConfig } from "../config";
 
 function createLangfuseConfig(): TracingConfig {
@@ -88,5 +91,28 @@ describe("observability node tracing", () => {
         },
       }),
     ).toBe(true);
+  });
+});
+
+describe("node auto-instrumentation compatibility", () => {
+  it("retains database instrumentation and excludes filesystem instrumentation", () => {
+    const instrumentations = createNodeAutoInstrumentations();
+    const names = instrumentations.map((entry) => entry.instrumentationName);
+    expect(names).toContain("@opentelemetry/instrumentation-pg");
+    expect(names).toContain("@opentelemetry/instrumentation-mysql2");
+    expect(names).not.toContain("@opentelemetry/instrumentation-fs");
+    const http = instrumentations.find(
+      (entry) =>
+        entry.instrumentationName === "@opentelemetry/instrumentation-http",
+    );
+    const config = http?.getConfig() as {
+      ignoreIncomingRequestHook: (request: { url: string }) => boolean;
+    };
+    expect(config.ignoreIncomingRequestHook({ url: "/health" })).toBe(true);
+    expect(config.ignoreIncomingRequestHook({ url: "/_health" })).toBe(true);
+    expect(config.ignoreIncomingRequestHook({ url: "/store/products" })).toBe(
+      false,
+    );
+    for (const instrumentation of instrumentations) instrumentation.disable();
   });
 });
