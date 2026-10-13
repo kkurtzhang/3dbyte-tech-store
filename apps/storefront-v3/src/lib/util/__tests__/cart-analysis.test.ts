@@ -247,3 +247,34 @@ describe("analyzeCartContents", () => {
     expect(result.bundleSavingsTotal).toBe(600)
   })
 })
+
+
+it("keeps bundle savings when native carts return only the public regular-price receipt", () => {
+  const result = analyzeCartContents([
+    createLineItem({
+      quantity: 2,
+      unit_price: 80,
+      variant: undefined,
+      metadata: { bundle_key: "native-receipt", bundle_regular_unit_price: 120 },
+    }),
+  ], "usd")
+  expect(result.bundleSavingsTotal).toBe(80)
+})
+
+it("does not turn a preorder comparison price into bundle savings without a standalone preorder price", () => {
+  const result = analyzeCartContents([
+    createLineItem({
+      quantity: 2,
+      unit_price: 80,
+      variant: createVariantFixture({
+        preorder_variant: {
+          status: "enabled",
+          available_date: "2999-01-01T00:00:00.000Z",
+          prices: [],
+        },
+      }),
+      metadata: { bundle_key: "preorder-receipt", bundle_regular_unit_price: 120 },
+    }),
+  ], "usd")
+  expect(result.bundleSavingsTotal).toBe(0)
+})

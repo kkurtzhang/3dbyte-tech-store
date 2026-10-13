@@ -1,4 +1,5 @@
 import { buildCartDisplayGroups } from "@/features/cart/lib/bundle-groups"
+import { resolveCartLineRegularUnitPrice } from "@/features/cart/lib/cart-line-pricing"
 import type { BundleCartGroup } from "@/features/cart/lib/bundle-groups"
 import type { MedusaCartLineItem } from "@/lib/medusa/cart"
 import type { MedusaPreorderVariant } from "@/lib/medusa/types"
@@ -53,16 +54,20 @@ function getBundleSavings<TItem extends AnalyzableLineItem>(
     return 0
   }
 
-  const baselinePrice = isPreorder(item.variant?.preorder_variant)
+  const preorder = isPreorder(item.variant?.preorder_variant)
+  const baselinePrice = preorder
     ? resolvePreorderPrice(item.variant, currencyCode)
     : resolveRegularPrice(item.variant, currencyCode)
+  const baselineAmount =
+    baselinePrice?.amount ??
+    (preorder ? null : resolveCartLineRegularUnitPrice(item, currencyCode ?? "usd"))
 
-  if (!baselinePrice) {
+  if (baselineAmount === null || baselineAmount === undefined) {
     return 0
   }
 
   const quantity = item.quantity ?? 0
-  const savingsPerUnit = baselinePrice.amount - item.unit_price
+  const savingsPerUnit = baselineAmount - item.unit_price
 
   if (savingsPerUnit <= 0 || quantity <= 0) {
     return 0
