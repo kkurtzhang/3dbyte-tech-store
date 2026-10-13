@@ -5,6 +5,16 @@ import re
 
 PREFIX = "catalogue_"
 
+# These six persisted families share the same two manufacturer specification
+# fields. This expands intent matching only; it adds no claims or source scope.
+FIBERLOGY_SPEC_GROUPS = frozenset(
+    "catalogue_c100_fiberlogy_" + suffix
+    for suffix in ("abs", "absgf", "asa", "pctg", "pctgcf", "pctggf")
+)
+MANUFACTURER_SPEC_FIELDS = frozenset(
+    ("manufacturer_print_temperature", "manufacturer_bed_temperature")
+)
+
 
 def catalogue_groups(question, store):
     groups = set()
@@ -75,20 +85,33 @@ def answer_catalogue_reference(store, question, group, result):
     matched_guides = [
         x for x in guides if re.search(x[1]["query_pattern"], question, re.I)
     ]
+    generic_specs = group in FIBERLOGY_SPEC_GROUPS and bool(
+        re.search(
+            r"\b(?:spec(?:ification)?s?|technical\s+(?:details|data))\b", question, re.I
+        )
+    )
     matched_facts = [
         x
         for x in claims
         if x[1]["status"] == "supported"
-        and re.search(x[1]["query_pattern"], question, re.I)
+        and (
+            x[1]["field"] in MANUFACTURER_SPEC_FIELDS
+            if generic_specs
+            else re.search(x[1]["query_pattern"], question, re.I)
+        )
     ]
     choice_question = re.search(
         r"choose|choice|buy|select|consider|recommend|planning", question, re.I
     )
     selected = (
-        (matched_guides if choice_question else matched_facts)
-        or matched_facts
-        or matched_guides
-        or guides
+        matched_facts
+        if generic_specs
+        else (
+            (matched_guides if choice_question else matched_facts)
+            or matched_facts
+            or matched_guides
+            or guides
+        )
     )
     # Limit to one persisted document, matching the storefront assembly contract.
     if selected:
@@ -115,6 +138,15 @@ def answer_catalogue_reference(store, question, group, result):
                 "citations": citations,
             }
         )
+    if not pack and claims:
+        return {
+            **result,
+            "status": "unknown",
+            "reason": "catalogue_question_unresolved",
+            "unknown_fields": ["requested_reference_details"],
+            "context_pack": [],
+            "answer": "The selected reference has captured source evidence, but the requested details are not verified within its recorded scope. No facts from another product or received revision can fill that gap.",
+        }
     if not pack:
         return {
             **result,

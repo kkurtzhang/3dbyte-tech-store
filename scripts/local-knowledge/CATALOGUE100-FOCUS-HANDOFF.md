@@ -58,7 +58,7 @@ The integration worker reported independent commit `eb2e79f8959aae786c2fcdbaa040
 
 Alias resolution is deterministic and bounded to reviewed identities. It does not promise arbitrary paraphrase, exhaustive model recognition, physical supplier-variant selection or factual coverage for every intent.
 
-Six existing Fiberlogy records (ABS, ABS+GF, ASA, PCTG, PCTG+CF10, PCTG+GF10) resolve correctly but their backend rules do not recognize a generic “specifications” request; that request currently returns unknown with misleading “not registered” wording. Their supported temperature/settings questions pass route evidence checks. This existing backend intent/wording limitation was not altered here. TPU95-HF's requested canonical drying values correctly remain unknown in this corpus. The preserved first route report documents these seven initial expectation mismatches; the final fixture explicitly tests supported temperature questions and the TPU unknown instead of changing evidence.
+At snapshot `36232563`, six Fiberlogy records (ABS, ABS+GF, ASA, PCTG, PCTG+CF10, PCTG+GF10) resolved correctly but required temperature/settings wording. The subsequent `feat/knowledge-100-specs-20261013` follow-up fixes generic specifications/specs/technical-details intent using only the two existing supported manufacturer fields. Existing unknown guards and citation integrity remain mandatory; requests outside recorded facts now report a scoped unknown rather than claiming the reference is unregistered. TPU95-HF's requested canonical drying values correctly remain unknown in this corpus. The preserved first route report documents these seven initial expectation mismatches; the final fixture explicitly tests supported temperature questions and the TPU unknown instead of changing evidence.
 
 ## Fourteen identities without a verified AUD price
 
@@ -82,7 +82,7 @@ These gaps are among the 70 additions, not permission to add products or infer p
 | FormFutura AquaSolve PVA | X3D product URL returned 404; historical diameter/price offers are not current. |
 
 
-## Independent combined integration
+## Independent combined focus milestone
 
 Follow-up branch `integration/security-knowledge-focus100-20261013` starts from `eb2e79f8959aae786c2fcdbaa040ad412b3005d2` and integrates the five pinned source commits through `362325631dd41a2d3e1a241c1b02ee3ab82fcbf1`. The one conflict in `local-catalogue-subjects.ts` is resolved with the complete generated 100-reference registry. Existing backend held/adjacent-identity safeguards, explicit seed discovery, source-preservation corrections, dependency remediation and scoped React type fix are retained.
 
@@ -100,3 +100,13 @@ Fresh combined verification:
 The final exact-head source archive, local SQLite snapshot, patches, logs and readiness report are stored under `/Volumes/MINI-M1/Codex/3dbyte-tech-store/artifacts/security-knowledge-integration-20261013/focus100`. The SQLite snapshot requires its byte-identical sources under the new private `focus100-fixture/catalogue100` directory.
 
 The Gitleaks exception proposal remains unapplied. The exact-head scan result is reported in that artifact directory and must not be represented as a clean release gate. Braces and previous dependency-audit limitations remain unresolved; no external audit/re-review retry occurred. Six Fiberlogy generic specifications/wording fixes remain with the KB worker. Native binding, canonical native review, production build/release validation and publication remain outside this local integration. Preview stays off; no service, dependency install, native write, push, merge or deployment occurred.
+## Generic specifications follow-up
+
+`362325631dd41a2d3e1a241c1b02ee3ab82fcbf1` remains the preserved integration snapshot. The small follow-up branch `feat/knowledge-100-specs-20261013` changes only deterministic catalogue intent selection, its regression coverage and this handoff. No facts or products were added; the count remains 100 plus three uncounted RC references.
+
+Verification uses a separate `20261013-catalogue100-specs` corpus copy. The 30 exact route cases are committed as `evaluation/fiberlogy-generic-specs-cases-v1.json`: six families × four direct/follow-up forms, two explicit ASA scope cases after Magigoo PP and E3D Roto motor, and four scoped unknowns. All 30 identity/evidence cases pass, with the exact two manufacturer fields in all 26 positive responses. Five targeted Python test methods additionally cover 18 generic phrasing subcases, citation failure, mismatched groups and unknown precedence. See `reports/specs-final-evidence.json`, `reports/specs-final-identities.json` and `reports/specs-streams.json` in that verification workspace.
+
+This follow-up does not duplicate the integration worker's seed-discovery, held-identity, dependency or security changes. No services, dependencies, model calls or native writes were used.
+
+
+Follow-up checks: 11 targeted/persisted retrieval test methods pass (including the phrasing subcases), 193 frontend regressions pass, all 30 actual route cases pass, Ruff check/format passes, and the unchanged source-and-test TypeScript check passes with `.next/dev` excluded. The unrelated historical import-replay test was attempted but its original source paths are outside this isolated copy's source-registration boundary; that guard was preserved, not weakened. Import activation and replay code were not changed. Original corpus file hashes, all 15 copied database tables and every preserved focus-receipt artifact remain unchanged; preservation evidence is `20261013-catalogue100-specs/reports/specs-preservation.json`.

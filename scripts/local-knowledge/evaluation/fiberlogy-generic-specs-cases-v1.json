@@ -1,0 +1,593 @@
+{
+  "cases": [
+    {
+      "id": "abs_specs_0",
+      "questions": [
+        "What are the specifications for Fiberlogy ABS?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_abs_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_abs_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "direct",
+      "expected_group": "catalogue_c100_fiberlogy_abs"
+    },
+    {
+      "id": "abs_specs_1",
+      "questions": [
+        "Magigoo PP",
+        "Tell me about Fiberlogy ABS",
+        "What are its specs?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_abs_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_abs_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_fiberlogy_abs"
+    },
+    {
+      "id": "abs_specs_2",
+      "questions": [
+        "E3D Roto motor",
+        "What are this Fiberlogy ABS's specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_abs_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_abs_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "direct",
+      "expected_group": "catalogue_c100_fiberlogy_abs"
+    },
+    {
+      "id": "abs_specs_3",
+      "questions": [
+        "E3D Roto motor",
+        "Tell me about Fiberlogy ABS",
+        "And its technical details?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_abs_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_abs_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_fiberlogy_abs"
+    },
+    {
+      "id": "absgf_specs_0",
+      "questions": [
+        "What are the specifications for Fiberlogy ABS+GF?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_absgf_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_absgf_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "direct",
+      "expected_group": "catalogue_c100_fiberlogy_absgf"
+    },
+    {
+      "id": "absgf_specs_1",
+      "questions": [
+        "Magigoo PP",
+        "Tell me about Fiberlogy ABS+GF",
+        "What are its specs?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_absgf_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_absgf_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_fiberlogy_absgf"
+    },
+    {
+      "id": "absgf_specs_2",
+      "questions": [
+        "E3D Roto motor",
+        "What are this Fiberlogy ABS+GF's specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_absgf_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_absgf_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "direct",
+      "expected_group": "catalogue_c100_fiberlogy_absgf"
+    },
+    {
+      "id": "absgf_specs_3",
+      "questions": [
+        "E3D Roto motor",
+        "Tell me about Fiberlogy ABS+GF",
+        "And its technical details?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_absgf_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_absgf_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_fiberlogy_absgf"
+    },
+    {
+      "id": "asa_specs_0",
+      "questions": [
+        "What are the specifications for Fiberlogy ASA?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_asa_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_asa_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "direct",
+      "expected_group": "catalogue_c100_fiberlogy_asa"
+    },
+    {
+      "id": "asa_specs_1",
+      "questions": [
+        "Magigoo PP",
+        "Tell me about Fiberlogy ASA",
+        "What are its specs?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_asa_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_asa_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_fiberlogy_asa"
+    },
+    {
+      "id": "asa_specs_2",
+      "questions": [
+        "E3D Roto motor",
+        "What are this Fiberlogy ASA's specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_asa_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_asa_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "direct",
+      "expected_group": "catalogue_c100_fiberlogy_asa"
+    },
+    {
+      "id": "asa_specs_3",
+      "questions": [
+        "E3D Roto motor",
+        "Tell me about Fiberlogy ASA",
+        "And its technical details?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_asa_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_asa_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_fiberlogy_asa"
+    },
+    {
+      "id": "pctg_specs_0",
+      "questions": [
+        "What are the specifications for Fiberlogy PCTG?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_pctg_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_pctg_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "direct",
+      "expected_group": "catalogue_c100_fiberlogy_pctg"
+    },
+    {
+      "id": "pctg_specs_1",
+      "questions": [
+        "Magigoo PP",
+        "Tell me about Fiberlogy PCTG",
+        "What are its specs?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_pctg_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_pctg_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_fiberlogy_pctg"
+    },
+    {
+      "id": "pctg_specs_2",
+      "questions": [
+        "E3D Roto motor",
+        "What are this Fiberlogy PCTG's specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_pctg_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_pctg_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "direct",
+      "expected_group": "catalogue_c100_fiberlogy_pctg"
+    },
+    {
+      "id": "pctg_specs_3",
+      "questions": [
+        "E3D Roto motor",
+        "Tell me about Fiberlogy PCTG",
+        "And its technical details?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_pctg_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_pctg_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_fiberlogy_pctg"
+    },
+    {
+      "id": "pctgcf_specs_0",
+      "questions": [
+        "What are the specifications for Fiberlogy PCTG+CF10?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_pctgcf_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_pctgcf_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "direct",
+      "expected_group": "catalogue_c100_fiberlogy_pctgcf"
+    },
+    {
+      "id": "pctgcf_specs_1",
+      "questions": [
+        "Magigoo PP",
+        "Tell me about Fiberlogy PCTG+CF10",
+        "What are its specs?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_pctgcf_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_pctgcf_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_fiberlogy_pctgcf"
+    },
+    {
+      "id": "pctgcf_specs_2",
+      "questions": [
+        "E3D Roto motor",
+        "What are this Fiberlogy PCTG+CF10's specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_pctgcf_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_pctgcf_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "direct",
+      "expected_group": "catalogue_c100_fiberlogy_pctgcf"
+    },
+    {
+      "id": "pctgcf_specs_3",
+      "questions": [
+        "E3D Roto motor",
+        "Tell me about Fiberlogy PCTG+CF10",
+        "And its technical details?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_pctgcf_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_pctgcf_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_fiberlogy_pctgcf"
+    },
+    {
+      "id": "pctggf_specs_0",
+      "questions": [
+        "What are the specifications for Fiberlogy PCTG+GF10?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_pctggf_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_pctggf_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "direct",
+      "expected_group": "catalogue_c100_fiberlogy_pctggf"
+    },
+    {
+      "id": "pctggf_specs_1",
+      "questions": [
+        "Magigoo PP",
+        "Tell me about Fiberlogy PCTG+GF10",
+        "What are its specs?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_pctggf_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_pctggf_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_fiberlogy_pctggf"
+    },
+    {
+      "id": "pctggf_specs_2",
+      "questions": [
+        "E3D Roto motor",
+        "What are this Fiberlogy PCTG+GF10's specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_pctggf_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_pctggf_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "direct",
+      "expected_group": "catalogue_c100_fiberlogy_pctggf"
+    },
+    {
+      "id": "pctggf_specs_3",
+      "questions": [
+        "E3D Roto motor",
+        "Tell me about Fiberlogy PCTG+GF10",
+        "And its technical details?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_pctggf_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_pctggf_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_fiberlogy_pctggf"
+    },
+    {
+      "id": "asa_three_subjects",
+      "questions": [
+        "Magigoo PP",
+        "E3D Roto motor",
+        "Fiberlogy ASA",
+        "What are its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_asa_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_asa_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_fiberlogy_asa"
+    },
+    {
+      "id": "asa_explicit_latest",
+      "questions": [
+        "Magigoo PP",
+        "E3D Roto motor",
+        "What are the specifications for Fiberlogy ASA?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_asa_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_asa_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_focus": "direct",
+      "expected_group": "catalogue_c100_fiberlogy_asa"
+    },
+    {
+      "id": "asa_strength",
+      "questions": [
+        "Magigoo PP",
+        "E3D Roto motor",
+        "Fiberlogy ASA",
+        "What is its tensile strength?"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "requested_reference_details"
+      ],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_fiberlogy_asa"
+    },
+    {
+      "id": "asa_received",
+      "questions": [
+        "Magigoo PP",
+        "E3D Roto motor",
+        "Fiberlogy ASA",
+        "What are its specifications for my received spool?"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "received_spool_settings_applicability"
+      ],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_fiberlogy_asa"
+    },
+    {
+      "id": "asa_price",
+      "questions": [
+        "Magigoo PP",
+        "E3D Roto motor",
+        "Fiberlogy ASA",
+        "What are its specifications and current price?"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "store_sale_price"
+      ],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_fiberlogy_asa"
+    },
+    {
+      "id": "asa_stock",
+      "questions": [
+        "Magigoo PP",
+        "E3D Roto motor",
+        "Fiberlogy ASA",
+        "What are its specifications and is it in stock?"
+      ],
+      "status": "unknown",
+      "unknown_fields": [
+        "physical_stock_and_delivery"
+      ],
+      "expected_focus": "focused",
+      "expected_group": "catalogue_c100_fiberlogy_asa"
+    }
+  ]
+}
