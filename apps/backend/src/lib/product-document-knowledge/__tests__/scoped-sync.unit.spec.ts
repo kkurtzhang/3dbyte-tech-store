@@ -1,16 +1,25 @@
+import type { KnowledgeProductDocument } from "../contract";
 import {
   reconcileProductDocuments,
   PUBLIC_KNOWLEDGE_INDEX_SETTINGS,
 } from "../synchronize";
 
 function fixture() {
-  const rows = ["doc_a", "doc_b", "doc_unrelated"].map((id) => ({
+  const rows: KnowledgeProductDocument[] = [
+    "doc_a",
+    "doc_b",
+    "doc_unrelated",
+  ].map((id) => ({
     id,
     medusa_product_id: "prod_fixture",
     product_handle: "fixture",
     product_title: "Fixture",
     title: id,
     document_type: "manual",
+    file_url: "",
+    file_name: "",
+    mime_type: "",
+    file_size: 0,
     source_url: `https://example.com/${id}`,
     search_keywords: [],
     sort_order: 0,
