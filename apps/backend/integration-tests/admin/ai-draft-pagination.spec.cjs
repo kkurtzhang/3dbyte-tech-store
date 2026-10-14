@@ -10,14 +10,19 @@ const expectOffset = async (page, offset) => {
 }
 
 test.beforeEach(async ({ page }) => {
+  page.on("pageerror", (error) => console.error("Fixture render error:", error.message))
   await page.goto("/")
   await expect(page.getByText("15 of 47 results", { exact: true })).toBeVisible()
 })
 
-for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
-  test(`shows pagination before scrolling at ${viewport.width}px and requests every page`, async ({ page }) => {
+for (const viewport of [{ width: 1440, height: 900 }, { width: 1024, height: 365 }, { width: 390, height: 844 }]) {
+  test(`keeps native bottom pagination reachable and unclipped at ${viewport.width}px and requests every page`, async ({ page }) => {
     await page.setViewportSize(viewport)
-    await expect(next(page)).toBeInViewport()
+    const footer = page.getByRole("navigation", { name: "AI product drafts pagination" })
+    await expect.poll(() => footer.evaluate((nav) => document.querySelector("table").compareDocumentPosition(nav) & Node.DOCUMENT_POSITION_FOLLOWING)).toBeTruthy()
+    await next(page).scrollIntoViewIfNeeded()
+    await expect(next(page)).toBeInViewport({ ratio: 1 })
+    await expect(footer).toBeInViewport({ ratio: 1 })
     await page.screenshot({ path: test.info().outputPath(`pagination-${viewport.width}.png`) })
     await expect(prev(page)).toBeDisabled()
     await expect(page.getByText("1 of 4 pages", { exact: true })).toBeVisible()
@@ -114,4 +119,57 @@ test("handles empty results, loading, list errors, and retry without losing pagi
   await page.getByRole("button", { name: "Clear", exact: true }).click()
   await expect(page.getByText("15 of 47 results", { exact: true })).toBeVisible()
   await expectOffset(page, 0)
+})
+
+for (const viewport of [{ width: 1440, height: 900 }, { width: 1024, height: 365 }, { width: 390, height: 844 }, { width: 390, height: 365 }]) {
+  test(`contains long rows and every footer label at ${viewport.width}x${viewport.height}`, async ({ page }) => {
+    await page.setViewportSize(viewport)
+    await page.goto("/?long=true")
+    await expect(page.getByText("15 of 47 results", { exact: true })).toBeVisible()
+    const footer = page.getByRole("navigation", { name: "AI product drafts pagination" })
+    await footer.scrollIntoViewIfNeeded()
+    const geometry = await footer.evaluate((nav) => {
+      const table = document.querySelector("table")
+      const scroller = table.parentElement
+      const main = document.querySelector("main")
+      const lastRow = table.rows[table.rows.length - 1]
+      const footerRect = nav.getBoundingClientRect()
+      const clip = main.getBoundingClientRect()
+      const labels = [...nav.querySelectorAll("p, button")].map((element) => {
+        const rect = element.getBoundingClientRect()
+        return { text: element.textContent, unclipped: rect.top >= clip.top && rect.bottom <= clip.bottom && rect.left >= clip.left && rect.right <= clip.right && element.scrollWidth <= element.clientWidth && element.scrollHeight <= element.clientHeight }
+      })
+      return {
+        afterRows: footerRect.top >= lastRow.getBoundingClientRect().bottom,
+        outsideRowScroller: !scroller.contains(nav),
+        completeLastRow: lastRow.getBoundingClientRect().bottom <= scroller.getBoundingClientRect().bottom,
+        noVerticalRowClipping: scroller.scrollHeight <= scroller.clientHeight + 1,
+        productWidth: table.rows[1].cells[0].firstElementChild.getBoundingClientRect().width,
+        labels,
+      }
+    })
+    expect(geometry.afterRows).toBe(true)
+    expect(geometry.outsideRowScroller).toBe(true)
+    expect(geometry.completeLastRow).toBe(true)
+    expect(geometry.noVerticalRowClipping).toBe(true)
+    expect(geometry.productWidth).toBeLessThanOrEqual(250)
+    expect(geometry.labels.every((label) => label.unclipped)).toBe(true)
+    expect(geometry.labels.map((label) => label.text)).toEqual(["1", "15 of 47 results", "1 of 4 pages", "Prev", "Next"])
+    await page.screenshot({ path: test.info().outputPath(`long-rows-${viewport.width}x${viewport.height}.png`) })
+  })
+}
+
+test("uses the same bottom paginator presentation as the installed native Products table", async ({ page }) => {
+  const footer = page.getByRole("navigation", { name: "AI product drafts pagination" })
+  const presentation = await footer.locator("fieldset > div").evaluate((element) => {
+    const s = getComputedStyle(element)
+    return { display: s.display, paddingTop: s.paddingTop, paddingBottom: s.paddingBottom, fontSize: s.fontSize, labels: element.innerText.replace(/\s+/g, " ").trim() }
+  })
+  await page.goto("/native-table")
+  const nativeFooter = next(page).locator("../..")
+  const nativePresentation = await nativeFooter.evaluate((element) => {
+    const s = getComputedStyle(element)
+    return { display: s.display, paddingTop: s.paddingTop, paddingBottom: s.paddingBottom, fontSize: s.fontSize, labels: element.innerText.replace(/\s+/g, " ").trim() }
+  })
+  expect(presentation).toEqual(nativePresentation)
 })
