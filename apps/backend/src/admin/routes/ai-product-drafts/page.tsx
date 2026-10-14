@@ -125,15 +125,22 @@ const columns = [
     sortAscLabel: "A-Z",
     sortDescLabel: "Z-A",
     cell: ({ row }) => (
-      <div>
+      <div className="max-w-[250px] overflow-hidden">
         <Link
-          className="text-ui-fg-base hover:text-ui-fg-base-hover focus-visible:shadow-borders-focus rounded-sm font-medium outline-none"
+          title={getAiProductDraftDisplayName(row.original)}
+          className="block truncate text-ui-fg-base hover:text-ui-fg-base-hover focus-visible:shadow-borders-focus rounded-sm font-medium outline-none"
           onClick={(event) => event.stopPropagation()}
           to={buildAiProductDraftDetailUrl(row.original.id)}
         >
           {getAiProductDraftDisplayName(row.original)}
         </Link>
-        <Text className="text-ui-fg-subtle" size="small">
+        <Text
+          className="truncate text-ui-fg-subtle"
+          size="small"
+          title={
+            row.original.product_handle ? `/${row.original.product_handle}` : undefined
+          }
+        >
           {row.original.product_handle
             ? `/${row.original.product_handle} · `
             : ""}
@@ -386,7 +393,7 @@ const AiProductDraftsPage = () => {
             : []
         }
       />
-      <DataTable instance={table}>
+      <DataTable instance={table} className="flex-none">
         <div className="flex flex-col gap-4 px-6 py-4">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {queueStatuses.map((queueStatus) => (
@@ -454,14 +461,6 @@ const AiProductDraftsPage = () => {
             </div>
           </div>
         </div>
-        <nav aria-label="AI product drafts pagination">
-          <fieldset
-            className="min-w-0 [&>div]:flex-wrap [&>div]:gap-y-2"
-            disabled={isFetching || isError || isCleaningUp}
-          >
-            <DataTable.Pagination />
-          </fieldset>
-        </nav>
         {isError ? (
           <div
             className="m-6 rounded-lg border border-ui-border-error bg-ui-bg-subtle p-4"
@@ -481,37 +480,48 @@ const AiProductDraftsPage = () => {
             </Button>
           </div>
         ) : (
-          <DataTable.Table
-            emptyState={{
-              empty: {
-                custom: (
-                  <div className="py-10 text-center">
-                    <Text weight="plus">
-                      {status === "needs_review"
-                        ? "No drafts need review"
-                        : `No ${labelizeAiProductDraftValue(status).toLowerCase()} drafts`}
-                    </Text>
-                    <Text className="text-ui-fg-subtle" size="small">
-                      {debouncedQ
-                        ? "Clear the search or choose another queue."
-                        : "New matching drafts will appear here."}
-                    </Text>
-                  </div>
-                ),
-              },
-              filtered: {
-                custom: (
-                  <div className="py-10 text-center">
-                    <Text weight="plus">No matching drafts</Text>
-                    <Text className="text-ui-fg-subtle" size="small">
-                      Clear the search or choose another queue.
-                    </Text>
-                  </div>
-                ),
-              },
-            }}
-          />
+          <div className="min-w-0 [&>div]:block [&_td:first-child]:static [&_th:first-child]:static">
+            {/* Match native fit lists: natural row height and horizontal scrolling. */}
+            <DataTable.Table
+              emptyState={{
+                empty: {
+                  custom: (
+                    <div className="py-10 text-center">
+                      <Text weight="plus">
+                        {status === "needs_review"
+                          ? "No drafts need review"
+                          : `No ${labelizeAiProductDraftValue(status).toLowerCase()} drafts`}
+                      </Text>
+                      <Text className="text-ui-fg-subtle" size="small">
+                        {debouncedQ
+                          ? "Clear the search or choose another queue."
+                          : "New matching drafts will appear here."}
+                      </Text>
+                    </div>
+                  ),
+                },
+                filtered: {
+                  custom: (
+                    <div className="py-10 text-center">
+                      <Text weight="plus">No matching drafts</Text>
+                      <Text className="text-ui-fg-subtle" size="small">
+                        Clear the search or choose another queue.
+                      </Text>
+                    </div>
+                  ),
+                },
+              }}
+            />
+          </div>
         )}
+        <nav className="shrink-0" aria-label="AI product drafts pagination">
+          <fieldset
+            className="min-w-0 [&>div]:flex-wrap [&>div]:gap-y-2"
+            disabled={isFetching || isError || isCleaningUp}
+          >
+            <DataTable.Pagination />
+          </fieldset>
+        </nav>
       </DataTable>
     </Container>
   )
