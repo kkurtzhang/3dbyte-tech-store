@@ -20,7 +20,7 @@ describe("POST /store/customers/me/product-files/:fileId/download", () => {
   it("returns a download URL only after the service rechecks entitlement", async () => {
     const createEntitledDownloadLink = jest.fn().mockResolvedValue({
       url: "https://signed.example.com/calibration.zip",
-      expires_in: 900,
+      expires_in: 3600,
     });
     const json = jest.fn();
 
@@ -50,7 +50,7 @@ describe("POST /store/customers/me/product-files/:fileId/download", () => {
     expect(json).toHaveBeenCalledWith({
       download: {
         url: "https://signed.example.com/calibration.zip",
-        expires_in: 900,
+        expires_in: 3600,
       },
     });
   });
