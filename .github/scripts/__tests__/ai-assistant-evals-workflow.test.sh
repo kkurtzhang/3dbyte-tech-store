@@ -41,3 +41,16 @@ do
 done
 
 echo "AI assistant eval workflow tests passed"
+
+# All evaluation modes must pass readiness, including current-release runs.
+python3 - "${workflow}" <<'PY'
+import sys
+from pathlib import Path
+text=Path(sys.argv[1]).read_text()
+step=text.split('      - name: Wait for staging deployment\n',1)[1].split('\n      - ',1)[0]
+assert "if: steps.live-eval.outputs.should_run == 'true'\n" in step
+assert 'STAGING_BACKEND_HEALTH_URL:' in step
+assert 'STAGING_CMS_HEALTH_URL:' in step
+assert 'RELEASE_MODE:' in step and "'expected'" in step and "'current'" in step
+assert 'REQUEST_TIMEOUT_SECONDS:' in step
+PY
