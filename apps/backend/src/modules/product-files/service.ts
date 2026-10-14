@@ -5,6 +5,7 @@ import {
   ProductRegistrationSource,
   ProductRegistrationStatus,
 } from "./models/product-registration";
+import { parseSignedDownload } from "./utils/signed-download";
 import type {
   ClaimProductSerialInput,
   CreateEntitledDownloadLinkInput,
@@ -13,8 +14,6 @@ import type {
   ProductFileDownload,
   ProductRegistrationRecord,
 } from "./types";
-
-import { parseSignedDownload } from "./utils/signed-download";
 
 export function normalizeSerialNumber(serialNumber: string): string {
   return serialNumber.trim().toUpperCase();
