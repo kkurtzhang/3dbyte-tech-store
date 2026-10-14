@@ -19,6 +19,37 @@ type Candidate = {
   revision: string;
 };
 
+/** Resolve exact native ownership before unrelated model documents consume the bound. */
+async function readVariantOwner(
+  query: KnowledgeDependencies["query"],
+  variantId: string,
+): Promise<string | null> {
+  const result = await query.graph({
+    entity: "product_variant",
+    fields: ["id", "product.id", "product.status"],
+    filters: { id: [variantId] },
+    pagination: { take: 2, skip: 0 },
+  });
+  if (
+    !Array.isArray(result.data) ||
+    result.metadata?.count !== result.data.length ||
+    result.data.length > 1
+  )
+    throw new Error("Incomplete knowledge variant ownership.");
+  if (!result.data.length) return null;
+  const variant = result.data[0];
+  if (
+    !isKnowledgeRecord(variant) ||
+    variant.id !== variantId ||
+    !isKnowledgeRecord(variant.product) ||
+    !knowledgeIdentifier(variant.product.id)
+  )
+    throw new Error("Invalid knowledge variant ownership.");
+  return variant.product.status === "published"
+    ? (variant.product.id as string)
+    : null;
+}
+
 /** Search locates candidates; indexed text can never become answer evidence. */
 export async function retrieveProductKnowledge(
   options: KnowledgeDependencies & {
@@ -41,12 +72,17 @@ export async function retrieveProductKnowledge(
     (options.variantId !== undefined && !knowledgeIdentifier(options.variantId))
   )
     throw new Error("Invalid knowledge search.");
+  let productId = options.productId;
+  if (options.variantId) {
+    const ownerId = await readVariantOwner(options.query, options.variantId);
+    if (!ownerId || (productId && productId !== ownerId))
+      return { documents: [], citations: [] };
+    productId = ownerId;
+  }
   const filter = [
     // This field is emitted only for approved knowledge, never metadata-only records.
     "knowledge_revision_hash EXISTS",
-    ...(options.productId
-      ? [`medusa_product_id = "${options.productId}"`]
-      : []),
+    ...(productId ? [`medusa_product_id = "${productId}"`] : []),
     ...(options.variantId
       ? [
           `(knowledge_binding_scope = "product" OR knowledge_variant_id = "${options.variantId}")`,
@@ -87,7 +123,7 @@ export async function retrieveProductKnowledge(
       throw new Error("Ambiguous document search response.");
     ids.add(candidate.id);
     if (
-      (options.productId && candidate.productId !== options.productId) ||
+      (productId && candidate.productId !== productId) ||
       (options.variantId &&
         candidate.bindingScope === "variant" &&
         candidate.variantId !== options.variantId)

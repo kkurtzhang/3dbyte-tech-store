@@ -301,6 +301,12 @@ it("searches knowledge candidates before the eight-hit bound, then rechecks expi
 
 it("combines knowledge eligibility with exact product and variant filters under metadata saturation", async () => {
   const options = saturatedSearch();
+  options.query.graph.mockResolvedValueOnce({
+    data: [
+      { id: "variant_b", product: { id: "prod_hotend", status: "published" } },
+    ],
+    metadata: { count: 1 },
+  });
   const result = await retrieveProductKnowledge({
     ...options,
     queryText: "manual",

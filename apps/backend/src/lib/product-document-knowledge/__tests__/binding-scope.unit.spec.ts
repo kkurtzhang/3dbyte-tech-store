@@ -221,7 +221,10 @@ function fixture() {
     },
     query: {
       graph: jest.fn(
-        async (input: { entity: string; filters: { id: string[] } }) => {
+        async (input: {
+          entity: string;
+          filters: { id: string[] };
+        }): Promise<{ data: unknown[]; metadata: { count?: number } }> => {
           if (input.entity === "product_variant") {
             const data = current.flatMap((p) =>
               p.variants
