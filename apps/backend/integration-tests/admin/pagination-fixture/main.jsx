@@ -1,19 +1,28 @@
 import React from "react"
 import { createRoot } from "react-dom/client"
 import { TooltipProvider } from "@medusajs/ui"
-import { BrowserRouter } from "react-router-dom"
+import { createBrowserRouter, RouterProvider, Link } from "react-router-dom"
+import i18n from "i18next"
+import { initReactI18next } from "react-i18next"
+import { Shell } from "@fixture/medusa-shell"
+import { SidebarProvider } from "@fixture/medusa-sidebar"
+import { DataTableRoot } from "@fixture/medusa-native-table"
+import { useReactTable, getCoreRowModel } from "@tanstack/react-table"
+import translations from "@fixture/translations"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import "@medusajs/dashboard/css"
 import "./utilities.css"
 import AiProductDraftsPage from "../../../src/admin/routes/ai-product-drafts/page"
 import { sdk } from "../../../src/admin/lib/sdk"
 
+i18n.use(initReactI18next).init({ lng: "en", resources: { en: { translation: translations } }, interpolation: { escapeValue: false } })
+const longRows = new URLSearchParams(location.search).has("long")
 const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
 const records = Array.from({ length: 47 }, (_, index) => ({
   id: `draft_${String(index + 1).padStart(2, "0")}`,
   status: "needs_review",
-  product_input: { product_name: `Fixture Product ${String(index + 1).padStart(2, "0")}` },
-  product_handle: `fixture-product-${index + 1}`,
+  product_input: { product_name: `Fixture Product ${String(index + 1).padStart(2, "0")}${longRows ? " — Detailed manufacturer research title with a long variant name".repeat(3) : ""}` },
+  product_handle: `fixture-product-${index + 1}${longRows ? "-very-long-research-source-handle".repeat(6) : ""}`,
   source_agent: "hermes",
   created_at: new Date(Date.UTC(2026, 0, index + 1)).toISOString(),
   warnings: [],
@@ -46,16 +55,21 @@ const shrinkQueue = () => {
   client.invalidateQueries({ queryKey: ["ai-product-drafts"] })
 }
 
+const nativeColumns = [{ accessorKey: "id", header: "Product", cell: ({ getValue }) => <span>{getValue()}</span> }]
+function NativeReference() {
+  const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 15 })
+  const table = useReactTable({ data: records.slice(pagination.pageIndex * 15, (pagination.pageIndex + 1) * 15), columns: nativeColumns, state: { pagination }, onPaginationChange: setPagination, rowCount: records.length, manualPagination: true, getCoreRowModel: getCoreRowModel() })
+  return <DataTableRoot table={table} columns={nativeColumns} count={records.length} pagination pageSize={15} layout="fit" />
+}
+function FixtureShell() {
+  return <SidebarProvider><Shell><aside className="flex flex-1 flex-col justify-between overflow-y-auto"><div className="p-3"><p>Medusa Shell fixture</p><p>Synthetic data only</p><Link to="/">AI Product Drafts</Link><br/><Link to="/native-table">Native Products table pattern</Link></div></aside></Shell></SidebarProvider>
+}
+const router = createBrowserRouter([{ element: <FixtureShell />, children: [
+  { path: "/", element: <AiProductDraftsPage /> },
+  { path: "/native-table", element: <NativeReference />, handle: { breadcrumb: () => "Native table reference" } },
+]}])
 createRoot(document.getElementById("root")).render(
   <QueryClientProvider client={client}>
-    <TooltipProvider><BrowserRouter>
-      <div className="flex h-screen w-full flex-col overflow-auto">
-        <div className="shrink-0 border-b px-6 py-4">Admin pagination fixture · synthetic data only</div>
-        <main className="flex h-full w-full flex-col items-center overflow-y-auto">
-          <div className="flex w-full max-w-[1600px] flex-col gap-y-2 p-3"><AiProductDraftsPage /></div>
-          <aside className="p-3"><button onClick={shrinkQueue}>Simulate queue shrink</button><output id="request" aria-label="Last list request" /></aside>
-        </main>
-      </div>
-    </BrowserRouter></TooltipProvider>
+    <TooltipProvider><RouterProvider router={router} /><aside style={{ position: "fixed", left: 0, bottom: 0, zIndex: 100 }}><button onClick={shrinkQueue}>Simulate queue shrink</button><output id="request" aria-label="Last list request" hidden /></aside></TooltipProvider>
   </QueryClientProvider>
 )
