@@ -1,0 +1,146 @@
+import type { ApprovedKnowledgeDocument } from "@3dbyte-tech-store/shared-types";
+import {
+  isKnowledgeRecord,
+  knowledgeIdentifier,
+  knowledgeDigest,
+  knowledgeBinding,
+} from "@3dbyte-tech-store/shared-utils/src/knowledge-reference.cjs";
+import {
+  knowledgeForPublishedProduct,
+  readKnowledgeProducts,
+  type KnowledgeDependencies,
+} from "./contract";
+
+type Candidate = {
+  id: string;
+  productId: string;
+  bindingScope: "product" | "variant";
+  variantId: string | null;
+  revision: string;
+};
+
+/** Search locates candidates; indexed text can never become answer evidence. */
+export async function retrieveProductKnowledge(
+  options: KnowledgeDependencies & {
+    queryText: string;
+    productId?: string;
+    variantId?: string;
+    limit?: number;
+  },
+) {
+  const limit = options.limit ?? 4;
+  if (
+    typeof options.queryText !== "string" ||
+    !options.queryText.trim() ||
+    options.queryText.length > 120 ||
+    !Number.isInteger(limit) ||
+    limit < 1 ||
+    limit > 4 ||
+    (options.productId !== undefined &&
+      !knowledgeIdentifier(options.productId)) ||
+    (options.variantId !== undefined && !knowledgeIdentifier(options.variantId))
+  )
+    throw new Error("Invalid knowledge search.");
+  const filter = [
+    // This field is emitted only for approved knowledge, never metadata-only records.
+    "knowledge_revision_hash EXISTS",
+    ...(options.productId
+      ? [`medusa_product_id = "${options.productId}"`]
+      : []),
+    ...(options.variantId
+      ? [
+          `(knowledge_binding_scope = "product" OR knowledge_variant_id = "${options.variantId}")`,
+        ]
+      : []),
+  ];
+  const result = await options.meilisearch.search(
+    options.queryText.trim(),
+    "product_document",
+    { limit: 8, filter },
+  );
+  if (!Array.isArray(result.hits) || result.hits.length > 8)
+    throw new Error("Invalid document search response.");
+  const candidates: Candidate[] = [];
+  const ids = new Set<string>();
+  for (const hit of result.hits) {
+    // Metadata-only public documents remain discoverable but cannot ground factual answers.
+    if (
+      !isKnowledgeRecord(hit) ||
+      !knowledgeIdentifier(hit.id) ||
+      !knowledgeIdentifier(hit.medusa_product_id) ||
+      !knowledgeDigest(hit.knowledge_revision_hash)
+    )
+      continue;
+    const binding = knowledgeBinding({
+      binding_scope: hit.knowledge_binding_scope,
+      variant_id: hit.knowledge_variant_id,
+    });
+    if (!binding) continue;
+    const candidate: Candidate = {
+      id: hit.id as string,
+      productId: hit.medusa_product_id as string,
+      bindingScope: binding.binding_scope,
+      variantId: binding.variant_id,
+      revision: hit.knowledge_revision_hash as string,
+    };
+    if (ids.has(candidate.id))
+      throw new Error("Ambiguous document search response.");
+    ids.add(candidate.id);
+    if (
+      (options.productId && candidate.productId !== options.productId) ||
+      (options.variantId &&
+        candidate.bindingScope === "variant" &&
+        candidate.variantId !== options.variantId)
+    )
+      continue;
+    candidates.push(candidate);
+  }
+  const products = await readKnowledgeProducts(
+    options.query,
+    candidates.map((c) => c.productId),
+  );
+  const current = await Promise.all(
+    candidates.map(async (candidate) => {
+      const raw = await options.strapi.getKnowledgeReference(
+        candidate.id,
+        candidate.productId,
+        candidate.revision,
+      );
+      const product = products.get(candidate.productId);
+      // Model guidance may accompany an exact-variant query only for its own product.
+      if (
+        options.variantId &&
+        (!Array.isArray(product?.variants) ||
+          product.variants.filter(
+            (v) => isKnowledgeRecord(v) && v.id === options.variantId,
+          ).length !== 1)
+      )
+        return null;
+      const document = knowledgeForPublishedProduct(raw, product, options.now);
+      return document?.document_id === candidate.id &&
+        document.product_id === candidate.productId &&
+        (document.binding_scope ?? "variant") === candidate.bindingScope &&
+        document.variant_id === candidate.variantId &&
+        document.revision_hash === candidate.revision
+        ? document
+        : null;
+    }),
+  );
+  const documents = current
+    .filter((d): d is ApprovedKnowledgeDocument => d !== null)
+    .slice(0, limit);
+  const citations = documents.map((d) => ({
+    document_id: d.document_id,
+    product_id: d.product_id,
+    binding_scope: d.binding_scope ?? "variant",
+    variant_id: d.variant_id,
+    title: d.document_title,
+    source_url: d.source_url,
+    source_sha256: d.source_sha256,
+    source_version: d.source_version,
+    source_checked_at: d.source_checked_at,
+    revision_hash: d.revision_hash,
+    valid_until: d.valid_until,
+  }));
+  return { documents, citations };
+}

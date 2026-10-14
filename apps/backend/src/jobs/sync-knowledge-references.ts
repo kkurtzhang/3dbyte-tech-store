@@ -1,6 +1,7 @@
 import type { MedusaContainer } from "@medusajs/framework/types";
 import { MEILISEARCH_MODULE } from "../modules/meilisearch";
 import { STRAPI_MODULE } from "../modules/strapi";
+import { trackReconciliation } from "../lib/product-document-knowledge/recovery";
 import { reconcileReferenceIndex } from "../lib/knowledge-reference/reference-index";
 
 /** Opt-in scope owned by one staging index; poll expiry/publication as well as revisions. */
@@ -15,16 +16,18 @@ export default async function syncKnowledgeReferences(
   const productIds = (process.env.KNOWLEDGE_REFERENCE_PRODUCT_IDS ?? "")
     .split(",")
     .map((id) => id.trim());
-  const result = await reconcileReferenceIndex({
-    query: container.resolve("query"),
-    strapi: container.resolve(STRAPI_MODULE),
-    meilisearch: container.resolve(MEILISEARCH_MODULE),
-    environment: process.env.APP_ENV,
-    productIds,
-  });
-  container
-    .resolve("logger")
-    .info(JSON.stringify({ job: "sync-knowledge-references", ...result }));
+  await trackReconciliation(
+    "sync-knowledge-references",
+    container.resolve("logger"),
+    () =>
+      reconcileReferenceIndex({
+        query: container.resolve("query"),
+        strapi: container.resolve(STRAPI_MODULE),
+        meilisearch: container.resolve(MEILISEARCH_MODULE),
+        environment: process.env.APP_ENV,
+        productIds,
+      }),
+  );
 }
 export const config = {
   name: "sync-knowledge-references",

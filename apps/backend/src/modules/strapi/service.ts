@@ -1,4 +1,5 @@
 import { Logger } from "@medusajs/framework/types";
+import type { KnowledgeProductDocument } from "../../lib/product-document-knowledge/contract";
 import { readPublicProductDocuments } from "./public-product-documents";
 import { verifiedReferenceDocument } from "../../lib/knowledge-reference/contract";
 import {
@@ -9,6 +10,12 @@ import {
   normalizeStrapiProductDocument,
   type PublicProductDocument,
 } from "../product-files/utils/public-documents";
+
+class StrapiHttpError extends Error {
+  constructor(readonly status: number, detail: string) {
+    super(`Strapi API error: ${status} - ${detail}`);
+  }
+}
 
 type InjectedDependencies = {
   logger: Logger;
@@ -25,6 +32,8 @@ interface StrapiRequestOptions extends RequestInit {
 }
 
 interface ListProductDocumentsOptions {
+  includeKnowledge?: boolean;
+  documentId?: string;
   failSoft?: boolean;
 }
 
@@ -119,7 +128,7 @@ class StrapiModuleService {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Strapi API error: ${response.status} - ${errorText}`);
+        throw new StrapiHttpError(response.status, errorText);
       } else if (response.status === 204) {
         return Promise.resolve({}); // Resolve with an empty object for 204
       }
@@ -384,6 +393,7 @@ class StrapiModuleService {
     documentId: string,
     productId: string,
     revision: string,
+    options: { failSoft?: boolean } = {},
   ) {
     if (
       !knowledgeIdentifier(documentId) ||
@@ -402,27 +412,32 @@ class StrapiModuleService {
         },
       );
       const doc = verifiedReferenceDocument(response.data);
-      return doc?.document_id === documentId &&
-        doc.product_id === productId &&
-        doc.revision_hash === revision
-        ? doc
-        : null;
-    } catch {
+      const exact = doc?.document_id === documentId && doc.product_id === productId && doc.revision_hash === revision;
+      if (!exact && options.failSoft === false)
+        throw new Error("Invalid authoritative knowledge response; retry reconciliation.");
+      return exact ? doc : null;
+    } catch (error) {
+      if (options.failSoft === false && !(error instanceof StrapiHttpError && error.status === 404))
+        throw new Error("Authoritative knowledge source unavailable; retry reconciliation.");
       return null;
     }
   }
   async listProductDocuments(
     medusaProductId?: string,
     options: ListProductDocumentsOptions = {},
-  ): Promise<PublicProductDocument[]> {
+  ): Promise<KnowledgeProductDocument[]> {
     try {
       return await readPublicProductDocuments(
         (endpoint) =>
           this.makeRequest(endpoint, {
             suppressErrorLog: options.failSoft,
             useAuth: false,
+            ...(options.includeKnowledge
+              ? { cache: "no-store", signal: AbortSignal.timeout(5000) }
+              : {}),
           }),
         medusaProductId,
+        options,
       );
     } catch (error) {
       if (options.failSoft) {
@@ -460,70 +475,23 @@ class StrapiModuleService {
     medusaProductId: string,
     documents: AiProductDocumentDraftData[],
   ): Promise<unknown[]> {
+    if (!knowledgeIdentifier(medusaProductId) || documents.some((document) => document.medusa_product_id !== medusaProductId))
+      throw new Error("Document intake must target the exact native product.");
     const upserted: unknown[] = [];
-
     for (const document of documents) {
-      const documentId = await this.findPrivateProductDocumentIdentity(
-        medusaProductId,
-        document.source_url,
-      );
-      const result = (await this.makeRequest(
-        documentId
-          ? `product-documents/${documentId}?status=draft`
-          : "product-documents?status=draft",
-        {
-          method: documentId ? "PUT" : "POST",
-          body: JSON.stringify({
-            data: document,
-          }),
-        },
-      )) as { data: unknown };
-
-      upserted.push(result.data);
+      const response = await this.makeRequest("product-documents/import-upsert", {
+        method: "PUT",
+        body: JSON.stringify({ data: document }),
+      });
+      const source = new URL(document.source_url); source.hash = "";
+      const record = response?.data;
+      if (!record || !knowledgeIdentifier(record.documentId) || record.medusa_product_id !== medusaProductId || record.source_url !== source.href)
+        throw new Error("Invalid atomic document intake identity response.");
+      upserted.push(record);
     }
-
     return upserted;
   }
 
-  private async findPrivateProductDocumentIdentity(
-    productId: string,
-    sourceUrl: string,
-  ): Promise<string | null> {
-    const identities = new Set<string>();
-    for (const status of ["draft", "published"]) {
-      const response: unknown = await this.makeRequest(
-        `product-documents/import-lookup?medusa_product_id=${encodeURIComponent(productId)}&source_url=${encodeURIComponent(sourceUrl)}&status=${status}`,
-      );
-      if (
-        !response ||
-        typeof response !== "object" ||
-        !Array.isArray((response as { data?: unknown }).data)
-      )
-        throw new Error("Invalid private document identity response.");
-      const rows = (response as { data: unknown[] }).data;
-      if (rows.length > 2)
-        throw new Error("Ambiguous private document identity.");
-      for (const row of rows) {
-        if (!row || typeof row !== "object")
-          throw new Error("Invalid private document identity.");
-        const record = row as Record<string, unknown>;
-        if (
-          !knowledgeIdentifier(record.documentId) ||
-          record.medusa_product_id !== productId ||
-          record.source_url !== sourceUrl
-        )
-          throw new Error(
-            "Private document identity does not match the exact request.",
-          );
-        identities.add(record.documentId);
-      }
-    }
-    if (identities.size > 1)
-      throw new Error(
-        "Ambiguous private document identity; reconcile before import.",
-      );
-    return identities.values().next().value ?? null;
-  }
   //====End======Product Documents Section===============
 
   //===============Brand Description Section===============

@@ -4,12 +4,25 @@ import StrapiModuleService from "../../../modules/strapi/service";
 import {
   now,
   approved,
+  fixtureReviewEvent,
   marked,
   product,
   approvedKnowledgeDocument,
 } from "./fixtures";
 
 const mockFindMany = jest.fn();
+const mockReviewEvents = jest.fn();
+function mockPersistedEvents(
+  records: ReturnType<typeof approved>[],
+  keys: string[],
+) {
+  const events = records
+    .map(fixtureReviewEvent)
+    .filter((event) => keys.includes(event.revision_key));
+  return [
+    ...new Map(events.map((event) => [event.revision_key, event])).values(),
+  ];
+}
 jest.mock(
   "@strapi/strapi",
   () => ({
@@ -20,6 +33,7 @@ jest.mock(
       ) =>
         build({
           strapi: {
+            db: { query: () => ({ findMany: mockReviewEvents }) },
             documents: () => ({
               findMany: (...args: unknown[]) => mockFindMany(...args),
             }),
@@ -56,6 +70,12 @@ const request = (query = {}) => ({
 
 beforeEach(() => {
   jest.resetAllMocks();
+  mockReviewEvents.mockImplementation(async ({ where }) =>
+    mockPersistedEvents(
+      (await mockFindMany.mock.results.at(-1)?.value) ?? [],
+      where.revision_key.$in,
+    ),
+  );
   jest.spyOn(Date, "now").mockReturnValue(now);
   process.env.APP_ENV = "staging";
 });

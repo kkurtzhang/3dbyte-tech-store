@@ -26,6 +26,7 @@ type Dependencies = {
       document: string,
       product: string,
       revision: string,
+      options?: { failSoft?: boolean },
     ): Promise<ApprovedKnowledgeDocument | null>;
   };
   meilisearch: Pick<
@@ -119,6 +120,7 @@ export async function reconcileReferenceIndex(
       binding.document_id,
       binding.product_id,
       binding.revision_hash,
+      { failSoft: false },
     );
     const card = referenceCard(product, document, environment, options.now);
     if (!card) continue;

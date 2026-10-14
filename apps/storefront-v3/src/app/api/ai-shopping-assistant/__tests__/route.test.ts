@@ -975,12 +975,18 @@ describe("POST /api/ai-shopping-assistant", () => {
     )
     expect(Object.keys(streamConfig.tools)).toEqual([
       "searchProducts",
+      "searchKnowledge",
       "lookupOrder",
       "getTracking",
       "estimateShipping",
       "createSupportTicket",
     ])
     expect(streamConfig.tools.addToCart).toBeUndefined()
+    expect(streamConfig.tools.searchKnowledge.inputSchema.safeParse({ query: "x".repeat(121) }).success).toBe(false)
+    expect(streamConfig.tools.searchKnowledge.inputSchema.safeParse({ query: "hotend", variant_id: 'bad"id' }).success).toBe(false)
+    await streamConfig.tools.searchKnowledge.execute({ query: "hotend manual", product_id: "prod_one", variant_id: "variant_one", limit: 2 })
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/ai/knowledge-search"), expect.objectContaining({ body: JSON.stringify({ query: "hotend manual", product_id: "prod_one", variant_id: "variant_one", limit: 2 }) }))
+
 
     await streamConfig.tools.createSupportTicket.execute({
       confirmedByCustomer: true,
@@ -1004,6 +1010,56 @@ describe("POST /api/ai-shopping-assistant", () => {
         body: expect.stringContaining('"source":"ai_chat"'),
       }),
     )
+  })
+
+  it.each([
+    { variants: ["variant_a", "variant_a", "variant_b"] },
+    { variants: [null, "variant_a", "variant_b"] },
+  ])("preserves fresh document citations, binding scopes and unknown facts through the normal knowledge tool ($variants)", async ({ variants }) => {
+    configureAiEnv()
+    const { POST } = await import("../route")
+    await POST(createJsonRequest({
+      messages: [{ role: "user", content: "Find the manuals for this product" }],
+    }))
+    const citations = variants.map((variant, index) => ({
+      document_id: `doc_manual_${index}`,
+      product_id: "prod_fixture",
+      binding_scope: variant === null ? "product" : "variant",
+      variant_id: variant,
+      source_url: `https://manufacturer.example/manual?version=${index}#${variant}`,
+      source_sha256: String(index + 1).repeat(64),
+      source_version: `v${index}`,
+      source_checked_at: "2030-01-01T10:00:00.000Z",
+      revision_hash: String(index + 4).repeat(64),
+      valid_until: "2030-01-02T12:00:00.000Z",
+    }))
+    const evidence = {
+      documents: citations.map((citation) => ({
+        ...citation,
+        text: "Synthetic source evidence.",
+        facts: [{ field: "maximum_temperature", value: null, evidence_excerpt: "" }],
+      })),
+      citations,
+    }
+    const before = JSON.stringify(evidence)
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => evidence })
+    const streamConfig = streamTextMock.mock.calls[0][0]
+    const input = { query: "manual", product_id: "prod_fixture", limit: 3 }
+    const result = await streamConfig.tools.searchKnowledge.execute(input)
+
+    expect(result).toEqual(evidence)
+    expect(JSON.stringify(evidence)).toBe(before)
+    expect(result.documents.map((document: { variant_id: string | null }) => document.variant_id))
+      .toEqual(variants)
+    expect(result.documents[0].facts[0].value).toBeNull()
+    expect(result.citations).toEqual(citations)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith("http://localhost:9000/ai/knowledge-search", expect.objectContaining({
+      method: "POST",
+      body: JSON.stringify(input),
+      headers: expect.objectContaining({ "x-3db-internal-token": "test-internal-token" }),
+    }))
+    expect(streamTextMock).toHaveBeenCalledTimes(1)
   })
 
   it("rejects malformed trace context before model creation", async () => {

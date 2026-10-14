@@ -176,11 +176,15 @@ export default class MeilisearchModuleService {
         return (
           this.options_.productDocumentIndexName || "product_documents_public"
         );
-      case "knowledge_reference":
-        return (
-          this.options_.knowledgeReferenceIndexName ||
-          "knowledge_references_staging"
-        );
+      case "knowledge_reference": {
+        const name = this.options_.knowledgeReferenceIndexName || "stg_knowledge_references";
+        const otherIndexes = [this.options_.productIndexName, this.options_.categoryIndexName,
+          this.options_.brandIndexName, this.options_.addressIndexName, this.options_.localityIndexName,
+          this.options_.productDocumentIndexName || "product_documents_public"];
+        if (process.env.APP_ENV !== "staging" || !/^stg_[a-z0-9_-]{1,80}$/.test(name) || otherIndexes.includes(name))
+          throw new Error("Reference index requires a distinct staging-prefixed index.");
+        return name;
+      }
       default:
         throw new MedusaError(
           MedusaError.Types.INVALID_ARGUMENT,
