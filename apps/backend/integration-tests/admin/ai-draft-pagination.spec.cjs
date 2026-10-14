@@ -153,6 +153,16 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 1024, height: 365
     expect(geometry.completeLastRow).toBe(true)
     expect(geometry.noVerticalRowClipping).toBe(true)
     expect(geometry.productWidth).toBeLessThanOrEqual(250)
+    await expect(page.locator("tbody tr").first().locator("td").first()).toHaveCSS("position", "static")
+    await page.locator("table").evaluate((table) => { table.parentElement.scrollLeft = table.parentElement.scrollWidth })
+    const trailingText = await page.locator("tbody tr").last().locator("td").nth(5).evaluate((cell) => {
+      const range = document.createRange()
+      range.selectNodeContents(cell)
+      const text = range.getBoundingClientRect()
+      const clip = cell.closest("table").parentElement.getBoundingClientRect()
+      return text.left >= clip.left && text.right <= clip.right
+    })
+    expect(trailingText).toBe(true)
     expect(geometry.labels.every((label) => label.unclipped)).toBe(true)
     expect(geometry.labels.map((label) => label.text)).toEqual(["1", "15 of 47 results", "1 of 4 pages", "Prev", "Next"])
     await page.screenshot({ path: test.info().outputPath(`long-rows-${viewport.width}x${viewport.height}.png`) })
@@ -166,7 +176,7 @@ test("uses the same bottom paginator presentation as the installed native Produc
     return { display: s.display, paddingTop: s.paddingTop, paddingBottom: s.paddingBottom, fontSize: s.fontSize, labels: element.innerText.replace(/\s+/g, " ").trim() }
   })
   await page.goto("/native-table")
-  const nativeFooter = next(page).locator("../..")
+  const nativeFooter = next(page).locator("xpath=../..")
   const nativePresentation = await nativeFooter.evaluate((element) => {
     const s = getComputedStyle(element)
     return { display: s.display, paddingTop: s.paddingTop, paddingBottom: s.paddingBottom, fontSize: s.fontSize, labels: element.innerText.replace(/\s+/g, " ").trim() }
