@@ -18,6 +18,7 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 
   test(`shows pagination before scrolling at ${viewport.width}px and requests every page`, async ({ page }) => {
     await page.setViewportSize(viewport)
     await expect(next(page)).toBeInViewport()
+    await page.screenshot({ path: test.info().outputPath(`pagination-${viewport.width}.png`) })
     await expect(prev(page)).toBeDisabled()
     await expect(page.getByText("1 of 4 pages", { exact: true })).toBeVisible()
     await expect(request(page)).toContainText('"limit":15')
@@ -67,6 +68,15 @@ test("resets page for search, clear, status, queue card, and sorting changes", a
   await expect(next(page)).toBeDisabled()
 })
 
+test("resets at the debounced search boundary after an intervening page click", async ({ page }) => {
+  await search(page).fill("Fixture")
+  await next(page).click()
+  await expectOffset(page, 15)
+  await expect(request(page)).toContainText('"q":"Fixture"')
+  await expectOffset(page, 0)
+  await expect(page.getByText("1 of 4 pages", { exact: true })).toBeVisible()
+})
+
 test("returns to a valid page when records disappear from the last page", async ({ page }) => {
   for (const offset of [15, 30, 45]) {
     await next(page).click()
@@ -91,8 +101,9 @@ test("handles empty results, loading, list errors, and retry without losing pagi
   await expect(page.getByRole("link", { name: "Fixture Product 01", exact: true })).toBeVisible()
   await next(page).click()
   await expect(request(page)).toContainText('"offset":15')
-  await expect(next(page)).toBeDisabled()
-  await expect(prev(page)).toBeDisabled()
+  await expect(page.getByRole("navigation", { name: "AI product drafts pagination" })).toBeVisible()
+  await expect(page.locator("nav fieldset")).toHaveAttribute("disabled", "")
+  await expect(next(page)).toHaveCount(0)
   await expect(page.getByRole("link", { name: "Fixture Product 16", exact: true })).toBeVisible()
   await search(page).fill("error")
   await expect(page.getByRole("alert")).toContainText("Could not load AI product drafts")
