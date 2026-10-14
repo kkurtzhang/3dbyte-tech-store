@@ -1,19 +1,19 @@
-const productGraph = jest.fn()
-const orderGraph = jest.fn()
-const karrioFetchRates = jest.fn()
-const meiliSearch = jest.fn()
-const getProductDescription = jest.fn()
+const productGraph = jest.fn();
+const orderGraph = jest.fn();
+const karrioFetchRates = jest.fn();
+const meiliSearch = jest.fn();
+const getProductDescription = jest.fn();
 
-import { POST as productGuidancePOST } from "../product-guidance/route"
-import { POST as orderLookupPOST } from "../order-lookup/route"
-import { POST as trackingPOST } from "../tracking/route"
-import { POST as shippingEstimatePOST } from "../shipping-estimate/route"
+import { POST as productGuidancePOST } from "../product-guidance/route";
+import { POST as orderLookupPOST } from "../order-lookup/route";
+import { POST as trackingPOST } from "../tracking/route";
+import { POST as shippingEstimatePOST } from "../shipping-estimate/route";
 
 function createResponse() {
   return {
     json: jest.fn(),
     status: jest.fn().mockReturnThis(),
-  }
+  };
 }
 
 function createScope() {
@@ -22,29 +22,29 @@ function createScope() {
       if (key === "query") {
         return {
           graph: (input: unknown) => {
-            const entity = (input as { entity?: string }).entity
+            const entity = (input as { entity?: string }).entity;
             return entity === "order" || entity === "fulfillment"
               ? orderGraph(input)
-              : productGraph(input)
+              : productGraph(input);
           },
-        }
+        };
       }
 
       if (key === "meilisearch") {
-        return { search: meiliSearch }
+        return { search: meiliSearch };
       }
 
       if (key === "strapi") {
-        return { getProductDescription }
+        return { getProductDescription };
       }
 
       if (key === "karrio") {
-        return { fetchRates: karrioFetchRates }
+        return { fetchRates: karrioFetchRates };
       }
 
-      throw new Error(`Unexpected dependency: ${key}`)
+      throw new Error(`Unexpected dependency: ${key}`);
     }),
-  }
+  };
 }
 
 function createRequest(body: unknown, token = "test-internal-token") {
@@ -54,36 +54,131 @@ function createRequest(body: unknown, token = "test-internal-token") {
       "x-3db-internal-token": token,
     },
     scope: createScope(),
-  }
+  };
 }
 
 describe("internal AI routes", () => {
   beforeEach(() => {
-    jest.clearAllMocks()
-    process.env.INTERNAL_API_TOKEN = "test-internal-token"
-    delete process.env.STOREFRONT_URL
-    delete process.env.NEXT_PUBLIC_SITE_URL
-    delete process.env.SERVICE_FQDN_STOREFRONT
-    delete process.env.SERVICE_URL_STOREFRONT
-    delete process.env.STORE_CORS
-  })
+    jest.clearAllMocks();
+    process.env.INTERNAL_API_TOKEN = "test-internal-token";
+    delete process.env.STOREFRONT_URL;
+    delete process.env.NEXT_PUBLIC_SITE_URL;
+    delete process.env.SERVICE_FQDN_STOREFRONT;
+    delete process.env.SERVICE_URL_STOREFRONT;
+    delete process.env.STORE_CORS;
+  });
 
   it("rejects product guidance without the internal token", async () => {
-    const res = createResponse()
+    const res = createResponse();
 
     await productGuidancePOST(
       createRequest({ query: "voron" }, "wrong-token") as never,
-      res as never
-    )
+      res as never,
+    );
 
-    expect(res.status).toHaveBeenCalledWith(401)
-    expect(res.json).toHaveBeenCalledWith({ error: "Unauthorized" })
-    expect(meiliSearch).not.toHaveBeenCalled()
-    expect(productGraph).not.toHaveBeenCalled()
-  })
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({ error: "Unauthorized" });
+    expect(meiliSearch).not.toHaveBeenCalled();
+    expect(productGraph).not.toHaveBeenCalled();
+  });
+
+  it("excludes withdrawn products returned through stale search hits", async () => {
+    meiliSearch.mockResolvedValue({ hits: [{ id: "prod_withdrawn" }] });
+    productGraph.mockResolvedValue({
+      data: [
+        { id: "prod_withdrawn", status: "draft", title: "Unreviewed draft" },
+      ],
+    });
+    const res = createResponse();
+    await productGuidancePOST(
+      createRequest({ query: "hotend" }) as never,
+      res as never,
+    );
+    expect(productGraph).toHaveBeenCalledWith(
+      expect.objectContaining({
+        filters: { id: ["prod_withdrawn"], status: "published" },
+      }),
+    );
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ products: [] }),
+    );
+    expect(getProductDescription).not.toHaveBeenCalled();
+  });
+
+  it("keeps simulated inventory out of guidance outside staging and identifies it on staging", async () => {
+    meiliSearch.mockResolvedValue({
+      hits: [{ id: "prod_simulated", in_stock: true }],
+    });
+    productGraph.mockResolvedValue({
+      data: [
+        {
+          id: "prod_simulated",
+          status: "published",
+          metadata: {
+            catalogue_simulation: { real_stock: false, scope: "staging" },
+          },
+        },
+      ],
+    });
+    getProductDescription.mockResolvedValue(null);
+    const originalAppEnv = process.env.APP_ENV;
+    try {
+      process.env.APP_ENV = "production";
+      const production = createResponse();
+      await productGuidancePOST(
+        createRequest({ query: "hotend" }) as never,
+        production as never,
+      );
+      expect(production.json).toHaveBeenCalledWith(
+        expect.objectContaining({ products: [] }),
+      );
+      process.env.APP_ENV = "staging";
+      const staging = createResponse();
+      await productGuidancePOST(
+        createRequest({ query: "hotend" }) as never,
+        staging as never,
+      );
+      expect(staging.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          products: [
+            expect.objectContaining({
+              authoritativeContext: expect.objectContaining({
+                inventory: "staging_simulation",
+              }),
+            }),
+          ],
+        }),
+      );
+    } finally {
+      if (originalAppEnv === undefined) delete process.env.APP_ENV;
+      else process.env.APP_ENV = originalAppEnv;
+    }
+  });
+
+  it("excludes knowledge references from commercial guidance even if mistakenly published", async () => {
+    meiliSearch.mockResolvedValue({ hits: [{ id: "prod_ref" }] });
+    productGraph.mockResolvedValue({
+      data: [
+        {
+          id: "prod_ref",
+          status: "published",
+          metadata: { catalogue_role: "knowledge_reference" },
+        },
+      ],
+    });
+    const res = createResponse();
+    await productGuidancePOST(
+      createRequest({ query: "hotend" }) as never,
+      res as never,
+    );
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ products: [] }),
+    );
+    expect(getProductDescription).not.toHaveBeenCalled();
+  });
 
   it("builds product guidance from Meilisearch, Medusa, and Strapi context", async () => {
-    process.env.STOREFRONT_URL = "https://store.example.com/"
+    process.env.STOREFRONT_URL = "https://store.example.com/";
     meiliSearch.mockResolvedValue({
       hits: [
         {
@@ -95,7 +190,7 @@ describe("internal AI routes", () => {
           variants: [{ id: "var_123", sku: "LDO-V24", title: "Default" }],
         },
       ],
-    })
+    });
     productGraph.mockResolvedValue({
       data: [
         {
@@ -122,83 +217,85 @@ describe("internal AI routes", () => {
           variants: [{ id: "var_123", sku: "LDO-V24", title: "Default" }],
         },
       ],
-    })
+    });
     getProductDescription.mockResolvedValue({
       rich_description: "Authoritative Strapi build guidance.",
       features: ["Complete motion kit"],
-    })
-    const res = createResponse()
+    });
+    const res = createResponse();
 
     await productGuidancePOST(
       createRequest({ query: "beginner voron", limit: 2 }) as never,
-      res as never
-    )
+      res as never,
+    );
 
     expect(meiliSearch).toHaveBeenCalledWith(
       "beginner voron",
       "product",
-      expect.objectContaining({ limit: 2 })
-    )
+      expect.objectContaining({ limit: 2 }),
+    );
     expect(productGraph).toHaveBeenCalledWith(
       expect.objectContaining({
         entity: "product",
         fields: expect.arrayContaining(["metadata"]),
-        filters: { id: ["prod_123"] },
-      })
-    )
-    expect(getProductDescription).toHaveBeenCalledWith("prod_123")
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-      expertContext: expect.objectContaining({
-        activeExperts: expect.arrayContaining([
-          expect.objectContaining({ id: "print_process" }),
-          expect.objectContaining({ id: "rc_model_building" }),
-        ]),
-        responseRules: expect.arrayContaining([
-          expect.stringContaining("Use only provided product facts"),
-        ]),
-        supportHandoff: expect.objectContaining({
-          allowedOnlyAfterConfirmation: true,
-        }),
+        filters: { id: ["prod_123"], status: "published" },
       }),
-      products: [
-        expect.objectContaining({
-          id: "prod_123",
-          handle: "ldo-voron-24-kit",
-          productUrl: "https://store.example.com/products/ldo-voron-24-kit",
-          aiContext: expect.objectContaining({
-            tdp_schema_version: 1,
-            tdp_product_kind: "printer_kit",
-            tdp_compatible_printers: ["Voron 2.4"],
-            tdp_best_for: ["advanced enclosed printer builds"],
-            tdp_ai_search_keywords: ["Voron kit", "CoreXY printer"],
-            rcb_schema_version: 1,
-            rcb_component_role: "project_hardware",
-            rcb_compatible_project_types: ["3d_printed_rc_car"],
-            rcb_used_for: ["3DSets-style assembly"],
-          }),
-          authoritativeContext: expect.objectContaining({
-            medusa: true,
-            meilisearch: true,
-            strapi: true,
-          }),
-          expertSignals: expect.arrayContaining([
-            expect.objectContaining({
-              expertId: "print_process",
-              evidence: expect.arrayContaining([
-                expect.stringContaining("printer_kit"),
-              ]),
-            }),
-            expect.objectContaining({
-              expertId: "rc_model_building",
-              evidence: expect.arrayContaining([
-                expect.stringContaining("project_hardware"),
-              ]),
-            }),
+    );
+    expect(getProductDescription).toHaveBeenCalledWith("prod_123");
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        expertContext: expect.objectContaining({
+          activeExperts: expect.arrayContaining([
+            expect.objectContaining({ id: "print_process" }),
+            expect.objectContaining({ id: "rc_model_building" }),
           ]),
+          responseRules: expect.arrayContaining([
+            expect.stringContaining("Use only provided product facts"),
+          ]),
+          supportHandoff: expect.objectContaining({
+            allowedOnlyAfterConfirmation: true,
+          }),
         }),
-      ],
-    }))
-  })
+        products: [
+          expect.objectContaining({
+            id: "prod_123",
+            handle: "ldo-voron-24-kit",
+            productUrl: "https://store.example.com/products/ldo-voron-24-kit",
+            aiContext: expect.objectContaining({
+              tdp_schema_version: 1,
+              tdp_product_kind: "printer_kit",
+              tdp_compatible_printers: ["Voron 2.4"],
+              tdp_best_for: ["advanced enclosed printer builds"],
+              tdp_ai_search_keywords: ["Voron kit", "CoreXY printer"],
+              rcb_schema_version: 1,
+              rcb_component_role: "project_hardware",
+              rcb_compatible_project_types: ["3d_printed_rc_car"],
+              rcb_used_for: ["3DSets-style assembly"],
+            }),
+            authoritativeContext: expect.objectContaining({
+              medusa: true,
+              meilisearch: true,
+              strapi: true,
+            }),
+            expertSignals: expect.arrayContaining([
+              expect.objectContaining({
+                expertId: "print_process",
+                evidence: expect.arrayContaining([
+                  expect.stringContaining("printer_kit"),
+                ]),
+              }),
+              expect.objectContaining({
+                expertId: "rc_model_building",
+                evidence: expect.arrayContaining([
+                  expect.stringContaining("project_hardware"),
+                ]),
+              }),
+            ]),
+          }),
+        ],
+      }),
+    );
+  });
 
   it("activates compatibility triage and support handoff for RC compatibility help", async () => {
     meiliSearch.mockResolvedValue({
@@ -209,7 +306,7 @@ describe("internal AI routes", () => {
           handle: "ai-35a-brushless-esc-xt60",
         },
       ],
-    })
+    });
     productGraph.mockResolvedValue({
       data: [
         {
@@ -229,50 +326,53 @@ describe("internal AI routes", () => {
           },
         },
       ],
-    })
-    getProductDescription.mockResolvedValue(null)
-    const res = createResponse()
+    });
+    getProductDescription.mockResolvedValue(null);
+    const res = createResponse();
 
     await productGuidancePOST(
       createRequest({
-        query: "Can a human check if this ESC is compatible with my 3DSets RC build?",
+        query:
+          "Can a human check if this ESC is compatible with my 3DSets RC build?",
         limit: 1,
       }) as never,
-      res as never
-    )
+      res as never,
+    );
 
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-      expertContext: expect.objectContaining({
-        activeExperts: expect.arrayContaining([
-          expect.objectContaining({ id: "rc_model_building" }),
-          expect.objectContaining({ id: "compatibility_triage" }),
-          expect.objectContaining({ id: "support_handoff" }),
-        ]),
-        followUpQuestions: expect.arrayContaining([
-          expect.stringContaining("project"),
-        ]),
-        supportHandoff: expect.objectContaining({
-          recommended: true,
-          requiredFields: ["name", "email", "subject", "message"],
-        }),
-      }),
-      products: [
-        expect.objectContaining({
-          expertSignals: expect.arrayContaining([
-            expect.objectContaining({
-              expertId: "rc_model_building",
-              evidence: expect.arrayContaining([
-                expect.stringContaining("XT60"),
-              ]),
-            }),
-            expect.objectContaining({
-              expertId: "compatibility_triage",
-            }),
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        expertContext: expect.objectContaining({
+          activeExperts: expect.arrayContaining([
+            expect.objectContaining({ id: "rc_model_building" }),
+            expect.objectContaining({ id: "compatibility_triage" }),
+            expect.objectContaining({ id: "support_handoff" }),
           ]),
+          followUpQuestions: expect.arrayContaining([
+            expect.stringContaining("project"),
+          ]),
+          supportHandoff: expect.objectContaining({
+            recommended: true,
+            requiredFields: ["name", "email", "subject", "message"],
+          }),
         }),
-      ],
-    }))
-  })
+        products: [
+          expect.objectContaining({
+            expertSignals: expect.arrayContaining([
+              expect.objectContaining({
+                expertId: "rc_model_building",
+                evidence: expect.arrayContaining([
+                  expect.stringContaining("XT60"),
+                ]),
+              }),
+              expect.objectContaining({
+                expertId: "compatibility_triage",
+              }),
+            ]),
+          }),
+        ],
+      }),
+    );
+  });
 
   it("activates generic product guidance from AI core metadata", async () => {
     meiliSearch.mockResolvedValue({
@@ -283,7 +383,7 @@ describe("internal AI routes", () => {
           handle: "compact-soldering-station",
         },
       ],
-    })
+    });
     productGraph.mockResolvedValue({
       data: [
         {
@@ -305,52 +405,54 @@ describe("internal AI routes", () => {
           },
         },
       ],
-    })
-    getProductDescription.mockResolvedValue(null)
-    const res = createResponse()
+    });
+    getProductDescription.mockResolvedValue(null);
+    const res = createResponse();
 
     await productGuidancePOST(
       createRequest({
         query: "Which soldering station is best for kit assembly?",
         limit: 1,
       }) as never,
-      res as never
-    )
+      res as never,
+    );
 
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-      expertContext: expect.objectContaining({
-        activeExperts: expect.arrayContaining([
-          expect.objectContaining({ id: "product_advisor" }),
-        ]),
-        responseRules: expect.arrayContaining([
-          expect.stringContaining("AI core product facts"),
-        ]),
-      }),
-      products: [
-        expect.objectContaining({
-          aiContext: expect.objectContaining({
-            aic_schema_version: 1,
-            aic_product_kind: "soldering_station",
-            aic_audience: ["electronics beginners"],
-            aic_best_for: ["kit assembly", "bench repairs"],
-            aic_not_recommended_for: ["high-volume production"],
-            aic_compatibility_notes: ["Use with 240V AU outlet"],
-            aic_care_or_safety_notes: ["Let the iron cool before storing"],
-            aic_ai_search_keywords: ["soldering iron", "electronics bench"],
-          }),
-          expertSignals: expect.arrayContaining([
-            expect.objectContaining({
-              expertId: "product_advisor",
-              evidence: expect.arrayContaining([
-                expect.stringContaining("soldering_station"),
-                expect.stringContaining("kit assembly"),
-              ]),
-            }),
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        expertContext: expect.objectContaining({
+          activeExperts: expect.arrayContaining([
+            expect.objectContaining({ id: "product_advisor" }),
+          ]),
+          responseRules: expect.arrayContaining([
+            expect.stringContaining("AI core product facts"),
           ]),
         }),
-      ],
-    }))
-  })
+        products: [
+          expect.objectContaining({
+            aiContext: expect.objectContaining({
+              aic_schema_version: 1,
+              aic_product_kind: "soldering_station",
+              aic_audience: ["electronics beginners"],
+              aic_best_for: ["kit assembly", "bench repairs"],
+              aic_not_recommended_for: ["high-volume production"],
+              aic_compatibility_notes: ["Use with 240V AU outlet"],
+              aic_care_or_safety_notes: ["Let the iron cool before storing"],
+              aic_ai_search_keywords: ["soldering iron", "electronics bench"],
+            }),
+            expertSignals: expect.arrayContaining([
+              expect.objectContaining({
+                expertId: "product_advisor",
+                evidence: expect.arrayContaining([
+                  expect.stringContaining("soldering_station"),
+                  expect.stringContaining("kit assembly"),
+                ]),
+              }),
+            ]),
+          }),
+        ],
+      }),
+    );
+  });
 
   it("does not activate support handoff for generic check wording", async () => {
     meiliSearch.mockResolvedValue({
@@ -361,7 +463,7 @@ describe("internal AI routes", () => {
           handle: "ai-petg-black-175-1kg",
         },
       ],
-    })
+    });
     productGraph.mockResolvedValue({
       data: [
         {
@@ -379,37 +481,38 @@ describe("internal AI routes", () => {
           },
         },
       ],
-    })
-    getProductDescription.mockResolvedValue(null)
-    const res = createResponse()
+    });
+    getProductDescription.mockResolvedValue(null);
+    const res = createResponse();
 
     await productGuidancePOST(
       createRequest({
         query: "Can you check which PETG should I use outdoors?",
         limit: 1,
       }) as never,
-      res as never
-    )
+      res as never,
+    );
 
-    const body = (res.json as jest.Mock).mock.calls[0]?.[0]
+    const body = (res.json as jest.Mock).mock.calls[0]?.[0];
     const activeExpertIds = body.expertContext.activeExperts.map(
-      (expert: { id: string }) => expert.id
-    )
+      (expert: { id: string }) => expert.id,
+    );
 
-    expect(activeExpertIds).toEqual(["print_process"])
+    expect(activeExpertIds).toEqual(["print_process"]);
     expect(body.expertContext.supportHandoff).toEqual(
       expect.objectContaining({
         recommended: false,
         reason: null,
-      })
-    )
-  })
+      }),
+    );
+  });
 
   it("uses the first concrete storefront CORS origin when STOREFRONT_URL is not set", async () => {
-    process.env.STORE_CORS = "*, https://store-cors.example.com, http://localhost:3001"
+    process.env.STORE_CORS =
+      "*, https://store-cors.example.com, http://localhost:3001";
     meiliSearch.mockResolvedValue({
       hits: [{ id: "prod_456", handle: "ai-petg-black-175-1kg" }],
-    })
+    });
     productGraph.mockResolvedValue({
       data: [
         {
@@ -419,59 +522,61 @@ describe("internal AI routes", () => {
           status: "published",
         },
       ],
-    })
-    getProductDescription.mockResolvedValue(null)
-    const res = createResponse()
+    });
+    getProductDescription.mockResolvedValue(null);
+    const res = createResponse();
 
     await productGuidancePOST(
       createRequest({ query: "PETG outdoor", limit: 1 }) as never,
-      res as never
-    )
+      res as never,
+    );
 
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-      products: [
-        expect.objectContaining({
-          handle: "ai-petg-black-175-1kg",
-          productUrl:
-            "https://store-cors.example.com/products/ai-petg-black-175-1kg",
-        }),
-      ],
-    }))
-  })
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        products: [
+          expect.objectContaining({
+            handle: "ai-petg-black-175-1kg",
+            productUrl:
+              "https://store-cors.example.com/products/ai-petg-black-175-1kg",
+          }),
+        ],
+      }),
+    );
+  });
 
   it("requires order proof before lookup", async () => {
-    const res = createResponse()
+    const res = createResponse();
 
     await orderLookupPOST(
       createRequest({ reference: "3DBO-123" }) as never,
-      res as never
-    )
+      res as never,
+    );
 
-    expect(res.status).toHaveBeenCalledWith(400)
+    expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
       order: null,
       error: "Order reference and email are required",
-    })
-    expect(orderGraph).not.toHaveBeenCalled()
-  })
+    });
+    expect(orderGraph).not.toHaveBeenCalled();
+  });
 
   it("does not disclose an order when proof email does not match", async () => {
     orderGraph.mockResolvedValue({
       data: [{ id: "order_123", email: "owner@example.com" }],
-    })
-    const res = createResponse()
+    });
+    const res = createResponse();
 
     await orderLookupPOST(
       createRequest({
         reference: "3DBO-123",
         email: "other@example.com",
       }) as never,
-      res as never
-    )
+      res as never,
+    );
 
-    expect(res.status).toHaveBeenCalledWith(404)
-    expect(res.json).toHaveBeenCalledWith({ order: null })
-  })
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ order: null });
+  });
 
   it("returns tracking only after order proof is verified", async () => {
     orderGraph.mockResolvedValue({
@@ -493,16 +598,16 @@ describe("internal AI routes", () => {
           ],
         },
       ],
-    })
-    const res = createResponse()
+    });
+    const res = createResponse();
 
     await trackingPOST(
       createRequest({
         reference: "3DBO-123",
         email: "customer@example.com",
       }) as never,
-      res as never
-    )
+      res as never,
+    );
 
     expect(res.json).toHaveBeenCalledWith({
       tracking: [
@@ -511,32 +616,33 @@ describe("internal AI routes", () => {
           carrierName: "Australia Post",
         }),
       ],
-    })
-  })
+    });
+  });
 
   it("rejects shipping estimates without destination proof fields", async () => {
-    const res = createResponse()
+    const res = createResponse();
 
     await shippingEstimatePOST(
       createRequest({
         items: [{ variantId: "var_123", quantity: 1 }],
         destination: { countryCode: "AU" },
       }) as never,
-      res as never
-    )
+      res as never,
+    );
 
-    expect(res.status).toHaveBeenCalledWith(400)
+    expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
       rates: [],
-      error: "City, postal code, and country are required for shipping estimates",
-    })
-    expect(karrioFetchRates).not.toHaveBeenCalled()
-  })
+      error:
+        "City, postal code, and country are required for shipping estimates",
+    });
+    expect(karrioFetchRates).not.toHaveBeenCalled();
+  });
 
   it("returns shipping estimates for proved destination and variants", async () => {
     productGraph.mockResolvedValue({
       data: [{ id: "var_123", weight: 0.4 }],
-    })
+    });
     karrioFetchRates.mockResolvedValue({
       rates: [
         {
@@ -549,8 +655,8 @@ describe("internal AI routes", () => {
           estimated_delivery: "2026-05-12",
         },
       ],
-    })
-    const res = createResponse()
+    });
+    const res = createResponse();
 
     await shippingEstimatePOST(
       createRequest({
@@ -561,15 +667,15 @@ describe("internal AI routes", () => {
           countryCode: "AU",
         },
       }) as never,
-      res as never
-    )
+      res as never,
+    );
 
     expect(productGraph).toHaveBeenCalledWith(
       expect.objectContaining({
         entity: "product_variant",
         filters: { id: ["var_123"] },
-      })
-    )
+      }),
+    );
     expect(karrioFetchRates).toHaveBeenCalledWith(
       expect.objectContaining({
         recipient: expect.objectContaining({
@@ -577,8 +683,8 @@ describe("internal AI routes", () => {
           postal_code: "7000",
           country_code: "AU",
         }),
-      })
-    )
+      }),
+    );
     expect(res.json).toHaveBeenCalledWith({
       rates: [
         expect.objectContaining({
@@ -586,6 +692,6 @@ describe("internal AI routes", () => {
           totalCharge: 1234,
         }),
       ],
-    })
-  })
-})
+    });
+  });
+});

@@ -33,7 +33,7 @@ describe("backend instrumentation", () => {
     createTraceExporterMock.mockReturnValue("trace-exporter");
     createOtelResourceMock.mockReturnValue("resource");
 
-    const { register } = await import("../../instrumentation");
+    const { register } = await import("../../instrumentation.js");
 
     register();
 
@@ -65,7 +65,7 @@ describe("backend instrumentation", () => {
       serviceName: "3dbyte-tech-store-backend",
     });
 
-    const { register } = await import("../../instrumentation");
+    const { register } = await import("../../instrumentation.js");
 
     register();
 

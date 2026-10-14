@@ -17,9 +17,14 @@ type MedusaProductBase = NonNullable<
   Awaited<ReturnType<typeof sdk.store.product.list>>['products']
 >[number]
 
-export type MedusaProduct = MedusaProductBase
+export type MedusaProduct = Omit<MedusaProductBase, 'variants'> & {
+  variants: MedusaProductVariant[] | null
+}
 
-export type MedusaProductVariant = NonNullable<MedusaProductBase['variants']>[number]
+export type MedusaProductVariant = NonNullable<MedusaProductBase['variants']>[number] & {
+  // Retrieved explicitly by storefront pricing field projections.
+  prices?: MedusaCurrencyAmount[]
+}
 
 export type MedusaProductVariantWithPreorder = MedusaProductVariant & {
   preorder_variant?: MedusaPreorderVariant
@@ -67,7 +72,8 @@ export type MedusaOrderTrackingPaymentMethod = {
   last4: string
 }
 
-export type MedusaOrder = Omit<MedusaOrderBase, 'fulfillments'> & {
+export type MedusaOrder = Omit<MedusaOrderBase, 'fulfillments' | 'custom_display_id'> & {
+  custom_display_id?: string | null
   fulfillments?: MedusaOrderFulfillmentWithLabels[] | null
   tracking_payment_method?: MedusaOrderTrackingPaymentMethod | null
 }
@@ -78,7 +84,7 @@ export type MedusaOrderLineItemWithPreorder = MedusaOrderLineItem & {
   variant?: MedusaProductVariantWithPreorder | null
 }
 
-export type MedusaOrderWithPreorder = Omit<MedusaOrderBase, 'items'> & {
+export type MedusaOrderWithPreorder = Omit<MedusaOrder, 'items'> & {
   items?: MedusaOrderLineItemWithPreorder[] | null
 }
 

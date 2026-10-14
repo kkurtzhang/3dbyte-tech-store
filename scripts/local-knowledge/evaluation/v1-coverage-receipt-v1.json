@@ -1,0 +1,368 @@
+{
+  "schema_version": 1,
+  "completed_at": "2026-10-13T12:09:33.633639+00:00",
+  "branch": "feat/knowledge-v1-coverage-20261013",
+  "parent_commit": "2f2c30cd8a21614dcd8e76597a959e9ad6852a90",
+  "scope": "Finite reference-only v1 content coverage and unbound staged-import preparation; stop further product accumulation now.",
+  "completion_criterion": "All 30 fixed cases pass actual offline route, scope, source-version/excerpt and rendering checks; every positive is byte-verified, every declared unknown stays null, official guide links stay link-only. Product accumulation stops when these gates pass.",
+  "before": {
+    "products": 31,
+    "records": 75,
+    "documents": 49,
+    "guides": 26,
+    "variants": 31,
+    "sources": 98,
+    "claims": 428,
+    "supported_claims": 156,
+    "unknown_claims": 204,
+    "local_editorial_decisions": 134,
+    "environment": "local_development",
+    "native_approvals": 0
+  },
+  "after": {
+    "products": 33,
+    "records": 80,
+    "documents": 51,
+    "guides": 29,
+    "variants": 33,
+    "sources": 110,
+    "claims": 469,
+    "supported_claims": 170,
+    "unknown_claims": 226,
+    "local_editorial_decisions": 139,
+    "environment": "local_development",
+    "native_approvals": 0,
+    "editorial_inference_claims": 73
+  },
+  "increment": {
+    "products": 2,
+    "documents": 2,
+    "guides": 3,
+    "source_versions": 12,
+    "claims": 41,
+    "supported_claims": 14,
+    "unknown_claims": 22,
+    "editorial_inference_claims": 5,
+    "local_review_events": 5
+  },
+  "new_records": [
+    {
+      "record_key": "catalogue_panchroma_basic_black_source",
+      "id": "local_dev_document_catalogue_panchroma_basic_black",
+      "revision": "3ef32a87ee390d65a137ff1b9bd95bd84e4a4086bf2f2a59d3a5effb7244f409",
+      "kind": "source_document",
+      "claims": 15,
+      "claim_statuses": {
+        "supported": 6,
+        "unknown": 9
+      }
+    },
+    {
+      "record_key": "catalogue_panchroma_basic_black_guide",
+      "id": "local_dev_guide_catalogue_panchroma_basic_black",
+      "revision": "f21b3387866bb528c40cf90d764741763f4bf875de834c346297f0cda398a851",
+      "kind": "editorial_guide",
+      "claims": 1,
+      "claim_statuses": {
+        "editorial_inference": 1
+      }
+    },
+    {
+      "record_key": "catalogue_polymaker_petg_black_source",
+      "id": "local_dev_document_catalogue_polymaker_petg_black",
+      "revision": "51001ab7672c3e2e6e4fc1200dafe5b39b6eee46e2d9c43b004c8255ac5a1636",
+      "kind": "source_document",
+      "claims": 18,
+      "claim_statuses": {
+        "supported": 8,
+        "unknown": 10
+      }
+    },
+    {
+      "record_key": "catalogue_polymaker_petg_black_guide",
+      "id": "local_dev_guide_catalogue_polymaker_petg_black",
+      "revision": "86b28ab95d40fead666cc1a58c41acdaaaaee15c1ebc67a3652c9a5ba85ade4f",
+      "kind": "editorial_guide",
+      "claims": 1,
+      "claim_statuses": {
+        "editorial_inference": 1
+      }
+    },
+    {
+      "record_key": "N15",
+      "id": "local_dev_guide_N15",
+      "revision": "58e558200b5f4b33c53da23c68b97269ee4e6de84696d082d5e1912f87e204a4",
+      "kind": "editorial_guide",
+      "claims": 6,
+      "claim_statuses": {
+        "editorial_inference": 3,
+        "unknown": 3
+      }
+    }
+  ],
+  "preserved_original_table_rows_and_payloads": {
+    "records": 75,
+    "products": 31,
+    "sources": 98,
+    "claims": 715,
+    "editorial_decisions": 134
+  },
+  "pre_activation_backup": {
+    "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/exports/v1-material-reference-activation-v1-before.sqlite3",
+    "sha256": "297d49190bad92d354fac5f308151d938497f7250aea4a9a87216b4cf7cfaf2d"
+  },
+  "final_local_snapshot": {
+    "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/exports/v1-final-local-snapshot-v1.sqlite3",
+    "sha256": "640c3182e4a21ee93c642d3008bf96d7937a87f456da71e5a100148515a23385"
+  },
+  "new_source_versions": [
+    {
+      "key": "pla_official_json",
+      "id": "local_source_v1_pla_official_json_441705aa80a9",
+      "source_url": "https://shop.polymaker.com/products/panchroma-pla.js",
+      "sha256": "441705aa80a9337bef0b1c3720856bfdd2134f600c2e3346011304c6df90e0b1",
+      "text_sha256": "34548d30e3dccdad1ec9807bdc59f6eb7b9e82cd59f32b1325018fb68d051876",
+      "captured_at": "2026-10-13T11:24:47.511396+00:00"
+    },
+    {
+      "key": "pla_au_json",
+      "id": "local_source_v1_pla_au_json_ed9d3378556e",
+      "source_url": "https://phaserfpv.com.au/products/polymaker-panchroma-basic-pla-175mm-filament-1kg.js",
+      "sha256": "ed9d3378556e5caaed77619ee0bc90734237cc3f275f201489909ed2054f6962",
+      "text_sha256": "864d270b1df8c5bc1d3bf74a09a2b666d0bf2e29e7f5d29b041b4003f05c3740",
+      "captured_at": "2026-10-13T11:24:47.400096+00:00"
+    },
+    {
+      "key": "pla_au_page",
+      "id": "local_source_v1_pla_au_page_5483114992c3",
+      "source_url": "https://phaserfpv.com.au/products/polymaker-panchroma-basic-pla-175mm-filament-1kg",
+      "sha256": "5483114992c3b61c80c163bb2cc864451e2410b480bb01657fadee68f7981945",
+      "text_sha256": "48f844534b309a68b0ce6c4a75d4c0e4377073ecc8981b9d4b5af351fb37ec16",
+      "captured_at": "2026-10-13T11:24:47.961601+00:00"
+    },
+    {
+      "key": "petg_official_json",
+      "id": "local_source_v1_petg_official_json_91229f029364",
+      "source_url": "https://shop.polymaker.com/products/petg.js",
+      "sha256": "91229f02936406c5253168bc5a985ead41eca03e1a9f10eb9a8a210627e23eb7",
+      "text_sha256": "6bda87699e31c8453fc6f1453733e0dc862280c0b9a3c089c2350b76f858d802",
+      "captured_at": "2026-10-13T11:24:48.023474+00:00"
+    },
+    {
+      "key": "petg_au_json",
+      "id": "local_source_v1_petg_au_json_338426e9162b",
+      "source_url": "https://phaserfpv.com.au/products/polymaker-petg-high-speed-175mm-filament-1kg.js",
+      "sha256": "338426e9162ba54db6e44fe5e289b02294ba2faca18fdcb168bfb78f3f89cd60",
+      "text_sha256": "54949989c517f4b575c71a50341eff49f58b5f5cd6485d2f21af4cce650a2b7e",
+      "captured_at": "2026-10-13T11:24:48.332018+00:00"
+    },
+    {
+      "key": "petg_au_page",
+      "id": "local_source_v1_petg_au_page_76c773663e85",
+      "source_url": "https://phaserfpv.com.au/products/polymaker-petg-high-speed-175mm-filament-1kg",
+      "sha256": "76c773663e85ba705f7dc8daab5b57c1e13fbd418dfb3a59245999b2227be65c",
+      "text_sha256": "3e50e5f6d14ddd13b03ed858b4f5d1d227bb78d986224152498c8ca7201befd6",
+      "captured_at": "2026-10-13T11:24:48.912556+00:00"
+    },
+    {
+      "key": "prusa_satin",
+      "id": "local_source_v1_prusa_satin_853ed9f60748",
+      "source_url": "https://help.prusa3d.com/article/satin-steel-sheet_196526",
+      "sha256": "853ed9f60748bf44a8091c8fbf4c48c88e8b9f25297301b4d6a6297ba7faf313",
+      "text_sha256": "8b84bc51a0a333bfbc119fad7123fdbcf321c828aaa34bc26186662faef1fde0",
+      "captured_at": "2026-10-13T11:24:51.106417+00:00"
+    },
+    {
+      "key": "prusa_textured",
+      "id": "local_source_v1_prusa_textured_2759b2bdc735",
+      "source_url": "https://help.prusa3d.com/article/textured-steel-sheet_196534",
+      "sha256": "2759b2bdc735c3036dfcb39ab809a95f73a7fa023ff8d1b3f731c24e153d6d93",
+      "text_sha256": "9e79408564c2e445601e6a05c5cc76afbf09755468efb5c0617bdfcf19b204e2",
+      "captured_at": "2026-10-13T11:24:51.591243+00:00"
+    },
+    {
+      "key": "prusa_smooth",
+      "id": "local_source_v1_prusa_smooth_51a0f8672aad",
+      "source_url": "https://help.prusa3d.com/article/smooth-steel-sheet_196550",
+      "sha256": "51a0f8672aad1f073993e313d35ba4b221e06b5797557b2c110528e45f0430a6",
+      "text_sha256": "e4a43c1ea951650885f978a0106aaeca5c11b6fd7c562c823c0c130f6938d88c",
+      "captured_at": "2026-10-13T11:24:51.948871+00:00"
+    },
+    {
+      "key": "pla_official_page_bounded5m",
+      "id": "local_source_v1_pla_official_page_bounded5m_e501b9fee390",
+      "source_url": "https://shop.polymaker.com/products/panchroma-pla",
+      "sha256": "e501b9fee39005e6f78fe2e1dae4c0b4705ab61e06d9805642e6f20c74d42ead",
+      "text_sha256": "cbcb81b5a421d18846f46bace04533ed11329246fc0ceddb827d07e7f22a3ae5",
+      "captured_at": "2026-10-13T11:31:13.659965+00:00"
+    },
+    {
+      "key": "petg_official_page_bounded5m",
+      "id": "local_source_v1_petg_official_page_bounded5m_8fe3aadbbdc3",
+      "source_url": "https://shop.polymaker.com/products/petg",
+      "sha256": "8fe3aadbbdc37b7df0bfc1ad576882917fa833f284105020ab8974e7e9ad03ac",
+      "text_sha256": "4f9665731299954e9e977eda5c697955c99b3f23994ac3417101e35037a111d2",
+      "captured_at": "2026-10-13T11:31:16.395751+00:00"
+    },
+    {
+      "key": "pla_au_black_page",
+      "id": "local_source_v1_pla_au_black_page_a8da62489c4c",
+      "source_url": "https://phaserfpv.com.au/products/polymaker-panchroma-basic-pla-175mm-filament-1kg?variant=46115303424171",
+      "sha256": "a8da62489c4c53052140e6eb7b07d2dfe54c843a1f7afbdbaf52f7ac3e00148b",
+      "text_sha256": "48f844534b309a68b0ce6c4a75d4c0e4377073ecc8981b9d4b5af351fb37ec16",
+      "captured_at": "2026-10-13T11:31:17.236062+00:00"
+    }
+  ],
+  "new_active_positive_citations": "all verified against immutable raw/text bytes and exact excerpt offsets or JSON pointers",
+  "factual_review": {
+    "local_review_kind": "agent_source_review_for_authorized_local_development",
+    "reviewers": [
+      "codex_local_catalogue_source_review",
+      "codex_local_v1_sheet_source_review"
+    ],
+    "user_factual_review_claimed": false,
+    "parent_factual_review_pending": true,
+    "native_reviewer_events": 0
+  },
+  "coverage": {
+    "fixture": "v1-coverage-checklist-v1.json",
+    "fixture_sha256": "30106caae8172e49c35816b0e3dbd021cb386ab8fab10860430f6fde8d6ed583",
+    "baseline": {
+      "passed": 22,
+      "total": 30,
+      "report": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/v1-checklist-before-v1.json"
+    },
+    "final": {
+      "passed": 30,
+      "total": 30,
+      "report": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/v1-checklist-final-v1.json",
+      "report_sha256": "00590a21bb82746fbf9c49ecaf363bc28ae22a7abca2cb408e5f5b0e91ee61d7"
+    },
+    "categories": [
+      {
+        "category": "bed_adhesion",
+        "case_count": 5,
+        "before": 3,
+        "after": 5
+      },
+      {
+        "category": "drying_storage",
+        "case_count": 5,
+        "before": 2,
+        "after": 5
+      },
+      {
+        "category": "filament_choice",
+        "case_count": 5,
+        "before": 3,
+        "after": 5
+      },
+      {
+        "category": "maintenance_troubleshooting",
+        "case_count": 5,
+        "before": 4,
+        "after": 5
+      },
+      {
+        "category": "nozzle_hotend",
+        "case_count": 5,
+        "before": 5,
+        "after": 5
+      },
+      {
+        "category": "physical_kit_guidance",
+        "case_count": 5,
+        "before": 5,
+        "after": 5
+      }
+    ],
+    "case_roles": {
+      "must_answer_source_context": 20,
+      "unknown_by_design": 9,
+      "official_link_only": 1
+    },
+    "transport": "actual offline chat handler plus persisted Python retrieval over stdin/stdout; source identity/revision/byte proof/rendered links verified",
+    "model_generation": false,
+    "independent_heldout_generation_evaluation": false
+  },
+  "staged_import_preparation": {
+    "manifest": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/v1-staged-import-preparation-manifest-v1.json",
+    "sha256": "faea64c1c99a7161e091da91f0a2cc499efea83f32b567b2379f3e4596a613ba",
+    "record_inventory": 80,
+    "single_source_candidate_fragments": 53,
+    "reference_shell_plans": 33,
+    "structure_fixtures_passed": 53,
+    "unbound_templates_rejected": true,
+    "unreviewed_documents_rejected": true,
+    "native_import_eligible": 0,
+    "native_bindings_and_review_fields": null,
+    "apply_authorized": false,
+    "physical_possession_required_for_reference_only": false,
+    "held_field_reasons": {
+      "editorial_synthesis_requires_separate_native_curation": 73,
+      "source_kind_not_classified_under_existing_native_allowlist": 37,
+      "multi_source_claim_requires_single_source_native_curation": 4
+    },
+    "remaining_prerequisites": [
+      "confirm exact native product/variant/document bindings",
+      "curate held editorial/multiple-source fields under native contract",
+      "genuine factual review of final canonical native revisions",
+      "explicit authorization for native writes/publication"
+    ],
+    "braces_security_deployment_gate": "separate parent-owned release work; not changed or bypassed"
+  },
+  "verification": {
+    "python_tests": {
+      "passed": 56,
+      "failed": 0,
+      "log": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/v1-python-tests-v1.log"
+    },
+    "jest_tests": {
+      "passed": 82,
+      "failed": 0,
+      "suites": 8,
+      "report": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/v1-jest-tests-v1.json"
+    },
+    "ruff_F_E9": "passed",
+    "source_and_test_types": {
+      "result": "passed",
+      "log": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/v1-source-test-types-v1.log"
+    },
+    "canonical_types": {
+      "result": "blocked by pre-existing generated .next/dev layout React 18/19 peer mismatch; parent integration owns fix",
+      "log": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/v1-canonical-types-v1.log"
+    },
+    "configured_eslint": {
+      "result": "exit0 with all three changed TypeScript files ignored by existing JavaScript-only config; no TypeScript lint coverage claimed",
+      "log": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/v1-configured-eslint-v2.log"
+    },
+    "preview_listeners": [
+      {
+        "port": 3005,
+        "no_listener": true
+      },
+      {
+        "port": 8873,
+        "no_listener": true
+      }
+    ]
+  },
+  "capture_and_activation_recovery": {
+    "failed_capture_attempts": 2,
+    "failed_capture_bound_bytes": 3000000,
+    "successful_official_page_capture_bound_bytes": 5000000,
+    "failed_attempts_registered_as_sources": false,
+    "activation_receipt_error": "KeyError id after successful four-record local ingest; fixed reporting and recovered from actual state and prior backup",
+    "rollback_or_reimport": false,
+    "idempotent_replay": "two documents and two guides skipped; zero new reviews or identities",
+    "replay_report": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/v1-material-reference-idempotent-replay-v1.json"
+  },
+  "native_approvals": 0,
+  "staging_writes": 0,
+  "paid_or_generation_model_calls": 0,
+  "dependency_changes": false,
+  "new_credentials_access": false,
+  "listeners_started": false,
+  "three_d_sets_build_guides_and_faqs": "official links only; no copied or indexed guide/FAQ content",
+  "known_historical_capture_loss": "five unavailable old raw source versions remain unavailable; not reconstructed or used for active positive citations"
+}

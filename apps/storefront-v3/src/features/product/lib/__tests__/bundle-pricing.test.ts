@@ -1,3 +1,4 @@
+import { createVariantFixture } from "@/test-utils/medusa-fixtures"
 import type { BundleProduct } from "@/lib/medusa/bundles"
 import type { MedusaProduct } from "@/lib/medusa/types"
 import {
@@ -15,7 +16,6 @@ function createProduct(
 ) {
   return {
     id: overrides.id || `prod_${overrides.title}`,
-    title: overrides.title,
     handle: overrides.handle || overrides.title.toLowerCase().replace(/\s+/g, "-"),
     variants: overrides.variants || [],
     options: overrides.options || [],
@@ -31,7 +31,7 @@ describe("bundle-pricing", () => {
       product: createProduct({
         title: "Starter Bundle",
         variants: [
-          {
+          createVariantFixture({
             id: "variant_bundle",
             title: "Default",
             prices: [{ amount: 149, currency_code: "aud" }],
@@ -40,7 +40,7 @@ describe("bundle-pricing", () => {
               original_amount: 149,
               currency_code: "aud",
             },
-          },
+          }),
         ],
       }),
       items: [
@@ -50,11 +50,11 @@ describe("bundle-pricing", () => {
           product: createProduct({
             title: "Printer",
             variants: [
-              {
+              createVariantFixture({
                 id: "variant_printer",
                 title: "Default",
                 prices: [{ amount: 99, currency_code: "aud" }],
-              },
+              }),
             ],
           }),
         },
@@ -64,11 +64,11 @@ describe("bundle-pricing", () => {
           product: createProduct({
             title: "Filament",
             variants: [
-              {
+              createVariantFixture({
                 id: "variant_filament",
                 title: "Default",
                 prices: [{ amount: 40, currency_code: "aud" }],
-              },
+              }),
             ],
           }),
         },
@@ -95,7 +95,7 @@ describe("bundle-pricing", () => {
       product: createProduct({
         title: "Starter Bundle",
         variants: [
-          {
+          createVariantFixture({
             id: "variant_bundle",
             title: "Default",
             prices: [{ amount: 75, currency_code: "aud" }],
@@ -104,7 +104,7 @@ describe("bundle-pricing", () => {
               original_amount: 75,
               currency_code: "aud",
             },
-          },
+          }),
         ],
       }),
       items: [
@@ -114,7 +114,7 @@ describe("bundle-pricing", () => {
           product: createProduct({
             title: "Part A",
             variants: [
-              {
+              createVariantFixture({
                 id: "variant_default",
                 title: "Default",
                 prices: [{ amount: 50, currency_code: "aud" }],
@@ -123,8 +123,8 @@ describe("bundle-pricing", () => {
                   original_amount: 50,
                   currency_code: "aud",
                 },
-              },
-              {
+              }),
+              createVariantFixture({
                 id: "variant_premium",
                 title: "Premium",
                 prices: [{ amount: 70, currency_code: "aud" }],
@@ -133,7 +133,7 @@ describe("bundle-pricing", () => {
                   original_amount: 70,
                   currency_code: "aud",
                 },
-              },
+              }),
             ],
           }),
         },
@@ -143,7 +143,7 @@ describe("bundle-pricing", () => {
           product: createProduct({
             title: "Part B",
             variants: [
-              {
+              createVariantFixture({
                 id: "variant_regular",
                 title: "Default",
                 prices: [{ amount: 40, currency_code: "aud" }],
@@ -152,7 +152,7 @@ describe("bundle-pricing", () => {
                   original_amount: 40,
                   currency_code: "aud",
                 },
-              },
+              }),
             ],
           }),
         },
@@ -183,7 +183,7 @@ describe("bundle-pricing", () => {
       product: createProduct({
         title: "Starter Bundle",
         variants: [
-          {
+          createVariantFixture({
             id: "variant_bundle",
             title: "Default",
             prices: [{ amount: 75, currency_code: "aud" }],
@@ -192,7 +192,7 @@ describe("bundle-pricing", () => {
               original_amount: 75,
               currency_code: "aud",
             },
-          },
+          }),
         ],
       }),
       items: [
@@ -202,7 +202,7 @@ describe("bundle-pricing", () => {
           product: createProduct({
             title: "Part A",
             variants: [
-              {
+              createVariantFixture({
                 id: "variant_a",
                 title: "Default",
                 prices: [{ amount: 53.57, currency_code: "aud" }],
@@ -211,7 +211,7 @@ describe("bundle-pricing", () => {
                   original_amount: 53.57,
                   currency_code: "aud",
                 },
-              },
+              }),
             ],
           }),
         },
@@ -221,7 +221,7 @@ describe("bundle-pricing", () => {
           product: createProduct({
             title: "Part B",
             variants: [
-              {
+              createVariantFixture({
                 id: "variant_b",
                 title: "Default",
                 prices: [{ amount: 35.63, currency_code: "aud" }],
@@ -230,7 +230,7 @@ describe("bundle-pricing", () => {
                   original_amount: 35.63,
                   currency_code: "aud",
                 },
-              },
+              }),
             ],
           }),
         },
@@ -249,7 +249,7 @@ describe("bundle-pricing", () => {
     const product = createProduct({
       title: "Part A",
       variants: [
-        {
+        createVariantFixture({
           id: "variant_a",
           title: "Default Title",
           options: [
@@ -259,7 +259,7 @@ describe("bundle-pricing", () => {
               value: "Default",
             },
           ],
-        },
+        }),
       ],
       options: [
         {
@@ -287,11 +287,11 @@ describe("bundle-pricing", () => {
       product: createProduct({
         title: "Starter Bundle",
         variants: [
-          {
+          createVariantFixture({
             id: "variant_bundle",
             title: "Default",
             prices: [{ amount: 75, currency_code: "aud" }],
-          },
+          }),
         ],
       }),
       items: [
@@ -301,14 +301,14 @@ describe("bundle-pricing", () => {
           product: createProduct({
             title: "Part A",
             variants: [
-              {
+              createVariantFixture({
                 id: "variant_a",
                 title: "Standard",
                 inventory_quantity: 7,
                 manage_inventory: true,
                 allow_backorder: false,
                 prices: [{ amount: 50, currency_code: "aud" }],
-              },
+              }),
             ],
           }),
         },
@@ -318,14 +318,14 @@ describe("bundle-pricing", () => {
           product: createProduct({
             title: "Part B",
             variants: [
-              {
+              createVariantFixture({
                 id: "variant_b",
                 title: "Standard",
                 inventory_quantity: 3,
                 manage_inventory: true,
                 allow_backorder: false,
                 prices: [{ amount: 40, currency_code: "aud" }],
-              },
+              }),
             ],
           }),
         },
@@ -347,11 +347,11 @@ describe("bundle-pricing", () => {
       product: createProduct({
         title: "Starter Bundle",
         variants: [
-          {
+          createVariantFixture({
             id: "variant_bundle",
             title: "Default",
             prices: [{ amount: 75, currency_code: "aud" }],
-          },
+          }),
         ],
       }),
       items: [
@@ -361,14 +361,14 @@ describe("bundle-pricing", () => {
           product: createProduct({
             title: "Part A",
             variants: [
-              {
+              createVariantFixture({
                 id: "variant_a",
                 title: "Standard",
                 inventory_quantity: 6,
                 manage_inventory: true,
                 allow_backorder: false,
                 prices: [{ amount: 50, currency_code: "aud" }],
-              },
+              }),
             ],
           }),
         },
@@ -390,11 +390,11 @@ describe("bundle-pricing", () => {
       product: createProduct({
         title: "Starter Bundle",
         variants: [
-          {
+          createVariantFixture({
             id: "variant_bundle",
             title: "Default",
             prices: [{ amount: 75, currency_code: "aud" }],
-          },
+          }),
         ],
       }),
       items: [
@@ -404,14 +404,14 @@ describe("bundle-pricing", () => {
           product: createProduct({
             title: "Part A",
             variants: [
-              {
+              createVariantFixture({
                 id: "variant_a",
                 title: "Standard",
                 inventory_quantity: 0,
                 manage_inventory: true,
                 allow_backorder: false,
                 prices: [{ amount: 50, currency_code: "aud" }],
-              },
+              }),
             ],
           }),
         },
@@ -421,14 +421,14 @@ describe("bundle-pricing", () => {
           product: createProduct({
             title: "Part B",
             variants: [
-              {
+              createVariantFixture({
                 id: "variant_b",
                 title: "Standard",
                 inventory_quantity: 20,
                 manage_inventory: true,
                 allow_backorder: false,
                 prices: [{ amount: 40, currency_code: "aud" }],
-              },
+              }),
             ],
           }),
         },
@@ -450,11 +450,11 @@ describe("bundle-pricing", () => {
       product: createProduct({
         title: "Starter Bundle",
         variants: [
-          {
+          createVariantFixture({
             id: "variant_bundle",
             title: "Default",
             prices: [{ amount: 75, currency_code: "aud" }],
-          },
+          }),
         ],
       }),
       items: [
@@ -464,14 +464,14 @@ describe("bundle-pricing", () => {
           product: createProduct({
             title: "Part A",
             variants: [
-              {
+              createVariantFixture({
                 id: "variant_backorder",
                 title: "Standard",
                 inventory_quantity: null,
                 manage_inventory: true,
                 allow_backorder: true,
                 prices: [{ amount: 50, currency_code: "aud" }],
-              },
+              }),
             ],
           }),
         },

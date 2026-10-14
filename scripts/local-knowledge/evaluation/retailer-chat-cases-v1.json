@@ -1,0 +1,13 @@
+{
+  "measurement": "Deterministic actual-route capability/regression checks; no model quality claim.",
+  "cases": [
+    {"id":"radio_battery","questions":["Does the DREMC retailer reference WES2487 include a radio and battery?"],"expected_status":"source_grounded_context","required_fields":["retailer_shared_radio_battery_exclusion"]},
+    {"id":"digital_files","questions":["Does DREMC WES2487 include STL model files?"],"expected_status":"source_grounded_context","required_fields":["retailer_shared_printed_stl_exclusion"]},
+    {"id":"separate_purchases","questions":["What do I need to buy separately for the DREMC WES2488 reference?"],"expected_status":"source_grounded_context","required_fields":["retailer_shared_radio_battery_exclusion","retailer_shared_printed_stl_exclusion"]},
+    {"id":"included_parts","questions":["What exact parts are included in DREMC WES2489?"],"expected_status":"unknown","unknown_fields":["exact_kit_included_contents"]},
+    {"id":"exact_version","questions":["Which exact model version is verified for DREMC WES2487?"],"expected_status":"unknown","unknown_fields":["exact_model_release_compatibility"]},
+    {"id":"connector","questions":["What battery connector type is verified for DREMC WES2488: XT60 or Tamiya?"],"expected_status":"unknown","unknown_fields":["esc_battery_connector_type"]},
+    {"id":"small_servo","questions":["How many small servos come in the DREMC WES2489 reference?"],"expected_status":"unknown","unknown_fields":["small_servo_quantity"]},
+    {"id":"own_store","questions":["Does a 3D Byte Tech kit mapped to WES2487 include STLs?"],"expected_status":"unknown","unknown_fields":["store_kit_sku","store_digital_access_included"]}
+  ]
+}

@@ -1,0 +1,122 @@
+{
+  "measurement": "Actual loopback follow-up and resource-link routing, no model generation.",
+  "cases": [
+    {
+      "case": "guide",
+      "questions": [
+        "Where is the public Sandy build guide for WES2487 kit?"
+      ],
+      "reason": "official_build_guide_link_only",
+      "expected_reason": "official_build_guide_link_only",
+      "text": "Local development \u00b7 Official resource links\n\nFor Sandy, use the official public presentation linked below for assembly steps. Linked guide revision: 1.0. Check that this guide revision matches your build. Physical kit contents and digital model access are separate and remain unverified for your selected store kit.",
+      "source_links": [
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_sandy",
+          "url": "https://3dsets.com/product/model-11-sandy/",
+          "title": "3D Sets: Sandy"
+        },
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_guide_sandy_1.0",
+          "url": "https://docs.google.com/presentation/d/1xb7YkoKhJmHLQ6zAjSLmep7UbICcW2iVI0if_n4BRAo/edit?usp=sharing",
+          "title": "Sandy official build guide v1.0"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "faq",
+      "questions": [
+        "3D Sets WES2487 FAQ"
+      ],
+      "reason": "official_faq_link_only",
+      "expected_reason": "official_faq_link_only",
+      "text": "Local development \u00b7 Official resource links\n\n3D Sets customer FAQs are available at the official link below. The page is dated 23 June 2021; check current model-specific sources for version-sensitive information.",
+      "source_links": [
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_faq",
+          "url": "https://3dsets.com/blog/faq/",
+          "title": "3D Sets official FAQ (2021)"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "guide_without_model",
+      "questions": [
+        "Where is the public build guide for WES2487?"
+      ],
+      "reason": "exact_model_required",
+      "expected_reason": "exact_model_required",
+      "text": "Local development \u00b7 Official resource links\n\nWhich 3D Sets model and version are you building? Name the model number and body variant so we can link its official guide.",
+      "source_links": [
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_catalogue",
+          "url": "https://3dsets.com/product-category/models/",
+          "title": "3D Sets official model catalogue"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "stl_followup",
+      "questions": [
+        "Tell me about DREMC WES2487.",
+        "Does it include STL files?"
+      ],
+      "reason": "captured_retailer_stl_exclusion",
+      "expected_reason": "captured_retailer_stl_exclusion",
+      "text": "Local development \u00b7 Deterministic source context \u00b7 No language model generation\n\n1. Shared listing note: printed parts/STLs exclusion: Retailer shared listing note excludes printed model parts and STLs..\nScope: Captured DREMC external retailer reference WES2487 (Buggy / Buggster / Sandy), checked 2026-10-13. Shared listing notes are third-party observations; they do not verify a 3D Byte Tech kit, complete contents, model release, live price or inventory.\nUnresolved: esc_battery_connector_type, exact_kit_excluded_contents, exact_kit_included_contents, exact_model_release_compatibility, kit_manufacturer, kit_revision, physical_stock, small_servo_quantity, store_digital_access_included, store_kit_sku, supplier_bom_revision",
+      "source_links": [
+        {
+          "type": "source-url",
+          "sourceId": "local_source_retailer_dremc_1858c9a0f00d",
+          "url": "https://store.dremc.com.au/products/3dsets-com-rc-vehicle-kits-by-3dmakerparts.js",
+          "title": "store.dremc.com.au"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "sku_change",
+      "questions": [
+        "Tell me about DREMC WES2487.",
+        "Instead I am considering DREMC WES2489.",
+        "How many small servos does it contain?"
+      ],
+      "reason": "retailer_servo_quantity_unresolved",
+      "expected_reason": "retailer_servo_quantity_unresolved",
+      "text": "Local development \u00b7 Deterministic source context \u00b7 No language model generation\n\nUnknown: For captured DREMC retailer reference WES2489, small-servo quantity for exact selected kit remains unverified. Keep it unknown. Supplier family BOM observations do not prove an exact kit or model revision, and this reference does not establish a 3D Byte Tech offer or fulfilment.\nUnresolved fields: small_servo_quantity",
+      "source_links": [],
+      "passed": true
+    },
+    {
+      "case": "ambiguous",
+      "questions": [
+        "Compare WES2487 and WES2488.",
+        "Does it include a radio?"
+      ],
+      "reason": "ambiguous_retailer_reference",
+      "expected_reason": "ambiguous_retailer_reference",
+      "text": "Local development \u00b7 Deterministic source context \u00b7 No language model generation\n\nUnknown: Which item or material do you mean: DREMC retailer reference WES2487 or DREMC retailer reference WES2488? Name the item and variant in the question.\nUnresolved fields: conversation_subject",
+      "source_links": [],
+      "passed": true
+    },
+    {
+      "case": "commerce",
+      "questions": [
+        "What is our price and can WES2487 ship tomorrow?"
+      ],
+      "reason": "actual_store_kit_unverified",
+      "expected_reason": "actual_store_kit_unverified",
+      "text": "Local development \u00b7 Deterministic source context \u00b7 No language model generation\n\nUnknown: For captured DREMC retailer reference WES2487, actual store kit sku, actual store kit digital access inclusion, exact selected kit included contents remains unverified. Keep it unknown. Supplier family BOM observations do not prove an exact kit or model revision, and this reference does not establish a 3D Byte Tech offer or fulfilment.\nUnresolved fields: store_kit_sku, store_digital_access_included, exact_kit_included_contents",
+      "source_links": [],
+      "passed": true
+    }
+  ],
+  "passed": 7,
+  "total": 7
+}

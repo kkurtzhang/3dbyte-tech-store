@@ -2,7 +2,7 @@ import { createOrderAccessToken } from "@/lib/order-access/token"
 
 const mockCookies = jest.fn()
 const mockGetOrder = jest.fn()
-const mockNotFound = jest.fn(() => {
+const mockNotFound = jest.fn((..._args: unknown[]) => {
   throw new Error("NEXT_NOT_FOUND")
 })
 

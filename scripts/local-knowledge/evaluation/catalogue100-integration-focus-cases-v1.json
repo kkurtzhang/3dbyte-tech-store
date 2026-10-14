@@ -1,0 +1,57 @@
+{
+  "cases": [
+    {
+      "id": "integration_roto_pronoun",
+      "questions": [
+        "Tell me about E3D Roto motor",
+        "What about its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_e3d_roto_motor_source",
+          "motor_type"
+        ]
+      ],
+      "expected_group": "catalogue_c100_e3d_roto_motor",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "integration_new_roto_blocks_old_magigoo",
+      "questions": [
+        "Tell me about Magigoo PP",
+        "Tell me about E3D Roto motor",
+        "What about its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_e3d_roto_motor_source",
+          "motor_type"
+        ]
+      ],
+      "expected_group": "catalogue_c100_e3d_roto_motor",
+      "expected_focus": "focused"
+    },
+    {
+      "id": "integration_fiberlogy_asa_identity",
+      "questions": [
+        "Tell me about Fiberlogy ASA",
+        "What about its specifications?"
+      ],
+      "status": "source_grounded_context",
+      "required": [
+        [
+          "catalogue_c100_fiberlogy_asa_source",
+          "manufacturer_print_temperature"
+        ],
+        [
+          "catalogue_c100_fiberlogy_asa_source",
+          "manufacturer_bed_temperature"
+        ]
+      ],
+      "expected_group": "catalogue_c100_fiberlogy_asa",
+      "expected_focus": "focused"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 const mockSearch = jest.fn();
 const mockIndex = jest.fn(() => ({ search: mockSearch }));
-const mockMeiliSearch = jest.fn(() => ({ index: mockIndex }));
+const mockMeiliSearch = jest.fn((..._args: unknown[]) => ({ index: mockIndex }));
 
 jest.mock("meilisearch", () => ({
   MeiliSearch: jest.fn().mockImplementation((...args: unknown[]) =>

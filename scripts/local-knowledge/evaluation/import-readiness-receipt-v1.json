@@ -1,0 +1,296 @@
+{
+  "schema_version": 1,
+  "completed_at": "2026-10-13T12:33:58.118694+00:00",
+  "branch": "fix/knowledge-import-readiness-20261013",
+  "parent_commit": "ddfa0a1fbefc2b66d53414265865ca85a65cd4c2",
+  "scope": "Offline native readiness only; no product/claim accumulation, no native mutation or approval",
+  "manifest": {
+    "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/import-readiness-plan-final-v1.json",
+    "sha256": "3578249a19bfcb737a2417aab0fe7384e44f4aaf8cbfbf2ac5f05ef72d29be55"
+  },
+  "contract_verification": {
+    "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/import-readiness-contract-final-v1.json",
+    "sha256": "1b20c54f8a2d817d42430251b4fd4655591a23c8f7cd5b027bab276ac9c8249f",
+    "results": {
+      "structure_fixtures": 64,
+      "supported_facts": 155,
+      "nullable_fact_occurrences": 344,
+      "primary_documents": 33,
+      "schema_required_fields_and_canonical_hash_mapping_passed": true,
+      "group_consistent_alternative_bindings_passed": true,
+      "unbound_pending_private_and_public_projection_approval_rejected": true,
+      "unsupported_unknown_promotion_and_source_kind_rejected": true,
+      "priced_shell_and_wrong_environment_binding_rejected": true,
+      "native_ids_approvals_or_writes_created": 0
+    }
+  },
+  "before": {
+    "fragments": 53,
+    "supported_facts": 127,
+    "shell_plans": 33,
+    "native_eligible": 0
+  },
+  "after": {
+    "fragments": 64,
+    "supported_facts": 155,
+    "primary_documents": 33,
+    "primary_supported_facts": 103,
+    "alternative_fragments": 31,
+    "shell_plans": 33,
+    "native_eligible": 0,
+    "local_review_events_referenced": 46
+  },
+  "recovered_already_supported_facts": 28,
+  "newly_classified_sources": [
+    {
+      "candidate_key": "catalogue_buildtak_pei235_source__local_source_catalogue_buildtak_pei_official_5fd72b4cc428",
+      "local_record_revision": "390c500469fd642e57c026fa3c67a492a3008596ed6edffad92f106d79879fe4",
+      "source_url": "https://buildtak.com/products/buildtak-pei-3d-printing-surface",
+      "source_kind": "official_product_page",
+      "source_sha256": "5fd72b4cc42857cbe94d3d451b82bec695d3208941751da388ecf3778f3d9fca",
+      "origin_proof": null
+    },
+    {
+      "candidate_key": "catalogue_buildtak_spatula_source__local_source_catalogue_buildtak_spatula_official_b9a84996e5e3",
+      "local_record_revision": "cf502a338d84db7720c79c3085da0c6ff303f3a7fa6d9e775e89db6f75dd6965",
+      "source_url": "https://buildtak.com/products/buildtak-spatula",
+      "source_kind": "official_product_page",
+      "source_sha256": "b9a84996e5e3e623135498732608de6ae7cea6f33edff6bba6621a1ce566b25a",
+      "origin_proof": null
+    },
+    {
+      "candidate_key": "catalogue_fiberlogy_pp750_source__local_source_catalogue_fiberlogy_official_0c97251a9018",
+      "local_record_revision": "3fdafcbd5adff29bede516a2eca39d8ba1989db8170297eada68d8ab579e7bec",
+      "source_url": "https://fiberlogy.com/en/product/pp-filament/",
+      "source_kind": "official_product_page",
+      "source_sha256": "0c97251a9018c3c81050476de17007eb5f89252b7d5654c95ef291e497ab9110",
+      "origin_proof": null
+    },
+    {
+      "candidate_key": "catalogue_magigoo_pp50_source__local_source_followup_magigoo_pp_official_cd873237048e",
+      "local_record_revision": "820c1a4e8fe9e23137335103ebdb4bbed28e3a8710446d69ca8405fc25eb5593",
+      "source_url": "https://magigoo.com/products/magigoo-pp/",
+      "source_kind": "official_product_page",
+      "source_sha256": "cd873237048e124d23db31b2f13130a898d722abf329dde44d773664d4fe4ee8",
+      "origin_proof": null
+    },
+    {
+      "candidate_key": "catalogue_orbiter_v25_source__local_source_catalogue_orbiter_official_5d755ec6355c",
+      "local_record_revision": "c3d7029b5ac8b0c0c29864c9361c03d2c70af0ddadd85240e8c4caa1cddff3bf",
+      "source_url": "https://www.orbiterprojects.com/orbiter-v2-5/",
+      "source_kind": "official_product_page",
+      "source_sha256": "5d755ec6355ca197c45946b417506a817232df6db73af7cf0b012801e0dcff5b",
+      "origin_proof": null
+    },
+    {
+      "candidate_key": "five_e03_tds__local_source_five_tpu-tds",
+      "local_record_revision": "6f82eb5025c028ad7e7c7905154d06527f9018dffc400ccb14b82730bf2e5d0c",
+      "source_url": "https://cdn.shopify.com/s/files/1/0548/7299/7945/files/PolyFlex_TPU95_HF_TDS_EN_V5.4.pdf",
+      "source_kind": "official_datasheet",
+      "source_sha256": "2ca4982f0d9661024ae1b9c789c901270973e2b6560532c8ec14f9a40281cb6f",
+      "origin_proof": {
+        "id": "local_source_new_tpu_0b40819ee2bb",
+        "source_url": "https://shop.polymaker.com/products/polyflex-tpu95-hf?variant=39574341779513",
+        "sha256": "0b40819ee2bbf83637ab8df18a11813df671041b872269dc875b7d79dfa8a8df",
+        "raw_path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/sources/immutable/0b40819ee2bbf83637ab8df18a11813df671041b872269dc875b7d79dfa8a8df.raw"
+      }
+    },
+    {
+      "candidate_key": "five_e08_identity__local_source_five_mag-shop-json",
+      "local_record_revision": "6214c46071de3feb5340e9f3a14cb65944ace145dd7f1c92a507ea46b4d57e82",
+      "source_url": "https://magigoo.com/products/magigoo-supergrip-test.js",
+      "source_kind": "official_product_page",
+      "source_sha256": "f43b1d6a2e6441d8e3f508621b29924fbfe2f93e07a3117c984c69a37e06bda5",
+      "origin_proof": null
+    },
+    {
+      "candidate_key": "five_e08_usage__local_source_five_mag-shop",
+      "local_record_revision": "52e912f042354d75996d378676f59022133c73eacef76aed9a4f3729ece1dab6",
+      "source_url": "https://magigoo.com/products/magigoo-supergrip-test",
+      "source_kind": "official_product_page",
+      "source_sha256": "7d1c529e6e50c671e97862e17f884c70b45abd38a6eb0013f22ae460d2f5920f",
+      "origin_proof": null
+    },
+    {
+      "candidate_key": "prior_R01_E01__local_source_earlier_E01",
+      "local_record_revision": "c36e8b9799babb209807550fdc6cd16ecd119d5fb841f7d8c0c90d2b31959d9c",
+      "source_url": "https://mvip.creality.com/en/goods/goodsDetail/1945",
+      "source_kind": "official_product_page",
+      "source_sha256": "029c9eb9b5bd7052dc411bb2dbc0dd8278bcec8ee18232feb484fa42cbca9460",
+      "origin_proof": null
+    },
+    {
+      "candidate_key": "prior_R08_E03__local_source_earlier_E03",
+      "local_record_revision": "d2c25e0a3c772b8380ca7de1ce196b80e780d2594b04bdb91997a40d67eb8dc4",
+      "source_url": "https://mvip.creality.com/en/goods/goodsDetail/2185",
+      "source_kind": "official_product_page",
+      "source_sha256": "ea43c07307308e9ab66489755af88604c498c15ec611a32df9262d9eef3fd2f6",
+      "origin_proof": null
+    },
+    {
+      "candidate_key": "prior_R11_E05__local_source_earlier_E05",
+      "local_record_revision": "e14789ea2b28607dbdcae10991e10507b47d8c973031526faa9186d7a97ea8f5",
+      "source_url": "https://mvip.creality.com/en/goods/goodsDetail/2427",
+      "source_kind": "official_product_page",
+      "source_sha256": "217c160420fb82e5bf691934995ab866e5223dc8d9f0651dfbce025910c6e76a",
+      "origin_proof": null
+    }
+  ],
+  "blocker_matrix": [
+    {
+      "category": "native_identity",
+      "state": "absent",
+      "affected_fragments": 64,
+      "affected_shells": 33,
+      "offline_resolution": "group-consistent templates and one primary per shell prepared",
+      "remaining": "actual Medusa product/variant and Strapi documentId readbacks; final handle/title"
+    },
+    {
+      "category": "review",
+      "state": "local source review established; final native revision review pending",
+      "affected_fragments": 64,
+      "offline_resolution": "real local review event IDs/actors/revisions retained; source bytes/excerpts reverified",
+      "remaining": "authorized reviewer event under honest actor identity after final native canonical binding; no forced re-review of unknowns"
+    },
+    {
+      "category": "unsupported_or_unresolved_facts",
+      "state": "field scoped; not a whole-product blocker",
+      "source_kind_held": 9,
+      "source_supported_unbound_guide_facts": 2,
+      "multi_source_held": 4,
+      "editorial_held": 73,
+      "offline_resolution": "supported single-source facts retained; unknowns remain null; no new facts or 3DSets guide/FAQ ingestion",
+      "remaining": "optional separate curation, not required for supported partial reference use"
+    },
+    {
+      "category": "schema_and_binding",
+      "state": "native schemas unchanged; core-intake and private-field stages distinguished",
+      "affected_fragments": 64,
+      "offline_resolution": "Strapi required fields/version mapping and 33 primary bindings prepared; official classifier omissions fixed",
+      "remaining": "Fragment pool includes one selected primary per product plus alternatives; current reference card binds one source document per product, not every fragment simultaneously"
+    },
+    {
+      "category": "environment",
+      "state": "native target availability not exercised",
+      "affected_fragments": 64,
+      "offline_resolution": "existing parser/CMS/backend pure checks available",
+      "remaining": "authorized connected staging Admin/CMS and deployed current gates/readbacks; no startup or credential expansion in this task"
+    },
+    {
+      "category": "action_authorization",
+      "state": "native creation/review-write/publication/binding not authorized",
+      "affected_fragments": 64,
+      "affected_shells": 33,
+      "offline_resolution": "reviewable templates ready; all apply flags false",
+      "remaining": "specific authorization for target and selected reference-only scope; release/index activation separately parent-owned"
+    }
+  ],
+  "held_field_reason_counts": {
+    "editorial_synthesis_requires_separate_native_curation": 73,
+    "guide_has_no_exact_product_binding; equivalent_material_TDS_facts_are_prepared_separately": 2,
+    "multi_source_claim_requires_single_source_native_curation": 4,
+    "source_kind_not_classified_under_existing_native_allowlist": 9
+  },
+  "native_workflow": {
+    "strapi_content_type": "api::product-document.product-document",
+    "core_intake": "existing StrapiModuleService.upsertAiProductDocumentDrafts performs unique protected lookup and draft POST/PUT for core fields; its typed DTO does not define knowledge_content/knowledge_review",
+    "private_field_stage": "after native identity readback, use agreed Strapi Admin path to enter canonical knowledge_content/version and pending review; no custom review-action endpoint or automatic promotion is assumed",
+    "preserve_existing": "do not overwrite existing reviewed/bound content; require scoped backup/reconciliation if native duplicate preflight finds it",
+    "initial_state": "private draft via agreed Strapi Admin/API, explicit is_public=false; status=draft on supported operator path",
+    "duplicate_preflight": "protected importLookup: exact medusa_product_id, source_url and draft/published status; public find cannot inspect private drafts",
+    "identity_plan": "33 unique group-consistent shells; one selected primary per reference card",
+    "canonical_revision": "knowledgeRevision from actual CMS utils after real documentId/product/variant/handle/title readback; v1 local/fixture hashes are not reusable native hashes",
+    "review_record": "genuine authorized event with exact document/product/variant/revision, honest reviewer identity, reviewed_at after source_checked_at and valid_until within90days; existing JSON contract has no dedicated reviewer-action endpoint",
+    "medusa_binding_preview": "GET /admin/products/{id}/knowledge-reference-preview?document_id={actual_id}&revision={canonical_hash}; read-only, requires current approved published DTO",
+    "apply": "authorized Medusa Admin/workflow metadata update preserving existing metadata; attach nonphysical group-bound simulation only with actual IDs; keep draft/unpriced/no checkout",
+    "serve": "verify CMS approved DTO and Medusa referenceCard; parent authorizes scoped index/release activation",
+    "local_review_sync": "sync-public-document-review writes local review state only and grants no native approval"
+  },
+  "frozen_v1_evidence": {
+    "database_snapshot": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/exports/v1-final-local-snapshot-v1.sqlite3",
+      "sha256": "640c3182e4a21ee93c642d3008bf96d7937a87f456da71e5a100148515a23385"
+    },
+    "import_manifest": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/v1-staged-import-preparation-manifest-v1.json",
+      "sha256": "faea64c1c99a7161e091da91f0a2cc499efea83f32b567b2379f3e4596a613ba"
+    }
+  },
+  "all_current_sqlite_table_rows_equal_v1_snapshot": {
+    "claim_fts": 469,
+    "claim_fts_config": 1,
+    "claim_fts_content": 469,
+    "claim_fts_data": 39,
+    "claim_fts_docsize": 469,
+    "claim_fts_idx": 37,
+    "claims": 756,
+    "editorial_decisions": 139,
+    "local_record_bindings": 61,
+    "local_reference_variants": 33,
+    "metadata": 1,
+    "products": 33,
+    "records": 80,
+    "revisions": 59,
+    "sources": 110
+  },
+  "local_stats_unchanged": {
+    "products": 33,
+    "records": 80,
+    "documents": 51,
+    "guides": 29,
+    "variants": 33,
+    "sources": 110,
+    "claims": 469,
+    "supported_claims": 170,
+    "unknown_claims": 226,
+    "local_editorial_decisions": 139,
+    "environment": "local_development",
+    "native_approvals": 0
+  },
+  "source_review": "Existing current local review events, actual actors/revisions and original factual bases retained; mechanical source/shape verification under honest Codex preparation identity; no new user or native approval claimed",
+  "native_review_prerequisite": "Actual binding and final canonical hash, then genuine authorized native review event under honest reviewer identity; no blanket user re-approval of supported facts or requirement to resolve every null",
+  "verification": {
+    "python": {
+      "passed": 62,
+      "failed": 0,
+      "log": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/import-readiness-python-final-v1.log",
+      "sha256": "7757f303f5681b087199c9ef13255448744a52dddb0da6b4dee20d21520a9da5"
+    },
+    "native_pure_contract_cases": 64,
+    "ruff_F_E9": "passed",
+    "focused_JS_lint_no_undef_no_unused_vars": "passed with Node globals",
+    "node_syntax": "passed",
+    "source_test_types": {
+      "result": "passed",
+      "log": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/import-readiness-source-types-v1.log"
+    },
+    "canonical_types": {
+      "result": "pre-existing generated .next/dev React 18/19 peer mismatch remains; parent integration owns release fix",
+      "log": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/import-readiness-canonical-types-v1.log"
+    },
+    "native_API_or_browser_verification": false,
+    "v1_route_coverage": "preceding 30/30 milestone; route/corpus unchanged, not rerun as a new generation evaluation",
+    "ports": [
+      {
+        "port": 3005,
+        "no_listener": true
+      },
+      {
+        "port": 8873,
+        "no_listener": true
+      }
+    ]
+  },
+  "unavoidable_user_decision": "Specific authorization for selected reference-only staging creation/review-write/publication/binding; resolve native identity ambiguity only if actual preflight finds it",
+  "physical_possession_required": false,
+  "unknown_facts_must_all_be_resolved": false,
+  "native_ids_created": 0,
+  "native_approvals_created": 0,
+  "staging_or_shared_database_writes": 0,
+  "services_started": false,
+  "dependency_changes": false,
+  "new_credentials_or_access": false,
+  "paid_or_generation_model_calls": 0,
+  "three_d_sets_guides_and_faqs": "official links only; no build-guide/FAQ content imported",
+  "parent_release_security_and_index_activation": "separate unchanged gates"
+}

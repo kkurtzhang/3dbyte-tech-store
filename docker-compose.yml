@@ -66,6 +66,7 @@ x-backend-env: &backend-env
   KARRIO_TEST_MODE: "${KARRIO_TEST_MODE:-false}"
   KARRIO_FULFILLMENT_OPTIONS: "${KARRIO_FULFILLMENT_OPTIONS:-}"
   STRIPE_SECRET_KEY: "${STRIPE_SECRET_KEY:?Set STRIPE_SECRET_KEY}"
+  NEXT_PUBLIC_STRIPE_KEY: "${NEXT_PUBLIC_STRIPE_KEY:?Set NEXT_PUBLIC_STRIPE_KEY}"
   STRIPE_WEBHOOK_SECRET: "${STRIPE_WEBHOOK_SECRET:?Set STRIPE_WEBHOOK_SECRET}"
   ORDER_EMAILS_ENABLED: "${ORDER_EMAILS_ENABLED:-true}"
   ORDER_EMAIL_STORE_NAME: "${ORDER_EMAIL_STORE_NAME:-3D Byte Tech}"
@@ -226,7 +227,7 @@ services:
     pids_limit: ${MEDUSA_WORKER_PIDS_LIMIT:-768}
     mem_limit: ${MEDUSA_WORKER_MEMORY_LIMIT:-1536m}
     cpus: "${MEDUSA_WORKER_CPUS:-0.75}"
-    command: ["sh", "-lc", "/opt/apps/backend/node_modules/.bin/medusa start"]
+    command: ["sh", "-lc", "node /opt/apps/backend/scripts/guard-catalogue-simulation.cjs && /opt/apps/backend/node_modules/.bin/medusa start"]
     environment:
       <<: *backend-env
       MEDUSA_WORKER_MODE: worker

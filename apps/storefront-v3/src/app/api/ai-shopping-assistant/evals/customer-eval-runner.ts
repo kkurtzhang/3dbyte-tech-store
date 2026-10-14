@@ -18,7 +18,10 @@ type AssistantResponse = {
   text: () => Promise<string>
 }
 
-type AssistantFetch = typeof globalThis.fetch
+type AssistantFetch = (
+  input: Parameters<typeof globalThis.fetch>[0],
+  init?: RequestInit,
+) => Promise<AssistantResponse>
 
 type AssistantMessage =
   | {

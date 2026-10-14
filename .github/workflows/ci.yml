@@ -29,6 +29,7 @@ jobs:
         run: |
           bash .github/scripts/__tests__/coolify-compose-build-stability.test.sh
           bash .github/scripts/__tests__/ci-quality-contract.test.sh
+          node --test .github/scripts/__tests__/staging-audit-exception.test.mjs
           bash .github/scripts/__tests__/search-ownership-contract.test.sh
 
   lint:
@@ -185,4 +186,7 @@ jobs:
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
       - name: Block high and critical dependency advisories
-        run: pnpm audit --audit-level=high
+        run: node .github/scripts/staging-audit-exception.mjs -- pnpm audit --audit-level=high
+      - name: Verify dependency audit restored the checkout
+        if: always()
+        run: git diff --exit-code -- package.json pnpm-lock.yaml pnpm-workspace.yaml

@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "scope": "staging",
+  "currency": "AUD",
+  "real_stock": false,
+  "applied": false,
+  "checkout_enabled": false,
+  "pricing_policy": "observed_exact_australian_retail_unit_price",
+  "price_unit": "major_currency_unit",
+  "fixture_sha256": "cce1e48fdda1e5a534f4222b8b7cbe5b5f710987c4854f080f65bb4d87b19698",
+  "entries": [
+    {
+      "reference_id": "creality-hotend-2024-4001030133",
+      "packet_sha256": "5dedcccc4a1597cd4777c2ac0796e1a0b0c8723fc18c1bb11bc53fa7895ac90e",
+      "native_product_id": null,
+      "native_variant_id": null,
+      "prices": [
+        {
+          "currency_code": "aud",
+          "amount": 58.45
+        }
+      ],
+      "required_tax_inclusive": true,
+      "price_source_url": "https://store.dremc.com.au/products/creality-k1c-k1-max-2024-oem-ceramic-hotend-kit?variant=43555662266537",
+      "price_checked_at": "2026-10-08T20:30:43.857Z",
+      "price_capture_sha256": "21192f25620e3e21937f908b9305b8c62cce2e68d19d04dcbb0fd3ab152289b0",
+      "retailer_availability": "sold_out",
+      "observed_retailer_quantity": null,
+      "simulated_quantity": 28,
+      "simulation_seed": "staging-products-20261008-v1",
+      "real_stock": false,
+      "checkout_enabled": false,
+      "applied": false,
+      "prerequisites": [
+        "current_exact_native_product_variant_document_binding",
+        "current_independent_source_review_and_native_approval",
+        "verified_aud_tax_inclusive_configuration",
+        "explicit_staging_offer_activation_and_checkout_verification"
+      ]
+    },
+    {
+      "reference_id": "creality-k1-pei-pc-4004090102",
+      "packet_sha256": "bd359ac690de3b3eb8fe06b65054d1b3bc2c9a8098b6b5d3d401d79e644f850c",
+      "native_product_id": null,
+      "native_variant_id": null,
+      "prices": [
+        {
+          "currency_code": "aud",
+          "amount": 35.95
+        }
+      ],
+      "required_tax_inclusive": true,
+      "price_source_url": "https://store.dremc.com.au/products/creality-k1-black-smooth-pei-build-plate-kit-235-235mm?variant=43045871747241",
+      "price_checked_at": "2026-10-08T20:30:53.512Z",
+      "price_capture_sha256": "ed8b6ec342517b346a8d72ef0ab88c9dbc10f5273720a1d3b5614f974af16674",
+      "retailer_availability": "in_stock",
+      "observed_retailer_quantity": 7,
+      "simulated_quantity": 4,
+      "simulation_seed": "staging-products-20261008-v1",
+      "real_stock": false,
+      "checkout_enabled": false,
+      "applied": false,
+      "prerequisites": [
+        "current_exact_native_product_variant_document_binding",
+        "current_independent_source_review_and_native_approval",
+        "verified_aud_tax_inclusive_configuration",
+        "explicit_staging_offer_activation_and_checkout_verification"
+      ]
+    },
+    {
+      "reference_id": "creality-space-pi-au-4005010081",
+      "packet_sha256": "c75c8d79ef43faf68a13e82dce8d6bc7d36be47b1809c1b50830a769790249e4",
+      "native_product_id": null,
+      "native_variant_id": null,
+      "prices": [
+        {
+          "currency_code": "aud",
+          "amount": 76.12
+        }
+      ],
+      "required_tax_inclusive": true,
+      "price_source_url": "https://www.pbtech.com/au/product/PTRCRL0098/Creality-Accessories-Filament-Dryer-Space-Pi-for-F",
+      "price_checked_at": "2026-10-08T20:32:02.449Z",
+      "price_capture_sha256": "a44c1e23a8cc0d530068012d7594476826ce5b53ac9a53b3f08b710b392852b8",
+      "retailer_availability": "out_of_stock",
+      "observed_retailer_quantity": null,
+      "simulated_quantity": 0,
+      "simulation_seed": "staging-products-20261008-v1",
+      "real_stock": false,
+      "checkout_enabled": false,
+      "applied": false,
+      "prerequisites": [
+        "current_exact_native_product_variant_document_binding",
+        "current_independent_source_review_and_native_approval",
+        "verified_aud_tax_inclusive_configuration",
+        "explicit_staging_offer_activation_and_checkout_verification"
+      ]
+    },
+    {
+      "reference_id": "polymaker-charcoal-old-pm70820",
+      "packet_sha256": "f7fabe6b2f73f6132e994383e20d2ae2c287eb8c033e576aaa8b980d9d573c3d",
+      "native_product_id": null,
+      "native_variant_id": null,
+      "prices": [
+        {
+          "currency_code": "aud",
+          "amount": 26.95
+        }
+      ],
+      "required_tax_inclusive": true,
+      "price_source_url": "https://store.dremc.com.au/products/polymaker-polyterra-pla-matte-filament-1-75mm-1kg?variant=41934926381225",
+      "price_checked_at": "2026-10-08T20:31:03.983Z",
+      "price_capture_sha256": "9f390cca1192b3d55b5c1e376e1bb0535d07ceb9e9961f6cb02696436a5892d5",
+      "retailer_availability": "in_stock",
+      "observed_retailer_quantity": 5,
+      "simulated_quantity": 12,
+      "simulation_seed": "staging-products-20261008-v1",
+      "real_stock": false,
+      "checkout_enabled": false,
+      "applied": false,
+      "prerequisites": [
+        "current_exact_native_product_variant_document_binding",
+        "current_independent_source_review_and_native_approval",
+        "verified_aud_tax_inclusive_configuration",
+        "explicit_staging_offer_activation_and_checkout_verification"
+      ]
+    }
+  ]
+}

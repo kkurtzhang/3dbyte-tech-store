@@ -1,0 +1,882 @@
+{
+  "created_at": "2026-10-13T07:08:47.052572+00:00",
+  "fixture_sha256": "bf5a25fa200dd195ba2ce3d8e9b0467b576657cd608ce0adad5ff6b31fb9061d",
+  "environment": "local_development",
+  "model_generation": false,
+  "paid_calls": 0,
+  "measurement": "Deterministic retrieval, rendering and source-version validity; no LLM answer-quality metric.",
+  "cases": [
+    {
+      "id": "H01",
+      "questions": [
+        "What does Creality part 4007010136 contain in its manufacturer package?"
+      ],
+      "status": "unknown",
+      "reason": "missing_previous_subject",
+      "answer": "Local development \u00b7 Deterministic source context \u00b7 No language model generation\n\nUnknown: Which item or material does the follow-up refer to? Name the item and variant in the question.\nUnresolved fields: conversation_subject",
+      "selected_claim_ids": [],
+      "checks": [
+        {
+          "check": "bounded_response",
+          "passed": true
+        },
+        {
+          "check": "deterministic_model_header",
+          "passed": true
+        },
+        {
+          "check": "local_scope",
+          "passed": true
+        },
+        {
+          "check": "no_model_generation",
+          "passed": true
+        },
+        {
+          "check": "expected_status",
+          "passed": false
+        },
+        {
+          "check": "selected_claims_exist",
+          "passed": true
+        },
+        {
+          "check": "expected_claim_selected:manufacturer_package",
+          "passed": false
+        },
+        {
+          "check": "no_rendered_positive_evidence",
+          "passed": true
+        }
+      ],
+      "passed": false
+    },
+    {
+      "id": "H02",
+      "questions": [
+        "Is a linear bearing supplied with carriage 3203010897 according to the AU retailer?"
+      ],
+      "status": "source_grounded_context",
+      "reason": null,
+      "answer": "Local development \u00b7 Deterministic source context \u00b7 No language model generation\n\n1. Linear bearing or sleeve excluded\nScope: Exact approved source-document scope; local reference grouping does not resolve a physical supplier package or native staging identity.\n\n2. 3203010897\nScope: Exact approved source-document scope; local reference grouping does not resolve a physical supplier package or native staging identity.",
+      "selected_claim_ids": [
+        "local_claim_3a568c6133f40f577ac68737d097f70f",
+        "local_claim_7946da3b77b2e7ac105c10a6b827649f"
+      ],
+      "checks": [
+        {
+          "check": "bounded_response",
+          "passed": true
+        },
+        {
+          "check": "deterministic_model_header",
+          "passed": true
+        },
+        {
+          "check": "local_scope",
+          "passed": true
+        },
+        {
+          "check": "no_model_generation",
+          "passed": true
+        },
+        {
+          "check": "expected_status",
+          "passed": true
+        },
+        {
+          "check": "selected_claims_exist",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_3a568c6133f40f577ac68737d097f70f",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_3a568c6133f40f577ac68737d097f70f",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_earlier_S10",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_7946da3b77b2e7ac105c10a6b827649f",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_7946da3b77b2e7ac105c10a6b827649f",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_earlier_S10",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_8f39695c04e5b6ddbf14941a6c33454c",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_8f39695c04e5b6ddbf14941a6c33454c",
+          "passed": true
+        },
+        {
+          "check": "null_unknown:local_claim_8f39695c04e5b6ddbf14941a6c33454c",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_c7c0a8bed1ca414ce4d4e1d05058e656",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_c7c0a8bed1ca414ce4d4e1d05058e656",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_earlier_S09",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_1fd63d706220760269a492b009f2892e",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_1fd63d706220760269a492b009f2892e",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_earlier_S08",
+          "passed": true
+        },
+        {
+          "check": "selected_statement_rendered:local_claim_3a568c6133f40f577ac68737d097f70f",
+          "passed": true
+        },
+        {
+          "check": "selected_statement_rendered:local_claim_7946da3b77b2e7ac105c10a6b827649f",
+          "passed": true
+        },
+        {
+          "check": "expected_claim_selected:retailer_bearing_exclusion",
+          "passed": true
+        },
+        {
+          "check": "pinned_expected_statement:retailer_bearing_exclusion",
+          "passed": true
+        },
+        {
+          "check": "pinned_source_version:local_source_earlier_S10",
+          "passed": true
+        },
+        {
+          "check": "source_link_matches_rendered_evidence:local_source_earlier_S10",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "H03",
+      "questions": [
+        "PA6-CF20 has a humidity storage target.",
+        "Instead I am selecting a Revo brass nozzle.",
+        "Does its HeatBreak arrive integrated, or as a separate loose part?"
+      ],
+      "status": "source_grounded_context",
+      "reason": null,
+      "answer": "Local development \u00b7 Deterministic source context \u00b7 No language model generation\n\n1. E3D describes each Revo nozzle as a preassembled nozzle and HeatBreak in one unit. Treat that as a different assembly scope from a separate V6-style nozzle.\nScope: E3D Revo brass nozzle\nUnresolved: exact_nozzle_hotend_variant_fitment, universal_installation_procedure, universal_nozzle_interchangeability, universal_thread_dimensions, unselected_k1_hotend_version\n\n2. The E3D Revo brass-nozzle product features state a maximum temperature of 300\u00b0C. This is the named brass-nozzle rating, not the V6 hardened-steel rating or a certification for the whole printer.\nScope: E3D Revo brass nozzle\nUnresolved: exact_nozzle_hotend_variant_fitment, universal_installation_procedure, universal_nozzle_interchangeability, universal_thread_dimensions, unselected_k1_hotend_version\n\n3. The E3D Revo brass-nozzle page explicitly says Revo nozzles are not compatible with V6-style heater blocks. This is a supported named-pair incompatibility, not a universal fit table for K1, Unicorn or every aftermarket part.\nScope: E3D Revo brass nozzle\nUnresolved: exact_nozzle_hotend_variant_fitment, universal_installation_procedure, universal_nozzle_interchangeability, universal_thread_dimensions, unselected_k1_hotend_version",
+      "selected_claim_ids": [
+        "local_claim_9f33388053739ef2d19a7f8abae87d0e",
+        "local_claim_7fc89ce16b23b438be3a7d7bcef9c255",
+        "local_claim_996d1912150f8726be41bfb77b83c5a6"
+      ],
+      "checks": [
+        {
+          "check": "bounded_response",
+          "passed": true
+        },
+        {
+          "check": "deterministic_model_header",
+          "passed": true
+        },
+        {
+          "check": "local_scope",
+          "passed": true
+        },
+        {
+          "check": "no_model_generation",
+          "passed": true
+        },
+        {
+          "check": "expected_status",
+          "passed": true
+        },
+        {
+          "check": "selected_claims_exist",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_9f33388053739ef2d19a7f8abae87d0e",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_9f33388053739ef2d19a7f8abae87d0e",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_nozzle_revo-brass_63c237a9d722",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_7fc89ce16b23b438be3a7d7bcef9c255",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_7fc89ce16b23b438be3a7d7bcef9c255",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_nozzle_revo-brass_63c237a9d722",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_996d1912150f8726be41bfb77b83c5a6",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_996d1912150f8726be41bfb77b83c5a6",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_nozzle_revo-brass_63c237a9d722",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_44a0136f5a3140a2f9874161bdd5ca76",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_44a0136f5a3140a2f9874161bdd5ca76",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_earlier_K2IMAGE6",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_58d88413c6ed28ef00e7d58b81417823",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_58d88413c6ed28ef00e7d58b81417823",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_new_sock_319dc2198564",
+          "passed": true
+        },
+        {
+          "check": "selected_statement_rendered:local_claim_9f33388053739ef2d19a7f8abae87d0e",
+          "passed": true
+        },
+        {
+          "check": "selected_statement_rendered:local_claim_7fc89ce16b23b438be3a7d7bcef9c255",
+          "passed": true
+        },
+        {
+          "check": "selected_statement_rendered:local_claim_996d1912150f8726be41bfb77b83c5a6",
+          "passed": true
+        },
+        {
+          "check": "expected_claim_selected:revo_assembly",
+          "passed": true
+        },
+        {
+          "check": "pinned_expected_statement:revo_assembly",
+          "passed": true
+        },
+        {
+          "check": "pinned_source_version:local_source_nozzle_revo-brass_63c237a9d722",
+          "passed": true
+        },
+        {
+          "check": "source_link_matches_rendered_evidence:local_source_nozzle_revo-brass_63c237a9d722",
+          "passed": true
+        },
+        {
+          "check": "replacement_entity_focus",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "H04",
+      "questions": [
+        "The retailer labels adapter board 4004010288 K2 Plus, but the manufacturer names K2 Pro. Is the board verified to fit both revisions?"
+      ],
+      "status": "source_grounded_context",
+      "reason": null,
+      "answer": "Local development \u00b7 Deterministic source context \u00b7 No language model generation\n\n1. The K2 Pro parts list calls 4004010288 the hot-end adapter board, measuring 37 x 12 x 1.6 mm. K2 Plus troubleshooting identifies 2101020285 as its hotend circuit board (the AU listing calls it the toolhead nozzle PCB). These are distinct component identities, not interchangeable names for one board. The AU retailer reports wider K2-family fitment for both, but the primary evidence here documents the named models only. Cross-model and predecessor compatibility remain unverified.\nScope: Cited editorial synthesis; preserve named product/manufacturer/revision conditions and explicit unknowns.",
+      "selected_claim_ids": [
+        "local_claim_b22c387573c6ae3840b02c511472668b"
+      ],
+      "checks": [
+        {
+          "check": "bounded_response",
+          "passed": true
+        },
+        {
+          "check": "deterministic_model_header",
+          "passed": true
+        },
+        {
+          "check": "local_scope",
+          "passed": true
+        },
+        {
+          "check": "no_model_generation",
+          "passed": true
+        },
+        {
+          "check": "expected_status",
+          "passed": false
+        },
+        {
+          "check": "selected_claims_exist",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_b22c387573c6ae3840b02c511472668b",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_b22c387573c6ae3840b02c511472668b",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_earlier_E09",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_earlier_E09",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_earlier_E10",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_be9121fd5fa64161c6dfab83dea862d5",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_be9121fd5fa64161c6dfab83dea862d5",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_earlier_E09",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_020c291f020657133b58066069dd71d5",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_020c291f020657133b58066069dd71d5",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_earlier_E09",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_c5f3aa35648f98d2c004e0476fb600cd",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_c5f3aa35648f98d2c004e0476fb600cd",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_earlier_E09",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_97d7a8ab6d4ce5e1733e89e0200ba838",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_97d7a8ab6d4ce5e1733e89e0200ba838",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_earlier_S24",
+          "passed": true
+        },
+        {
+          "check": "selected_statement_rendered:local_claim_b22c387573c6ae3840b02c511472668b",
+          "passed": true
+        },
+        {
+          "check": "required_unknown:verified_all_model_fitment",
+          "passed": false
+        },
+        {
+          "check": "source_link_matches_rendered_evidence:local_source_earlier_E09",
+          "passed": true
+        },
+        {
+          "check": "source_link_matches_rendered_evidence:local_source_earlier_E10",
+          "passed": true
+        }
+      ],
+      "passed": false
+    },
+    {
+      "id": "H05",
+      "questions": [
+        "What voltage and heater wattage are verified for heated bed 4001040056?"
+      ],
+      "status": "source_grounded_context",
+      "reason": null,
+      "answer": "Local development \u00b7 Deterministic source context \u00b7 No language model generation\n\n1. 4001040056\nScope: Exact approved source-document scope; local reference grouping does not resolve a physical supplier package or native staging identity.",
+      "selected_claim_ids": [
+        "local_claim_9e01edc93678fcbf94b988049882c6cd"
+      ],
+      "checks": [
+        {
+          "check": "bounded_response",
+          "passed": true
+        },
+        {
+          "check": "deterministic_model_header",
+          "passed": true
+        },
+        {
+          "check": "local_scope",
+          "passed": true
+        },
+        {
+          "check": "no_model_generation",
+          "passed": true
+        },
+        {
+          "check": "expected_status",
+          "passed": false
+        },
+        {
+          "check": "selected_claims_exist",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_6bc8f0e4c5eaa254566b0186ee6ba3ff",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_6bc8f0e4c5eaa254566b0186ee6ba3ff",
+          "passed": true
+        },
+        {
+          "check": "null_unknown:local_claim_6bc8f0e4c5eaa254566b0186ee6ba3ff",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_5b465e12a43edda14e0b028e2ac14f83",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_5b465e12a43edda14e0b028e2ac14f83",
+          "passed": true
+        },
+        {
+          "check": "null_unknown:local_claim_5b465e12a43edda14e0b028e2ac14f83",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_9e760180fae17dd53c9763f0c72caa23",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_9e760180fae17dd53c9763f0c72caa23",
+          "passed": true
+        },
+        {
+          "check": "null_unknown:local_claim_9e760180fae17dd53c9763f0c72caa23",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_941a7530ef1c8bdbb3c082ce0c98c1c9",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_941a7530ef1c8bdbb3c082ce0c98c1c9",
+          "passed": true
+        },
+        {
+          "check": "null_unknown:local_claim_941a7530ef1c8bdbb3c082ce0c98c1c9",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_9e01edc93678fcbf94b988049882c6cd",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_9e01edc93678fcbf94b988049882c6cd",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_earlier_S06",
+          "passed": true
+        },
+        {
+          "check": "selected_statement_rendered:local_claim_9e01edc93678fcbf94b988049882c6cd",
+          "passed": true
+        },
+        {
+          "check": "required_unknown:voltage_v",
+          "passed": false
+        },
+        {
+          "check": "required_unknown:heater_power_w",
+          "passed": false
+        },
+        {
+          "check": "source_link_matches_rendered_evidence:local_source_earlier_S06",
+          "passed": true
+        }
+      ],
+      "passed": false
+    },
+    {
+      "id": "H06",
+      "questions": [
+        "The local record local_dev_product_five_E03 has a simulated quantity of 7. Can you dispatch two tomorrow?"
+      ],
+      "status": "unknown",
+      "reason": "commerce_not_verified",
+      "answer": "Local development \u00b7 Deterministic source context \u00b7 No language model generation\n\nUnknown: Current store price, physical stock and delivery timing are not verified by this local reference corpus. Simulated quantities or reference records cannot supply live commerce facts.\nUnresolved fields: store_sale_price, physical_stock, delivery_estimate",
+      "selected_claim_ids": [],
+      "checks": [
+        {
+          "check": "bounded_response",
+          "passed": true
+        },
+        {
+          "check": "deterministic_model_header",
+          "passed": true
+        },
+        {
+          "check": "local_scope",
+          "passed": true
+        },
+        {
+          "check": "no_model_generation",
+          "passed": true
+        },
+        {
+          "check": "expected_status",
+          "passed": true
+        },
+        {
+          "check": "selected_claims_exist",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_4c72f25ea1befe737a2b8e1700995e59",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_4c72f25ea1befe737a2b8e1700995e59",
+          "passed": true
+        },
+        {
+          "check": "null_unknown:local_claim_4c72f25ea1befe737a2b8e1700995e59",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_989f903afcadafae2b24bf8795592024",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_989f903afcadafae2b24bf8795592024",
+          "passed": true
+        },
+        {
+          "check": "null_unknown:local_claim_989f903afcadafae2b24bf8795592024",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_eba0ac5a7974f90660b1111ee99744f1",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_eba0ac5a7974f90660b1111ee99744f1",
+          "passed": true
+        },
+        {
+          "check": "null_unknown:local_claim_eba0ac5a7974f90660b1111ee99744f1",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_1fd63d706220760269a492b009f2892e",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_1fd63d706220760269a492b009f2892e",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_earlier_S08",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_ce67fe479544ec6fa64360a3ebea5d84",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_ce67fe479544ec6fa64360a3ebea5d84",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_earlier_E06",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_earlier_S28",
+          "passed": true
+        },
+        {
+          "check": "required_unknown:physical_stock",
+          "passed": true
+        },
+        {
+          "check": "required_unknown:delivery_estimate",
+          "passed": true
+        },
+        {
+          "check": "no_rendered_positive_evidence",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "H07",
+      "questions": [
+        "Cite the manufacturer SKU of the selected black 1kg TPU95-HF, using the source excerpt."
+      ],
+      "status": "source_grounded_context",
+      "reason": null,
+      "answer": "Local development \u00b7 Deterministic source context \u00b7 No language model generation\n\n1. PD03001\nScope: Exact approved source-document scope; local reference grouping does not resolve a physical supplier package or native staging identity.\n\n2. Black / 1.75mm / 1kg\nScope: Exact approved source-document scope; local reference grouping does not resolve a physical supplier package or native staging identity.\n\n3. 39574341779513\nScope: Exact approved source-document scope; local reference grouping does not resolve a physical supplier package or native staging identity.",
+      "selected_claim_ids": [
+        "local_claim_48fd560740e218244a26bfc4d4a724fe",
+        "local_claim_67835a8d1c1385a7742e2db3ddb528ce",
+        "local_claim_f08db637a0b77c5528ab1e615ab165a3"
+      ],
+      "checks": [
+        {
+          "check": "bounded_response",
+          "passed": true
+        },
+        {
+          "check": "deterministic_model_header",
+          "passed": true
+        },
+        {
+          "check": "local_scope",
+          "passed": true
+        },
+        {
+          "check": "no_model_generation",
+          "passed": true
+        },
+        {
+          "check": "expected_status",
+          "passed": true
+        },
+        {
+          "check": "selected_claims_exist",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_48fd560740e218244a26bfc4d4a724fe",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_48fd560740e218244a26bfc4d4a724fe",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_five_tpu-shop-json",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_67835a8d1c1385a7742e2db3ddb528ce",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_67835a8d1c1385a7742e2db3ddb528ce",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_five_tpu-shop-json",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_f08db637a0b77c5528ab1e615ab165a3",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_f08db637a0b77c5528ab1e615ab165a3",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_five_tpu-shop-json",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_e2468b8756de5aadef022a20c6abbf4f",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_e2468b8756de5aadef022a20c6abbf4f",
+          "passed": true
+        },
+        {
+          "check": "citation_bytes:local_source_five_tpu-tds",
+          "passed": true
+        },
+        {
+          "check": "claim_revision_and_statement:local_claim_bd22cf1d5776640a70b63ec0e6ee2aa9",
+          "passed": true
+        },
+        {
+          "check": "source_scope:local_claim_bd22cf1d5776640a70b63ec0e6ee2aa9",
+          "passed": true
+        },
+        {
+          "check": "null_unknown:local_claim_bd22cf1d5776640a70b63ec0e6ee2aa9",
+          "passed": true
+        },
+        {
+          "check": "selected_statement_rendered:local_claim_48fd560740e218244a26bfc4d4a724fe",
+          "passed": true
+        },
+        {
+          "check": "selected_statement_rendered:local_claim_67835a8d1c1385a7742e2db3ddb528ce",
+          "passed": true
+        },
+        {
+          "check": "selected_statement_rendered:local_claim_f08db637a0b77c5528ab1e615ab165a3",
+          "passed": true
+        },
+        {
+          "check": "expected_claim_selected:manufacturer_sku",
+          "passed": true
+        },
+        {
+          "check": "pinned_expected_statement:manufacturer_sku",
+          "passed": true
+        },
+        {
+          "check": "pinned_source_version:local_source_five_tpu-shop-json",
+          "passed": true
+        },
+        {
+          "check": "source_link_matches_rendered_evidence:local_source_five_tpu-shop-json",
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "H08",
+      "questions": [
+        "The K2 Plus ceramic hotend 4001030145 contains a hardened steel tip. Does that establish its maximum operating temperature and heater power?"
+      ],
+      "status": "unknown",
+      "reason": "missing_previous_subject",
+      "answer": "Local development \u00b7 Deterministic source context \u00b7 No language model generation\n\nUnknown: Which item or material does the follow-up refer to? Name the item and variant in the question.\nUnresolved fields: conversation_subject",
+      "selected_claim_ids": [],
+      "checks": [
+        {
+          "check": "bounded_response",
+          "passed": true
+        },
+        {
+          "check": "deterministic_model_header",
+          "passed": true
+        },
+        {
+          "check": "local_scope",
+          "passed": true
+        },
+        {
+          "check": "no_model_generation",
+          "passed": true
+        },
+        {
+          "check": "expected_status",
+          "passed": true
+        },
+        {
+          "check": "selected_claims_exist",
+          "passed": true
+        },
+        {
+          "check": "required_unknown:max_operating_temperature_c",
+          "passed": false
+        },
+        {
+          "check": "required_unknown:heater_power_w",
+          "passed": false
+        },
+        {
+          "check": "no_rendered_positive_evidence",
+          "passed": true
+        }
+      ],
+      "passed": false
+    }
+  ],
+  "passed_cases": 4,
+  "total_cases": 8,
+  "citation_negative_checks": [
+    {
+      "local_source_id": "local_source_new_mag",
+      "source_sha256": "14863f6177e33c96dff2b89a409bebd39cf69579e94f7f28cbb793e6fbd89c83",
+      "passed": true
+    },
+    {
+      "local_source_id": "local_source_new_pa",
+      "source_sha256": "74467ff38ba6236300e5577499b51e15e3ce1f1cdaea9aac74b4212af3c9fbb4",
+      "passed": true
+    },
+    {
+      "local_source_id": "local_source_new_prp",
+      "source_sha256": "2cb423ec009a5f872a355401a5963290dbe35dec11459f8fd2d6d432489208d3",
+      "passed": true
+    },
+    {
+      "local_source_id": "local_source_new_sock",
+      "source_sha256": "a0a8a0a37bf9054c0017d48fedd10fbe64a5e6ffae633e8832735d24129b3277",
+      "passed": true
+    },
+    {
+      "local_source_id": "local_source_new_tpu",
+      "source_sha256": "b529c84f433c3ac75a512dabd1cd461bd50951c609c884658ff74e0e97652883",
+      "passed": true
+    },
+    {
+      "case": "bad_character_excerpt",
+      "passed": true
+    },
+    {
+      "case": "bad_json_pointer_value",
+      "passed": true
+    }
+  ],
+  "all_negative_checks_passed": true,
+  "all_passed": false
+}

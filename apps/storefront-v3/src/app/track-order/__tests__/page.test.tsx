@@ -1,3 +1,4 @@
+import { createOrderFixture } from "@/test-utils/medusa-fixtures"
 import { render, screen } from "@testing-library/react"
 
 import TrackOrderPage from "../page"
@@ -31,7 +32,7 @@ jest.mock("lucide-react", () => ({
   Truck: () => <span />,
 }))
 
-const order = {
+const order = createOrderFixture({
   id: "order_01KQJV8S9GVN1A1YBW2XENDK65",
   custom_display_id: "3DBO-H7KM-2P9QXR",
   status: "pending",
@@ -129,7 +130,7 @@ const order = {
     postal_code: "7000",
     country_code: "au",
   },
-} as MedusaOrder
+})
 
 let mockSearchParams = new URLSearchParams()
 
@@ -204,7 +205,7 @@ describe("Track order page order details", () => {
   it("uses the verified tracking payment method when Stripe card details are not embedded in the order", () => {
     render(
       <OrderDetails
-        order={{
+        order={createOrderFixture({
           ...order,
           tracking_payment_method: {
             type: "card",
@@ -225,7 +226,7 @@ describe("Track order page order details", () => {
               ],
             },
           ],
-        } as MedusaOrder}
+        })}
       />
     )
 
@@ -254,10 +255,10 @@ describe("Track order page order details", () => {
   it("shows partially shipped while preorder items still wait for release", () => {
     render(
       <OrderDetails
-        order={{
+        order={createOrderFixture({
           ...order,
           fulfillment_status: "partially_shipped",
-        } as MedusaOrder}
+        })}
       />
     )
 
@@ -269,7 +270,7 @@ describe("Track order page order details", () => {
   it("shows regular processing when the order has no preorder items", () => {
     render(
       <OrderDetails
-        order={{
+        order={createOrderFixture({
           ...order,
           items: [
             {
@@ -285,7 +286,7 @@ describe("Track order page order details", () => {
               },
             },
           ],
-        } as MedusaOrder}
+        })}
       />
     )
 

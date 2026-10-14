@@ -1,0 +1,327 @@
+{
+  "batch_id": "materials-01",
+  "source_manifests": [
+    "sources-materials-01.json"
+  ],
+  "entries": [
+    {
+      "key": "fiberlogy_abs",
+      "canonical_key": "fiberlogy:abs",
+      "title": "Fiberlogy ABS",
+      "brand": "Fiberlogy",
+      "category": "filament",
+      "manufacturer_product_url": "https://fiberlogy.com/en/product/abs-filament-s1/",
+      "distinctness_reason": "Distinct polymer or functional reinforced grade; all colours, spool sizes and diameters remain one family.",
+      "source_scope": "Captured manufacturer family parameters and separately scoped Australian retailer package reference; no physical inventory or native store identity.",
+      "aliases": [
+        "fiberlogy\\s+abs(?!\\s*(?:\\+|gf|esd))"
+      ],
+      "facts": [
+        {
+          "field": "manufacturer_print_temperature",
+          "value": "Fiberlogy lists a printing temperature of 250\u2013265 \u00b0C for the captured Fiberlogy ABS family. Received spool revision and printer settings still require verification.",
+          "query_pattern": "nozzle|print.*temp|temperature|settings",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_abs",
+              "quote": "Printing temperature: 250\u2013265\u00b0C"
+            }
+          ]
+        },
+        {
+          "field": "manufacturer_bed_temperature",
+          "value": "Fiberlogy lists a bed temperature of 100 \u00b0C for the captured Fiberlogy ABS family.",
+          "query_pattern": "bed|plate|settings|temperature",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_abs",
+              "quote": "Bed temperature: 100\u00b0C"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, ProForged 3D displayed AUD 49.95 for Fiberlogy ABS Black 1.75mm 850g. This is a dated external reference, not a live 3D Byte offer. GST, shipping and current availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_au_general",
+              "quote": "Fiberlogy ABS Black 1.75mm 850g\nRegular price\n$49.95 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "received_spool_settings_applicability",
+          "query_pattern": "legacy|old.spool|ams|my.spool|current.spool|received",
+          "reason": "The current manufacturer family page does not prove that a legacy Australian spool has the same revision, geometry or recommended settings."
+        }
+      ]
+    },
+    {
+      "key": "fiberlogy_absgf",
+      "canonical_key": "fiberlogy:abs-gf",
+      "title": "Fiberlogy ABS+GF",
+      "brand": "Fiberlogy",
+      "category": "filament",
+      "manufacturer_product_url": "https://fiberlogy.com/en/product/absgf-filament/",
+      "distinctness_reason": "Distinct polymer or functional reinforced grade; all colours, spool sizes and diameters remain one family.",
+      "source_scope": "Captured manufacturer family parameters and separately scoped Australian retailer package reference; no physical inventory or native store identity.",
+      "aliases": [
+        "fiberlogy\\s+abs\\s*\\+?\\s*gf"
+      ],
+      "facts": [
+        {
+          "field": "manufacturer_print_temperature",
+          "value": "Fiberlogy lists a printing temperature of 270\u2013285 \u00b0C for the captured Fiberlogy ABS+GF family. Received spool revision and printer settings still require verification.",
+          "query_pattern": "nozzle|print.*temp|temperature|settings",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_absgf",
+              "quote": "Printing temperature: 270\u2013285\u00b0C"
+            }
+          ]
+        },
+        {
+          "field": "manufacturer_bed_temperature",
+          "value": "Fiberlogy lists a bed temperature of 90 \u00b0C for the captured Fiberlogy ABS+GF family.",
+          "query_pattern": "bed|plate|settings|temperature",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_absgf",
+              "quote": "Bed temperature: 90\u00b0C"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, ProForged 3D displayed AUD 57.95 for Fiberlogy ABS + GF Black 1.75mm 750g. This is a dated external reference, not a live 3D Byte offer. GST, shipping and current availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_au_general",
+              "quote": "Fiberlogy ABS + GF Black 1.75mm 750g\nRegular price\n$57.95 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "received_spool_settings_applicability",
+          "query_pattern": "legacy|old.spool|ams|my.spool|current.spool|received",
+          "reason": "The current manufacturer family page does not prove that a legacy Australian spool has the same revision, geometry or recommended settings."
+        }
+      ]
+    },
+    {
+      "key": "fiberlogy_asa",
+      "canonical_key": "fiberlogy:asa",
+      "title": "Fiberlogy ASA",
+      "brand": "Fiberlogy",
+      "category": "filament",
+      "manufacturer_product_url": "https://fiberlogy.com/en/filaments/asa-en/asa-asa-en/",
+      "distinctness_reason": "Distinct polymer or functional reinforced grade; all colours, spool sizes and diameters remain one family.",
+      "source_scope": "Captured manufacturer family parameters and separately scoped Australian retailer package reference; no physical inventory or native store identity.",
+      "aliases": [
+        "fiberlogy\\s+asa"
+      ],
+      "facts": [
+        {
+          "field": "manufacturer_print_temperature",
+          "value": "Fiberlogy lists a printing temperature of 255\u2013270 \u00b0C for the captured Fiberlogy ASA family. Received spool revision and printer settings still require verification.",
+          "query_pattern": "nozzle|print.*temp|temperature|settings",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_asa",
+              "quote": "Printing temperature: 255\u2013270\u00b0C"
+            }
+          ]
+        },
+        {
+          "field": "manufacturer_bed_temperature",
+          "value": "Fiberlogy lists a bed temperature of 110 \u00b0C for the captured Fiberlogy ASA family.",
+          "query_pattern": "bed|plate|settings|temperature",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_asa",
+              "quote": "Bed temperature: 110\u00b0C"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "received_spool_settings_applicability",
+          "query_pattern": "legacy|old.spool|ams|my.spool|current.spool|received",
+          "reason": "The current manufacturer family page does not prove that a legacy Australian spool has the same revision, geometry or recommended settings."
+        }
+      ]
+    },
+    {
+      "key": "fiberlogy_pctg",
+      "canonical_key": "fiberlogy:pctg",
+      "title": "Fiberlogy PCTG",
+      "brand": "Fiberlogy",
+      "category": "filament",
+      "manufacturer_product_url": "https://fiberlogy.com/en/product/pctg-filament/",
+      "distinctness_reason": "Distinct polymer or functional reinforced grade; all colours, spool sizes and diameters remain one family.",
+      "source_scope": "Captured manufacturer family parameters and separately scoped Australian retailer package reference; no physical inventory or native store identity.",
+      "aliases": [
+        "fiberlogy\\s+pctg(?!\\s*(?:\\+|cf|gf))"
+      ],
+      "facts": [
+        {
+          "field": "manufacturer_print_temperature",
+          "value": "Fiberlogy lists a printing temperature of 250\u2013270 \u00b0C for the captured Fiberlogy PCTG family. Received spool revision and printer settings still require verification.",
+          "query_pattern": "nozzle|print.*temp|temperature|settings",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_pctg",
+              "quote": "Printing temperature: 250\u2013270\u00b0C"
+            }
+          ]
+        },
+        {
+          "field": "manufacturer_bed_temperature",
+          "value": "Fiberlogy lists a bed temperature of 90 \u00b0C for the captured Fiberlogy PCTG family.",
+          "query_pattern": "bed|plate|settings|temperature",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_pctg",
+              "quote": "Bed temperature: 90\u00b0C"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, ProForged 3D displayed AUD 64.95 for Fiberlogy PCTG Black 1.75mm 1kg. This is a dated external reference, not a live 3D Byte offer. GST, shipping and current availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_au_pctg",
+              "quote": "Fiberlogy PCTG Black 1.75mm 1kg\nRegular price\n$64.95 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "received_spool_settings_applicability",
+          "query_pattern": "legacy|old.spool|ams|my.spool|current.spool|received",
+          "reason": "The current manufacturer family page does not prove that a legacy Australian spool has the same revision, geometry or recommended settings."
+        }
+      ]
+    },
+    {
+      "key": "fiberlogy_pctgcf",
+      "canonical_key": "fiberlogy:pctg-cf10",
+      "title": "Fiberlogy PCTG+CF10",
+      "brand": "Fiberlogy",
+      "category": "filament",
+      "manufacturer_product_url": "https://fiberlogy.com/en/filaments/pctg-en/pctgcf-en/",
+      "distinctness_reason": "Distinct polymer or functional reinforced grade; all colours, spool sizes and diameters remain one family.",
+      "source_scope": "Captured manufacturer family parameters and separately scoped Australian retailer package reference; no physical inventory or native store identity.",
+      "aliases": [
+        "fiberlogy\\s+pctg\\s*\\+?\\s*cf(?:10)?"
+      ],
+      "facts": [
+        {
+          "field": "manufacturer_print_temperature",
+          "value": "Fiberlogy lists a printing temperature of 250\u2013270 \u00b0C for the captured Fiberlogy PCTG+CF10 family. Received spool revision and printer settings still require verification.",
+          "query_pattern": "nozzle|print.*temp|temperature|settings",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_pctgcf",
+              "quote": "Printing temperature: 250\u2013270\u00b0C"
+            }
+          ]
+        },
+        {
+          "field": "manufacturer_bed_temperature",
+          "value": "Fiberlogy lists a bed temperature of 100 \u00b0C for the captured Fiberlogy PCTG+CF10 family.",
+          "query_pattern": "bed|plate|settings|temperature",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_pctgcf",
+              "quote": "Bed temperature: 100\u00b0C"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, ProForged 3D displayed AUD 83.55 for Fiberlogy PCTG + CF Black 1.75mm 750g. This is a dated external reference, not a live 3D Byte offer. GST, shipping and current availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_au_pctg",
+              "quote": "Fiberlogy PCTG + CF Black 1.75mm 750g\nRegular price\n$83.55 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "received_spool_settings_applicability",
+          "query_pattern": "legacy|old.spool|ams|my.spool|current.spool|received",
+          "reason": "The current manufacturer family page does not prove that a legacy Australian spool has the same revision, geometry or recommended settings."
+        }
+      ]
+    },
+    {
+      "key": "fiberlogy_pctggf",
+      "canonical_key": "fiberlogy:pctg-gf10",
+      "title": "Fiberlogy PCTG+GF10",
+      "brand": "Fiberlogy",
+      "category": "filament",
+      "manufacturer_product_url": "https://fiberlogy.com/en/filaments/pctg-en/pctggf-en/",
+      "distinctness_reason": "Distinct polymer or functional reinforced grade; all colours, spool sizes and diameters remain one family.",
+      "source_scope": "Captured manufacturer family parameters and separately scoped Australian retailer package reference; no physical inventory or native store identity.",
+      "aliases": [
+        "fiberlogy\\s+pctg\\s*\\+?\\s*gf(?:10)?"
+      ],
+      "facts": [
+        {
+          "field": "manufacturer_print_temperature",
+          "value": "Fiberlogy lists a printing temperature of 250\u2013270 \u00b0C for the captured Fiberlogy PCTG+GF10 family. Received spool revision and printer settings still require verification.",
+          "query_pattern": "nozzle|print.*temp|temperature|settings",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_pctggf",
+              "quote": "Printing temperature: 250\u2013270\u00b0C"
+            }
+          ]
+        },
+        {
+          "field": "manufacturer_bed_temperature",
+          "value": "Fiberlogy lists a bed temperature of 100 \u00b0C for the captured Fiberlogy PCTG+GF10 family.",
+          "query_pattern": "bed|plate|settings|temperature",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_pctggf",
+              "quote": "Bed temperature: 100\u00b0C"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, ProForged 3D displayed AUD 83.55 for Fiberlogy PCTG + GF Black 1.75mm 750g. This is a dated external reference, not a live 3D Byte offer. GST, shipping and current availability are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_au_pctg",
+              "quote": "Fiberlogy PCTG + GF Black 1.75mm 750g\nRegular price\n$83.55 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "received_spool_settings_applicability",
+          "query_pattern": "legacy|old.spool|ams|my.spool|current.spool|received",
+          "reason": "The current manufacturer family page does not prove that a legacy Australian spool has the same revision, geometry or recommended settings."
+        }
+      ]
+    }
+  ]
+}

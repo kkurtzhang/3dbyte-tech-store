@@ -339,6 +339,7 @@ export interface AiProductDraftQueryParams extends FindParams {
 
 export type AdminAiProductDraftRejectParams = {
   reason: string;
+  review_hash: string;
 };
 
 export type AdminAiProductDraftApproveParams = {

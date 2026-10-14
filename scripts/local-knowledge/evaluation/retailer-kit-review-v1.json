@@ -1,0 +1,1507 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-10-13T07:45:38.189491+00:00",
+  "environment": "local_development",
+  "staging_native_eligible": false,
+  "native_approval": null,
+  "guide_and_faq_content_ingested": false,
+  "handed_off_index_sha256": "8b7f690be328f9a2954ecc101b9fec3182314d62168fe5199fe8327cab13cb3d",
+  "sources": [
+    {
+      "source_id": "retailer_variant_data",
+      "source_url": "https://store.dremc.com.au/products/3dsets-com-rc-vehicle-kits-by-3dmakerparts.js",
+      "checked_at": "2026-10-13T07:39:00.258312+00:00",
+      "raw_sha256": "1858c9a0f00d199a97a4d90de329be59340ea089de2cfc3b7a80367999b43f2f",
+      "text_sha256": "3da9309c7bbaa1f800cf1707a79be25b97b9c679c489f86606377d8dbcd50b37",
+      "raw_path": "sources/immutable/1858c9a0f00d199a97a4d90de329be59340ea089de2cfc3b7a80367999b43f2f.raw",
+      "text_path": "sources/immutable/3da9309c7bbaa1f800cf1707a79be25b97b9c679c489f86606377d8dbcd50b37.text"
+    },
+    {
+      "source_id": "supplier_bom_index",
+      "source_url": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSuP7sOs7YcksDub19YNV6CW42fZsIbm_ek2tLsfw0R8viqZ74uNQgjqtfSKPqf9BbAW2oPxOxdrXC0/pubhtml",
+      "checked_at": "2026-10-13T07:39:01.218350+00:00",
+      "raw_sha256": "2b602cb0287fd9233b0b9117cf8abc8080c9538edfbd5a6f036dc80ffc1cd9d8",
+      "text_sha256": "26146e483e291277a2f40b8bb24582ebd13ef12b6b62c093159ed7d3248e1aab",
+      "raw_path": "sources/immutable/2b602cb0287fd9233b0b9117cf8abc8080c9538edfbd5a6f036dc80ffc1cd9d8.raw",
+      "text_path": "sources/immutable/26146e483e291277a2f40b8bb24582ebd13ef12b6b62c093159ed7d3248e1aab.text"
+    },
+    {
+      "source_id": "supplier_1508133208",
+      "source_url": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSuP7sOs7YcksDub19YNV6CW42fZsIbm_ek2tLsfw0R8viqZ74uNQgjqtfSKPqf9BbAW2oPxOxdrXC0/pubhtml/sheet?headers=false&gid=1508133208",
+      "checked_at": "2026-10-13T07:40:28.858915+00:00",
+      "raw_sha256": "3a9d44bf986f6bd94c3acb757709f9965fc313f88a66c7201830c604540bdc7f",
+      "text_sha256": "a318abcc9cc094f28ce2d03c98f0b3556b27f913261752e486744e745cda6895",
+      "raw_path": "sources/immutable/3a9d44bf986f6bd94c3acb757709f9965fc313f88a66c7201830c604540bdc7f.raw",
+      "text_path": "sources/immutable/a318abcc9cc094f28ce2d03c98f0b3556b27f913261752e486744e745cda6895.text"
+    },
+    {
+      "source_id": "supplier_18408003",
+      "source_url": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSuP7sOs7YcksDub19YNV6CW42fZsIbm_ek2tLsfw0R8viqZ74uNQgjqtfSKPqf9BbAW2oPxOxdrXC0/pubhtml/sheet?headers=false&gid=18408003",
+      "checked_at": "2026-10-13T07:40:29.442748+00:00",
+      "raw_sha256": "1121adf89b2bd63c83d9090964f0fb2d2856fd53595e4279aa5147a42ca85c4e",
+      "text_sha256": "96e744b931b3e55f28c6a97e810d11d1fe229fe368fc662c7db65c3bbdcc0813",
+      "raw_path": "sources/immutable/1121adf89b2bd63c83d9090964f0fb2d2856fd53595e4279aa5147a42ca85c4e.raw",
+      "text_path": "sources/immutable/96e744b931b3e55f28c6a97e810d11d1fe229fe368fc662c7db65c3bbdcc0813.text"
+    },
+    {
+      "source_id": "supplier_1265236356",
+      "source_url": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSuP7sOs7YcksDub19YNV6CW42fZsIbm_ek2tLsfw0R8viqZ74uNQgjqtfSKPqf9BbAW2oPxOxdrXC0/pubhtml/sheet?headers=false&gid=1265236356",
+      "checked_at": "2026-10-13T07:40:30.390877+00:00",
+      "raw_sha256": "b47edf5282599925560ba2ccc908483f75aac80e0a02a9e4d8a213eabe68c7fb",
+      "text_sha256": "e2f93afcf038da412f1341fb3a6d7d57ffb4789540e007d1bb08a5aaac44256e",
+      "raw_path": "sources/immutable/b47edf5282599925560ba2ccc908483f75aac80e0a02a9e4d8a213eabe68c7fb.raw",
+      "text_path": "sources/immutable/e2f93afcf038da412f1341fb3a6d7d57ffb4789540e007d1bb08a5aaac44256e.text"
+    }
+  ],
+  "index_evidence_mismatches": [],
+  "shared_retailer_exclusions": [
+    "radio_transmitter",
+    "radio_receiver",
+    "battery",
+    "battery_charger",
+    "printed_model_parts",
+    "STL_model_files",
+    "grease",
+    "threadlocker"
+  ],
+  "exclusions_evidence": {
+    "source_id": "retailer_variant_data",
+    "json_pointer": "/description",
+    "interpretation": "Retailer note names these as not supplied; this is not a statement about Kurt store kit contents."
+  },
+  "conflicts": [
+    {
+      "field": "esc_battery_connector_type",
+      "value": null,
+      "source_id": "retailer_variant_data",
+      "json_pointer": "/description",
+      "reason": "Retailer description names both XT60 and TAMIYA for ESC input/battery connector."
+    },
+    {
+      "field": "exact_kit_manufacturer",
+      "value": null,
+      "source_id": "retailer_variant_data",
+      "reason": "Listing title names 3DMakerParts; vendor metadata names West3D. Relationship is not established here."
+    },
+    {
+      "field": "sakura_small_servo_quantity",
+      "value": null,
+      "source_id": "supplier_1265236356",
+      "reason": "Supplier servo row 24 has a blank quantity."
+    },
+    {
+      "field": "model_16_compatibility",
+      "value": null,
+      "source_id": "retailer_variant_data",
+      "reason": "Model 16 Winch Truck is marked SOON; this does not establish present release compatibility."
+    }
+  ],
+  "records": [
+    {
+      "review_record_id": "retailer_dremc_WES2487",
+      "scope": "third_party_retailer_and_supplier_observations",
+      "review_status": "agent_reviewed_local_evidence_not_native_approval",
+      "retailer_observation": {
+        "retailer_sku": "WES2487",
+        "retailer_variant_id": "46730415767721",
+        "variant_title": "Buggy / Buggster / Sandy",
+        "observed_price_aud": 224.95,
+        "observed_available": true,
+        "retailer_vendor_metadata": "West3D"
+      },
+      "retailer_identity_evidence": {
+        "source_id": "retailer_variant_data",
+        "variant_pointer": "/variants/0"
+      },
+      "retailer_stated_models": [
+        7,
+        8,
+        11
+      ],
+      "retailer_model_version_scope": null,
+      "future_model_compatibility": {},
+      "supplier_bom": {
+        "sheet_title": "BuggyBuggsterSandy",
+        "source_id": "supplier_1508133208",
+        "published_kit_revision": null,
+        "retailer_sku_binding": "family_name_match_only_not_explicit_SKU_or_revision",
+        "observed_components": [
+          {
+            "category": "Fastener",
+            "description": "M3x12 BHCS",
+            "quantity": 30,
+            "quantity_text": "30",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 3,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 66,
+              "end_char": 96,
+              "excerpt_sha256": "bc07d39472d562ebcd4f536f558e77b27f41df610227e61e6f360c61b96915d3"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M2x6 SHCS",
+            "quantity": 70,
+            "quantity_text": "70",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 4,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 97,
+              "end_char": 126,
+              "excerpt_sha256": "a8b4eedadc26540e2c76b652485244dc56eba12c43d47a93f7fe55909836d2dc"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M2x10 SHCS",
+            "quantity": 40,
+            "quantity_text": "40",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 5,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 127,
+              "end_char": 157,
+              "excerpt_sha256": "d4003a580ae42f561eb749a43dc677faaf2cf2b2f8339e890c430e3f30407b12"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M2x12 SHCS",
+            "quantity": 20,
+            "quantity_text": "20",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 6,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 158,
+              "end_char": 188,
+              "excerpt_sha256": "21b83c4909d4301943dc4b2aae19232441f815db37b2744a433ad15097bb6144"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M2x8 SHCS",
+            "quantity": 100,
+            "quantity_text": "100",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 7,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 189,
+              "end_char": 219,
+              "excerpt_sha256": "11d93fad84ede200cb2028817361c7e496ded5ae2fcdf8dfc755179b58032fab"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3x10 BHCS",
+            "quantity": 25,
+            "quantity_text": "25",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 8,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 220,
+              "end_char": 250,
+              "excerpt_sha256": "cd2aa1bc42dcb15d1777ec6430ddebc9211578efdba31de1066957d073774113"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3x8 BHCS",
+            "quantity": 30,
+            "quantity_text": "30",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 9,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 251,
+              "end_char": 280,
+              "excerpt_sha256": "8b21a34ed5c9f94bd5fd6b42e335e0b7c1284e18e381cd41d07383d4520965da"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3x16 BHCS",
+            "quantity": 30,
+            "quantity_text": "30",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 10,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 281,
+              "end_char": 312,
+              "excerpt_sha256": "64b939d853a4770969bf574c0d24aaf6aaaa7f48761d005e53e12e1e8df42e83"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M2x16 SHCS",
+            "quantity": 6,
+            "quantity_text": "6",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 11,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 313,
+              "end_char": 343,
+              "excerpt_sha256": "e18b7b162fd983915d3c7968bd25c16e62840d72333e4f8447f8f1250e9f806a"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3x20 BHCS",
+            "quantity": 5,
+            "quantity_text": "5",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 12,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 344,
+              "end_char": 374,
+              "excerpt_sha256": "29eb79c90c064df1c1556920019135d5f39fe0287302794144e889d6b9e6725b"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3 Hex Nut",
+            "quantity": 30,
+            "quantity_text": "30",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 13,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 375,
+              "end_char": 406,
+              "excerpt_sha256": "dc3f7f98ed6993af2ad83ef8b125d0a4387ef35ead4031b7211bd159f7b128c6"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3 Nylock Nut",
+            "quantity": 5,
+            "quantity_text": "5",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 14,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 407,
+              "end_char": 440,
+              "excerpt_sha256": "c25f343c9d356f926e253a4edae8f3f16eb18ad338912ab2968afec1d69349e9"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3x8 SHCS",
+            "quantity": 5,
+            "quantity_text": "5",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 15,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 441,
+              "end_char": 470,
+              "excerpt_sha256": "f90f871f08270a069451834734435b062a3904abfc5db971da96f6d07f50c114"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3x6 BHCS",
+            "quantity": 10,
+            "quantity_text": "10",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 16,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 471,
+              "end_char": 501,
+              "excerpt_sha256": "36754b7955e098bba8183e0d9c704934018e42babb7d7e252629b66e0189c8ac"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3x14 BHCS",
+            "quantity": 10,
+            "quantity_text": "10",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 17,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 502,
+              "end_char": 533,
+              "excerpt_sha256": "b87e9083f25e8aba2441a150df75815b89cddfc4272da8075f42062fd8663139"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M2x10 Self Tapping Screws",
+            "quantity": 16,
+            "quantity_text": "16",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 18,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 534,
+              "end_char": 580,
+              "excerpt_sha256": "6744ad38c1e45077ae4b9f27e99fd76c653193419c0fd2ede32995f30806b408"
+            }
+          },
+          {
+            "category": "Motor",
+            "description": "1400KV C3530 Brushless Outrunner Motor",
+            "quantity": 1,
+            "quantity_text": "1",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 19,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 581,
+              "end_char": 636,
+              "excerpt_sha256": "3c068114d25a5f0c898bf7909ab45065cd2ff8a66c9b022573f532ba9b3e5763"
+            }
+          },
+          {
+            "category": "ESC",
+            "description": "16BL30 30A Brushless ESC",
+            "quantity": 1,
+            "quantity_text": "1",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 20,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 637,
+              "end_char": 676,
+              "excerpt_sha256": "14555a85a8cfaf6fec8b340cd2d3e60b87e7023e4faefe7e4dcb27b5f4b9966d"
+            }
+          },
+          {
+            "category": "Bearings",
+            "description": "6700rs - Z2 Precision bearings",
+            "quantity": 20,
+            "quantity_text": "20",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 21,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 677,
+              "end_char": 728,
+              "excerpt_sha256": "36695401a0cf60323e197fe29e6302086589001c689acda5123bbf92e30774d9"
+            }
+          },
+          {
+            "category": "Timing Belt",
+            "description": "60XL 30 tooth 6.35mm width",
+            "quantity": 2,
+            "quantity_text": "2",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 22,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 729,
+              "end_char": 778,
+              "excerpt_sha256": "bea200f853251b0901cc9a3573c4cc6a660561d90ff351e697a59004cd7591fc"
+            }
+          },
+          {
+            "category": "Timing Belt",
+            "description": "80XL 40 Tooth 6.35mm width",
+            "quantity": 2,
+            "quantity_text": "2",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 23,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 779,
+              "end_char": 828,
+              "excerpt_sha256": "62d3624ced486ef1904fa63604afd7b07c9bbdbb95e28e888e07b98e4f5a89b1"
+            }
+          },
+          {
+            "category": "Servo",
+            "description": "20KG Digital Servo DS3218 with Metal Gears and Arm",
+            "quantity": 1,
+            "quantity_text": "1",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 24,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 829,
+              "end_char": 896,
+              "excerpt_sha256": "994ee62c0171f448c50daecd08e2f127e0050d28d48c51cf9b4e5bbf2e43d413"
+            }
+          },
+          {
+            "category": "Wiring",
+            "description": "Servo Extension 500mm",
+            "quantity": 1,
+            "quantity_text": "1",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 25,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 897,
+              "end_char": 936,
+              "excerpt_sha256": "69ed7e91667677033ecb5c7320a89147a44378598ed835c003e666e55633adfd"
+            }
+          },
+          {
+            "category": "Shock Absorber",
+            "description": "55mm long shock absorber/damper",
+            "quantity": 4,
+            "quantity_text": "4",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 26,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 937,
+              "end_char": 994,
+              "excerpt_sha256": "93ae59798e3a9120db6e7e538db4665ecf3418a736dfed8a6ec56472964516ab"
+            }
+          },
+          {
+            "category": "Tires",
+            "description": "RC Mud Block Tires 1.9 inch offroad",
+            "quantity": 4,
+            "quantity_text": "4",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 27,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 995,
+              "end_char": 1047,
+              "excerpt_sha256": "bcea9abdd9a90dcf4fea834ea1236f51c9279fc5dced1e34a4717f43e806c446"
+            }
+          },
+          {
+            "category": "Connectors",
+            "description": "3.5mm gold connectors",
+            "quantity": 10,
+            "quantity_text": "10",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 28,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 1048,
+              "end_char": 1092,
+              "excerpt_sha256": "ea8379b5862a378ebfd4ab3af928e910151779171ce85074e58674d2cd70f76d"
+            }
+          },
+          {
+            "category": "Wiring",
+            "description": "14AWG Silicone wire",
+            "quantity": null,
+            "quantity_text": "1 meter",
+            "quantity_status": "observed_non_integer_supplier_quantity",
+            "supplier_row": 29,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 1093,
+              "end_char": 1136,
+              "excerpt_sha256": "5086b7ac9663fcd93ab6ff82852118902ecc7df05db00a2d968fb5bdd47dd9d5"
+            }
+          },
+          {
+            "category": "Aesthetic",
+            "description": "70127 Plastic Plate 0.4 mm Pack of 4 257 x 364 mm Clear",
+            "quantity": 1,
+            "quantity_text": "1",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 30,
+            "evidence": {
+              "source_id": "supplier_1508133208",
+              "start_char": 1137,
+              "end_char": 1213,
+              "excerpt_sha256": "ce19d49c591e4460f1b8de16350d13848f75fba83fa4e506d1fd64abe81ae768"
+            }
+          }
+        ]
+      },
+      "unknowns": {
+        "exact_kit_manufacturer": null,
+        "esc_battery_connector_type": null,
+        "exact_model_release_compatibility": null,
+        "kit_revision": null,
+        "supplier_bom_revision": null
+      },
+      "actual_store": {
+        "product_id": null,
+        "variant_id": null,
+        "sku": null,
+        "kit_revision": null,
+        "supported_model_release": null,
+        "included_contents": null,
+        "excluded_contents": null,
+        "digital_access_included": null,
+        "price": null,
+        "physical_stock": null,
+        "delivery_estimate": null
+      },
+      "native_import": {
+        "eligible": false,
+        "document_id": null,
+        "revision_hash": null,
+        "approved_reviewer_event": null,
+        "valid_until": null
+      }
+    },
+    {
+      "review_record_id": "retailer_dremc_WES2488",
+      "scope": "third_party_retailer_and_supplier_observations",
+      "review_status": "agent_reviewed_local_evidence_not_native_approval",
+      "retailer_observation": {
+        "retailer_sku": "WES2488",
+        "retailer_variant_id": "46730415800489",
+        "variant_title": "Landy",
+        "observed_price_aud": 244.95,
+        "observed_available": true,
+        "retailer_vendor_metadata": "West3D"
+      },
+      "retailer_identity_evidence": {
+        "source_id": "retailer_variant_data",
+        "variant_pointer": "/variants/1"
+      },
+      "retailer_stated_models": [
+        3,
+        4,
+        5
+      ],
+      "retailer_model_version_scope": null,
+      "future_model_compatibility": {
+        "model_16_winch_truck": null
+      },
+      "supplier_bom": {
+        "sheet_title": "Landy",
+        "source_id": "supplier_18408003",
+        "published_kit_revision": null,
+        "retailer_sku_binding": "family_name_match_only_not_explicit_SKU_or_revision",
+        "observed_components": [
+          {
+            "category": "Fastener",
+            "description": "M3x12 BHCS",
+            "quantity": 40,
+            "quantity_text": "40",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 3,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 66,
+              "end_char": 96,
+              "excerpt_sha256": "403e1b51500c5e6639111c09fa0f4c8000d14f69247d6240e5f1356ee1b57fae"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M2x6 SHCS",
+            "quantity": 135,
+            "quantity_text": "135",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 4,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 97,
+              "end_char": 127,
+              "excerpt_sha256": "0c336dd7aa01b00bce20c2ef4198f7bc90e40fd19143f9e65d480c7f03b9a89d"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M2x10 SHCS",
+            "quantity": 84,
+            "quantity_text": "84",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 5,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 128,
+              "end_char": 158,
+              "excerpt_sha256": "b7ae7b7f629a9b7d3b4dd36480fd781619b2e5c9c52b4e466102e80324e129d4"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M2x12 SHCS",
+            "quantity": 8,
+            "quantity_text": "8",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 6,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 159,
+              "end_char": 188,
+              "excerpt_sha256": "78cf4fff536deea9eb1dd63bcbb29941b6ef3c79d202ee02d2531573a0ebe4c0"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M2x8 SHCS",
+            "quantity": 8,
+            "quantity_text": "8",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 7,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 189,
+              "end_char": 217,
+              "excerpt_sha256": "a505e1bfa5ddc98462f6ebd8ce05a234bb6bebdd030f837e8a907820410eda76"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3x10 BHCS",
+            "quantity": 75,
+            "quantity_text": "75",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 8,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 218,
+              "end_char": 248,
+              "excerpt_sha256": "108d15ac62b753c2151ac144061a5a1840700a5a07ab0acb8de12f9bafb380b6"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3x16 BHCS",
+            "quantity": 46,
+            "quantity_text": "46",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 9,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 249,
+              "end_char": 279,
+              "excerpt_sha256": "3fd8a04b6a536233334a252148f6ad5da5aa9286a800904bc0f6fce83b300acf"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M2x16 SHCS",
+            "quantity": 4,
+            "quantity_text": "4",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 10,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 280,
+              "end_char": 310,
+              "excerpt_sha256": "4c7ac5fca3d6fee9bee6cbb8195303e5fd2cfeb47b42c2b22cbdbdea9207a186"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3x20 SHCS",
+            "quantity": 11,
+            "quantity_text": "11",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 11,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 311,
+              "end_char": 342,
+              "excerpt_sha256": "603d2fda3b4a36b12572eaabbef7b7107d6109a89cd0fa0b5e8f5fc77d63e015"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3 Hex Nut",
+            "quantity": 45,
+            "quantity_text": "45",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 12,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 343,
+              "end_char": 374,
+              "excerpt_sha256": "dfb6c94e7b9b14f1d147198cf01370dc28eb6188d550f464d192870d8884a44d"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3 Nylock Nut",
+            "quantity": 25,
+            "quantity_text": "25",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 13,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 375,
+              "end_char": 409,
+              "excerpt_sha256": "e517f5e1fefaa50e0b251ba773ab3e578bb7cd40cd472bf39bce86ad62c8523a"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3x8 BHCS",
+            "quantity": 17,
+            "quantity_text": "17",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 14,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 410,
+              "end_char": 440,
+              "excerpt_sha256": "16df37cdbec9d4d277f1ee99b21abacf2aee0a9c4af9d99c9f7565a201509ff3"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3x6 BHCS",
+            "quantity": 9,
+            "quantity_text": "9",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 15,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 441,
+              "end_char": 470,
+              "excerpt_sha256": "303573c47e2a98872afd13474ca946b136bf810add5cc2237b6e4a545d59991e"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "m2x14 SHCS",
+            "quantity": 8,
+            "quantity_text": "8",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 16,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 471,
+              "end_char": 501,
+              "excerpt_sha256": "7200828e11fb3ba59a214c1ce4f3253ca0bfc72a473f8ddc6053588c05606fef"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "m3x25 SHCS",
+            "quantity": 13,
+            "quantity_text": "13",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 17,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 502,
+              "end_char": 533,
+              "excerpt_sha256": "bd3cb43ab25c41b2df7f6ee1e7087961db8c6c8542c40008dbd1f89f9aa2e769"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "m3x6 grubscrew",
+            "quantity": 4,
+            "quantity_text": "4",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 18,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 534,
+              "end_char": 568,
+              "excerpt_sha256": "18ae41cabde1eb5fa7f6a49d5afaff901b71cf69222a111757796f336bbb73c6"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "m3x6 SHCS",
+            "quantity": 5,
+            "quantity_text": "5",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 19,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 569,
+              "end_char": 598,
+              "excerpt_sha256": "b7c6c4d42c6e5082e90ba4f0167a3ec6bf970422a8d2d4d00cb25906a172b5c6"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "m3x8 SHCS",
+            "quantity": 22,
+            "quantity_text": "22",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 20,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 599,
+              "end_char": 629,
+              "excerpt_sha256": "e39c3382f139486d3626b710d7e1d7eb1e4433f657edc6ef2576f6cad9cc6135"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M2x10 Self Tapping Screws",
+            "quantity": 16,
+            "quantity_text": "16",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 21,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 630,
+              "end_char": 676,
+              "excerpt_sha256": "3e9a29954988c4791771e0f1c979cc12e9df10e5e993154c541c0354ed930774"
+            }
+          },
+          {
+            "category": "Motor",
+            "description": "1400KV C3530 Brushless Outrunner Motor",
+            "quantity": 1,
+            "quantity_text": "1",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 22,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 677,
+              "end_char": 732,
+              "excerpt_sha256": "a1a36dccb74fc6827e34987240ca251c0176ca03ec10a5a934a10499c78b47b5"
+            }
+          },
+          {
+            "category": "ESC",
+            "description": "16BL30 30A Brushless ESC",
+            "quantity": 1,
+            "quantity_text": "1",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 23,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 733,
+              "end_char": 772,
+              "excerpt_sha256": "303c01c77d65d88edcd86f599998903a308530688040d6d31a67c2e0cc3e8033"
+            }
+          },
+          {
+            "category": "Bearings",
+            "description": "6700rs - Z2 Precision bearings",
+            "quantity": 40,
+            "quantity_text": "40",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 24,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 773,
+              "end_char": 824,
+              "excerpt_sha256": "02325f1b345b134e2333c405716bcf51110be3b20d602af26a2f7c920de3a93a"
+            }
+          },
+          {
+            "category": "Timing Belt",
+            "description": "HTD 144-3M-06 Belts (144mm long, 3mm teeth distance, 6mm wide)",
+            "quantity": 4,
+            "quantity_text": "4",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 25,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 825,
+              "end_char": 910,
+              "excerpt_sha256": "37244d2e1df08db03d5c2a1bd3185112977bbd1b2a5844ab4ee56149b9978f53"
+            }
+          },
+          {
+            "category": "Servo",
+            "description": "20KG Digital Servo DS3218 with Metal Gears and Arm",
+            "quantity": 1,
+            "quantity_text": "1",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 26,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 911,
+              "end_char": 978,
+              "excerpt_sha256": "b85ee554aefd1e1203355eaa8fb8f6aeae19a4166fac9a813e36f1127fe3cece"
+            }
+          },
+          {
+            "category": "Wiring",
+            "description": "Servo Extension 500mm",
+            "quantity": 1,
+            "quantity_text": "1",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 27,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 979,
+              "end_char": 1018,
+              "excerpt_sha256": "cefc9959d5b5db8142113401e70f5b7a1cf0439625f1b9246ea0283eb757fc41"
+            }
+          },
+          {
+            "category": "Shock Absorber",
+            "description": "85mm long shock absorber/damper",
+            "quantity": 4,
+            "quantity_text": "4",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 28,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 1019,
+              "end_char": 1076,
+              "excerpt_sha256": "bc140b5146297072cd6a26d7b85501fd6c71d8112725a63b413886e9d71d8126"
+            }
+          },
+          {
+            "category": "Tires",
+            "description": "RC Mud Block Tires 1.9 inch offroad",
+            "quantity": 5,
+            "quantity_text": "5",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 29,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 1077,
+              "end_char": 1129,
+              "excerpt_sha256": "63e60364703b788e165dc932e81dc81e31df902a432351c81e8b0257382ce097"
+            }
+          },
+          {
+            "category": "Connectors",
+            "description": "3.5mm gold connectors",
+            "quantity": 10,
+            "quantity_text": "10",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 30,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 1130,
+              "end_char": 1174,
+              "excerpt_sha256": "f4600d1357aeb5335f164c5749e4626ca00517f88e91856c803689982b5c8f60"
+            }
+          },
+          {
+            "category": "Wiring",
+            "description": "14AWG Silicone wire",
+            "quantity": null,
+            "quantity_text": "1 meter",
+            "quantity_status": "observed_non_integer_supplier_quantity",
+            "supplier_row": 31,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 1175,
+              "end_char": 1218,
+              "excerpt_sha256": "3d7025d5a70e97aeb027224f3841b49ccb00ce1f184878f1e4d4533724810b7f"
+            }
+          },
+          {
+            "category": "Aesthetic",
+            "description": "70127 Plastic Plate 0.4 mm Pack of 4 257 x 364 mm Clear",
+            "quantity": 1,
+            "quantity_text": "1",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 32,
+            "evidence": {
+              "source_id": "supplier_18408003",
+              "start_char": 1219,
+              "end_char": 1295,
+              "excerpt_sha256": "6847cdd8ef50f75137befc2e5917a8686d94c3429ccaaa7d567c6eec6fafc980"
+            }
+          }
+        ]
+      },
+      "unknowns": {
+        "exact_kit_manufacturer": null,
+        "esc_battery_connector_type": null,
+        "exact_model_release_compatibility": null,
+        "kit_revision": null,
+        "supplier_bom_revision": null
+      },
+      "actual_store": {
+        "product_id": null,
+        "variant_id": null,
+        "sku": null,
+        "kit_revision": null,
+        "supported_model_release": null,
+        "included_contents": null,
+        "excluded_contents": null,
+        "digital_access_included": null,
+        "price": null,
+        "physical_stock": null,
+        "delivery_estimate": null
+      },
+      "native_import": {
+        "eligible": false,
+        "document_id": null,
+        "revision_hash": null,
+        "approved_reviewer_event": null,
+        "valid_until": null
+      }
+    },
+    {
+      "review_record_id": "retailer_dremc_WES2489",
+      "scope": "third_party_retailer_and_supplier_observations",
+      "review_status": "agent_reviewed_local_evidence_not_native_approval",
+      "retailer_observation": {
+        "retailer_sku": "WES2489",
+        "retailer_variant_id": "46730423664809",
+        "variant_title": "Sakura",
+        "observed_price_aud": 249.0,
+        "observed_available": true,
+        "retailer_vendor_metadata": "West3D"
+      },
+      "retailer_identity_evidence": {
+        "source_id": "retailer_variant_data",
+        "variant_pointer": "/variants/2"
+      },
+      "retailer_stated_models": [
+        17,
+        18
+      ],
+      "retailer_model_version_scope": null,
+      "future_model_compatibility": {},
+      "supplier_bom": {
+        "sheet_title": "Skura 240 w Sport Pack",
+        "source_id": "supplier_1265236356",
+        "published_kit_revision": null,
+        "retailer_sku_binding": "family_name_match_only_not_explicit_SKU_or_revision",
+        "observed_components": [
+          {
+            "category": "Fastener",
+            "description": "M2 x 6 SHCS",
+            "quantity": 70,
+            "quantity_text": "70",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 3,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 66,
+              "end_char": 97,
+              "excerpt_sha256": "70bbf7aa141e4656d1031a7026bc73c8ebe84905b60248d6ffb7a5e08f7d590f"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M2 x 8 SHCS",
+            "quantity": 30,
+            "quantity_text": "30",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 4,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 98,
+              "end_char": 129,
+              "excerpt_sha256": "c1e5085c21bac0c41828a93278e21ea0649c61082d6b141ff63148c325479075"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M2 x 10 SHCS",
+            "quantity": 10,
+            "quantity_text": "10",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 5,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 130,
+              "end_char": 162,
+              "excerpt_sha256": "4beb8f1e1fba6d3b2d198af2028d705efe0b14f14978a5aa401e55a81fb46140"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M2 x 12 SHCS",
+            "quantity": 18,
+            "quantity_text": "18",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 6,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 163,
+              "end_char": 195,
+              "excerpt_sha256": "a4a99caf19d1765aa7ac2e83d241661ab2b7bcb5946ae2d8087773ad2d1e1467"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3 x 6 BHCS",
+            "quantity": 30,
+            "quantity_text": "30",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 7,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 196,
+              "end_char": 227,
+              "excerpt_sha256": "d559f8edd627d703bccd33053c4f9251b8e42c16c5007bd70e152a6fc6f78304"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3 x 8 BHCS",
+            "quantity": 103,
+            "quantity_text": "103",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 8,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 228,
+              "end_char": 260,
+              "excerpt_sha256": "d094157d2c6e1ba25c092b9c31ce441ab8a310fe437083b777e5600c6b09481f"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3 x 10 BHCS",
+            "quantity": 67,
+            "quantity_text": "67",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 9,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 261,
+              "end_char": 293,
+              "excerpt_sha256": "5a3a2dff8211cec3ba1f91c8249a9b494c8845ed6df87017c708cfe17badede4"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3 x 12 BHCS",
+            "quantity": 30,
+            "quantity_text": "30",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 10,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 294,
+              "end_char": 327,
+              "excerpt_sha256": "91f611924e998995c89bf15b53dea1ca78255b06a4843c5dab856c8ddff32de2"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3 x 14 BHCS",
+            "quantity": 5,
+            "quantity_text": "5",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 11,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 328,
+              "end_char": 360,
+              "excerpt_sha256": "708a27e99706ec3c6a929670d2af8cd6fef59ece1a2e182554c9173943d3e810"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3 x 16 BHCS",
+            "quantity": 45,
+            "quantity_text": "45",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 12,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 361,
+              "end_char": 394,
+              "excerpt_sha256": "f855c6710003fa0a57bf6a8fafd01253e8cbad37dd53734a7c87226492b8c069"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3 x 20 BHCS",
+            "quantity": 6,
+            "quantity_text": "6",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 13,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 395,
+              "end_char": 427,
+              "excerpt_sha256": "f47d80def727432ee253abedf046517cd31ab1df9b6632826f6e3f8cb2d72c93"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3 x 25 BHCS",
+            "quantity": 10,
+            "quantity_text": "10",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 14,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 428,
+              "end_char": 461,
+              "excerpt_sha256": "7d1ffa20c08f9b4d58250679aafec1bf3ec6a0d70cdc59154762d933405134b5"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3 Hex nuts",
+            "quantity": 45,
+            "quantity_text": "45",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 15,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 462,
+              "end_char": 494,
+              "excerpt_sha256": "7833791fa584f5ef468a7b2533790c945f74828ba1706715818209ea63a0ef7e"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3 Nyloc nuts",
+            "quantity": 7,
+            "quantity_text": "7",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 16,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 495,
+              "end_char": 528,
+              "excerpt_sha256": "29b04bb8c719e97203059bfd3014695cbb10e4ce08078fd64eda8bba1b6aa18a"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M3 x 6 SHCS",
+            "quantity": 10,
+            "quantity_text": "10",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 17,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 529,
+              "end_char": 561,
+              "excerpt_sha256": "c6adbf0af2796b5d9ebdf6ae09616c0dab488da1cce551bd99ac6868bb934982"
+            }
+          },
+          {
+            "category": "Fastener",
+            "description": "M2x10 Self Tapping Screws",
+            "quantity": 16,
+            "quantity_text": "16",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 18,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 562,
+              "end_char": 608,
+              "excerpt_sha256": "6744ad38c1e45077ae4b9f27e99fd76c653193419c0fd2ede32995f30806b408"
+            }
+          },
+          {
+            "category": "Motor",
+            "description": "1400KV C3530 Brushless Outrunner Motor",
+            "quantity": 1,
+            "quantity_text": "1",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 19,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 609,
+              "end_char": 664,
+              "excerpt_sha256": "3c068114d25a5f0c898bf7909ab45065cd2ff8a66c9b022573f532ba9b3e5763"
+            }
+          },
+          {
+            "category": "ESC",
+            "description": "16BL30 30A Brushless ESC",
+            "quantity": 1,
+            "quantity_text": "1",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 20,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 665,
+              "end_char": 704,
+              "excerpt_sha256": "14555a85a8cfaf6fec8b340cd2d3e60b87e7023e4faefe7e4dcb27b5f4b9966d"
+            }
+          },
+          {
+            "category": "Bearings",
+            "description": "6700rs - Z2 Precision bearings",
+            "quantity": 30,
+            "quantity_text": "30",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 21,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 705,
+              "end_char": 756,
+              "excerpt_sha256": "bb2637e698eb1962ccb6935b293ea6554014d17a98b7d4fa1309902dc210c233"
+            }
+          },
+          {
+            "category": "Timing Belt",
+            "description": "HTD 144-3M-06 Belts (144mm long, 3mm teeth distance, 6mm wide)",
+            "quantity": 4,
+            "quantity_text": "4",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 22,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 757,
+              "end_char": 842,
+              "excerpt_sha256": "5a457e4c08c8991bde1ef6192ec869761d0b055120377278b840119f32c659d8"
+            }
+          },
+          {
+            "category": "Servo",
+            "description": "20KG Digital Servo DS3218 with Metal Gears and Arm",
+            "quantity": 1,
+            "quantity_text": "1",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 23,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 843,
+              "end_char": 910,
+              "excerpt_sha256": "9eb7547c24b66b10223f72214498291dec3bc1a97eba69a0713aeee509df96b2"
+            }
+          },
+          {
+            "category": "Servo",
+            "description": "D85MG or any with Maximum Dimension - 29x29x13 mm, minimum torque 2 kg/cm",
+            "quantity": null,
+            "quantity_text": "",
+            "quantity_status": "unknown_blank_supplier_cell",
+            "supplier_row": 24,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 911,
+              "end_char": 1000,
+              "excerpt_sha256": "991eac32bf76e9f0897108431d9a266914d14762d953bdff8879714fc5fa5303"
+            }
+          },
+          {
+            "category": "Wiring",
+            "description": "Servo Extension 500mm",
+            "quantity": 1,
+            "quantity_text": "1",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 25,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 1001,
+              "end_char": 1040,
+              "excerpt_sha256": "69ed7e91667677033ecb5c7320a89147a44378598ed835c003e666e55633adfd"
+            }
+          },
+          {
+            "category": "Shock Absorber",
+            "description": "55mm long shock absorber/damper",
+            "quantity": 4,
+            "quantity_text": "4",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 26,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 1041,
+              "end_char": 1098,
+              "excerpt_sha256": "93ae59798e3a9120db6e7e538db4665ecf3418a736dfed8a6ec56472964516ab"
+            }
+          },
+          {
+            "category": "Tires",
+            "description": "2.2inches 1/10 Buggy Tires Tyre(On-Road) with insert fits for 1:10 4WD Buggy Car 1/10 Tire",
+            "quantity": 4,
+            "quantity_text": "4",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 27,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 1099,
+              "end_char": 1206,
+              "excerpt_sha256": "1a63665b5a6a79a8dd19a39b1ec44801078177ebd912ae6c655a1ddefb7ae601"
+            }
+          },
+          {
+            "category": "Tires",
+            "description": "1/10 Hole Shot T 2.0 M3 F/R 2.2\" Off-Road Stadium Truck Tires",
+            "quantity": 2,
+            "quantity_text": "2",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 28,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 1207,
+              "end_char": 1285,
+              "excerpt_sha256": "e81d008fe068cfbf64ae75b55150d450ccdda135cbec1f9ecc73c21fa2156811"
+            }
+          },
+          {
+            "category": "Connectors",
+            "description": "3.5mm gold connectors",
+            "quantity": 10,
+            "quantity_text": "10",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 29,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 1286,
+              "end_char": 1330,
+              "excerpt_sha256": "235d94f5a974ba04e9e066f0b31383a5776374d3489f66c6b5a4cd1b4aad992b"
+            }
+          },
+          {
+            "category": "Wiring",
+            "description": "14AWG Silicone wire",
+            "quantity": null,
+            "quantity_text": "1 meter",
+            "quantity_status": "observed_non_integer_supplier_quantity",
+            "supplier_row": 30,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 1331,
+              "end_char": 1374,
+              "excerpt_sha256": "e4e30fbe9f612f444a6f54542896f63915ee81a70c4c809153044dd1eb3c9a4c"
+            }
+          },
+          {
+            "category": "Aesthetic",
+            "description": "70127 Plastic Plate 0.4 mm Pack of 4 257 x 364 mm Clear",
+            "quantity": 1,
+            "quantity_text": "1",
+            "quantity_status": "observed_supplier_tab_value",
+            "supplier_row": 31,
+            "evidence": {
+              "source_id": "supplier_1265236356",
+              "start_char": 1375,
+              "end_char": 1451,
+              "excerpt_sha256": "b44c1957180102e446a908a98ebaf643daeda31392ac72b83bd5767d37b9c999"
+            }
+          }
+        ]
+      },
+      "unknowns": {
+        "exact_kit_manufacturer": null,
+        "esc_battery_connector_type": null,
+        "exact_model_release_compatibility": null,
+        "kit_revision": null,
+        "supplier_bom_revision": null,
+        "small_servo_quantity": null
+      },
+      "actual_store": {
+        "product_id": null,
+        "variant_id": null,
+        "sku": null,
+        "kit_revision": null,
+        "supported_model_release": null,
+        "included_contents": null,
+        "excluded_contents": null,
+        "digital_access_included": null,
+        "price": null,
+        "physical_stock": null,
+        "delivery_estimate": null
+      },
+      "native_import": {
+        "eligible": false,
+        "document_id": null,
+        "revision_hash": null,
+        "approved_reviewer_event": null,
+        "valid_until": null
+      }
+    }
+  ],
+  "native_contract_missing": [
+    "Real Strapi product-document documentId and actual Medusa product_id/variant_id.",
+    "Verified product_handle/product_title and exact supplier package/kit revision binding.",
+    "One source per document, <=30 bounded facts, source version/hash/date and exact excerpts.",
+    "Reviewed source_kind mapping: supplier_product_page is allowed; supplier_BOM/source_link_index are not current enum values. Do not relabel a BOM as an official model manual.",
+    "Approval matching exact document/product/variant/revision, reviewed_at >= source_checked_at, validity <=90 days.",
+    "Approved public publication metadata through the agreed Strapi path.",
+    "Actual commerce price/inventory only from Medusa; retailer observations and simulated reference quantities are not live store facts."
+  ]
+}

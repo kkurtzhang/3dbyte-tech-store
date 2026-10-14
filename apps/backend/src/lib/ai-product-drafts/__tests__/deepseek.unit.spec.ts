@@ -170,9 +170,17 @@ function responseWith(content: string) {
   }
 }
 
+const originalBaseUrl = process.env.DEEPSEEK_BASE_URL
+
 describe("DeepSeek AI product draft normalizer", () => {
   beforeEach(() => {
+    delete process.env.DEEPSEEK_BASE_URL
     jest.clearAllMocks()
+  })
+
+  afterEach(() => {
+    if (originalBaseUrl === undefined) delete process.env.DEEPSEEK_BASE_URL
+    else process.env.DEEPSEEK_BASE_URL = originalBaseUrl
   })
 
   it("selects flash for ordinary packets and pro for low-confidence or safety-sensitive packets", () => {

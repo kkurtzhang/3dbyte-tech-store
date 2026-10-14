@@ -1,0 +1,32 @@
+diff --git a/dist/Strapi.js b/dist/Strapi.js
+index ec549aa14212260708c0dd4f1570a1bb8f5be5f5..88cf3bd2c7a6012e60d9c7ad0e1edf1ba8933857 100644
+--- a/dist/Strapi.js
++++ b/dist/Strapi.js
+@@ -11,7 +11,6 @@ var factories = require('./factories.js');
+ var openBrowser = require('./utils/open-browser.js');
+ var isInitialized = require('./utils/is-initialized.js');
+ var index = require('./ee/index.js');
+-require('package-json');
+ require('configstore');
+ require('semver');
+ require('boxen');
+diff --git a/dist/utils/update-notifier/index.js b/dist/utils/update-notifier/index.js
+index f72c5b109a13ffdf7a8df3f3d69f24a1537ad4b2..91f9667e8446965f7d3129a7a2aa084384ab40b4 100644
+--- a/dist/utils/update-notifier/index.js
++++ b/dist/utils/update-notifier/index.js
+@@ -1,7 +1,6 @@
+ 'use strict';
+ 
+ var path = require('path');
+-var packageJson = require('package-json');
+ var Configstore = require('configstore');
+ var semver = require('semver');
+ var boxen = require('boxen');
+@@ -45,6 +44,7 @@ const createUpdateNotifier = (strapi)=>{
+             return;
+         }
+         try {
++            const { default: packageJson } = await import('package-json');
+             const res = await packageJson(_package.default.name);
+             if (res.version) {
+                 config.set('latest', res.version);

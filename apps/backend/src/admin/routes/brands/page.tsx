@@ -139,7 +139,7 @@ const BrandsPage = () => {
     columns,
     data: brands,
     getRowId: (row) => row.id,
-    onRowClick: (event, row) => {
+    onRowClick: (_event, row) => {
       navigate(`/brands/${row.id}`);
     },
     rowCount: count,

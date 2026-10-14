@@ -38,7 +38,7 @@ jest.mock("@/components/ui/button", () => ({
     asChild?: boolean
     children: React.ReactNode
   }) =>
-    asChild && React.isValidElement(children)
+    asChild && React.isValidElement<{ onClick?: React.MouseEventHandler<HTMLAnchorElement> }>(children)
       ? React.cloneElement(children, {
           ...props,
           onClick: (event: React.MouseEvent<HTMLAnchorElement>) => {

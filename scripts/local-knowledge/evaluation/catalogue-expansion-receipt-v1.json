@@ -1,0 +1,283 @@
+{
+  "environment": "local_development",
+  "new_products": 6,
+  "new_source_documents": 6,
+  "new_guides": 6,
+  "new_supported_claims": 32,
+  "new_unknown_claims": 42,
+  "new_editorial_inferences": 6,
+  "new_source_versions": 17,
+  "before": {
+    "products": 23,
+    "records": 56,
+    "documents": 41,
+    "guides": 15,
+    "variants": 23,
+    "sources": 71,
+    "claims": 303,
+    "supported_claims": 112,
+    "unknown_claims": 137,
+    "local_editorial_decisions": 112,
+    "environment": "local_development",
+    "native_approvals": 0
+  },
+  "after": {
+    "products": 29,
+    "records": 68,
+    "documents": 47,
+    "guides": 21,
+    "variants": 29,
+    "sources": 88,
+    "claims": 383,
+    "supported_claims": 144,
+    "unknown_claims": 179,
+    "local_editorial_decisions": 125,
+    "environment": "local_development",
+    "native_approvals": 0
+  },
+  "preserved_original_record_revisions": 56,
+  "sources": [
+    {
+      "key": "flowtech_official",
+      "id": "local_source_catalogue_flowtech_official_6b5771d204e8",
+      "source_url": "https://store.micro-swiss.com/products/micro-swiss-flowtech-hotend-for-creality-k1-k1-max.js",
+      "sha256": "6b5771d204e8b43ec5d11935cf6999cb7610594cb18b3cd2596cd508ab09a7cd",
+      "text_sha256": "e634cef998259dba6c2533200a8af54af54ef0424e9359dab94c2fe7c2f02250",
+      "captured_at": "2026-10-13T10:04:43.638333+00:00"
+    },
+    {
+      "key": "flowtech_au",
+      "id": "local_source_catalogue_flowtech_au_0fcd7d0bcd9d",
+      "source_url": "https://store.dremc.com.au/products/micro-swiss-flowtech-hotend-for-creality-k1-k1-max-k1c.js",
+      "sha256": "0fcd7d0bcd9d251945efccf33bb15737cc9ea2de93afee351293bb64c85a7e0f",
+      "text_sha256": "f113aea2dccb8a857469ef38209ebffe4421bcc0bc1f4016521a0cc23bbef014",
+      "captured_at": "2026-10-13T10:04:43.635898+00:00"
+    },
+    {
+      "key": "flowtech_au_page",
+      "id": "local_source_catalogue_flowtech_au_page_f29274c76ba2",
+      "source_url": "https://store.dremc.com.au/products/micro-swiss-flowtech-hotend-for-creality-k1-k1-max-k1c",
+      "sha256": "f29274c76ba267084a28134424aa162d8fa65c6c202e31e61ddb966503ceb046",
+      "text_sha256": "d3ce955dc694c57f1ed3a7f0d85206907d7cf1fea789b879e84be3c2738683c7",
+      "captured_at": "2026-10-13T10:04:44.154984+00:00"
+    },
+    {
+      "key": "orbiter_official",
+      "id": "local_source_catalogue_orbiter_official_5d755ec6355c",
+      "source_url": "https://www.orbiterprojects.com/orbiter-v2-5/",
+      "sha256": "5d755ec6355ca197c45946b417506a817232df6db73af7cf0b012801e0dcff5b",
+      "text_sha256": "db71c721cc86b5d9c92c3fbd474f5c448a7921bbd60db6744d17a22ade2cb0c2",
+      "captured_at": "2026-10-13T10:04:46.026240+00:00"
+    },
+    {
+      "key": "orbiter_au",
+      "id": "local_source_catalogue_orbiter_au_a4136f532485",
+      "source_url": "https://store.dremc.com.au/products/ldo-orbiter-v2-5-extruder.js",
+      "sha256": "a4136f532485fcb6111610eaa24d5697fe0852b0148721e82c4b2e1830c9f56d",
+      "text_sha256": "6bb7e1ab41da19cc98656e4e4bba249d833a81afc56beacd6885826aba0b4c57",
+      "captured_at": "2026-10-13T10:04:44.050550+00:00"
+    },
+    {
+      "key": "orbiter_au_page",
+      "id": "local_source_catalogue_orbiter_au_page_3ce3bc6cbab7",
+      "source_url": "https://store.dremc.com.au/products/ldo-orbiter-v2-5-extruder",
+      "sha256": "3ce3bc6cbab7cfc98791d96fd36e2897122d0e75c3c944119de2567bcd9692d5",
+      "text_sha256": "9b306b956ad81e848fbabfa69600bee9498ef35fa868de2219fd4d666cd355a7",
+      "captured_at": "2026-10-13T10:04:44.659630+00:00"
+    },
+    {
+      "key": "orbiter_other_au",
+      "id": "local_source_catalogue_orbiter_other_au_8adc64ee3177",
+      "source_url": "https://raven3dtech.com.au/product/orbiter-extruder-v2-5/",
+      "sha256": "8adc64ee3177d9622becbc8ac3babd9c6ec3c86a6c5d11019eae0d5fb2f874ac",
+      "text_sha256": "786558d89f542585b83d02966ce6fa6952bb1bab3833be5e85f70f6543304898",
+      "captured_at": "2026-10-13T10:04:46.015047+00:00"
+    },
+    {
+      "key": "slice_official",
+      "id": "local_source_catalogue_slice_official_fcd05dd02103",
+      "source_url": "https://www.sliceengineering.com/products/nozzle-torque-wrench-1-5-nm",
+      "sha256": "fcd05dd02103a99df3e99814031a0ddd90a82f79ffe9906e45edafbeb380454c",
+      "text_sha256": "02df492229d315debc2eb6c71c254ac64a4b59f8758d487ce37301f28bec0a0e",
+      "captured_at": "2026-10-13T10:04:44.957596+00:00"
+    },
+    {
+      "key": "slice_official_sku",
+      "id": "local_source_catalogue_slice_official_sku_7dd34c2894c8",
+      "source_url": "https://www.sliceengineering.com/products/nozzle-torque-wrench-1-5-nm?view=wsg-json",
+      "sha256": "7dd34c2894c8e5a260e9a62ada4a8548297f27dbf43c62a5b0bf3dbfe39002d3",
+      "text_sha256": "217d880042a01685989b6fa221b952aef33343525fc0d91d213e4364a175caed",
+      "captured_at": "2026-10-13T10:04:45.114655+00:00"
+    },
+    {
+      "key": "slice_au",
+      "id": "local_source_catalogue_slice_au_d997c0fa6a5e",
+      "source_url": "https://phaserfpv.com.au/products/slice-engineering-nozzle-torque-wrench",
+      "sha256": "d997c0fa6a5eb52f5b5088723af70c896cb20c1c25182d285fd12c2a1c2909e5",
+      "text_sha256": "f23cfe6fc13aabaa0db2ccc3ec1b570132403af10969153e48885305ce565cb4",
+      "captured_at": "2026-10-13T10:04:46.003193+00:00"
+    },
+    {
+      "key": "buildtak_pei_official",
+      "id": "local_source_catalogue_buildtak_pei_official_5fd72b4cc428",
+      "source_url": "https://buildtak.com/products/buildtak-pei-3d-printing-surface",
+      "sha256": "5fd72b4cc42857cbe94d3d451b82bec695d3208941751da388ecf3778f3d9fca",
+      "text_sha256": "00e96a04bcc0150271f3c352295cfffe39e8c1f69de90e3890c3b976eb106cde",
+      "captured_at": "2026-10-13T10:04:46.474106+00:00"
+    },
+    {
+      "key": "buildtak_pei_au",
+      "id": "local_source_catalogue_buildtak_pei_au_c40ab68b7127",
+      "source_url": "https://b3d.com.au/DispProd.asp?CatID=8&ProdID=ptTapePEI235&SubCatID=132",
+      "sha256": "c40ab68b7127f73a9245545cbcd9213d4314e03bdcf1a4b437736052f244ac06",
+      "text_sha256": "1bc90c1b2fbfc7493acbd0610a5f03d384cb369e1c008949f9971a5b470ab5fc",
+      "captured_at": "2026-10-13T10:04:46.576528+00:00"
+    },
+    {
+      "key": "buildtak_spatula_official",
+      "id": "local_source_catalogue_buildtak_spatula_official_b9a84996e5e3",
+      "source_url": "https://buildtak.com/products/buildtak-spatula",
+      "sha256": "b9a84996e5e3e623135498732608de6ae7cea6f33edff6bba6621a1ce566b25a",
+      "text_sha256": "6d6ddd51e3d5d3b4ddab3e692b0f8bc98bf431f4616d80d29fdf00d1a48aeaf2",
+      "captured_at": "2026-10-13T10:04:46.696778+00:00"
+    },
+    {
+      "key": "buildtak_spatula_au",
+      "id": "local_source_catalogue_buildtak_spatula_au_8b6858e18e93",
+      "source_url": "https://b3d.com.au/DispProd.asp?CatID=8&ProdID=tlSpatulaBT&SubCatID=132",
+      "sha256": "8b6858e18e936b2adf69e20904951243360e37c1080b8573507ba9308fdbab39",
+      "text_sha256": "7b47c605e6fa6ec241472651d14e56dc4bb0311d6b05e075da4ee2392f278494",
+      "captured_at": "2026-10-13T10:04:46.906177+00:00"
+    },
+    {
+      "key": "fiberlogy_official",
+      "id": "local_source_catalogue_fiberlogy_official_0c97251a9018",
+      "source_url": "https://fiberlogy.com/en/product/pp-filament/",
+      "sha256": "0c97251a9018c3c81050476de17007eb5f89252b7d5654c95ef291e497ab9110",
+      "text_sha256": "f051b35308305f2555324f35aa797a33d39445917e60c3a256d500e9d4e3a67e",
+      "captured_at": "2026-10-13T10:04:48.874882+00:00"
+    },
+    {
+      "key": "fiberlogy_au",
+      "id": "local_source_catalogue_fiberlogy_au_955b25265ce6",
+      "source_url": "https://www.proforged3d.com.au/products/fiberlogy-pp-graphite-1-75mm-750g.js",
+      "sha256": "955b25265ce630c01f48946d98cbd22a3becc7fdbf79f377ec68bed4de4ef479",
+      "text_sha256": "12194af49ef79ce0c4274d3c8343f67eb4c221a0f731b97b319317a175d55599",
+      "captured_at": "2026-10-13T10:04:47.164959+00:00"
+    },
+    {
+      "key": "fiberlogy_au_page",
+      "id": "local_source_catalogue_fiberlogy_au_page_ce44871a9491",
+      "source_url": "https://www.proforged3d.com.au/products/fiberlogy-pp-graphite-1-75mm-750g?country=AU&currency=AUD&variant=50549052932375",
+      "sha256": "ce44871a9491061443a2d7ef1a737df98bbe9d50a6275e347deefbeca40c40e4",
+      "text_sha256": "86c46ad6fb7f7e429bc12548e48b9d94683aa82fea14b7ac9186ef0899f44e59",
+      "captured_at": "2026-10-13T10:04:47.472564+00:00"
+    }
+  ],
+  "records": [
+    {
+      "id": "local_dev_guide_catalogue_buildtak_pei235",
+      "record_key": "catalogue_buildtak_pei235_guide",
+      "revision": "f041dece8682dbf15e03af42681f6e7812be8b684e7aa42cef5807e1635f22dc"
+    },
+    {
+      "id": "local_dev_document_catalogue_buildtak_pei235",
+      "record_key": "catalogue_buildtak_pei235_source",
+      "revision": "390c500469fd642e57c026fa3c67a492a3008596ed6edffad92f106d79879fe4"
+    },
+    {
+      "id": "local_dev_guide_catalogue_buildtak_spatula",
+      "record_key": "catalogue_buildtak_spatula_guide",
+      "revision": "cfd4a8ccf087f6fe24174c43b248bd3d25821f2f688283f29df2e35e7568655e"
+    },
+    {
+      "id": "local_dev_document_catalogue_buildtak_spatula",
+      "record_key": "catalogue_buildtak_spatula_source",
+      "revision": "cf502a338d84db7720c79c3085da0c6ff303f3a7fa6d9e775e89db6f75dd6965"
+    },
+    {
+      "id": "local_dev_guide_catalogue_fiberlogy_pp750",
+      "record_key": "catalogue_fiberlogy_pp750_guide",
+      "revision": "d9929df34f0930bb85fc7ea69daca975096f55c06eae14470af565110c61a96a"
+    },
+    {
+      "id": "local_dev_document_catalogue_fiberlogy_pp750",
+      "record_key": "catalogue_fiberlogy_pp750_source",
+      "revision": "3fdafcbd5adff29bede516a2eca39d8ba1989db8170297eada68d8ab579e7bec"
+    },
+    {
+      "id": "local_dev_guide_catalogue_flowtech_m3101",
+      "record_key": "catalogue_flowtech_m3101_guide",
+      "revision": "528410b742d04a002bef9cf3b6b2e04f24d2e3b392d12a371b383ed8229f1b63"
+    },
+    {
+      "id": "local_dev_document_catalogue_flowtech_m3101",
+      "record_key": "catalogue_flowtech_m3101_source",
+      "revision": "221f07df2d3c38082275577600b774f6e05adf6ed58121b8b33e94292a95b50a"
+    },
+    {
+      "id": "local_dev_guide_catalogue_orbiter_v25",
+      "record_key": "catalogue_orbiter_v25_guide",
+      "revision": "4fc3e071d4907dace9e32b568dcc5ad5a1a450e78f25e8a1bcc6c40948976ea1"
+    },
+    {
+      "id": "local_dev_document_catalogue_orbiter_v25",
+      "record_key": "catalogue_orbiter_v25_source",
+      "revision": "c3d7029b5ac8b0c0c29864c9361c03d2c70af0ddadd85240e8c4caa1cddff3bf"
+    },
+    {
+      "id": "local_dev_guide_catalogue_slice_torque_15",
+      "record_key": "catalogue_slice_torque_15_guide",
+      "revision": "e7e89c0c4b3dcf6b95b05ec23f62dbb22f45a997778fcca7cbcaacd22c192253"
+    },
+    {
+      "id": "local_dev_document_catalogue_slice_torque_15",
+      "record_key": "catalogue_slice_torque_15_source",
+      "revision": "2b620d6736bfc9f9995455e4384fa76b145e9208d6205619d6f11018b8707fcf"
+    }
+  ],
+  "seed_sha256": "5f7b671d0c5a2c9f7a55d69e08a5d11374337fe64480f20b93c43ca213a10c56",
+  "frozen_questions_sha256": "0fd3d62e76989f04f61b9f266d44ddab083b07718da62a5636ef72552c8619b0",
+  "offline_baseline": {
+    "passed": 0,
+    "total": 22
+  },
+  "offline_final": {
+    "passed": 22,
+    "total": 22
+  },
+  "jest": {
+    "passed": 70,
+    "failed": 0,
+    "suites": 5,
+    "mode": "real route handler with independently verified persisted context and mocked loopback transport"
+  },
+  "python_tests": {
+    "passed": 42,
+    "failed": 0
+  },
+  "ruff_F_E9": "passed",
+  "source_and_test_types": "passed",
+  "canonical_types": "pre-existing generated .next/dev layout React 18/19 peer mismatch; parent integration owns fix",
+  "configured_eslint": "exit 0; changed TypeScript files ignored by JavaScript-only configuration",
+  "preview_listeners": [
+    {
+      "port": 3005,
+      "no_listener": true
+    },
+    {
+      "port": 8873,
+      "no_listener": true
+    }
+  ],
+  "native_approvals": 0,
+  "staging_writes": 0,
+  "paid_calls": 0,
+  "new_credentials_access": false,
+  "user_factual_review_claimed": false,
+  "local_actor": "codex_local_catalogue_source_review",
+  "price_refinement_report": "catalogue-price-scope-refinement-v1.json",
+  "uncaptured_prior_pp_aud7250": "research lead only; excluded from accepted factual claims",
+  "three_d_sets_guides_faqs": "link-only; no copied or indexed manual content",
+  "known_original_capture_loss": "five historical raw versions remain unavailable; no reconstruction; zero active citations"
+}

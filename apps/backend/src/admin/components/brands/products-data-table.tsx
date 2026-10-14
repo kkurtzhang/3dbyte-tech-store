@@ -298,7 +298,7 @@ const ProductsDataTable = (props: {
       onRowSelectionChange: setRowSelection,
       //   enableRowSelection
     },
-    onRowClick: (event, row) => {
+    onRowClick: (_event, row) => {
       navigate(`/products/${row.id}`);
     },
   });

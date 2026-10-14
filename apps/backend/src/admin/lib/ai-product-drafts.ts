@@ -42,7 +42,7 @@ export const getAiProductDraftNextStep = (
   if (draft.status === "approved")
     return draft.review_current
       ? "This draft is approved and ready to import."
-      : "Import is blocked: the research approval is missing or outdated. If no import has started, reject this approval, replace the research and review again."
+      : "Import is blocked: the research approval is missing or outdated. Protected approved work requires operator review before research can be replaced."
   if (!draft.quality?.can_approve)
     return "Obtain fresh, exact-product v3 research and resolve the quality blockers below before approval."
   if (draft.status === "needs_resolution")
@@ -156,18 +156,24 @@ export const getAiProductDraftDisplayName = (
   )
 }
 
-export const getAiProductDraftActionAvailability = (status: string) => ({
+export const getAiProductDraftActionAvailability = (
+  status: string,
+  draft: Pick<
+    AdminAiProductDraft,
+    "approved_at" | "imported_at" | "import_progress"
+  > = {},
+) => ({
   canApprove: status === "needs_review",
   canImport: status === "approved",
   canResolve: status === "needs_resolution",
-  canReject: [
-    "received",
-    "validation_failed",
-    "needs_resolution",
-    "needs_review",
-    "approved",
-  ].includes(status),
-})
+  canReject:
+    ["validation_failed", "needs_resolution", "needs_review"].includes(
+      status,
+    ) &&
+    !draft.approved_at &&
+    !draft.imported_at &&
+    (!draft.import_progress || Object.keys(draft.import_progress).length === 0),
+});
 
 export const getAiProductDraftReviewIssues = (
   draft: Pick<AdminAiProductDraft, "validation_errors" | "warnings">

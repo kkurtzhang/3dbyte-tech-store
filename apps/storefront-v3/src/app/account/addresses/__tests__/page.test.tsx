@@ -106,7 +106,7 @@ describe("account addresses page", () => {
   })
 
   it("opens the expandable add form from the mode query", async () => {
-    render(await AddressesPage({ searchParams: { mode: "add" } }))
+    render(await AddressesPage({ searchParams: Promise.resolve({ mode: "add" }) }))
 
     expect(screen.getByTestId("add-address-panel")).toHaveAttribute(
       "data-default-open",
@@ -119,7 +119,7 @@ describe("account addresses page", () => {
   })
 
   it("opens edit in place for the selected address", async () => {
-    render(await AddressesPage({ searchParams: { edit: "addr_1" } }))
+    render(await AddressesPage({ searchParams: Promise.resolve({ edit: "addr_1" }) }))
 
     expect(screen.getByRole("form", { name: /edit address/i })).toHaveAttribute(
       "data-address-id",
@@ -135,7 +135,7 @@ describe("account addresses page", () => {
   })
 
   it("keeps the address list read-only until add or edit is selected", async () => {
-    render(await AddressesPage())
+    render(await AddressesPage({}))
 
     expect(screen.queryByRole("form")).not.toBeInTheDocument()
     expect(screen.getByTestId("add-address-panel")).toHaveAttribute(

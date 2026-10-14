@@ -15,7 +15,8 @@ export type MeilisearchIndexType =
   | "brand"
   | "address"
   | "locality"
-  | "product_document";
+  | "product_document"
+  | "knowledge_reference";
 
 export interface MeilisearchModuleConfig {
   host: string;
@@ -26,6 +27,7 @@ export interface MeilisearchModuleConfig {
   addressIndexName: string;
   localityIndexName: string;
   productDocumentIndexName?: string;
+  knowledgeReferenceIndexName?: string;
   settings?: MeilisearchIndexSettings;
 }
 
@@ -164,7 +166,8 @@ export interface AiProductMetadataSearchFields {
   rcb_ai_search_keywords?: string[];
 }
 
-export interface MeilisearchProductDocument extends AiProductMetadataSearchFields {
+export interface MeilisearchProductDocument
+  extends AiProductMetadataSearchFields {
   // --- 1. CORE IDENTITY ---
   id: string;
   title: string;

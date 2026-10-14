@@ -42,7 +42,7 @@ describe("assistant prompt management", () => {
 
   it("fetches and compiles a Langfuse prompt by name and label", async () => {
     const getPrompt = jest.fn(async () => ({
-      compile: (variables: Record<string, string>) =>
+      compile: (variables: Record<string, string> = {}) =>
         `Dashboard prompt for ${variables.storeName} on ${variables.promptLabel}.`,
       name: DEFAULT_ASSISTANT_PROMPT_NAME,
       toJSON: () => ({

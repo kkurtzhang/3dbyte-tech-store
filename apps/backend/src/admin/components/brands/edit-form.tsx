@@ -29,7 +29,7 @@ const schema = z.object({
 });
 
 export const EditForm = (props: EditFormProps) => {
-  const { id, name, handle, editOpen, showEdit, closeEdit } = props;
+  const { id, name, handle, editOpen, closeEdit } = props;
   const form = useForm<z.infer<typeof schema>>({
     defaultValues: {
       name: name,

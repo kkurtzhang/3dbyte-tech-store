@@ -11,12 +11,14 @@ import {
 import { useMemo, useState } from "react";
 import CreateBundledProduct from "../../components/create-bundled-product";
 import { Container } from "../../components/container";
-import { useBundledProducts } from "../../hooks/bundled-products";
-import { AdminBundledProduct } from "../../types";
+import {
+  useBundledProducts,
+  type NormalizedAdminBundledProduct,
+} from "../../hooks/bundled-products";
 
 const getAdminProductPath = (productId: string) => `/app/products/${productId}`;
 
-const columnHelper = createDataTableColumnHelper<AdminBundledProduct>();
+const columnHelper = createDataTableColumnHelper<NormalizedAdminBundledProduct>();
 
 const columns = [
   columnHelper.accessor("id", {

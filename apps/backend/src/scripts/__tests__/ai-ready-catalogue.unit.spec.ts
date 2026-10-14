@@ -132,7 +132,7 @@ describe("AI-ready realistic product catalogue", () => {
       }),
     );
     expect(input.variants).toHaveLength(1);
-    expect(input.variants[0]?.prices).toEqual([
+    expect(input.variants?.[0]?.prices).toEqual([
       { amount: 32.95, currency_code: "aud" },
     ]);
     expect(input.images?.[0]?.url).toContain("shop.polymaker.com");

@@ -90,7 +90,7 @@ function getStatusMessage(params?: Awaited<SignInPageProps["searchParams"]>) {
 
 export default async function SignInPage({
   searchParams,
-}: SignInPageProps = {}) {
+}: SignInPageProps) {
   const session = await getSessionAction();
   const params = await searchParams;
 

@@ -1,0 +1,346 @@
+{
+  "created_at": "2026-10-13T14:28:32.798639+00:00",
+  "branch": "fix/knowledge-v1-evidence-handoff-20261013",
+  "base_commit": "85b41486b7869d7369a475fb0daab3ccda516d3b",
+  "current_corpus": {
+    "products": 33,
+    "records": 80,
+    "documents": 51,
+    "guides": 29,
+    "variants": 33,
+    "sources": 117,
+    "claims": 469,
+    "supported_claims": 170,
+    "unknown_claims": 226,
+    "local_editorial_decisions": 168,
+    "environment": "local_development",
+    "native_approvals": 0
+  },
+  "active_corpus_changed": false,
+  "baseline_snapshot": {
+    "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/exports/guide-citation-final-local-snapshot-v1.sqlite3",
+    "sha256": "f70dfb47695b554e11ac13e7b47ab773b86b25441c813d71e085e6560dd685c1"
+  },
+  "reports": {
+    "consolidated-v1-handoff-v1.json": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/consolidated-v1-handoff-v1.json",
+      "sha256": "63c5d5208a3432e6f1e608c6a114ec3b505b1df6862f3aecedb7521ffb684636"
+    },
+    "consolidated-v1-handoff-v1-native-plan.json": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/consolidated-v1-handoff-v1-native-plan.json",
+      "sha256": "bb7f1034d2f6b72d9f67631847a4b9cc0dcd226b4703b0b0760438b9dbab9538"
+    },
+    "v1-handoff-preservation-v1.json": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/v1-handoff-preservation-v1.json",
+      "sha256": "1737f2e14a6eb1059b7edd16e18db5551ce041a522ebeb5c9b71ab324a1f1c31"
+    }
+  },
+  "official_equivalent_reconciliation": [
+    {
+      "record_key": "prior_R12_E08",
+      "original_field": "manufacturer_part_number",
+      "original_revision": "4caa716f9c949017513de2cb58b876af9c1e782121b19c8b8ccf42596d86fa0c",
+      "candidate_key": "prior_R12_E08__local_source_guide_equivalent_k2_hotend_e0df8cf55452",
+      "value": "4001030145",
+      "citations": [
+        {
+          "local_source_id": "local_source_guide_equivalent_k2_hotend_e0df8cf55452",
+          "source_url": "https://mvip.creality.com/en/goods/goodsDetail/2309",
+          "quote": "Item Number\nK2 Plus Ceramic Heating Block\n4001030145",
+          "start_char": 129043,
+          "end_char": 129095
+        }
+      ],
+      "disposition": "exact_official_equivalent_prepared",
+      "original_hold_preserved": true,
+      "review": {
+        "actor": "codex_local_v1_handoff_review",
+        "reviewed_at": "2026-10-13T14:25:19.781046+00:00",
+        "status": "source_specific_preparation_evidence_checked",
+        "original_record_id": "local_dev_document_prior_R12_E08",
+        "original_revision": "4caa716f9c949017513de2cb58b876af9c1e782121b19c8b8ccf42596d86fa0c",
+        "original_field": "manufacturer_part_number",
+        "field": "manufacturer_part_number",
+        "source_id": "local_source_guide_equivalent_k2_hotend_e0df8cf55452",
+        "source_sha256": "e0df8cf554521629cb47b9d712b5d549baace28e325c7e08a18b11106d395a0e",
+        "source_form": "official_product_page",
+        "same_product_model_scope_verified": true,
+        "native_review_event": false,
+        "new_user_approval_claimed": false,
+        "not_an_existing_local_record_claim": true
+      }
+    },
+    {
+      "record_key": "prior_R12_E08",
+      "original_field": "manufacturer_model",
+      "original_revision": "4caa716f9c949017513de2cb58b876af9c1e782121b19c8b8ccf42596d86fa0c",
+      "candidate_key": "prior_R12_E08__local_source_guide_equivalent_k2_hotend_e0df8cf55452",
+      "value": "K2 Plus",
+      "citations": [
+        {
+          "local_source_id": "local_source_guide_equivalent_k2_hotend_e0df8cf55452",
+          "source_url": "https://mvip.creality.com/en/goods/goodsDetail/2309",
+          "quote": "Item Number\nK2 Plus Ceramic Heating Block\n4001030145",
+          "start_char": 129043,
+          "end_char": 129095
+        }
+      ],
+      "disposition": "exact_official_equivalent_prepared",
+      "original_hold_preserved": true,
+      "review": {
+        "actor": "codex_local_v1_handoff_review",
+        "reviewed_at": "2026-10-13T14:25:19.781058+00:00",
+        "status": "source_specific_preparation_evidence_checked",
+        "original_record_id": "local_dev_document_prior_R12_E08",
+        "original_revision": "4caa716f9c949017513de2cb58b876af9c1e782121b19c8b8ccf42596d86fa0c",
+        "original_field": "manufacturer_model",
+        "field": "manufacturer_model",
+        "source_id": "local_source_guide_equivalent_k2_hotend_e0df8cf55452",
+        "source_sha256": "e0df8cf554521629cb47b9d712b5d549baace28e325c7e08a18b11106d395a0e",
+        "source_form": "official_product_page",
+        "same_product_model_scope_verified": true,
+        "native_review_event": false,
+        "new_user_approval_claimed": false,
+        "not_an_existing_local_record_claim": true
+      }
+    }
+  ],
+  "supplier_provenance_summary": [
+    {
+      "original_record_key": "prior_R14_E08",
+      "original_field": "manufacturer_module_part",
+      "source_id": "local_source_earlier_S22",
+      "source_url": "https://store.dremc.com.au/products/creality-k2-plus-replacement-nozzle-wipe-module-kit",
+      "publisher_host": "store.dremc.com.au",
+      "original_technical_fact_author_established": false,
+      "independence_established": false,
+      "mirror_status": "unverified",
+      "original_supplier_of_received_stock_established": false,
+      "existing_supplier_identifier_preparation_retained": true,
+      "condition": "Existing supplier-listed identifier already has a native preparation. Retain supplier attribution; it does not turn the original support article into a manufacturer sales page.",
+      "disposition": "retain_existing_supplier_listing_preparation"
+    },
+    {
+      "original_record_key": "prior_R16_E09",
+      "original_field": "manufacturer_adapter_part",
+      "source_id": "local_source_earlier_S24",
+      "source_url": "https://store.dremc.com.au/products/creality-k2-toolhead-heater-thermistor-breakout-board",
+      "publisher_host": "store.dremc.com.au",
+      "original_technical_fact_author_established": false,
+      "independence_established": false,
+      "mirror_status": "unverified",
+      "original_supplier_of_received_stock_established": false,
+      "existing_supplier_identifier_preparation_retained": true,
+      "condition": "Existing supplier-listed identifier already has a native preparation. Retain supplier attribution; it does not turn the original support article into a manufacturer sales page.",
+      "disposition": "retain_existing_supplier_listing_preparation"
+    },
+    {
+      "original_record_key": "prior_R18_E10",
+      "original_field": "manufacturer_circuit_board_part",
+      "source_id": "local_source_earlier_S26",
+      "source_url": "https://store.dremc.com.au/products/creality-k2-plus-toolhead-nozzle-pcb-board",
+      "publisher_host": "store.dremc.com.au",
+      "original_technical_fact_author_established": false,
+      "independence_established": false,
+      "mirror_status": "unverified",
+      "original_supplier_of_received_stock_established": false,
+      "existing_supplier_identifier_preparation_retained": true,
+      "condition": "Existing supplier-listed identifier already has a native preparation. Retain supplier attribution; it does not turn the original support article into a manufacturer sales page.",
+      "disposition": "retain_existing_supplier_listing_preparation"
+    },
+    {
+      "original_record_key": "prior_R14_E08",
+      "original_field": "manufacturer_pad_part",
+      "source_id": "local_source_guide_pad_supplier_lf_7cfcaa45726bddc1",
+      "source_url": "https://makerlab.ph/products/creality-nozzle-wiper-adhesive-tape-for-k2-plus-4004010278",
+      "publisher_host": "makerlab.ph",
+      "original_technical_fact_author_established": false,
+      "independence_established": false,
+      "mirror_status": "unverified",
+      "original_supplier_of_received_stock_established": false,
+      "existing_supplier_identifier_preparation_retained": false,
+      "condition": "Supplier reports the pad identifier. Seller SKU MLE06901 is separate; no module contents, wider model guarantee or manufacturer-source claim.",
+      "disposition": "retain_attributed_observation_only; no original-manufacturer replacement or new native fact prepared"
+    },
+    {
+      "original_record_key": "prior_R16_E09",
+      "original_field": "manufacturer_named_model",
+      "source_id": "local_source_earlier_S24",
+      "source_url": "https://store.dremc.com.au/products/creality-k2-toolhead-heater-thermistor-breakout-board",
+      "publisher_host": "store.dremc.com.au",
+      "original_technical_fact_author_established": false,
+      "independence_established": false,
+      "mirror_status": "unverified",
+      "original_supplier_of_received_stock_established": false,
+      "existing_supplier_identifier_preparation_retained": false,
+      "condition": "Supplier names K2 Pro within a broader family listing; manufacturer-only model assertion continues to rely on the original wiki.",
+      "disposition": "retain_attributed_observation_only; no original-manufacturer replacement or new native fact prepared"
+    },
+    {
+      "original_record_key": "prior_R16_E09",
+      "original_field": "manufacturer_adapter_dimensions",
+      "source_id": "local_source_guide_equivalent_adapter_supplier_72465088b385",
+      "source_url": "https://www.firstshop.co.za/products/creality-k2-k2-pro-k2-plus-hotend-adapter-board-4004010288-406732",
+      "publisher_host": "www.firstshop.co.za",
+      "original_technical_fact_author_established": false,
+      "independence_established": false,
+      "mirror_status": "unverified",
+      "original_supplier_of_received_stock_established": false,
+      "existing_supplier_identifier_preparation_retained": false,
+      "condition": "Explicitly approximate supplier dimensions; do not promote to exact received measurement or manufacturer-certified tolerance.",
+      "disposition": "retain_attributed_observation_only; no original-manufacturer replacement or new native fact prepared"
+    }
+  ],
+  "original_source_form_holds_preserved": 9,
+  "held_original_fields_with_exact_official_preparation": 2,
+  "remaining_original_manufacturer_equivalents_unestablished": 7,
+  "prepared_plan": {
+    "fragments": 66,
+    "positive_facts": 164,
+    "null_fact_occurrences": 357,
+    "reference_shells": 33,
+    "primary_selections_preserved": 33,
+    "prior_candidate_fragments_preserved_exactly": 65,
+    "native_eligible": 0,
+    "new_preparation_review_records": 2,
+    "preparation_reviewer_actor": "codex_local_v1_handoff_review",
+    "new_local_store_review_events": 0,
+    "new_native_approvals": 0
+  },
+  "unresolved_active_fact_count": 226,
+  "verification": {
+    "python": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/v1-handoff-python-v1.log",
+      "sha256": "9feab12b735e314709ea80434a58e246a4c35fcb7044ebb0ef7ce0e4f8989a61",
+      "passed": 81,
+      "failed": 0
+    },
+    "native_pure_contract": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/v1-handoff-native-contract-v1.json",
+      "sha256": "c304d19f429c561f38ec73daa8846fd11fd78e72dfa6fb166085919e85d545e2",
+      "structure_fixtures": 66,
+      "supported_facts": 164,
+      "nullable_fact_occurrences": 357,
+      "primary_documents": 33,
+      "schema_required_fields_and_canonical_hash_mapping_passed": true,
+      "group_consistent_alternative_bindings_passed": true,
+      "unbound_pending_private_and_public_projection_approval_rejected": true,
+      "unsupported_unknown_promotion_and_source_kind_rejected": true,
+      "priced_shell_and_wrong_environment_binding_rejected": true,
+      "native_ids_approvals_or_writes_created": 0
+    },
+    "ruff_F_E9": "passed",
+    "ruff_format": "passed",
+    "git_diff_check": "passed",
+    "ports": [
+      {
+        "port": 3005,
+        "no_listener": true
+      },
+      {
+        "port": 8873,
+        "no_listener": true
+      }
+    ],
+    "all_sqlite_tables_equal_prior_snapshot": true,
+    "prior_route_evidence_unchanged": {
+      "jest": {
+        "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/guide-citation-jest-v1.json",
+        "sha256": "d17ffe770370cfb43b8abdd53b71cf39eeb441ba6e3c9bfc3260900450ae72e0",
+        "passed": 82,
+        "suites": 8
+      },
+      "customer_coverage": {
+        "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/guide-citation-coverage-v1.json",
+        "sha256": "dd1b7d296fa70ed1c393922a6078980378245e12c1cf425bb644ad48f12f2183",
+        "passed": 30,
+        "total": 30
+      },
+      "not_rerun_reason": "No active corpus or chat runtime changed; new preparation is covered by 81 Python tests and 66 native pure-contract fixtures."
+    },
+    "type_check": "No TypeScript source changed. Prior source/test types passed; canonical generated React18/19 limitation remains parent-owned. No fresh full compile claimed."
+  },
+  "bounded_local_evidence_scope_complete": true,
+  "next_supported_action": "Choose and explicitly authorize a native target and reference-only scope, then perform protected duplicate/identity preflight using existing access. Create or reconcile private drafts and actual product/variant/document IDs only under that authorization; review the final canonical native revision under a real reviewer identity. Parent owns release/index gates. Further fixture-only work cannot supply these identities, review or authorization.",
+  "environment_availability": "Native endpoints were not contacted; availability is unverified, not asserted unavailable. Existing connection/access only; no startup or credential expansion.",
+  "native_blockers": [
+    {
+      "category": "native_identity",
+      "state": "absent",
+      "affected_fragments": 66,
+      "affected_shells": 33,
+      "offline_resolution": "group-consistent templates and one primary per shell prepared",
+      "remaining": "actual Medusa product/variant and Strapi documentId readbacks; final handle/title"
+    },
+    {
+      "category": "review",
+      "state": "local source review established; final native revision review pending",
+      "affected_fragments": 66,
+      "offline_resolution": "real local review event IDs/actors/revisions retained; source bytes/excerpts reverified",
+      "remaining": "authorized reviewer event under honest actor identity after final native canonical binding; no forced re-review of unknowns"
+    },
+    {
+      "category": "unsupported_or_unresolved_facts",
+      "state": "field scoped; not a whole-product blocker",
+      "source_kind_held": 9,
+      "source_supported_unbound_guide_facts": 2,
+      "editorial_held": 73,
+      "offline_resolution": "supported single-source facts retained; unknowns remain null; no new facts or 3DSets guide/FAQ ingestion",
+      "remaining": "optional separate curation, not required for supported partial reference use",
+      "multi_source_originals_held": 4,
+      "unreconciled_multi_source_fields": 0,
+      "source_specific_preparation_facts_added": 7,
+      "original_source_form_holds_preserved": 9,
+      "original_fields_with_exact_official_equivalents_prepared": 2,
+      "original_fields_without_original_manufacturer_text_equivalent": 7
+    },
+    {
+      "category": "schema_and_binding",
+      "state": "native schemas unchanged; core-intake and private-field stages distinguished",
+      "affected_fragments": 66,
+      "offline_resolution": "Strapi required fields/version mapping and 33 primary bindings prepared; official classifier omissions fixed",
+      "remaining": "Fragment pool includes one selected primary per product plus alternatives; current reference card binds one source document per product, not every fragment simultaneously"
+    },
+    {
+      "category": "environment",
+      "state": "native target availability not exercised",
+      "affected_fragments": 66,
+      "offline_resolution": "existing parser/CMS/backend pure checks available",
+      "remaining": "authorized connected staging Admin/CMS and deployed current gates/readbacks; no startup or credential expansion in this task"
+    },
+    {
+      "category": "action_authorization",
+      "state": "native creation/review-write/publication/binding not authorized",
+      "affected_fragments": 66,
+      "affected_shells": 33,
+      "offline_resolution": "reviewable templates ready; all apply flags false",
+      "remaining": "specific authorization for target and selected reference-only scope; release/index activation separately parent-owned"
+    }
+  ],
+  "native_workflow": {
+    "strapi_content_type": "api::product-document.product-document",
+    "core_intake": "existing StrapiModuleService.upsertAiProductDocumentDrafts performs unique protected lookup and draft POST/PUT for core fields; its typed DTO does not define knowledge_content/knowledge_review",
+    "private_field_stage": "after native identity readback, use agreed Strapi Admin path to enter canonical knowledge_content/version and pending review; no custom review-action endpoint or automatic promotion is assumed",
+    "preserve_existing": "do not overwrite existing reviewed/bound content; require scoped backup/reconciliation if native duplicate preflight finds it",
+    "initial_state": "private draft via agreed Strapi Admin/API, explicit is_public=false; status=draft on supported operator path",
+    "duplicate_preflight": "protected importLookup: exact medusa_product_id, source_url and draft/published status; public find cannot inspect private drafts",
+    "identity_plan": "33 unique group-consistent shells; one selected primary per reference card",
+    "canonical_revision": "knowledgeRevision from actual CMS utils after real documentId/product/variant/handle/title readback; v1 local/fixture hashes are not reusable native hashes",
+    "review_record": "genuine authorized event with exact document/product/variant/revision, honest reviewer identity, reviewed_at after source_checked_at and valid_until within90days; existing JSON contract has no dedicated reviewer-action endpoint",
+    "medusa_binding_preview": "GET /admin/products/{id}/knowledge-reference-preview?document_id={actual_id}&revision={canonical_hash}; read-only, requires current approved published DTO",
+    "apply": "authorized Medusa Admin/workflow metadata update preserving existing metadata; attach nonphysical group-bound simulation only with actual IDs; keep draft/unpriced/no checkout",
+    "serve": "verify CMS approved DTO and Medusa referenceCard; parent authorizes scoped index/release activation",
+    "local_review_sync": "sync-public-document-review writes local review state only and grants no native approval"
+  },
+  "source_form_policy_changed": false,
+  "exact_url_classification_added": {
+    "url": "https://mvip.creality.com/en/goods/goodsDetail/2309",
+    "existing_form": "official_product_page",
+    "domain_wide_rule_added": false
+  },
+  "services_started": false,
+  "staging_or_shared_database_writes": 0,
+  "model_calls": 0,
+  "dependencies_changed": false,
+  "three_d_sets_build_guides_and_faqs": "official_link_only"
+}

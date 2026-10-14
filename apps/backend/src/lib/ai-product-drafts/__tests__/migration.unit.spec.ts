@@ -1,3 +1,5 @@
+import assert from "node:assert/strict"
+
 import {
   buildAiProductDraftMigrationPlan,
   prepareAiProductDraftMigration,
@@ -119,7 +121,7 @@ describe("AI product draft data migration", () => {
       created_at: "2026-07-24T00:00:00.000Z",
     })
 
-    expect(prepared.kind).toBe("repair_packet")
+    assert(prepared.kind === "repair_packet", "Expected a legacy packet repair")
     expect(prepared.packet).toEqual(
       expect.objectContaining({
         product_id: "",

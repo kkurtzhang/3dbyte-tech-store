@@ -11,6 +11,12 @@ export * from "./meilisearch";
 
 // Shipping types
 export * from "./shipping";
+export type {
+  KnowledgeFact,
+  KnowledgeDocumentBody,
+  ApprovedKnowledgeDocument,
+  KnowledgeReferenceCard,
+} from "./knowledge-reference";
 
 // Custom shared types
 export interface StoreConfig {

@@ -1,0 +1,816 @@
+{
+  "batch_id": "materials-02",
+  "source_manifests": [
+    "sources-materials-01.json",
+    "sources-remainder-01.json",
+    "sources-followup-01.json"
+  ],
+  "entries": [
+    {
+      "key": "fiberlogy_pa12cf",
+      "title": "Fiberlogy PA12+CF15",
+      "brand": "Fiberlogy",
+      "category": "filament",
+      "canonical_key": "fiberlogy:pa12-cf15",
+      "manufacturer_product_url": "https://fiberlogy.com/en/filaments/nylon-en/nylon-pa12cf-en/",
+      "distinctness_reason": "Distinct polymer, reinforcement, hardness or functional formulation; all cosmetic colours, spool masses and diameters counted once.",
+      "source_scope": "Manufacturer material-family claims, preserving stated conditions and edition; separate dated retailer price observations when exact product and package match.",
+      "aliases": [
+        "fiberlogy\\s*(?:nylon\\s*)?pa12\\s*\\+?\\s*cf(?:15)?"
+      ],
+      "facts": [
+        {
+          "field": "composition",
+          "value": "Fiberlogy source states: PA12 nylon with 15% carbon-fibre additive.",
+          "query_pattern": "composition|properties|specification",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_pa12cf_official",
+              "quote": "It is based on Nylon PA12, reinforced with a 15% carbon fiber additive"
+            }
+          ]
+        },
+        {
+          "field": "low_shrinkage",
+          "value": "Fiberlogy source states: The manufacturer describes low shrinkage; no numerical shrinkage guarantee is inferred.",
+          "query_pattern": "low|shrinkage|properties|specification",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_pa12cf_official",
+              "quote": "Low shrinkage reduces the risk of deformation and delamination"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured ProForged 3D page displayed AUD 97.95 for Fiberlogy Nylon PA12 + CF15 Black 1.75mm 500g. This is a dated external reference, not a live 3D Byte offer. GST, shipping, availability and exact spool revision are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_au_nylon",
+              "quote": "Fiberlogy Nylon PA12 + CF15 Black 1.75mm 500g\nRegular price\n$97.95 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_and_revision",
+          "query_pattern": "conflict|revision|legacy|current.spool|ams|guarantee|certif|nozzle|recipe|drying|enclos|chamber|safe",
+          "reason": "Enclosure statements differ across sections/sources; exact enclosure requirement and unverified nozzle/temperature recipes remain unknown. Current family descriptions do not bind a received spool or guarantee printer compatibility or certification."
+        }
+      ]
+    },
+    {
+      "key": "fiberlogy_pa12gf",
+      "title": "Fiberlogy PA12+GF15",
+      "brand": "Fiberlogy",
+      "category": "filament",
+      "canonical_key": "fiberlogy:pa12-gf15",
+      "manufacturer_product_url": "https://fiberlogy.com/en/filaments/nylon-en/nylon-pa12gf-en/",
+      "distinctness_reason": "Distinct polymer, reinforcement, hardness or functional formulation; all cosmetic colours, spool masses and diameters counted once.",
+      "source_scope": "Manufacturer material-family claims, preserving stated conditions and edition; separate dated retailer price observations when exact product and package match.",
+      "aliases": [
+        "fiberlogy\\s*(?:nylon\\s*)?pa12\\s*\\+?\\s*gf(?:15)?"
+      ],
+      "facts": [
+        {
+          "field": "reinforcement",
+          "value": "Fiberlogy source states: 15% glass fibre reinforcement.",
+          "query_pattern": "reinforcement|properties|specification",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_pa12gf_official",
+              "quote": "15% glass fiber (GF)"
+            }
+          ]
+        },
+        {
+          "field": "print_temperature",
+          "value": "Fiberlogy source states: Captured family printing temperature: 255\u2013270 \u00b0C.",
+          "query_pattern": "print|temperature|properties|specification",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_pa12gf_official",
+              "quote": "Printing temperature: 255\u2013270\u00b0C"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured ProForged 3D page displayed AUD 97.95 for Fiberlogy Nylon PA12 + GF15 Black 1.75mm 500g. This is a dated external reference, not a live 3D Byte offer. GST, shipping, availability and exact spool revision are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_au_nylon",
+              "quote": "Fiberlogy Nylon PA12 + GF15 Black 1.75mm 500g\nRegular price\n$97.95 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_and_revision",
+          "query_pattern": "conflict|revision|legacy|current.spool|ams|guarantee|certif|nozzle|recipe|drying|enclos|chamber|safe",
+          "reason": "Received spool revision and abrasive-nozzle requirements need exact source and hardware verification. Current family descriptions do not bind a received spool or guarantee printer compatibility or certification."
+        }
+      ]
+    },
+    {
+      "key": "fiberlogy_bvoh",
+      "title": "Fiberlogy BVOH soluble support",
+      "brand": "Fiberlogy",
+      "category": "filament",
+      "canonical_key": "fiberlogy:bvoh",
+      "manufacturer_product_url": "https://fiberlogy.com/en/product/bvoh-filament/",
+      "distinctness_reason": "Distinct polymer, reinforcement, hardness or functional formulation; all cosmetic colours, spool masses and diameters counted once.",
+      "source_scope": "Manufacturer material-family claims, preserving stated conditions and edition; separate dated retailer price observations when exact product and package match.",
+      "aliases": [
+        "fiberlogy\\s*bvoh"
+      ],
+      "facts": [
+        {
+          "field": "support_removal",
+          "value": "Fiberlogy source states: Supports can be removed by immersing the model in warm water; no disposal claim is inferred.",
+          "query_pattern": "support|removal|properties|specification",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_bvoh_official",
+              "quote": "easy removal of supports\nby immersing the model in warm water"
+            }
+          ]
+        },
+        {
+          "field": "print_temperature",
+          "value": "Fiberlogy source states: Captured family printing temperature: 190\u2013220 \u00b0C.",
+          "query_pattern": "print|temperature|properties|specification",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_bvoh_official",
+              "quote": "Printing temperature: 190\u2013220\u00b0C"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured ProForged 3D page displayed AUD 135.50 for Fiberlogy BVOH 1.75mm 500g. This is a dated external reference, not a live 3D Byte offer. GST, shipping, availability and exact spool revision are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_bvoh_au",
+              "quote": "Fiberlogy BVOH 1.75mm 500g\nRegular price\n$135.50 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_and_revision",
+          "query_pattern": "conflict|revision|legacy|current.spool|ams|guarantee|certif|nozzle|recipe|drying|enclos|chamber|safe",
+          "reason": "Wastewater/disposal and any unsupported humidity guidance remain unknown. Current family descriptions do not bind a received spool or guarantee printer compatibility or certification."
+        }
+      ]
+    },
+    {
+      "key": "fiberlogy_fiberflex30d",
+      "title": "Fiberlogy FiberFlex 30D TPU",
+      "brand": "Fiberlogy",
+      "category": "filament",
+      "canonical_key": "fiberlogy:fiberflex-30d",
+      "manufacturer_product_url": "https://fiberlogy.com/en/product/fiberflex-30d-filament-s2/",
+      "distinctness_reason": "Distinct polymer, reinforcement, hardness or functional formulation; all cosmetic colours, spool masses and diameters counted once.",
+      "source_scope": "Manufacturer material-family claims, preserving stated conditions and edition; separate dated retailer price observations when exact product and package match.",
+      "aliases": [
+        "(?:fiberlogy\\s*)?fiberflex\\s*30d"
+      ],
+      "facts": [
+        {
+          "field": "shore_hardness",
+          "value": "Fiberlogy source states: TPU with Shore hardness 30D.",
+          "query_pattern": "shore|hardness|properties|specification",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_fiberflex30d_official",
+              "quote": "FiberFlex 30D\nis a flexible TPU filament with a reduced\nShore\nhardness\nof 30D"
+            }
+          ]
+        },
+        {
+          "field": "print_temperature",
+          "value": "Fiberlogy source states: Captured family printing temperature: 200\u2013220 \u00b0C.",
+          "query_pattern": "print|temperature|properties|specification",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_fiberflex30d_official",
+              "quote": "Printing temperature: 200\u2013220\u00b0C"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_and_revision",
+          "query_pattern": "conflict|revision|legacy|current.spool|ams|guarantee|certif|nozzle|recipe|drying|enclos|chamber|safe",
+          "reason": "Direct-extruder suitability is source-scoped; legacy spool and AMS fit are unknown. Current family descriptions do not bind a received spool or guarantee printer compatibility or certification."
+        },
+        {
+          "field": "dated_reference_price",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "reason": "No matching current AUD product-and-variant price was verified in the archived response; earlier research or cached observations are not a current offer."
+        }
+      ]
+    },
+    {
+      "key": "fiberlogy_fiberflex40d",
+      "title": "Fiberlogy FiberFlex 40D TPU",
+      "brand": "Fiberlogy",
+      "category": "filament",
+      "canonical_key": "fiberlogy:fiberflex-40d",
+      "manufacturer_product_url": "https://fiberlogy.com/en/product/fiberflex-40d-filament-s1/",
+      "distinctness_reason": "Distinct polymer, reinforcement, hardness or functional formulation; all cosmetic colours, spool masses and diameters counted once.",
+      "source_scope": "Manufacturer material-family claims, preserving stated conditions and edition; separate dated retailer price observations when exact product and package match.",
+      "aliases": [
+        "(?:fiberlogy\\s*)?fiberflex\\s*40d"
+      ],
+      "facts": [
+        {
+          "field": "shore_hardness",
+          "value": "Fiberlogy source states: TPU with Shore hardness 40D.",
+          "query_pattern": "shore|hardness|properties|specification",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_fiberflex40d_official",
+              "quote": "FiberFlex 40D\nis a flexible TPU filament with\na Shore hardness of 40D"
+            }
+          ]
+        },
+        {
+          "field": "print_temperature",
+          "value": "Fiberlogy source states: Captured family printing temperature: 200\u2013220 \u00b0C.",
+          "query_pattern": "print|temperature|properties|specification",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_fiberflex40d_official",
+              "quote": "Printing temperature: 200\u2013220\u00b0C"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured ProForged 3D page displayed AUD 83.60 for Fiberlogy FiberFlex 40D Gray 1.75mm 850g. This is a dated external reference, not a live 3D Byte offer. GST, shipping, availability and exact spool revision are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_fiberflex40d_au",
+              "quote": "Fiberlogy FiberFlex 40D Gray 1.75mm 850g\nRegular price\n$83.60 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_and_revision",
+          "query_pattern": "conflict|revision|legacy|current.spool|ams|guarantee|certif|nozzle|recipe|drying|enclos|chamber|safe",
+          "reason": "Reported 680% versus 700% elongation and legacy-spool AMS applicability remain unresolved. Current family descriptions do not bind a received spool or guarantee printer compatibility or certification."
+        }
+      ]
+    },
+    {
+      "key": "fiberlogy_easyabs",
+      "title": "Fiberlogy Easy ABS",
+      "brand": "Fiberlogy",
+      "category": "filament",
+      "canonical_key": "fiberlogy:easy-abs",
+      "manufacturer_product_url": "https://fiberlogy.com/en/product/easy-abs-filament/",
+      "distinctness_reason": "Distinct polymer, reinforcement, hardness or functional formulation; all cosmetic colours, spool masses and diameters counted once.",
+      "source_scope": "Manufacturer material-family claims, preserving stated conditions and edition; separate dated retailer price observations when exact product and package match.",
+      "aliases": [
+        "(?:fiberlogy\\s*)?easy\\s*abs"
+      ],
+      "facts": [
+        {
+          "field": "print_temperature",
+          "value": "Fiberlogy source states: Captured family printing temperature: 235\u2013255 \u00b0C.",
+          "query_pattern": "print|temperature|properties|specification",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_easyabs_official",
+              "quote": "Printing temperature: 235\u2013255\u00b0C"
+            }
+          ]
+        },
+        {
+          "field": "bed_temperature",
+          "value": "Fiberlogy source states: Captured family bed temperature: 100 \u00b0C.",
+          "query_pattern": "bed|temperature|properties|specification",
+          "proofs": [
+            {
+              "source_key": "fiberlogy_easyabs_official",
+              "quote": "Bed temperature: 100\u00b0C"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_and_revision",
+          "query_pattern": "conflict|revision|legacy|current.spool|ams|guarantee|certif|nozzle|recipe|drying|enclos|chamber|safe",
+          "reason": "Enclosure/density conflicts and retailer net spool mass are unresolved; shipping weight is not net filament weight. Current family descriptions do not bind a received spool or guarantee printer compatibility or certification."
+        },
+        {
+          "field": "dated_reference_price",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "reason": "No matching current AUD product-and-variant price was verified in the archived response; earlier research or cached observations are not a current offer."
+        }
+      ]
+    },
+    {
+      "key": "carbonx_abscf",
+      "title": "3DXTECH CarbonX ABS+CF10",
+      "brand": "3DXTECH",
+      "category": "filament",
+      "canonical_key": "3dxtech:carbonx-abs-cf10",
+      "manufacturer_product_url": "https://www.3dxtech.com/products/carbonx-abs-cf-1",
+      "distinctness_reason": "Distinct polymer, reinforcement, hardness or functional formulation; all cosmetic colours, spool masses and diameters counted once.",
+      "source_scope": "Manufacturer material-family claims, preserving stated conditions and edition; separate dated retailer price observations when exact product and package match.",
+      "aliases": [
+        "(?:3dxtech\\s*)?carbonx\\s*abs\\s*\\+?\\s*cf"
+      ],
+      "facts": [
+        {
+          "field": "reinforcement",
+          "value": "3DXTECH source states: Contains 10% high-modulus carbon fibre.",
+          "query_pattern": "reinforcement|properties|specification",
+          "proofs": [
+            {
+              "source_key": "carbonx_abscf_official",
+              "quote": "Made using 10% High-Modulus Carbon Fiber."
+            }
+          ]
+        },
+        {
+          "field": "nozzle_construction",
+          "value": "3DXTECH source states: Visible print recommendations specify hardened steel with a minimum 0.4 mm diameter.",
+          "query_pattern": "nozzle|construction|properties|specification",
+          "proofs": [
+            {
+              "source_key": "carbonx_abscf_official",
+              "quote": "Hardened Steel with .4mm diameter minimum"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured ProForged 3D page displayed AUD 97.50 for 3DXTECH CarbonX ABS+CF Black 1.75mm, 750g. This is a dated external reference, not a live 3D Byte offer. GST, shipping, availability and exact spool revision are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "carbonx_abscf_au",
+              "quote": "3DXTECH CarbonX ABS+CF Black 1.75mm, 750g\nRegular price\n$97.50 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_and_revision",
+          "query_pattern": "conflict|revision|legacy|current.spool|ams|guarantee|certif|nozzle|recipe|drying|enclos|chamber|safe",
+          "reason": "Visible temperature instructions and image-alt settings conflict; no unified print or drying recipe is selected. Current family descriptions do not bind a received spool or guarantee printer compatibility or certification."
+        }
+      ]
+    },
+    {
+      "key": "thermax_pei1010",
+      "title": "3DXTECH ThermaX PEI 1010",
+      "brand": "3DXTECH",
+      "category": "filament",
+      "canonical_key": "3dxtech:thermax-pei1010",
+      "manufacturer_product_url": "https://www.3dxtech.com/products/thermax-pei-1010",
+      "distinctness_reason": "Distinct polymer, reinforcement, hardness or functional formulation; all cosmetic colours, spool masses and diameters counted once.",
+      "source_scope": "Manufacturer material-family claims, preserving stated conditions and edition; separate dated retailer price observations when exact product and package match.",
+      "aliases": [
+        "(?:thermax\\s*(?:ultem\\s*)?(?:pei\\s*)?1010|3dxtech\\s*(?:pei\\s*)?1010)"
+      ],
+      "facts": [
+        {
+          "field": "glass_transition_temperature",
+          "value": "3DXTECH source states: Manufacturer-listed Tg is 217 \u00b0C; Tg is not an operating-temperature guarantee.",
+          "query_pattern": "glass|transition|temperature|properties|specification",
+          "proofs": [
+            {
+              "source_key": "thermax_pei1010_official",
+              "quote": "High thermal properties, with a Tg of 217C"
+            }
+          ]
+        },
+        {
+          "field": "heated_chamber",
+          "value": "3DXTECH source states: The visible recommendations call for a heated chamber.",
+          "query_pattern": "heated|chamber|properties|specification",
+          "proofs": [
+            {
+              "source_key": "thermax_pei1010_official",
+              "quote": "Heated Chamber\nRecommended"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured ProForged 3D page displayed AUD 137.50 for 3DXTECH THERMAX ULTEM PEI 1010 Black 1.75mm, 500g. This is a dated external reference, not a live 3D Byte offer. GST, shipping, availability and exact spool revision are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "carbonx_abscf_au",
+              "quote": "3DXTECH THERMAX ULTEM PEI 1010 Black 1.75mm, 500g\nRegular price\n$137.50 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_and_revision",
+          "query_pattern": "conflict|revision|legacy|current.spool|ams|guarantee|certif|nozzle|recipe|drying|enclos|chamber|safe",
+          "reason": "Visible and image-alt print settings conflict; no consolidated recipe or finished-part certification is established. Not established as ordinary desktop-printer compatible. Current family descriptions do not bind a received spool or guarantee printer compatibility or certification."
+        }
+      ]
+    },
+    {
+      "key": "thermax_pei9085",
+      "title": "3DXTECH ThermaX PEI 9085",
+      "brand": "3DXTECH",
+      "category": "filament",
+      "canonical_key": "3dxtech:thermax-pei9085",
+      "manufacturer_product_url": "https://www.3dxtech.com/products/thermax-pei-9085",
+      "distinctness_reason": "Distinct polymer, reinforcement, hardness or functional formulation; all cosmetic colours, spool masses and diameters counted once.",
+      "source_scope": "Manufacturer material-family claims, preserving stated conditions and edition; separate dated retailer price observations when exact product and package match.",
+      "aliases": [
+        "thermax\\s*(?:ultem\\s*)?(?:pei\\s*)?9085"
+      ],
+      "facts": [
+        {
+          "field": "glass_transition_temperature",
+          "value": "3DXTECH source states: Manufacturer-listed Tg is 186 \u00b0C; Tg is not an operating-temperature guarantee.",
+          "query_pattern": "glass|transition|temperature|properties|specification",
+          "proofs": [
+            {
+              "source_key": "thermax_pei9085_official",
+              "quote": "High thermal properties, with a Tg of 186C"
+            }
+          ]
+        },
+        {
+          "field": "heated_chamber",
+          "value": "3DXTECH source states: The visible recommendations call for a heated chamber.",
+          "query_pattern": "heated|chamber|properties|specification",
+          "proofs": [
+            {
+              "source_key": "thermax_pei9085_official",
+              "quote": "Heated Chamber\nRecommended"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured ProForged 3D page displayed AUD 183.50 for 3DXTECH THERMAX ULTEM PEI 9085 Natural 1.75mm, 500g. This is a dated external reference, not a live 3D Byte offer. GST, shipping, availability and exact spool revision are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "carbonx_abscf_au",
+              "quote": "3DXTECH THERMAX ULTEM PEI 9085 Natural 1.75mm, 500g\nRegular price\n$183.50 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_and_revision",
+          "query_pattern": "conflict|revision|legacy|current.spool|ams|guarantee|certif|nozzle|recipe|drying|enclos|chamber|safe",
+          "reason": "Visible and image-alt print settings conflict; no consolidated recipe or finished-part certification is established. Current family descriptions do not bind a received spool or guarantee printer compatibility or certification."
+        }
+      ]
+    },
+    {
+      "key": "carbonx_pei9085cf",
+      "title": "3DXTECH CarbonX PEI 9085+CF15",
+      "brand": "3DXTECH",
+      "category": "filament",
+      "canonical_key": "3dxtech:carbonx-pei9085-cf15",
+      "manufacturer_product_url": "https://www.3dxtech.com/products/pei-cf15",
+      "distinctness_reason": "Distinct polymer, reinforcement, hardness or functional formulation; all cosmetic colours, spool masses and diameters counted once.",
+      "source_scope": "Manufacturer material-family claims, preserving stated conditions and edition; separate dated retailer price observations when exact product and package match.",
+      "aliases": [
+        "carbonx\\s*(?:ultem\\s*)?(?:cf\\s*)?pei\\s*9085"
+      ],
+      "facts": [
+        {
+          "field": "composition",
+          "value": "3DXTECH source states: Uses Sabic Ultem 9085 resin and 15% high-modulus carbon fibre.",
+          "query_pattern": "composition|properties|specification",
+          "proofs": [
+            {
+              "source_key": "carbonx_pei9085cf_official",
+              "quote": "CarbonX\u2122 CF PEI 9085 is made using Sabic Ultem\u2122 9085 resin and 15% high-modulus carbon fiber."
+            }
+          ]
+        },
+        {
+          "field": "nozzle_construction",
+          "value": "3DXTECH source states: Visible recommendations specify hardened steel with a minimum 0.4 mm nozzle diameter.",
+          "query_pattern": "nozzle|construction|properties|specification",
+          "proofs": [
+            {
+              "source_key": "carbonx_pei9085cf_official",
+              "quote": "Hardened Steel with .4mm diameter minimum"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured ProForged 3D page displayed AUD 315.50 for 3DXTECH CARBONX ULTEM PEI 9085+CF Black 1.75mm, 500g. This is a dated external reference, not a live 3D Byte offer. GST, shipping, availability and exact spool revision are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "carbonx_abscf_au",
+              "quote": "3DXTECH CARBONX ULTEM PEI 9085+CF Black 1.75mm, 500g\nRegular price\n$315.50 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_and_revision",
+          "query_pattern": "conflict|revision|legacy|current.spool|ams|guarantee|certif|nozzle|recipe|drying|enclos|chamber|safe",
+          "reason": "Manufacturer resin compliance claims do not certify a finished printed part; source print-recipe conflicts and actual printer capacity remain unresolved. Current family descriptions do not bind a received spool or guarantee printer compatibility or certification."
+        }
+      ]
+    },
+    {
+      "key": "pythonflex98a",
+      "title": "FormFutura Python Flex TPU 98A",
+      "brand": "FormFutura",
+      "category": "filament",
+      "canonical_key": "formfutura:python-flex-98a",
+      "manufacturer_product_url": "https://www.formfutura.com/product/python-flex/",
+      "distinctness_reason": "Distinct polymer, reinforcement, hardness or functional formulation; all cosmetic colours, spool masses and diameters counted once.",
+      "source_scope": "Manufacturer material-family claims, preserving stated conditions and edition; separate dated retailer price observations when exact product and package match.",
+      "aliases": [
+        "(?:formfutura\\s*)?python\\s*flex(?:\\s*tpu)?(?:\\s*98a)?"
+      ],
+      "facts": [
+        {
+          "field": "grade_hardness",
+          "value": "FormFutura source states: The manufacturer identifies this grade as Python Flex TPU 98A.",
+          "query_pattern": "grade|hardness|properties|specification",
+          "proofs": [
+            {
+              "source_key": "pythonflex98a_official",
+              "quote": "Python Flex TPU 98A - FormFutura"
+            }
+          ]
+        },
+        {
+          "field": "elongation_claim",
+          "value": "FormFutura source states: The manufacturer claims stretching up to 450% before breaking; this is not a guarantee for any printed geometry.",
+          "query_pattern": "elongation|claim|properties|specification",
+          "proofs": [
+            {
+              "source_key": "pythonflex98a_official",
+              "quote": "Python Flex 98A allows itself to be stretched up to 450% before breaking."
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_and_revision",
+          "query_pattern": "conflict|revision|legacy|current.spool|ams|guarantee|certif|nozzle|recipe|drying|enclos|chamber|safe",
+          "reason": "Product-page and overview printing recommendations conflict. Prior X3D price observations could not be reproduced; do not label historical prices current. Current family descriptions do not bind a received spool or guarantee printer compatibility or certification."
+        },
+        {
+          "field": "dated_reference_price",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "reason": "No matching current AUD product-and-variant price was verified in the archived response; earlier research or cached observations are not a current offer."
+        }
+      ]
+    },
+    {
+      "key": "aquasolve_pva",
+      "title": "FormFutura AquaSolve PVA",
+      "brand": "FormFutura",
+      "category": "filament",
+      "canonical_key": "formfutura:aquasolve-pva",
+      "manufacturer_product_url": "https://www.formfutura.com/product/aquasolve-pva/",
+      "distinctness_reason": "Distinct polymer, reinforcement, hardness or functional formulation; all cosmetic colours, spool masses and diameters counted once.",
+      "source_scope": "Manufacturer material-family claims, preserving stated conditions and edition; separate dated retailer price observations when exact product and package match.",
+      "aliases": [
+        "(?:formfutura\\s*)?aquasolve\\s*pva"
+      ],
+      "facts": [
+        {
+          "field": "print_temperature",
+          "value": "FormFutura source states: The product page suggests approximately 190\u2013210 \u00b0C as a starting print range.",
+          "query_pattern": "print|temperature|properties|specification",
+          "proofs": [
+            {
+              "source_key": "aquasolve_pva_official",
+              "quote": "Print temp:\n\u00b1 190 \u2013 210\u00b0 C"
+            }
+          ]
+        },
+        {
+          "field": "temperature_limit",
+          "value": "FormFutura source states: Do not exceed 225 \u00b0C: the manufacturer warns of crystallisation and loss of flow or water solubility.",
+          "query_pattern": "temperature|limit|properties|specification",
+          "proofs": [
+            {
+              "source_key": "aquasolve_pva_official",
+              "quote": "Do not exceed a printing temperature of 225\u02daC, because AquaSolve PVA will then crystallize to quickly and it will no longer flow and/or dissolve in water."
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_and_revision",
+          "query_pattern": "conflict|revision|legacy|current.spool|ams|guarantee|certif|nozzle|recipe|drying|enclos|chamber|safe",
+          "reason": "Multi-material adhesion and dwell time require validation; historical retailer price/diameter observations are not current offers. Current family descriptions do not bind a received spool or guarantee printer compatibility or certification."
+        },
+        {
+          "field": "dated_reference_price",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "reason": "No matching current AUD product-and-variant price was verified in the archived response; earlier research or cached observations are not a current offer."
+        }
+      ]
+    },
+    {
+      "key": "colorfabb_varioshore",
+      "title": "colorFabb varioShore TPU legacy 92A foaming grade",
+      "brand": "colorFabb",
+      "category": "filament",
+      "canonical_key": "colorfabb:varioshore-tpu-legacy92a",
+      "manufacturer_product_url": "https://www.3dprintergear.com.au/assets/files/TDS_E_ColorFabb_varioShore_TPU.pdf",
+      "distinctness_reason": "Distinct polymer, reinforcement, hardness or functional formulation; all cosmetic colours, spool masses and diameters counted once.",
+      "source_scope": "Manufacturer material-family claims, preserving stated conditions and edition; separate dated retailer price observations when exact product and package match.",
+      "aliases": [
+        "(?:colorfabb\\s*)?varioshore(?:\\s*tpu)?(?!\\s*prosthetic)"
+      ],
+      "facts": [
+        {
+          "field": "base_hardness",
+          "value": "colorFabb source states: The archived manufacturer TDS describes a base Shore hardness of 92A.",
+          "query_pattern": "base|hardness|properties|specification",
+          "proofs": [
+            {
+              "source_key": "colorfabb_varioshore_official",
+              "quote": "quality expanding TPU 3D printing filament with base Shore hardness of\n92A."
+            }
+          ]
+        },
+        {
+          "field": "foaming_behavior",
+          "value": "colorFabb source states: That TDS describes foaming around 230 \u00b0C with volume increasing approximately 1.4\u20131.6 times; settings and resulting hardness depend on the process.",
+          "query_pattern": "foaming|behavior|properties|specification",
+          "proofs": [
+            {
+              "source_key": "colorfabb_varioshore_official",
+              "quote": "At around 230C this material will start foaming, increasing its volume 1.4 - 1.6 times."
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured ProForged 3D page displayed AUD 102.70 for ColorFabb varioShore TPU Black filament 700g 1.75mm. This is a dated external reference, not a live 3D Byte offer. GST, shipping, availability and exact spool revision are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "colorfabb_varioshore_au",
+              "quote": "ColorFabb varioShore TPU Black filament 700g 1.75mm\nRegular price\n$102.70 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_and_revision",
+          "query_pattern": "conflict|revision|current.spool|ams|guarantee|certif|nozzle|recipe|drying|enclos|chamber|safe|(?:apply|same|received).*legacy|legacy.*(?:apply|received|equivalent)",
+          "reason": "Legacy TDS is manufacturer-authored but retailer-hosted. Mapping to a received current 85A/95A revision is unknown; the generic AU varioShore listing does not prove legacy revision. Current family descriptions do not bind a received spool or guarantee printer compatibility or certification."
+        },
+        {
+          "field": "unverified_nearby_model",
+          "query_pattern": "prosthetic|(?:varioshore.*(?:85a|95a))",
+          "reason": "Prosthetic and later 85A/95A varioShore formulations are outside the legacy 92A TDS reference; their properties and revision mapping remain unknown."
+        }
+      ]
+    },
+    {
+      "key": "colorfabb_tpu85a",
+      "title": "colorFabb TPU 85A",
+      "brand": "colorFabb",
+      "category": "filament",
+      "canonical_key": "colorfabb:tpu85a",
+      "manufacturer_product_url": "https://colorfabb.com/tpu-85a-orange",
+      "distinctness_reason": "Distinct polymer, reinforcement, hardness or functional formulation; all cosmetic colours, spool masses and diameters counted once.",
+      "source_scope": "Manufacturer material-family claims, preserving stated conditions and edition; separate dated retailer price observations when exact product and package match.",
+      "aliases": [
+        "colorfabb\\s*tpu\\s*85a"
+      ],
+      "facts": [
+        {
+          "field": "print_temperature",
+          "value": "colorFabb source states: Advised printing temperature: 220\u2013230 \u00b0C.",
+          "query_pattern": "print|temperature|properties|specification",
+          "proofs": [
+            {
+              "source_key": "colorfabb_tpu85a_official",
+              "quote": "Advised 3D printing temperature\n220C-230C"
+            }
+          ]
+        },
+        {
+          "field": "print_speed",
+          "value": "colorFabb source states: Advised print speed: 25\u201335 mm/s.",
+          "query_pattern": "print|speed|properties|specification",
+          "proofs": [
+            {
+              "source_key": "colorfabb_tpu85a_official",
+              "quote": "Advised 3d print speed\n25-35 mm/s"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured ProForged 3D page displayed AUD 78.60 for ColorFabb TPU 85A Black 700g 1.75mm. This is a dated external reference, not a live 3D Byte offer. GST, shipping, availability and exact spool revision are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "colorfabb_varioshore_au",
+              "quote": "ColorFabb TPU 85A Black 700g 1.75mm\nRegular price\n$78.60 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_and_revision",
+          "query_pattern": "conflict|revision|legacy|current.spool|ams|guarantee|certif|nozzle|recipe|drying|enclos|chamber|safe",
+          "reason": "Dry filament, spool geometry and machine settings need verification; no AMS or universal printer-fit promise. Current family descriptions do not bind a received spool or guarantee printer compatibility or certification."
+        }
+      ]
+    },
+    {
+      "key": "colorfabb_tpu95a",
+      "title": "colorFabb TPU 95A",
+      "brand": "colorFabb",
+      "category": "filament",
+      "canonical_key": "colorfabb:tpu95a",
+      "manufacturer_product_url": "https://colorfabb.com/media/datasheets/tds/colorfabb/TDS_colorFabb_TPU95A.pdf",
+      "distinctness_reason": "Distinct polymer, reinforcement, hardness or functional formulation; all cosmetic colours, spool masses and diameters counted once.",
+      "source_scope": "Manufacturer material-family claims, preserving stated conditions and edition; separate dated retailer price observations when exact product and package match.",
+      "aliases": [
+        "colorfabb\\s*tpu\\s*95a"
+      ],
+      "facts": [
+        {
+          "field": "print_temperature",
+          "value": "colorFabb source states: TDS nozzle-temperature guideline: 220\u2013230 \u00b0C.",
+          "query_pattern": "print|temperature|properties|specification",
+          "proofs": [
+            {
+              "source_key": "colorfabb_tpu95a_official",
+              "quote": "Nozzle Temp.                                   \u02daC                                        220-230"
+            }
+          ]
+        },
+        {
+          "field": "print_speed",
+          "value": "colorFabb source states: TDS print-speed guideline: 30\u201340 mm/s.",
+          "query_pattern": "print|speed|properties|specification",
+          "proofs": [
+            {
+              "source_key": "colorfabb_tpu95a_official",
+              "quote": "Print Speed                                    mm/s                                      30-40"
+            }
+          ]
+        },
+        {
+          "field": "dated_reference_price",
+          "value": "On 13 October 2026, the captured ProForged 3D page displayed AUD 78.60 for ColorFabb TPU 95A Green 700g 1.75mm. This is a dated external reference, not a live 3D Byte offer. GST, shipping, availability and exact spool revision are unverified.",
+          "query_pattern": "dated|reference|observed|benchmark",
+          "proofs": [
+            {
+              "source_key": "colorfabb_tpu95a_au",
+              "quote": "ColorFabb TPU 95A Green 700g 1.75mm\nRegular price\n$78.60 AUD"
+            }
+          ]
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "source_conflicts_and_revision",
+          "query_pattern": "conflict|revision|legacy|current.spool|ams|guarantee|certif|nozzle|recipe|drying|enclos|chamber|safe",
+          "reason": "Printed-specimen versus injection-moulded hardness and elongation are different conditions; no unqualified equivalence or AMS guarantee. Current family descriptions do not bind a received spool or guarantee printer compatibility or certification."
+        }
+      ]
+    }
+  ]
+}

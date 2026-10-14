@@ -20,7 +20,7 @@ const readParam = (value?: string | string[]) =>
 
 export default async function ResetPasswordPage({
   searchParams,
-}: ResetPasswordPageProps = {}) {
+}: ResetPasswordPageProps) {
   const params = await searchParams
   const email = readParam(params?.email) || ""
   const token = readParam(params?.token) || ""

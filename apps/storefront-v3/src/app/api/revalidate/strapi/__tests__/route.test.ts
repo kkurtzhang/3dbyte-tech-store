@@ -1,3 +1,5 @@
+export {}
+
 jest.mock("next/cache", () => ({
   revalidatePath: jest.fn(),
   revalidateTag: jest.fn(),

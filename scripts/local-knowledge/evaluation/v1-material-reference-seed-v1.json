@@ -1,0 +1,376 @@
+{
+  "environment": "local_development",
+  "version": 1,
+  "source_capture_manifest": "v1-gap-review-captures-v1.json",
+  "entries": [
+    {
+      "reference_id": "catalogue_panchroma_basic_black",
+      "title": "Polymaker Panchroma Basic PLA Black 1 kg with spool reference",
+      "brand": "Polymaker",
+      "aliases": [
+        "\\bpanchroma\\s+basic(?:\\s+pla)?\\b",
+        "\\bca19006\\b"
+      ],
+      "source_scope": "Current official Panchroma Basic PLA Black / Spool / 1kg CA19006 and captured Phaser Black 1.75mm 1kg with-spool retailer SKU 34463. Names/variant labels are separately evidenced; physical batch and native supplier bindings remain unverified. The official page conflicts on bed range.",
+      "facts": [
+        {
+          "field": "manufacturer_variant_identity",
+          "value": "Official current Black / Spool / 1kg variant is CA19006. This is separate from refill CA19029 and other Panchroma finishes.",
+          "proofs": [
+            {
+              "source_key": "pla_official_json",
+              "quote": "Black / Spool / 1kg",
+              "json_pointer": "/variants/0/title"
+            },
+            {
+              "source_key": "pla_official_json",
+              "quote": "CA19006",
+              "json_pointer": "/variants/0/sku"
+            }
+          ],
+          "query_pattern": "identity|manufacturer.*sku|mpn|spool|black|ca19006"
+        },
+        {
+          "field": "retailer_variant_identity",
+          "value": "Phaser reference identifies Panchroma Basic PLA 1.75 mm, 1 kg with spool; Black retailer variant SKU 34463. This does not establish a selected native/store variant.",
+          "proofs": [
+            {
+              "source_key": "pla_au_json",
+              "quote": "Polymaker Panchroma Basic PLA 1.75mm Filament 1kg (With Spool)",
+              "json_pointer": "/title"
+            },
+            {
+              "source_key": "pla_au_json",
+              "quote": "Black",
+              "json_pointer": "/variants/0/title"
+            },
+            {
+              "source_key": "pla_au_json",
+              "quote": "34463",
+              "json_pointer": "/variants/0/sku"
+            }
+          ],
+          "query_pattern": "retailer.*identity|phaser.*sku|package|diameter|weight"
+        },
+        {
+          "field": "manufacturer_nozzle_temperature",
+          "value": "Current named-grade manufacturer page lists 190–230°C printing temperature. Use it as a grade-specific starting range, not a universal PLA or printer setting.",
+          "proofs": [
+            {
+              "source_key": "pla_official_page_bounded5m",
+              "quote": "Printing Temperature: 190˚C - 230˚C"
+            }
+          ],
+          "query_pattern": "nozzle.*temperature|printing.*temperature|temperature.*range"
+        },
+        {
+          "field": "manufacturer_drying",
+          "value": "Current Panchroma Basic PLA page lists 55°C for 6 h only if the material has absorbed moisture. Verify the actual spool and dryer limits separately; this is not a recipe for all PLA finishes.",
+          "proofs": [
+            {
+              "source_key": "pla_official_page_bounded5m",
+              "quote": "Drying Settings: 55˚C for 6h\n(Only if the material has absorbed moisture)"
+            }
+          ],
+          "query_pattern": "dry|moisture cycle"
+        },
+        {
+          "field": "manufacturer_bed_conflict",
+          "value": "The same captured manufacturer page lists bed 25–60°C in Print Settings and 20–60°C in Technical Specifications. The canonical bed range remains unknown until the publisher resolves the difference.",
+          "proofs": [
+            {
+              "source_key": "pla_official_page_bounded5m",
+              "quote": "Bed Temperature: 25˚C - 60˚C"
+            },
+            {
+              "source_key": "pla_official_page_bounded5m",
+              "quote": "Bed\n20-60\n°C"
+            }
+          ],
+          "query_pattern": "conflict|observed.*bed"
+        },
+        {
+          "field": "aud_reference_observation",
+          "value": "Exact Phaser Black with-spool variant page captured 13 October 2026 lists AUD22.95 including GST, shipping calculated separately. The listing-wide minimum AUD21.95 is not this selected colour observation. Dated external reference only; no live 3D Byte Tech offer or stock.",
+          "proofs": [
+            {
+              "source_key": "pla_au_black_page",
+              "quote": "$22.95 AUD"
+            },
+            {
+              "source_key": "pla_au_black_page",
+              "quote": "GST included"
+            },
+            {
+              "source_key": "pla_au_black_page",
+              "quote": "Shipping calculated at checkout."
+            }
+          ],
+          "query_pattern": "(?:dated|reference|observed|captured).*(?:price|aud)|(?:price|aud).*(?:dated|reference|observed|captured)"
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "bed_temperature_c",
+          "query_pattern": "bed.*(?:temperature|range|setting|default)|(?:temperature|range).*bed"
+        },
+        {
+          "field": "other_pla_grade_recipe_transfer",
+          "query_pattern": "matte|silk|glow|every.*pla|all.*pla|polylite.*same|same.*polylite"
+        },
+        {
+          "field": "refill_variant_binding",
+          "query_pattern": "refill|ca19029"
+        },
+        {
+          "field": "actual_spool_temperature_limit",
+          "query_pattern": "spool.*(?:limit|safe|temperature)|dryer.*safe"
+        },
+        {
+          "field": "finished_part_load_rating",
+          "query_pattern": "load rating|certif|service temperature|food.?safe"
+        },
+        {
+          "field": "store_sale_price",
+          "query_pattern": "price|cost|how much"
+        },
+        {
+          "field": "physical_stock",
+          "query_pattern": "stock|available|availability"
+        },
+        {
+          "field": "delivery_estimate",
+          "query_pattern": "ship|deliver|dispatch"
+        },
+        {
+          "field": "actual_store_package_contents",
+          "query_pattern": "(?:your|our|store|3d byte).*(?:package|included|contents|bundle)"
+        }
+      ],
+      "guides": [
+        {
+          "field": "selection_guidance",
+          "value": "Use the current Basic-grade printing window and conditional 55°C / 6 h drying context, with the actual spool/dryer checked separately. Keep the conflicting 20–60 versus 25–60°C bed ranges unresolved. This Black with-spool reference is not the refill or another Panchroma finish, and it does not certify a finished part. Confirm the exact supplied package before treating the source profile as a physical/native binding.",
+          "proofs": [
+            {
+              "source_key": "pla_official_page_bounded5m",
+              "quote": "Printing Temperature: 190˚C - 230˚C"
+            },
+            {
+              "source_key": "pla_official_page_bounded5m",
+              "quote": "Drying Settings: 55˚C for 6h"
+            },
+            {
+              "source_key": "pla_official_page_bounded5m",
+              "quote": "Bed Temperature: 25˚C - 60˚C"
+            },
+            {
+              "source_key": "pla_official_page_bounded5m",
+              "quote": "Bed\n20-60\n°C"
+            }
+          ],
+          "query_pattern": "choose|choice|buy|select|consider|starting point|guidance"
+        }
+      ]
+    },
+    {
+      "reference_id": "catalogue_polymaker_petg_black",
+      "title": "Polymaker PETG New Formula Black 1 kg reference",
+      "brand": "Polymaker",
+      "aliases": [
+        "\\bpolymaker\\s+(?:new\\s+formula\\s+)?petg\\b",
+        "\\bpb05001\\b"
+      ],
+      "source_scope": "Current official Polymaker PETG Black / New Formula / 1kg PB05001 and Phaser 2025 Black 1.75 mm 1 kg retailer SKU 34122. Legacy PolyLite PETG TDS is a different source/grade; the current page conflicts on drying60°C/ 6 h versus 65°C/ 4 h.",
+      "facts": [
+        {
+          "field": "manufacturer_variant_identity",
+          "value": "Official current Black / New Formula / 1kg variant is PB05001; this is not a Galaxy or legacy PolyLite variant.",
+          "proofs": [
+            {
+              "source_key": "petg_official_json",
+              "quote": "Black / New Formula / 1kg",
+              "json_pointer": "/variants/0/title"
+            },
+            {
+              "source_key": "petg_official_json",
+              "quote": "PB05001",
+              "json_pointer": "/variants/0/sku"
+            }
+          ],
+          "query_pattern": "identity|manufacturer.*sku|mpn|pb05001|new formula"
+        },
+        {
+          "field": "retailer_variant_identity",
+          "value": "Phaser 2025 Polymaker PETG reference is 1.75 mm, 1 kg; captured Black variant has retailer SKU 34122. Physical batch/spool generation and native store IDs remain unverified.",
+          "proofs": [
+            {
+              "source_key": "petg_au_json",
+              "quote": "Polymaker PETG 1.75mm Filament 1kg (2025)",
+              "json_pointer": "/title"
+            },
+            {
+              "source_key": "petg_au_json",
+              "quote": "Black",
+              "json_pointer": "/variants/0/title"
+            },
+            {
+              "source_key": "petg_au_json",
+              "quote": "34122",
+              "json_pointer": "/variants/0/sku"
+            }
+          ],
+          "query_pattern": "phaser.*sku|retailer.*identity|package|diameter|weight"
+        },
+        {
+          "field": "manufacturer_nozzle_temperature",
+          "value": "Current new-formula manufacturer description recommends 240–260°C printing temperature; this is not an unqualified profile for all PETG or every printer.",
+          "proofs": [
+            {
+              "source_key": "petg_official_json",
+              "quote": "Recommended printing temperature is 240-260 °C."
+            }
+          ],
+          "query_pattern": "nozzle.*temperature|printing.*temperature|temperature.*range"
+        },
+        {
+          "field": "manufacturer_bed_temperature",
+          "value": "Current new-formula manufacturer description recommends 60–70°C bed temperature. Exact plate coating, release treatment and printer tuning remain separate checks.",
+          "proofs": [
+            {
+              "source_key": "petg_official_json",
+              "quote": "Bed temperature should be set between 60-70 °C."
+            }
+          ],
+          "query_pattern": "bed.*temperature|bed.*range|temperature.*range"
+        },
+        {
+          "field": "manufacturer_drying_conflict",
+          "value": "Current page Print Settings list 60°C / 6 h, while Technical Specifications list 65°C / 4 h. Keep the canonical drying temperature/duration unknown; do not blend these into a new cycle or use the linked legacy PolyLite TDS as a substitute.",
+          "proofs": [
+            {
+              "source_key": "petg_official_page_bounded5m",
+              "quote": "Drying Settings: 60˚C for 6h"
+            },
+            {
+              "source_key": "petg_official_page_bounded5m",
+              "quote": "Drying\n65°C\nfor 4h"
+            }
+          ],
+          "query_pattern": "observed.*dry|conflict|different.*dry"
+        },
+        {
+          "field": "current_storage_context",
+          "value": "Current manufacturer guidance says to keep the filament sealed and dry when not in use. It does not establish a numeric humidity target or an actual spool/dryer temperature limit for this reference.",
+          "proofs": [
+            {
+              "source_key": "petg_official_page_bounded5m",
+              "quote": "Keep the filament sealed and dry when not in use."
+            }
+          ],
+          "query_pattern": "storage|store.*filament|sealed|keep.*dry"
+        },
+        {
+          "field": "legacy_grade_distinction",
+          "value": "The current manufacturer describes Polymaker PETG as the successor replacing PolyLite PETG. The linked PolyLite PETG TDS is labelled for the legacy grade and is not accepted here as the current new-formula recipe.",
+          "proofs": [
+            {
+              "source_key": "petg_official_json",
+              "quote": "Polylite PETG will be discontinued and replaced by the faster, stronger and easier to print successor, Polymaker PETG."
+            }
+          ],
+          "query_pattern": "legacy|polylite|tds|successor"
+        },
+        {
+          "field": "aud_reference_observation",
+          "value": "Captured Phaser Black 2025 reference on13 October 2026: AUD27.95 including GST, shipping calculated separately. Dated external observation only, not a live store price, stock or delivery promise.",
+          "proofs": [
+            {
+              "source_key": "petg_au_page",
+              "quote": "$27.95 AUD"
+            },
+            {
+              "source_key": "petg_au_page",
+              "quote": "GST included"
+            },
+            {
+              "source_key": "petg_au_page",
+              "quote": "Shipping calculated at checkout."
+            }
+          ],
+          "query_pattern": "(?:dated|reference|observed|captured).*(?:price|aud)|(?:price|aud).*(?:dated|reference|observed|captured)"
+        }
+      ],
+      "unknowns": [
+        {
+          "field": "drying_temperature_c",
+          "query_pattern": "drying|dry.*(?:temperature|cycle|setting|duration)|canonical.*dry"
+        },
+        {
+          "field": "drying_duration_hours",
+          "query_pattern": "drying|dry.*(?:duration|cycle|setting|temperature)|canonical.*dry"
+        },
+        {
+          "field": "legacy_tds_recipe_transfer",
+          "query_pattern": "apply.*polylite|polylite.*(?:same|recipe|apply|use)|legacy.*recipe"
+        },
+        {
+          "field": "galaxy_or_filled_variant_binding",
+          "query_pattern": "galaxy|carbon|cf|esd|glass.?fibre"
+        },
+        {
+          "field": "actual_spool_temperature_limit",
+          "query_pattern": "spool.*(?:temperature|limit|safe)|dryer.*safe"
+        },
+        {
+          "field": "finished_part_load_rating",
+          "query_pattern": "load rating|certif|food.?safe|service temperature"
+        },
+        {
+          "field": "store_sale_price",
+          "query_pattern": "price|cost|how much"
+        },
+        {
+          "field": "physical_stock",
+          "query_pattern": "stock|available|availability"
+        },
+        {
+          "field": "delivery_estimate",
+          "query_pattern": "ship|deliver|dispatch"
+        },
+        {
+          "field": "actual_store_package_contents",
+          "query_pattern": "(?:your|our|store|3d byte).*(?:package|included|contents|bundle)"
+        }
+      ],
+      "guides": [
+        {
+          "field": "selection_guidance",
+          "value": "Use the current new-formula 240–260°C printing and 60–70°C bed windows as source-scoped starting context. Keep filament sealed/dry, but the page’s 60°C/ 6 h versus 65°C/ 4 h drying conflict prevents a canonical cycle here. Do not substitute the linked legacy PolyLite TDS, a Galaxy/filled variant or an assumed spool limit. This reference is evidence for the named product line, not an exact supplied batch, printer profile or finished-part certification.",
+          "proofs": [
+            {
+              "source_key": "petg_official_json",
+              "quote": "Recommended printing temperature is 240-260 °C."
+            },
+            {
+              "source_key": "petg_official_json",
+              "quote": "Bed temperature should be set between 60-70 °C."
+            },
+            {
+              "source_key": "petg_official_page_bounded5m",
+              "quote": "Drying Settings: 60˚C for 6h"
+            },
+            {
+              "source_key": "petg_official_page_bounded5m",
+              "quote": "Drying\n65°C\nfor 4h"
+            }
+          ],
+          "query_pattern": "choose|choice|buy|select|consider|starting point|guidance"
+        }
+      ]
+    }
+  ],
+  "retailer_own_brand_excluded": true,
+  "live_offers": false,
+  "native_export": false
+}

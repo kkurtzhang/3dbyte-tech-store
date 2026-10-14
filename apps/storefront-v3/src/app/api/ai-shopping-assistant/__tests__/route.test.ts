@@ -240,8 +240,9 @@ function stringToReadableStream(text: string) {
 function toHeaders(
   headers?: Record<string, string> | { get: (name: string) => string | null },
 ) {
-  if (headers && "get" in headers) {
-    return headers
+  if (headers && typeof headers.get === "function") {
+    const get = headers.get
+    return { get: (name: string) => get.call(headers, name) }
   }
 
   const normalized = Object.fromEntries(
@@ -1305,8 +1306,8 @@ describe("POST /api/ai-shopping-assistant", () => {
             stopStream: () => void
             tools: Record<string, unknown>
           }) => TransformStream<
-            { text: string; type: "text-delta" } | { type: "finish" },
-            { text: string; type: "text-delta" } | { type: "finish" }
+            { text: string; type: "text-delta" } | { type: "finish" } | { type: "tool-input-start"; toolCallId: string; toolName: string },
+            { text: string; type: "text-delta" } | { type: "finish" } | { type: "tool-input-start"; toolCallId: string; toolName: string }
           >
         }
       | undefined
@@ -1375,8 +1376,8 @@ describe("POST /api/ai-shopping-assistant", () => {
             stopStream: () => void
             tools: Record<string, unknown>
           }) => TransformStream<
-            { text: string; type: "text-delta" } | { type: "finish" },
-            { text: string; type: "text-delta" } | { type: "finish" }
+            { text: string; type: "text-delta" } | { type: "finish" } | { type: "tool-input-start"; toolCallId: string; toolName: string },
+            { text: string; type: "text-delta" } | { type: "finish" } | { type: "tool-input-start"; toolCallId: string; toolName: string }
           >
           onFinish?: (finish: unknown) => void
         }

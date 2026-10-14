@@ -1,0 +1,43 @@
+{
+  "checked_at": "2026-10-13T08:00:17.714787+00:00",
+  "base_head": "a42067dfef59f017e951d2f821e8c867d80ff4f3",
+  "followup_branch": "fix/knowledge-preview-kit-review-20261013",
+  "runtime_files_changed": false,
+  "preview": {
+    "help_http": 200,
+    "faq_http": 200,
+    "assistant_button_in_server_html": true,
+    "live_response_cases": 6,
+    "drawer_dom_cases": 6,
+    "browser_visual_verified": false,
+    "screenshots_created": false,
+    "codex_browser_panel": "queued for current hidden task",
+    "model_generation": false
+  },
+  "retailer_review": {
+    "records": 3,
+    "archived_sources": 5,
+    "component_observations": 87,
+    "index_evidence_mismatches": [],
+    "native_import_eligible": false,
+    "active_sqlite_corpus_changed": false,
+    "guide_faq_content_ingested": false
+  },
+  "verification": {
+    "python_tests": 20,
+    "new_retailer_guard_tests": 8,
+    "eslint": "configured JS gate passed",
+    "ruff": "F,E9 passed",
+    "canonical_storefront_types": "failed Next-generated dev layout check with ReactNode mismatch",
+    "react_type_versions_observed": [
+      "18.3.27",
+      "19.2.7"
+    ],
+    "source_test_only_type_diagnostic": "passed with only generated dev checks excluded; canonical full gate remains failed"
+  },
+  "blockers": [
+    "Browser control/visual verification unavailable in this text session.",
+    "Canonical local generated-dev type gate currently fails; combined clean exact-head checks remain required.",
+    "Actual kit identities/revisions/contents and native review remain unbound."
+  ]
+}

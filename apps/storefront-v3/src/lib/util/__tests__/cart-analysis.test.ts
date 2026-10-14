@@ -1,3 +1,4 @@
+import { createVariantFixture } from "@/test-utils/medusa-fixtures"
 import type { MedusaCartLineItem } from "@/lib/medusa/cart"
 import { analyzeCartContents } from "../cart-analysis"
 
@@ -8,12 +9,12 @@ function createLineItem(overrides: Partial<MedusaCartLineItem> = {}) {
     quantity: 1,
     unit_price: 1000,
     metadata: null,
-    variant: {
+    variant: createVariantFixture({
       id: "variant_default",
       title: "Default Variant",
       prices: [{ amount: 1200, currency_code: "usd" }],
       preorder_variant: undefined,
-    },
+    }),
     ...overrides,
   } as MedusaCartLineItem
 }
@@ -61,7 +62,7 @@ describe("analyzeCartContents", () => {
     const result = analyzeCartContents([
       createLineItem({
         id: "line_pre_1",
-        variant: {
+        variant: createVariantFixture({
           id: "variant_pre_1",
           title: "Default Variant",
           preorder_variant: {
@@ -69,11 +70,11 @@ describe("analyzeCartContents", () => {
             available_date: "2999-03-01T00:00:00.000Z",
             prices: [{ amount: 900, currency_code: "usd" }],
           },
-        },
+        }),
       }),
       createLineItem({
         id: "line_pre_2",
-        variant: {
+        variant: createVariantFixture({
           id: "variant_pre_2",
           title: "Default Variant",
           preorder_variant: {
@@ -81,7 +82,7 @@ describe("analyzeCartContents", () => {
             available_date: "2999-01-15T00:00:00.000Z",
             prices: [{ amount: 850, currency_code: "usd" }],
           },
-        },
+        }),
       }),
     ])
 
@@ -97,7 +98,7 @@ describe("analyzeCartContents", () => {
       createLineItem(),
       createLineItem({
         id: "line_pre_1",
-        variant: {
+        variant: createVariantFixture({
           id: "variant_pre_1",
           title: "Default Variant",
           preorder_variant: {
@@ -105,7 +106,7 @@ describe("analyzeCartContents", () => {
             available_date: "2999-04-20T00:00:00.000Z",
             prices: [{ amount: 900, currency_code: "usd" }],
           },
-        },
+        }),
       }),
     ])
 
@@ -127,11 +128,11 @@ describe("analyzeCartContents", () => {
           bundle_title: "Starter Bundle",
           bundle_quantity: 1,
         },
-        variant: {
+        variant: createVariantFixture({
           id: "variant_bundle_1",
           title: "Default Variant",
           prices: [{ amount: 1100, currency_code: "usd" }],
-        },
+        }),
       }),
       createLineItem({
         id: "line_bundle_2",
@@ -142,11 +143,11 @@ describe("analyzeCartContents", () => {
           bundle_title: "Starter Bundle",
           bundle_quantity: 1,
         },
-        variant: {
+        variant: createVariantFixture({
           id: "variant_bundle_2",
           title: "Default Variant",
           prices: [{ amount: 700, currency_code: "usd" }],
-        },
+        }),
       }),
     ])
 
@@ -169,7 +170,7 @@ describe("analyzeCartContents", () => {
           bundle_title: "Launch Bundle",
           bundle_quantity: 1,
         },
-        variant: {
+        variant: createVariantFixture({
           id: "variant_bundle_preorder",
           title: "Default Variant",
           prices: [{ amount: 1000, currency_code: "usd" }],
@@ -178,7 +179,7 @@ describe("analyzeCartContents", () => {
             available_date: "2999-02-01T00:00:00.000Z",
             prices: [{ amount: 800, currency_code: "usd" }],
           },
-        },
+        }),
       }),
       createLineItem({
         id: "line_regular",
@@ -202,7 +203,7 @@ describe("analyzeCartContents", () => {
           bundle_title: "Launch Bundle",
           bundle_quantity: 1,
         },
-        variant: {
+        variant: createVariantFixture({
           id: "variant_bundle_preorder",
           title: "Default Variant",
           prices: [{ amount: 1200, currency_code: "usd" }],
@@ -211,7 +212,7 @@ describe("analyzeCartContents", () => {
             available_date: "2999-02-01T00:00:00.000Z",
             prices: [{ amount: 800, currency_code: "usd" }],
           },
-        },
+        }),
       }),
     ])
 
@@ -230,14 +231,14 @@ describe("analyzeCartContents", () => {
             bundle_title: "Australia Bundle",
             bundle_quantity: 1,
           },
-          variant: {
+          variant: createVariantFixture({
             id: "variant_bundle_au",
             title: "Default Variant",
             prices: [
               { amount: 600, currency_code: "usd" },
               { amount: 1300, currency_code: "aud" },
             ],
-          },
+          }),
         }),
       ],
       "aud"
@@ -245,4 +246,35 @@ describe("analyzeCartContents", () => {
 
     expect(result.bundleSavingsTotal).toBe(600)
   })
+})
+
+
+it("keeps bundle savings when native carts return only the public regular-price receipt", () => {
+  const result = analyzeCartContents([
+    createLineItem({
+      quantity: 2,
+      unit_price: 80,
+      variant: undefined,
+      metadata: { bundle_key: "native-receipt", bundle_regular_unit_price: 120 },
+    }),
+  ], "usd")
+  expect(result.bundleSavingsTotal).toBe(80)
+})
+
+it("does not turn a preorder comparison price into bundle savings without a standalone preorder price", () => {
+  const result = analyzeCartContents([
+    createLineItem({
+      quantity: 2,
+      unit_price: 80,
+      variant: createVariantFixture({
+        preorder_variant: {
+          status: "enabled",
+          available_date: "2999-01-01T00:00:00.000Z",
+          prices: [],
+        },
+      }),
+      metadata: { bundle_key: "preorder-receipt", bundle_regular_unit_price: 120 },
+    }),
+  ], "usd")
+  expect(result.bundleSavingsTotal).toBe(0)
 })

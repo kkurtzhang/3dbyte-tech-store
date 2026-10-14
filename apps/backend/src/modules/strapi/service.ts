@@ -1,4 +1,10 @@
 import { Logger } from "@medusajs/framework/types";
+import { readPublicProductDocuments } from "./public-product-documents";
+import { verifiedReferenceDocument } from "../../lib/knowledge-reference/contract";
+import {
+  knowledgeDigest,
+  knowledgeIdentifier,
+} from "@3dbyte-tech-store/shared-utils/src/knowledge-reference.cjs";
 import {
   normalizeStrapiProductDocument,
   type PublicProductDocument,
@@ -374,19 +380,49 @@ class StrapiModuleService {
   //====End======Product Description Section===============
 
   //===============Product Documents Section===============
+  async getKnowledgeReference(
+    documentId: string,
+    productId: string,
+    revision: string,
+  ) {
+    if (
+      !knowledgeIdentifier(documentId) ||
+      !knowledgeIdentifier(productId) ||
+      !knowledgeDigest(revision)
+    )
+      return null;
+    try {
+      const response = await this.makeRequest(
+        `product-documents/${encodeURIComponent(documentId)}/knowledge-reference?medusa_product_id=${encodeURIComponent(productId)}&revision=${revision}`,
+        {
+          useAuth: false,
+          cache: "no-store",
+          signal: AbortSignal.timeout(5000),
+          suppressErrorLog: true,
+        },
+      );
+      const doc = verifiedReferenceDocument(response.data);
+      return doc?.document_id === documentId &&
+        doc.product_id === productId &&
+        doc.revision_hash === revision
+        ? doc
+        : null;
+    } catch {
+      return null;
+    }
+  }
   async listProductDocuments(
     medusaProductId?: string,
-    options: ListProductDocumentsOptions = {}
+    options: ListProductDocumentsOptions = {},
   ): Promise<PublicProductDocument[]> {
-    const filters = medusaProductId
-      ? `&filters[medusa_product_id][$eq]=${encodeURIComponent(medusaProductId)}`
-      : "";
-    let response: any;
-
     try {
-      response = await this.makeRequest(
-        `product-documents?populate[file]=true&filters[is_public][$eq]=true${filters}&sort[0]=sort_order:asc&sort[1]=title:asc&pagination[pageSize]=200`,
-        { suppressErrorLog: options.failSoft, useAuth: false }
+      return await readPublicProductDocuments(
+        (endpoint) =>
+          this.makeRequest(endpoint, {
+            suppressErrorLog: options.failSoft,
+            useAuth: false,
+          }),
+        medusaProductId,
       );
     } catch (error) {
       if (options.failSoft) {
@@ -395,24 +431,16 @@ class StrapiModuleService {
 
       throw error;
     }
-
-    return (response.data || [])
-      .map((document: unknown) => normalizeStrapiProductDocument(document))
-      .filter(
-        (document: PublicProductDocument) =>
-          Boolean(document.id) &&
-          (Boolean(document.file_url) || Boolean(document.source_url))
-      );
   }
 
   async getProductDocument(
-    documentId: string
+    documentId: string,
   ): Promise<PublicProductDocument | null> {
     try {
       const encodedDocumentId = encodeURIComponent(documentId);
       const response = await this.makeRequest(
         `product-documents?populate[file]=true&filters[documentId][$eq]=${encodedDocumentId}&filters[is_public][$eq]=true&pagination[pageSize]=1`,
-        { useAuth: false }
+        { useAuth: false },
       );
       const document = normalizeStrapiProductDocument(response.data?.[0]);
 
@@ -422,7 +450,7 @@ class StrapiModuleService {
     } catch (error) {
       this.logger_.error(
         `Failed to get product document for ${documentId}`,
-        new Error(error.message)
+        new Error(error.message),
       );
       return null;
     }
@@ -430,16 +458,15 @@ class StrapiModuleService {
 
   async upsertAiProductDocumentDrafts(
     medusaProductId: string,
-    documents: AiProductDocumentDraftData[]
+    documents: AiProductDocumentDraftData[],
   ): Promise<unknown[]> {
     const upserted: unknown[] = [];
 
     for (const document of documents) {
-      const response = (await this.makeRequest(
-        `product-documents?filters[medusa_product_id][$eq]=${encodeURIComponent(medusaProductId)}&filters[source_url][$eq]=${encodeURIComponent(document.source_url)}&status=draft&pagination[pageSize]=1`
-      )) as { data?: { documentId?: string; id?: string }[] };
-      const existing = response.data?.[0];
-      const documentId = existing?.documentId || existing?.id;
+      const documentId = await this.findPrivateProductDocumentIdentity(
+        medusaProductId,
+        document.source_url,
+      );
       const result = (await this.makeRequest(
         documentId
           ? `product-documents/${documentId}?status=draft`
@@ -449,13 +476,53 @@ class StrapiModuleService {
           body: JSON.stringify({
             data: document,
           }),
-        }
+        },
       )) as { data: unknown };
 
       upserted.push(result.data);
     }
 
     return upserted;
+  }
+
+  private async findPrivateProductDocumentIdentity(
+    productId: string,
+    sourceUrl: string,
+  ): Promise<string | null> {
+    const identities = new Set<string>();
+    for (const status of ["draft", "published"]) {
+      const response: unknown = await this.makeRequest(
+        `product-documents/import-lookup?medusa_product_id=${encodeURIComponent(productId)}&source_url=${encodeURIComponent(sourceUrl)}&status=${status}`,
+      );
+      if (
+        !response ||
+        typeof response !== "object" ||
+        !Array.isArray((response as { data?: unknown }).data)
+      )
+        throw new Error("Invalid private document identity response.");
+      const rows = (response as { data: unknown[] }).data;
+      if (rows.length > 2)
+        throw new Error("Ambiguous private document identity.");
+      for (const row of rows) {
+        if (!row || typeof row !== "object")
+          throw new Error("Invalid private document identity.");
+        const record = row as Record<string, unknown>;
+        if (
+          !knowledgeIdentifier(record.documentId) ||
+          record.medusa_product_id !== productId ||
+          record.source_url !== sourceUrl
+        )
+          throw new Error(
+            "Private document identity does not match the exact request.",
+          );
+        identities.add(record.documentId);
+      }
+    }
+    if (identities.size > 1)
+      throw new Error(
+        "Ambiguous private document identity; reconcile before import.",
+      );
+    return identities.values().next().value ?? null;
   }
   //====End======Product Documents Section===============
 

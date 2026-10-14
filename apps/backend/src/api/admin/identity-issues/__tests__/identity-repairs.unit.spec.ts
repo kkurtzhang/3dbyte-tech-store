@@ -1,9 +1,4 @@
 import { Modules } from "@medusajs/framework/utils";
-import {
-  acceptOrderTransferWorkflow,
-  requestOrderTransferWorkflow,
-  setAuthAppMetadataWorkflow,
-} from "@medusajs/medusa/core-flows";
 
 import { ACCOUNT_COORDINATION_MODULE } from "../../../../modules/account-coordination";
 import { SUPPORT_TICKET_MODULE } from "../../../../modules/support-ticket";
@@ -19,9 +14,18 @@ jest.mock("@medusajs/medusa/core-flows", () => ({
   setAuthAppMetadataWorkflow: jest.fn(),
 }));
 
-const mockRequestTransfer = requestOrderTransferWorkflow as jest.Mock;
-const mockAcceptTransfer = acceptOrderTransferWorkflow as jest.Mock;
-const mockSetAuthMetadata = setAuthAppMetadataWorkflow as jest.Mock;
+type MockWorkflow = jest.MockedFunction<(container: unknown) => {
+  run: (input: unknown) => Promise<unknown>;
+}>;
+const {
+  requestOrderTransferWorkflow: mockRequestTransfer,
+  acceptOrderTransferWorkflow: mockAcceptTransfer,
+  setAuthAppMetadataWorkflow: mockSetAuthMetadata,
+} = jest.requireMock<{
+  requestOrderTransferWorkflow: MockWorkflow;
+  acceptOrderTransferWorkflow: MockWorkflow;
+  setAuthAppMetadataWorkflow: MockWorkflow;
+}>("@medusajs/medusa/core-flows");
 
 describe("identity issue repairs", () => {
   beforeEach(() => {

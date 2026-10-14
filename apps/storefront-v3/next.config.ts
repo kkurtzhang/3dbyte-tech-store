@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import createMDX from "@next/mdx";
@@ -11,6 +12,24 @@ import {
 import { buildSecurityHeaders } from "./src/lib/security/content-security-policy";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
+const repositoryRoot = path.resolve(dirname, "../..");
+const nextPackageRoot = path.dirname(
+  createRequire(import.meta.url).resolve("next/package.json"),
+);
+const hasFlagPackageRoot = path.dirname(
+  createRequire(path.join(nextPackageRoot, "package.json")).resolve(
+    "has-flag/package.json",
+  ),
+);
+// Shared worktree dependencies must stay inside the standalone trace and package.
+// An ordinary pnpm/Docker install keeps the existing repository-root layout.
+let tracingRoot = repositoryRoot;
+while (
+  path.relative(tracingRoot, nextPackageRoot) === ".." ||
+  path.relative(tracingRoot, nextPackageRoot).startsWith(`..${path.sep}`)
+) {
+  tracingRoot = path.dirname(tracingRoot);
+}
 
 const imageHostnames = getAssetImageHostnames();
 const sourceBackedProductImageHostnames =
@@ -22,7 +41,13 @@ const nextConfig: NextConfig = {
   typescript: {
     tsconfigPath: "tsconfig.build.json",
   },
-  outputFileTracingRoot: path.resolve(dirname, "../.."),
+  outputFileTracingRoot: tracingRoot,
+  // Turbopack retains pnpm's hoisted has-flag alias but can omit its target.
+  outputFileTracingIncludes: {
+    "/*": [
+      `${path.relative(dirname, hasFlagPackageRoot).split(path.sep).join("/")}/**/*`,
+    ],
+  },
   pageExtensions: ["js", "jsx", "mdx", "ts", "tsx"],
   transpilePackages: [
     "@3dbyte-tech-store/observability",

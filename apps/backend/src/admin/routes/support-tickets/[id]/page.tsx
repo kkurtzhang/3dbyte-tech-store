@@ -1,7 +1,6 @@
 import {
   Badge,
   Button,
-  Heading,
   Select,
   Text,
   Textarea,

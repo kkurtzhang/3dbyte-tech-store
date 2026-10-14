@@ -1,0 +1,165 @@
+{
+  "timestamp": "2026-10-13T18:14:21.609984+00:00",
+  "before": {
+    "products": 103,
+    "records": 150,
+    "documents": 121,
+    "guides": 29,
+    "variants": 103,
+    "sources": 231,
+    "claims": 962,
+    "supported_claims": 366,
+    "unknown_claims": 523,
+    "local_editorial_decisions": 247,
+    "environment": "local_development",
+    "native_approvals": 0
+  },
+  "after": {
+    "products": 103,
+    "records": 150,
+    "documents": 121,
+    "guides": 29,
+    "variants": 103,
+    "sources": 254,
+    "claims": 965,
+    "supported_claims": 378,
+    "unknown_claims": 514,
+    "local_editorial_decisions": 260,
+    "environment": "local_development",
+    "native_approvals": 0
+  },
+  "ingest": {
+    "created": 0,
+    "updated": 13,
+    "skipped": 0,
+    "environment": "local_development",
+    "native_changes": 0
+  },
+  "artifacts": {
+    "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100-prices/reports/price-followup-reviewed-v2.json": "646e729137f80608e12b7a6bf8b68f1dba1c59b9fde26c2fb347d8952c1041b7",
+    "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100-prices/exports/price-followup-activation-v1-before.sqlite3": "cbea3dda56d181d4706900bd26c893e520057dfccbc8f76911c6813b223bdf22",
+    "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100-prices/exports/price-followup-activation-v1-after.sqlite3": "85d465b37b594e5b9cbabce19907a34531438ae1f85a860bf860d8fcce7eec03",
+    "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100-prices/exports/price-followup-activation-v1-ledger.json": "de0a990ff9cc5ce56e27dc3bed0b755bceb95c1d767bee7496424b6e93ea592a"
+  },
+  "source_count": 23,
+  "source_hashes": {
+    "local_source_price_aquasolve_manufacturer_9c760986c697": "9c760986c6970ed93fedb6e1212f26badfcd9dfe5c24398d332bc481b8897733",
+    "local_source_price_aquasolve_page_79d8e251165e": "79d8e251165ee59168c0ab02ca3f7bcca3cf91dffff4296508fd08e7a7240fb8",
+    "local_source_price_asa_json_bfb0e88adcbb": "bfb0e88adcbb2a9085766dd9f5fc8f9afe8697ee93c6dd2c664a3391f8e16cfd",
+    "local_source_price_asa_page_10b816e09443": "10b816e094431d4e0c07d628a4825e1d392c08be3a566291434edb716bac783c",
+    "local_source_price_btt_sfs_json_ee772d515b24": "ee772d515b24661b2a6bef7f2f985f4f8b1e3ce5da6accee5f98573e663133a9",
+    "local_source_price_btt_sfs_page_fallback_41d5b5de8e8f": "41d5b5de8e8faf9e0e03a8a22dee62b56eba6b5d6914f21eb45171cd4d588a4c",
+    "local_source_price_cnc_deburrer_manufacturer_16c16d4538de": "16c16d4538defb0f9e34f1d51a48bf62f1294ca072e220b873fe66640df003c6",
+    "local_source_price_cnc_deburrer_page_fallback_fba36776584a": "fba36776584aba8ab22863d04db440874d1d727395bebf9242f36a392b05eade",
+    "local_source_price_cnc_ts100_page_fallback_2c23c578ab58": "2c23c578ab58668d87241bc07acd3e4b9117ea44b8ad0fd55c67fd30088b0241",
+    "local_source_price_creality_tax_faq_504a9ef59cc0": "504a9ef59cc09a435fde5d6248a53639a36053a0af2214f1e2a035d32ff4ff40",
+    "local_source_price_creality_x4_page_4a58bd62d435": "4a58bd62d435b710ef3122768979102fd4810920ca3692d49586a5e68434f8eb",
+    "local_source_price_easyabs_page_8c16c8a447d8": "8c16c8a447d890620ebb87c79c875cbcdf344186996ddb6e71ad324e0b6dfcc3",
+    "local_source_price_ebb36_json_bf52c4786d4f": "bf52c4786d4fdfbac7128f335e1fb9538d99c871c4bb4c1505b45295c7b54fef",
+    "local_source_price_ebb36_page_0da7c20a4900": "0da7c20a490007807c65751b5b92fdc6bbb105b08b53c11634b466e03e012b16",
+    "local_source_price_eibos_page_fallback_41d5b5de8e8f": "41d5b5de8e8faf9e0e03a8a22dee62b56eba6b5d6914f21eb45171cd4d588a4c",
+    "local_source_price_flex30d_json_e3433217662c": "e3433217662cfd9b1f9991971d9b66e37af02a18f86ff7b389436348a4fc402c",
+    "local_source_price_flex30d_page_5b3242932edf": "5b3242932edf88e3cfcedbe93cbcd4ebf561c6d760bb8bec0eb75b47e73e2af1",
+    "local_source_price_jaycar_terms_d52ea1582c4b": "d52ea1582c4b16c8700f1647e88f593239f28b3284424840308c9ecec0ae9167",
+    "local_source_price_pythonflex_page_e44cd7e5fa24": "e44cd7e5fa2495479bb99584b04d60571b57bf0225097cac9a97412d788424a8",
+    "local_source_price_pythonflex_variant_e4e2c99b0908": "e4e2c99b0908f9f8a97a264aebe2e22c51d49fdd9fa96c6d6ef35adc94609fb7",
+    "local_source_price_revo_six_json_d9566f25058b": "d9566f25058b2e15c9670869013bb0d3207607f5260fc853136ab0900e1fceeb",
+    "local_source_price_revo_six_page_5b9a0d3d96b6": "5b9a0d3d96b63a80024ae41d5f79ca23c35d9f889522057cf2ae620650bdd8fe",
+    "local_source_price_sunlu_s2_page_fallback_11c11f03d9f8": "11c11f03d9f8943668da20fa2bfc5b626c9ea54edecb1c6fa97744738f66dfa6"
+  },
+  "observations": [
+    {
+      "key": "sunlu_s2",
+      "amount_aud": "149.00",
+      "classification": "dated_current_page",
+      "statement": "Dated external reference observed 2026-10-13: Jaycar AUD 149.00, tax included, for SUNLU S2, Jaycar TL5012, one unit. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established."
+    },
+    {
+      "key": "cnc_ts100",
+      "amount_aud": "47.95",
+      "classification": "dated_current_page",
+      "statement": "Dated external reference observed 2026-10-13: ShapeShop AUD 47.95, tax included, for CNC Kitchen TS100/101 soldering adapter and tips set; retailer EAN 4262391010129. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established."
+    },
+    {
+      "key": "creality_spacepi_x4",
+      "amount_aud": "269.00",
+      "classification": "dated_current_page",
+      "statement": "Dated external reference observed 2026-10-13: Creality AU AUD 269.00, tax included, for standalone Creality SpacePi X4, SKU 4005010107. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established."
+    },
+    {
+      "key": "btt_ebb36_gen2",
+      "amount_aud": "65.65",
+      "classification": "dated_current_page",
+      "statement": "Dated external reference observed 2026-10-13: DREMC AUD 65.65, tax included, for EBB36 Gen 2 V1.0; selected variant 46504017035433, SKU 1030000188. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established."
+    },
+    {
+      "key": "e3d_revo_six_cold",
+      "amount_aud": "69.90",
+      "classification": "dated_current_page",
+      "statement": "Dated external reference observed 2026-10-13: DREMC AUD 69.90, tax included, for Revo Six 24V coldside pack only; variant 43781865799849, SKU REVO-SIX-24V-COLD. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established."
+    },
+    {
+      "key": "fiberlogy_asa",
+      "amount_aud": "61.15",
+      "classification": "dated_current_page",
+      "statement": "Dated external reference observed 2026-10-13: Proforged3D AUD 61.15, tax included, for Fiberlogy ASA Natural 1.75 mm 750 g; variant 52806275957015, SKU MISC-FIL-FIB-102. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established."
+    },
+    {
+      "key": "fiberlogy_fiberflex30d",
+      "amount_aud": "83.60",
+      "classification": "dated_current_page",
+      "statement": "Dated external reference observed 2026-10-13: Proforged3D AUD 83.60, tax included, for Fiberlogy FiberFlex 30D Black 1.75 mm 850 g; variant 49497186042135, SKU MISC-FIL-FIB-014. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established."
+    },
+    {
+      "key": "fiberlogy_easyabs",
+      "amount_aud": "41.00",
+      "classification": "dated_current_page",
+      "statement": "Dated external reference observed 2026-10-13: Fuse3D AUD 41.00, tax included, for Fiberlogy Easy ABS transparent navy blue 1.75 mm 750 g, SKU EABS-NBLUETR-175-075; retailer manufacturer number 5902560996524. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established."
+    },
+    {
+      "key": "pythonflex98a",
+      "amount_aud": "69.99",
+      "classification": "dated_current_page",
+      "statement": "Dated external reference observed 2026-10-13: AUSTiC AUD 69.99, tax included, for FormFutura PythonFlex 98A Black 1.75 mm 500 g; SKU 175PYTFLX-B-0500, retailer GTIN 8718924479315; selected variant 34417. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established."
+    },
+    {
+      "key": "aquasolve_pva",
+      "amount_aud": "72.99",
+      "classification": "dated_current_page",
+      "statement": "Dated external reference observed 2026-10-13: AUSTiC AUD 72.99, tax included, for FormFutura AquaSolve PVA natural 1.75 mm 300 g; retailer SKU 175AQSOPVA-TRNS-0300; manufacturer AQSV-175NTRL-00300, EAN 8718924471388. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established."
+    },
+    {
+      "key": "eibos_polyphemus",
+      "amount_aud": "231.00",
+      "classification": "historical_only",
+      "statement": "Historical cached Add Labs listing, retrieved 2026-10-13; provider crawl age: 2 months ago. AUD 231.00, tax included, for retailer-described EIBOS Polyphemus 3KG 80c with 3KG extension; no equivalence to another hardware revision asserted. Current external price is unknown. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established."
+    },
+    {
+      "key": "btt_sfs_v2",
+      "amount_aud": "33.45",
+      "classification": "historical_only",
+      "statement": "Historical cached DREMC listing, retrieved 2026-10-13; provider crawl age: last month. AUD 33.45, tax included, for BIGTREETECH SFS V2.0, SKU 1060000630; current URL now describes V2.1, not equivalent. Current external price is unknown. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established."
+    },
+    {
+      "key": "cnc_deburrer",
+      "amount_aud": "29.95",
+      "classification": "retailer_identity_unresolved",
+      "statement": "Retailer-described observation retrieved 2026-10-13: ShapeShop AUD 29.95, GST included, for CNC Kitchen deburrer with three blades; retailer EAN 4262391011713 conflicts with manufacturer EAN 4262391010099. Exact manufacturer identity remains unresolved; this amount is not assigned to the canonical product. No live 3D Byte sale price, physical availability, shipping charge or landed cost is established."
+    }
+  ],
+  "holds": [
+    {
+      "key": "printdry_fc305",
+      "reason": "No verified exact AUD single large non-vacuum container observation. Earlier AUD 129.95 kit cannot be mapped to this canonical package."
+    }
+  ],
+  "invariants": {
+    "counted_products": 100,
+    "held_references": 3,
+    "product_rows_unchanged": true,
+    "non_price_claims_unchanged": true,
+    "prior_source_rows_unchanged": true,
+    "prior_revisions_preserved": true,
+    "native_changes": 0
+  }
+}

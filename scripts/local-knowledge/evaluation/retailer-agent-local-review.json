@@ -1,0 +1,55 @@
+{
+  "checked_at": "2026-10-13T09:08:28.892552+00:00",
+  "environment": "local_development",
+  "reviewer_type": "codex_agent",
+  "reviewer_actor": "codex_local_retailer_reference_source_review",
+  "mechanism": "Store.ingest writes accepted_for_local_development editorial decisions in the dedicated local SQLite database.",
+  "supported_facts_verified": 21,
+  "unknown_fields_preserved": 33,
+  "user_factual_review_claimed": false,
+  "parent_review_pending": true,
+  "native_approvals_created": 0,
+  "staging_changes": 0,
+  "existing_record_revisions_preserved": true,
+  "before_database_backup": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/exports/retailer-agent-local-activation-v1-before.sqlite3",
+  "before": {
+    "products": 20,
+    "records": 53,
+    "documents": 38,
+    "guides": 15,
+    "variants": 20,
+    "sources": 70,
+    "claims": 249,
+    "supported_claims": 91,
+    "unknown_claims": 104,
+    "local_editorial_decisions": 109,
+    "environment": "local_development",
+    "native_approvals": 0
+  },
+  "after": {
+    "products": 23,
+    "records": 56,
+    "documents": 41,
+    "guides": 15,
+    "variants": 23,
+    "sources": 71,
+    "claims": 303,
+    "supported_claims": 112,
+    "unknown_claims": 137,
+    "local_editorial_decisions": 112,
+    "environment": "local_development",
+    "native_approvals": 0
+  },
+  "ingest": {
+    "created": 3,
+    "updated": 0,
+    "skipped": 0,
+    "environment": "local_development",
+    "native_changes": 0
+  },
+  "record_keys": [
+    "retailer_dremc_WES2487",
+    "retailer_dremc_WES2488",
+    "retailer_dremc_WES2489"
+  ]
+}

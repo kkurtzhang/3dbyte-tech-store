@@ -223,7 +223,6 @@ describe('POST /store/orders/lookup', () => {
             {
               id: 'ful_1',
               shipped_at: '2026-06-03T01:00:00.000Z',
-              shipped_at: '2026-06-03T01:00:00.000Z',
             },
           ],
         },

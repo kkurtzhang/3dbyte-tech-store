@@ -1,0 +1,303 @@
+{
+  "sourceCommit": "3f4850499d9a8c744b8237b980b3211cc53ac7c7",
+  "approvalDate": "2026-10-14",
+  "baselinePolicySHA256": "f9564b1c7d91cda0a45acd0e5787f8c3d0c4da9e62b468fcd1029e3206e27483",
+  "scope": "53 non-secret assignments; exact file AND exact full match; generic-api-key only",
+  "files": [
+    {
+      "path": "apps/storefront-v3/src/app/api/ai-shopping-assistant/local-product-registry.generated.ts",
+      "sha256": "1f7ad70aaa1a8edfa47801ae2c1e531c2708ddb377784dd948fbfc75eeb1a574",
+      "matches": [
+        {
+          "line": 59,
+          "field": "groupKey",
+          "matchSHA256": "e3826dbc4c70db4fc8d4d6dc89358fa7f64a1bf1cd729b11e5d1e79e743fa3de"
+        },
+        {
+          "line": 137,
+          "field": "groupKey",
+          "matchSHA256": "5d346ff343b51f0778191aa78609090899a814e814584eb6d7877b93e840095b"
+        },
+        {
+          "line": 162,
+          "field": "groupKey",
+          "matchSHA256": "94fbfe36d89944ba721d654d78fa5fe5ad99655cbc084d477929c69f1cf0c67f"
+        },
+        {
+          "line": 239,
+          "field": "groupKey",
+          "matchSHA256": "976d09d5eabb12ee3a37c86defd13c21f44b4fc93da49e17d20f8190b98d6a90"
+        },
+        {
+          "line": 742,
+          "field": "groupKey",
+          "matchSHA256": "20aca31a9d68f1a0635edbc90ef49dc740322fb74bce91706e586b60f86b6f67"
+        },
+        {
+          "line": 762,
+          "field": "groupKey",
+          "matchSHA256": "9d1fbd466443c924544fc83029b4d146861c52c1a925e19f73677567ae0d316a"
+        },
+        {
+          "line": 782,
+          "field": "groupKey",
+          "matchSHA256": "4a966efffea686fbac3c9392d3fc7b7ed0d07749addabf28538ac22566d45a04"
+        },
+        {
+          "line": 801,
+          "field": "groupKey",
+          "matchSHA256": "45a001e68fb5e2a83e5311ec51e9f2b0e57a606865e37d9bddfa91818f7a20a8"
+        },
+        {
+          "line": 821,
+          "field": "groupKey",
+          "matchSHA256": "f9a6e09fff283732731ceea16e25c47a29ddd894b6c0e47d96c3d316cb97ed9c"
+        },
+        {
+          "line": 841,
+          "field": "groupKey",
+          "matchSHA256": "44266e041b546bb68db16cf2c558b0deb00adc36249769aea6c43edb107264eb"
+        },
+        {
+          "line": 861,
+          "field": "groupKey",
+          "matchSHA256": "c368e0e7b154822465bc5607d7e6ce2d01565e93956788d79bf7a98d4333e63d"
+        },
+        {
+          "line": 900,
+          "field": "groupKey",
+          "matchSHA256": "5c2b5f076f2decd4205e3e6e833271a490fd4c845ef053d98f776fdec4053a6a"
+        },
+        {
+          "line": 920,
+          "field": "groupKey",
+          "matchSHA256": "8a7e7d310118218b5250720512d0dfc771fd9e86cacda13df9c7f86e9314718b"
+        },
+        {
+          "line": 941,
+          "field": "groupKey",
+          "matchSHA256": "db7ee137ec3fc5394d4681f42157ca97d0ae1b3e26a59df3edccc718ef7c73a3"
+        },
+        {
+          "line": 1000,
+          "field": "groupKey",
+          "matchSHA256": "74e262b498bbd0d6deac0ba49489e53780867e1a6db6a7b8d8cd9200be148410"
+        },
+        {
+          "line": 1080,
+          "field": "groupKey",
+          "matchSHA256": "c6de6b20bfe6813fd52f69d83fc4ba6e615a2821212d6d04682d2ba4325504f5"
+        },
+        {
+          "line": 1100,
+          "field": "groupKey",
+          "matchSHA256": "63ab7b4b013133c3ff0b3da2a5d08bd6a923077fc8ba9aac82481015f5742de6"
+        },
+        {
+          "line": 1120,
+          "field": "groupKey",
+          "matchSHA256": "53a5c5391945005a6f6dd9861e2e6a3bdcd98071a902ae139832eb911dcd2f99"
+        },
+        {
+          "line": 1240,
+          "field": "groupKey",
+          "matchSHA256": "e6fe71cf92737f15c00ba36a15b2e9ab6302b00a3651b1bd4bc635447e3453be"
+        },
+        {
+          "line": 1260,
+          "field": "groupKey",
+          "matchSHA256": "1bffd7f9a8b900d6de3f7c703f59205ded7accd0d8c86f7d34171e59a3ff4376"
+        },
+        {
+          "line": 1280,
+          "field": "groupKey",
+          "matchSHA256": "5a2d8552cdae0224046430f6e6d64a207dc4a0ab11f2e8385ffc1ed7c7ba5019"
+        },
+        {
+          "line": 1299,
+          "field": "groupKey",
+          "matchSHA256": "91123348b825d36af49ebd4f0c37a428b246f3c82beae9ebcc27a6fd2cbeceee"
+        },
+        {
+          "line": 1339,
+          "field": "groupKey",
+          "matchSHA256": "b51087d03cd41c624b6dce36ea3a9efc5ac321d9603cd61800a1bb192784a5df"
+        },
+        {
+          "line": 1359,
+          "field": "groupKey",
+          "matchSHA256": "2b377ea407874d0a172728c8292577bbe4f2ec30479d0779ae8a1e0f98f50071"
+        },
+        {
+          "line": 1379,
+          "field": "groupKey",
+          "matchSHA256": "17645f6d65426c73166019c8f7f818fbf92bd2d1c9f5fca1443161e46c3f949e"
+        },
+        {
+          "line": 1457,
+          "field": "groupKey",
+          "matchSHA256": "09e0ce9d7cb0454ddabd5aa12ceccb485ddc1d54ff8d61ab43e37d9585b04fd9"
+        },
+        {
+          "line": 1477,
+          "field": "groupKey",
+          "matchSHA256": "713c84c8cb40ddcf524009d7c4b74b419e5f5be8d89db36848021d4a3a7d55fa"
+        },
+        {
+          "line": 1497,
+          "field": "groupKey",
+          "matchSHA256": "03d1a2b1fd934fe20ded8dfc8ec52264fddbda15315bbafa773fe1155cf79574"
+        },
+        {
+          "line": 1517,
+          "field": "groupKey",
+          "matchSHA256": "78704e5b5ff501f1bc9acf7e376cf0aab65d59980366ea72a01931fd325c84bb"
+        },
+        {
+          "line": 1556,
+          "field": "groupKey",
+          "matchSHA256": "9967c3c6e7ba9916a5b641e89fb09489e1a5d70f13a894227928e0483c4a32cf"
+        },
+        {
+          "line": 1655,
+          "field": "groupKey",
+          "matchSHA256": "0019c7fd2b9edf2bb47beaf5e4a666128a958ec27006c17fc3845ff40a57c218"
+        },
+        {
+          "line": 1695,
+          "field": "groupKey",
+          "matchSHA256": "1fa317d093764a11d60fc08c1303708c4c07eb9d3de9706926fd4187c8df91f8"
+        },
+        {
+          "line": 1715,
+          "field": "groupKey",
+          "matchSHA256": "1aff6e41f30b4e3ce614c19ead7156c68220b4a60fd2e5c5f04fbcd1e4bb2672"
+        },
+        {
+          "line": 1735,
+          "field": "groupKey",
+          "matchSHA256": "01e62b440aac4c048649abcb239b91652e3536ada7e4465d6a7e150b376954a3"
+        },
+        {
+          "line": 1795,
+          "field": "groupKey",
+          "matchSHA256": "17f869ea01d90993f88f6bf2991e189f6d25f632a81e4ced053db4ad8be909fd"
+        },
+        {
+          "line": 1815,
+          "field": "groupKey",
+          "matchSHA256": "e37469757bdfc5e66fdc02fe9356b5092dc9cb810a657cf96137c6ebd888d9ed"
+        },
+        {
+          "line": 1835,
+          "field": "groupKey",
+          "matchSHA256": "cd78ae64e115cec9c7e09cdcb4e07489c073bffcc2ebe2d11eea29225602450e"
+        },
+        {
+          "line": 1874,
+          "field": "groupKey",
+          "matchSHA256": "869b815f3a67c3b5fa0a39e7421218293af2f8a803ccb57fc8b644683d3b2fbd"
+        },
+        {
+          "line": 1952,
+          "field": "groupKey",
+          "matchSHA256": "4222ca0413e7d5ad09b76acf88259736aa39ee96c480a13deec4ccee2c69f51c"
+        },
+        {
+          "line": 1972,
+          "field": "groupKey",
+          "matchSHA256": "9b95e4b43ae998daf4066878778416556ecb0036b84bc4f3cc0ade406ba2c845"
+        },
+        {
+          "line": 2072,
+          "field": "groupKey",
+          "matchSHA256": "b3265811d02057310d7841eef1f9b70468ba5f4e94a9f1520eb52a3e1ba32010"
+        },
+        {
+          "line": 2112,
+          "field": "groupKey",
+          "matchSHA256": "84c2b4cabcbefebacef867ebf09e6b47fb0d04ee9f97fa7cd8f9db6411dba152"
+        }
+      ]
+    },
+    {
+      "path": "scripts/local-knowledge/evaluation/catalogue100-materials-02.json",
+      "sha256": "53a9788764b6e666dd02e9421a38afa92bb830c173ae2588cecd71af22932562",
+      "matches": [
+        {
+          "line": 10,
+          "field": "key",
+          "matchSHA256": "e868b911a29d1cd8c33c3e63732600b1e7bc7358f603b758749fdc6d09bc30ae"
+        },
+        {
+          "line": 65,
+          "field": "key",
+          "matchSHA256": "4fce1e0bd51abc6ea1bc527af92484ea68610416a02e6bfcdcab64f4a6968f42"
+        },
+        {
+          "line": 383,
+          "field": "key",
+          "matchSHA256": "9bc0ffda50e537b449f663ef6fd0f76d195c4dceea76bed18f4be4b0dadb3e39"
+        },
+        {
+          "line": 438,
+          "field": "key",
+          "matchSHA256": "0d8056b1714e9dd135cef29dc38b32bac33bf4aefd56d762570ee1b7abd17998"
+        },
+        {
+          "line": 493,
+          "field": "key",
+          "matchSHA256": "76ecf15043448ef369d46560fafcf296bed04bb99ab5e12e0234f6433e6cfc92"
+        }
+      ]
+    },
+    {
+      "path": "scripts/local-knowledge/test_catalogue100_corpus.py",
+      "sha256": "ee89f2b554622e0de329ee705f311d1c644303e79b4d83a96a069ce15c99e1f1",
+      "matches": [
+        {
+          "line": 330,
+          "field": "group_key",
+          "matchSHA256": "32279e5c0832ab1f2fa64b67b05340e9fe405014fdfd7924e0d8e09fecf3f51c"
+        }
+      ]
+    },
+    {
+      "path": "scripts/local-knowledge/test_price_followup.py",
+      "sha256": "ed4783dafdbeec7ed6c45beb63a11a398cc6423938991665aa32deb7862c1c33",
+      "matches": [
+        {
+          "line": 39,
+          "field": "group_key",
+          "matchSHA256": "95fe8ce390f0396ef979b49d40a102071c45fc17c64f6d78a5b05bd35e4165d4"
+        }
+      ]
+    },
+    {
+      "path": "scripts/local-knowledge/evaluation/catalogue100-hardware-01.json",
+      "sha256": "5d0d02572e0e17dbb801377a15b747dcf6c48f84b75139cdcf9f499676269753",
+      "matches": [
+        {
+          "line": 672,
+          "field": "key",
+          "matchSHA256": "311bdef2c2056e208a2a0e50fafa9ea0fbc8bbc6872ef45cc8fb5f2552e907b1"
+        },
+        {
+          "line": 712,
+          "field": "source_key",
+          "matchSHA256": "7fb4d0b7939f6c9534264dc5ccdd32930a583251d63a7919298bd6aa8a61da51"
+        },
+        {
+          "line": 727,
+          "field": "key",
+          "matchSHA256": "9c40f69fcd4d9f38f9fd0c793db39f3f532f8864854e8ee0f61c6b892e33bc82"
+        },
+        {
+          "line": 767,
+          "field": "source_key",
+          "matchSHA256": "f4739d41ea99495ea3e6b3561c5780d8b34f430ce25fdff73c4109e1eeb234d7"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,245 @@
+{
+  "note": "Reviewed source-reference aliases only; no supplier variant or original-manufacturer inference. New references require a separately approved corpus milestone. Exact titles and active source revisions come from the pinned snapshot. Overrides narrow family aliases and preserve revision distinctions.",
+  "baseline": {
+    "catalogue_panchroma_basic_black": {
+      "name": "Panchroma Basic PLA Black",
+      "aliases": [
+        "\\bpanchroma\\s+basic(?:\\s+pla)?\\b|\\bca19006\\b"
+      ]
+    },
+    "catalogue_polymaker_petg_black": {
+      "name": "Polymaker PETG New Formula Black",
+      "aliases": [
+        "\\bpolymaker\\s+(?:new\\s+formula\\s+)?petg\\b|\\bpb05001\\b"
+      ]
+    },
+    "catalogue_magigoo_pp50": {
+      "name": "Magigoo PP 50 mL",
+      "aliases": [
+        "\\bmagigoo\\s+(?:glide\\s+)?pp\\b|\\b5350583999921\\b"
+      ]
+    },
+    "catalogue_flowtech_cm2_04": {
+      "name": "FlowTech CM2 M2904-04 nozzle",
+      "aliases": [
+        "\\bflowtech\\s+cm2\\b",
+        "\\bcm2\\s+flowtech\\b",
+        "\\bm2904-04\\b"
+      ]
+    },
+    "catalogue_flowtech_m3101": {
+      "name": "Micro Swiss FlowTech M3101",
+      "aliases": [
+        "\\b(?:flowtech\\s+)?m3101\\b"
+      ]
+    },
+    "catalogue_orbiter_v25": {
+      "name": "Orbiter v2.5",
+      "aliases": [
+        "\\borbiter\\s*v?2[.]5\\b|\\bldo-obt-v2[.]5\\b"
+      ]
+    },
+    "catalogue_slice_torque_15": {
+      "name": "Slice torque wrench",
+      "aliases": [
+        "\\bslice(?:\\s+engineering)?\\s+(?:1[.]5\\s*nm\\s+)?(?:nozzle\\s+)?torque\\s+wrench\\b",
+        "\\bp-ntw-ac-0015\\b"
+      ]
+    },
+    "catalogue_buildtak_pei235": {
+      "name": "BuildTak PEI 235 sheet",
+      "aliases": [
+        "\\bbuildtak\\s+pei\\b",
+        "\\bpttapepei235\\b"
+      ]
+    },
+    "catalogue_buildtak_spatula": {
+      "name": "BuildTak Spatula",
+      "aliases": [
+        "\\bbuildtak\\s+spatula\\b",
+        "\\btlspatulabt\\b"
+      ]
+    },
+    "catalogue_fiberlogy_pp750": {
+      "name": "Fiberlogy PP Graphite 750 g",
+      "aliases": [
+        "\\bfiberlogy\\s+pp\\b",
+        "\\bmisc-fil-fib-078\\b"
+      ]
+    },
+    "five_E03": {
+      "name": "TPU95-HF",
+      "aliases": [
+        "\\btpu95[\\s-]*hf\\b"
+      ]
+    },
+    "five_E04": {
+      "name": "PA6-CF20",
+      "aliases": [
+        "\\bpa6[\\s-]*cf20\\b",
+        "\\bpolymide\\s+pa6[\\s-]*cf\\b"
+      ]
+    },
+    "five_E08": {
+      "name": "Supergrip",
+      "aliases": [
+        "\\b(?:magigoo\\s+)?supergrip\\b"
+      ]
+    },
+    "five_E09": {
+      "name": "Plastic Repellent Paint",
+      "aliases": [
+        "\\bplastic repellent paint\\b",
+        "\\bprp\\b"
+      ]
+    },
+    "five_E10": {
+      "name": "V6 Pro socks",
+      "aliases": [
+        "\\bv6\\s+pro\\s+(?:silicone\\s+)?socks?\\b",
+        "\\bv6\\s+socks?\\s+pro\\b"
+      ]
+    },
+    "prior_R01": {
+      "name": "Creality part 4007010136",
+      "aliases": [
+        "\\b4007010136\\b"
+      ],
+      "public_part_reference": "4007010136"
+    },
+    "prior_R03": {
+      "name": "Creality part 4001040056",
+      "aliases": [
+        "\\b4001040056\\b"
+      ],
+      "public_part_reference": "4001040056"
+    },
+    "prior_R04": {
+      "name": "Creality part 3201011488",
+      "aliases": [
+        "\\b3201011488\\b"
+      ],
+      "public_part_reference": "3201011488"
+    },
+    "prior_R05": {
+      "name": "Creality part 3203010968",
+      "aliases": [
+        "\\b3203010968\\b"
+      ],
+      "public_part_reference": "3203010968"
+    },
+    "prior_R06": {
+      "name": "Creality part 3203010897",
+      "aliases": [
+        "\\b3203010897\\b"
+      ],
+      "public_part_reference": "3203010897"
+    },
+    "prior_R08": {
+      "name": "Creality part 4001030132",
+      "aliases": [
+        "\\b4001030132\\b"
+      ],
+      "public_part_reference": "4001030132"
+    },
+    "prior_R09": {
+      "name": "Creality part 3201011519",
+      "aliases": [
+        "\\b3201011519\\b"
+      ],
+      "public_part_reference": "3201011519"
+    },
+    "prior_R11": {
+      "name": "Creality part 4001030147",
+      "aliases": [
+        "\\b4001030147\\b"
+      ],
+      "public_part_reference": "4001030147"
+    },
+    "prior_R12": {
+      "name": "Creality part 4001030145",
+      "aliases": [
+        "\\b4001030145\\b"
+      ],
+      "public_part_reference": "4001030145"
+    },
+    "prior_R13": {
+      "name": "Creality part 2102013424",
+      "aliases": [
+        "\\b2102013424\\b"
+      ],
+      "public_part_reference": "2102013424"
+    },
+    "prior_R14": {
+      "name": "Creality part 4004010266",
+      "aliases": [
+        "\\b4004010266\\b"
+      ],
+      "public_part_reference": "4004010266"
+    },
+    "prior_R15": {
+      "name": "Creality part 4006030075",
+      "aliases": [
+        "\\b4006030075\\b"
+      ],
+      "public_part_reference": "4006030075"
+    },
+    "prior_R16": {
+      "name": "Creality part 4004010288",
+      "aliases": [
+        "\\b4004010288\\b"
+      ],
+      "public_part_reference": "4004010288"
+    },
+    "prior_R17": {
+      "name": "Creality part 3103110660",
+      "aliases": [
+        "\\b3103110660\\b"
+      ],
+      "public_part_reference": "3103110660"
+    },
+    "prior_R18": {
+      "name": "Creality part 2101020285",
+      "aliases": [
+        "\\b2101020285\\b"
+      ],
+      "public_part_reference": "2101020285"
+    }
+  },
+  "alias_overrides": {
+    "catalogue_c100_bondtech_lgx": [
+      "(?:bondtech\\s+)?lgx\\s+large\\s+gears\\s+extruder"
+    ],
+    "catalogue_c100_creality_spacepi": [
+      "(?:creality\\s*)?space\\s*pi\\s*single[-\\s]*spool"
+    ],
+    "catalogue_c100_btt_sb2209_stm32": [
+      "(?:ebb\\s+)?sb2209\\s+(?:can\\s+)?(?:v1\\.0\\s+)?stm32",
+      "(?:ebb\\s+)?sb2209\\s+can\\s+v1\\.0"
+    ],
+    "catalogue_c100_btt_skr_mini_e3_v3": [
+      "skr\\s*mini\\s*e3\\s*v?3\\.0(?![.\\d])"
+    ],
+    "catalogue_c100_btt_skr_pico": [
+      "skr\\s*pico\\s*v?1\\.0"
+    ],
+    "catalogue_c100_btt_ebb36_gen2": [
+      "ebb\\s*36\\s*gen\\s*2\\s*v?1\\.0"
+    ],
+    "catalogue_c100_phaetus_rapido2f": [
+      "rapido\\s*(?:hotend\\s*)?2f\\s+uhf\\s+pt1000"
+    ],
+    "catalogue_c100_colorfabb_varioshore": [
+      "(?:colorfabb\\s*)?varioshore\\s+tpu\\s+(?:legacy\\s+)?92a"
+    ],
+    "catalogue_c100_pythonflex98a": [
+      "(?:formfutura\\s*)?python\\s*flex(?:\\s*tpu)?\\s*98a"
+    ],
+    "catalogue_c100_cnc_deburrer": [
+      "cnc\\s*kitchen\\s*deburr(?:er|ing\\s+tool)"
+    ],
+    "catalogue_c100_cnc_ts100": [
+      "cnc\\s*kitchen\\s*ts\\s*100(?:[/\\s]*101)?\\s*(?:adapter\\s*)?tips(?:\\s*set)?"
+    ]
+  }
+}

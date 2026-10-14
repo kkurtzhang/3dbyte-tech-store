@@ -38,6 +38,8 @@ import { GetAdminIdentityIssuesSchema } from "./admin/identity-issues/route";
 import { PostAdminResolveIdentityIssueSchema } from "./admin/identity-issues/resolve/route";
 import {
   adminEmailTestRateLimit,
+  adminKnowledgeReferenceReadRateLimit,
+  storeKnowledgeReferenceRateLimit,
   adminMeilisearchSyncRateLimit,
   customerDisconnectGoogleRateLimit,
   customerEmailChangeRateLimit,
@@ -51,6 +53,7 @@ import {
   storeSupportTicketRateLimit,
   storeWaitlistJoinRateLimit,
 } from "../lib/rate-limits/api-rules";
+import { rejectReferenceOffers } from "../lib/knowledge-reference/offer-guard";
 import { hermesProductDraftPayloadLimit } from "../lib/ai-product-drafts/security";
 import { requireStoreOrderAccess } from "../lib/order-access/middleware";
 
@@ -58,6 +61,24 @@ export const GetBrandsSchema = createFindParams();
 
 export default defineMiddlewares({
   routes: [
+    {
+      matcher: "/admin/products/:id/knowledge-reference-preview",
+      methods: ["GET"],
+      middlewares: [
+        authenticate("user", ["session", "bearer", "api-key"]),
+        adminKnowledgeReferenceReadRateLimit,
+      ],
+    },
+    {
+      matcher: "/store/knowledge-references",
+      methods: ["GET"],
+      middlewares: [storeKnowledgeReferenceRateLimit],
+    },
+    {
+      matcher: "/store/carts/:id/line-items*",
+      methods: ["POST"],
+      middlewares: [rejectReferenceOffers],
+    },
     // Media Manager plugin authentication
     {
       matcher: "/admin/media*",

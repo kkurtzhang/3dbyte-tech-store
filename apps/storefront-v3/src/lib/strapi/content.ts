@@ -272,7 +272,9 @@ export async function getBrandDescriptions() {
   );
 }
 
-export async function getBrandDescriptionByHandle(handle: string) {
+export async function getBrandDescriptionByHandle(
+  handle: string
+): Promise<BrandDescriptionData | null> {
   const query = qs.stringify(
     {
       filters: {

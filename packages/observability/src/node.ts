@@ -97,8 +97,9 @@ export async function buildSpanProcessorsAsync(
   const processors = buildSpanProcessors(config);
 
   if (config.langfuse) {
-    const { isDefaultExportSpan, LangfuseSpanProcessor } =
-      await import("@langfuse/otel");
+    const { isDefaultExportSpan, LangfuseSpanProcessor } = await import(
+      "@langfuse/otel"
+    );
 
     processors.push(
       new LangfuseSpanProcessor({
@@ -120,7 +121,7 @@ export function createOtelResource(config: TracingConfig) {
   return resourceFromAttributes(config.resourceAttributes);
 }
 
-export function createNodeAutoInstrumentations() {
+export function createNodeAutoInstrumentations(): Instrumentation[] {
   return getNodeAutoInstrumentations({
     "@opentelemetry/instrumentation-fs": {
       enabled: false,

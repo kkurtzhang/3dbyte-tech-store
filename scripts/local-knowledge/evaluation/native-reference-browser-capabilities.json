@@ -1,0 +1,14 @@
+{
+  "checked_at": "2026-10-13 08:31:32 UTC",
+  "conversation_mode": "text",
+  "callable_browser_controller_tools": [],
+  "open_in_codex_available": true,
+  "open_in_codex_scope": "Open or queue a browser panel only; no DOM or rendered-screen inspection action.",
+  "capture_screen_context_available": true,
+  "capture_screen_context_usable_here": false,
+  "capture_screen_context_constraint": "Only during active voice chat; this task is text.",
+  "web_screenshot_scope": "PDF pages via remote web tool, not the user's local browser.",
+  "browser_visual_verification": false,
+  "permissions_changed": false,
+  "tools_installed": false
+}

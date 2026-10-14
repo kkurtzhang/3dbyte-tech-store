@@ -1,3 +1,4 @@
+import type { Context } from "@medusajs/framework/types"
 import { POST as approve } from "../[id]/approve/route"
 import { GET as detail } from "../[id]/route"
 import { normalizeProductResearchPacket } from "../../../../lib/ai-product-drafts/normalizer"
@@ -10,6 +11,7 @@ import { POST as intake } from "../../../integrations/hermes/product-drafts/rout
 
 function harness(draft: Record<string, unknown>, body = {}) {
   const module = {
+    withDraftTransaction: jest.fn(async <T>(job: (context: Context) => Promise<T>) => job({})),
     listAiProductDrafts: jest.fn().mockResolvedValue([draft]),
     listAiProductDraftEvents: jest.fn().mockResolvedValue([]),
     updateAiProductDrafts: jest
@@ -62,7 +64,8 @@ describe("draft quality API gates", () => {
       expect.objectContaining({
         type: "research_replacement_backup",
         metadata: expect.objectContaining({ previous_draft: draft }),
-      })
+      }),
+      expect.any(Object)
     )
     expect(
       h.module.createAiProductDraftEvents.mock.invocationCallOrder[0]

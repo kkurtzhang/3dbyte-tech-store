@@ -65,6 +65,7 @@ describe("syncAddressesJob", () => {
       batchesProcessed: 340,
       durationMs: 120_000,
       indexName: "addresses_v1",
+      localityIndexName: "localities",
     });
     const { container } = createContainer();
 

@@ -1,3 +1,4 @@
+import { createVariantFixture, createProductFixture } from "@/test-utils/medusa-fixtures"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import type { ReactNode } from "react"
@@ -31,7 +32,7 @@ const currentProduct = {
   title: "Printer",
   handle: "printer",
   variants: [
-    {
+    createVariantFixture({
       id: "variant_standard",
       title: "Standard",
       prices: [{ amount: 99, currency_code: "AUD" }],
@@ -40,8 +41,8 @@ const currentProduct = {
         original_amount: 99,
         currency_code: "AUD",
       },
-    },
-    {
+    }),
+    createVariantFixture({
       id: "variant_premium",
       title: "Premium",
       prices: [{ amount: 129, currency_code: "AUD" }],
@@ -50,7 +51,7 @@ const currentProduct = {
         original_amount: 129,
         currency_code: "AUD",
       },
-    },
+    }),
   ],
   options: [],
 } as unknown as MedusaProduct
@@ -77,20 +78,20 @@ describe("AvailableInBundles", () => {
           {
             id: "bundle_123",
             title: "Starter Bundle",
-            product: {
+            product: createProductFixture({
               variants: [
-                {
+                createVariantFixture({
                   prices: [{ amount: 149, currency_code: "AUD" }],
                   calculated_price: {
                     calculated_amount: 149,
                     original_amount: 199,
                     currency_code: "AUD",
                   },
-                },
+                }),
               ],
               handle: "starter-bundle",
               title: "Starter Bundle",
-            },
+            }),
             items: [
               {
                 id: "item_1",
@@ -100,14 +101,14 @@ describe("AvailableInBundles", () => {
               {
                 id: "item_2",
                 quantity: 2,
-                product: {
+                product: createProductFixture({
                   id: "prod_filament",
                   title: "Filament Spool With A Longer Accessory Name",
                   handle: "filament-spool",
                   variants: [
-                    { prices: [{ amount: 40, currency_code: "AUD" }] },
+                    createVariantFixture({ prices: [{ amount: 40, currency_code: "AUD" }] }),
                   ],
-                },
+                }),
               },
             ] as never[],
           },
@@ -146,20 +147,20 @@ describe("AvailableInBundles", () => {
           {
             id: "bundle_123",
             title: "Starter Bundle",
-            product: {
+            product: createProductFixture({
               variants: [
-                {
+                createVariantFixture({
                   prices: [{ amount: 119, currency_code: "AUD" }],
                   calculated_price: {
                     calculated_amount: 119,
                     original_amount: 119,
                     currency_code: "AUD",
                   },
-                },
+                }),
               ],
               handle: "starter-bundle",
               title: "Starter Bundle",
-            },
+            }),
             items: [
               {
                 id: "item_1",
@@ -169,13 +170,13 @@ describe("AvailableInBundles", () => {
               {
                 id: "item_2",
                 quantity: 1,
-                product: {
+                product: createProductFixture({
                   id: "prod_part_b",
                   title: "Part B",
                   variants: [
-                    { prices: [{ amount: 40, currency_code: "AUD" }] },
+                    createVariantFixture({ prices: [{ amount: 40, currency_code: "AUD" }] }),
                   ],
-                },
+                }),
               },
             ] as never[],
           },
@@ -196,11 +197,11 @@ describe("AvailableInBundles", () => {
           {
             id: "bundle_flat",
             title: "No Savings Bundle",
-            product: {
+            product: createProductFixture({
               handle: "no-savings-bundle",
               title: "No Savings Bundle",
-              variants: [{ prices: [{ amount: 139, currency_code: "AUD" }] }],
-            },
+              variants: [createVariantFixture({ prices: [{ amount: 139, currency_code: "AUD" }] })],
+            }),
             items: [
               {
                 id: "item_1",
@@ -210,13 +211,13 @@ describe("AvailableInBundles", () => {
               {
                 id: "item_2",
                 quantity: 1,
-                product: {
+                product: createProductFixture({
                   id: "prod_part_b",
                   title: "Part B",
                   variants: [
-                    { prices: [{ amount: 40, currency_code: "AUD" }] },
+                    createVariantFixture({ prices: [{ amount: 40, currency_code: "AUD" }] }),
                   ],
-                },
+                }),
               },
             ] as never[],
           },
@@ -238,11 +239,11 @@ describe("AvailableInBundles", () => {
           {
             id: "bundle_low",
             title: "Lower Savings Bundle",
-            product: {
+            product: createProductFixture({
               handle: "lower-savings-bundle",
               title: "Lower Savings Bundle",
-              variants: [{ prices: [{ amount: 180, currency_code: "AUD" }] }],
-            },
+              variants: [createVariantFixture({ prices: [{ amount: 180, currency_code: "AUD" }] })],
+            }),
             items: [
               {
                 id: "item_1",
@@ -252,24 +253,24 @@ describe("AvailableInBundles", () => {
               {
                 id: "item_2",
                 quantity: 1,
-                product: {
+                product: createProductFixture({
                   id: "prod_part_b",
                   title: "Part B",
                   variants: [
-                    { prices: [{ amount: 100, currency_code: "AUD" }] },
+                    createVariantFixture({ prices: [{ amount: 100, currency_code: "AUD" }] }),
                   ],
-                },
+                }),
               },
             ] as never[],
           },
           {
             id: "bundle_high",
             title: "Higher Savings Bundle",
-            product: {
+            product: createProductFixture({
               handle: "higher-savings-bundle",
               title: "Higher Savings Bundle",
-              variants: [{ prices: [{ amount: 120, currency_code: "AUD" }] }],
-            },
+              variants: [createVariantFixture({ prices: [{ amount: 120, currency_code: "AUD" }] })],
+            }),
             items: [
               {
                 id: "item_1",
@@ -279,13 +280,13 @@ describe("AvailableInBundles", () => {
               {
                 id: "item_2",
                 quantity: 1,
-                product: {
+                product: createProductFixture({
                   id: "prod_part_b",
                   title: "Part B",
                   variants: [
-                    { prices: [{ amount: 100, currency_code: "AUD" }] },
+                    createVariantFixture({ prices: [{ amount: 100, currency_code: "AUD" }] }),
                   ],
-                },
+                }),
               },
             ] as never[],
           },
@@ -308,11 +309,11 @@ describe("AvailableInBundles", () => {
           {
             id: "bundle_123",
             title: "Starter Bundle",
-            product: {
+            product: createProductFixture({
               handle: "starter-bundle",
               title: "Starter Bundle",
-              variants: [{ prices: [{ amount: 149, currency_code: "AUD" }] }],
-            },
+              variants: [createVariantFixture({ prices: [{ amount: 149, currency_code: "AUD" }] })],
+            }),
             items: [
               {
                 id: "item_1",
@@ -322,17 +323,17 @@ describe("AvailableInBundles", () => {
               {
                 id: "item_fasteners",
                 quantity: 2,
-                product: {
+                product: createProductFixture({
                   id: "prod_fasteners",
                   title: "Fastener Kit",
                   handle: "fastener-kit",
                   variants: [
-                    {
+                    createVariantFixture({
                       id: "variant_fasteners",
                       prices: [{ amount: 25, currency_code: "AUD" }],
-                    },
+                    }),
                   ],
-                },
+                }),
               },
             ] as never[],
           },

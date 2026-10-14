@@ -1,0 +1,118 @@
+{
+  "checked_at": "2026-10-13T07:27:52.531635+00:00",
+  "measurement": "Deterministic source-link routing through actual project API; no manual/FAQ ingestion or model-generation quality claim.",
+  "passed": 7,
+  "total": 7,
+  "cases": [
+    {
+      "case": "sandy",
+      "question": "How do I assemble model 11 Sandy?",
+      "reason": "official_build_guide_link_only",
+      "source_links": [
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_sandy",
+          "url": "https://3dsets.com/product/model-11-sandy/",
+          "title": "3D Sets: Sandy"
+        },
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_guide_sandy_1.0",
+          "url": "https://docs.google.com/presentation/d/1xb7YkoKhJmHLQ6zAjSLmep7UbICcW2iVI0if_n4BRAo/edit?usp=sharing",
+          "title": "Sandy official build guide v1.0"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "rancher",
+      "question": "Model 2 assembly guide v1.3.2",
+      "reason": "official_build_guide_link_only",
+      "source_links": [
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_rancher_hardtop",
+          "url": "https://3dsets.com/product/model-2-rancher-4x4-hardtop/",
+          "title": "3D Sets: Rancher 4x4 Hardtop"
+        },
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_guide_rancher_hardtop_1.3.2",
+          "url": "https://docs.google.com/presentation/d/1efrWbdka1HBKklFfKKETao6EAzMzaLn4NoRnkBS0U2A/edit?usp=sharing",
+          "title": "Rancher 4x4 Hardtop official build guide v1.3.2"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "max",
+      "question": "How do I build Max 4x4?",
+      "reason": "publisher_guide_label_conflict",
+      "source_links": [
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_max_4x4",
+          "url": "https://3dsets.com/product/model-15-max-4x4/",
+          "title": "3D Sets: Max 4x4"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "faq",
+      "question": "3D Sets FAQ please",
+      "reason": "official_faq_link_only",
+      "source_links": [
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_faq",
+          "url": "https://3dsets.com/blog/faq/",
+          "title": "3D Sets official FAQ (2021)"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "kit",
+      "question": "Does my Sandy kit include STLs and a radio, and is it in stock?",
+      "reason": "store_kit_not_mapped",
+      "source_links": [
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_sandy",
+          "url": "https://3dsets.com/product/model-11-sandy/",
+          "title": "3D Sets: Sandy"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "aircraft",
+      "question": "How do I build a 3D Sets jet aircraft?",
+      "reason": "aircraft_family_unverified",
+      "source_links": [
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_catalogue",
+          "url": "https://3dsets.com/product-category/models/",
+          "title": "3D Sets official model catalogue"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "wrong_revision",
+      "question": "Sandy build guide v2.0",
+      "reason": "exact_guide_revision_unverified",
+      "source_links": [
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_sandy",
+          "url": "https://3dsets.com/product/model-11-sandy/",
+          "title": "3D Sets: Sandy"
+        }
+      ],
+      "passed": true
+    }
+  ]
+}

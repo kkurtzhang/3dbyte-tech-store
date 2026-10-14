@@ -1018,6 +1018,7 @@ describe("AI product draft routes", () => {
         status: "approved",
       }),
       createAiProductDraftEvents: jest.fn().mockResolvedValue({ id: "evt_1" }),
+      withDraftTransaction: jest.fn(async (job: (context: object) => Promise<unknown>) => job({})),
     }
     const approveReq = createRequest({
       body: {
@@ -1029,7 +1030,7 @@ describe("AI product draft routes", () => {
       draftModule,
     })
     const rejectReq = createRequest({
-      body: { reason: "Wrong product" },
+      body: { reason: "Wrong product", review_hash: draftReviewHash(draft) },
       params: { id: "aipd_1" },
       draftModule: {
         ...draftModule,

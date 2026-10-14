@@ -1,3 +1,4 @@
+import type { Context } from "@medusajs/framework/types"
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 
 import {
@@ -25,7 +26,8 @@ export type AiProductDraftModule = {
     input: Record<string, unknown>
   ) => Promise<Record<string, unknown>>
   updateAiProductDrafts: (
-    input: Record<string, unknown>
+    input: Record<string, unknown>,
+    context?: Context
   ) => Promise<Record<string, unknown>>
   softDeleteAiProductDrafts: (
     input: string | string[] | Record<string, unknown>
@@ -35,12 +37,14 @@ export type AiProductDraftModule = {
     config?: Record<string, unknown>
   ) => Promise<Record<string, unknown>[]>
   createAiProductDraftEvents: (
-    input: Record<string, unknown> | Record<string, unknown>[]
+    input: Record<string, unknown> | Record<string, unknown>[],
+    context?: Context
   ) => Promise<Record<string, unknown> | Record<string, unknown>[]>
   listAiProductDraftEvents: (
     filters?: Record<string, unknown>,
     config?: Record<string, unknown>
   ) => Promise<Record<string, unknown>[]>
+  withDraftTransaction: <T>(job: (context: Context) => Promise<T>) => Promise<T>
 }
 
 type QueryGraph = {

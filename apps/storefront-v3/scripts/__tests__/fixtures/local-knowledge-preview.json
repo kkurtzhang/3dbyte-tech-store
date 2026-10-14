@@ -1,0 +1,176 @@
+{
+  "checked_at": "2026-10-13T07:42:33.963705+00:00",
+  "source": "Actual loopback project API responses from handed-off head a42067dfef59f017e951d2f821e8c867d80ff4f3",
+  "model_generation": false,
+  "browser_visual_check_performed": false,
+  "cases": [
+    {
+      "id": "part_package",
+      "questions": [
+        "What does Creality part 4007010136 contain in its manufacturer package?"
+      ],
+      "status": "source_grounded_context",
+      "reason": null,
+      "response_parts": [
+        {
+          "type": "text",
+          "text": "Local development \u00b7 Deterministic source context \u00b7 No language model generation\n\n1. 4007010136\nScope: Exact approved source-document scope; local reference grouping does not resolve a physical supplier package or native staging identity.\n\n2. Four red levelling nuts and four mould springs\nScope: Exact approved source-document scope; local reference grouping does not resolve a physical supplier package or native staging identity."
+        },
+        {
+          "type": "source-url",
+          "sourceId": "local_source_earlier_E01",
+          "url": "https://mvip.creality.com/en/goods/goodsDetail/1945",
+          "title": "mvip.creality.com"
+        }
+      ],
+      "expected_source_links": [
+        {
+          "url": "https://mvip.creality.com/en/goods/goodsDetail/1945",
+          "title": "mvip.creality.com"
+        }
+      ],
+      "http_status": 200,
+      "model": "local-deterministic-context"
+    },
+    {
+      "id": "clarification",
+      "questions": [
+        "Compare TPU95-HF and PA6-CF20.",
+        "How do I dry it?"
+      ],
+      "status": "unknown",
+      "reason": "ambiguous_previous_subject",
+      "response_parts": [
+        {
+          "type": "text",
+          "text": "Local development \u00b7 Deterministic source context \u00b7 No language model generation\n\nUnknown: Which item or material do you mean: TPU95-HF or PA6-CF20? Name the item and variant in the question.\nUnresolved fields: conversation_subject"
+        }
+      ],
+      "expected_source_links": [],
+      "http_status": 200,
+      "model": "local-deterministic-context"
+    },
+    {
+      "id": "sandy_guide",
+      "questions": [
+        "How do I assemble model 11 Sandy?"
+      ],
+      "status": "source_links",
+      "reason": "official_build_guide_link_only",
+      "response_parts": [
+        {
+          "type": "text",
+          "text": "Local development \u00b7 Official resource links\n\nFor Sandy, use the official public presentation linked below for assembly steps. Linked guide revision: 1.0. Check that this guide revision matches your build. Physical kit contents and digital model access are separate and remain unverified for your selected store kit."
+        },
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_sandy",
+          "url": "https://3dsets.com/product/model-11-sandy/",
+          "title": "3D Sets: Sandy"
+        },
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_guide_sandy_1.0",
+          "url": "https://docs.google.com/presentation/d/1xb7YkoKhJmHLQ6zAjSLmep7UbICcW2iVI0if_n4BRAo/edit?usp=sharing",
+          "title": "Sandy official build guide v1.0"
+        }
+      ],
+      "expected_source_links": [
+        {
+          "url": "https://3dsets.com/product/model-11-sandy/",
+          "title": "3D Sets: Sandy"
+        },
+        {
+          "url": "https://docs.google.com/presentation/d/1xb7YkoKhJmHLQ6zAjSLmep7UbICcW2iVI0if_n4BRAo/edit?usp=sharing",
+          "title": "Sandy official build guide v1.0"
+        }
+      ],
+      "http_status": 200,
+      "model": "local-deterministic-context"
+    },
+    {
+      "id": "faq",
+      "questions": [
+        "3D Sets FAQ please"
+      ],
+      "status": "source_links",
+      "reason": "official_faq_link_only",
+      "response_parts": [
+        {
+          "type": "text",
+          "text": "Local development \u00b7 Official resource links\n\n3D Sets customer FAQs are available at the official link below. The page is dated 23 June 2021; check current model-specific sources for version-sensitive information."
+        },
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_faq",
+          "url": "https://3dsets.com/blog/faq/",
+          "title": "3D Sets official FAQ (2021)"
+        }
+      ],
+      "expected_source_links": [
+        {
+          "url": "https://3dsets.com/blog/faq/",
+          "title": "3D Sets official FAQ (2021)"
+        }
+      ],
+      "http_status": 200,
+      "model": "local-deterministic-context"
+    },
+    {
+      "id": "unsupported_guide",
+      "questions": [
+        "Sandy build guide v2.0"
+      ],
+      "status": "unknown",
+      "reason": "exact_guide_revision_unverified",
+      "response_parts": [
+        {
+          "type": "text",
+          "text": "Local development \u00b7 Official resource links\n\nAn official presentation link for that exact guide revision is not verified in this index. Use the publisher product page below to select the model and guide version."
+        },
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_sandy",
+          "url": "https://3dsets.com/product/model-11-sandy/",
+          "title": "3D Sets: Sandy"
+        }
+      ],
+      "expected_source_links": [
+        {
+          "url": "https://3dsets.com/product/model-11-sandy/",
+          "title": "3D Sets: Sandy"
+        }
+      ],
+      "http_status": 200,
+      "model": "local-deterministic-context"
+    },
+    {
+      "id": "physical_kit",
+      "questions": [
+        "Does my Sandy kit include STLs and a radio, and is it in stock?"
+      ],
+      "status": "unknown",
+      "reason": "store_kit_not_mapped",
+      "response_parts": [
+        {
+          "type": "text",
+          "text": "Local development \u00b7 Official resource links\n\nThis store sells physical build kits for 3D Sets models. The selected kit's contents, exclusions and supported model release are not yet verified. Digital model access and its licence are separate; inclusion in a kit is unverified. Name the store kit SKU and model version so we can check the supplier BOM. Store price, stock and delivery also remain unverified."
+        },
+        {
+          "type": "source-url",
+          "sourceId": "local_resource_3dsets_sandy",
+          "url": "https://3dsets.com/product/model-11-sandy/",
+          "title": "3D Sets: Sandy"
+        }
+      ],
+      "expected_source_links": [
+        {
+          "url": "https://3dsets.com/product/model-11-sandy/",
+          "title": "3D Sets: Sandy"
+        }
+      ],
+      "http_status": 200,
+      "model": "local-deterministic-context"
+    }
+  ]
+}

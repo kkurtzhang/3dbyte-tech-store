@@ -1,3 +1,8 @@
+import {
+  createOrderFixture,
+  createVariantFixture,
+  type OrderFixtureInput,
+} from "@/test-utils/medusa-fixtures"
 import type { MedusaOrder } from "@/lib/medusa/types"
 import { getOrderLifecycle } from "../order-lifecycle"
 
@@ -8,8 +13,8 @@ const preorderVariant = {
   prices: [{ amount: 19, currency_code: "aud" }],
 } as const
 
-function makeOrder(overrides: Partial<MedusaOrder> = {}): MedusaOrder {
-  return {
+function makeOrder(overrides: OrderFixtureInput = {}): MedusaOrder {
+  return createOrderFixture({
     id: "order_1",
     status: "pending",
     payment_status: "authorized",
@@ -21,24 +26,24 @@ function makeOrder(overrides: Partial<MedusaOrder> = {}): MedusaOrder {
         id: "item_ready",
         title: "Ready Product",
         quantity: 1,
-        variant: {
+        variant: createVariantFixture({
           id: "variant_ready",
           title: "Default",
-        },
+        }),
       },
       {
         id: "item_preorder",
         title: "Pre-order Product",
         quantity: 2,
-        variant: {
+        variant: createVariantFixture({
           id: "variant_preorder",
           title: "Default",
           preorder_variant: preorderVariant,
-        },
+        }),
       },
     ],
     ...overrides,
-  } as MedusaOrder
+  })
 }
 
 describe("order lifecycle", () => {
@@ -93,11 +98,11 @@ describe("order lifecycle", () => {
             id: "item_preorder",
             title: "Pre-order Product",
             quantity: 1,
-            variant: {
+            variant: createVariantFixture({
               id: "variant_preorder",
               title: "Default",
               preorder_variant: preorderVariant,
-            },
+            }),
           },
         ],
       })
@@ -115,10 +120,10 @@ describe("order lifecycle", () => {
             id: "item_ready",
             title: "Ready Product",
             quantity: 1,
-            variant: {
+            variant: createVariantFixture({
               id: "variant_ready",
               title: "Default",
-            },
+            }),
           },
         ],
       })

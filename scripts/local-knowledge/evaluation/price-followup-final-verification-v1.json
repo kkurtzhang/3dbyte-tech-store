@@ -1,0 +1,55 @@
+{
+  "base_commit": "6b10bc4307c7afab616188c14ba79e7dde19b79e",
+  "verification": {
+    "route_cases": 34,
+    "rendered_prices": 12,
+    "jest_passed": 193,
+    "python_price_tests": 8,
+    "python_generic_spec_tests": 5,
+    "ruff": "passed",
+    "source_and_test_typecheck": "passed"
+  },
+  "invariants": {
+    "prior_specs_database_equal_to_before_copy": true,
+    "tables_compared": 15,
+    "available_raw_source_hashes_verified": 249,
+    "normalized_source_hashes_verified": 254,
+    "previously_unavailable_unused_sources_preserved": [
+      "local_source_new_mag",
+      "local_source_new_pa",
+      "local_source_new_prp",
+      "local_source_new_sock",
+      "local_source_new_tpu"
+    ],
+    "prior_source_rows_preserved": 231,
+    "unchanged_tables": [
+      "products",
+      "local_reference_variants",
+      "local_record_bindings"
+    ],
+    "counted_products": 100,
+    "held_references": 3,
+    "created_products": 0,
+    "native_changes": 0
+  },
+  "artifacts": {
+    "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100-prices/reports/price-followup-reviewed-v2.json": "646e729137f80608e12b7a6bf8b68f1dba1c59b9fde26c2fb347d8952c1041b7",
+    "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100-prices/reports/price-followup-activation-v1.json": "bedca378fad1839896b3cb392f1055a82dcc29ee49fb367755668f77d6d28e95",
+    "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100-prices/reports/price-route-verification-v2-evidence.json": "aa4a1473fe130bda065351ff15554b2a4eea32665c2b9b9ddbf35c5f812ddfcb",
+    "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100-prices/reports/price-route-verification-v2-identities.json": "512edf46e337386c2b504e2de8372b33b714ace65463d6e38ee50570c9cc2458",
+    "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100-prices/reports/jest-regression-v1.json": "5ea8cbff4e78aa7272c1384a711aeac6a26a960234f8967d101ae723c527bac1"
+  },
+  "snapshots": {
+    "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100-prices/exports/price-followup-activation-v1-before.sqlite3": "cbea3dda56d181d4706900bd26c893e520057dfccbc8f76911c6813b223bdf22",
+    "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100-prices/exports/price-followup-activation-v1-after.sqlite3": "85d465b37b594e5b9cbabce19907a34531438ae1f85a860bf860d8fcce7eec03",
+    "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100-prices/exports/price-followup-activation-v1-ledger.json": "de0a990ff9cc5ce56e27dc3bed0b755bceb95c1d767bee7496424b6e93ea592a"
+  },
+  "limitations": [
+    "Direct Jaycar fetch returned 403; observation uses independently retrieved page text with crawl age today plus direct Jaycar tax terms.",
+    "SFS V2.0 and EIBOS are historical cached observations only; original reported crawl ages retained.",
+    "CNC deburrer AUD 29.95 is quarantined retailer-described evidence due to EAN mismatch; canonical price remains unknown.",
+    "PrintDry AUD 129.95 kit is not assigned to the single large container.",
+    "Existing exact focus aliases require EBB36 Gen2 V1.0 and CNC Kitchen TS100/101 adapter tips set; initial abbreviated-query reports preserved.",
+    "No checkout, physical-stock or address-specific shipping verification; no model/API generation or listening service."
+  ]
+}

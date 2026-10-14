@@ -1,0 +1,255 @@
+{
+  "schema_version": 1,
+  "completed_at": "2026-10-13T13:00:59.667831+00:00",
+  "branch": "fix/knowledge-evidence-reconciliation-20261013",
+  "parent_commit": "1a53021a652773403b289a17eec3457d3f76ef12",
+  "scope": "Bounded nine source-form gaps, four multi-source claims and labelled editorial-guide reconciliation; active corpus unchanged",
+  "report": {
+    "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/evidence-reconciliation-v1.json",
+    "sha256": "eec278d1d71fac26aedd2918e94e568cfad7e834346fb6db52c75333c3481596"
+  },
+  "base_manifest": {
+    "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/import-readiness-plan-final-v1.json",
+    "sha256": "3578249a19bfcb737a2417aab0fe7384e44f4aaf8cbfbf2ac5f05ef72d29be55"
+  },
+  "seed": {
+    "path": "scripts/local-knowledge/evaluation/evidence-reconciliation-seed-v1.json",
+    "sha256": "7994f93911f18d94620165a07582dd41a384c0e8fb8637ba552c803a5b9733e4"
+  },
+  "outcomes": {
+    "source_form_holds": 9,
+    "source_form_false_promotions": 0,
+    "combined_claims_reconciled_by_decomposition": 4,
+    "source_specific_atoms": 8,
+    "new_prepared_positive_facts": 7,
+    "already_prepared_atoms": 1,
+    "prepared_fragments": 65,
+    "prepared_positive_facts": 162,
+    "primary_references": 33,
+    "editorial_guides": 29,
+    "source_dependent_positive_guide_statements": 75,
+    "original_navigation_sentences": 29,
+    "targeted_guide_citation_repairs": 7,
+    "raw_selector_couplings_verified": 8,
+    "native_eligible": 0
+  },
+  "source_form_holds": [
+    {
+      "record_key": "prior_R12_E08",
+      "field": "manufacturer_part_number",
+      "source_form": "manufacturer_support_parts_catalogue",
+      "reason": "The source is an official support catalogue/article, not an explicitly classified product sales page, manual or datasheet; do not relabel it to fit the existing five-kind reference contract.",
+      "evidence_verified": true,
+      "remaining": "Exact equivalent evidence in an allowed source, or a separately scoped source-form design decision; no approval/security relaxation."
+    },
+    {
+      "record_key": "prior_R12_E08",
+      "field": "manufacturer_model",
+      "source_form": "manufacturer_support_parts_catalogue",
+      "reason": "The source is an official support catalogue/article, not an explicitly classified product sales page, manual or datasheet; do not relabel it to fit the existing five-kind reference contract.",
+      "evidence_verified": true,
+      "remaining": "Exact equivalent evidence in an allowed source, or a separately scoped source-form design decision; no approval/security relaxation."
+    },
+    {
+      "record_key": "prior_R12_K2IMAGE6",
+      "field": "component_materials",
+      "source_form": "manufacturer_component_diagram",
+      "reason": "The original component diagram and transcription are verified, but a standalone image is outside the five-kind plain-text source contract. Its product-page origin does not turn the image into page text.",
+      "evidence_verified": true,
+      "remaining": "Exact equivalent evidence in an allowed source, or a separately scoped source-form design decision; no approval/security relaxation."
+    },
+    {
+      "record_key": "prior_R14_E08",
+      "field": "manufacturer_module_part",
+      "source_form": "manufacturer_support_parts_catalogue",
+      "reason": "The source is an official support catalogue/article, not an explicitly classified product sales page, manual or datasheet; do not relabel it to fit the existing five-kind reference contract.",
+      "evidence_verified": true,
+      "remaining": "Exact equivalent evidence in an allowed source, or a separately scoped source-form design decision; no approval/security relaxation."
+    },
+    {
+      "record_key": "prior_R14_E08",
+      "field": "manufacturer_pad_part",
+      "source_form": "manufacturer_support_parts_catalogue",
+      "reason": "The source is an official support catalogue/article, not an explicitly classified product sales page, manual or datasheet; do not relabel it to fit the existing five-kind reference contract.",
+      "evidence_verified": true,
+      "remaining": "Exact equivalent evidence in an allowed source, or a separately scoped source-form design decision; no approval/security relaxation."
+    },
+    {
+      "record_key": "prior_R16_E09",
+      "field": "manufacturer_adapter_part",
+      "source_form": "manufacturer_support_parts_catalogue",
+      "reason": "The source is an official support catalogue/article, not an explicitly classified product sales page, manual or datasheet; do not relabel it to fit the existing five-kind reference contract.",
+      "evidence_verified": true,
+      "remaining": "Exact equivalent evidence in an allowed source, or a separately scoped source-form design decision; no approval/security relaxation."
+    },
+    {
+      "record_key": "prior_R16_E09",
+      "field": "manufacturer_named_model",
+      "source_form": "manufacturer_support_parts_catalogue",
+      "reason": "The source is an official support catalogue/article, not an explicitly classified product sales page, manual or datasheet; do not relabel it to fit the existing five-kind reference contract.",
+      "evidence_verified": true,
+      "remaining": "Exact equivalent evidence in an allowed source, or a separately scoped source-form design decision; no approval/security relaxation."
+    },
+    {
+      "record_key": "prior_R16_E09",
+      "field": "manufacturer_adapter_dimensions",
+      "source_form": "manufacturer_support_parts_catalogue",
+      "reason": "The source is an official support catalogue/article, not an explicitly classified product sales page, manual or datasheet; do not relabel it to fit the existing five-kind reference contract.",
+      "evidence_verified": true,
+      "remaining": "Exact equivalent evidence in an allowed source, or a separately scoped source-form design decision; no approval/security relaxation."
+    },
+    {
+      "record_key": "prior_R18_E10",
+      "field": "manufacturer_circuit_board_part",
+      "source_form": "manufacturer_troubleshooting_article",
+      "reason": "The source is an official support catalogue/article, not an explicitly classified product sales page, manual or datasheet; do not relabel it to fit the existing five-kind reference contract.",
+      "evidence_verified": true,
+      "remaining": "Exact equivalent evidence in an allowed source, or a separately scoped source-form design decision; no approval/security relaxation."
+    }
+  ],
+  "resolved_multi_source_fields": [
+    {
+      "record_key": "catalogue_buildtak_pei235_source",
+      "field": "sheet_dimensions",
+      "original_revision": "390c500469fd642e57c026fa3c67a492a3008596ed6edffad92f106d79879fe4",
+      "prepared_atom_fields": [
+        "manufacturer_sheet_dimensions",
+        "retailer_sheet_dimensions"
+      ],
+      "original_record_changed": false
+    },
+    {
+      "record_key": "catalogue_buildtak_pei235_source",
+      "field": "adhesive_revision_warning",
+      "original_revision": "390c500469fd642e57c026fa3c67a492a3008596ed6edffad92f106d79879fe4",
+      "prepared_atom_fields": [
+        "manufacturer_adhesive_notice",
+        "retailer_adhesive_wording"
+      ],
+      "original_record_changed": false
+    },
+    {
+      "record_key": "catalogue_flowtech_cm2_04_source",
+      "field": "manufacturer_part_number",
+      "original_revision": "f8d53dab709667fa74b8f0c924c84e8fe6dc7e93b7b3829f3623cf0efea60c11",
+      "prepared_atom_fields": [
+        "manufacturer_variant_sku",
+        "retailer_variant_sku"
+      ],
+      "original_record_changed": false
+    },
+    {
+      "record_key": "catalogue_flowtech_cm2_04_source",
+      "field": "tip_material",
+      "original_revision": "f8d53dab709667fa74b8f0c924c84e8fe6dc7e93b7b3829f3623cf0efea60c11",
+      "prepared_atom_fields": [
+        "manufacturer_cm2_insert",
+        "official_default_nozzle"
+      ],
+      "original_record_changed": false
+    }
+  ],
+  "editorial_boundary": "All75positive statements remain source-dependent; only separately authored navigation has no technical claim/citation requirement. No guide is reclassified as a manufacturer document.",
+  "guide_repair_activation": "Five normalized-text repair sets are ready; raw selector pairs require a new linked derived-text representation for active Store.cite. Diagram observation remains visual/native-held. Active revisions were not changed.",
+  "genuine_blocker": "Selected 33 partial reference content has no remaining local factual prerequisite. Native target/IDs, actual final review, action authorization and parent release gates remain. Optional guide activation/raw-selector normalization and editorial placement are distinct local/product follow-ups.",
+  "optional_product_decisions": [
+    "allowed source-form equivalent or separately scoped support-article/diagram policy if these nine facts must be native",
+    "reviewed editorial destination: blog draft requires image; guides/help navigation singletons have no Draft & Publish",
+    "G03 iron interface/package and G04 nozzle diameter/package only if binding their quarantined generic drafts"
+  ],
+  "frozen_v1_evidence": {
+    "database_snapshot": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/exports/v1-final-local-snapshot-v1.sqlite3",
+      "sha256": "640c3182e4a21ee93c642d3008bf96d7937a87f456da71e5a100148515a23385"
+    },
+    "import_manifest": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/v1-staged-import-preparation-manifest-v1.json",
+      "sha256": "faea64c1c99a7161e091da91f0a2cc499efea83f32b567b2379f3e4596a613ba"
+    }
+  },
+  "all_current_tables_equal_frozen_v1_snapshot": {
+    "claim_fts": 469,
+    "claim_fts_config": 1,
+    "claim_fts_content": 469,
+    "claim_fts_data": 39,
+    "claim_fts_docsize": 469,
+    "claim_fts_idx": 37,
+    "claims": 756,
+    "editorial_decisions": 139,
+    "local_record_bindings": 61,
+    "local_reference_variants": 33,
+    "metadata": 1,
+    "products": 33,
+    "records": 80,
+    "revisions": 59,
+    "sources": 110
+  },
+  "local_stats_unchanged": {
+    "products": 33,
+    "records": 80,
+    "documents": 51,
+    "guides": 29,
+    "variants": 33,
+    "sources": 110,
+    "claims": 469,
+    "supported_claims": 170,
+    "unknown_claims": 226,
+    "local_editorial_decisions": 139,
+    "environment": "local_development",
+    "native_approvals": 0
+  },
+  "verification": {
+    "python": {
+      "passed": 68,
+      "failed": 0,
+      "log": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/evidence-reconciliation-python-v1.log",
+      "sha256": "b7d255f7f5a6ecd81931fec452017ce1eb347b01743aa7799ad747aea1ba25c5"
+    },
+    "native_pure_contract": {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013/reports/evidence-reconciliation-contract-v1.json",
+      "sha256": "e1b586f80697645ed274c3eb0bce16c3478cb8c2d3e7e9a57590160139cef5e1",
+      "results": {
+        "structure_fixtures": 65,
+        "supported_facts": 162,
+        "nullable_fact_occurrences": 352,
+        "primary_documents": 33,
+        "schema_required_fields_and_canonical_hash_mapping_passed": true,
+        "group_consistent_alternative_bindings_passed": true,
+        "unbound_pending_private_and_public_projection_approval_rejected": true,
+        "unsupported_unknown_promotion_and_source_kind_rejected": true,
+        "priced_shell_and_wrong_environment_binding_rejected": true,
+        "native_ids_approvals_or_writes_created": 0
+      }
+    },
+    "ruff_F_E9": "passed",
+    "ruff_format": "passed",
+    "TypeScript_runtime_changes": false,
+    "previous_source_test_types": "passed at prior unchanged source head; canonical React18/19 generated-type limitation remains parent-owned",
+    "ports": [
+      {
+        "port": 3005,
+        "no_listener": true
+      },
+      {
+        "port": 8873,
+        "no_listener": true
+      }
+    ],
+    "native_API_or_browser_exercised": false
+  },
+  "public_source_review": "Current BuildTak and Micro Swiss pages corroborate bounded facts; public reader supplied only shell content for three Creality wiki pages. Archived raw/text bytes and manually viewed diagram remain distinct from current page verification.",
+  "active_record_changes": 0,
+  "new_products": 0,
+  "new_claims_ingested": 0,
+  "new_source_versions_registered": 0,
+  "new_local_store_review_events": 0,
+  "new_user_approval_claimed": false,
+  "native_approvals_created": 0,
+  "services_started": false,
+  "staging_or_shared_database_writes": 0,
+  "dependency_changes": false,
+  "new_credentials_or_access": false,
+  "paid_or_generation_model_calls": 0,
+  "three_d_sets_build_guides_and_faqs": "official_link_only; no build/FAQ content copied or indexed",
+  "parent_release_security_and_native_binding_gates": "preserved and separate"
+}

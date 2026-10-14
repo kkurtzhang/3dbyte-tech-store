@@ -1,0 +1,141 @@
+{
+  "measurement": "Deterministic actual-route capability/regression checks; no model quality claim.",
+  "model_generation": false,
+  "paid_calls": 0,
+  "cases": [
+    {
+      "id": "radio_battery",
+      "questions": [
+        "Does the DREMC retailer reference WES2487 include a radio and battery?"
+      ],
+      "status": "source_grounded_context",
+      "reason": "captured_retailer_radio_battery_exclusion",
+      "text": "Local development \u00b7 Deterministic source context \u00b7 No language model generation\n\n1. Shared listing note: radio/battery exclusion: Retailer shared listing note excludes transmitter, receiver and battery..\nScope: Captured DREMC external retailer reference WES2487 (Buggy / Buggster / Sandy), checked 2026-10-13. Shared listing notes are third-party observations; they do not verify a 3D Byte Tech kit, complete contents, model release, live price or inventory.\nUnresolved: esc_battery_connector_type, exact_kit_excluded_contents, exact_kit_included_contents, exact_model_release_compatibility, kit_manufacturer, kit_revision, physical_stock, small_servo_quantity, store_digital_access_included, store_kit_sku, supplier_bom_revision",
+      "selected_fields": [
+        "retailer_shared_radio_battery_exclusion"
+      ],
+      "source_links": [
+        {
+          "type": "source-url",
+          "sourceId": "local_source_retailer_dremc_1858c9a0f00d",
+          "url": "https://store.dremc.com.au/products/3dsets-com-rc-vehicle-kits-by-3dmakerparts.js",
+          "title": "store.dremc.com.au"
+        }
+      ],
+      "passed": true,
+      "failed_checks": []
+    },
+    {
+      "id": "digital_files",
+      "questions": [
+        "Does DREMC WES2487 include STL model files?"
+      ],
+      "status": "source_grounded_context",
+      "reason": "captured_retailer_stl_exclusion",
+      "text": "Local development \u00b7 Deterministic source context \u00b7 No language model generation\n\n1. Shared listing note: printed parts/STLs exclusion: Retailer shared listing note excludes printed model parts and STLs..\nScope: Captured DREMC external retailer reference WES2487 (Buggy / Buggster / Sandy), checked 2026-10-13. Shared listing notes are third-party observations; they do not verify a 3D Byte Tech kit, complete contents, model release, live price or inventory.\nUnresolved: esc_battery_connector_type, exact_kit_excluded_contents, exact_kit_included_contents, exact_model_release_compatibility, kit_manufacturer, kit_revision, physical_stock, small_servo_quantity, store_digital_access_included, store_kit_sku, supplier_bom_revision",
+      "selected_fields": [
+        "retailer_shared_printed_stl_exclusion"
+      ],
+      "source_links": [
+        {
+          "type": "source-url",
+          "sourceId": "local_source_retailer_dremc_1858c9a0f00d",
+          "url": "https://store.dremc.com.au/products/3dsets-com-rc-vehicle-kits-by-3dmakerparts.js",
+          "title": "store.dremc.com.au"
+        }
+      ],
+      "passed": true,
+      "failed_checks": []
+    },
+    {
+      "id": "separate_purchases",
+      "questions": [
+        "What do I need to buy separately for the DREMC WES2488 reference?"
+      ],
+      "status": "source_grounded_context",
+      "reason": "captured_shared_retailer_exclusions",
+      "text": "Local development \u00b7 Deterministic source context \u00b7 No language model generation\n\n1. Shared listing note: radio/battery exclusion: Retailer shared listing note excludes transmitter, receiver and battery..\nScope: Captured DREMC external retailer reference WES2488 (Landy), checked 2026-10-13. Shared listing notes are third-party observations; they do not verify a 3D Byte Tech kit, complete contents, model release, live price or inventory.\nUnresolved: esc_battery_connector_type, exact_kit_excluded_contents, exact_kit_included_contents, exact_model_release_compatibility, kit_manufacturer, kit_revision, physical_stock, small_servo_quantity, store_digital_access_included, store_kit_sku, supplier_bom_revision\n\n2. Shared listing note: printed parts/STLs exclusion: Retailer shared listing note excludes printed model parts and STLs..\nScope: Captured DREMC external retailer reference WES2488 (Landy), checked 2026-10-13. Shared listing notes are third-party observations; they do not verify a 3D Byte Tech kit, complete contents, model release, live price or inventory.\nUnresolved: esc_battery_connector_type, exact_kit_excluded_contents, exact_kit_included_contents, exact_model_release_compatibility, kit_manufacturer, kit_revision, physical_stock, small_servo_quantity, store_digital_access_included, store_kit_sku, supplier_bom_revision",
+      "selected_fields": [
+        "retailer_shared_radio_battery_exclusion",
+        "retailer_shared_printed_stl_exclusion"
+      ],
+      "source_links": [
+        {
+          "type": "source-url",
+          "sourceId": "local_source_retailer_dremc_1858c9a0f00d",
+          "url": "https://store.dremc.com.au/products/3dsets-com-rc-vehicle-kits-by-3dmakerparts.js",
+          "title": "store.dremc.com.au"
+        }
+      ],
+      "passed": true,
+      "failed_checks": []
+    },
+    {
+      "id": "included_parts",
+      "questions": [
+        "What exact parts are included in DREMC WES2489?"
+      ],
+      "status": "unknown",
+      "reason": "exact_retailer_contents_unresolved",
+      "text": "Local development \u00b7 Deterministic source context \u00b7 No language model generation\n\nUnknown: For captured DREMC retailer reference WES2489, exact selected kit included contents, kit revision, supplier bom revision remains unverified. Keep it unknown. Supplier family BOM observations do not prove an exact kit or model revision, and this reference does not establish a 3D Byte Tech offer or fulfilment.\nUnresolved fields: exact_kit_included_contents, kit_revision, supplier_bom_revision",
+      "selected_fields": [],
+      "source_links": [],
+      "passed": true,
+      "failed_checks": []
+    },
+    {
+      "id": "exact_version",
+      "questions": [
+        "Which exact model version is verified for DREMC WES2487?"
+      ],
+      "status": "unknown",
+      "reason": "retailer_model_release_unresolved",
+      "text": "Local development \u00b7 Deterministic source context \u00b7 No language model generation\n\nUnknown: For captured DREMC retailer reference WES2487, exact model release compatibility remains unverified. Keep it unknown. Supplier family BOM observations do not prove an exact kit or model revision, and this reference does not establish a 3D Byte Tech offer or fulfilment.\nUnresolved fields: exact_model_release_compatibility",
+      "selected_fields": [],
+      "source_links": [],
+      "passed": true,
+      "failed_checks": []
+    },
+    {
+      "id": "connector",
+      "questions": [
+        "What battery connector type is verified for DREMC WES2488: XT60 or Tamiya?"
+      ],
+      "status": "unknown",
+      "reason": "retailer_connector_unresolved",
+      "text": "Local development \u00b7 Deterministic source context \u00b7 No language model generation\n\nUnknown: For captured DREMC retailer reference WES2488, esc battery connector type remains unverified. Keep it unknown. Supplier family BOM observations do not prove an exact kit or model revision, and this reference does not establish a 3D Byte Tech offer or fulfilment.\nUnresolved fields: esc_battery_connector_type",
+      "selected_fields": [],
+      "source_links": [],
+      "passed": true,
+      "failed_checks": []
+    },
+    {
+      "id": "small_servo",
+      "questions": [
+        "How many small servos come in the DREMC WES2489 reference?"
+      ],
+      "status": "unknown",
+      "reason": "retailer_servo_quantity_unresolved",
+      "text": "Local development \u00b7 Deterministic source context \u00b7 No language model generation\n\nUnknown: For captured DREMC retailer reference WES2489, small-servo quantity for exact selected kit remains unverified. Keep it unknown. Supplier family BOM observations do not prove an exact kit or model revision, and this reference does not establish a 3D Byte Tech offer or fulfilment.\nUnresolved fields: small_servo_quantity",
+      "selected_fields": [],
+      "source_links": [],
+      "passed": true,
+      "failed_checks": []
+    },
+    {
+      "id": "own_store",
+      "questions": [
+        "Does a 3D Byte Tech kit mapped to WES2487 include STLs?"
+      ],
+      "status": "unknown",
+      "reason": "actual_store_kit_unverified",
+      "text": "Local development \u00b7 Deterministic source context \u00b7 No language model generation\n\nUnknown: For captured DREMC retailer reference WES2487, actual store kit sku, actual store kit digital access inclusion, exact selected kit included contents remains unverified. Keep it unknown. Supplier family BOM observations do not prove an exact kit or model revision, and this reference does not establish a 3D Byte Tech offer or fulfilment.\nUnresolved fields: store_kit_sku, store_digital_access_included, exact_kit_included_contents",
+      "selected_fields": [],
+      "source_links": [],
+      "passed": true,
+      "failed_checks": []
+    }
+  ],
+  "passed": 8,
+  "total": 8
+}
