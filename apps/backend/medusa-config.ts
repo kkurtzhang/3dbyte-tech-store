@@ -175,6 +175,8 @@ module.exports = defineConfig({
           process.env.MEILISEARCH_ADDRESS_INDEX_NAME || "addresses",
         localityIndexName:
           process.env.MEILISEARCH_LOCALITY_INDEX_NAME || "localities",
+        knowledgeReferenceIndexName:
+          process.env.MEILISEARCH_KNOWLEDGE_REFERENCE_INDEX_NAME || "stg_knowledge_references",
         productDocumentIndexName:
           process.env.MEILISEARCH_PRODUCT_DOCUMENT_INDEX_NAME ||
           "product_documents_public",

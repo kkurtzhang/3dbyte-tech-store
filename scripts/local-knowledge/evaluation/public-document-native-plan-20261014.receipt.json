@@ -1,0 +1,29 @@
+{
+  "artifact": "public-document-native-plan-20261014.json",
+  "artifact_kind": "generated dry-run corpus evidence; not runtime input",
+  "sha256": "775c4b89f30fb0a0cadeac9ffd3f9f1319f5618321a53043b6c1d81f1a292985",
+  "bytes": 466952,
+  "external_ssd_path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/artifacts/native-knowledge-pipeline-20261014/corpus-plan/public-document-native-plan-20261014.json",
+  "provenance_manifest": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/artifacts/native-knowledge-pipeline-20261014/corpus-plan/provenance.json",
+  "introduced_commit": "46c2af4d50c80405155084f4e05062865217eca3",
+  "review_checkpoint": "977f7ac5d39be5f6f4427ad948b76017089077a2",
+  "generator": "scripts/local-knowledge/prepare_public_document_plan.py",
+  "source_evidence": [
+    {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100-prices/exports/price-followup-activation-v1-after.sqlite3",
+      "sha256": "85d465b37b594e5b9cbabce19907a34531438ae1f85a860bf860d8fcce7eec03"
+    },
+    {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/local-knowledge/20261013-catalogue100-prices/exports/price-followup-activation-v1-ledger.json",
+      "sha256": "de0a990ff9cc5ce56e27dc3bed0b755bceb95c1d767bee7496424b6e93ea592a"
+    },
+    {
+      "path": "/Volumes/MINI-M1/Codex/3dbyte-tech-store/artifacts/expansion-full-corpus-20261011/drafts-identities.json",
+      "sha256": "4b9840cbe350f578c82e6b7505a743f8897f53c4fbb3d669cdd2b1728bd4c0b0"
+    }
+  ],
+  "write_ready": false,
+  "native_bindings": 0,
+  "native_approvals": 0,
+  "scanner_note": "97 generic-api-key matches at the review checkpoint were verified as local corpus identifiers against the pinned source database. Exact matches and source-row evidence remain in the external validation artifacts. Scanner configuration and exceptions were not changed. History is retained; removal from the runtime source tree is not a history scan waiver."
+}

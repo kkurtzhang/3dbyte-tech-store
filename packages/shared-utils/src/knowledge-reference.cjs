@@ -5,6 +5,7 @@ exports.KNOWLEDGE_MAX_AGE_MS =
   exports.knowledgeIdentifier =
   exports.isKnowledgeRecord =
     void 0;
+exports.knowledgeBinding = knowledgeBinding;
 exports.parseKnowledgeBody = parseKnowledgeBody;
 exports.parseApprovedKnowledgeDocument = parseApprovedKnowledgeDocument;
 const isKnowledgeRecord = (v) =>
@@ -23,14 +24,27 @@ const timestamp = (v) =>
   /^\d{4}-\d\d-\d\dT/.test(v) &&
   Number.isFinite(Date.parse(v));
 exports.KNOWLEDGE_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
+/** Legacy documents with an exact variant remain variant-scoped only. */
+function knowledgeBinding(raw) {
+  if (!(0, exports.isKnowledgeRecord)(raw)) return null;
+  if (raw.binding_scope === "product")
+    return raw.variant_id === null
+      ? { binding_scope: "product", variant_id: null }
+      : null;
+  if (
+    (raw.binding_scope === undefined || raw.binding_scope === "variant") &&
+    (0, exports.knowledgeIdentifier)(raw.variant_id)
+  )
+    return { binding_scope: "variant", variant_id: raw.variant_id };
+  return null;
+}
 /** Whitelist a bounded, plain-text, single-source document revision. */
 function parseKnowledgeBody(raw) {
   if (
     !(0, exports.isKnowledgeRecord)(raw) ||
     raw.version !== 1 ||
-    ![raw.document_id, raw.product_id, raw.variant_id].every(
-      exports.knowledgeIdentifier,
-    ) ||
+    !knowledgeBinding(raw) ||
+    ![raw.document_id, raw.product_id].every(exports.knowledgeIdentifier) ||
     !text(raw.product_handle, 200) ||
     !text(raw.product_title, 300) ||
     !text(raw.document_title, 300) ||
@@ -94,6 +108,10 @@ function parseKnowledgeBody(raw) {
     version: 1,
     document_id: raw.document_id,
     product_id: raw.product_id,
+    // Preserve legacy canonical bytes; explicit scope is part of every new revision.
+    ...(raw.binding_scope !== undefined
+      ? { binding_scope: raw.binding_scope }
+      : {}),
     variant_id: raw.variant_id,
     product_handle: raw.product_handle,
     product_title: raw.product_title,

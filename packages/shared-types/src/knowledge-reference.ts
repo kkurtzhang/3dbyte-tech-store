@@ -5,11 +5,14 @@ export interface KnowledgeFact {
   evidence_excerpt: string;
   page?: number;
 }
-export interface KnowledgeDocumentBody {
+/** Absent scope is accepted only for legacy documents with an exact variant. */
+export type KnowledgeBinding =
+  | { binding_scope: "product"; variant_id: null }
+  | { binding_scope?: "variant"; variant_id: string };
+export type KnowledgeDocumentBody = KnowledgeBinding & {
   version: 1;
   document_id: string;
   product_id: string;
-  variant_id: string;
   product_handle: string;
   product_title: string;
   document_title: string;
@@ -20,15 +23,15 @@ export interface KnowledgeDocumentBody {
   source_checked_at: string;
   text: string;
   facts: KnowledgeFact[];
-}
-export interface ApprovedKnowledgeDocument extends KnowledgeDocumentBody {
+};
+export type ApprovedKnowledgeDocument = KnowledgeDocumentBody & {
   revision_hash: string;
   valid_until: string;
-}
-export interface KnowledgeReferenceCard extends ApprovedKnowledgeDocument {
+};
+export type KnowledgeReferenceCard = ApprovedKnowledgeDocument & {
   scope: "staging";
   catalogue_role: "knowledge_reference";
   checkout_enabled: false;
   price: null;
   simulated_initial_quantity: number;
-}
+};

@@ -13,6 +13,7 @@ export * from "./meilisearch";
 export * from "./shipping";
 export type {
   KnowledgeFact,
+  KnowledgeBinding,
   KnowledgeDocumentBody,
   ApprovedKnowledgeDocument,
   KnowledgeReferenceCard,

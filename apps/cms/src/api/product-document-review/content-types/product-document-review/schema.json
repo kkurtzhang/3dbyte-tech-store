@@ -1,0 +1,88 @@
+{
+  "kind": "collectionType",
+  "collectionName": "product_document_review_events",
+  "info": {
+    "singularName": "product-document-review",
+    "pluralName": "product-document-reviews",
+    "displayName": "Product Document Review Event"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {
+    "content-manager": {
+      "visible": false
+    },
+    "content-type-builder": {
+      "visible": false
+    }
+  },
+  "attributes": {
+    "revision_key": {
+      "type": "string",
+      "required": true,
+      "private": true,
+      "unique": true
+    },
+    "target_document_id": {
+      "type": "string",
+      "required": true,
+      "private": true
+    },
+    "medusa_product_id": {
+      "type": "string",
+      "required": true,
+      "private": true
+    },
+    "medusa_variant_id": {
+      "type": "string",
+      "private": true
+    },
+    "content_revision": {
+      "type": "string",
+      "required": true,
+      "private": true
+    },
+    "actor_type": {
+      "type": "string",
+      "required": true,
+      "private": true
+    },
+    "actor_id": {
+      "type": "string",
+      "required": true,
+      "private": true
+    },
+    "evidence_policy": {
+      "type": "string",
+      "required": true,
+      "private": true
+    },
+    "decision": {
+      "type": "enumeration",
+      "enum": ["approved", "rejected"],
+      "required": true,
+      "private": true
+    },
+    "decided_at": {
+      "type": "datetime",
+      "required": true,
+      "private": true
+    },
+    "valid_until": {
+      "type": "datetime",
+      "required": true,
+      "private": true
+    },
+    "review_note": {
+      "type": "text",
+      "required": true,
+      "private": true
+    },
+    "binding_scope": {
+      "type": "enumeration",
+      "enum": ["product", "variant"],
+      "private": true
+    }
+  }
+}

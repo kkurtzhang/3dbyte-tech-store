@@ -332,6 +332,13 @@ const productSearchInputSchema = z.object({
   limit: z.number().int().min(1).max(6).default(4),
 })
 
+const knowledgeSearchInputSchema = z.object({
+  query: z.string().trim().min(1).max(120),
+  product_id: z.string().regex(/^[a-zA-Z0-9_-]{1,100}$/).optional(),
+  variant_id: z.string().regex(/^[a-zA-Z0-9_-]{1,100}$/).optional(),
+  limit: z.number().int().min(1).max(4).default(4),
+}).strict()
+
 const orderProofInputSchema = z.object({
   reference: z.string().trim().min(1).max(80),
   email: z.string().trim().email().max(254),
@@ -1071,6 +1078,12 @@ export async function POST(req: Request): Promise<Response> {
                   inputSchema: productSearchInputSchema,
                   execute: (input) =>
                     callInternalBackend("/ai/product-guidance", input, config),
+                }),
+                searchKnowledge: tool({
+                  description:
+                    "Retrieve current approved Product Document facts with exact product/variant identity and source/revision citations. Use for specifications, manuals and compatibility; null facts remain unknown. Use commerce tools for current offers and inventory.",
+                  inputSchema: knowledgeSearchInputSchema,
+                  execute: (input) => callInternalBackend("/ai/knowledge-search", input, config),
                 }),
                 lookupOrder: tool({
                   description:

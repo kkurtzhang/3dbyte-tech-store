@@ -4,7 +4,7 @@ import {
   parseKnowledgeBody,
   parseApprovedKnowledgeDocument,
 } from "@3dbyte-tech-store/shared-utils/src/knowledge-reference.cjs";
-function body(record: unknown) {
+export function knowledgeBody(record: unknown) {
   if (
     !isKnowledgeRecord(record) ||
     !isKnowledgeRecord(record.knowledge_content)
@@ -22,6 +22,9 @@ function body(record: unknown) {
     source_kind: record.source_kind,
     source_version: record.version,
     source_checked_at: record.source_checked_at,
+    ...(content.binding_scope !== undefined
+      ? { binding_scope: content.binding_scope }
+      : {}),
     variant_id: content.variant_id,
     source_sha256: content.source_sha256,
     text: content.text,
@@ -29,14 +32,18 @@ function body(record: unknown) {
   });
 }
 export function knowledgeRevision(record: unknown): string | null {
-  const value = body(record);
+  const value = knowledgeBody(record);
   return value
     ? createHash("sha256").update(JSON.stringify(value)).digest("hex")
     : null;
 }
 /** Read-only verification; never creates approval or grants publication. */
-export function approvedKnowledgeDocument(record: unknown, now = Date.now()) {
-  const value = body(record);
+export function approvedKnowledgeDocument(
+  record: unknown,
+  now = Date.now(),
+  event?: unknown,
+) {
+  const value = knowledgeBody(record);
   if (
     !value ||
     !isKnowledgeRecord(record) ||
@@ -44,21 +51,31 @@ export function approvedKnowledgeDocument(record: unknown, now = Date.now()) {
     typeof record.publishedAt !== "string" ||
     !Number.isFinite(Date.parse(record.publishedAt)) ||
     Date.parse(record.publishedAt) > now ||
-    !isKnowledgeRecord(record.knowledge_review)
+    !isKnowledgeRecord(event)
   )
     return null;
-  const review = record.knowledge_review,
+  const review = event,
     hash = knowledgeRevision(record);
   if (
-    review.status !== "approved" ||
-    review.document_id !== value.document_id ||
-    review.product_id !== value.product_id ||
-    review.variant_id !== value.variant_id ||
-    review.revision_hash !== hash ||
-    typeof review.reviewed_at !== "string" ||
-    !Number.isFinite(Date.parse(review.reviewed_at)) ||
-    Date.parse(review.reviewed_at) > now ||
-    Date.parse(review.reviewed_at) < Date.parse(value.source_checked_at)
+    review.decision !== "approved" ||
+    review.actor_type !== "content_api_token" ||
+    typeof review.actor_id !== "string" ||
+    !/^[1-9][0-9]*$/.test(review.actor_id) ||
+    !Number.isSafeInteger(review.id) ||
+    (review.id as number) < 1 ||
+    review.evidence_policy !== "official_or_two_independent" ||
+    review.target_document_id !== value.document_id ||
+    review.medusa_product_id !== value.product_id ||
+    // Existing scope-less events are valid only for legacy exact-variant bodies.
+    (review.binding_scope ??
+      (value.binding_scope === undefined ? "variant" : null)) !==
+      (value.binding_scope ?? "variant") ||
+    review.medusa_variant_id !== value.variant_id ||
+    review.content_revision !== hash ||
+    typeof review.decided_at !== "string" ||
+    !Number.isFinite(Date.parse(review.decided_at)) ||
+    Date.parse(review.decided_at) > now ||
+    Date.parse(review.decided_at) < Date.parse(value.source_checked_at)
   )
     return null;
   return parseApprovedKnowledgeDocument(

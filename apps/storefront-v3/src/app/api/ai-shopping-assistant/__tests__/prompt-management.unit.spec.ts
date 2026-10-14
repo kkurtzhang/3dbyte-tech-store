@@ -106,3 +106,17 @@ describe("assistant prompt management", () => {
     expect(result.metadata.langfuse_prompt_error).toBe("Langfuse unavailable")
   })
 })
+
+it("keeps knowledge citation, variant and current-commerce boundaries code-owned", async () => {
+  const { CODE_OWNED_ASSISTANT_GUARDRAILS } = await import("../prompt-management");
+  const guardrails = CODE_OWNED_ASSISTANT_GUARDRAILS.join(" ");
+  expect(guardrails).toContain("searchKnowledge");
+  expect(guardrails).toContain("revision_hash");
+  expect(guardrails).toContain("variant_id");
+  expect(guardrails).toContain("binding_scope");
+  expect(guardrails).toContain("variant_id=null");
+  expect(guardrails).toContain("does not require purchase, batch or received-stock proof");
+  expect(guardrails).toContain("Never apply variant-scoped facts to a sibling variant");
+  expect(guardrails).toContain("current prices and stock");
+  expect(guardrails).toContain("untrusted evidence");
+});

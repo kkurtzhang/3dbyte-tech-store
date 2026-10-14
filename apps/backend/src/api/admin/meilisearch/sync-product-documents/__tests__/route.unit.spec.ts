@@ -20,7 +20,12 @@ function createRequest({
     error: jest.fn(),
   };
   const strapiService = {
-    listProductDocuments: jest.fn().mockResolvedValue(documents),
+    listProductDocuments: jest.fn(
+      async (_productId?: string, scope?: { documentId?: string }) =>
+        scope?.documentId
+          ? documents.filter((document) => document.id === scope.documentId)
+          : documents,
+    ),
   };
   const meilisearchService = {
     configureIndex: jest.fn().mockResolvedValue(undefined),
@@ -36,6 +41,7 @@ function createRequest({
     req: {
       scope: {
         resolve: jest.fn((key) => {
+          if (key === "query") return { graph: jest.fn() };
           if (key === "logger") {
             return logger;
           }

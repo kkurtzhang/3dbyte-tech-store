@@ -12,6 +12,8 @@ import type {
 } from "@3dbyte-tech-store/shared-types"
 import type { MedusaContainer } from "@medusajs/framework/types"
 import ProductBrandLink from "../../../links/product-brand"
+import { handleProductDocumentWebhook } from "../../../lib/product-document-knowledge/lifecycle"
+import { knowledgeIdentifier } from "@3dbyte-tech-store/shared-utils/src/knowledge-reference.cjs"
 
 /**
  * Link record structure returned by query.graph for product-brand links
@@ -157,6 +159,22 @@ export async function POST(
 
 	// 3. Parse validated webhook payload
 	const { model, entry, event } = parseResult.data
+
+	// Product Documents use the same authenticated webhook, with current-state reads.
+	if (["product-document", "product-documents", "api::product-document.product-document"].includes(model)) {
+		if (process.env.PRODUCT_DOCUMENT_SYNC_ENABLED === "true" && !knowledgeIdentifier(entry.documentId)) {
+			res.status(400).json({ error: "Invalid document identity" })
+			return
+		}
+		try {
+			const result = await handleProductDocumentWebhook(req.scope, event, entry.documentId)
+			res.json({ received: true, ...result })
+		} catch {
+			logger.error("Product document reconciliation failed; retry required")
+			res.status(503).json({ error: "Document reconciliation unavailable" })
+		}
+		return
+	}
 
 	// 4. Validate this is a tracked model
 	const validProductModels = [
