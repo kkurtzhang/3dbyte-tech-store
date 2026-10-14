@@ -670,6 +670,43 @@ describe("AI product draft routes", () => {
     })
   })
 
+  it.each([0, 15, 30, 45])(
+    "returns the full filtered total and stable records at offset %i",
+    async (offset) => {
+      const matching = Array.from({ length: 32 }, (_, index) => ({
+        ...draft,
+        id: `aipd_${String(index).padStart(3, "0")}`,
+        product_input: { product_name: "Pagination fixture product" },
+        created_at: "2026-07-01T00:00:00.000Z",
+      }))
+      const draftModule = {
+        listAiProductDrafts: jest.fn().mockResolvedValue([
+          ...matching.slice().reverse(),
+          { ...matching[0], id: "failed", status: "validation_failed" },
+          { ...draft, id: "unrelated", product_input: { product_name: "Other" } },
+        ]),
+      }
+      const req = createRequest({
+        query: {
+          q: "Pagination fixture", status: "needs_review", order: "created_at",
+          limit: "15", offset: String(offset),
+        },
+        draftModule,
+      })
+      const res = createResponse()
+
+      await listDrafts(req as never, res as never)
+
+      expect(res.json).toHaveBeenCalledWith({
+        drafts: matching.slice(offset, offset + 15).map(withDraftQuality),
+        count: 32,
+        limit: 15,
+        offset,
+        status_counts: { needs_review: 32, validation_failed: 1 },
+      })
+    }
+  )
+
   it("rejects unsupported draft sort fields", async () => {
     const draftModule = {
       listAiProductDrafts: jest.fn(),

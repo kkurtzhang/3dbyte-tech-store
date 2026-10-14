@@ -161,6 +161,8 @@ jobs:
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
+      - name: Test AI draft Admin pagination with synthetic data
+        run: pnpm exec playwright test --config apps/backend/integration-tests/admin/playwright.config.cjs
       - name: Run browser smoke against the PR storefront
         run: pnpm exec playwright test tests/e2e/homepage.spec.ts
 

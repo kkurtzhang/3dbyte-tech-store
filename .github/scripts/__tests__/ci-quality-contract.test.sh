@@ -63,6 +63,7 @@ required_commands=(
   'pnpm --filter=@3dbyte-tech-store/observability type-check'
   'pnpm --filter=@3dbyte-tech-store/shared-types type-check'
   'pnpm --filter=@3dbyte-tech-store/shared-utils type-check'
+  'pnpm exec playwright test --config apps/backend/integration-tests/admin/playwright.config.cjs'
   'pnpm exec playwright test tests/e2e/homepage.spec.ts'
   'gitleaks dir . --config .gitleaks.toml --redact --exit-code 1'
   'pnpm audit --audit-level=high'

@@ -233,9 +233,15 @@ const AiProductDraftsPage = () => {
     : "created_at"
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => setDebouncedQ(q.trim()), 300)
+    const nextQ = q.trim()
+    if (nextQ === debouncedQ) return
+
+    const timeout = window.setTimeout(() => {
+      setPagination((current) => ({ ...current, pageIndex: 0 }))
+      setDebouncedQ(nextQ)
+    }, 300)
     return () => window.clearTimeout(timeout)
-  }, [q])
+  }, [debouncedQ, q])
 
   useEffect(() => {
     const next = new URLSearchParams()
@@ -255,9 +261,23 @@ const AiProductDraftsPage = () => {
     }),
     [debouncedQ, offset, order, pagination.pageSize, status]
   )
-  const { drafts, count, statusCounts, isError, isLoading, refetch } =
+  const { drafts, count, statusCounts, isError, isFetching, isLoading, refetch } =
     useAiProductDrafts(query)
+
+  useEffect(() => {
+    if (isLoading || isFetching || isError) return
+
+    const lastPageIndex = Math.max(0, Math.ceil(count / pagination.pageSize) - 1)
+    setPagination((current) =>
+      current.pageIndex > lastPageIndex
+        ? { ...current, pageIndex: lastPageIndex }
+        : current
+    )
+  }, [count, isError, isFetching, isLoading, pagination.pageSize])
+
   const canBulkCleanup =
+    !isFetching &&
+    !isError &&
     status === "validation_failed" &&
     !q.trim() &&
     count > 0 &&
@@ -403,7 +423,10 @@ const AiProductDraftsPage = () => {
               />
               {q ? (
                 <Button
-                  onClick={() => setQ("")}
+                  onClick={() => {
+                    setPagination((current) => ({ ...current, pageIndex: 0 }))
+                    setQ("")
+                  }}
                   size="small"
                   variant="secondary"
                 >
@@ -431,6 +454,14 @@ const AiProductDraftsPage = () => {
             </div>
           </div>
         </div>
+        <nav aria-label="AI product drafts pagination">
+          <fieldset
+            className="min-w-0 [&>div]:flex-wrap [&>div]:gap-y-2"
+            disabled={isFetching || isError || isCleaningUp}
+          >
+            <DataTable.Pagination />
+          </fieldset>
+        </nav>
         {isError ? (
           <div
             className="m-6 rounded-lg border border-ui-border-error bg-ui-bg-subtle p-4"
@@ -481,7 +512,6 @@ const AiProductDraftsPage = () => {
             }}
           />
         )}
-        <DataTable.Pagination />
       </DataTable>
     </Container>
   )
