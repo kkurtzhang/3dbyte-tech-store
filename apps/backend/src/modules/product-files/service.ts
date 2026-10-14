@@ -5,6 +5,7 @@ import {
   ProductRegistrationSource,
   ProductRegistrationStatus,
 } from "./models/product-registration";
+import { parseSignedDownload } from "./utils/signed-download";
 import type {
   ClaimProductSerialInput,
   CreateEntitledDownloadLinkInput,
@@ -152,10 +153,14 @@ class ProductFilesModuleService extends MedusaService({
       ? await input.retrieveFile(file.file_key)
       : null;
 
-    return {
-      url: fileData?.url || file.file_key,
-      expires_in: 900,
-    };
+    const download = parseSignedDownload(fileData?.url);
+    if (!download) {
+      throw new MedusaError(
+        MedusaError.Types.UNEXPECTED_STATE,
+        "Unable to create a product file download link",
+      );
+    }
+    return download;
   }
 }
 
