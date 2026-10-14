@@ -24,6 +24,26 @@ Coolify's predefined source commit value and makes `/api/health` report
 For one-app hotfixes, use a scoped redeploy so Coolify does not rebuild every
 service in the compose file.
 
+## Assistant Evaluation Readiness
+
+Every live assistant evaluation first checks storefront release identity, backend
+`/health`, and CMS `/admin/init`. Runtime pushes require the expected commit SHA.
+Manual and eval-only runs pin the first valid current storefront SHA and require
+that same SHA with both services healthy; they do not wait for a CI-only commit
+to be deployed. All three checks must pass in one polling iteration.
+
+The workflow supplies `STAGING_HEALTH_URL`, `STAGING_BACKEND_HEALTH_URL`, and
+`STAGING_CMS_HEALTH_URL`. The latter two can use matching staging repository
+variables for a different staging deployment. These endpoints are unauthenticated
+health reads. The gate does not query object storage or unrelated services.
+
+`TIMEOUT_SECONDS` (default 1200) is a shared wall-clock deadline. Each health or
+optional Coolify diagnostic request is capped by `REQUEST_TIMEOUT_SECONDS`
+(default 10) and the remaining deadline. Timeout logs identify each service's
+HTTP status/curl exit code and the observed versus expected storefront SHA.
+A failed matching Coolify deployment remains a failure. Investigate the failing
+service before rerunning; do not bypass readiness to obtain an evaluation pass.
+
 ## Compose Build Stability
 
 The root compose file is tuned for Coolify's webhook path. Coolify runs a full

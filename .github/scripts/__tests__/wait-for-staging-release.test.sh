@@ -23,7 +23,7 @@ while [ "$#" -gt 0 ]; do
     -o|--output) output="$2"; shift 2 ;;
     -w|--write-out) format="$2"; shift 2 ;;
     --max-time) budget="$2"; shift 2 ;;
-    --connect-timeout|-H) shift 2 ;;
+    --connect-timeout|--max-filesize|-H) shift 2 ;;
     -*) shift ;;
     *) url="$1"; shift ;;
   esac
@@ -48,12 +48,12 @@ if [ "${service}" = storefront ]; then
     missing_sha) body='{}' ;;
     unknown_sha) body='{"releaseSha":"unknown"}' ;;
     storefront_503) status=503 ;;
-    recover) if [ "${count}" -eq 1 ]; then body='{"releaseSha":"old-sha"}'; fi ;;
+    recover|current_drift) if [ "${count}" -eq 1 ]; then body='{"releaseSha":"old-sha"}'; fi ;;
   esac
 elif [ "${service}" = backend ]; then
   case "${TEST_SCENARIO}" in
     backend_503|coolify_failed_ready_sha) status=503 ;;
-    recover) if [ "${count}" -eq 1 ]; then status=503; fi ;;
+    recover|current_drift) if [ "${count}" -eq 1 ]; then status=503; fi ;;
     hang)
       if [ -z "${budget}" ]; then exit 91; fi
       printf '%s' "$(( $(cat "${TEST_STATE}/clock") + budget ))" > "${TEST_STATE}/clock"
@@ -127,10 +127,11 @@ check grep -Fq 'Timed out' "${last_state}/log"
 check test "$(cat "${last_state}/coolify")" -le 2
 run_case ready 0 RELEASE_MODE=current EXPECTED_RELEASE_SHA=
 check grep -Fq 'expected=expected-sha' "${last_state}/log"
+run_case current_drift 1 RELEASE_MODE=current EXPECTED_RELEASE_SHA=
 run_case unknown_sha 1 RELEASE_MODE=current EXPECTED_RELEASE_SHA=
 run_case ready 2 EXPECTED_RELEASE_SHA=
 run_case ready 2 REQUEST_TIMEOUT_SECONDS=0
 run_case ready 2 STAGING_CMS_HEALTH_URL=
 run_case ready 2 RELEASE_MODE=invalid
 if [ "${failures}" -ne 0 ]; then echo "${failures} readiness assertions failed"; exit 1; fi
-echo 'Staging release wait tests passed (19 offline scenarios)'
+echo 'Staging release wait tests passed (20 offline scenarios)'

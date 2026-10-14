@@ -76,15 +76,19 @@ jobs:
           echo "Skipping live staging assistant eval: ${{ steps.live-eval.outputs.reason }}"
 
       - name: Wait for staging deployment
-        if: steps.live-eval.outputs.should_run == 'true' && steps.live-eval.outputs.wait_for_release == 'true'
+        if: steps.live-eval.outputs.should_run == 'true'
         env:
           COOLIFY_API_TOKEN: ${{ secrets.COOLIFY_API_TOKEN || '' }}
           COOLIFY_API_URL: ${{ vars.COOLIFY_API_URL || secrets.COOLIFY_API_URL || '' }}
           COOLIFY_APPLICATION_UUID: ${{ vars.COOLIFY_STAGING_APPLICATION_UUID || secrets.COOLIFY_STAGING_APPLICATION_UUID || '' }}
           COOLIFY_POLL_SECONDS: "60"
           EXPECTED_RELEASE_SHA: ${{ github.sha }}
+          RELEASE_MODE: ${{ steps.live-eval.outputs.wait_for_release == 'true' && 'expected' || 'current' }}
+          REQUEST_TIMEOUT_SECONDS: "10"
           POLL_SECONDS: "15"
           STAGING_HEALTH_URL: ${{ inputs.base_url || 'https://store.staging.3dbytetech.com.au' }}/api/health
+          STAGING_BACKEND_HEALTH_URL: ${{ vars.STAGING_BACKEND_HEALTH_URL || 'https://api.staging.3dbytetech.com.au/health' }}
+          STAGING_CMS_HEALTH_URL: ${{ vars.STAGING_CMS_HEALTH_URL || 'https://cms.staging.3dbytetech.com.au/admin/init' }}
           TIMEOUT_SECONDS: "1200"
         run: bash .github/scripts/wait-for-staging-release.sh
 
