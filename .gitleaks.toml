@@ -16,3 +16,103 @@ id = "curl-auth-header"
   regexTarget = "match"
   paths = ['''^apps/cms/docs/(?:02-media-management|03-api-integrations)\.md$''']
   regexes = ['''Authorization: Bearer YOUR_(?:JWT_TOKEN|API_TOKEN|TOKEN)''']
+
+# Approved 2026-10-14: 53 inspected non-secret catalogue/source identifiers.
+# Each entry requires the exact file AND the exact full scanner match.
+# See scripts/security/fixtures/gitleaks-approved-identifiers.json and
+# scripts/security/test_gitleaks_exceptions.py for scope and negative controls.
+[[rules]]
+id = "generic-api-key"
+
+  [[rules.allowlists]]
+  description = "Approved literal reference identifiers in apps/storefront-v3/src/app/api/ai-shopping-assistant/local-product-registry.generated.ts"
+  condition = "AND"
+  regexTarget = "match"
+  paths = ['''^apps/storefront\-v3/src/app/api/ai\-shopping\-assistant/local\-product\-registry\.generated\.ts$''']
+  regexes = [
+    '''^groupKey":\ "catalogue_fiberlogy_pp750"$''',
+    '''^groupKey":\ "catalogue_magigoo_pp50"$''',
+    '''^groupKey":\ "catalogue_orbiter_v25"$''',
+    '''^groupKey":\ "catalogue_slice_torque_15"$''',
+    '''^groupKey":\ "catalogue_c100_fiberlogy_abs"$''',
+    '''^groupKey":\ "catalogue_c100_fiberlogy_absgf"$''',
+    '''^groupKey":\ "catalogue_c100_fiberlogy_asa"$''',
+    '''^groupKey":\ "catalogue_c100_fiberlogy_pctg"$''',
+    '''^groupKey":\ "catalogue_c100_fiberlogy_pctgcf"$''',
+    '''^groupKey":\ "catalogue_c100_fiberlogy_pctggf"$''',
+    '''^groupKey":\ "catalogue_c100_btt_sfs_v2"$''',
+    '''^groupKey":\ "catalogue_c100_btt_manta_m8p_v2"$''',
+    '''^groupKey":\ "catalogue_c100_btt_sb2209_stm32"$''',
+    '''^groupKey":\ "catalogue_c100_btt_ebb36_gen2"$''',
+    '''^groupKey":\ "catalogue_c100_phaetus_dxc"$''',
+    '''^groupKey":\ "catalogue_c100_btt_eddy_duo"$''',
+    '''^groupKey":\ "catalogue_c100_ldo_leviathan_v13"$''',
+    '''^groupKey":\ "catalogue_c100_ldo_nitehawk36"$''',
+    '''^groupKey":\ "catalogue_c100_e3d_roto_motor"$''',
+    '''^groupKey":\ "catalogue_c100_btt_skr_pico"$''',
+    '''^groupKey":\ "catalogue_c100_e3d_revo_six_cold"$''',
+    '''^groupKey":\ "catalogue_c100_e3d_obxidian_a1"$''',
+    '''^groupKey":\ "catalogue_c100_fiberlogy_pa12cf"$''',
+    '''^groupKey":\ "catalogue_c100_fiberlogy_pa12gf"$''',
+    '''^groupKey":\ "catalogue_c100_fiberlogy_bvoh"$''',
+    '''^groupKey":\ "catalogue_c100_carbonx_abscf"$''',
+    '''^groupKey":\ "catalogue_c100_thermax_pei1010"$''',
+    '''^groupKey":\ "catalogue_c100_thermax_pei9085"$''',
+    '''^groupKey":\ "catalogue_c100_carbonx_pei9085cf"$''',
+    '''^groupKey":\ "catalogue_c100_aquasolve_pva"$''',
+    '''^groupKey":\ "catalogue_c100_magigoo_pa"$''',
+    '''^groupKey":\ "catalogue_c100_magigoo_ht"$''',
+    '''^groupKey":\ "catalogue_c100_magigoo_pc"$''',
+    '''^groupKey":\ "catalogue_c100_sunlu_s2"$''',
+    '''^groupKey":\ "catalogue_c100_ldo_heatinsert"$''',
+    '''^groupKey":\ "catalogue_c100_slice_boron"$''',
+    '''^groupKey":\ "catalogue_c100_slice_desiccant"$''',
+    '''^groupKey":\ "catalogue_c100_cnc_deburrer"$''',
+    '''^groupKey":\ "catalogue_c100_sunlu_e2"$''',
+    '''^groupKey":\ "catalogue_c100_bambu_liquid_glue"$''',
+    '''^groupKey":\ "catalogue_c100_eibos_polyphemus"$''',
+    '''^groupKey":\ "catalogue_c100_ldo_leviathan_expansion"$''',
+  ]
+
+  [[rules.allowlists]]
+  description = "Approved literal reference identifiers in scripts/local-knowledge/evaluation/catalogue100-materials-02.json"
+  condition = "AND"
+  regexTarget = "match"
+  paths = ['''^scripts/local\-knowledge/evaluation/catalogue100\-materials\-02\.json$''']
+  regexes = [
+    '''^key":\ "fiberlogy_pa12cf"$''',
+    '''^key":\ "fiberlogy_pa12gf"$''',
+    '''^key":\ "thermax_pei1010"$''',
+    '''^key":\ "thermax_pei9085"$''',
+    '''^key":\ "carbonx_pei9085cf"$''',
+  ]
+
+  [[rules.allowlists]]
+  description = "Approved literal reference identifiers in scripts/local-knowledge/test_catalogue100_corpus.py"
+  condition = "AND"
+  regexTarget = "match"
+  paths = ['''^scripts/local\-knowledge/test_catalogue100_corpus\.py$''']
+  regexes = [
+    '''^group_key="catalogue_c100_magigoo_pc"$''',
+  ]
+
+  [[rules.allowlists]]
+  description = "Approved literal reference identifiers in scripts/local-knowledge/test_price_followup.py"
+  condition = "AND"
+  regexTarget = "match"
+  paths = ['''^scripts/local\-knowledge/test_price_followup\.py$''']
+  regexes = [
+    '''^group_key="catalogue_c100_sunlu_s2"$''',
+  ]
+
+  [[rules.allowlists]]
+  description = "Approved literal reference identifiers in scripts/local-knowledge/evaluation/catalogue100-hardware-01.json"
+  condition = "AND"
+  regexTarget = "match"
+  paths = ['''^scripts/local\-knowledge/evaluation/catalogue100\-hardware\-01\.json$''']
+  regexes = [
+    '''^key":\ "ldo_leviathan_v13"$''',
+    '''^source_key":\ "ldo_leviathan_v13_au"$''',
+    '''^key":\ "ldo_nitehawk36"$''',
+    '''^source_key":\ "ldo_nitehawk36_au"$''',
+  ]
