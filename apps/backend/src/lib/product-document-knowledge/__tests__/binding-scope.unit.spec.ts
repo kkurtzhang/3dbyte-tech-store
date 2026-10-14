@@ -220,10 +220,23 @@ function fixture() {
       deleteFromIndex: jest.fn(async () => {}),
     },
     query: {
-      graph: jest.fn(async (input: { filters: { id: string[] } }) => {
-        const data = current.filter((p) => input.filters.id.includes(p.id));
-        return { data, metadata: { count: data.length } };
-      }),
+      graph: jest.fn(
+        async (input: { entity: string; filters: { id: string[] } }) => {
+          if (input.entity === "product_variant") {
+            const data = current.flatMap((p) =>
+              p.variants
+                .filter((v) => input.filters.id.includes(v.id))
+                .map((v) => ({
+                  id: v.id,
+                  product: { id: p.id, status: p.status },
+                })),
+            );
+            return { data, metadata: { count: data.length } };
+          }
+          const data = current.filter((p) => input.filters.id.includes(p.id));
+          return { data, metadata: { count: data.length } };
+        },
+      ),
     },
     now,
   };
@@ -321,4 +334,158 @@ it("rejects cross-product requests, nonexistent variants and forged scope candid
       })
     ).documents.map((d) => d.document_id),
   ).toEqual(["doc_product", "doc_second"]);
+});
+
+it.each([undefined, "prod_hotend"])(
+  "keeps owning model and exact-variant evidence ahead of eight unrelated approved hits (%s)",
+  async (productId) => {
+    const options = fixture();
+    const foreign = options.candidates.find(
+      (c) => c.id === "doc_other_product",
+    )!;
+    options.candidates.unshift(
+      ...Array.from({ length: 8 }, (_, i) => ({
+        ...foreign,
+        id: `unrelated_approved_${i}`,
+      })),
+    );
+    const result = await retrieveProductKnowledge({
+      ...options,
+      queryText: "manual",
+      productId,
+      variantId: "variant_hotend",
+    });
+    expect(result.documents.map((d) => d.document_id)).toEqual([
+      "doc_product",
+      "doc_variant",
+    ]);
+    expect(result.citations.map((c) => c.variant_id)).toEqual([
+      null,
+      "variant_hotend",
+    ]);
+    expect(options.meilisearch.search).toHaveBeenCalledWith(
+      "manual",
+      "product_document",
+      {
+        limit: 8,
+        filter: expect.arrayContaining(['medusa_product_id = "prod_hotend"']),
+      },
+    );
+  },
+);
+
+it.each([
+  { productId: "prod_other", variantId: "variant_hotend" },
+  { variantId: "variant_missing" },
+  { productId: "prod_hotend", variantId: "variant_missing" },
+])(
+  "rejects an unknown or conflicting variant before search (%j)",
+  async (scope) => {
+    const options = fixture();
+    expect(
+      await retrieveProductKnowledge({
+        ...options,
+        queryText: "manual",
+        ...scope,
+      }),
+    ).toEqual({ documents: [], citations: [] });
+    expect(options.meilisearch.search).not.toHaveBeenCalled();
+    expect(options.strapi.getKnowledgeReference).not.toHaveBeenCalled();
+  },
+);
+
+it("stops before search when the variant ownership graph is unavailable", async () => {
+  const options = fixture();
+  options.query.graph.mockRejectedValueOnce(new Error("graph outage"));
+  await expect(
+    retrieveProductKnowledge({
+      ...options,
+      queryText: "manual",
+      variantId: "variant_hotend",
+    }),
+  ).rejects.toThrow();
+  expect(options.meilisearch.search).not.toHaveBeenCalled();
+  expect(options.strapi.getKnowledgeReference).not.toHaveBeenCalled();
+});
+
+it.each([
+  { data: [], metadata: { count: 1 } },
+  {
+    data: [
+      {
+        id: "variant_wrong",
+        product: { id: "prod_hotend", status: "published" },
+      },
+    ],
+    metadata: { count: 1 },
+  },
+  {
+    data: [
+      {
+        id: "variant_hotend",
+        product: { id: 'invalid"id', status: "published" },
+      },
+    ],
+    metadata: { count: 1 },
+  },
+  {
+    data: [
+      {
+        id: "variant_hotend",
+        product: { id: "prod_hotend", status: "published" },
+      },
+    ],
+    metadata: {},
+  },
+  {
+    data: Array(2).fill({
+      id: "variant_hotend",
+      product: { id: "prod_hotend", status: "published" },
+    }),
+    metadata: { count: 2 },
+  },
+])(
+  "rejects incomplete or ambiguous variant ownership before search (%j)",
+  async (snapshot) => {
+    const options = fixture();
+    options.query.graph.mockResolvedValueOnce(snapshot);
+    await expect(
+      retrieveProductKnowledge({
+        ...options,
+        queryText: "manual",
+        variantId: "variant_hotend",
+      }),
+    ).rejects.toThrow();
+    expect(options.meilisearch.search).not.toHaveBeenCalled();
+  },
+);
+
+it("does not search for a variant owned by an unpublished product", async () => {
+  const options = fixture();
+  options.current[0].status = "draft";
+  expect(
+    await retrieveProductKnowledge({
+      ...options,
+      queryText: "manual",
+      variantId: "variant_hotend",
+    }),
+  ).toEqual({ documents: [], citations: [] });
+  expect(options.meilisearch.search).not.toHaveBeenCalled();
+});
+
+it("rechecks current ownership after the search if the variant has moved", async () => {
+  const options = fixture();
+  const search = options.meilisearch.search.getMockImplementation()!;
+  options.meilisearch.search.mockImplementation(async (...args) => {
+    const result = await search(...args);
+    options.current[0].variants = [{ id: "variant_second" }];
+    return result;
+  });
+  expect(
+    await retrieveProductKnowledge({
+      ...options,
+      queryText: "manual",
+      variantId: "variant_hotend",
+    }),
+  ).toEqual({ documents: [], citations: [] });
 });

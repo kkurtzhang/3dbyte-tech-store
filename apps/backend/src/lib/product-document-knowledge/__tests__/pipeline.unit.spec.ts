@@ -42,9 +42,20 @@ function setup() {
     ),
   };
   const query = {
-    graph: jest
-      .fn()
-      .mockResolvedValue({ data: [nativeProduct], metadata: { count: 1 } }),
+    graph: jest.fn(
+      async (input: { entity: string; filters: { id: string[] } }) => {
+        if (input.entity === "product_variant") {
+          const data = nativeProduct.variants
+            .filter((v) => input.filters.id.includes(v.id))
+            .map((v) => ({
+              id: v.id,
+              product: { id: nativeProduct.id, status: nativeProduct.status },
+            }));
+          return { data, metadata: { count: data.length } };
+        }
+        return { data: [nativeProduct], metadata: { count: 1 } };
+      },
+    ),
   };
   const meilisearch = {
     configureIndex: jest.fn(),
