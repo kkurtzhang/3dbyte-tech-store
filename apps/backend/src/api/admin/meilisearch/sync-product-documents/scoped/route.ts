@@ -33,10 +33,8 @@ export async function POST(
     });
     res.json({ document_ids: input.data.document_ids, ...result });
   } catch {
-    res
-      .status(503)
-      .json({
-        error: "Scoped product document synchronization is unavailable.",
-      });
+    res.status(503).json({
+      error: "Scoped product document synchronization is unavailable.",
+    });
   }
 }
