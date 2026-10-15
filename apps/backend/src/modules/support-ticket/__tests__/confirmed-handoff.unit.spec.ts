@@ -40,7 +40,7 @@ function fixture() {
     .mockResolvedValue({ id: "synthetic-event" } as never);
   return { service, repository, manager, ticket, message, event };
 }
-it("uses the native Medusa transaction context for all three records", async () => {
+it("uses the native transaction for the ticket, message, consent event and both notification intents", async () => {
   const f = fixture();
   await f.service.createConfirmedAiHandoff(input);
   expect(f.ticket).toHaveBeenCalledWith(
@@ -50,6 +50,17 @@ it("uses the native Medusa transaction context for all three records", async () 
     expect.anything(),
   );
   expect(f.repository.transaction).toHaveBeenCalledTimes(1);
+  expect(f.event).toHaveBeenCalledTimes(3);
+  for (const [, context] of f.event.mock.calls)
+    expect(context).toEqual(
+      expect.objectContaining({ transactionManager: f.manager }),
+    );
+  for (const call of [2, 3])
+    expect(f.event).toHaveBeenNthCalledWith(
+      call,
+      expect.objectContaining({ type: "ai_notification_delivery_state" }),
+      expect.anything(),
+    );
   for (const operation of [f.ticket, f.message, f.event])
     expect(operation.mock.calls[0][1]).toEqual(
       expect.objectContaining({ transactionManager: f.manager }),

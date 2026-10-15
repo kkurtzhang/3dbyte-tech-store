@@ -117,3 +117,28 @@ export const sendSupportTicketCustomerReplyNotification = async ({
     },
   });
 };
+
+/** Build once, persist before dispatch, then reuse the exact approved-recipient payload. */
+export async function buildSupportCreatedNotification(
+  container: MedusaContainer,
+  ticket: SupportTicketRecord,
+  supportInboxEmail: string,
+  kind: "customer" | "internal",
+) {
+  const senderProfile = await resolveSenderProfileFromContainer(container, "default");
+  const content = kind === "customer"
+    ? await renderSupportTicketCustomerCreatedEmail({ supportInboxEmail, ticket })
+    : await renderSupportTicketInternalCreatedEmail({ supportInboxEmail, ticket });
+  return {
+    to: kind === "customer" ? ticket.customer_email : supportInboxEmail,
+    channel: "email",
+    template: kind === "customer" ? "support-ticket-created" : "support-ticket-internal-alert",
+    from: senderProfile.from,
+    provider_data: { reply_to: kind === "customer" ? senderProfile.reply_to : ticket.customer_email },
+    content,
+    data: {
+      ticket,
+      email_metadata: { entity_id: ticket.id, event: `support_ticket.created.${kind}` },
+    },
+  };
+}

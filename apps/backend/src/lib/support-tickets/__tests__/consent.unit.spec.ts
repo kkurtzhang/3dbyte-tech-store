@@ -9,10 +9,11 @@ import {
   consentHash,
   type ConsentRecord,
 } from "../consent-store";
-import { sendSupportTicketCreatedNotifications } from "../notifications";
+import { dispatchInitialTicketDeliveries } from "../delivery";
 
-jest.mock("../notifications", () => ({
-  sendSupportTicketCreatedNotifications: jest.fn().mockResolvedValue(undefined),
+jest.mock("../delivery", () => ({
+  ...jest.requireActual("../delivery"),
+  dispatchInitialTicketDeliveries: jest.fn().mockResolvedValue("queued"),
 }));
 jest.mock("../consent-store", () => {
   const actual = jest.requireActual("../consent-store");
@@ -143,7 +144,7 @@ it("prepares and previews exact recipients without creating a ticket or exposing
   });
   expect(preview.body.payload.customer_id).toBeUndefined();
   expect(f.module.createConfirmedAiHandoff).not.toHaveBeenCalled();
-  expect(sendSupportTicketCreatedNotifications).not.toHaveBeenCalled();
+  expect(dispatchInitialTicketDeliveries).not.toHaveBeenCalled();
 });
 it("submits the exact preview once and rejects replay while status lookup returns the saved result", async () => {
   const f = fixture();
@@ -169,7 +170,7 @@ it("submits the exact preview once and rejects replay while status lookup return
       }),
     }),
   );
-  expect(sendSupportTicketCreatedNotifications).toHaveBeenCalledTimes(1);
+  expect(dispatchInitialTicketDeliveries).toHaveBeenCalledTimes(1);
 });
 it.each([
   { receipt: "b".repeat(64) },
@@ -189,7 +190,7 @@ it.each([
         .code,
     ).toBeGreaterThanOrEqual(400);
     expect(f.module.createConfirmedAiHandoff).not.toHaveBeenCalled();
-    expect(sendSupportTicketCreatedNotifications).not.toHaveBeenCalled();
+    expect(dispatchInitialTicketDeliveries).not.toHaveBeenCalled();
   },
 );
 it.each([
@@ -297,7 +298,7 @@ it("keeps the claim spent after a database failure and does not notify or retry"
     409,
   );
   expect(f.module.createConfirmedAiHandoff).toHaveBeenCalledTimes(1);
-  expect(sendSupportTicketCreatedNotifications).not.toHaveBeenCalled();
+  expect(dispatchInitialTicketDeliveries).not.toHaveBeenCalled();
 });
 it("fails closed when consent storage is unavailable", async () => {
   const f = fixture();
@@ -312,7 +313,7 @@ it("does not let a notification failure turn a saved ticket into a second submis
   const p = await f.prepare();
   const { body } = await f.preview(p.proposalId);
   jest
-    .mocked(sendSupportTicketCreatedNotifications)
+    .mocked(dispatchInitialTicketDeliveries)
     .mockRejectedValueOnce(new Error("notification unavailable"));
   expect((await f.call(confirmSupportTicket, confirmation(body))).code).toBe(
     201,
@@ -351,10 +352,8 @@ it("returns the saved ticket and still queues notifications when Redis completio
   const result = await f.call(confirmSupportTicket, confirmation(body));
   expect(result.code).toBe(201);
   expect(result.body.notificationStatus).toBe("queued");
-  expect(sendSupportTicketCreatedNotifications).toHaveBeenCalledTimes(1);
-  expect(f.module.createSupportTicketEvents).toHaveBeenCalledWith(
-    expect.objectContaining({ type: "ai_handoff_notifications_queued" }),
-  );
+  expect(dispatchInitialTicketDeliveries).toHaveBeenCalledTimes(1);
+  expect(f.module.createSupportTicketEvents).not.toHaveBeenCalled();
   expect(
     f.module.createConfirmedAiHandoff.mock.calls[0][0].metadata,
   ).toMatchObject({
@@ -394,22 +393,20 @@ it("recovers durable status without Redis and denies another session or account"
     );
     expect((await other.preview("f".repeat(64))).code).toBe(409);
   }
-  expect(sendSupportTicketCreatedNotifications).not.toHaveBeenCalled();
+  expect(dispatchInitialTicketDeliveries).not.toHaveBeenCalled();
   expect(f.module.createConfirmedAiHandoff).not.toHaveBeenCalled();
 });
-it("reports pending email if queuing or durable acknowledgement fails", async () => {
+it("reports pending email if dispatch fails or the journal remains incomplete", async () => {
   for (const stage of ["queue", "event"]) {
     const f = fixture();
     const p = await f.prepare();
     const { body } = await f.preview(p.proposalId);
     if (stage === "queue")
       jest
-        .mocked(sendSupportTicketCreatedNotifications)
+        .mocked(dispatchInitialTicketDeliveries)
         .mockRejectedValueOnce(new Error("synthetic"));
     else
-      f.module.createSupportTicketEvents.mockRejectedValueOnce(
-        new Error("synthetic"),
-      );
+      jest.mocked(dispatchInitialTicketDeliveries).mockResolvedValueOnce("pending");
     expect(
       (await f.call(confirmSupportTicket, confirmation(body))).body
         .notificationStatus,

@@ -255,6 +255,12 @@ export default defineMiddlewares({
       middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
     },
     {
+      matcher: "/admin/support-tickets/:id/notifications",
+      methods: ["POST"],
+      bodyParser: { sizeLimit: "16kb" },
+      middlewares: [authenticate("user", ["session", "bearer"])],
+    },
+    {
       matcher: "/admin/support-tickets*",
       middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
     },

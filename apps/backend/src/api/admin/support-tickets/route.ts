@@ -1,3 +1,4 @@
+import { deliveryFromEvents, publicDelivery, DELIVERY_EVENT } from "../../../lib/support-tickets/delivery-state"
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 
 import { getSupportTicketModule } from "../../support-ticket-utils"
@@ -31,8 +32,27 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
   const limit = parseLimit(req.query.limit)
   const offset = parseOffset(req.query.offset)
 
+  const page = paginateSupportTickets(filtered, limit, offset)
+  const ids = page
+    .filter((ticket) => ticket.source === "ai_chat")
+    .map((ticket) => ticket.id)
+  const events = ids.length
+    ? await supportTicketModule.listSupportTicketEvents({
+        ticket_id: ids,
+        type: DELIVERY_EVENT,
+      })
+    : []
   return res.json({
-    tickets: paginateSupportTickets(filtered, limit, offset),
+    tickets: page.map((ticket) => {
+      if (ticket.source !== "ai_chat") return ticket
+      const ticketEvents = events.filter((event) => event.ticket_id === ticket.id)
+      return {
+        ...ticket,
+        deliveries: (["customer", "internal"] as const).map((kind) =>
+          publicDelivery(deliveryFromEvents(ticket, ticketEvents, kind))
+        ),
+      }
+    }),
     count: filtered.length,
     limit,
     offset,

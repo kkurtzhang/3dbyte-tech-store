@@ -15,11 +15,8 @@ import {
   consentStore,
   consentHash,
 } from "../../../lib/support-tickets/consent-store";
-import { sendSupportTicketCreatedNotifications } from "../../../lib/support-tickets/notifications";
+const createNotification = jest.fn(async (payload: Record<string, unknown>) => ({ ...payload, id: "synthetic-notification", external_id: "synthetic-provider", status: "success" }));
 
-jest.mock("../../../lib/support-tickets/notifications", () => ({
-  sendSupportTicketCreatedNotifications: jest.fn(async () => undefined),
-}));
 const fixtureUrl = process.env.CONSENT_TEST_POSTGRES_URL;
 const suite = fixtureUrl ? describe : describe.skip;
 const modulePath = path.join(process.cwd(), "src/modules/support-ticket");
@@ -164,7 +161,7 @@ suite("native support consent reliability", () => {
         },
         scope: {
           resolve: (name: string) =>
-            name === "supportTicket" ? service : { warn: jest.fn() },
+            name === "supportTicket" ? service : name === "notification" ? { createNotifications: createNotification } : { warn: jest.fn() },
         },
       };
       const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
@@ -210,7 +207,7 @@ suite("native support consent reliability", () => {
       expect(
         await service.listSupportTicketEvents({ type: "ai_handoff_confirmed" }),
       ).toHaveLength(1);
-      expect(sendSupportTicketCreatedNotifications).toHaveBeenCalledTimes(1);
+      expect(createNotification).toHaveBeenCalledTimes(2);
       jest
         .spyOn(consentStore, "read")
         .mockRejectedValue(new Error("Redis unavailable"));
@@ -265,7 +262,7 @@ suite("native support consent reliability", () => {
       expect(
         (await invoke(previewSupportTicket, { proposalId: crashId })).body,
       ).toMatchObject({ status: "submitted", notificationStatus: "pending" });
-      expect(sendSupportTicketCreatedNotifications).toHaveBeenCalledTimes(1);
+      expect(createNotification).toHaveBeenCalledTimes(2);
     } finally {
       await app.onApplicationPrepareShutdown();
       await app.onApplicationShutdown();

@@ -8,6 +8,7 @@ import type {
 } from "../lib/support-tickets/types"
 
 export type SupportTicketModule = {
+  transitionDelivery: (ticketId: string, kind: import("@3dbyte-tech-store/shared-types").SupportDeliveryKind, command: import("../lib/support-tickets/delivery-state").DeliveryCommand) => Promise<import("../lib/support-tickets/delivery-state").DeliveryRecord>
   createConfirmedAiHandoff: (
     input: import("../lib/support-tickets/validation").CreateSupportTicketInput & { consent_proposal_id: string }
   ) => Promise<SupportTicketRecord>
