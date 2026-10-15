@@ -1,5 +1,6 @@
 import { ReadableStream, TransformStream } from "stream/web";
 import type { UIMessageChunk } from "ai";
+import { isProductLookupDeclined } from "../product-link-routing";
 
 import {
   createProductActionTransform,
@@ -273,4 +274,41 @@ it("browses only when server policy selects explicit browse, never as an empty-s
     await normal.execute({ query: "PETG" }, { toolCallId: "search" }),
   ).toMatchObject({ mode: "search", status: "empty", actions: [] });
   expect(emptyFetch).toHaveBeenCalledTimes(1);
+});
+
+// Exercise the same policy-to-executor boundary used by the route, not just routing hints.
+it.each([
+  ["Send me the product page for PETG.", true],
+  ["Send me the product page for PETG. Don't search my order history.", true],
+  ["Show me the product link for PETG, but don’t look up my account.", true],
+  ["Find PETG. Avoid searching customer records.", true],
+  ["Find PETG without searching through my private account.", true],
+  ["Find PETG without performing an order lookup.", true],
+  ["Find PETG. No need to look up order status.", true],
+  ["Don't search my orders or account details. Find PETG.", true],
+  ["Don't look up my account records, but find the PETG page.", true],
+  ["Find PETG. Don't search my address.", true],
+  ["Find PETG. Don't search my orders and don't look up my account.", true],
+  ["Find PETG. Don't search my order history for product details.", true],
+  ["Find PETG. Don't search yet.", false],
+  ["Find PETG without a search.", false],
+  ["Find PETG. Avoid running a catalogue search.", false],
+  ["Find PETG. Don't look up products.", false],
+  ["Find PETG. Don't search for PETG.", false],
+  ["Find PETG. Don't search my order history or products.", false],
+  ["Find PETG. Don't search products and my account.", false],
+  ["Find PETG. Don't look up my account; don't search the catalogue.", false],
+  ["Find PETG. Don't search my profile, but don't search yet either.", false],
+  ["Find PETG. Don't search my orders and PETG.", false],
+  ["Find PETG. Don't search my order history or.", false],
+  ["Find PETG. Don't search my orders, products or account.", false],
+  ["Find PETG. Don't look up that.", false],
+  ["Find PETG. Don't share the product link.", false],
+])("scopes product execution independently of other lookup opt-outs: %s", async (message, allowed) => {
+  const fetcher = jest.fn(async () => ({ ok: true, json: async () => payload }) as Response);
+  const result = await createProductSearchExecution({ ...config(), lookupAllowed: !isProductLookupDeclined(message), fetcher })
+    .execute({ query: "PETG" }, { toolCallId: "scoped-optout" });
+  expect(result.status).toBe(allowed ? "matches" : "declined");
+  expect(fetcher).toHaveBeenCalledTimes(allowed ? 1 : 0);
+  expect(result.actions).toHaveLength(allowed ? 1 : 0);
 });

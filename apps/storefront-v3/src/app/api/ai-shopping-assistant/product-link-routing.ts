@@ -8,16 +8,44 @@ const lookupNoun = String.raw`(?:(?:a|another|any|the|new)\s+){0,2}(?:(?:product
 const lookupAction = String.raw`(?:search(?:ing)?|look(?:ing)?\s+up|(?:(?:run(?:ning)?|do(?:ing)?|perform(?:ing)?|start(?:ing)?|repeat(?:ing)?)\s+)?${lookupNoun})\b`;
 const pageReference = String.raw`(?:(?:a|an|the|any|this|that|these|those|my)\s+)?(?:product\s+)?(?:pages?|links?|urls?)\b`;
 const pageAction = String.raw`(?:send(?:ing)?|show(?:ing)?|shar(?:e|ing)|giv(?:e|ing)|provid(?:e|ing)|fetch(?:ing)?|find(?:ing)?)\s+(?:(?:me|us|them|anyone)\s+)?${pageReference}`;
-// Declining disclosure of details/prices is not declining a catalogue lookup.
 const declinedLookup = new RegExp(
-  `${declinePrefix}(?:${lookupAction}|${pageAction})`,
-  "i",
+  `${declinePrefix}(?:(?<lookup>${lookupAction})|(?<page>${pageAction}))`,
+  "gi",
 );
 const vagueSubject =
   /^(?:the\s+)?(?:it|this|that|those|these|one|ones|product|item)(?:\s+(?:you recommended|we discussed))?$/i;
 
+// Exempt only explicit non-product objects. An unspecified/ambiguous search
+// opt-out still blocks product lookup, as does a mixed product/private-data list.
+const nonProductObject =
+  /^(?:(?:through|in|for|inside|my|our|the|a|an|any|all|private|personal)\s+)*(?:orders?|accounts?|profiles?|addresses|address|customer\s+(?:records?|details?|data)|(?:personal|private)\s+(?:details?|data)|(?:purchase|payment|shipping|tracking|browsing)\s+(?:history|details?|records?))\b/i;
+const clauseBoundary = /[.!?;\n]|,?\s*\b(?:but|however|instead|then|whereas)\b/i;
+
 export function isProductLookupDeclined(message: string) {
-  return declinedLookup.test(message);
+  const declines = Array.from(message.matchAll(declinedLookup));
+  return declines.some((decline, index) => {
+    if (
+      decline.groups?.page ||
+      /\b(?:product|catalog|catalogue)\b/i.test(decline.groups?.lookup ?? "")
+    ) {
+      return true;
+    }
+
+    // Stop before the next declined action; assess that action independently.
+    const nextDecline = declines[index + 1];
+    const complement = message.slice(
+      decline.index + decline[0].length,
+      nextDecline?.index,
+    );
+    const object = (nextDecline
+      ? complement.replace(/(?:\s+\b(?:and|or|nor)\b\s*|,\s*)$/i, "")
+      : complement
+    )
+      .split(clauseBoundary, 1)[0]
+      .trim();
+    const targets = object.split(/\s+\b(?:and|or|nor)\b(?:\s+|$)|\s*,\s*/i);
+    return !targets.every((target) => nonProductObject.test(target));
+  });
 }
 
 // An explicit catalogue command is distinct from an empty or failed named search.

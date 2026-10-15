@@ -377,6 +377,26 @@ describe("POST /api/ai-shopping-assistant", () => {
     ).toBeUndefined()
   })
 
+  it.each([
+    ["Send me the product page for PETG. Don't search my order history.", true],
+    ["Show me the product link for PETG, but don't look up my account.", true],
+    ["Send me the product page for PETG. Don't search my orders and don't look up my account.", true],
+    ["Send me the product page for PETG. Don't search yet.", false],
+    ["Show me the product link for PETG. Don't look up my account or products.", false],
+    ["Send me the product page for PETG. Don't search my order history; don't search the catalogue.", false],
+  ])("applies action-scoped opt-outs at the actual product tool execution boundary: %s", async (message, allowed) => {
+    configureAiEnv()
+    process.env.NEXT_PUBLIC_SITE_URL = "https://store.example"
+    const { POST } = await import("../route")
+    await POST(createJsonRequest({ messages: [{ role: "user", parts: [{ type: "text", text: message }] }] }))
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({ status: "matches", mode: "search", query: "PETG", products: [{ id: "prod_petg", title: "PETG", handle: "petg", productUrl: "https://store.example/products/petg" }] }) })
+    const config = streamTextMock.mock.calls[0][0]
+    const result = await config.tools.searchProducts.execute({ query: "PETG" }, { toolCallId: "scoped-lookup" })
+    expect(result.status).toBe(allowed ? "matches" : "declined")
+    expect(fetchMock).toHaveBeenCalledTimes(allowed ? 1 : 0)
+    expect(config.prepareStep({ stepNumber: 0 })).toEqual(allowed ? { toolChoice: { type: "tool", toolName: "searchProducts" } } : undefined)
+  })
+
   it("rejects invalid chat payloads before creating a model stream", async () => {
     configureAiEnv()
     const { POST } = await import("../route")
