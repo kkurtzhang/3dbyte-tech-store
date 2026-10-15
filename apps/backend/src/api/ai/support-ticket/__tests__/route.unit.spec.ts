@@ -1,5 +1,9 @@
 import { POST } from "../route"
 
+jest.mock("../../../../lib/support-tickets/notifications", () => ({
+  sendSupportTicketCreatedNotifications: jest.fn().mockResolvedValue(undefined),
+}))
+
 function createResponse() {
   return {
     status: jest.fn().mockReturnThis(),
@@ -63,6 +67,22 @@ describe("POST /ai/support-ticket", () => {
 
     expect(supportTicketModule.createSupportTickets).not.toHaveBeenCalled()
     expect(res.status).toHaveBeenCalledWith(401)
+  })
+
+  it("rejects a model confirmation flag without a server confirmation receipt", async () => {
+    const supportTicketModule = {
+      createSupportTickets: jest.fn().mockResolvedValue({ id: "should-not-exist" }),
+      createSupportTicketMessages: jest.fn(),
+      createSupportTicketEvents: jest.fn(),
+    }
+    const req = createRequest({ token: "internal-token", supportTicketModule, body: {
+      name: "Synthetic Test", email: "synthetic@example.invalid", subject: "Test", message: "Test message",
+      confirmedByCustomer: true,
+    } })
+    const res = createResponse()
+    await POST(req as never, res as never)
+    expect(supportTicketModule.createSupportTickets).not.toHaveBeenCalled()
+    expect(res.status).toHaveBeenCalledWith(400)
   })
 
   it("creates an ai_chat ticket with summary and consented transcript context", async () => {
