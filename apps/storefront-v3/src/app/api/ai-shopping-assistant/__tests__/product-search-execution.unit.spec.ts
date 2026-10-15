@@ -1,6 +1,7 @@
 import { ReadableStream, TransformStream } from "stream/web";
 import type { UIMessageChunk } from "ai";
-import { isProductLookupDeclined } from "../product-link-routing";
+import { productLookupCases } from "../__fixtures__/product-lookup-cases";
+import { getProductLookupDecision, isProductLookupDeclined } from "../product-link-routing";
 
 import {
   createProductActionTransform,
@@ -280,6 +281,9 @@ it("browses only when server policy selects explicit browse, never as an empty-s
 it.each([
   ["Send me the product page for PETG.", true],
   ["Send me the product page for PETG. Don't search my order history.", true],
+  ["Send me the product page for PETG. Don't search my order history & products.", false],
+  ["Send me the product page for PETG. Don't search my account & the product catalogue.", false],
+  ["Send me the product page for PETG. Don't search my orders plus the product catalogue.", false],
   ["Show me the product link for PETG, but don’t look up my account.", true],
   ["Find PETG. Avoid searching customer records.", true],
   ["Find PETG without searching through my private account.", true],
@@ -308,6 +312,17 @@ it.each([
   const fetcher = jest.fn(async () => ({ ok: true, json: async () => payload }) as Response);
   const result = await createProductSearchExecution({ ...config(), lookupAllowed: !isProductLookupDeclined(message), fetcher })
     .execute({ query: "PETG" }, { toolCallId: "scoped-optout" });
+  expect(result.status).toBe(allowed ? "matches" : "declined");
+  expect(fetcher).toHaveBeenCalledTimes(allowed ? 1 : 0);
+  expect(result.actions).toHaveLength(allowed ? 1 : 0);
+});
+
+
+it.each(productLookupCases)("enforces typed routing at execution: $status — $message", async ({ message, allowed }) => {
+  const decision = getProductLookupDecision(message);
+  const fetcher = jest.fn(async () => ({ ok: true, json: async () => payload }) as Response);
+  const result = await createProductSearchExecution({ ...config(), lookupAllowed: decision.lookupAllowed, fetcher })
+    .execute({ query: "PETG" }, { toolCallId: "typed-optout" });
   expect(result.status).toBe(allowed ? "matches" : "declined");
   expect(fetcher).toHaveBeenCalledTimes(allowed ? 1 : 0);
   expect(result.actions).toHaveLength(allowed ? 1 : 0);

@@ -63,7 +63,7 @@ export function AssistantProductActions({
   const statusText = {
     empty: "No matching products were found. Try a different product name.",
     unavailable: "Product search is unavailable. Please try again.",
-    declined: "No product search was made because you asked to skip it.",
+    declined: "No product search was made.",
   };
   if (event.status !== "matches")
     return (

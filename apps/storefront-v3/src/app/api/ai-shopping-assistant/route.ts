@@ -22,7 +22,7 @@ import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
 import { getReleaseSha } from "@/lib/release-identity"
 import { checkRateLimit, getClientIp } from "@/lib/security/rate-limit"
 
-import { isExplicitProductBrowse, isProductLookupDeclined, prepareProductLinkStep } from "./product-link-routing"
+import { getProductLookupDecision, isExplicitProductBrowse, prepareProductLinkStep } from "./product-link-routing"
 import { createProductActionTransform, createProductSearchExecution } from "./product-search-execution"
 import { resolveAssistantSystemPrompt } from "./prompt-management"
 import {
@@ -1024,12 +1024,14 @@ export async function POST(req: Request): Promise<Response> {
               name: "deepseek",
             })
             const uiMessages = toUiMessages(parsed.data.messages)
+            const latestUserMessage = getLatestUserMessage(parsed.data.messages)
+            const productLookupDecision = getProductLookupDecision(latestUserMessage)
             const productSearch = createProductSearchExecution({
               backendUrl: config.backendUrl,
               internalToken: config.internalToken,
               storefrontOrigin: process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin,
-              lookupAllowed: !isProductLookupDeclined(getLatestUserMessage(parsed.data.messages)),
-              mode: isExplicitProductBrowse(getLatestUserMessage(parsed.data.messages)) ? "browse" : "search",
+              lookupAllowed: productLookupDecision.lookupAllowed,
+              mode: isExplicitProductBrowse(latestUserMessage) ? "browse" : "search",
               signal: req.signal,
             })
             const responseMessageId = randomUUID()
@@ -1086,8 +1088,9 @@ export async function POST(req: Request): Promise<Response> {
               stopWhen: stepCountIs(5),
               prepareStep: ({ stepNumber }) =>
                 prepareProductLinkStep(
-                  getLatestUserMessage(parsed.data.messages),
+                  latestUserMessage,
                   stepNumber,
+                  productLookupDecision,
                 ),
               tools: {
                 searchProducts: tool({

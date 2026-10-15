@@ -1,6 +1,8 @@
 import { ReadableStream, TransformStream } from "stream/web"
 import { TextDecoder } from "util"
 
+import { productLookupCases } from "../__fixtures__/product-lookup-cases"
+
 const streamTextMock = jest.fn()
 const toolMock = jest.fn((config) => config)
 const createOpenAIMock = jest.fn()
@@ -377,14 +379,7 @@ describe("POST /api/ai-shopping-assistant", () => {
     ).toBeUndefined()
   })
 
-  it.each([
-    ["Send me the product page for PETG. Don't search my order history.", true],
-    ["Show me the product link for PETG, but don't look up my account.", true],
-    ["Send me the product page for PETG. Don't search my orders and don't look up my account.", true],
-    ["Send me the product page for PETG. Don't search yet.", false],
-    ["Show me the product link for PETG. Don't look up my account or products.", false],
-    ["Send me the product page for PETG. Don't search my order history; don't search the catalogue.", false],
-  ])("applies action-scoped opt-outs at the actual product tool execution boundary: %s", async (message, allowed) => {
+  it.each(productLookupCases)("uses the same typed decision for forcing and execution: $status — $message", async ({ message, allowed }) => {
     configureAiEnv()
     process.env.NEXT_PUBLIC_SITE_URL = "https://store.example"
     const { POST } = await import("../route")

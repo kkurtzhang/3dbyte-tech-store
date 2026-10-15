@@ -1,4 +1,5 @@
-import { prepareProductLinkStep } from "../product-link-routing";
+import { productLookupCases } from "../__fixtures__/product-lookup-cases";
+import { getProductLookupDecision, prepareProductLinkStep } from "../product-link-routing";
 
 describe("explicit product link routing", () => {
   it.each([
@@ -133,4 +134,14 @@ it.each(["Browse catalogue", "Show me the products", "Please view the catalog."]
 it("does not interpret a named product or an opt-out as catalogue browsing", () => {
   expect(prepareProductLinkStep("Browse catalogue without a search", 0)).toBeUndefined();
   expect(prepareProductLinkStep("Show me the products for PETG", 0)).toBeUndefined();
+});
+
+
+it.each(productLookupCases)("bounded routing decision: $status — $message", ({ message, status, allowed }) => {
+  const decision = getProductLookupDecision(message);
+  expect(decision).toEqual({ status, lookupAllowed: allowed });
+  expect(prepareProductLinkStep(message, 0, decision)).toEqual(
+    allowed ? { toolChoice: { type: "tool", toolName: "searchProducts" } } : undefined,
+  );
+  expect(prepareProductLinkStep(message, 1, decision)).toBeUndefined();
 });
