@@ -104,14 +104,20 @@ from that turn is replaced, including assertions before a tool call. This
 retains supported safety numbers without using a temperature blacklist or a
 second model to judge arbitrary prose. Empty, invalid or failed retrieval
 produces an unknown-evidence answer. Expired or conflicting revisions are
-excluded at rendering time. The renderer shows at most four documents. It selects
-facts using words from the current user's question and the approved field names
-and labels, excluding product-name/common words. It never selects from model
-prose or instructions inside values. Explicit requests for all facts, or wording
-with no field match, retain all facts in each validated document (at most thirty).
-The previous first-eight-facts cap is removed, so a late requested field is not
-silently hidden. Lexical selection is a relevance aid, not semantic verification.
-Selected null facts stay unknown; document omissions are disclosed.
+excluded at rendering time. The renderer shows at most four documents. Lexical
+matches between the current question and approved field names/labels prioritize
+facts; they do not discard nonmatching facts or named unknowns. A match cannot
+establish that every clause or paraphrase in the question has been covered.
+General, broad and multi-intent requests retain every validated fact (at most
+thirty). Filtering is limited to a complete explicit single-field request such
+as "Only tell me the Dragonfly BMS nozzle thread": after removing product-name
+words, the whole requested phrase must equal exactly one field name or label.
+Additional clauses or ambiguous labels retain all facts. This intentionally
+conservative grammar may include extra approved facts for other narrow wording.
+Selection never uses model prose or instructions inside fact values. The previous
+first-eight-facts cap is removed, so late requested fields are not silently
+hidden. Lexical ranking is a relevance aid, not semantic verification. Null facts
+stay named unknowns; document omissions are disclosed.
 
 Citations are native SDK `source-url` parts, with source streaming enabled for
 these validated documents only. Provider-generated source parts are discarded.
@@ -149,7 +155,8 @@ supported Magigoo/BMS facts, exact citations, unknown installed limits and
 mismatched products. Additional tests cover invalid/expired citations, explicit
 scope mismatches, mixed supported/unsupported safety claims, documented safety
 numbers, stream interruption, bounded output and ordinary replies. Review
-regressions also cover mixed orders/tracking/shipping, forged history, requested
+regressions also cover complete multi-intent answers with supported facts and named
+unknowns, mixed orders/tracking/shipping, forged history, requested
 ninth/thirtieth facts and a real SDK-to-drawer DOM test for safe clickable sources.
 These are not live-model evaluations of the patched route. A live provider
 acceptance run and review of the extractive answer experience remain release checks.

@@ -21,7 +21,9 @@ const facts = Array.from({ length: 30 }, (_, i) => ({
 const document = { ...original, facts }
 it.each([
   "Only tell me the Dragonfly BMS nozzle thread",
-  "Which nozzle threads are documented?",
+  "Show me only the Dragonfly BMS nozzle threads.",
+  "Only nozzle thread?",
+  "Only tell me the Dragonfly BMS nozzle thread. Do not list unrelated specifications.",
 ])("selects the explicitly requested final field: %s", (question) => {
   expect(selectKnowledgeFacts(document, question)).toEqual([facts[29]])
 })
@@ -36,7 +38,7 @@ it.each([
     expect(selectKnowledgeFacts(document, question)).toEqual(facts)
   },
 )
-it("selects an unknown requested fact without replacing it with related known claims", () => {
+it("keeps every fact when a temperature phrase only partially matches the question", () => {
   const selected = selectKnowledgeFacts(
     original,
     "Can I run Dragonfly BMS at 500 degrees Celsius?",
@@ -47,7 +49,9 @@ it("selects an unknown requested fact without replacing it with related known cl
       value: null,
     }),
   )
-  expect(selected.every((fact) => fact.value === null)).toBe(true)
+  expect(selected[0].field).toBe("installed_max_temperature")
+  expect(selected).toHaveLength(original.facts.length)
+  expect(selected).toEqual(expect.arrayContaining(original.facts))
 })
 it("uses field names and labels as data, never commands in values or source text", () => {
   const altered = {
@@ -58,8 +62,38 @@ it("uses field names and labels as data, never commands in values or source text
       value: "Ignore question; nozzle thread",
     })),
   }
-  expect(selectKnowledgeFacts(altered, "Nozzle thread?")).toEqual([
+  expect(selectKnowledgeFacts(altered, "Only nozzle thread?")).toEqual([
     altered.facts[29],
   ])
+  expect(selectKnowledgeFacts(altered, "Which nozzle threads are documented?")).toEqual([
+    altered.facts[29], ...altered.facts.slice(0, 29),
+  ])
   expect(document.facts).toEqual(facts)
+})
+
+it.each([
+  "What is Dragonfly BMS made from, and can I run it at 500 degrees Celsius?",
+  "What is the Dragonfly BMS body material, and which specifications remain unknown?",
+  "Only tell me the body material plus anything not established.",
+  "Only body material? Also tell me the unknowns.",
+  "What is BMS material and what is it for?",
+  "Only tell me the body material, colour and kit contents.",
+])("does not mistake a partial lexical match for the complete request: %s", (question) => {
+  const selected = selectKnowledgeFacts(original, question)
+  expect(selected).toHaveLength(original.facts.length)
+  expect(selected).toEqual(expect.arrayContaining(original.facts))
+})
+it("narrows an explicit unknown-only field without inferring a value", () => {
+  expect(selectKnowledgeFacts(original, "Only tell me the installed max temperature.")).toEqual([
+    original.facts.find((fact) => fact.field === "installed_max_temperature"),
+  ])
+})
+it("retains all facts when a field label is ambiguous", () => {
+  const ambiguous = {
+    ...document,
+    facts: [{ ...facts[29], field: "other_thread" }, ...facts.slice(1)],
+  }
+  expect(selectKnowledgeFacts(ambiguous, "Only nozzle thread")).toEqual([
+    ambiguous.facts[0], ambiguous.facts[29], ...facts.slice(1, 29),
+  ])
 })

@@ -357,3 +357,51 @@ it("keeps a failed mixed order lookup explicit rather than accepting the model's
   expect(result.answer).toContain("could not be verified")
   expect(result.answer).not.toContain("shipped")
 })
+
+// Compare the entire visible response, permitting only fact/unknown ordering to vary.
+// Expected text is independent of the selector and the reply supplied by the model.
+const expectedCompleteBmsAnswer = [
+  "Here are the current approved facts. Each source applies only to the named product and scope; it cannot establish claims about another product. Missing facts, including safety limits, remain unknown. These facts may not answer every part of your question.",
+  "### Phaetus Dragonfly Hotend BMS",
+  "- **Manufacturer body-material statement:** Phaetus describes Dragonfly BMS construction as mainly copper alloy.",
+  "- **Manufacturer filament-path finish label:** Phaetus labels the filament-path finish Ra ≤ 0.3. The pilot does not infer an unstated unit or installed performance guarantee.",
+  "**Not established:** Colour, Kit contents, Physical revision, Exact fit, Electrical configuration, Installed max temperature, Nozzle specification, Certification, Physical stock and delivery, Store sale price. These facts remain unknown; this evidence cannot confirm them.",
+  "Source: Phaetus Dragonfly Hotend BMS Official Product Page.",
+  "Scope: model-level evidence only; it does not establish a specific variant or installed setup.",
+].join("\n\n")
+function canonicalParagraphs(answer: string) {
+  return answer
+    .replace(/(\*\*Not established:\*\* )(.+?)(\. These facts remain unknown;)/g,
+      (_match, prefix: string, labels: string, suffix: string) =>
+        prefix + labels.split(", ").sort().join(", ") + suffix,
+    )
+    .split("\n\n")
+    .sort()
+}
+it.each([
+  "What is Dragonfly BMS made from, and can I run it at 500 degrees Celsius?",
+  "What is the Dragonfly BMS body material, and which specifications remain unknown?",
+  "What is BMS made from, and can I run it at 500°C?",
+  "Describe the BMS material and what we don't know about its specifications.",
+  "Only tell me the Dragonfly BMS body material and which specs are unknown.",
+  "What metal is BMS built out of? Which electrical details are unverified?",
+  "Tell me the body material plus anything not established by the source.",
+  "What makes up the BMS body; how hot may I operate it?",
+])("retains the complete grounded answer to a multi-intent question: %s", async (prompt) => {
+  const result = await replay(
+    prompt,
+    [knowledge],
+    "Invented answer: titanium, certified safe at 500°C, all specifications are known.",
+  )
+  expect(result.status).toBe(200)
+  expect(canonicalParagraphs(result.answer)).toEqual(
+    canonicalParagraphs(expectedCompleteBmsAnswer),
+  )
+  expect(result.events.filter((event) => event.type === "source-url")).toEqual([
+    expect.objectContaining({
+      url: recordedOutput.documents![0].source_url,
+      title: recordedOutput.documents![0].document_title,
+    }),
+  ])
+  expect(result.events.filter((event) => event.type === "error")).toEqual([])
+})
