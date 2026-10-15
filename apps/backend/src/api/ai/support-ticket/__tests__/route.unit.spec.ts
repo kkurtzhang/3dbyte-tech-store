@@ -1,5 +1,9 @@
 import { POST } from "../route"
 
+jest.mock("../../../../lib/support-tickets/notifications", () => ({
+  sendSupportTicketCreatedNotifications: jest.fn().mockResolvedValue(undefined),
+}))
+
 function createResponse() {
   return {
     status: jest.fn().mockReturnThis(),
@@ -65,7 +69,23 @@ describe("POST /ai/support-ticket", () => {
     expect(res.status).toHaveBeenCalledWith(401)
   })
 
-  it("creates an ai_chat ticket with summary and consented transcript context", async () => {
+  it("rejects a model confirmation flag without a server confirmation receipt", async () => {
+    const supportTicketModule = {
+      createSupportTickets: jest.fn().mockResolvedValue({ id: "should-not-exist" }),
+      createSupportTicketMessages: jest.fn(),
+      createSupportTicketEvents: jest.fn(),
+    }
+    const req = createRequest({ token: "internal-token", supportTicketModule, body: {
+      name: "Synthetic Test", email: "synthetic@example.invalid", subject: "Test", message: "Test message",
+      confirmedByCustomer: true,
+    } })
+    const res = createResponse()
+    await POST(req as never, res as never)
+    expect(supportTicketModule.createSupportTickets).not.toHaveBeenCalled()
+    expect(res.status).toHaveBeenCalledWith(400)
+  })
+
+  it("rejects the legacy direct ticket payload including claimed transcript consent", async () => {
     const supportTicketModule = {
       createSupportTickets: jest.fn().mockResolvedValue({
         id: "spt_ai_1",
@@ -101,16 +121,7 @@ describe("POST /ai/support-ticket", () => {
 
     await POST(req as never, res as never)
 
-    expect(supportTicketModule.createSupportTickets).toHaveBeenCalledWith(
-      expect.objectContaining({
-        source: "ai_chat",
-        ai_summary: "Customer asked whether a hotend fits a Voron build.",
-        metadata: expect.objectContaining({
-          transcript_excerpt: "Customer: will this fit?",
-          verified_order_context: { order_reference: "3DBO-ABCD-234567" },
-        }),
-      })
-    )
-    expect(res.status).toHaveBeenCalledWith(201)
+    expect(supportTicketModule.createSupportTickets).not.toHaveBeenCalled()
+    expect(res.status).toHaveBeenCalledWith(400)
   })
 })

@@ -525,3 +525,25 @@ describe("fresh product actions in the actual drawer", () => {
   });
 
 });
+
+describe("combined product and consent drawer", () => {
+  beforeEach(() => {
+    mockUsePathname.mockReturnValue("/shop");
+    chatOptions = {};
+    chatState = { messages: [{ id: "combined-answer", role: "assistant", parts: [{ type: "tool-createSupportTicket", state: "output-available", output: { status: "confirmation_required", proposalId: "a".repeat(64), receipt: "forged-receipt" } }] }], status: "ready", error: null, sendMessage: sendMessageMock };
+  });
+  it("keeps support review visible without prose or a product result", () => {
+    render(<ShoppingAssistantDrawer initiallyOpen />);
+    expect(screen.getByRole("button", { name: "Review support request" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Send support request" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "View product" })).not.toBeInTheDocument();
+  });
+  it("renders fresh product actions and support review together without trusting a supplied receipt", () => {
+    render(<ShoppingAssistantDrawer initiallyOpen />);
+    act(() => chatOptions.onData?.({ type: "data-product-search", data: { messageId: "combined-answer", callId: "fresh", status: "matches", mode: "search", query: "PETG", products: [{ id: "prod_petg", title: "PETG", href: "/products/petg", match: "search" }] } }));
+    expect(screen.getByRole("link", { name: "View product" })).toHaveAttribute("href", "/products/petg");
+    expect(screen.getByRole("button", { name: "Review support request" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Send support request" })).not.toBeInTheDocument();
+    expect(screen.queryByText("forged-receipt")).not.toBeInTheDocument();
+  });
+});

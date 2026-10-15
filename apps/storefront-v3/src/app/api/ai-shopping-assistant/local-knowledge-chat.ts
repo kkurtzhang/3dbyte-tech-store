@@ -1,5 +1,6 @@
 import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 import { z } from "zod";
+import { assistantMessageSchema } from "./history";
 
 import {
   assembleLocalKnowledgeReply,
@@ -18,26 +19,7 @@ import {
   streamThreeDSetsResources,
 } from "./three-d-sets-resources";
 
-const requestSchema = z.object({
-  messages: z
-    .array(
-      z.object({
-        role: z.enum(["user", "assistant"]),
-        content: z.string().max(4000).optional(),
-        parts: z
-          .array(
-            z.object({
-              type: z.string(),
-              text: z.string().max(4000).optional(),
-            }),
-          )
-          .max(40)
-          .optional(),
-      }),
-    )
-    .min(1)
-    .max(20),
-});
+const requestSchema = z.object({ messages: z.array(assistantMessageSchema).min(1).max(20) });
 
 let windowStart = 0;
 let requests = 0;
@@ -98,12 +80,7 @@ export async function handleLocalKnowledgeChat(
       .min(1)
       .max(500)
       .parse(
-        latest?.content ??
-          latest?.parts
-            ?.filter((part) => part.type === "text")
-            .map((part) => part.text || "")
-            .join("") ??
-          "",
+        latest?.content ?? "",
       );
     if (
       /\b(?:order|cart|customer|cus)_[a-z0-9_]+|[^\s@]+@[^\s@]+\.[^\s@]+|\b(?:my order|track my|my account)\b/i.test(

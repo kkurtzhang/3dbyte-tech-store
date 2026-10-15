@@ -117,3 +117,4 @@ export type {
   AssistantProductAction,
   AssistantProductSearchEvent,
 } from "./assistant-products";
+export type { AssistantSupportPreview, AssistantSupportResult } from "./assistant-support";

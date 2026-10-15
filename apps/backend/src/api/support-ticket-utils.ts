@@ -8,6 +8,9 @@ import type {
 } from "../lib/support-tickets/types"
 
 export type SupportTicketModule = {
+  createConfirmedAiHandoff: (
+    input: import("../lib/support-tickets/validation").CreateSupportTicketInput & { consent_proposal_id: string }
+  ) => Promise<SupportTicketRecord>
   createSupportTickets: (
     payload: Record<string, unknown>
   ) => Promise<SupportTicketRecord>
@@ -15,7 +18,8 @@ export type SupportTicketModule = {
     payload: Record<string, unknown>
   ) => Promise<SupportTicketRecord>
   listSupportTickets: (
-    filters: Record<string, unknown>
+    filters: Record<string, unknown>,
+    config?: Record<string, unknown>
   ) => Promise<SupportTicketRecord[]>
   createSupportTicketMessages: (
     payload: Record<string, unknown>
