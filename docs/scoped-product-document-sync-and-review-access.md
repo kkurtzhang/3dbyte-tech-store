@@ -18,6 +18,18 @@ Successful responses contain `document_ids`, `indexed`, `deleted` and `knowledge
 
 The existing unscoped Admin route remains a full reconciliation. The legacy single-ID webhook behavior remains unchanged. A two-document pilot must use the new `/scoped` route explicitly and must not enable background flags as a substitute.
 
+## Native Admin two-document pilot action
+
+Settings → Meilisearch includes **Two-document pilot**, using the existing Admin SDK authentication and the scoped route above. Its fixed scope is `mu3sv3poa965a25lvvlbdngc` (Magigoo Original) and `uur1zr0pe99e6px1r5ljs0nm` (Dragonfly BMS). It has no arbitrary scope input, settings activation or full-sync fallback. The confirmation lists both IDs; cancellation submits nothing.
+
+Check separately approved staging settings, current published revisions and review freshness before confirming. The server reads current eligible published content; the request does not pin revision hashes. Exact response IDs plus `indexed=2`, `deleted=0`, `knowledge_indexed=2` confirm server counts only. Verify both indexed hashes, task completion and unrelated state before using retrieval results. Pending, completed and unconfirmed attempts disable repeat submission until an operator checks state and reloads. Errors never trigger an automatic retry, disclose server details or imply rollback.
+
+No new token, permission or authentication strategy is needed for this control. An actual expired Admin session uses the ordinary login flow; do not obtain browser cookies or tokens. Index setup is a separately approved operator action: preserve all unrelated settings, account for index-wide internal reindexing when searchable/filterable arrays change, and wait for terminal tasks before the scoped request. Background sync flags are not a substitute.
+
+Regression checks: `TEST_TYPE=unit pnpm --filter @3dbyte-tech-store/backend exec jest --runInBand --runTestsByPath src/admin/lib/__tests__/pilot-document-sync.unit.spec.ts` and `pnpm exec playwright test --config apps/backend/integration-tests/admin/pilot-sync.playwright.config.cjs`. Browser tests use a synthetic SDK fixture and block external requests.
+
+The following access sections record the original PR243 proposal and its denied Content API review boundary. The subsequently implemented [native Admin review pilot](native-product-document-knowledge.md#native-admin-review-pilot) is the current editorial path; it does not turn the old denied Content API route into an authorized one.
+
 ## Observed review-access boundary
 
 The two-product pilot recorded HTTP 403 from the native review-preview route using the existing staging Medusa Strapi client. It made zero native changes. The ordinary Strapi Admin session is a different authentication domain. No denied request was retried or routed through another credential during this engineering work.
