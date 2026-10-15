@@ -4,6 +4,7 @@ import { sdk } from "../../../lib/sdk";
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { Header } from "../../../components/header";
 import { MagnifyingGlass, ChatBubble } from "@medusajs/icons";
+import { ScopedPilotDocumentSync } from "./scoped-pilot-document-sync";
 
 type SyncResponse = {
   message: string;
@@ -173,7 +174,7 @@ const MeilisearchPage = () => {
     <Container>
       <Header
         title="Meilisearch"
-        subtitle="Manually trigger full re-index operations to Meilisearch."
+        subtitle="Manage Meilisearch index operations and the scoped document pilot."
       />
       <div className="px-6 py-8">
         {/* Addresses Index Section */}
@@ -235,6 +236,8 @@ const MeilisearchPage = () => {
             </div>
           </div>
         </div>
+
+        <ScopedPilotDocumentSync />
 
         {/* Products Index Section */}
         <div className="mb-10">
