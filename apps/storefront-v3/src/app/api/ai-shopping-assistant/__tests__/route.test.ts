@@ -329,6 +329,51 @@ describe("POST /api/ai-shopping-assistant", () => {
     global.TransformStream = originalTransformStream
   })
 
+  it("looks up an explicit product-page request before asking compatibility questions", async () => {
+    configureAiEnv()
+    const { POST } = await import("../route")
+
+    const response = await POST(
+      createJsonRequest({
+        messages: [
+          {
+            role: "user",
+            content:
+              "Can you send me the product page for the PETG you recommend?",
+          },
+        ],
+      }),
+    )
+
+    expect(response.status).toBe(200)
+    const config = streamTextMock.mock.calls[0]?.[0]
+    expect(config.prepareStep?.({ stepNumber: 0 })).toEqual({
+      toolChoice: { type: "tool", toolName: "searchProducts" },
+    })
+    expect(config.prepareStep?.({ stepNumber: 1 })).toBeUndefined()
+    expect(config.stopWhen).toEqual({ steps: 5 })
+  })
+
+  it("does not force a previous product request onto the current compatibility question", async () => {
+    configureAiEnv()
+    const { POST } = await import("../route")
+    await POST(
+      createJsonRequest({
+        messages: [
+          { role: "user", content: "Send me the product page for PETG." },
+          { role: "assistant", content: "Here are the PETG options." },
+          {
+            role: "user",
+            parts: [{ type: "text", text: "Will this fit my printer?" }],
+          },
+        ],
+      }),
+    )
+    expect(
+      streamTextMock.mock.calls[0]?.[0].prepareStep({ stepNumber: 0 }),
+    ).toBeUndefined()
+  })
+
   it("rejects invalid chat payloads before creating a model stream", async () => {
     configureAiEnv()
     const { POST } = await import("../route")

@@ -20,6 +20,7 @@ import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
 import { getReleaseSha } from "@/lib/release-identity"
 import { checkRateLimit, getClientIp } from "@/lib/security/rate-limit"
 
+import { prepareProductLinkStep } from "./product-link-routing"
 import { resolveAssistantSystemPrompt } from "./prompt-management"
 import {
   collectEmailAddresses,
@@ -1071,10 +1072,15 @@ export async function POST(req: Request): Promise<Response> {
               onAbort: recordAssistantTraceAbort,
               onError: recordAssistantTraceError,
               stopWhen: stepCountIs(5),
+              prepareStep: ({ stepNumber }) =>
+                prepareProductLinkStep(
+                  getLatestUserMessage(parsed.data.messages),
+                  stepNumber,
+                ),
               tools: {
                 searchProducts: tool({
                   description:
-                    "Search published products and retrieve authoritative Medusa, Meilisearch, and Strapi context.",
+                    "Search published products for exact product-page links and authoritative Medusa, Meilisearch, and Strapi context.",
                   inputSchema: productSearchInputSchema,
                   execute: (input) =>
                     callInternalBackend("/ai/product-guidance", input, config),
