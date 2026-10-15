@@ -41,7 +41,7 @@ const createContainer = (
 
       throw new Error(`Unexpected module ${key}`);
     }),
-  }) as unknown as MedusaContainer;
+  } as unknown as MedusaContainer);
 
 describe("support ticket email notifications", () => {
   beforeEach(() => {
@@ -149,4 +149,20 @@ describe("support ticket email notifications", () => {
     );
     expect(notification.content.html).toContain("Support update");
   });
+});
+
+it("uses the exact consent-confirmed inbox even if configuration changes before notification", async () => {
+  const createNotifications = jest.fn().mockResolvedValue({});
+  process.env.SUPPORT_TICKET_INBOX_EMAIL = "changed@example.invalid";
+  await sendSupportTicketCreatedNotifications({
+    container: createContainer(createNotifications),
+    ticket,
+    supportInboxEmail: "confirmed@example.invalid",
+  });
+  expect(createNotifications.mock.calls[1][0].to).toBe(
+    "confirmed@example.invalid",
+  );
+  expect(createNotifications.mock.calls[0][0].content.text).toContain(
+    "confirmed@example.invalid",
+  );
 });

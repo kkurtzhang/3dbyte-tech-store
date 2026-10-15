@@ -1,3 +1,4 @@
+import type { SupportDeliveryView } from "@3dbyte-tech-store/shared-types";
 import {
   AdminProduct,
   FindParams,
@@ -144,6 +145,7 @@ export type SendWaitlistTestNotificationParams = {
 };
 
 export type AdminSupportTicket = {
+  deliveries?: SupportDeliveryView[];
   id: string;
   ticket_number: string;
   status: string;
@@ -201,6 +203,7 @@ export type AdminSupportTicketsResponse = {
 };
 
 export type AdminSupportTicketResponse = {
+  deliveries?: SupportDeliveryView[];
   ticket: AdminSupportTicket;
   messages: AdminSupportTicketMessage[];
   events: AdminSupportTicketEvent[];
