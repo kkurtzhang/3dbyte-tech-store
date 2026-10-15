@@ -24,13 +24,46 @@ Therefore rollout approval must cover the CMS review/private-read routes, public
 
 ## Reviewer identity and least privilege
 
-The current accepted actor is any valid **full-access Strapi Content API token**. The event stores `actor_type=content_api_token` and that token's actual numeric database ID. It does not prove a named human reviewed the material, and the client cannot choose the actor in a request body. An authorized agent may perform the review using an approved service credential; its decision note must accurately describe the review it performed. A reviewer must inspect the exact source evidence, native product/variant binding and canonical revision before approving it.
+The Content API review path accepts any valid **full-access Strapi Content API token**. The separate Admin pilot path below records an authenticated Admin user. The event stores `actor_type=content_api_token` and that token's actual numeric database ID. It does not prove a named human reviewed the material, and the client cannot choose the actor in a request body. An authorized agent may perform the review using an approved service credential; its decision note must accurately describe the review it performed. A reviewer must inspect the exact source evidence, native product/variant binding and canonical revision before approving it.
 
-No particular existing credential has been selected or verified for rollout, and no credential was created or broadened for this work. The rollout owner must identify the intended existing token, its accountable owner and existing permissions through the approved access process. Do not assume the CMS integration token is automatically authorized for factual review or impersonate a human with its attribution.
+No particular existing credential has been selected or verified for rollout, and no live credential was created or broadened for this work. The rollout owner must identify the intended existing token, its accountable owner and existing permissions through the approved access process. Do not assume the CMS integration token is automatically authorized for factual review or impersonate a human with its attribution.
 
 Strapi 5.48.1 supports custom Content API token abilities for route action scopes. However, these native actions currently also require `credentials.type === "full-access"`; granting a custom token an action scope alone would still be rejected. A narrower reviewer role would require an explicit authorization change and tests for preview/review/intake separation, denied unrelated actions, expiry/revocation and real CMS HTTP authentication. This validation patch does not alter that policy or grant access. If full-access token scope is unacceptable for the rollout, keep the deployment blocked until a reviewed least-privilege change is ready.
 
 `knowledge_review` JSON is not a genuine native event. Existing JSON-only approvals fail closed. Never migrate them by silently inventing an actor or approval timestamp. Re-review the exact current native revision and persist a real authenticated decision. Events are immutable through application lifecycle APIs; database-owner raw SQL is outside that guarantee. Each revision has one decision. Replaying the same decision returns the original event and actor; a conflicting decision requires a new revision or withdrawal from publication, not mutation of the event.
+
+## Native Admin review pilot
+
+The Content Manager **Review knowledge** action opens a fresh packet for the saved draft or published tab. It shows the canonical plain-text content, source URL/version/check time/hash, product association, binding scope, evidence excerpts and explicit unknowns. Unsaved form edits are excluded. A reviewer supplies an expiry and review note and acknowledges checking the exact packet. The UI uses Strapi's [document-action modal API](https://docs.strapi.io/cms/plugins-development/content-manager-apis); text is escaped by React and is never interpreted as HTML.
+
+The application registers the `api::knowledge-review.review` Content Types permission (displayed as **Review knowledge**) for Product Document only, with field permissions. It defines no role grants. The normal Strapi Super Admin behavior still applies; registering an action is not a new restriction on a Super Admin. A rollout owner must separately approve any ordinary role assignment, deployment and live review.
+
+Both `GET /knowledge-review/:documentId?status=draft|published` and `POST /knowledge-review/:documentId` are Admin routes restricted to the `admin` authentication strategy and `admin::isAuthenticatedAdmin`. Content API tokens, Admin API tokens and Users & Permissions sessions cannot authenticate these routes. The existing full-access Content API actions retain their separate authentication and attribution.
+
+The server additionally requires all of these permissions against the actual saved record, using Strapi's Content Manager permission checker and its record conditions:
+
+- `api::knowledge-review.review` on `knowledge_content`.
+- Content Manager `update` on `knowledge_content`.
+- Content Manager `read` on every field returned in the canonical packet: `medusa_product_id`, `product_title`, `product_handle`, `title`, `source_url`, `source_kind`, `source_checked_at`, `version` and `knowledge_content`.
+
+The server checks the model/field capability before reading, then checks the concrete record and its creator/editor relation IDs. It refuses private content if any required permission is missing. Request-supplied model, actor, timestamp, publication controls and extra fields are rejected. Preview responses are private and uncached; decision responses contain only decision/revision/expiry/actor metadata, not private notes or account profiles.
+
+The pilot is fixed in server code to these exact document/product pairs; a request cannot expand it:
+
+| Document  | Native document ID         | Native Medusa product ID          |
+| --------- | -------------------------- | --------------------------------- |
+| Magigoo   | `mu3sv3poa965a25lvvlbdngc` | `prod_01KSY6A5870Y2J3VR66XAWP9GD` |
+| Dragonfly | `uur1zr0pe99e6px1r5ljs0nm` | `prod_01KSY6A587QB771VW85M12GSWJ` |
+
+An Admin decision records `actor_type=admin_user` and the ID of the framework-verified, active Admin user. This is account attribution, not proof that a human independently verified every fact; the note must accurately disclose agent assistance. The existing `content_api_token` actor remains valid. An idempotent retry returns the original actor and decision, even across these two paths. No review event or old canonical hash is migrated.
+
+Submission binds to the packet's exact canonical revision and saved status. Inside the existing PostgreSQL review transaction, a row lock on both draft/published rows precedes rereading and authorization. An edit committed while a review waits makes the stale submission fail. An edit after approval changes the canonical hash, making the previous event ineligible for the new content. Conflicting decisions for a revision remain immutable. The UI discards the packet after an unconfirmed submission and requires reopening/reinspection.
+
+A review creates only the immutable event. It does not save editor changes, publish, change `is_public`, enqueue indexing, or grant a role. Publication and current native Medusa binding checks still govern public eligibility. The source schema and canonical bytes remain unchanged; accepting `admin_user` is the explicit authorization expansion in the public approval verifier.
+
+This action builds on the deployed PR #242 architecture. It does **not** require [PR #243](https://github.com/kkurtzhang/3dbyte-tech-store/pull/243) to record reviews. The separate, bounded two-document indexing step depends on that scoped-sync change (or another explicitly authorized scoped operation). Neither this action nor its deployment authorizes using the broad sync route, publishing pilot content, changing background flags or retrying a previously denied integration-token request.
+
+Before rollout, require review of this authorization change, successful CI, approved deployment and intended role assignment, and an authenticated Admin browser check with an existing approved account. Isolated validation uses synthetic records and roles. It does not establish that a particular live account has permission or that either pilot's factual content is approved.
 
 ## Synchronization and retrieval guarantees
 

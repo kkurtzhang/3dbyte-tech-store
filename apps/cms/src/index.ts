@@ -4,6 +4,8 @@ import {
   startNodeTracing,
 } from "@3dbyte-tech-store/observability";
 
+import { registerAdminReview } from "./knowledge-review/server";
+
 const MEILISEARCH_API_KEY_STORE_KEY = "plugin_meilisearch_meilisearch_api_key";
 const MEILISEARCH_HOST_STORE_KEY = "plugin_meilisearch_meilisearch_host";
 
@@ -44,7 +46,8 @@ export default {
    *
    * This gives you an opportunity to extend code.
    */
-  register(/* { strapi }: { strapi: Core.Strapi } */) {
+  async register({ strapi }: { strapi: Core.Strapi }) {
+    await registerAdminReview(strapi);
     startNodeTracing({
       instrumentations: [createNodeAutoInstrumentations()],
       serviceName: "3dbyte-tech-store-cms",

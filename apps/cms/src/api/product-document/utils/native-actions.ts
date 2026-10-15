@@ -63,7 +63,7 @@ export function revisionKey(documentId: string, revision: string) {
 async function locked<T>(
   strapi: Core.Strapi,
   scope: string,
-  execute: () => Promise<T>,
+  execute: (trx: Core.Strapi["db"]["connection"]) => Promise<T>,
 ): Promise<T> {
   if (
     !["pg", "postgres", "postgresql"].includes(
@@ -78,7 +78,7 @@ async function locked<T>(
       hash.readInt32BE(0),
       hash.readInt32BE(4),
     ]);
-    return execute();
+    return execute(trx);
   });
 }
 
@@ -264,6 +264,16 @@ export async function previewNativeReview(
   status: unknown,
 ) {
   authenticatedActor(state);
+  return previewDocumentRevision(strapi, documentId, status);
+}
+
+/** Internal capability: callers must authenticate before invoking this helper. */
+export async function previewDocumentRevision(
+  strapi: Core.Strapi,
+  documentId: unknown,
+  status: unknown,
+  authorizeRecord?: (record: Record<string, unknown>) => void,
+) {
   if (
     !knowledgeIdentifier(documentId) ||
     !["draft", "published"].includes(String(status))
@@ -273,9 +283,18 @@ export async function previewNativeReview(
     status: status as "draft" | "published",
     filters: { documentId: { $eq: documentId } },
     limit: 2,
+    ...(authorizeRecord
+      ? {
+          populate: {
+            createdBy: { fields: ["id"] },
+            updatedBy: { fields: ["id"] },
+          },
+        }
+      : {}),
   });
   if (records.length !== 1 || records[0].documentId !== documentId)
     throw new NativeDocumentError("ambiguous_identity");
+  authorizeRecord?.(records[0]);
   const document = knowledgeBody(records[0]),
     revision = knowledgeRevision(records[0]);
   if (!document || !revision) throw new NativeDocumentError("invalid_review");
@@ -295,6 +314,17 @@ export async function reviewNativeDocument(
   raw: unknown,
 ) {
   const actor = authenticatedActor(state);
+  return reviewDocumentRevision(strapi, actor, documentId, raw);
+}
+
+/** Internal capability. Identity is derived by the authenticated boundary, never the request body. */
+export async function reviewDocumentRevision(
+  strapi: Core.Strapi,
+  actor: { actor_type: string; actor_id: string },
+  documentId: unknown,
+  raw: unknown,
+  authorizeRecord?: (record: Record<string, unknown>) => void,
+) {
   const allowed = [
     "revision_hash",
     "status",
@@ -316,14 +346,34 @@ export async function reviewNativeDocument(
     raw.review_note.length > 2000
   )
     throw new NativeDocumentError("invalid_input");
-  return locked(strapi, `review:${documentId}`, async () => {
+  return locked(strapi, `review:${documentId}`, async (trx) => {
+    // Ordinary Content Manager edits do not acquire our advisory lock. Lock both
+    // draft/published rows before reading so a concurrent writer cannot approve
+    // a version it changed while this transaction was waiting.
+    await strapi.db
+      .queryBuilder(DOCUMENT_UID)
+      .select(["id"])
+      .where({ documentId })
+      .orderBy({ id: "asc" })
+      .transacting(trx)
+      .forUpdate()
+      .execute();
     const records = await strapi.documents(DOCUMENT_UID).findMany({
       status: raw.status as "draft" | "published",
       filters: { documentId: { $eq: documentId } },
       limit: 2,
+      ...(authorizeRecord
+        ? {
+            populate: {
+              createdBy: { fields: ["id"] },
+              updatedBy: { fields: ["id"] },
+            },
+          }
+        : {}),
     });
     if (records.length !== 1 || records[0].documentId !== documentId)
       throw new NativeDocumentError("ambiguous_identity");
+    authorizeRecord?.(records[0]);
     const record = records[0],
       body = knowledgeBody(record),
       revision = knowledgeRevision(record);

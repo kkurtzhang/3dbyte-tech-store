@@ -79,6 +79,17 @@ function setup() {
     documents: (uid: string) =>
       uid.includes("product-document-review") ? reviewApi : documentApi,
     db: {
+      queryBuilder: () => {
+        const builder = {
+          select: () => builder,
+          where: () => builder,
+          orderBy: () => builder,
+          transacting: () => builder,
+          forUpdate: () => builder,
+          execute: async () => [],
+        };
+        return builder;
+      },
       connection: { client: { config: { client: "pg" } } },
       query: () => ({
         findMany: jest.fn(async ({ where }: any) =>
