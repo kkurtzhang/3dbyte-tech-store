@@ -104,16 +104,37 @@ from that turn is replaced, including assertions before a tool call. This
 retains supported safety numbers without using a temperature blacklist or a
 second model to judge arbitrary prose. Empty, invalid or failed retrieval
 produces an unknown-evidence answer. Expired or conflicting revisions are
-excluded at rendering time. The renderer shows at most four documents and eight
-known facts per document, retains unknown labels, and discloses omissions.
+excluded at rendering time. The renderer shows at most four documents. It selects
+facts using words from the current user's question and the approved field names
+and labels, excluding product-name/common words. It never selects from model
+prose or instructions inside values. Explicit requests for all facts, or wording
+with no field match, retain all facts in each validated document (at most thirty).
+The previous first-eight-facts cap is removed, so a late requested field is not
+silently hidden. Lexical selection is a relevance aid, not semantic verification.
+Selected null facts stay unknown; document omissions are disclosed.
+
+Citations are native SDK `source-url` parts, with source streaming enabled for
+these validated documents only. Provider-generated source parts are discarded.
+The real drawer renders the citations through its existing HTTPS-only source
+links (no embedded credentials; new tabs use `noopener noreferrer`). The source
+title remains beside the product's facts; the URL is a clickable source link,
+not a Markdown link that the drawer would display literally.
 
 This changes the response experience: tool/status events still stream, but text
 is held until the SDK finish event, including on ordinary non-knowledge turns.
 Those ordinary turns keep their text and existing email masking, with a 64,000
 character limit. Aborted, errored or truncated streams do not release held text.
 Traces record only the final visible text. Product action and support confirmation
-cards keep their existing authorization paths, but a mixed knowledge/tool turn
-uses the evidence summary in place of any freeform text about the other tools.
+cards keep their existing authorization paths. Mixed knowledge turns also render
+bounded, schema-validated results captured from this request's authenticated
+`lookupOrder`, `getTracking` and `estimateShipping` executions. Order/payment/
+fulfillment statuses, items, totals, tracking identifiers and shipping estimates
+have separate labels; one status does not imply another. Order amounts stay in
+Medusa's major units; shipping charges use that endpoint's explicit cent contract.
+Failed/invalid lookups remain explicit, and client-owned historical tool parts
+cannot supply summaries. Each commerce execution is recorded once, with at most
+five per turn. Raw tool contracts remain unchanged; only whitelisted fields
+become grounded prose. No unrestricted model prose is restored.
 
 The boundary is intentionally limited to attempted knowledge retrieval. It does
 not force the model to retrieve, establish that every question was answered,
@@ -127,9 +148,11 @@ replaying the captured replies plus adversarial pre-tool claims. They verify
 supported Magigoo/BMS facts, exact citations, unknown installed limits and
 mismatched products. Additional tests cover invalid/expired citations, explicit
 scope mismatches, mixed supported/unsupported safety claims, documented safety
-numbers, stream interruption, bounded output and ordinary replies. These are
-not live-model evaluations of the patched route. A live provider acceptance run
-and review of the extractive answer experience remain release checks.
+numbers, stream interruption, bounded output and ordinary replies. Review
+regressions also cover mixed orders/tracking/shipping, forged history, requested
+ninth/thirtieth facts and a real SDK-to-drawer DOM test for safe clickable sources.
+These are not live-model evaluations of the patched route. A live provider
+acceptance run and review of the extractive answer experience remain release checks.
 
 ## Validation and evidence locations
 

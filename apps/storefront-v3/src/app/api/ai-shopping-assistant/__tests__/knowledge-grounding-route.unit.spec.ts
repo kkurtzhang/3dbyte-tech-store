@@ -175,11 +175,18 @@ it.each(observed.cases)(
       if (!output.documents) throw Error("Expected captured knowledge evidence")
       for (const doc of output.documents) {
         expect(answer).toContain(doc.product_title)
-        expect(answer).toContain(doc.source_url)
-        for (const fact of doc.facts.filter((f) => f.value !== null))
-          expect(answer).toContain(fact.value)
+        expect(events).toContainEqual(
+          expect.objectContaining({
+            type: "source-url",
+            url: doc.source_url,
+            title: doc.document_title,
+          }),
+        )
       }
     }
+    if (fixture.id === "magigoo-materials") expect(answer).toContain("PLA")
+    if (fixture.id === "bms-body-material")
+      expect(answer).toContain("mainly copper")
     if (fixture.id === "unsupported-installed-temperature") {
       expect(answer).toContain("Installed max temperature")
       expect(answer).toContain("Not established")
@@ -320,8 +327,11 @@ it("preserves product actions and draft-only support confirmation during a knowl
     .map((e) => e.delta)
     .join("")
   expect(answer).toContain("mainly copper")
-  expect(answer).toContain(
-    "https://www.phaetus.com/products/dragonfly-hotend-bms",
+  expect(events).toContainEqual(
+    expect.objectContaining({
+      type: "source-url",
+      url: "https://www.phaetus.com/products/dragonfly-hotend-bms",
+    }),
   )
   expect(answer).not.toMatch(/definitely safe|ticket was sent/)
   expect(events.filter((e) => e.type === "data-product-search")).toEqual([

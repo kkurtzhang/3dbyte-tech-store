@@ -2,33 +2,23 @@ import type { ApprovedKnowledgeDocument } from "@3dbyte-tech-store/shared-types"
 import { parseApprovedKnowledgeDocument } from "@3dbyte-tech-store/shared-utils/src/knowledge-reference.cjs"
 import type { TextStreamPart, ToolSet } from "ai"
 
+import { plainMarkdown } from "./grounded-text"
+import { selectKnowledgeFacts } from "./knowledge-fact-selection"
+import type { CommerceExecution } from "./commerce-execution"
 import type { KnowledgeExecution } from "./knowledge-execution"
 import { createAssistantVisibleTextTransform } from "./visible-output-sanitizer"
 
 const MAX_BUFFERED_TEXT = 64_000
 const MAX_DOCUMENTS = 4
-const MAX_FACTS = 8
 const NO_EVIDENCE =
   "I could not verify current approved evidence for this request. The requested specifications and safety limits remain unknown; please identify the exact product or variant."
 const TOO_LONG =
   "This reply exceeded the response limit. Please ask a narrower question."
 
-function plainMarkdown(value: string) {
-  return value
-    .replace(/[\r\n\t]+/g, " ")
-    .replace(/[\\`*_{}\[\]<>#!|~]/g, "\\$&")
-}
-function sourceLink(document: ApprovedKnowledgeDocument) {
-  const url = document.source_url
-    .replace(/\(/g, "%28")
-    .replace(/\)/g, "%29")
-    .replace(/[\s\\<>\[\]]/g, (character) => encodeURIComponent(character))
-  return `[${plainMarkdown(document.document_title)}](${url})`
-}
-
 /** Bounded extractive rendering, not a semantic claim that every question was answered. */
-export function renderKnowledgeEvidence(
+export function assembleKnowledgeAnswer(
   execution: Pick<KnowledgeExecution, "results">,
+  question = "",
   now = Date.now(),
 ) {
   const documents = new Map<string, ApprovedKnowledgeDocument>()
@@ -55,48 +45,58 @@ export function renderKnowledgeEvidence(
       documents.set(document.document_id, document)
     }
   }
-  if (!documents.size) return NO_EVIDENCE
-  const sections = Array.from(documents.values())
-    .slice(0, MAX_DOCUMENTS)
-    .map((document) => {
-      const known = document.facts.filter((fact) => fact.value !== null)
-      const unknown = document.facts.filter((fact) => fact.value === null)
-      return [
-        `### ${plainMarkdown(document.product_title)}`,
-        ...known
-          .slice(0, MAX_FACTS)
-          .map(
-            (fact) =>
-              `- **${plainMarkdown(fact.label)}:** ${plainMarkdown(fact.value!)}`,
-          ),
-        ...(known.length > MAX_FACTS
-          ? [
-              "Additional documented facts are omitted here; ask a narrower question.",
-            ]
-          : []),
-        ...(unknown.length
-          ? [
-              `**Not established:** ${unknown.map((fact) => plainMarkdown(fact.label)).join(", ")}. These facts remain unknown; this evidence cannot confirm them.`,
-            ]
-          : []),
-        `Source: ${sourceLink(document)}.`,
-        document.binding_scope === "product"
-          ? "Scope: model-level evidence only; it does not establish a specific variant or installed setup."
-          : `Scope: variant ${plainMarkdown(document.variant_id!)} only; do not apply it to sibling variants or assume an installed setup.`,
-      ].join("\n\n")
-    })
-  return [
-    "Here are the current approved facts. Each source applies only to the named product and scope; it cannot establish claims about another product. Missing facts, including safety limits, remain unknown. These facts may not answer every part of your question.",
-    ...sections,
-    ...(documents.size > MAX_DOCUMENTS
-      ? [
-          "More evidence was returned; only four documents are shown. Please narrow the request.",
-        ]
-      : []),
-    ...(unavailable
-      ? ["Some evidence could not be validated and is not used here."]
-      : []),
-  ].join("\n\n")
+  const selected = Array.from(documents.values()).slice(0, MAX_DOCUMENTS)
+  const sources = selected.map((document) => ({
+    sourceType: "url" as const,
+    id: `knowledge-${document.document_id}-${document.revision_hash}`,
+    url: document.source_url,
+    title: document.document_title,
+  }))
+  if (!selected.length) return { text: NO_EVIDENCE, sources }
+  const sections = selected.map((document) => {
+    const facts = selectKnowledgeFacts(document, question)
+    const known = facts.filter((fact) => fact.value !== null)
+    const unknown = facts.filter((fact) => fact.value === null)
+    return [
+      `### ${plainMarkdown(document.product_title)}`,
+      ...known.map(
+        (fact) =>
+          `- **${plainMarkdown(fact.label)}:** ${plainMarkdown(fact.value!)}`,
+      ),
+      ...(unknown.length
+        ? [
+            `**Not established:** ${unknown.map((fact) => plainMarkdown(fact.label)).join(", ")}. These facts remain unknown; this evidence cannot confirm them.`,
+          ]
+        : []),
+      `Source: ${plainMarkdown(document.document_title)}.`,
+      document.binding_scope === "product"
+        ? "Scope: model-level evidence only; it does not establish a specific variant or installed setup."
+        : `Scope: variant ${plainMarkdown(document.variant_id!)} only; do not apply it to sibling variants or assume an installed setup.`,
+    ].join("\n\n")
+  })
+  return {
+    sources,
+    text: [
+      "Here are the current approved facts. Each source applies only to the named product and scope; it cannot establish claims about another product. Missing facts, including safety limits, remain unknown. These facts may not answer every part of your question.",
+      ...sections,
+      ...(documents.size > MAX_DOCUMENTS
+        ? [
+            "More evidence was returned; only four documents are shown. Please narrow the request.",
+          ]
+        : []),
+      ...(unavailable
+        ? ["Some evidence could not be validated and is not used here."]
+        : []),
+    ].join("\n\n"),
+  }
+}
+
+export function renderKnowledgeEvidence(
+  execution: Pick<KnowledgeExecution, "results">,
+  now = Date.now(),
+  question = "",
+) {
+  return assembleKnowledgeAnswer(execution, question, now).text
 }
 
 /**
@@ -108,6 +108,7 @@ export function createKnowledgeGroundingTransform<TOOLS extends ToolSet>(
   execution: KnowledgeExecution,
   suppliedEmails: readonly string[],
   hooks: { onFlush?: () => void; onText?: (text: string) => void } = {},
+  context: { question?: string; commerce?: CommerceExecution } = {},
 ) {
   return () => {
     type Part = TextStreamPart<TOOLS>
@@ -121,12 +122,20 @@ export function createKnowledgeGroundingTransform<TOOLS extends ToolSet>(
       emitted = true
       // An interrupted stream cannot establish a complete response.
       if (failed) return
-      const output =
-        execution.attempted || knowledgeToolSeen
-          ? renderKnowledgeEvidence(execution)
-          : tooLong
-            ? TOO_LONG
-            : text
+      const knowledgeTurn = execution.attempted || knowledgeToolSeen
+      const evidence = knowledgeTurn
+        ? assembleKnowledgeAnswer(execution, context.question)
+        : null
+      const output = evidence
+        ? [
+            evidence.text,
+            ...Array.from(context.commerce?.summaries.values() ?? []),
+          ].join("\n\n")
+        : tooLong
+          ? TOO_LONG
+          : text
+      for (const source of evidence?.sources ?? [])
+        controller.enqueue({ type: "source", ...source } as Part)
       if (!output) return
       const id = "evidence-grounded-answer"
       controller.enqueue({ type: "text-start", id } as Part)
@@ -136,6 +145,8 @@ export function createKnowledgeGroundingTransform<TOOLS extends ToolSet>(
     }
     const grounding = new TransformStream<Part, Part>({
       transform(chunk, controller) {
+        // sendSources is enabled only for our validated citations, never provider sources.
+        if (chunk.type === "source") return
         if (chunk.type === "text-delta") {
           if (text.length + chunk.text.length > MAX_BUFFERED_TEXT) {
             text = ""

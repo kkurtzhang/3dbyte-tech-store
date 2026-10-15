@@ -30,6 +30,7 @@ import { callSupportBackend, getSupportSession, isSupportSameOrigin, withSupport
 import { readAssistantJson } from "./read-request"
 
 import { resolveAssistantSystemPrompt } from "./prompt-management"
+import { COMMERCE_PATHS, createCommerceExecution } from "./commerce-execution"
 import { createKnowledgeExecution } from "./knowledge-execution"
 import { createKnowledgeGroundingTransform } from "./knowledge-grounding"
 import {
@@ -781,6 +782,9 @@ export async function POST(req: Request): Promise<Response> {
             const knowledge = createKnowledgeExecution((input) =>
               callInternalBackend("/ai/knowledge-search", input, config),
             )
+            const commerce = createCommerceExecution((toolName, input) =>
+              callInternalBackend(COMMERCE_PATHS[toolName], input, config),
+            )
             const responseMessageId = randomUUID()
             const result = streamText({
               abortSignal: req.signal,
@@ -802,6 +806,7 @@ export async function POST(req: Request): Promise<Response> {
                     visibleAssistantOutput += text
                   },
                 },
+                { question: latestUserMessage, commerce },
               ),
               experimental_telemetry: {
                 functionId: "storefront.ai-shopping-assistant",
@@ -855,22 +860,19 @@ export async function POST(req: Request): Promise<Response> {
                   description:
                     "Look up read-only order status after the customer provides order reference and email proof.",
                   inputSchema: orderProofInputSchema,
-                  execute: (input) =>
-                    callInternalBackend("/ai/order-lookup", input, config),
+                  execute: (input, options) => commerce.execute("lookupOrder", input, options),
                 }),
                 getTracking: tool({
                   description:
                     "Retrieve read-only tracking details after the customer provides order reference and email proof.",
                   inputSchema: orderProofInputSchema,
-                  execute: (input) =>
-                    callInternalBackend("/ai/tracking", input, config),
+                  execute: (input, options) => commerce.execute("getTracking", input, options),
                 }),
                 estimateShipping: tool({
                   description:
                     "Estimate shipping from chosen variants and destination fields without changing a cart.",
                   inputSchema: shippingEstimateInputSchema,
-                  execute: (input) =>
-                    callInternalBackend("/ai/shipping-estimate", input, config),
+                  execute: (input, options) => commerce.execute("estimateShipping", input, options),
                 }),
                 createSupportTicket: tool({
                   description:
@@ -894,7 +896,7 @@ export async function POST(req: Request): Promise<Response> {
             })
 
             const response = withSupportSession(createUIMessageStreamResponse({
-              stream: result.toUIMessageStream({ generateMessageId: () => responseMessageId })
+              stream: result.toUIMessageStream({ generateMessageId: () => responseMessageId, sendSources: true })
                 .pipeThrough(createProductActionTransform(productSearch.results, responseMessageId)),
             }), req, supportSession)
 

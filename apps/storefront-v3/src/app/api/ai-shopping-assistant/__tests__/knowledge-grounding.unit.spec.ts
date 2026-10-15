@@ -8,6 +8,7 @@ import {
   type KnowledgeResult,
 } from "../knowledge-execution"
 import {
+  assembleKnowledgeAnswer,
   createKnowledgeGroundingTransform,
   renderKnowledgeEvidence,
 } from "../knowledge-grounding"
@@ -386,7 +387,7 @@ describe("extractive answer boundary", () => {
     expect(renderKnowledgeEvidence(execution)).toContain("could not verify")
   })
 
-  it("deduplicates identical evidence, bounds displayed facts/documents and reports partial failures", async () => {
+  it("deduplicates evidence, keeps all bounded facts and reports partial failures", async () => {
     const raw = clone()
     raw.documents[0].facts = Array.from({ length: 10 }, (_, i) => ({
       ...raw.documents[0].facts[0],
@@ -405,8 +406,8 @@ describe("extractive answer boundary", () => {
     const answer = renderKnowledgeEvidence(execution)
     expect(answer.match(/### /g)).toHaveLength(4)
     expect(answer).toContain("Fact 7")
-    expect(answer).not.toContain("Fact 8")
-    expect(answer).toContain("Additional documented facts are omitted")
+    expect(answer).toContain("Fact 8")
+    expect(answer).toContain("Fact 9")
     expect(answer).toContain("only four documents")
     expect(answer).toContain("Some evidence could not be validated")
   })
@@ -419,11 +420,15 @@ describe("extractive answer boundary", () => {
     doc.source_url = "https://source.example/manual(v1)?q=[x]"
     raw.citations[0].title = doc.document_title
     raw.citations[0].source_url = doc.source_url
-    const answer = renderKnowledgeEvidence(await executionFor(raw))
-    expect(answer).toContain("Product \\[override\\]")
-    expect(answer).toContain(
-      "[Source \\](https://evil.example)](https://source.example/manual%28v1%29?q=%5Bx%5D)",
-    )
-    expect(answer).not.toContain("\n[override]")
+    const result = assembleKnowledgeAnswer(await executionFor(raw))
+    expect(result.text).toContain("Product \\[override\\]")
+    expect(result.text).toContain("Source: Source \\](https://evil.example)")
+    expect(result.sources).toEqual([
+      expect.objectContaining({
+        url: doc.source_url,
+        title: doc.document_title,
+      }),
+    ])
+    expect(result.text).not.toContain("\n[override]")
   })
 })
