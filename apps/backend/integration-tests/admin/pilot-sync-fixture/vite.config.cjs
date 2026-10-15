@@ -8,6 +8,6 @@ module.exports = {
  resolve: { dedupe: ["react", "react-dom", "@tanstack/react-query"] },
  esbuild: { jsx: "automatic" },
  css: { postcss: { plugins: [bundlerRequire("tailwindcss")({content:[path.join(__dirname,"*.jsx"),path.join(__dirname,"../../../src/admin/**/*.{ts,tsx}")]})] } },
- server: { host: "127.0.0.1", port: 5201, strictPort: true, fs: { allow: [path.resolve(__dirname,"../../../../..")] } },
+ server: { host: "127.0.0.1", port: 5201, strictPort: true, fs: { allow: [path.resolve(__dirname,"../../../../.."), path.dirname(require.resolve("@medusajs/dashboard/package.json"))] } },
  define: { __AUTH_TYPE__: JSON.stringify("session"), __JWT_TOKEN_STORAGE_KEY__: JSON.stringify("") },
 };
