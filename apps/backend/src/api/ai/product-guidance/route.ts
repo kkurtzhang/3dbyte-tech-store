@@ -1,3 +1,7 @@
+import type {
+  ProductSearchMode,
+  ProductSearchStatus,
+} from "@3dbyte-tech-store/shared-types";
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 
 import { MEILISEARCH_MODULE } from "../../../modules/meilisearch";
@@ -81,7 +85,8 @@ function toProductResponse(
   hit: ProductHit | undefined,
   strapiDescription: Record<string, unknown> | null,
 ) {
-  const handle = product.handle ?? hit?.handle;
+  // Only the native current product can identify its page; the search index may be stale.
+  const handle = product.handle;
 
   return {
     id: product.id,
@@ -133,75 +138,119 @@ export const POST = async (
   const queryText = getTrimmedString(body.query);
   const limit = getPositiveInteger(body.limit, 4, 6);
 
-  if (!queryText) {
-    res
-      .status(400)
-      .json({ products: [], error: "Product guidance query is required" });
+  const mode: ProductSearchMode = body.mode === "browse" ? "browse" : "search";
+  const respond = (
+    status: ProductSearchStatus,
+    products: unknown[],
+    extra = {},
+  ) => res.json({ status, mode, query: queryText, products, ...extra });
+
+  if (
+    (body.mode !== undefined &&
+      body.mode !== "search" &&
+      body.mode !== "browse") ||
+    (mode === "search" && (!queryText || queryText.length > 200)) ||
+    (mode === "browse" && queryText)
+  ) {
+    res.status(400).json({
+      status: "unavailable",
+      mode,
+      query: queryText,
+      products: [],
+      error:
+        "Provide a product search query or an explicit empty browse request",
+    });
     return;
   }
 
-  const query = req.scope.resolve("query");
-  const meilisearch =
-    req.scope.resolve<MeilisearchModuleService>(MEILISEARCH_MODULE);
-  const strapi = req.scope.resolve<StrapiModuleService>(STRAPI_MODULE);
-  const searchResult = await meilisearch.search<ProductHit>(
-    queryText,
-    "product",
-    {
-      limit,
-    },
-  );
-  const hits = searchResult.hits ?? [];
-  const hitById = new Map(
-    hits
-      .filter((hit): hit is ProductHit & { id: string } => Boolean(hit.id))
-      .map((hit) => [hit.id, hit]),
-  );
-  const ids = [...hitById.keys()];
-
-  const { data } = await query.graph({
-    entity: "product",
-    fields: productFields,
-    filters: { status: "published", ...(ids.length ? { id: ids } : {}) },
-    pagination: { take: limit },
-  });
-
-  const products = ((data ?? []) as ProductRecord[]).filter(
-    (product) =>
-      Boolean(product.id) &&
-      product.status === "published" &&
-      !(
-        product.metadata &&
-        typeof product.metadata === "object" &&
-        "catalogue_role" in product.metadata &&
-        product.metadata.catalogue_role === "knowledge_reference"
-      ) &&
-      (!hasSimulatedInventory(product) || process.env.APP_ENV === "staging"),
-  );
-  const enrichedProducts = await Promise.all(
-    products.map(async (product) => {
-      const strapiDescription = await strapi
-        .getProductDescription(product.id)
-        .catch(() => null);
-
-      return toProductResponse(
-        product,
-        hitById.get(product.id),
-        strapiDescription,
+  try {
+    const query = req.scope.resolve("query");
+    const hitById = new Map<string, ProductHit>();
+    if (mode === "search") {
+      const meilisearch =
+        req.scope.resolve<MeilisearchModuleService>(MEILISEARCH_MODULE);
+      const result = await meilisearch.search<ProductHit>(
+        queryText,
+        "product",
+        { limit },
       );
-    }),
-  );
-  const expertGuidance = buildExpertProductGuidance(
-    queryText,
-    enrichedProducts,
-  );
-  const productsWithExpertSignals = enrichedProducts.map((product) => ({
-    ...product,
-    expertSignals: expertGuidance.productSignalsById[product.id] ?? [],
-  }));
-
-  res.json({
-    products: productsWithExpertSignals,
-    expertContext: expertGuidance.expertContext,
-  });
+      if (
+        !Array.isArray(result?.hits) ||
+        result.hits.some(
+          (hit) =>
+            !hit ||
+            typeof hit.id !== "string" ||
+            !/^[a-zA-Z0-9_-]{1,100}$/.test(hit.id),
+        )
+      ) {
+        throw new Error("Invalid search response");
+      }
+      for (const hit of result.hits.slice(0, limit)) hitById.set(hit.id!, hit);
+      // An empty ID set is an empty search, never permission to browse the catalogue.
+      if (hitById.size === 0) {
+        respond("empty", []);
+        return;
+      }
+    }
+    const ids = [...hitById.keys()];
+    const { data } = await query.graph({
+      entity: "product",
+      fields: productFields,
+      filters: {
+        status: "published",
+        ...(mode === "search" ? { id: ids } : {}),
+      },
+      pagination: { take: limit },
+    });
+    if (!Array.isArray(data)) throw new Error("Invalid catalogue response");
+    const products = (data as ProductRecord[])
+      .filter(
+        (product) =>
+          Boolean(product?.id) &&
+          product.status === "published" &&
+          (mode === "browse" || hitById.has(product.id)) &&
+          !(
+            product.metadata &&
+            typeof product.metadata === "object" &&
+            "catalogue_role" in product.metadata &&
+            product.metadata.catalogue_role === "knowledge_reference"
+          ) &&
+          (!hasSimulatedInventory(product) ||
+            process.env.APP_ENV === "staging"),
+      )
+      .sort((left, right) =>
+        mode === "search" ? ids.indexOf(left.id) - ids.indexOf(right.id) : 0,
+      )
+      .slice(0, limit);
+    if (products.length === 0) {
+      respond("empty", []);
+      return;
+    }
+    const strapi = req.scope.resolve<StrapiModuleService>(STRAPI_MODULE);
+    const enrichedProducts = await Promise.all(
+      products.map(async (product) => {
+        const description = await strapi
+          .getProductDescription(product.id)
+          .catch(() => null);
+        return {
+          ...toProductResponse(product, hitById.get(product.id), description),
+          evidence: { kind: "catalogue_discovery", compatibility: "unknown" },
+        };
+      }),
+    );
+    const guidance = buildExpertProductGuidance(queryText, enrichedProducts);
+    respond(
+      "matches",
+      enrichedProducts.map((product) => ({
+        ...product,
+        expertSignals: guidance.productSignalsById[product.id] ?? [],
+      })),
+      { expertContext: guidance.expertContext },
+    );
+  } catch {
+    res.status(503);
+    respond("unavailable", [], {
+      error: "Product search is unavailable. Please try again.",
+    });
+  }
 };

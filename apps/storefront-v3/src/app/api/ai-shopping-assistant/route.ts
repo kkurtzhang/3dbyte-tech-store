@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto"
 import { createOpenAI } from "@ai-sdk/openai"
 import {
   getActiveLangfuseTraceId,
@@ -9,6 +10,7 @@ import {
 } from "@3dbyte-tech-store/observability"
 import {
   convertToModelMessages,
+  createUIMessageStreamResponse,
   stepCountIs,
   streamText,
   tool,
@@ -20,6 +22,8 @@ import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
 import { getReleaseSha } from "@/lib/release-identity"
 import { checkRateLimit, getClientIp } from "@/lib/security/rate-limit"
 
+import { getProductLookupDecision, isExplicitProductBrowse, prepareProductLinkStep } from "./product-link-routing"
+import { createProductActionTransform, createProductSearchExecution } from "./product-search-execution"
 import { resolveAssistantSystemPrompt } from "./prompt-management"
 import {
   collectEmailAddresses,
@@ -1020,6 +1024,17 @@ export async function POST(req: Request): Promise<Response> {
               name: "deepseek",
             })
             const uiMessages = toUiMessages(parsed.data.messages)
+            const latestUserMessage = getLatestUserMessage(parsed.data.messages)
+            const productLookupDecision = getProductLookupDecision(latestUserMessage)
+            const productSearch = createProductSearchExecution({
+              backendUrl: config.backendUrl,
+              internalToken: config.internalToken,
+              storefrontOrigin: process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin,
+              lookupAllowed: productLookupDecision.lookupAllowed,
+              mode: isExplicitProductBrowse(latestUserMessage) ? "browse" : "search",
+              signal: req.signal,
+            })
+            const responseMessageId = randomUUID()
             const result = streamText({
               abortSignal: req.signal,
               model: deepseek.chat(config.model),
@@ -1071,13 +1086,18 @@ export async function POST(req: Request): Promise<Response> {
               onAbort: recordAssistantTraceAbort,
               onError: recordAssistantTraceError,
               stopWhen: stepCountIs(5),
+              prepareStep: ({ stepNumber }) =>
+                prepareProductLinkStep(
+                  latestUserMessage,
+                  stepNumber,
+                  productLookupDecision,
+                ),
               tools: {
                 searchProducts: tool({
                   description:
-                    "Search published products and retrieve authoritative Medusa, Meilisearch, and Strapi context.",
+                    "Search published catalogue products and return current product-page links. This is discovery, not approved compatibility evidence; use searchKnowledge for verified specifications. Respect declined/empty/unavailable outcomes.",
                   inputSchema: productSearchInputSchema,
-                  execute: (input) =>
-                    callInternalBackend("/ai/product-guidance", input, config),
+                  execute: productSearch.execute,
                 }),
                 searchKnowledge: tool({
                   description:
@@ -1120,7 +1140,10 @@ export async function POST(req: Request): Promise<Response> {
               },
             })
 
-            const response = result.toUIMessageStreamResponse()
+            const response = createUIMessageStreamResponse({
+              stream: result.toUIMessageStream({ generateMessageId: () => responseMessageId })
+                .pipeThrough(createProductActionTransform(productSearch.results, responseMessageId)),
+            })
 
             if (!shouldExposeLangfuseTraceHeader(req)) {
               return response

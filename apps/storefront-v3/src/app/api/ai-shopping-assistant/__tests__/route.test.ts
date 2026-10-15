@@ -1,6 +1,8 @@
 import { ReadableStream, TransformStream } from "stream/web"
 import { TextDecoder } from "util"
 
+import { productLookupCases } from "../__fixtures__/product-lookup-cases"
+
 const streamTextMock = jest.fn()
 const toolMock = jest.fn((config) => config)
 const createOpenAIMock = jest.fn()
@@ -40,6 +42,7 @@ const checkRateLimitMock: jest.Mock<
 jest.mock(
   "ai",
   () => ({
+    createUIMessageStreamResponse: jest.fn(() => new Response("assistant-stream", { status: 200 })),
     convertToModelMessages: jest.fn(async (messages) => messages),
     stepCountIs: jest.fn((steps: number) => ({ steps })),
     streamText: (config: unknown) => streamTextMock(config),
@@ -285,6 +288,7 @@ function createJsonRequest(
   )
 
   return {
+    url: "https://store.example/api/ai-shopping-assistant",
     headers: {
       get: (name: string) =>
         normalizedHeaders[name.toLowerCase()] ??
@@ -316,6 +320,7 @@ describe("POST /api/ai-shopping-assistant", () => {
     createOpenAIMock.mockReturnValue(deepseekProviderMock)
     getActiveLangfuseTraceIdMock.mockReturnValue("trace_01HQA")
     streamTextMock.mockReturnValue({
+      toUIMessageStream: () => new ReadableStream({ start(controller) { controller.close() } }),
       toUIMessageStreamResponse: jest.fn(
         () => new Response("assistant-stream", { status: 200 }),
       ),
@@ -327,6 +332,64 @@ describe("POST /api/ai-shopping-assistant", () => {
     global.Response = originalResponse
     global.TextDecoder = originalTextDecoder
     global.TransformStream = originalTransformStream
+  })
+
+  it("looks up an explicit product-page request before asking compatibility questions", async () => {
+    configureAiEnv()
+    const { POST } = await import("../route")
+
+    const response = await POST(
+      createJsonRequest({
+        messages: [
+          {
+            role: "user",
+            content:
+              "Can you send me the product page for the PETG you recommend?",
+          },
+        ],
+      }),
+    )
+
+    expect(response.status).toBe(200)
+    const config = streamTextMock.mock.calls[0]?.[0]
+    expect(config.prepareStep?.({ stepNumber: 0 })).toEqual({
+      toolChoice: { type: "tool", toolName: "searchProducts" },
+    })
+    expect(config.prepareStep?.({ stepNumber: 1 })).toBeUndefined()
+    expect(config.stopWhen).toEqual({ steps: 5 })
+  })
+
+  it("does not force a previous product request onto the current compatibility question", async () => {
+    configureAiEnv()
+    const { POST } = await import("../route")
+    await POST(
+      createJsonRequest({
+        messages: [
+          { role: "user", content: "Send me the product page for PETG." },
+          { role: "assistant", content: "Here are the PETG options." },
+          {
+            role: "user",
+            parts: [{ type: "text", text: "Will this fit my printer?" }],
+          },
+        ],
+      }),
+    )
+    expect(
+      streamTextMock.mock.calls[0]?.[0].prepareStep({ stepNumber: 0 }),
+    ).toBeUndefined()
+  })
+
+  it.each(productLookupCases)("uses the same typed decision for forcing and execution: $status — $message", async ({ message, allowed }) => {
+    configureAiEnv()
+    process.env.NEXT_PUBLIC_SITE_URL = "https://store.example"
+    const { POST } = await import("../route")
+    await POST(createJsonRequest({ messages: [{ role: "user", parts: [{ type: "text", text: message }] }] }))
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({ status: "matches", mode: "search", query: "PETG", products: [{ id: "prod_petg", title: "PETG", handle: "petg", productUrl: "https://store.example/products/petg" }] }) })
+    const config = streamTextMock.mock.calls[0][0]
+    const result = await config.tools.searchProducts.execute({ query: "PETG" }, { toolCallId: "scoped-lookup" })
+    expect(result.status).toBe(allowed ? "matches" : "declined")
+    expect(fetchMock).toHaveBeenCalledTimes(allowed ? 1 : 0)
+    expect(config.prepareStep({ stepNumber: 0 })).toEqual(allowed ? { toolChoice: { type: "tool", toolName: "searchProducts" } } : undefined)
   })
 
   it("rejects invalid chat payloads before creating a model stream", async () => {
