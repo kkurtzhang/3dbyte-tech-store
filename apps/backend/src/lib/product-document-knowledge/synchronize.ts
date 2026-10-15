@@ -33,12 +33,17 @@ export const PUBLIC_KNOWLEDGE_INDEX_SETTINGS = {
 
 /** Offset pages can omit a live ID even when counts and uniqueness stay stable. */
 async function confirmWithdrawals(
-  options: KnowledgeDependencies & { documentId?: string },
+  options: KnowledgeDependencies & {
+    documentId?: string;
+    documentIds?: string[];
+  },
   currentIds: Set<string>,
 ) {
-  const existing = options.documentId
-    ? [options.documentId]
-    : await options.meilisearch.listDocumentIds("product_document");
+  const existing =
+    options.documentIds ??
+    (options.documentId
+      ? [options.documentId]
+      : await options.meilisearch.listDocumentIds("product_document"));
   if (
     !Array.isArray(existing) ||
     existing.length > 20_000 ||
@@ -52,7 +57,7 @@ async function confirmWithdrawals(
       "Document withdrawal verification exceeds its bounded scope.",
     );
   // A scoped sync already performed this exact authoritative read above.
-  if (!options.documentId) {
+  if (!options.documentId && !options.documentIds) {
     for (let offset = 0; offset < missing.length; offset += 4) {
       await Promise.all(
         missing.slice(offset, offset + 4).map(async (documentId) => {
@@ -73,17 +78,45 @@ async function confirmWithdrawals(
 
 /** Rebuild a derived projection only; never writes CMS/Medusa records or approvals. */
 export async function reconcileProductDocuments(
-  options: KnowledgeDependencies & { documentId?: string },
+  options: KnowledgeDependencies & {
+    documentId?: string;
+    documentIds?: string[];
+  },
 ) {
   if (
-    options.documentId !== undefined &&
-    !knowledgeIdentifier(options.documentId)
+    (options.documentId !== undefined &&
+      !knowledgeIdentifier(options.documentId)) ||
+    (options.documentIds !== undefined &&
+      (options.documentId !== undefined ||
+        !Array.isArray(options.documentIds) ||
+        options.documentIds.length < 1 ||
+        options.documentIds.length > 2 ||
+        options.documentIds.some((id) => !knowledgeIdentifier(id)) ||
+        new Set(options.documentIds).size !== options.documentIds.length))
   )
     throw new Error("Invalid document synchronization scope.");
-  const documents = await options.strapi.listProductDocuments(undefined, {
-    includeKnowledge: true,
-    ...(options.documentId ? { documentId: options.documentId } : {}),
-  });
+  const documents = options.documentIds
+    ? (
+        await Promise.all(
+          options.documentIds.map(async (documentId) => {
+            const rows = await options.strapi.listProductDocuments(undefined, {
+              includeKnowledge: true,
+              documentId,
+            });
+            if (
+              !Array.isArray(rows) ||
+              rows.length > 1 ||
+              rows.some((row) => row.id !== documentId)
+            )
+              throw new Error("Invalid scoped document snapshot.");
+            return rows;
+          }),
+        )
+      ).flat()
+    : await options.strapi.listProductDocuments(undefined, {
+        includeKnowledge: true,
+        ...(options.documentId ? { documentId: options.documentId } : {}),
+      });
   if (!Array.isArray(documents) || documents.length > 2000)
     throw new Error("Oversized document synchronization snapshot.");
   const ids = new Set<string>();
@@ -131,10 +164,34 @@ export async function reconcileProductDocuments(
     };
   });
   // All source reads and completeness checks finish before any search mutation.
-  await options.meilisearch.configureIndex(
-    PUBLIC_KNOWLEDGE_INDEX_SETTINGS,
-    "product_document",
-  );
+  if (options.documentIds) {
+    // A bounded operation must never reconfigure a shared index or create one
+    // implicitly. Readiness is a separate, explicitly approved rollout step.
+    const settings =
+      await options.meilisearch.getIndexSettings?.("product_document");
+    const contains = (actual: unknown, required: string[]) =>
+      Array.isArray(actual) &&
+      actual.every((v) => typeof v === "string") &&
+      required.every((v) => actual.includes(v));
+    const expected = PUBLIC_KNOWLEDGE_INDEX_SETTINGS;
+    if (
+      !settings ||
+      !contains(settings.filterableAttributes, expected.filterableAttributes) ||
+      !contains(settings.searchableAttributes, expected.searchableAttributes) ||
+      !contains(settings.displayedAttributes, expected.displayedAttributes) ||
+      settings.displayedAttributes!.some(
+        (v) => !expected.displayedAttributes.includes(v),
+      )
+    )
+      throw new Error(
+        "Scoped document index is not ready; explicit index configuration is required.",
+      );
+  } else {
+    await options.meilisearch.configureIndex(
+      PUBLIC_KNOWLEDGE_INDEX_SETTINGS,
+      "product_document",
+    );
+  }
   if (records.length)
     await options.meilisearch.indexData(records, "product_document");
   if (stale.length)

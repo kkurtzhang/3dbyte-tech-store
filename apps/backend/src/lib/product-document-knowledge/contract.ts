@@ -35,6 +35,9 @@ export interface KnowledgeDependencies {
     ): Promise<{ data: unknown[]; metadata?: { count?: number } }>;
   };
   meilisearch: {
+    getIndexSettings?(
+      type: MeilisearchIndexType,
+    ): Promise<MeilisearchIndexSettings>;
     configureIndex(
       settings: MeilisearchIndexSettings,
       type: MeilisearchIndexType,
