@@ -126,3 +126,11 @@ describe("lookup and handoff intent boundaries", () => {
     },
   );
 });
+
+it.each(["Browse catalogue", "Show me the products", "Please view the catalog."])("looks up an explicitly requested catalogue browse: %s", message => {
+  expect(prepareProductLinkStep(message, 0)).toEqual({ toolChoice: { type: "tool", toolName: "searchProducts" } });
+});
+it("does not interpret a named product or an opt-out as catalogue browsing", () => {
+  expect(prepareProductLinkStep("Browse catalogue without a search", 0)).toBeUndefined();
+  expect(prepareProductLinkStep("Show me the products for PETG", 0)).toBeUndefined();
+});

@@ -16,13 +16,27 @@ const declinedLookup = new RegExp(
 const vagueSubject =
   /^(?:the\s+)?(?:it|this|that|those|these|one|ones|product|item)(?:\s+(?:you recommended|we discussed))?$/i;
 
+export function isProductLookupDeclined(message: string) {
+  return declinedLookup.test(message);
+}
+
+// An explicit catalogue command is distinct from an empty or failed named search.
+export function isExplicitProductBrowse(message: string) {
+  return /^(?:please\s+)?(?:browse|show(?:\s+me)?|view)\s+(?:the\s+)?(?:catalogue|catalog|products)(?:\s+please)?[.!?]*$/i.test(
+    message.trim(),
+  );
+}
+
 export function prepareProductLinkStep(message: string, stepNumber: number) {
-  if (stepNumber !== 0 || declinedLookup.test(message)) {
+  if (stepNumber !== 0 || isProductLookupDeclined(message)) {
     return undefined;
   }
 
   const subject = explicitProductLinkRequest.exec(message.trim())?.[1]?.trim();
-  if (!subject || vagueSubject.test(subject)) {
+  if (
+    !isExplicitProductBrowse(message) &&
+    (!subject || vagueSubject.test(subject))
+  ) {
     return undefined;
   }
 

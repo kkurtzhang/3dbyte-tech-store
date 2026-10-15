@@ -40,6 +40,7 @@ const checkRateLimitMock: jest.Mock<
 jest.mock(
   "ai",
   () => ({
+    createUIMessageStreamResponse: jest.fn(() => new Response("assistant-stream", { status: 200 })),
     convertToModelMessages: jest.fn(async (messages) => messages),
     stepCountIs: jest.fn((steps: number) => ({ steps })),
     streamText: (config: unknown) => streamTextMock(config),
@@ -285,6 +286,7 @@ function createJsonRequest(
   )
 
   return {
+    url: "https://store.example/api/ai-shopping-assistant",
     headers: {
       get: (name: string) =>
         normalizedHeaders[name.toLowerCase()] ??
@@ -316,6 +318,7 @@ describe("POST /api/ai-shopping-assistant", () => {
     createOpenAIMock.mockReturnValue(deepseekProviderMock)
     getActiveLangfuseTraceIdMock.mockReturnValue("trace_01HQA")
     streamTextMock.mockReturnValue({
+      toUIMessageStream: () => new ReadableStream({ start(controller) { controller.close() } }),
       toUIMessageStreamResponse: jest.fn(
         () => new Response("assistant-stream", { status: 200 }),
       ),

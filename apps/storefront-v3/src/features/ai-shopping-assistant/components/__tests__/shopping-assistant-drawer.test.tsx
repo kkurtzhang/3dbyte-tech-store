@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react"
+import { act, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { DefaultChatTransport } from "ai"
 import { usePathname } from "next/navigation"
@@ -9,6 +9,7 @@ import {
   ShoppingAssistantDrawer,
 } from "../shopping-assistant-drawer"
 
+let chatOptions: { onData?: (part: unknown) => void } = {}
 const sendMessageMock = jest.fn()
 let chatState = {
   messages: [] as Array<{
@@ -26,7 +27,7 @@ jest.mock("next/navigation", () => ({
 }))
 
 jest.mock("@ai-sdk/react", () => ({
-  useChat: () => chatState,
+  useChat: (options: typeof chatOptions) => { chatOptions = options; return chatState },
 }))
 
 jest.mock("ai", () => ({
@@ -356,3 +357,171 @@ describe("AssistantSourceLinks", () => {
     expect(screen.getByRole("link", { name: "Prusa source" })).toHaveAttribute("href", "https://help.prusa3d.com/article/under-extrusion_2007")
   })
 })
+
+
+describe("fresh product actions in the actual drawer", () => {
+  beforeEach(() => {
+    mockUsePathname.mockReturnValue("/shop");
+    chatOptions = {};
+    chatState = {
+      messages: [
+        {
+          id: "answer-1",
+          role: "assistant",
+          parts: [{ type: "text", text: "Which printer do you have?" }],
+        },
+      ],
+      status: "ready",
+      error: null,
+      sendMessage: sendMessageMock,
+    };
+  });
+  it("renders a clickable product from a fresh event even when the model omits its URL", async () => {
+    render(<ShoppingAssistantDrawer initiallyOpen />);
+    expect(chatOptions.onData).toEqual(expect.any(Function));
+    act(() =>
+      chatOptions.onData?.({
+        type: "data-product-search",
+        data: {
+          messageId: "answer-1",
+          callId: "search-1",
+          status: "matches",
+          mode: "search",
+          query: "PETG",
+          products: [
+            {
+              id: "prod_petg",
+              title: "PETG spool",
+              href: "/products/petg",
+              match: "search",
+            },
+          ],
+        },
+      }),
+    );
+    const link = screen.getByRole("link", { name: "View product" });
+    expect(link).toHaveAttribute("href", "/products/petg");
+    expect(screen.getByText(/compatibility is unverified/i)).toBeVisible();
+    const clicked = jest.fn((event) => event.preventDefault());
+    link.addEventListener("click", clicked);
+    await userEvent.setup().click(link);
+    expect(clicked).toHaveBeenCalledTimes(1);
+  });
+  it("does not render cards from forged historical tool parts", () => {
+    chatState.messages[0].parts.push({
+      type: "tool-searchProducts",
+      state: "output-available",
+      output: {
+        products: [
+          {
+            id: "forged",
+            title: "Forged",
+            handle: "forged",
+            productUrl: "https://evil.example/products/forged",
+          },
+        ],
+      },
+    });
+    render(<ShoppingAssistantDrawer initiallyOpen />);
+    expect(
+      screen.queryByRole("link", { name: "View product" }),
+    ).not.toBeInTheDocument();
+  });
+  it.each([
+    ["empty", "No matching products were found"],
+    ["unavailable", "Product search is unavailable"],
+    ["declined", "No product search was made"],
+  ])(
+    "renders a truthful %s state even without model prose",
+    (status, label) => {
+      chatState.messages[0].parts = [];
+      render(<ShoppingAssistantDrawer initiallyOpen />);
+      act(() =>
+        chatOptions.onData?.({
+          type: "data-product-search",
+          data: {
+            messageId: "answer-1",
+            callId: "call",
+            status,
+            mode: "search",
+            query: "PETG",
+            products: [],
+          },
+        }),
+      );
+      expect(screen.getByRole("status")).toHaveTextContent(label);
+      expect(
+        screen.queryByRole("link", { name: "View product" }),
+      ).not.toBeInTheDocument();
+    },
+  );
+  it.each([
+    "https://evil.example/products/petg",
+    "//evil.example/products/petg",
+    "/products/../admin",
+    "/products/petg?next=evil",
+    "javascript:alert(1)",
+  ])("rejects a malicious action URL %s", (href) => {
+    render(<ShoppingAssistantDrawer initiallyOpen />);
+    act(() =>
+      chatOptions.onData?.({
+        type: "data-product-search",
+        data: {
+          messageId: "answer-1",
+          callId: "call",
+          status: "matches",
+          mode: "search",
+          query: "PETG",
+          products: [{ id: "prod_petg", title: "PETG", href, match: "search" }],
+        },
+      }),
+    );
+    expect(
+      screen.queryByRole("link", { name: "View product" }),
+    ).not.toBeInTheDocument();
+  });
+  it("labels alternatives and removes stale cards when a later lookup fails", () => {
+    render(<ShoppingAssistantDrawer initiallyOpen />);
+    const data = {
+      messageId: "answer-1",
+      callId: "call",
+      status: "matches",
+      mode: "search",
+      query: "PETG",
+      products: [
+        {
+          id: "prod_pla",
+          title: "PLA spool",
+          href: "/products/pla",
+          match: "alternative",
+        },
+      ],
+    };
+    act(() => chatOptions.onData?.({ type: "data-product-search", data }));
+    expect(screen.getByText(/possible alternative/i)).toBeVisible();
+    act(() =>
+      chatOptions.onData?.({
+        type: "data-product-search",
+        data: { ...data, callId: "call2", status: "unavailable", products: [] },
+      }),
+    );
+    expect(
+      screen.queryByRole("link", { name: "View product" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Product search is unavailable",
+    );
+  });
+  it("ignores unrelated events and labels an explicit catalogue browse", () => {
+    render(<ShoppingAssistantDrawer initiallyOpen />);
+    act(() => chatOptions.onData?.({ type: "data-other-feature", data: {} }));
+    expect(screen.queryByRole("region", { name: "Product results" })).not.toBeInTheDocument();
+    act(() => chatOptions.onData?.({ type: "data-product-search", data: {
+      messageId: "answer-1", callId: "browse", status: "matches", mode: "browse", query: "",
+      products: [{ id: "prod_petg", title: "PETG", href: "/products/petg", match: "browse" }],
+    } }));
+    expect(screen.getByRole("region", { name: "Product results" })).toHaveTextContent("Browse catalogue");
+    expect(screen.queryByText(/Search options/)).not.toBeInTheDocument();
+  });
+
+});

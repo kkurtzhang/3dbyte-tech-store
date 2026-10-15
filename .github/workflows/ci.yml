@@ -164,7 +164,7 @@ jobs:
       - name: Test AI draft Admin pagination with synthetic data
         run: pnpm exec playwright test --config apps/backend/integration-tests/admin/playwright.config.cjs
       - name: Run browser smoke against the PR storefront
-        run: pnpm exec playwright test tests/e2e/homepage.spec.ts
+        run: pnpm exec playwright test tests/e2e/homepage.spec.ts tests/e2e/assistant-product-actions.spec.ts
 
   security-scan:
     name: security-scan
