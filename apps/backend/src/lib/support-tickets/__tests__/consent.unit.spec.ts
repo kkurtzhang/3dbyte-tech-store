@@ -50,6 +50,9 @@ const draft = {
 };
 function fixture(session = "a".repeat(64), customerId?: string) {
   const module = {
+    listSupportTickets: jest.fn().mockResolvedValue([]),
+    listSupportTicketEvents: jest.fn().mockResolvedValue([]),
+    createSupportTicketEvents: jest.fn().mockResolvedValue({}),
     createConfirmedAiHandoff: jest
       .fn()
       .mockResolvedValue({
@@ -115,7 +118,11 @@ const confirmation = (preview: {
   digest: preview.digest,
   confirmed: true,
 });
+const originalRead = jest.mocked(consentStore.read).getMockImplementation()!;
+const originalReplace = jest.mocked(consentStore.replace).getMockImplementation()!;
 beforeEach(() => {
+  jest.mocked(consentStore.read).mockImplementation(originalRead);
+  jest.mocked(consentStore.replace).mockImplementation(originalReplace);
   jest.clearAllMocks();
   process.env.INTERNAL_API_TOKEN = "synthetic-internal";
 });
@@ -327,4 +334,47 @@ it("rejects altered server snapshot payloads even with an old receipt", async ()
   expect((await f.call(confirmSupportTicket, confirmation(body))).code).toBe(
     409,
   );
+});
+
+it("returns the saved ticket and still queues notifications when Redis completion fails", async () => {
+  const f = fixture();
+  const proposal = await f.prepare();
+  const { body } = await f.preview(proposal.proposalId);
+  const replace = originalReplace;
+  jest.spyOn(consentStore, "replace").mockImplementation(async (id, raw, record) => {
+    if (record.status === "submitted") throw new Error("synthetic completion interruption");
+    return replace(id, raw, record);
+  });
+  const result = await f.call(confirmSupportTicket, confirmation(body));
+  expect(result.code).toBe(201);
+  expect(result.body.notificationStatus).toBe("queued");
+  expect(sendSupportTicketCreatedNotifications).toHaveBeenCalledTimes(1);
+  expect(f.module.createSupportTicketEvents).toHaveBeenCalledWith(expect.objectContaining({ type: "ai_handoff_notifications_queued" }));
+  expect(f.module.createConfirmedAiHandoff.mock.calls[0][0].metadata).toMatchObject({
+    consent_context_hash: consentHash(JSON.stringify(["a".repeat(64), null])),
+    consent_support_inbox: body.payload.supportInbox,
+  });
+});
+it("recovers durable status without Redis and denies another session or account", async () => {
+  const f = fixture();
+  f.module.listSupportTickets.mockResolvedValue([{ id: "saved", ticket_number: "SAVED", status: "new", metadata: { consent_context_hash: consentHash(JSON.stringify(["a".repeat(64), null])) } }]);
+  jest.spyOn(consentStore, "read").mockRejectedValue(new Error("Redis unavailable"));
+  expect((await f.preview("f".repeat(64))).body).toMatchObject({ status: "submitted", notificationStatus: "pending", ticket: { id: "saved" } });
+  expect(consentStore.read).not.toHaveBeenCalled();
+  for (const other of [fixture("b".repeat(64)), fixture("a".repeat(64), "changed-account")]) {
+    other.module.listSupportTickets.mockImplementation(f.module.listSupportTickets);
+    expect((await other.preview("f".repeat(64))).code).toBe(409);
+  }
+  expect(sendSupportTicketCreatedNotifications).not.toHaveBeenCalled();
+  expect(f.module.createConfirmedAiHandoff).not.toHaveBeenCalled();
+});
+it("reports pending email if queuing or durable acknowledgement fails", async () => {
+  for (const stage of ["queue", "event"]) {
+    const f = fixture();
+    const p = await f.prepare();
+    const { body } = await f.preview(p.proposalId);
+    if (stage === "queue") jest.mocked(sendSupportTicketCreatedNotifications).mockRejectedValueOnce(new Error("synthetic"));
+    else f.module.createSupportTicketEvents.mockRejectedValueOnce(new Error("synthetic"));
+    expect((await f.call(confirmSupportTicket, confirmation(body))).body.notificationStatus).toBe("pending");
+  }
 });
