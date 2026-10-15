@@ -1,5 +1,6 @@
 import { ReadableStream, TransformStream } from "stream/web"
 import { TextDecoder } from "util"
+import type { TextStreamPart, ToolSet } from "ai"
 
 import { productLookupCases } from "../__fixtures__/product-lookup-cases"
 
@@ -300,6 +301,30 @@ function createJsonRequest(
     json: async () => body,
     signal,
   } as unknown as Request
+}
+
+// Complete the visible stream separately from onFinish: callback prose is not authoritative.
+async function finishVisibleStream(
+  config: {
+    experimental_transform: () => TransformStream<
+      TextStreamPart<ToolSet>,
+      TextStreamPart<ToolSet>
+    >
+  },
+  text = "",
+) {
+  const transform = config.experimental_transform()
+  const writer = transform.writable.getWriter()
+  const reader = transform.readable.getReader()
+  const reading = (async () => {
+    while (!(await reader.read()).done) { /* drain */ }
+  })()
+  if (text) await writer.write({ type: "text-delta", id: "reply", text })
+  await writer.write({
+    type: "finish", finishReason: "stop",
+  } as TextStreamPart<ToolSet>)
+  await writer.close()
+  await reading
 }
 
 describe("POST /api/ai-shopping-assistant", () => {
@@ -965,7 +990,7 @@ describe("POST /api/ai-shopping-assistant", () => {
     expect(streamConfig.tools.addToCart).toBeUndefined()
     expect(streamConfig.tools.searchKnowledge.inputSchema.safeParse({ query: "x".repeat(121) }).success).toBe(false)
     expect(streamConfig.tools.searchKnowledge.inputSchema.safeParse({ query: "hotend", variant_id: 'bad"id' }).success).toBe(false)
-    await streamConfig.tools.searchKnowledge.execute({ query: "hotend manual", product_id: "prod_one", variant_id: "variant_one", limit: 2 })
+    await streamConfig.tools.searchKnowledge.execute({ query: "hotend manual", product_id: "prod_one", variant_id: "variant_one", limit: 2 }, { toolCallId: "knowledge-call" })
     expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/ai/knowledge-search"), expect.objectContaining({ body: JSON.stringify({ query: "hotend manual", product_id: "prod_one", variant_id: "variant_one", limit: 2 }) }))
 
 
@@ -1005,20 +1030,26 @@ describe("POST /api/ai-shopping-assistant", () => {
     const citations = variants.map((variant, index) => ({
       document_id: `doc_manual_${index}`,
       product_id: "prod_fixture",
+      title: `Manual ${index}`,
       binding_scope: variant === null ? "product" : "variant",
       variant_id: variant,
       source_url: `https://manufacturer.example/manual?version=${index}#${variant}`,
       source_sha256: String(index + 1).repeat(64),
       source_version: `v${index}`,
-      source_checked_at: "2030-01-01T10:00:00.000Z",
+      source_checked_at: new Date(Date.now() - 60_000).toISOString(),
       revision_hash: String(index + 4).repeat(64),
-      valid_until: "2030-01-02T12:00:00.000Z",
+      valid_until: new Date(Date.now() + 86_400_000).toISOString(),
     }))
     const evidence = {
-      documents: citations.map((citation) => ({
+      documents: citations.map(({ title, ...citation }) => ({
         ...citation,
+        version: 1,
+        document_title: title,
+        product_title: "Synthetic product",
+        product_handle: "synthetic-product",
+        source_kind: "official_manual",
         text: "Synthetic source evidence.",
-        facts: [{ field: "maximum_temperature", value: null, evidence_excerpt: "" }],
+        facts: [{ field: "maximum_temperature", label: "Maximum temperature", value: null, evidence_excerpt: "" }],
       })),
       citations,
     }
@@ -1026,7 +1057,7 @@ describe("POST /api/ai-shopping-assistant", () => {
     fetchMock.mockResolvedValueOnce({ ok: true, json: async () => evidence })
     const streamConfig = streamTextMock.mock.calls[0][0]
     const input = { query: "manual", product_id: "prod_fixture", limit: 3 }
-    const result = await streamConfig.tools.searchKnowledge.execute(input)
+    const result = await streamConfig.tools.searchKnowledge.execute(input, { toolCallId: "manual-call" })
 
     expect(result).toEqual(evidence)
     expect(JSON.stringify(evidence)).toBe(before)
@@ -1130,6 +1161,8 @@ describe("POST /api/ai-shopping-assistant", () => {
       },
     })
 
+    await finishVisibleStream(streamConfig)
+
     expect(updateActiveLangfuseGenerationMock).toHaveBeenLastCalledWith(
       expect.objectContaining({
         metadata: expect.objectContaining({
@@ -1186,6 +1219,8 @@ describe("POST /api/ai-shopping-assistant", () => {
       },
     })
 
+    await finishVisibleStream(streamConfig, "Use PETG, and I found ava.customer@example.com in the request.")
+
     expect(updateActiveLangfuseTraceIOMock).toHaveBeenLastCalledWith({
       output: "Use PETG, and I found [email] in the request.",
     })
@@ -1227,6 +1262,8 @@ describe("POST /api/ai-shopping-assistant", () => {
       usage: {},
     })
 
+    await finishVisibleStream(streamConfig, "PETG works well for durable printer parts.")
+
     expect(updateActiveLangfuseTraceIOMock.mock.calls).toEqual([
       [{ input: "Recommend PETG for a printer." }],
       [{ output: "PETG works well for durable printer parts." }],
@@ -1255,6 +1292,8 @@ describe("POST /api/ai-shopping-assistant", () => {
       text: longOutput,
       usage: {},
     })
+
+    await finishVisibleStream(streamConfig, longOutput)
 
     expect(updateActiveLangfuseTraceIOMock).toHaveBeenLastCalledWith({
       output: longOutput,
@@ -1385,6 +1424,7 @@ describe("POST /api/ai-shopping-assistant", () => {
       text: "example.com.",
       type: "text-delta",
     })
+    await writer.write({ type: "finish" })
     await writer.close()
 
     await expect(outputPromise).resolves.toBe(
@@ -1453,6 +1493,7 @@ describe("POST /api/ai-shopping-assistant", () => {
       usage: {},
     })
     await writer.write({ text: "setup", type: "text-delta" })
+    await writer.write({ type: "finish" })
     await writer.close()
 
     await expect(outputPromise).resolves.toBe(

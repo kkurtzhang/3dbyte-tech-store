@@ -79,6 +79,58 @@ This fallback locates evidence for the known product; it does not assert that th
 
 Multiple product-scoped documents, documents per variant and variants per ordinary priced product are valid. Unknown facts remain null. Historical AUD evidence is not a current offer; current price and stock come from commerce tools. An orphan may remain download metadata, but cannot ground knowledge without a valid native product binding and, where declared, its exact variant.
 
+## Storefront answer grounding
+
+The normal storefront route records only `searchKnowledge` executions made by
+this request against the authenticated backend. It validates each bounded
+approved-document DTO, its paired citation and any requested product/variant
+scope. Client history and model-written tool results do not authorize evidence.
+The backend remains responsible for fresh CMS approval, canonical revision and
+native product identity checks; the storefront does not replace those checks.
+
+The model can ignore the prompt even when retrieval is correct. In the staging
+`4f9b21065c14f766fd638ad30702112460396860` acceptance run, it correctly left the
+Dragonfly BMS installed temperature unknown but added an unsupported statement
+about typical temperature ranges and the limiting hardware. The exact four
+observed prompts, responses and public tool outputs are preserved in
+[`observed-knowledge-answers.json`](../apps/storefront-v3/src/app/api/ai-shopping-assistant/__fixtures__/observed-knowledge-answers.json).
+The captured timestamp is fixed in regression tests so evidence expiry does not
+make the test silently exercise a different case.
+
+For any turn that attempts knowledge retrieval, the visible answer is now an
+extractive rendering of current validated fact labels/values and explicit null
+unknowns, grouped by product with each source and binding scope. All model prose
+from that turn is replaced, including assertions before a tool call. This
+retains supported safety numbers without using a temperature blacklist or a
+second model to judge arbitrary prose. Empty, invalid or failed retrieval
+produces an unknown-evidence answer. Expired or conflicting revisions are
+excluded at rendering time. The renderer shows at most four documents and eight
+known facts per document, retains unknown labels, and discloses omissions.
+
+This changes the response experience: tool/status events still stream, but text
+is held until the SDK finish event, including on ordinary non-knowledge turns.
+Those ordinary turns keep their text and existing email masking, with a 64,000
+character limit. Aborted, errored or truncated streams do not release held text.
+Traces record only the final visible text. Product action and support confirmation
+cards keep their existing authorization paths, but a mixed knowledge/tool turn
+uses the evidence summary in place of any freeform text about the other tools.
+
+The boundary is intentionally limited to attempted knowledge retrieval. It does
+not force the model to retrieve, establish that every question was answered,
+validate non-knowledge prose, or turn component/model facts into a verified
+installed-printer safety limit. Multiple valid products stay separately scoped;
+retrieval relevance still matters. No runtime flags, credentials or CMS evidence
+are changed by this fix.
+
+Deterministic route regressions use the actual pinned AI SDK with a mock provider
+replaying the captured replies plus adversarial pre-tool claims. They verify
+supported Magigoo/BMS facts, exact citations, unknown installed limits and
+mismatched products. Additional tests cover invalid/expired citations, explicit
+scope mismatches, mixed supported/unsupported safety claims, documented safety
+numbers, stream interruption, bounded output and ordinary replies. These are
+not live-model evaluations of the patched route. A live provider acceptance run
+and review of the extractive answer experience remain release checks.
+
 ## Validation and evidence locations
 
 The reusable planner and fixture tests stay in source. Its generated corpus inventory is an external evidence artifact, not a runtime input. [The receipt](../scripts/local-knowledge/evaluation/public-document-native-plan-20261014.receipt.json) records its exact hash, source hashes, historical Git identity and SSD destination. No source content was renamed to avoid a scanner, no scanner exception was added, and historical findings remain in the original local commits.

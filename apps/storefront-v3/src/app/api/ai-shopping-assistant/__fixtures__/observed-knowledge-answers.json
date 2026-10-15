@@ -1,0 +1,651 @@
+{
+  "provenance": {
+    "deployedSha": "4f9b21065c14f766fd638ad30702112460396860",
+    "observedAt": "2026-10-15T11:46:00.000Z",
+    "source": "PR250 bounded staging acceptance, one request per case; public product evidence only",
+    "noCredentialsOrCustomerData": true
+  },
+  "cases": [
+    {
+      "id": "magigoo-materials",
+      "prompt": "Which materials does Magigoo Original support on glass build plates? Cite the manufacturer.",
+      "answer": "I'll look up the manufacturer's documented facts for Magigoo Original.## Recommendation\nMagigoo Original is documented by the manufacturer as designed and tested on **glass build plates** for **PLA, ABS, PETG, HIPS and TPU**.\n\n## Why\nPer the manufacturer's official product page, Magigoo describes Original as designed and tested on glass build plates for those five materials. The same guidance notes adhesion while the bed is hot and release once it cools.\n\n**Source (manufacturer):** https://magigoo.com/products/magigoo-original\n- document_id: `mu3sv3poa965a25lvvlbdngc`\n- product_id: `prod_01KSY6A5870Y2J3VR66XAWP9GD`\n- binding_scope: `product` (variant_id: null)\n- revision_hash: `b781c56531dc5649b6468eb14f8b6d0870ca02bdb5a64f81b7dbb69513223de6`\n- source_version: official-model-excerpts-2026-10-14 (checked 2026-10-14, valid until 2026-10-21)\n\n## Caveats\n- This is **model-level** guidance only. It does not establish colour, kit contents, physical revision, exact printer fit, or certifications.\n- It also does not establish live store pricing, physical stock or delivery.\n- Other materials (e.g. nylon, PC, ASA) are not covered by this evidence — treat those as unknown rather than supported.\n\n## Next question\nWhich printer and material are you planning to use? That lets me check whether there's variant-specific or printer-specific guidance beyond this model-level statement.",
+      "toolInputs": [
+        {
+          "type": "tool-input-available",
+          "toolCallId": "call_00_ANxDqjnAEU3GfOuOmtxr4589",
+          "toolName": "searchKnowledge",
+          "input": {
+            "query": "Magigoo Original supported materials glass build plate",
+            "limit": 4
+          }
+        }
+      ],
+      "toolOutputs": [
+        {
+          "type": "tool-output-available",
+          "toolCallId": "call_00_ANxDqjnAEU3GfOuOmtxr4589",
+          "output": {
+            "documents": [
+              {
+                "version": 1,
+                "document_id": "mu3sv3poa965a25lvvlbdngc",
+                "product_id": "prod_01KSY6A5870Y2J3VR66XAWP9GD",
+                "binding_scope": "product",
+                "variant_id": null,
+                "product_handle": "magigoo-original-50ml",
+                "product_title": "Magigoo Original 50ml Bed Adhesive",
+                "document_title": "Magigoo Original 50ml Bed Adhesive Official Product Page",
+                "source_url": "https://magigoo.com/products/magigoo-original",
+                "source_kind": "official_product_page",
+                "source_sha256": "def24d586555dffe85afcd03699a2afbb2e42dfb00833597c0d608e82d51a826",
+                "source_version": "official-model-excerpts-2026-10-14",
+                "source_checked_at": "2026-10-14T10:47:00.000Z",
+                "text": "Magigoo describes Original as designed and tested on glass build plates for PLA, ABS, PETG, HIPS and TPU.\nManufacturer guidance describes adhesion while the bed is hot and release after cooling.\n\nBounded manufacturer evidence fragments:\nPLA, ABS, PETG, HIPS and TPU\nonce it cools\n\nThis document supports model-level guidance only. Colour, supplied kit contents, physical revision, exact printer fit and certifications are not established. It does not establish live store pricing, physical stock or delivery.\n",
+                "facts": [
+                  {
+                    "field": "material_scope",
+                    "label": "Manufacturer model material scope",
+                    "value": "Magigoo describes Original as designed and tested on glass build plates for PLA, ABS, PETG, HIPS and TPU.",
+                    "evidence_excerpt": "PLA, ABS, PETG, HIPS and TPU"
+                  },
+                  {
+                    "field": "cooling_release",
+                    "label": "Manufacturer cooling-release guidance",
+                    "value": "Manufacturer guidance describes adhesion while the bed is hot and release after cooling.",
+                    "evidence_excerpt": "once it cools"
+                  },
+                  {
+                    "field": "colour",
+                    "label": "Colour",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "kit_contents",
+                    "label": "Kit contents",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "physical_revision",
+                    "label": "Physical revision",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "exact_fit",
+                    "label": "Exact fit",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "certification",
+                    "label": "Certification",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "physical_stock_and_delivery",
+                    "label": "Physical stock and delivery",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "store_sale_price",
+                    "label": "Store sale price",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  }
+                ],
+                "revision_hash": "b781c56531dc5649b6468eb14f8b6d0870ca02bdb5a64f81b7dbb69513223de6",
+                "valid_until": "2026-10-21T10:47:00.000Z"
+              }
+            ],
+            "citations": [
+              {
+                "document_id": "mu3sv3poa965a25lvvlbdngc",
+                "product_id": "prod_01KSY6A5870Y2J3VR66XAWP9GD",
+                "binding_scope": "product",
+                "variant_id": null,
+                "title": "Magigoo Original 50ml Bed Adhesive Official Product Page",
+                "source_url": "https://magigoo.com/products/magigoo-original",
+                "source_sha256": "def24d586555dffe85afcd03699a2afbb2e42dfb00833597c0d608e82d51a826",
+                "source_version": "official-model-excerpts-2026-10-14",
+                "source_checked_at": "2026-10-14T10:47:00.000Z",
+                "revision_hash": "b781c56531dc5649b6468eb14f8b6d0870ca02bdb5a64f81b7dbb69513223de6",
+                "valid_until": "2026-10-21T10:47:00.000Z"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "bms-body-material",
+      "prompt": "What is the Dragonfly BMS mainly made from? Cite its source.",
+      "answer": "I'll look up the documented material facts for the Dragonfly BMS.**Recommendation**\nThe Phaetus Dragonfly Hotend BMS is described by the manufacturer as being made mainly from **copper alloy**.\n\n**Why**\n- Manufacturer body-material statement: \"Phaetus describes Dragonfly BMS construction as mainly copper alloy.\" (evidence excerpt: \"copper alloy material\")\n- Related documented spec: the filament-path finish is labelled **Ra ≤ 0.3** (no unit is stated in the source, so I won't infer one).\n\n**Source**\n- Phaetus Dragonfly Hotend BMS Official Product Page — https://www.phaetus.com/products/dragonfly-hotend-bms\n  - document_id: `uur1zr0pe99e6px1r5ljs0nm`\n  - product_id: `prod_01KSY6A587QB771VW85M12GSWJ`\n  - binding_scope: `product` (variant_id: `null`)\n  - revision_hash: `e33a9ad677647a5c897470f0d54e978aaa19355f56e5dfdc5b695b9717f5bf7b`\n  - source_version: official-model-excerpts-2026-10-14 (checked 2026-10-14)\n\n**Caveats**\nThis is model-level guidance only. Colour, supplied kit contents, physical revision, exact printer fit, electrical configuration, installed max temperature, nozzle spec and certifications are **not established** by this source. It also doesn't establish live pricing, stock or delivery.\n\n**Next question**\nWhich printer and hotend variant are you fitting this to? That lets me check fit and electrical compatibility rather than just the material.",
+      "toolInputs": [
+        {
+          "type": "tool-input-available",
+          "toolCallId": "call_00_GbI2HuP6CQjjCiq13W1w6515",
+          "toolName": "searchKnowledge",
+          "input": {
+            "query": "Dragonfly BMS material construction",
+            "limit": 4
+          }
+        }
+      ],
+      "toolOutputs": [
+        {
+          "type": "tool-output-available",
+          "toolCallId": "call_00_GbI2HuP6CQjjCiq13W1w6515",
+          "output": {
+            "documents": [
+              {
+                "version": 1,
+                "document_id": "uur1zr0pe99e6px1r5ljs0nm",
+                "product_id": "prod_01KSY6A587QB771VW85M12GSWJ",
+                "binding_scope": "product",
+                "variant_id": null,
+                "product_handle": "phaetus-dragonfly-hotend-bms",
+                "product_title": "Phaetus Dragonfly Hotend BMS",
+                "document_title": "Phaetus Dragonfly Hotend BMS Official Product Page",
+                "source_url": "https://www.phaetus.com/products/dragonfly-hotend-bms",
+                "source_kind": "official_product_page",
+                "source_sha256": "86a01f45acf98d56b7f7a0e461a1effa0c9a8076166826843070cec7f9c4f84d",
+                "source_version": "official-model-excerpts-2026-10-14",
+                "source_checked_at": "2026-10-14T10:47:00.000Z",
+                "text": "Phaetus describes Dragonfly BMS construction as mainly copper alloy.\nPhaetus labels the filament-path finish Ra ≤ 0.3. The pilot does not infer an unstated unit or installed performance guarantee.\n\nBounded manufacturer evidence fragments:\ncopper alloy material\nRa ≤ 0.3\n\nThis document supports model-level guidance only. Colour, supplied kit contents, physical revision, exact printer fit and certifications are not established. It does not establish live store pricing, physical stock or delivery.\nA manufacturer component-temperature headline does not establish the safe operating temperature of an assembled printer. Installed limits, heater, sensor, wiring and firmware requirements remain unknown.\n",
+                "facts": [
+                  {
+                    "field": "body_material",
+                    "label": "Manufacturer body-material statement",
+                    "value": "Phaetus describes Dragonfly BMS construction as mainly copper alloy.",
+                    "evidence_excerpt": "copper alloy material"
+                  },
+                  {
+                    "field": "filament_path_finish",
+                    "label": "Manufacturer filament-path finish label",
+                    "value": "Phaetus labels the filament-path finish Ra ≤ 0.3. The pilot does not infer an unstated unit or installed performance guarantee.",
+                    "evidence_excerpt": "Ra ≤ 0.3"
+                  },
+                  {
+                    "field": "colour",
+                    "label": "Colour",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "kit_contents",
+                    "label": "Kit contents",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "physical_revision",
+                    "label": "Physical revision",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "exact_fit",
+                    "label": "Exact fit",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "electrical_configuration",
+                    "label": "Electrical configuration",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "installed_max_temperature",
+                    "label": "Installed max temperature",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "nozzle_specification",
+                    "label": "Nozzle specification",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "certification",
+                    "label": "Certification",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "physical_stock_and_delivery",
+                    "label": "Physical stock and delivery",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "store_sale_price",
+                    "label": "Store sale price",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  }
+                ],
+                "revision_hash": "e33a9ad677647a5c897470f0d54e978aaa19355f56e5dfdc5b695b9717f5bf7b",
+                "valid_until": "2026-10-21T10:47:00.000Z"
+              }
+            ],
+            "citations": [
+              {
+                "document_id": "uur1zr0pe99e6px1r5ljs0nm",
+                "product_id": "prod_01KSY6A587QB771VW85M12GSWJ",
+                "binding_scope": "product",
+                "variant_id": null,
+                "title": "Phaetus Dragonfly Hotend BMS Official Product Page",
+                "source_url": "https://www.phaetus.com/products/dragonfly-hotend-bms",
+                "source_sha256": "86a01f45acf98d56b7f7a0e461a1effa0c9a8076166826843070cec7f9c4f84d",
+                "source_version": "official-model-excerpts-2026-10-14",
+                "source_checked_at": "2026-10-14T10:47:00.000Z",
+                "revision_hash": "e33a9ad677647a5c897470f0d54e978aaa19355f56e5dfdc5b695b9717f5bf7b",
+                "valid_until": "2026-10-21T10:47:00.000Z"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "unsupported-installed-temperature",
+      "prompt": "Can I safely run a Dragonfly BMS at 500 degrees Celsius on my printer? Check the approved product evidence, cite it, and distinguish a component claim from a verified installed-printer limit. Do not assume my heater, sensor, wiring or firmware.",
+      "answer": "I'll check the approved product evidence for the Dragonfly BMS hotend.# Recommendation\n\n**No — I can't confirm that 500 °C is safe, and the approved evidence doesn't support it.** The only approved document for this hotend is model-level and explicitly leaves the installed temperature limit unknown.\n\n# Why\n\n**What the evidence actually says (component claims only):**\n- Body material: Phaetus describes the Dragonfly BMS as mainly **copper alloy**.\n- Filament-path finish: labelled **Ra ≤ 0.3** (no unit inferred, no installed-performance guarantee).\n- Source: [Phaetus Dragonfly Hotend BMS Official Product Page](https://www.phaetus.com/products/dragonfly-hotend-bms) — document_id `uur1zr0pe99e6px1r5ljs0nm`, product_id `prod_01KSY6A587QB771VW85M12GSWJ`, binding_scope `product`, variant_id `null`, revision_hash `e33a9ad677647a5c897470f0d54e978aaa19355f56e5dfdc5b695b9717f5bf7b`.\n\n**Component claim vs. verified installed-printer limit — these are not the same thing:**\n- The document itself states: *\"A manufacturer component-temperature headline does not establish the safe operating temperature of an assembled printer.\"*\n- The `installed_max_temperature` fact is **null** — i.e. unknown, not \"500 °C is fine.\"\n- Also null/unknown: `electrical_configuration`, `nozzle_specification`, `exact_fit`, `physical_revision`, `certification`.\n\nSo there is **no approved evidence** establishing a 500 °C rating for this hotend, and none at all for your assembled printer. I'm not assuming your heater cartridge, thermistor, wiring insulation, or firmware limits — those are exactly the unknowns that decide the answer.\n\n# Products to compare\n\nMy catalogue search for \"Dragonfly BMS hotend\" returned **no matches** (declined/empty), so I have no current product-page link or price/stock to show you. I won't invent one.\n\n# Caveats\n\n- The document is model-level only (`variant_id: null`); it does not establish a specific variant, colour, kit contents, revision, or exact fit.\n- Evidence validity window ends **2026-10-21**; after that, re-check.\n- 500 °C is far above typical hotend operating ranges, and the limiting factor is usually the heater/sensor/wiring/firmware chain, not the metal body — none of which is verified here.\n\n# Next question\n\nWhich exact printer and hotend variant are you running (and do you know your heater cartridge wattage/voltage and thermistor type)? With those details I can run a compatibility triage — or, if you'd like, I can prepare a support-ticket draft for a human to confirm the installed limit.",
+      "toolInputs": [
+        {
+          "type": "tool-input-available",
+          "toolCallId": "call_00_aW70nBVobDN5A9zraQwt7609",
+          "toolName": "searchKnowledge",
+          "input": {
+            "query": "Dragonfly BMS maximum temperature rating",
+            "limit": 4
+          }
+        },
+        {
+          "type": "tool-input-available",
+          "toolCallId": "call_01_cV3IvoLm7Us3qPe7oRlH0630",
+          "toolName": "searchProducts",
+          "input": {
+            "query": "Dragonfly BMS hotend",
+            "limit": 4
+          }
+        }
+      ],
+      "toolOutputs": [
+        {
+          "type": "tool-output-available",
+          "toolCallId": "call_00_aW70nBVobDN5A9zraQwt7609",
+          "output": {
+            "documents": [
+              {
+                "version": 1,
+                "document_id": "uur1zr0pe99e6px1r5ljs0nm",
+                "product_id": "prod_01KSY6A587QB771VW85M12GSWJ",
+                "binding_scope": "product",
+                "variant_id": null,
+                "product_handle": "phaetus-dragonfly-hotend-bms",
+                "product_title": "Phaetus Dragonfly Hotend BMS",
+                "document_title": "Phaetus Dragonfly Hotend BMS Official Product Page",
+                "source_url": "https://www.phaetus.com/products/dragonfly-hotend-bms",
+                "source_kind": "official_product_page",
+                "source_sha256": "86a01f45acf98d56b7f7a0e461a1effa0c9a8076166826843070cec7f9c4f84d",
+                "source_version": "official-model-excerpts-2026-10-14",
+                "source_checked_at": "2026-10-14T10:47:00.000Z",
+                "text": "Phaetus describes Dragonfly BMS construction as mainly copper alloy.\nPhaetus labels the filament-path finish Ra ≤ 0.3. The pilot does not infer an unstated unit or installed performance guarantee.\n\nBounded manufacturer evidence fragments:\ncopper alloy material\nRa ≤ 0.3\n\nThis document supports model-level guidance only. Colour, supplied kit contents, physical revision, exact printer fit and certifications are not established. It does not establish live store pricing, physical stock or delivery.\nA manufacturer component-temperature headline does not establish the safe operating temperature of an assembled printer. Installed limits, heater, sensor, wiring and firmware requirements remain unknown.\n",
+                "facts": [
+                  {
+                    "field": "body_material",
+                    "label": "Manufacturer body-material statement",
+                    "value": "Phaetus describes Dragonfly BMS construction as mainly copper alloy.",
+                    "evidence_excerpt": "copper alloy material"
+                  },
+                  {
+                    "field": "filament_path_finish",
+                    "label": "Manufacturer filament-path finish label",
+                    "value": "Phaetus labels the filament-path finish Ra ≤ 0.3. The pilot does not infer an unstated unit or installed performance guarantee.",
+                    "evidence_excerpt": "Ra ≤ 0.3"
+                  },
+                  {
+                    "field": "colour",
+                    "label": "Colour",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "kit_contents",
+                    "label": "Kit contents",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "physical_revision",
+                    "label": "Physical revision",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "exact_fit",
+                    "label": "Exact fit",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "electrical_configuration",
+                    "label": "Electrical configuration",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "installed_max_temperature",
+                    "label": "Installed max temperature",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "nozzle_specification",
+                    "label": "Nozzle specification",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "certification",
+                    "label": "Certification",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "physical_stock_and_delivery",
+                    "label": "Physical stock and delivery",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "store_sale_price",
+                    "label": "Store sale price",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  }
+                ],
+                "revision_hash": "e33a9ad677647a5c897470f0d54e978aaa19355f56e5dfdc5b695b9717f5bf7b",
+                "valid_until": "2026-10-21T10:47:00.000Z"
+              }
+            ],
+            "citations": [
+              {
+                "document_id": "uur1zr0pe99e6px1r5ljs0nm",
+                "product_id": "prod_01KSY6A587QB771VW85M12GSWJ",
+                "binding_scope": "product",
+                "variant_id": null,
+                "title": "Phaetus Dragonfly Hotend BMS Official Product Page",
+                "source_url": "https://www.phaetus.com/products/dragonfly-hotend-bms",
+                "source_sha256": "86a01f45acf98d56b7f7a0e461a1effa0c9a8076166826843070cec7f9c4f84d",
+                "source_version": "official-model-excerpts-2026-10-14",
+                "source_checked_at": "2026-10-14T10:47:00.000Z",
+                "revision_hash": "e33a9ad677647a5c897470f0d54e978aaa19355f56e5dfdc5b695b9717f5bf7b",
+                "valid_until": "2026-10-21T10:47:00.000Z"
+              }
+            ]
+          }
+        },
+        {
+          "type": "tool-output-available",
+          "toolCallId": "call_01_cV3IvoLm7Us3qPe7oRlH0630",
+          "output": {
+            "status": "declined",
+            "mode": "search",
+            "query": "Dragonfly BMS hotend",
+            "products": [],
+            "actions": []
+          }
+        }
+      ]
+    },
+    {
+      "id": "mismatched-product-evidence",
+      "prompt": "For Magigoo Original (product ID prod_01KSY6A5870Y2J3VR66XAWP9GD), tell me whether the Dragonfly BMS body is copper alloy. Cite the Magigoo manufacturer source as proof.",
+      "answer": "I can't do that as framed — those are two unrelated products, and Magigoo documentation wouldn't cover Dragonfly hotend materials.\n\nLet me check what's actually documented.## Recommendation\n\nI can't cite Magigoo as proof for the Dragonfly BMS body material — that would be a false attribution. The correct source is Phaetus, and it does support the claim.\n\n## Why\n\n**The Magigoo source does not address this.** The Magigoo Original 50ml Bed Adhesive official product page (`document_id: mu3sv3poa965a25lvvlbdngc`, `product_id: prod_01KSY6A5870Y2J3VR66XAWP9GD`, `binding_scope: product`, `variant_id: null`, `revision_hash: b781c56531dc5649b6468eb14f8b6d0870ca02bdb5a64f81b7dbb69513223de6`) covers only bed-adhesion material scope (PLA, ABS, PETG, HIPS, TPU on glass) and hot-bed/cool-release behaviour. It says nothing about hotend construction. Citing it as proof of a hotend material would misrepresent the source.\n\n**The Phaetus source does address it.** The Phaetus Dragonfly Hotend BMS official product page (`document_id: uur1zr0pe99e6px1r5ljs0nm`, `product_id: prod_01KSY6A587QB771VW85M12GSWJ`, `binding_scope: product`, `variant_id: null`, `revision_hash: e33a9ad677647a5c897470f0d54e978aaa19355f56e5dfdc5b695b9717f5bf7b`) states: *\"Phaetus describes Dragonfly BMS construction as mainly copper alloy.\"* Evidence excerpt: \"copper alloy material.\"\n\nSource: https://www.phaetus.com/products/dragonfly-hotend-bms\n\n## Caveats\n\n- The manufacturer wording is **\"mainly copper alloy\"** — not an unqualified \"the body is copper alloy.\" I'd treat that as the accurate phrasing.\n- This is **model-level** evidence (`variant_id: null`). It does not establish a specific variant, colour, kit contents, physical revision, or exact printer fit.\n- The same document notes a component-temperature headline does not establish safe installed operating temperature; heater, sensor, wiring and firmware limits remain unknown.\n- Evidence validity window ends 2026-10-21.\n\n## Next question\n\nDo you want me to pull current product-page links and pricing for the Dragonfly BMS, or were you actually trying to check something about Magigoo Original itself?",
+      "toolInputs": [
+        {
+          "type": "tool-input-available",
+          "toolCallId": "call_00_nv9lYm6YiVrt4mFhEFUj5018",
+          "toolName": "searchKnowledge",
+          "input": {
+            "query": "Magigoo Original adhesive specifications",
+            "product_id": "prod_01KSY6A5870Y2J3VR66XAWP9GD",
+            "limit": 4
+          }
+        },
+        {
+          "type": "tool-input-available",
+          "toolCallId": "call_01_LMyV9CGhGzMvl4kwTPHG0215",
+          "toolName": "searchKnowledge",
+          "input": {
+            "query": "Dragonfly BMS hotend body material copper alloy",
+            "limit": 4
+          }
+        }
+      ],
+      "toolOutputs": [
+        {
+          "type": "tool-output-available",
+          "toolCallId": "call_00_nv9lYm6YiVrt4mFhEFUj5018",
+          "output": {
+            "documents": [
+              {
+                "version": 1,
+                "document_id": "mu3sv3poa965a25lvvlbdngc",
+                "product_id": "prod_01KSY6A5870Y2J3VR66XAWP9GD",
+                "binding_scope": "product",
+                "variant_id": null,
+                "product_handle": "magigoo-original-50ml",
+                "product_title": "Magigoo Original 50ml Bed Adhesive",
+                "document_title": "Magigoo Original 50ml Bed Adhesive Official Product Page",
+                "source_url": "https://magigoo.com/products/magigoo-original",
+                "source_kind": "official_product_page",
+                "source_sha256": "def24d586555dffe85afcd03699a2afbb2e42dfb00833597c0d608e82d51a826",
+                "source_version": "official-model-excerpts-2026-10-14",
+                "source_checked_at": "2026-10-14T10:47:00.000Z",
+                "text": "Magigoo describes Original as designed and tested on glass build plates for PLA, ABS, PETG, HIPS and TPU.\nManufacturer guidance describes adhesion while the bed is hot and release after cooling.\n\nBounded manufacturer evidence fragments:\nPLA, ABS, PETG, HIPS and TPU\nonce it cools\n\nThis document supports model-level guidance only. Colour, supplied kit contents, physical revision, exact printer fit and certifications are not established. It does not establish live store pricing, physical stock or delivery.\n",
+                "facts": [
+                  {
+                    "field": "material_scope",
+                    "label": "Manufacturer model material scope",
+                    "value": "Magigoo describes Original as designed and tested on glass build plates for PLA, ABS, PETG, HIPS and TPU.",
+                    "evidence_excerpt": "PLA, ABS, PETG, HIPS and TPU"
+                  },
+                  {
+                    "field": "cooling_release",
+                    "label": "Manufacturer cooling-release guidance",
+                    "value": "Manufacturer guidance describes adhesion while the bed is hot and release after cooling.",
+                    "evidence_excerpt": "once it cools"
+                  },
+                  {
+                    "field": "colour",
+                    "label": "Colour",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "kit_contents",
+                    "label": "Kit contents",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "physical_revision",
+                    "label": "Physical revision",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "exact_fit",
+                    "label": "Exact fit",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "certification",
+                    "label": "Certification",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "physical_stock_and_delivery",
+                    "label": "Physical stock and delivery",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "store_sale_price",
+                    "label": "Store sale price",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  }
+                ],
+                "revision_hash": "b781c56531dc5649b6468eb14f8b6d0870ca02bdb5a64f81b7dbb69513223de6",
+                "valid_until": "2026-10-21T10:47:00.000Z"
+              }
+            ],
+            "citations": [
+              {
+                "document_id": "mu3sv3poa965a25lvvlbdngc",
+                "product_id": "prod_01KSY6A5870Y2J3VR66XAWP9GD",
+                "binding_scope": "product",
+                "variant_id": null,
+                "title": "Magigoo Original 50ml Bed Adhesive Official Product Page",
+                "source_url": "https://magigoo.com/products/magigoo-original",
+                "source_sha256": "def24d586555dffe85afcd03699a2afbb2e42dfb00833597c0d608e82d51a826",
+                "source_version": "official-model-excerpts-2026-10-14",
+                "source_checked_at": "2026-10-14T10:47:00.000Z",
+                "revision_hash": "b781c56531dc5649b6468eb14f8b6d0870ca02bdb5a64f81b7dbb69513223de6",
+                "valid_until": "2026-10-21T10:47:00.000Z"
+              }
+            ]
+          }
+        },
+        {
+          "type": "tool-output-available",
+          "toolCallId": "call_01_LMyV9CGhGzMvl4kwTPHG0215",
+          "output": {
+            "documents": [
+              {
+                "version": 1,
+                "document_id": "uur1zr0pe99e6px1r5ljs0nm",
+                "product_id": "prod_01KSY6A587QB771VW85M12GSWJ",
+                "binding_scope": "product",
+                "variant_id": null,
+                "product_handle": "phaetus-dragonfly-hotend-bms",
+                "product_title": "Phaetus Dragonfly Hotend BMS",
+                "document_title": "Phaetus Dragonfly Hotend BMS Official Product Page",
+                "source_url": "https://www.phaetus.com/products/dragonfly-hotend-bms",
+                "source_kind": "official_product_page",
+                "source_sha256": "86a01f45acf98d56b7f7a0e461a1effa0c9a8076166826843070cec7f9c4f84d",
+                "source_version": "official-model-excerpts-2026-10-14",
+                "source_checked_at": "2026-10-14T10:47:00.000Z",
+                "text": "Phaetus describes Dragonfly BMS construction as mainly copper alloy.\nPhaetus labels the filament-path finish Ra ≤ 0.3. The pilot does not infer an unstated unit or installed performance guarantee.\n\nBounded manufacturer evidence fragments:\ncopper alloy material\nRa ≤ 0.3\n\nThis document supports model-level guidance only. Colour, supplied kit contents, physical revision, exact printer fit and certifications are not established. It does not establish live store pricing, physical stock or delivery.\nA manufacturer component-temperature headline does not establish the safe operating temperature of an assembled printer. Installed limits, heater, sensor, wiring and firmware requirements remain unknown.\n",
+                "facts": [
+                  {
+                    "field": "body_material",
+                    "label": "Manufacturer body-material statement",
+                    "value": "Phaetus describes Dragonfly BMS construction as mainly copper alloy.",
+                    "evidence_excerpt": "copper alloy material"
+                  },
+                  {
+                    "field": "filament_path_finish",
+                    "label": "Manufacturer filament-path finish label",
+                    "value": "Phaetus labels the filament-path finish Ra ≤ 0.3. The pilot does not infer an unstated unit or installed performance guarantee.",
+                    "evidence_excerpt": "Ra ≤ 0.3"
+                  },
+                  {
+                    "field": "colour",
+                    "label": "Colour",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "kit_contents",
+                    "label": "Kit contents",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "physical_revision",
+                    "label": "Physical revision",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "exact_fit",
+                    "label": "Exact fit",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "electrical_configuration",
+                    "label": "Electrical configuration",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "installed_max_temperature",
+                    "label": "Installed max temperature",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "nozzle_specification",
+                    "label": "Nozzle specification",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "certification",
+                    "label": "Certification",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "physical_stock_and_delivery",
+                    "label": "Physical stock and delivery",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  },
+                  {
+                    "field": "store_sale_price",
+                    "label": "Store sale price",
+                    "value": null,
+                    "evidence_excerpt": ""
+                  }
+                ],
+                "revision_hash": "e33a9ad677647a5c897470f0d54e978aaa19355f56e5dfdc5b695b9717f5bf7b",
+                "valid_until": "2026-10-21T10:47:00.000Z"
+              }
+            ],
+            "citations": [
+              {
+                "document_id": "uur1zr0pe99e6px1r5ljs0nm",
+                "product_id": "prod_01KSY6A587QB771VW85M12GSWJ",
+                "binding_scope": "product",
+                "variant_id": null,
+                "title": "Phaetus Dragonfly Hotend BMS Official Product Page",
+                "source_url": "https://www.phaetus.com/products/dragonfly-hotend-bms",
+                "source_sha256": "86a01f45acf98d56b7f7a0e461a1effa0c9a8076166826843070cec7f9c4f84d",
+                "source_version": "official-model-excerpts-2026-10-14",
+                "source_checked_at": "2026-10-14T10:47:00.000Z",
+                "revision_hash": "e33a9ad677647a5c897470f0d54e978aaa19355f56e5dfdc5b695b9717f5bf7b",
+                "valid_until": "2026-10-21T10:47:00.000Z"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
