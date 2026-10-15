@@ -87,6 +87,9 @@ overrides:
 packageExtensionsChecksum: sha256-dWug/AzlLL2e7QTtDPSOk3bCHsQpNbc9FPiWgUjR7+w=
 
 patchedDependencies:
+  '@medusajs/modules-sdk@2.15.5':
+    hash: c6c5af40b51d91d4644acb837d71743cc47814de2bc63a14cb2e28e44d0bbb41
+    path: patches/@medusajs__modules-sdk@2.15.5.patch
   '@strapi/core@5.48.1':
     hash: b2a18146f43b5c9b26eb8209acab5b81797afd402cd12db33a9fc6cb29dcfdf7
     path: patches/@strapi__core@5.48.1.patch
@@ -18286,7 +18289,7 @@ snapshots:
       '@jercle/yargonaut': 1.1.5
       '@medusajs/cli': 2.15.5(@types/node@20.19.27)
       '@medusajs/deps': 2.15.5(@types/node@20.19.27)
-      '@medusajs/modules-sdk': 2.15.5(@types/node@20.19.27)(express@4.22.1)
+      '@medusajs/modules-sdk': 2.15.5(patch_hash=c6c5af40b51d91d4644acb837d71743cc47814de2bc63a14cb2e28e44d0bbb41)(@types/node@20.19.27)(express@4.22.1)
       '@medusajs/orchestration': 2.15.5(@types/node@20.19.27)(express@4.22.1)
       '@medusajs/telemetry': 2.15.5
       '@medusajs/types': 2.15.5(ioredis@5.8.2)(vite@6.4.3(@types/node@20.19.27)(jiti@1.21.7)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.9.0))
@@ -18480,7 +18483,7 @@ snapshots:
       - typescript
       - yaml
 
-  '@medusajs/modules-sdk@2.15.5(@types/node@20.19.27)(express@4.22.1)':
+  '@medusajs/modules-sdk@2.15.5(patch_hash=c6c5af40b51d91d4644acb837d71743cc47814de2bc63a14cb2e28e44d0bbb41)(@types/node@20.19.27)(express@4.22.1)':
     dependencies:
       '@medusajs/deps': 2.15.5(@types/node@20.19.27)
       '@medusajs/orchestration': 2.15.5(@types/node@20.19.27)(express@4.22.1)
@@ -18746,7 +18749,7 @@ snapshots:
   '@medusajs/workflows-sdk@2.15.5(@types/node@20.19.27)(express@4.22.1)':
     dependencies:
       '@medusajs/deps': 2.15.5(@types/node@20.19.27)
-      '@medusajs/modules-sdk': 2.15.5(@types/node@20.19.27)(express@4.22.1)
+      '@medusajs/modules-sdk': 2.15.5(patch_hash=c6c5af40b51d91d4644acb837d71743cc47814de2bc63a14cb2e28e44d0bbb41)(@types/node@20.19.27)(express@4.22.1)
       '@medusajs/orchestration': 2.15.5(@types/node@20.19.27)(express@4.22.1)
       '@medusajs/utils': 2.15.5(@types/node@20.19.27)(express@4.22.1)
       ulid: 2.4.0

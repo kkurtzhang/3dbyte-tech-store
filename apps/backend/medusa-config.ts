@@ -122,6 +122,8 @@ module.exports = defineConfig({
     },
     {
       resolve: "./src/modules/support-ticket",
+      // Pinned modules-sdk patch: concurrent DDL must not hold an outer snapshot.
+      options: { migrationLock: "session" },
     },
     {
       resolve: "./src/modules/ai-product-draft",
