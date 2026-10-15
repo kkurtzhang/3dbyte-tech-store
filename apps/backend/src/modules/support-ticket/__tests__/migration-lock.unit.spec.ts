@@ -24,6 +24,12 @@ function fixture() {
       sql.includes("try_advisory") ? { acquired: true } : { released: true },
     ],
   }));
+  const settings = jest.fn(async () => ({
+    rows: [
+      { name: "statement_timeout", setting: "0" },
+      { name: "lock_timeout", setting: "0" },
+    ],
+  }));
   const knex = {
     client: {
       acquireConnection: jest.fn(async () => connection),
@@ -32,6 +38,7 @@ function fixture() {
     raw: jest.fn((sql: string, bindings: string[]) => ({
       connection: jest.fn(async (conn: unknown) => {
         expect(conn).toBe(connection);
+        if (sql.includes("pg_settings")) return settings();
         expect(bindings).toEqual([key]);
         return query(sql);
       }),
@@ -45,13 +52,108 @@ function fixture() {
       key,
       migrate,
     );
-  return { knex, query, migrate, run, connection };
+  return { knex, query, settings, migrate, run, connection };
 }
 describe("session migration coordinator lock lifecycle", () => {
+  afterEach(() => jest.useRealTimers());
+  it.each([
+    ["0", "0", 60000, "ETIMEDOUT"],
+    ["120000", "90000", 60000, "ETIMEDOUT"],
+    ["150", "0", 150, "57014"],
+    ["0", "150", 150, "55P03"],
+    ["150", "150", 150, "57014"],
+  ])(
+    "bounds the entire wait for statement=%s / lock=%s",
+    async (statement, lock, ms, code) => {
+      jest.useFakeTimers();
+      const f = fixture();
+      f.settings.mockResolvedValue({
+        rows: [
+          { name: "statement_timeout", setting: statement },
+          { name: "lock_timeout", setting: lock },
+        ],
+      });
+      f.query.mockResolvedValue({ rows: [{ acquired: false }] });
+      const result = expect(f.run()).rejects.toMatchObject({
+        code,
+        message: expect.stringContaining(`${ms}ms`),
+      });
+      await jest.advanceTimersByTimeAsync(ms);
+      await result;
+      expect(f.migrate).not.toHaveBeenCalled();
+      expect(
+        f.query.mock.calls.every(([sql]) => sql.includes("try_advisory")),
+      ).toBe(true);
+      expect(f.knex.client.releaseConnection).toHaveBeenCalledWith(
+        f.connection,
+      );
+      expect(f.knex.destroy).toHaveBeenCalledTimes(1);
+    },
+  );
+  it("releases a lock acquired by a response received after the deadline", async () => {
+    jest.useFakeTimers();
+    const f = fixture();
+    f.query.mockImplementationOnce(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 60001));
+      return { rows: [{ acquired: true }] };
+    });
+    const result = expect(f.run()).rejects.toMatchObject({ code: "ETIMEDOUT" });
+    await jest.advanceTimersByTimeAsync(60001);
+    await result;
+    expect(f.migrate).not.toHaveBeenCalled();
+    expect(f.query.mock.calls[1][0]).toContain("pg_advisory_unlock");
+    expect(f.knex.destroy).toHaveBeenCalledTimes(1);
+  });
+  it("does not impose the acquisition deadline on a migration that already owns its lock", async () => {
+    jest.useFakeTimers();
+    const f = fixture();
+    f.migrate.mockImplementationOnce(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 61000));
+      return ["migration"];
+    });
+    const result = f.run();
+    await jest.advanceTimersByTimeAsync(61000);
+    await expect(result).resolves.toEqual(["migration"]);
+    expect(f.knex.destroy).toHaveBeenCalledTimes(1);
+  });
+  it.each(["missing", "invalid", "negative"])(
+    "fails closed on %s timeout settings and closes its private session",
+    async (kind) => {
+      const f = fixture();
+      f.settings.mockResolvedValue({
+        rows:
+          kind === "missing"
+            ? []
+            : [
+                {
+                  name: "statement_timeout",
+                  setting: kind === "invalid" ? "NaN" : "-1",
+                },
+              ],
+      });
+      await expect(f.run()).rejects.toThrow(
+        "Invalid migration lock timeout setting",
+      );
+      expect(f.query).not.toHaveBeenCalled();
+      expect(f.migrate).not.toHaveBeenCalled();
+      expect(f.knex.destroy).toHaveBeenCalledTimes(1);
+    },
+  );
+  it("closes its private session when timeout settings cannot be read", async () => {
+    const f = fixture();
+    f.settings.mockRejectedValue(new Error("settings unavailable"));
+    await expect(f.run()).rejects.toThrow("settings unavailable");
+    expect(f.migrate).not.toHaveBeenCalled();
+    expect(f.knex.destroy).toHaveBeenCalledTimes(1);
+  });
   it("holds the same physical session through migration and releases it before closing its private pool", async () => {
     const f = fixture();
     expect(await f.run()).toEqual(["migration"]);
-    expect(f.knex.raw.mock.calls.map(([sql]) => sql)).toEqual([
+    expect(
+      f.knex.raw.mock.calls
+        .filter(([sql]) => !sql.includes("pg_settings"))
+        .map(([sql]) => sql),
+    ).toEqual([
       "SELECT pg_try_advisory_lock(hashtext(?)) AS acquired",
       "SELECT pg_advisory_unlock(hashtext(?)) AS released",
     ]);

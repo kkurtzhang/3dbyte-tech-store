@@ -197,6 +197,53 @@ suite("full application migration coordinator", () => {
     });
     await assertUnlocked(db);
   });
+  it("fails visibly on configured contention timeout before entering the module migrator", async () => {
+    const db = await database();
+    const owner = createPgConnection({ ...db, pool: { min: 0, max: 1 } });
+    const connection = await owner.client.acquireConnection();
+    const key = "db-module-migration:supportTicket";
+    let waiting: ReturnType<typeof start> | undefined;
+    try {
+      const name = new URL(db.clientUrl).pathname.slice(1);
+      await owner
+        .raw(`alter database "${name}" set lock_timeout = '150ms'`)
+        .connection(connection);
+      await owner
+        .raw("SELECT pg_advisory_lock(hashtext(?))", [key])
+        .connection(connection);
+      waiting = start(db);
+      const result = await waiting.result;
+      expect(result.code).toBe(1);
+      expect(result.output).toContain(
+        "Migration advisory lock acquisition timed out after 150ms (lock_timeout)",
+      );
+      expect(waiting.events).toEqual([]);
+      // The original holder remains connected: the failure must not depend on its release.
+      expect(
+        (
+          await owner
+            .raw(
+              `select pid from pg_locks where locktype='advisory' and database=(select oid from pg_database where datname=current_database())`,
+            )
+            .connection(connection)
+        ).rows,
+      ).toHaveLength(1);
+    } finally {
+      await owner
+        .raw("SELECT pg_advisory_unlock(hashtext(?))", [key])
+        .connection(connection);
+      await waiting?.result;
+      await owner.client.releaseConnection(connection);
+      await owner.destroy();
+    }
+    await assertUnlocked(db);
+    // A later invocation can acquire normally after the owner releases.
+    expect(await run(db)).toEqual({
+      code: 0,
+      output: expect.stringContaining("MIGRATION_OK"),
+    });
+    await assertUnlocked(db);
+  });
   it("serializes separate processes without a waiting coordinator retaining a snapshot", async () => {
     const db = await database();
     const observer = createPgConnection(db);

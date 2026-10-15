@@ -45,7 +45,7 @@ diff --git a/dist/utils/session-migration-lock.js b/dist/utils/session-migration
 new file mode 100644
 --- /dev/null
 +++ b/dist/utils/session-migration-lock.js
-@@ -0,0 +1,74 @@
+@@ -0,0 +1,109 @@
 +"use strict";
 +Object.defineProperty(exports, "__esModule", { value: true });
 +exports.withSessionMigrationLock = withSessionMigrationLock;
@@ -60,16 +60,51 @@ new file mode 100644
 +    const errors = [];
 +    try {
 +        connection = await knex.client.acquireConnection();
++        const started = performance.now();
++        // pg_settings exposes both timeout values in milliseconds, regardless
++        // of the units used by SET/ALTER ROLE/ALTER DATABASE. Read this session.
++        const settings = await knex.raw(
++            "SELECT name, setting FROM pg_catalog.pg_settings WHERE name IN ('statement_timeout', 'lock_timeout')"
++        ).connection(connection);
++        const values = new Map(settings.rows.map((row) => [row.name, Number(row.setting)]));
++        let timeoutMs = 60000;
++        let timeoutReason = "60s acquisition cap";
++        let timeoutCode = "ETIMEDOUT";
++        for (const name of ["statement_timeout", "lock_timeout"]) {
++            const value = values.get(name);
++            if (!Number.isSafeInteger(value) || value < 0) {
++                throw new Error(`Invalid migration lock timeout setting: ${name}`);
++            }
++            // Statement timeout wins a tie, matching a blocking PostgreSQL
++            // statement. Zero disables only that database timeout, not our cap.
++            if (value > 0 && (value < timeoutMs || (value === timeoutMs && name === "statement_timeout"))) {
++                timeoutMs = value;
++                timeoutReason = name;
++                timeoutCode = name === "lock_timeout" ? "55P03" : "57014";
++            }
++        }
++        const deadline = started + timeoutMs;
++        const checkDeadline = () => {
++            if (performance.now() >= deadline) {
++                const error = new Error(`Migration advisory lock acquisition timed out after ${timeoutMs}ms (${timeoutReason})`);
++                error.code = timeoutCode;
++                throw error;
++            }
++        };
 +        while (!locked) {
++            checkDeadline();
 +            const response = await knex.raw(
 +                "SELECT pg_try_advisory_lock(hashtext(?)) AS acquired", [lockKey]
 +            ).connection(connection);
 +            locked = response.rows[0].acquired === true;
++            // A late successful response still owns a lock: finally must unlock
++            // it, but migration must not start after the acquisition deadline.
++            checkDeadline();
 +            // A blocking pg_advisory_lock SELECT can retain an old snapshot
 +            // while waiting and deadlock a concurrent partial index builder.
 +            // Sleep in JavaScript, with no open SQL statement/transaction.
 +            if (!locked) {
-+                await new Promise((resolve) => setTimeout(resolve, 100));
++                await new Promise((resolve) => setTimeout(resolve, Math.min(100, Math.max(0, deadline - performance.now()))));
 +            }
 +        }
 +        result = await migrate();
