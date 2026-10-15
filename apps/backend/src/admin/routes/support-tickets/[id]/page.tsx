@@ -11,7 +11,9 @@ import { Link, useParams } from "react-router-dom"
 
 import { Container } from "../../../components/container"
 import { Header } from "../../../components/header"
+import { SupportDeliveries } from "../../../components/support-deliveries"
 import {
+  useSupportDeliveryAction,
   useCreateSupportTicketMessage,
   useSupportTicket,
   useUpdateSupportTicketStatus,
@@ -34,7 +36,8 @@ const statusOptions = [
 
 const SupportTicketDetailPage = () => {
   const { id = "" } = useParams()
-  const { ticket, messages, events, isLoading } = useSupportTicket(id)
+  const { ticket, messages, events, deliveries, refetch, isLoading } = useSupportTicket(id)
+  const deliveryAction = useSupportDeliveryAction(id)
   const [status, setStatus] = useState("new")
   const [body, setBody] = useState("")
   const [visibility, setVisibility] = useState<"customer" | "internal">(
@@ -275,6 +278,14 @@ const SupportTicketDetailPage = () => {
             ))
           )}
         </div>
+      </Container>
+
+      <Container>
+        <SupportDeliveries
+          deliveries={deliveries}
+          onAction={deliveryAction.mutateAsync}
+          onRefresh={() => { void refetch() }}
+        />
       </Container>
 
       <Container>

@@ -255,6 +255,12 @@ export default defineMiddlewares({
       middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
     },
     {
+      matcher: "/admin/support-tickets/:id/notifications",
+      methods: ["POST"],
+      bodyParser: { sizeLimit: "16kb" },
+      middlewares: [authenticate("user", ["session", "bearer"])],
+    },
+    {
       matcher: "/admin/support-tickets*",
       middlewares: [authenticate("user", ["session", "bearer", "api-key"])],
     },
@@ -445,6 +451,16 @@ export default defineMiddlewares({
       matcher: "/store/newsletter/subscribe",
       methods: ["POST"],
       middlewares: [storeNewsletterSubscribeRateLimit],
+    },
+    {
+      matcher: "/ai/support-ticket*",
+      methods: ["POST"],
+      bodyParser: { sizeLimit: "64kb" },
+      middlewares: [
+        (req, res, next) => req.headers.authorization
+          ? authenticate("customer", ["bearer"])(req, res, next)
+          : next(),
+      ],
     },
     {
       matcher: "/ai*",

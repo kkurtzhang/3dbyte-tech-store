@@ -60,6 +60,12 @@ function SupportTicketActions({ ticket }: { ticket: AdminSupportTicket }) {
 }
 
 const columns = [
+  columnHelper.display({
+    id: "email_delivery", header: "Ticket emails",
+    cell: ({ row }) => row.original.deliveries?.length
+      ? <div className="flex flex-col gap-1">{row.original.deliveries.map((delivery) => <span key={delivery.kind}>{delivery.kind}: {delivery.status}</span>)}</div>
+      : <span>Not tracked</span>,
+  }),
   columnHelper.accessor("ticket_number", {
     header: "Ticket",
   }),

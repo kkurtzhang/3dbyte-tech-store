@@ -14,6 +14,8 @@ describe("assistant prompt management", () => {
     expect(result.source).toBe("code_fallback")
     expect(result.prompt).toContain("You are the 3D Byte Tech shopping assistant.")
     expect(result.prompt).toContain("Never place orders, modify carts")
+    expect(result.prompt).toContain("searchProducts before answering")
+    expect(result.prompt).toContain("retain compatibility and variant unknowns")
     expect(result.prompt).toContain(
       "do not repeat customer email addresses, order references",
     )
@@ -71,6 +73,8 @@ describe("assistant prompt management", () => {
     expect(result.source).toBe("langfuse")
     expect(result.prompt).toContain("Dashboard prompt for 3D Byte Tech")
     expect(result.prompt).toContain("Never place orders, modify carts")
+    expect(result.prompt).toContain("searchProducts before answering")
+    expect(result.prompt).toContain("retain compatibility and variant unknowns")
     expect(result.metadata).toEqual(
       expect.objectContaining({
         code_guardrails_version: CODE_OWNED_ASSISTANT_GUARDRAILS_VERSION,

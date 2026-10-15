@@ -1,3 +1,4 @@
+import { deliveryViews } from "../../../../lib/support-tickets/delivery"
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 
 import { getSupportTicketModule } from "../../../support-ticket-utils"
@@ -27,6 +28,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
 
   return res.json({
     ticket,
+    ...(ticket.source === "ai_chat" ? { deliveries: await deliveryViews(req, ticket) } : {}),
     messages,
     events,
   })

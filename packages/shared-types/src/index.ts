@@ -109,3 +109,14 @@ export interface ApiError {
   message: string;
   field?: string;
 }
+
+export type {
+  ProductSearchMode,
+  ProductSearchStatus,
+  ProductSearchSummary,
+  AssistantProductAction,
+  AssistantProductSearchEvent,
+} from "./assistant-products";
+export type { AssistantSupportPreview, AssistantSupportResult } from "./assistant-support";
+
+export * from "./support-delivery";

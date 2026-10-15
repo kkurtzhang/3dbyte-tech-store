@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-query"
 
 import { sdk } from "../lib/sdk"
+import type { SupportDeliveryAction, SupportDeliveryView } from "@3dbyte-tech-store/shared-types"
 import type {
   AdminSupportTicketMessageResponse,
   AdminSupportTicketResponse,
@@ -76,12 +77,14 @@ export const useSupportTicket = (
   })
 
   return {
+    deliveries: data?.deliveries || [],
     events: data?.events || [],
     messages: data?.messages || [],
     ticket: data?.ticket,
     ...rest,
   }
 }
+
 
 const useInvalidateSupportTickets = (id?: string) => {
   const queryClient = useQueryClient()
@@ -148,5 +151,17 @@ export const useCreateSupportTicketMessage = (
       options?.onSuccess?.(data, variables, context)
     },
     ...options,
+  })
+}
+
+export const useSupportDeliveryAction = (id: string) => {
+  const invalidate = useInvalidateSupportTickets(id)
+  return useMutation({
+    mutationFn: (body: SupportDeliveryAction) =>
+      sdk.client.fetch<{ deliveries: SupportDeliveryView[] }>(
+        `/admin/support-tickets/${id}/notifications`,
+        { method: "post", body }
+      ),
+    onSuccess: invalidate,
   })
 }
