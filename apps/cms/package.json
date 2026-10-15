@@ -24,6 +24,8 @@
     "@3dbyte-tech-store/observability": "workspace:*",
     "@3dbyte-tech-store/shared-types": "workspace:*",
     "@3dbyte-tech-store/shared-utils": "workspace:*",
+    "@strapi/content-manager": "5.48.1",
+    "@strapi/design-system": "2.2.0",
     "@strapi/plugin-cloud": "5.48.1",
     "@strapi/plugin-users-permissions": "5.48.1",
     "@strapi/provider-email-nodemailer": "5.48.1",

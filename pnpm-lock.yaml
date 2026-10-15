@@ -300,6 +300,12 @@ importers:
       '@3dbyte-tech-store/shared-utils':
         specifier: workspace:*
         version: link:../../packages/shared-utils
+      '@strapi/content-manager':
+        specifier: 5.48.1
+        version: 5.48.1(e63f69ef2e68f1c2d9e1153698047bc2)
+      '@strapi/design-system':
+        specifier: 2.2.0
+        version: 2.2.0(@babel/runtime@7.28.4)(@codemirror/autocomplete@6.20.0)(@codemirror/language@6.12.1)(@codemirror/lint@6.9.2)(@codemirror/search@6.5.11)(@codemirror/state@6.5.3)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.39.7)(@strapi/icons@2.2.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.4.2(css-to-react-native@3.2.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)))(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(codemirror@5.65.20)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(styled-components@6.4.2(css-to-react-native@3.2.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@strapi/plugin-cloud':
         specifier: 5.48.1
         version: 5.48.1(a3519e5f82ad628a2adcfcb20cc8c83f)

@@ -58,7 +58,8 @@ export function approvedKnowledgeDocument(
     hash = knowledgeRevision(record);
   if (
     review.decision !== "approved" ||
-    review.actor_type !== "content_api_token" ||
+    (review.actor_type !== "content_api_token" &&
+      review.actor_type !== "admin_user") ||
     typeof review.actor_id !== "string" ||
     !/^[1-9][0-9]*$/.test(review.actor_id) ||
     !Number.isSafeInteger(review.id) ||
