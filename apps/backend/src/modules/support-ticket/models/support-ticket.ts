@@ -1,24 +1,37 @@
-import { model } from "@medusajs/framework/utils"
+import { model } from "@medusajs/framework/utils";
 
-export const SupportTicket = model.define("support_ticket", {
-  id: model.id({ prefix: "spt" }).primaryKey(),
-  ticket_number: model.text(),
-  status: model.text().default("new"),
-  priority: model.text().default("normal"),
-  category: model.text().default("general"),
-  source: model.text().default("contact_form"),
-  subject: model.text(),
-  customer_name: model.text(),
-  customer_email: model.text(),
-  customer_id: model.text().nullable(),
-  order_id: model.text().nullable(),
-  order_reference: model.text().nullable(),
-  product_id: model.text().nullable(),
-  product_handle: model.text().nullable(),
-  assigned_admin_id: model.text().nullable(),
-  ai_summary: model.text().nullable(),
-  metadata: model.json().nullable(),
-  last_message_at: model.dateTime().nullable(),
-  resolved_at: model.dateTime().nullable(),
-  closed_at: model.dateTime().nullable(),
-})
+export const SupportTicket = model
+  .define("support_ticket", {
+    id: model.id({ prefix: "spt" }).primaryKey(),
+    ticket_number: model.text(),
+    status: model.text().default("new"),
+    priority: model.text().default("normal"),
+    category: model.text().default("general"),
+    source: model.text().default("contact_form"),
+    subject: model.text(),
+    customer_name: model.text(),
+    customer_email: model.text(),
+    customer_id: model.text().nullable(),
+    order_id: model.text().nullable(),
+    order_reference: model.text().nullable(),
+    product_id: model.text().nullable(),
+    product_handle: model.text().nullable(),
+    assigned_admin_id: model.text().nullable(),
+    ai_summary: model.text().nullable(),
+    ai_consent_proposal_id: model.text().nullable(),
+    metadata: model.json().nullable(),
+    last_message_at: model.dateTime().nullable(),
+    resolved_at: model.dateTime().nullable(),
+    closed_at: model.dateTime().nullable(),
+  })
+  .indexes([
+    {
+      name: "IDX_support_ticket_ai_consent_proposal",
+      on: ["ai_consent_proposal_id"],
+      unique: true,
+      // Explicitly include both deletion states: Medusa otherwise adds its default
+      // soft-delete predicate, which would allow replay after a ticket is deleted.
+      where:
+        "ai_consent_proposal_id is not null and (deleted_at is null or deleted_at is not null)",
+    },
+  ]);

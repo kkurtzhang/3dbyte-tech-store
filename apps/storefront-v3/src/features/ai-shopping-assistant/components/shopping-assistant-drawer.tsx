@@ -35,6 +35,11 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 
+import {
+  SupportTicketConfirmation,
+  getSupportProposalId,
+} from "./support-ticket-confirmation"
+
 import { AssistantSourceLinks } from "./assistant-source-links"
 
 export { AssistantSourceLinks } from "./assistant-source-links"
@@ -554,7 +559,10 @@ export function ShoppingAssistantDrawer({
           {messages.map((message) => {
             const content = getMessageText(message)
 
-            if (!content) return null
+            const supportProposal = message.role === "assistant"
+              ? getSupportProposalId(message.parts)
+              : undefined
+            if (!content && !supportProposal) return null
 
             return (
               <div
@@ -574,6 +582,7 @@ export function ShoppingAssistantDrawer({
                     <>
                       <FormattedAssistantMessage content={content} />
                       <AssistantSourceLinks parts={message.parts} />
+                      {supportProposal ? <SupportTicketConfirmation proposalId={supportProposal} /> : null}
                     </>
                   ) : (
                     <span className="whitespace-pre-wrap">{content}</span>

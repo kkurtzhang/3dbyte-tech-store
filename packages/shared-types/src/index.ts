@@ -109,3 +109,5 @@ export interface ApiError {
   message: string;
   field?: string;
 }
+
+export type { AssistantSupportPreview, AssistantSupportResult } from "./assistant-support";

@@ -12,13 +12,18 @@ import {
   stepCountIs,
   streamText,
   tool,
-  type UIMessage,
 } from "ai"
 import { z } from "zod"
 
 import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
 import { getReleaseSha } from "@/lib/release-identity"
 import { checkRateLimit, getClientIp } from "@/lib/security/rate-limit"
+
+import { assistantMessageSchema, getAssistantMessageContent, toUiMessages, type AssistantMessage } from "./history"
+
+import { callSupportBackend, getSupportSession, isSupportSameOrigin, withSupportSession } from "./support-session"
+
+import { readAssistantJson } from "./read-request"
 
 import { resolveAssistantSystemPrompt } from "./prompt-management"
 import {
@@ -47,248 +52,11 @@ const AI_TEMPERATURE_HEADER = "x-3db-ai-temperature"
 const AI_PROMPT_VERSION_HEADER = "x-3db-ai-prompt-version"
 const AI_GUARDRAILS_VERSION_HEADER = "x-3db-ai-guardrails-version"
 const RELEASE_SHA_HEADER = "x-3db-release-sha"
-const MAX_ASSISTANT_PART_BYTES = 25_000
 const TRACE_CONTEXT_ID_PATTERN = /^[a-zA-Z0-9._:-]+$/
 const TRACE_REFERENCE_PATTERN =
   /\b(?:CASE|INV|ORDER|ORD|REF|RMA|SUP|TICKET|TKT)-[A-Z0-9-]+\b/gi
 const TRACE_COMMERCE_ID_PATTERN =
   /\b(?:cart|claim|cus|customer|doc|ful|order|payment|pay|pi|price|prod|product|region|ship|track|variant)_[a-zA-Z0-9_:-]{6,}\b/g
-
-const assistantPartSchema = z
-  .object({
-    type: z.string().trim().min(1).max(120),
-    text: z.string().max(4_000).optional(),
-  })
-  .passthrough()
-  .superRefine((part, ctx) => {
-    if (part.type === "text" && !part.text?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Text part content is required",
-      })
-    }
-
-    if (JSON.stringify(part).length > MAX_ASSISTANT_PART_BYTES) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Assistant message part is too large",
-      })
-    }
-  })
-
-const assistantMessageSchema = z
-  .object({
-    role: z.enum(["user", "assistant"]),
-    content: z.string().trim().min(1).max(4_000).optional(),
-    parts: z.array(assistantPartSchema).min(1).max(40).optional(),
-  })
-  .superRefine((message, ctx) => {
-    const content = getAssistantMessageContent(message)
-
-    if (message.role === "user" && !content) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "User message content is required",
-      })
-    }
-
-    if (message.role === "assistant" && !content && !message.parts?.length) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Assistant message content or parts are required",
-      })
-    }
-
-    if (content.length > 4_000) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Assistant message content is too long",
-      })
-    }
-  })
-
-function getAssistantMessageContent(message: {
-  content?: string
-  parts?: Array<{ text?: string; type: string }>
-}) {
-  return (
-    message.content ??
-    message.parts
-      ?.filter((part) => part.type === "text")
-      .map((part) => part.text ?? "")
-      .join("") ??
-    ""
-  ).trim()
-}
-
-type AssistantMessage = z.infer<typeof assistantMessageSchema>
-type AssistantUiMessage = Omit<UIMessage, "id">
-type AssistantPart = NonNullable<AssistantMessage["parts"]>[number]
-
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === "string" && value.trim().length > 0
-}
-
-function hasOptionalString(value: unknown) {
-  return value === undefined || typeof value === "string"
-}
-
-function isApprovalRecord(value: unknown, approved: boolean) {
-  return (
-    isJsonRecord(value) &&
-    isNonEmptyString(value.id) &&
-    value.approved === approved &&
-    hasOptionalString(value.reason)
-  )
-}
-
-function hasOptionalApprovedApproval(part: AssistantPart) {
-  return (
-    !("approval" in part) ||
-    part.approval === undefined ||
-    isApprovalRecord(part.approval, true)
-  )
-}
-
-function isSafeFilePart(part: AssistantPart) {
-  return (
-    part.type === "file" &&
-    isNonEmptyString(part.mediaType) &&
-    isNonEmptyString(part.url) &&
-    hasOptionalString(part.filename)
-  )
-}
-
-function isSafeDataPart(part: AssistantPart) {
-  return part.type.startsWith("data-") && "data" in part
-}
-
-function toModelToolHistoryPart(part: AssistantPart) {
-  return Object.fromEntries(
-    Object.entries(part).filter(([key]) => key !== "providerExecuted"),
-  ) as AssistantPart
-}
-
-function toSafeToolHistoryPart(part: AssistantPart): AssistantPart | null {
-  if (!part.type.startsWith("tool-") || !isNonEmptyString(part.toolCallId)) {
-    return null
-  }
-
-  if (part.state === "output-available") {
-    if (
-      !("input" in part) ||
-      !("output" in part) ||
-      !hasOptionalApprovedApproval(part)
-    ) {
-      return null
-    }
-
-    return toModelToolHistoryPart(part)
-  }
-
-  if (part.state === "output-error") {
-    if (!isNonEmptyString(part.errorText) || !hasOptionalApprovedApproval(part)) {
-      return null
-    }
-
-    return toModelToolHistoryPart(part)
-  }
-
-  if (part.state === "output-denied") {
-    if (
-      !("input" in part) ||
-      !isApprovalRecord(part.approval, false)
-    ) {
-      return null
-    }
-
-    return toModelToolHistoryPart(part)
-  }
-
-  return null
-}
-
-function toSafeAssistantPart(part: AssistantPart): AssistantPart | null {
-  if (part.type === "text" && part.text?.trim()) {
-    return { ...part, text: part.text }
-  }
-
-  if (part.type === "step-start") {
-    return { type: "step-start" }
-  }
-
-  if (part.type === "reasoning" && part.text?.trim()) {
-    return { ...part, text: part.text }
-  }
-
-  if (isSafeFilePart(part) || isSafeDataPart(part)) {
-    return { ...part }
-  }
-
-  return toSafeToolHistoryPart(part)
-}
-
-function hasUsefulPart(parts: AssistantPart[]) {
-  return parts.some((part) => part.type !== "step-start")
-}
-
-function toSafeUserPart(part: AssistantPart): AssistantPart | null {
-  if (part.type === "text" && part.text?.trim()) {
-    return { ...part, text: part.text }
-  }
-
-  if (isSafeFilePart(part) || isSafeDataPart(part)) {
-    return { ...part }
-  }
-
-  return null
-}
-
-function toUiMessage(message: AssistantMessage): AssistantUiMessage | null {
-  const content = getAssistantMessageContent(message)
-
-  if (message.role === "user") {
-    const safeParts = (message.parts ?? [])
-      .map(toSafeUserPart)
-      .filter((part): part is AssistantPart => Boolean(part))
-    const parts =
-      content && !safeParts.some((part) => part.type === "text")
-        ? [{ type: "text" as const, text: content }, ...safeParts]
-        : safeParts
-    const uiParts = (
-      parts.length ? parts : [{ type: "text" as const, text: content }]
-    ) as AssistantUiMessage["parts"]
-
-    return {
-      role: "user",
-      parts: uiParts,
-    } as AssistantUiMessage
-  }
-
-  const safeParts = (message.parts ?? [])
-    .map(toSafeAssistantPart)
-    .filter((part): part is AssistantPart => Boolean(part))
-
-  const parts =
-    content && !safeParts.some((part) => part.type === "text")
-      ? [{ type: "text" as const, text: content }, ...safeParts]
-      : safeParts
-
-  if (!content && !hasUsefulPart(parts)) {
-    return null
-  }
-
-  return {
-    role: "assistant",
-    parts,
-  } as AssistantUiMessage
-}
-
-function toUiMessages(messages: AssistantMessage[]) {
-  return messages
-    .map(toUiMessage)
-    .filter((message): message is AssistantUiMessage => Boolean(message))
-}
 
 const assistantRequestSchema = z.object({
   messages: z.array(assistantMessageSchema).min(1).max(20),
@@ -363,7 +131,6 @@ const shippingEstimateInputSchema = z.object({
 })
 
 const supportTicketInputSchema = z.object({
-  confirmedByCustomer: z.literal(true),
   name: z.string().trim().min(1).max(120),
   email: z.string().trim().email().max(254),
   subject: z.string().trim().min(1).max(160),
@@ -381,16 +148,10 @@ const supportTicketInputSchema = z.object({
     ])
     .default("general"),
   priority: z.enum(["low", "normal", "high", "urgent"]).default("normal"),
-  customerId: z.string().trim().max(80).optional(),
-  orderId: z.string().trim().max(80).optional(),
   orderReference: z.string().trim().max(80).optional(),
-  productId: z.string().trim().max(80).optional(),
   productHandle: z.string().trim().max(160).optional(),
-  aiSummary: z.string().trim().max(1_000).optional(),
-  transcriptExcerpt: z.string().trim().max(4_000).optional(),
-  consentToIncludeTranscript: z.boolean().default(false),
-  verifiedOrderContext: z.record(z.unknown()).optional(),
-})
+  aiSummary: z.string().trim().min(1).max(1_000).optional(),
+}).strict()
 
 function getConfig() {
   const provider = process.env.AI_PROVIDER || "deepseek"
@@ -797,24 +558,15 @@ function toSupportTicketPayload(
   input: z.infer<typeof supportTicketInputSchema>,
 ) {
   return {
-    source: "ai_chat",
     name: input.name,
     email: input.email,
     subject: input.subject,
     message: input.message,
     category: input.category,
     priority: input.priority,
-    customer_id: input.customerId,
-    order_id: input.orderId,
-    order_reference: input.orderReference,
-    product_id: input.productId,
-    product_handle: input.productHandle,
-    ai_summary: input.aiSummary,
-    transcript_excerpt: input.consentToIncludeTranscript
-      ? input.transcriptExcerpt
-      : undefined,
-    consent_to_include_transcript: input.consentToIncludeTranscript,
-    verified_order_context: input.verifiedOrderContext,
+    order_reference: input.orderReference || null,
+    product_handle: input.productHandle || null,
+    ai_summary: input.aiSummary || null,
   }
 }
 
@@ -897,7 +649,7 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   const parsed = assistantRequestSchema.safeParse(
-    await req.json().catch(() => null),
+    await readAssistantJson(req),
   )
 
   if (!parsed.success) {
@@ -916,6 +668,7 @@ export async function POST(req: Request): Promise<Response> {
     )
   }
 
+  const supportSession = getSupportSession(req, true)!
   const assistantPrompt = await resolveAssistantSystemPrompt()
   const traceMetadata = {
     ...assistantPrompt.metadata,
@@ -1108,19 +861,26 @@ export async function POST(req: Request): Promise<Response> {
                 }),
                 createSupportTicket: tool({
                   description:
-                    "Create a human support ticket only after the customer explicitly confirms the handoff and provides required contact fields.",
+                    "Prepare a support request for the customer to review. This never creates a ticket. The customer must use the separate review and send controls; chat messages cannot authorize submission.",
                   inputSchema: supportTicketInputSchema,
-                  execute: (input) =>
-                    callInternalBackend(
-                      "/ai/support-ticket",
-                      toSupportTicketPayload(input),
-                      config,
-                    ),
+                  execute: async (input) => {
+                    if (!isSupportSameOrigin(req)) return { error: "Open the store to review a support request." }
+                    try {
+                      const response = await callSupportBackend(req, supportSession, "prepare", {
+                        ...toSupportTicketPayload(input),
+                        transcript_excerpt: parsed.data.messages.map((message) =>
+                          `${message.role}: ${message.content}`).join("\n").slice(-4000),
+                      })
+                      if (!response.ok) return { error: "Support preview is unavailable." }
+                      return z.object({ status: z.literal("confirmation_required"), proposalId: z.string().regex(/^[a-f0-9]{64}$/),
+                        expiresAt: z.number().int().positive() }).parse(await response.json())
+                    } catch { return { error: "Support preview is unavailable." } }
+                  },
                 }),
               },
             })
 
-            const response = result.toUIMessageStreamResponse()
+            const response = withSupportSession(result.toUIMessageStreamResponse(), req, supportSession)
 
             if (!shouldExposeLangfuseTraceHeader(req)) {
               return response

@@ -85,7 +85,7 @@ describe("POST /ai/support-ticket", () => {
     expect(res.status).toHaveBeenCalledWith(400)
   })
 
-  it("creates an ai_chat ticket with summary and consented transcript context", async () => {
+  it("rejects the legacy direct ticket payload including claimed transcript consent", async () => {
     const supportTicketModule = {
       createSupportTickets: jest.fn().mockResolvedValue({
         id: "spt_ai_1",
@@ -121,16 +121,7 @@ describe("POST /ai/support-ticket", () => {
 
     await POST(req as never, res as never)
 
-    expect(supportTicketModule.createSupportTickets).toHaveBeenCalledWith(
-      expect.objectContaining({
-        source: "ai_chat",
-        ai_summary: "Customer asked whether a hotend fits a Voron build.",
-        metadata: expect.objectContaining({
-          transcript_excerpt: "Customer: will this fit?",
-          verified_order_context: { order_reference: "3DBO-ABCD-234567" },
-        }),
-      })
-    )
-    expect(res.status).toHaveBeenCalledWith(201)
+    expect(supportTicketModule.createSupportTickets).not.toHaveBeenCalled()
+    expect(res.status).toHaveBeenCalledWith(400)
   })
 })

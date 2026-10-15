@@ -447,6 +447,16 @@ export default defineMiddlewares({
       middlewares: [storeNewsletterSubscribeRateLimit],
     },
     {
+      matcher: "/ai/support-ticket*",
+      methods: ["POST"],
+      bodyParser: { sizeLimit: "64kb" },
+      middlewares: [
+        (req, res, next) => req.headers.authorization
+          ? authenticate("customer", ["bearer"])(req, res, next)
+          : next(),
+      ],
+    },
+    {
       matcher: "/ai*",
       methods: ["POST"],
       middlewares: [internalAiRateLimit],

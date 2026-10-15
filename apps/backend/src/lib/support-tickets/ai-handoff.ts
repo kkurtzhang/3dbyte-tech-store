@@ -1,36 +1,18 @@
-import type {
-  SupportTicketCategory,
-  SupportTicketPriority,
-} from "./types"
+import type { AssistantSupportResult } from "@3dbyte-tech-store/shared-types";
+import type { ConsentDraft } from "./consent-validation";
 
-export const SUPPORT_TICKET_AI_HANDOFF_ENDPOINT = "/ai/support-ticket"
-export const SUPPORT_TICKET_AI_HANDOFF_HEADER = "x-3db-internal-token"
-export const SUPPORT_TICKET_AI_TRANSCRIPT_MAX_LENGTH = 4_000
+export const SUPPORT_TICKET_AI_HANDOFF_ENDPOINT = "/ai/support-ticket";
+export const SUPPORT_TICKET_AI_PREPARE_ENDPOINT = "/ai/support-ticket/prepare";
+export const SUPPORT_TICKET_AI_HANDOFF_HEADER = "x-3db-internal-token";
+export const SUPPORT_TICKET_AI_TRANSCRIPT_MAX_LENGTH = 4_000;
 
+export type SupportTicketAiDraftPayload = ConsentDraft;
+// Direct creation with contact fields or model-owned confirmation flags is no
+// longer supported. Only the separate customer UI receives this receipt.
 export type SupportTicketAiHandoffPayload = {
-  name: string
-  email: string
-  subject: string
-  message: string
-  category?: SupportTicketCategory
-  priority?: SupportTicketPriority
-  customer_id?: string | null
-  order_id?: string | null
-  order_reference?: string | null
-  product_id?: string | null
-  product_handle?: string | null
-  ai_summary?: string | null
-  transcript_excerpt?: string | null
-  consent_to_include_transcript?: boolean
-  verified_order_context?: Record<string, unknown> | null
-  metadata?: Record<string, unknown> | null
-}
-
-export type SupportTicketAiHandoffResponse = {
-  ticket: {
-    id: string
-    ticket_number: string
-    status: string
-    created_at?: string | Date | null
-  }
-}
+  proposalId: string;
+  receipt: string;
+  digest: string;
+  confirmed: true;
+};
+export type SupportTicketAiHandoffResponse = AssistantSupportResult;
