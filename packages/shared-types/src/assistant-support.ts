@@ -24,5 +24,6 @@ export type AssistantSupportPreview = {
 };
 export type AssistantSupportResult = {
   status: "submitted";
+  notificationStatus: "queued" | "pending";
   ticket: { id: string; ticket_number: string; status: string };
 };

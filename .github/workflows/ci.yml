@@ -68,6 +68,23 @@ jobs:
   test:
     name: test
     runs-on: ubuntu-latest
+    services:
+      consent-postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 127.0.0.1:55489:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      consent-redis:
+        image: redis:8.4
+        ports:
+          - 127.0.0.1:6399:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -80,6 +97,10 @@ jobs:
       - name: Test storefront custom behavior
         run: pnpm --filter=@3dbyte-tech-store/storefront-v3 test:ci
       - name: Test Medusa custom modules and routes
+        env:
+          CONSENT_TEST_POSTGRES_URL: postgres://postgres@127.0.0.1:55489/postgres
+          CONSENT_TEST_REDIS_URL: redis://127.0.0.1:6399
+          REDIS_URL: redis://127.0.0.1:6399
         run: pnpm --filter=@3dbyte-tech-store/backend test:unit
       - name: Test shared runtime packages
         run: |

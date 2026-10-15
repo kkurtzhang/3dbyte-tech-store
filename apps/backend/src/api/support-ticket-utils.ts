@@ -18,7 +18,8 @@ export type SupportTicketModule = {
     payload: Record<string, unknown>
   ) => Promise<SupportTicketRecord>
   listSupportTickets: (
-    filters: Record<string, unknown>
+    filters: Record<string, unknown>,
+    config?: Record<string, unknown>
   ) => Promise<SupportTicketRecord[]>
   createSupportTicketMessages: (
     payload: Record<string, unknown>

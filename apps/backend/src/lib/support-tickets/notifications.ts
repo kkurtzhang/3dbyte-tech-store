@@ -14,9 +14,11 @@ const getSupportInboxEmail = (): string =>
 export const sendSupportTicketCreatedNotifications = async ({
   container,
   ticket,
+  supportInboxEmail = getSupportInboxEmail(),
 }: {
   container: MedusaContainer;
   ticket: SupportTicketRecord;
+  supportInboxEmail?: string;
 }) => {
   const notificationModule = container.resolve<{
     createNotifications: (payload: Record<string, unknown>) => Promise<unknown>;
@@ -25,7 +27,6 @@ export const sendSupportTicketCreatedNotifications = async ({
     container,
     "default",
   );
-  const supportInboxEmail = getSupportInboxEmail();
   const customerContent = await renderSupportTicketCustomerCreatedEmail({
     supportInboxEmail,
     ticket,

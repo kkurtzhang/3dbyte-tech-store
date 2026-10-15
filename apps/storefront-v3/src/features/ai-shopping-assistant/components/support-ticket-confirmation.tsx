@@ -49,14 +49,14 @@ export function SupportTicketConfirmation({
         action === "preview"
           ? { action, proposalId, includeTranscript: include }
           : preview?.status === "confirmation_required"
-            ? {
-                action,
-                proposalId,
-                receipt: preview.receipt,
-                digest: preview.digest,
-                confirmed: true,
-              }
-            : null;
+          ? {
+              action,
+              proposalId,
+              receipt: preview.receipt,
+              digest: preview.digest,
+              confirmed: true,
+            }
+          : null;
       if (!body) return;
       const response = await fetch(
         "/api/ai-shopping-assistant/support-ticket",
@@ -90,7 +90,10 @@ export function SupportTicketConfirmation({
   if (preview?.status === "submitted")
     return (
       <div role="status" className="mt-3 rounded border p-3">
-        Support request {preview.ticket.ticket_number} was sent.
+        Support request {preview.ticket.ticket_number} was saved.
+        {preview.notificationStatus === "queued"
+          ? " Confirmation email is queued."
+          : " Email may be delayed. Your request is saved; do not send it again."}
       </div>
     );
   return (

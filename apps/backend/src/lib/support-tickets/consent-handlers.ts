@@ -1,10 +1,13 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
-import type { AssistantSupportResult } from "@3dbyte-tech-store/shared-types";
 import { z } from "@medusajs/framework/zod";
 
 import { authorizeInternalAiRequest } from "../../api/ai/_utils";
 import { getSupportTicketModule } from "../../api/support-ticket-utils";
-import { sendSupportTicketCreatedNotifications } from "./notifications";
+import {
+  findSavedSupportResult,
+  queueConfirmedSupportNotifications,
+  savedSupportResult,
+} from "./consent-recovery";
 import {
   consentHash,
   consentToken,
@@ -27,18 +30,14 @@ function failure(res: MedusaResponse, error: unknown) {
       .status(400)
       .json({ error: "Invalid support confirmation request" });
   if (error instanceof ConsentConflict)
-    return res
-      .status(409)
-      .json({
-        error:
-          "This preview expired, changed or was already submitted. Check its status before starting another request.",
-      });
-  return res
-    .status(503)
-    .json({
+    return res.status(409).json({
       error:
-        "Support confirmation is unavailable. Submission may be incomplete; do not submit another request until its status is checked.",
+        "This preview expired, changed or was already submitted. Check its status before starting another request.",
     });
+  return res.status(503).json({
+    error:
+      "Support confirmation is unavailable. Submission may be incomplete; do not submit another request until its status is checked.",
+  });
 }
 export async function prepareSupportTicket(
   req: MedusaRequest,
@@ -70,6 +69,8 @@ export async function previewSupportTicket(
   try {
     const input = previewSchema.parse(req.body);
     const { context } = getConsentContext(req);
+    const saved = await findSavedSupportResult(req, input.proposalId, context);
+    if (saved) return res.json(saved);
     const { raw, record } = await consentStore.read(input.proposalId, context);
     if (record.status === "submitted") return res.json(record.result);
     if (!record.draft || record.status === "processing")
@@ -140,6 +141,8 @@ export async function confirmSupportTicket(
     const metadata = {
       consent_proposal_id: input.proposalId,
       consent_payload_digest: input.digest,
+      consent_context_hash: context,
+      consent_support_inbox: payload.supportInbox,
       consent_to_include_transcript: payload.consent_to_include_transcript,
       transcript_excerpt: payload.transcript_excerpt,
       verified_order_context: payload.order_id
@@ -156,30 +159,28 @@ export async function confirmSupportTicket(
       product_id: null,
       metadata,
     });
-    const result: AssistantSupportResult = {
-      status: "submitted",
-      ticket: {
-        id: ticket.id,
-        ticket_number: ticket.ticket_number,
-        status: ticket.status,
-      },
-    };
-    await consentStore.replace(input.proposalId, JSON.stringify(claimed), {
-      context,
-      expiresAt: record.expiresAt,
-      status: "submitted",
-      result,
-    });
-    // The existing notification module uses per-ticket idempotency keys. A
-    // notification failure must not make the customer resubmit a saved ticket.
-    await sendSupportTicketCreatedNotifications({
-      container: req.scope,
+    // The durable commit is authoritative. Cache failure must not hide the saved
+    // ticket or prevent notification queuing. Preview reconciles from PostgreSQL.
+    await consentStore
+      .replace(input.proposalId, JSON.stringify(claimed), {
+        context,
+        expiresAt: record.expiresAt,
+        status: "submitted",
+        result: savedSupportResult(ticket, "pending"),
+      })
+      .catch(() => {
+        req.scope
+          .resolve("logger")
+          .warn(
+            "AI support ticket saved; consent cache completion needs review",
+          );
+      });
+    const notificationStatus = await queueConfirmedSupportNotifications(
+      req,
       ticket,
-    }).catch(() => {
-      req.scope
-        .resolve("logger")
-        .warn("AI support ticket saved; notification delivery needs review");
-    });
+      payload.supportInbox,
+    );
+    const result = savedSupportResult(ticket, notificationStatus);
     return res.status(201).json(result);
   } catch (error) {
     return failure(res, error);

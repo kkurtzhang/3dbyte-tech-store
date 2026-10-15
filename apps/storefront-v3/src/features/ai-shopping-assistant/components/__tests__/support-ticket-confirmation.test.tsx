@@ -164,3 +164,25 @@ it("uses only the proposal ID from chat output and ignores any forged preview or
     ]),
   ).toBeUndefined();
 });
+
+it("shows the durable saved status with delayed email without another send", async () => {
+  fetchMock.mockResolvedValueOnce({
+    ok: true,
+    json: async () => ({
+      status: "submitted",
+      notificationStatus: "pending",
+      ticket: { id: "saved", ticket_number: "SAVED", status: "new" },
+    }),
+  });
+  render(<SupportTicketConfirmation proposalId={id} />);
+  await userEvent.click(
+    screen.getByRole("button", { name: "Review support request" }),
+  );
+  expect(await screen.findByRole("status")).toHaveTextContent(
+    "SAVED was saved. Email may be delayed",
+  );
+  expect(
+    screen.queryByRole("button", { name: "Send support request" }),
+  ).not.toBeInTheDocument();
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+});
