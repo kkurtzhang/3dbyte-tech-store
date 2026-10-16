@@ -1,6 +1,6 @@
 # Local assistant acceptance
 
-This harness exercises the normal `/api/ai-shopping-assistant` route from reviewed PR #252, commit `96ebebd062f81b370b394e988aec77e06a2bb082`. It does not change the route, mock the AI SDK, enable the local-knowledge bypass, merge #252, or contact staging. The harness PR is stacked on #252; review its scripts separately and rebaseline only after the dependency is reviewed/merged.
+This harness exercises the normal `/api/ai-shopping-assistant` route from reviewed PR #252, commit `65231bdef03ce9d1d22e98a6dc6d83e1f3dba12c`. It does not change the route, mock the AI SDK, enable the local-knowledge bypass, merge #252, or contact staging. The harness pins the landed #252 runtime; review its scripts separately and rebaseline only after a replacement dependency is reviewed and merged.
 
 Two modes share the same real Next.js route, AI SDK, Redis rate limiter and synthetic backend:
 
