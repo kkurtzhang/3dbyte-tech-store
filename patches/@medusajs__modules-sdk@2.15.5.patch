@@ -1,0 +1,157 @@
+diff --git a/dist/medusa-app.js b/dist/medusa-app.js
+--- a/dist/medusa-app.js
++++ b/dist/medusa-app.js
+@@ -12,6 +12,7 @@
+ const medusa_module_1 = require("./medusa-module");
+ const remote_query_1 = require("./remote-query");
+ const types_1 = require("./types");
++const { withSessionMigrationLock } = require("./utils/session-migration-lock");
+ const LinkModulePackage = utils_1.MODULE_PACKAGE_NAMES[utils_1.Modules.LINK];
+ async function loadModules(args) {
+     const { modulesConfig, sharedContainer, sharedResourcesConfig, migrationOnly = false, schemaOnly = false, loaderOnly = false, workerMode = "shared", cwd, } = args;
+@@ -315,8 +316,7 @@
+                 cwd,
+             };
+             const lockKey = `db-module-migration:${migrationOptions.moduleKey}`;
+-            await lockKnex.transaction(async (trx) => {
+-                await trx.raw(`SELECT pg_advisory_xact_lock(hashtext(?))`, [lockKey]);
++            const migrate = async () => {
+                 if (action === "revert") {
+                     await medusa_module_1.MedusaModule.migrateDown(migrationOptions, migrationNames);
+                 }
+@@ -331,7 +331,20 @@
+                 else {
+                     await medusa_module_1.MedusaModule.migrateGenerate(migrationOptions);
+                 }
+-            });
++            };
++            // Repository opt-in for modules with nontransactional concurrent DDL.
++            // Retain the upstream transaction lock for every other module.
++            if (moduleResolution.options?.migrationLock === "session") {
++                await withSessionMigrationLock(utils_1.ModulesSdkUtils.createPgConnection({
++                    ...dbData, pool: { min: 0, max: 1 },
++                }), lockKey, migrate);
++            }
++            else {
++                await lockKnex.transaction(async (trx) => {
++                    await trx.raw(`SELECT pg_advisory_xact_lock(hashtext(?))`, [lockKey]);
++                    await migrate();
++                });
++            }
+         };
+         const concurrency = parseInt(process.env.DB_MIGRATION_CONCURRENCY ?? "1");
+         try {
+diff --git a/dist/utils/session-migration-lock.js b/dist/utils/session-migration-lock.js
+new file mode 100644
+--- /dev/null
++++ b/dist/utils/session-migration-lock.js
+@@ -0,0 +1,109 @@
++"use strict";
++Object.defineProperty(exports, "__esModule", { value: true });
++exports.withSessionMigrationLock = withSessionMigrationLock;
++
++// Own a private Knex pool for this invocation. Never return a possibly locked
++// connection to a pool used by another migration. The same physical session
++// acquires/releases the existing advisory key, outside any transaction.
++async function withSessionMigrationLock(knex, lockKey, migrate) {
++    let connection;
++    let locked = false;
++    let result;
++    const errors = [];
++    try {
++        connection = await knex.client.acquireConnection();
++        const started = performance.now();
++        // pg_settings exposes both timeout values in milliseconds, regardless
++        // of the units used by SET/ALTER ROLE/ALTER DATABASE. Read this session.
++        const settings = await knex.raw(
++            "SELECT name, setting FROM pg_catalog.pg_settings WHERE name IN ('statement_timeout', 'lock_timeout')"
++        ).connection(connection);
++        const values = new Map(settings.rows.map((row) => [row.name, Number(row.setting)]));
++        let timeoutMs = 60000;
++        let timeoutReason = "60s acquisition cap";
++        let timeoutCode = "ETIMEDOUT";
++        for (const name of ["statement_timeout", "lock_timeout"]) {
++            const value = values.get(name);
++            if (!Number.isSafeInteger(value) || value < 0) {
++                throw new Error(`Invalid migration lock timeout setting: ${name}`);
++            }
++            // Statement timeout wins a tie, matching a blocking PostgreSQL
++            // statement. Zero disables only that database timeout, not our cap.
++            if (value > 0 && (value < timeoutMs || (value === timeoutMs && name === "statement_timeout"))) {
++                timeoutMs = value;
++                timeoutReason = name;
++                timeoutCode = name === "lock_timeout" ? "55P03" : "57014";
++            }
++        }
++        const deadline = started + timeoutMs;
++        const checkDeadline = () => {
++            if (performance.now() >= deadline) {
++                const error = new Error(`Migration advisory lock acquisition timed out after ${timeoutMs}ms (${timeoutReason})`);
++                error.code = timeoutCode;
++                throw error;
++            }
++        };
++        while (!locked) {
++            checkDeadline();
++            const response = await knex.raw(
++                "SELECT pg_try_advisory_lock(hashtext(?)) AS acquired", [lockKey]
++            ).connection(connection);
++            locked = response.rows[0].acquired === true;
++            // A late successful response still owns a lock: finally must unlock
++            // it, but migration must not start after the acquisition deadline.
++            checkDeadline();
++            // A blocking pg_advisory_lock SELECT can retain an old snapshot
++            // while waiting and deadlock a concurrent partial index builder.
++            // Sleep in JavaScript, with no open SQL statement/transaction.
++            if (!locked) {
++                await new Promise((resolve) => setTimeout(resolve, Math.min(100, Math.max(0, deadline - performance.now()))));
++            }
++        }
++        result = await migrate();
++    }
++    catch (error) {
++        errors.push(error);
++    }
++    finally {
++        try {
++            if (locked) {
++                const response = await knex.raw(
++                    "SELECT pg_advisory_unlock(hashtext(?)) AS released", [lockKey]
++                ).connection(connection);
++                if (response.rows[0].released !== true) {
++                    throw new Error("Migration advisory lock was not held at release");
++                }
++            }
++        }
++        catch (error) {
++            errors.push(error);
++        }
++        finally {
++            try {
++                if (connection) {
++                    await knex.client.releaseConnection(connection);
++                }
++            }
++            catch (error) {
++                errors.push(error);
++            }
++            finally {
++                try {
++                    // Closing the session also releases the lock if an acquire
++                    // or unlock response was lost. No other work uses this pool.
++                    await knex.destroy();
++                }
++                catch (error) {
++                    errors.push(error);
++                }
++            }
++        }
++    }
++    if (errors.length === 1) {
++        throw errors[0];
++    }
++    if (errors.length > 1) {
++        throw new AggregateError(errors, `Migration or advisory lock cleanup failed: ${errors.map(String).join("; ")}`, { cause: errors[0] });
++    }
++    return result;
++}

@@ -133,7 +133,8 @@
       "minimatch@9.0.7": "patches/minimatch@9.0.7.patch",
       "yalc@1.0.0-pre.53": "patches/yalc@1.0.0-pre.53.patch",
       "braces@3.0.3": "patches/braces@3.0.3.patch",
-      "@strapi/core@5.48.1": "patches/@strapi__core@5.48.1.patch"
+      "@strapi/core@5.48.1": "patches/@strapi__core@5.48.1.patch",
+      "@medusajs/modules-sdk@2.15.5": "patches/@medusajs__modules-sdk@2.15.5.patch"
     },
     "packageExtensions": {
       "next@16.3.8": {
