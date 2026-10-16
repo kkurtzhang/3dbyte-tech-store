@@ -89,16 +89,24 @@ export async function retrieveProductKnowledge(
         ]
       : []),
   ];
-  const result = await options.meilisearch.search(
-    options.queryText.trim(),
-    "product_document",
-    { limit: 8, filter },
-  );
-  if (!Array.isArray(result.hits) || result.hits.length > 8)
-    throw new Error("Invalid document search response.");
+  const searchCandidates = async (queryText: string) => {
+    const result = await options.meilisearch.search(
+      queryText,
+      "product_document",
+      { limit: 8, filter },
+    );
+    if (!Array.isArray(result.hits) || result.hits.length > 8)
+      throw new Error("Invalid document search response.");
+    return result.hits;
+  };
+  let hits = await searchCandidates(options.queryText.trim());
+  // Natural questions may have no lexical match. An exact product (including
+  // a verified variant owner) permits one bounded lookup of its approved docs.
+  // Keep every identity filter; these candidates still require source validation.
+  if (hits.length === 0 && productId) hits = await searchCandidates("");
   const candidates: Candidate[] = [];
   const ids = new Set<string>();
-  for (const hit of result.hits) {
+  for (const hit of hits) {
     // Metadata-only public documents remain discoverable but cannot ground factual answers.
     if (
       !isKnowledgeRecord(hit) ||
