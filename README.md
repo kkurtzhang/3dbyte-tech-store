@@ -241,6 +241,10 @@ verification.
 When changing a shared package, keep internal dependencies on `workspace:*` and
 build the affected consumers.
 
+For isolated assistant verification without staging or customer systems, see the
+[local assistant acceptance harness](scripts/assistant-acceptance/README.md). It
+runs seven cases through the normal route and SDK with disposable loopback services.
+
 ## Environment contracts
 
 Use the tracked examples as checklists instead of copying environment variable
