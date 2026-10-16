@@ -55,7 +55,7 @@ export function reportHtml(report) {
 }
 export async function runHarness(
   options,
-  { signal, onReady = () => {}, failAfter } = {},
+  { signal, onReady = () => {}, failAfter, liveFetch } = {},
 ) {
   // Read an explicitly selected private file only in live mode. Never inspect other profiles.
   const providerKey =
@@ -94,6 +94,7 @@ export async function runHarness(
       mode: options.mode,
       storefrontOrigin: `http://127.0.0.1:${nextPort}`,
       providerKey,
+      liveFetch,
     });
     report.fixtureProvenance = fixture.provenance;
     report.listeners = {

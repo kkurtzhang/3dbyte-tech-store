@@ -1,6 +1,7 @@
 import http from "node:http";
 import { once } from "node:events";
-import { cases } from "./cases.mjs";
+import { createConversationBoundary } from "./relay-conversation.mjs";
+import { decodeProviderSse, encodeProviderSse } from "./relay-sse.mjs";
 import {
   createFixtureData,
   answerFixture,
@@ -24,26 +25,6 @@ async function readJson(req) {
     chunks.push(chunk);
   }
   return JSON.parse(Buffer.concat(chunks).toString("utf8"));
-}
-function messageText(message) {
-  return typeof message?.content === "string"
-    ? message.content
-    : Array.isArray(message?.content)
-      ? message.content.map((p) => (p.type === "text" ? p.text : "")).join("")
-      : "";
-}
-function providerCase(body) {
-  if (
-    !body ||
-    body.stream !== true ||
-    body.model !== "deepseek-flash" ||
-    !Array.isArray(body.messages) ||
-    body.messages.length > 40
-  )
-    return null;
-  const users = body.messages.filter((m) => m.role === "user");
-  if (users.length !== 1) return null;
-  return cases.find((c) => c.prompt === messageText(users[0])) ?? null;
 }
 export function deterministicSse(body, item) {
   const done = body.messages.some((m) => m.role === "tool");
@@ -86,11 +67,13 @@ export async function startFixtureServer({
   if (mode === "live" && !providerKey)
     throw new Error("Live mode needs a user-provided provider key");
   const data = await createFixtureData();
+  const conversations = createConversationBoundary(data, storefrontOrigin);
   const stats = {
     backendRequests: {},
     deniedRequests: 0,
     providerRequests: 0,
     realProviderRequests: 0,
+    mockProviderRequests: 0,
   };
   let serverPort;
   const active = new Set();
@@ -137,16 +120,25 @@ export async function startFixtureServer({
         const result = answerFixture(req.url, body, data, storefrontOrigin);
         return result ? json(200, result) : deny(422);
       }
-      const item = providerCase(body);
-      if (!item) return deny(422);
+      let prepared;
+      try {
+        prepared = conversations.prepare(body);
+      } catch {
+        return deny(422);
+      }
+      const { item } = prepared;
       if (stats.providerRequests >= 35) return deny(429);
       stats.providerRequests++;
       if (mode === "deterministic") {
+        const decoded = decodeProviderSse(
+          deterministicSse(prepared.body, item),
+        );
+        decoded.assistant = conversations.complete(prepared, decoded.assistant);
         res.writeHead(200, {
           "content-type": "text/event-stream",
           "cache-control": "no-store",
         });
-        return res.end(deterministicSse(body, item));
+        return res.end(encodeProviderSse(decoded));
       }
       // Only this fixed endpoint can receive the key. No URL override or redirects.
       const controller = new AbortController();
@@ -154,7 +146,8 @@ export async function startFixtureServer({
       res.on("close", () => controller.abort());
       const timer = setTimeout(() => controller.abort(), 45000);
       try {
-        stats.realProviderRequests++;
+        if (liveFetch === fetch) stats.realProviderRequests++;
+        else stats.mockProviderRequests++;
         const upstream = await liveFetch(
           "https://api.deepseek.com/chat/completions",
           {
@@ -165,12 +158,7 @@ export async function startFixtureServer({
               "content-type": "application/json",
               authorization: "Bearer " + providerKey,
             },
-            body: JSON.stringify({
-              ...body,
-              model: "deepseek-flash",
-              temperature: 0.2,
-              max_tokens: 1800,
-            }),
+            body: JSON.stringify(prepared.body),
           },
         );
         if (
@@ -180,7 +168,7 @@ export async function startFixtureServer({
           return json(502, {
             error: "Provider request failed; details withheld",
           });
-        // Buffer a bounded response so a secret cannot cross a chunk boundary into output.
+        // Buffer, decode and check semantic deltas before any downstream output.
         let size = 0;
         const chunks = [];
         for await (const chunk of upstream.body) {
@@ -189,15 +177,16 @@ export async function startFixtureServer({
             throw new Error("Provider response too large");
           chunks.push(chunk);
         }
-        const text = Buffer.concat(chunks)
-          .toString("utf8")
-          .split(providerKey)
-          .join("[REDACTED]");
+        const text = new TextDecoder("utf-8", { fatal: true }).decode(
+          Buffer.concat(chunks),
+        );
+        const decoded = decodeProviderSse(text, providerKey);
+        decoded.assistant = conversations.complete(prepared, decoded.assistant);
         res.writeHead(200, {
           "content-type": "text/event-stream",
           "cache-control": "no-store",
         });
-        res.end(text);
+        res.end(encodeProviderSse(decoded));
       } finally {
         clearTimeout(timer);
         active.delete(controller);
@@ -220,7 +209,15 @@ export async function startFixtureServer({
     url: `http://127.0.0.1:${serverPort}`,
     port: serverPort,
     stats,
-    provenance: data.provenance,
+    provenance: {
+      ...data.provenance,
+      providerTransport:
+        mode === "deterministic"
+          ? "simulator"
+          : liveFetch === fetch
+            ? "official-provider"
+            : "injected-test-transport",
+    },
     async close() {
       for (const c of active) c.abort();
       server.closeAllConnections();

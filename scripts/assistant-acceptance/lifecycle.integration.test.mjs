@@ -14,6 +14,7 @@ import {
 import path from "node:path";
 import { parseOptions, readProviderKey } from "./config.mjs";
 import { runHarness } from "./runner.mjs";
+import { cases } from "./cases.mjs";
 import {
   freePort,
   makeRunDirectory,
@@ -220,6 +221,142 @@ test(
     } finally {
       clearTimeout(timer);
       if (child.exitCode === null) child.kill("SIGTERM");
+    }
+  },
+);
+
+test(
+  "mocked live relay preserves four SDK steps per case with tool defaults and synthetic outputs",
+  { timeout: 300000 },
+  async () => {
+    const dir = await mkdtemp(
+      path.join(options.workspace, "mock-provider-config-"),
+    );
+    const file = path.join(dir, "provider.env");
+    const fake = "fixture-only-mock-multistep-provider-key";
+    await writeFile(file, "DEEPSEEK_API_KEY=" + fake + "\n", { mode: 0o600 });
+    let mockCalls = 0;
+    const observedTools = new Set();
+    try {
+      const result = await runHarness(
+        { ...options, mode: "live", keyFile: file },
+        {
+          liveFetch: async (url, config) => {
+            assert.equal(url, "https://api.deepseek.com/chat/completions");
+            assert.equal(config.headers.authorization, "Bearer " + fake);
+            const body = JSON.parse(config.body);
+            const item = cases.find(
+              (c) =>
+                c.prompt ===
+                body.messages.find((m) => m.role === "user").content,
+            );
+            const step = body.messages.filter(
+              (m) => m.role === "assistant",
+            ).length;
+            mockCalls++;
+            assert.ok(step < 4);
+            assert.ok(!JSON.stringify(body).includes(fake));
+            const calls =
+              step === 0
+                ? item.calls.slice(0, 1)
+                : step === 1
+                  ? [
+                      {
+                        name: "searchProducts",
+                        input: {
+                          query:
+                            item.id === "magigoo-materials"
+                              ? "  Magigoo Original  "
+                              : "  Dragonfly BMS  ",
+                        },
+                      },
+                    ]
+                  : step === 2
+                    ? item.commerce
+                      ? item.calls.slice(1)
+                      : item.calls.slice(0, 1)
+                    : [];
+            const delta = calls.length
+              ? {
+                  role: "assistant",
+                  content: "Checking synthetic fixtures. ",
+                  tool_calls: calls.map((call, index) => {
+                    observedTools.add(call.name);
+                    const input = structuredClone(call.input);
+                    delete input.limit;
+                    if (input.items) {
+                      delete input.items[0].quantity;
+                      delete input.destination.countryCode;
+                    }
+                    return {
+                      index,
+                      id: `mock_step_${step}_${index}`,
+                      type: "function",
+                      function: {
+                        name: call.name,
+                        arguments: JSON.stringify(input),
+                      },
+                    };
+                  }),
+                }
+              : {
+                  content:
+                    "UNSAFE_UNGROUNDED: This fabricated provider prose must stay hidden.",
+                };
+            const events = [
+              { choices: [{ index: 0, delta, finish_reason: null }] },
+              {
+                choices: [
+                  {
+                    index: 0,
+                    delta: {},
+                    finish_reason: calls.length ? "tool_calls" : "stop",
+                  },
+                ],
+              },
+            ];
+            return new Response(
+              events
+                .map((v) => "data: " + JSON.stringify(v) + "\n\n")
+                .join("") + "data: [DONE]\n\n",
+              { headers: { "content-type": "text/event-stream" } },
+            );
+          },
+        },
+      );
+      assert.equal(
+        result.result,
+        "PASS",
+        JSON.stringify(
+          result.cases.map((c) => ({ id: c.id, checks: c.checks })),
+        ),
+      );
+      assert.equal(result.cases.length, 7);
+      assert.equal(mockCalls, 28);
+      assert.equal(result.fixtureRequests.mockProviderRequests, 28);
+      assert.equal(result.fixtureRequests.realProviderRequests, 0);
+      assert.equal(
+        result.fixtureProvenance.providerTransport,
+        "injected-test-transport",
+      );
+      assert.deepEqual(
+        [...observedTools].sort(),
+        [
+          "searchKnowledge",
+          "searchProducts",
+          "lookupOrder",
+          "getTracking",
+          "estimateShipping",
+        ].sort(),
+      );
+      await assertClosed(result);
+      assert.ok(
+        !(
+          await readFile(path.join(result.runDir, "report.json"), "utf8")
+        ).includes(fake),
+      );
+    } finally {
+      await rm(dir, { recursive: true });
     }
   },
 );

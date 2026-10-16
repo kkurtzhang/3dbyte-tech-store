@@ -236,7 +236,8 @@ test("live relay pins the official endpoint and keeps its key out of downstream 
     assert.equal(request.options.redirect, "error");
     assert.equal(request.options.headers.authorization, "Bearer " + fake);
     assert.doesNotMatch(await response.text(), new RegExp(fake));
-    assert.equal(service.stats.realProviderRequests, 1);
+    assert.equal(service.stats.realProviderRequests, 0);
+    assert.equal(service.stats.mockProviderRequests, 1);
   } finally {
     await service.close();
   }
