@@ -30,9 +30,11 @@ import { callSupportBackend, getSupportSession, isSupportSameOrigin, withSupport
 import { readAssistantJson } from "./read-request"
 
 import { resolveAssistantSystemPrompt } from "./prompt-management"
+import { COMMERCE_PATHS, createCommerceExecution } from "./commerce-execution"
+import { createKnowledgeExecution } from "./knowledge-execution"
+import { createKnowledgeGroundingTransform } from "./knowledge-grounding"
 import {
   collectEmailAddresses,
-  createAssistantVisibleTextTransform,
   maskCompleteEmailAddresses,
 } from "./visible-output-sanitizer"
 
@@ -457,14 +459,6 @@ function getFinishUsage(finish: unknown): UsageSnapshot {
   return finish.usage as UsageSnapshot
 }
 
-function getFinishText(finish: unknown) {
-  if (!isJsonRecord(finish)) {
-    return ""
-  }
-
-  return typeof finish.text === "string" ? finish.text : ""
-}
-
 function getFinishReason(finish: unknown) {
   if (!isJsonRecord(finish)) {
     return "unknown"
@@ -702,10 +696,9 @@ export async function POST(req: Request): Promise<Response> {
         },
         async () => {
           let traceEnded = false
-          let pendingFinishOutput: string | null = null
+          let finishPending = false
           let visibleAssistantOutput = ""
           let visibleStreamClosed = false
-          let visibleStreamObserved = false
           const finishAssistantTrace = (attributes: {
             level?: "DEFAULT" | "ERROR" | "WARNING"
             output: string
@@ -726,13 +719,12 @@ export async function POST(req: Request): Promise<Response> {
             assistantTrace.end()
           }
           const finishPendingAssistantTrace = () => {
-            if (pendingFinishOutput === null) {
+            if (!finishPending || !visibleStreamClosed) {
               return
             }
 
-            const output = visibleAssistantOutput || pendingFinishOutput
-            pendingFinishOutput = null
-            const sanitizedOutput = sanitizeTraceText(output)
+            finishPending = false
+            const sanitizedOutput = sanitizeTraceText(visibleAssistantOutput)
 
             finishAssistantTrace({
               output: sanitizedOutput,
@@ -787,6 +779,12 @@ export async function POST(req: Request): Promise<Response> {
               mode: isExplicitProductBrowse(latestUserMessage) ? "browse" : "search",
               signal: req.signal,
             })
+            const knowledge = createKnowledgeExecution((input) =>
+              callInternalBackend("/ai/knowledge-search", input, config),
+            )
+            const commerce = createCommerceExecution((toolName, input) =>
+              callInternalBackend(COMMERCE_PATHS[toolName], input, config),
+            )
             const responseMessageId = randomUUID()
             const result = streamText({
               abortSignal: req.signal,
@@ -796,7 +794,8 @@ export async function POST(req: Request): Promise<Response> {
                 ignoreIncompleteToolCalls: true,
               }),
               temperature: config.temperature,
-              experimental_transform: createAssistantVisibleTextTransform(
+              experimental_transform: createKnowledgeGroundingTransform(
+                knowledge,
                 suppliedEmails,
                 {
                   onFlush: () => {
@@ -804,10 +803,10 @@ export async function POST(req: Request): Promise<Response> {
                     finishPendingAssistantTrace()
                   },
                   onText: (text) => {
-                    visibleStreamObserved = true
                     visibleAssistantOutput += text
                   },
                 },
+                { question: latestUserMessage, commerce },
               ),
               experimental_telemetry: {
                 functionId: "storefront.ai-shopping-assistant",
@@ -830,11 +829,10 @@ export async function POST(req: Request): Promise<Response> {
                   model: config.model,
                   usageDetails,
                 })
-                pendingFinishOutput = getFinishText(finish)
-
-                if (!visibleStreamObserved || visibleStreamClosed) {
-                  finishPendingAssistantTrace()
-                }
+                // Trace only the rendered output, after its stream has closed.
+                // Provider prose may have been withheld by the grounding boundary.
+                finishPending = true
+                finishPendingAssistantTrace()
               },
               onAbort: recordAssistantTraceAbort,
               onError: recordAssistantTraceError,
@@ -856,28 +854,25 @@ export async function POST(req: Request): Promise<Response> {
                   description:
                     "Retrieve current approved Product Document facts with exact product/variant identity and source/revision citations. Use for specifications, manuals and compatibility; null facts remain unknown. Use commerce tools for current offers and inventory.",
                   inputSchema: knowledgeSearchInputSchema,
-                  execute: (input) => callInternalBackend("/ai/knowledge-search", input, config),
+                  execute: knowledge.execute,
                 }),
                 lookupOrder: tool({
                   description:
                     "Look up read-only order status after the customer provides order reference and email proof.",
                   inputSchema: orderProofInputSchema,
-                  execute: (input) =>
-                    callInternalBackend("/ai/order-lookup", input, config),
+                  execute: (input, options) => commerce.execute("lookupOrder", input, options),
                 }),
                 getTracking: tool({
                   description:
                     "Retrieve read-only tracking details after the customer provides order reference and email proof.",
                   inputSchema: orderProofInputSchema,
-                  execute: (input) =>
-                    callInternalBackend("/ai/tracking", input, config),
+                  execute: (input, options) => commerce.execute("getTracking", input, options),
                 }),
                 estimateShipping: tool({
                   description:
                     "Estimate shipping from chosen variants and destination fields without changing a cart.",
                   inputSchema: shippingEstimateInputSchema,
-                  execute: (input) =>
-                    callInternalBackend("/ai/shipping-estimate", input, config),
+                  execute: (input, options) => commerce.execute("estimateShipping", input, options),
                 }),
                 createSupportTicket: tool({
                   description:
@@ -901,7 +896,7 @@ export async function POST(req: Request): Promise<Response> {
             })
 
             const response = withSupportSession(createUIMessageStreamResponse({
-              stream: result.toUIMessageStream({ generateMessageId: () => responseMessageId })
+              stream: result.toUIMessageStream({ generateMessageId: () => responseMessageId, sendSources: true })
                 .pipeThrough(createProductActionTransform(productSearch.results, responseMessageId)),
             }), req, supportSession)
 
