@@ -2,27 +2,33 @@ import type { ApprovedKnowledgeDocument } from "@3dbyte-tech-store/shared-types"
 import { parseApprovedKnowledgeDocument } from "@3dbyte-tech-store/shared-utils/src/knowledge-reference.cjs"
 import type { TextStreamPart, ToolSet } from "ai"
 
-import { includeConflictingEvidence, knowledgeSources, summarizeKnowledge } from "./knowledge-summary"
+import { missingKnowledgeAnswer } from "./knowledge-help"
+import {
+  includeConflictingEvidence,
+  knowledgeSources,
+  summarizeKnowledge,
+} from "./knowledge-summary"
 import type { CommerceExecution } from "./commerce-execution"
 import type { KnowledgeExecution } from "./knowledge-execution"
 import { createAssistantVisibleTextTransform } from "./visible-output-sanitizer"
 
 const MAX_BUFFERED_TEXT = 64_000
 const MAX_DOCUMENTS = 4
-const NO_EVIDENCE =
-  "I could not verify current approved evidence for this request. The requested specifications and safety limits remain unknown; please identify the exact product or variant."
 const TOO_LONG =
   "This reply exceeded the response limit. Please ask a narrower question."
 
 /** Bounded approved-fact summary, not a claim that every question was answered. */
 export function assembleKnowledgeAnswer(
-  execution: Pick<KnowledgeExecution, "results">,
+  execution: Pick<KnowledgeExecution, "results"> &
+    Partial<Pick<KnowledgeExecution, "outcomes">>,
   question = "",
   now = Date.now(),
+  subject = "",
 ) {
   const documents = new Map<string, ApprovedKnowledgeDocument>()
   const rejected = new Set<string>()
   let unavailable = false
+  let invalid = false
   for (const result of Array.from(execution.results.values())) {
     if (!result) {
       unavailable = true
@@ -38,7 +44,7 @@ export function assembleKnowledgeAnswer(
       ) {
         documents.delete(raw.document_id)
         rejected.add(raw.document_id)
-        unavailable = true
+        invalid = true
         continue
       }
       documents.set(document.document_id, document)
@@ -48,14 +54,27 @@ export function assembleKnowledgeAnswer(
   const selected = validated.slice(0, MAX_DOCUMENTS)
   const evidence = includeConflictingEvidence(selected, validated, question)
   const sources = knowledgeSources(evidence, question)
-  if (!selected.length) return { text: NO_EVIDENCE, sources }
+  if (!selected.length) {
+    const outcomes = Array.from(execution.outcomes?.values() ?? [])
+    const reason =
+      invalid || outcomes.includes("not_current")
+        ? "not_current"
+        : unavailable || outcomes.includes("unavailable")
+          ? "unavailable"
+          : execution.results.size
+            ? "empty"
+            : "not_retrieved"
+    return { text: missingKnowledgeAnswer(question, reason, subject), sources }
+  }
   const sections = summarizeKnowledge(selected, question, evidence)
   return {
     sources,
     text: [
       ...sections,
       ...(new Set(selected.map((document) => document.product_id)).size > 1
-        ? ["Evidence applies only to the named product and scope; it cannot establish claims about another product."]
+        ? [
+            "Evidence applies only to the named product and scope; it cannot establish claims about another product.",
+          ]
         : []),
       ...(documents.size > MAX_DOCUMENTS
         ? [
@@ -63,14 +82,17 @@ export function assembleKnowledgeAnswer(
           ]
         : []),
       ...(unavailable
-        ? ["Some evidence could not be validated and is not used here."]
+        ? [
+            "Some matching documents could not be checked and are not used here.",
+          ]
         : []),
     ].join("\n\n"),
   }
 }
 
 export function renderKnowledgeEvidence(
-  execution: Pick<KnowledgeExecution, "results">,
+  execution: Pick<KnowledgeExecution, "results"> &
+    Partial<Pick<KnowledgeExecution, "outcomes">>,
   now = Date.now(),
   question = "",
 ) {
@@ -80,13 +102,19 @@ export function renderKnowledgeEvidence(
 /**
  * Hold prose until the turn's tool use is known: pre-tool claims cannot be unsent.
  * Tool/status events keep streaming. A knowledge turn replaces ALL model prose
- * with current validated facts; other turns retain their text, after email masking.
+ * with a validated, question-focused answer and safe next step. Ordinary
+ * clarification can retain model text; all visible text is email-masked.
  */
 export function createKnowledgeGroundingTransform<TOOLS extends ToolSet>(
   execution: KnowledgeExecution,
   suppliedEmails: readonly string[],
   hooks: { onFlush?: () => void; onText?: (text: string) => void } = {},
-  context: { question?: string; commerce?: CommerceExecution } = {},
+  context: {
+    question?: string
+    subject?: () => string
+    requiresKnowledge?: boolean
+    commerce?: CommerceExecution
+  } = {},
 ) {
   return () => {
     type Part = TextStreamPart<TOOLS>
@@ -100,9 +128,10 @@ export function createKnowledgeGroundingTransform<TOOLS extends ToolSet>(
       emitted = true
       // An interrupted stream cannot establish a complete response.
       if (failed) return
-      const knowledgeTurn = execution.attempted || knowledgeToolSeen
+      const knowledgeTurn =
+        execution.attempted || knowledgeToolSeen || context.requiresKnowledge
       const evidence = knowledgeTurn
-        ? assembleKnowledgeAnswer(execution, context.question)
+        ? assembleKnowledgeAnswer(execution, context.question, Date.now(), context.subject?.())
         : null
       const output = evidence
         ? [

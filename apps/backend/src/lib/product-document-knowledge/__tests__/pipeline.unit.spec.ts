@@ -247,7 +247,7 @@ describe("authoritative knowledge retrieval", () => {
     if (reason === "unpublishedProduct") nativeProduct.status = "draft";
     expect(
       await retrieveProductKnowledge({ ...options, queryText: "Printer One" }),
-    ).toEqual({ documents: [], citations: [] });
+    ).toMatchObject({ documents: [], citations: [] });
   });
 
   it("honors exact requested product/variant even if search returns an unrelated candidate", async () => {

@@ -56,12 +56,12 @@ function fixture() {
   };
 }
 const queryText =
-  "Which materials does this model support? Cite the manufacturer.";
+  "Which materials does this model support?";
 
 describe("bounded discovery after a scoped lexical miss", () => {
   it.each([
-    "Which materials does Magigoo Original support on glass build plates? Cite the manufacturer.",
-    "What is the Dragonfly BMS mainly made from? Cite its source.",
+    "Can I use Magigoo Original on glass with PETG?",
+    "What is the Dragonfly BMS made of?",
   ])(
     "returns current scoped evidence when natural-language search has no hits: %s",
     async (question) => {
@@ -97,6 +97,7 @@ describe("bounded discovery after a scoped lexical miss", () => {
         options.document.document_id,
         "prod_hotend",
         options.document.revision_hash,
+        { failSoft: false },
       );
       expect(options.meilisearch.configureIndex).not.toHaveBeenCalled();
       expect(options.meilisearch.indexData).not.toHaveBeenCalled();
@@ -124,7 +125,7 @@ describe("bounded discovery after a scoped lexical miss", () => {
   });
   it("never performs an unscoped placeholder search", async () => {
     const options = fixture();
-    expect(await retrieveProductKnowledge({ ...options, queryText })).toEqual({
+    expect(await retrieveProductKnowledge({ ...options, queryText })).toMatchObject({
       documents: [],
       citations: [],
     });
@@ -205,7 +206,7 @@ describe("bounded discovery after a scoped lexical miss", () => {
         queryText,
         productId: "prod_hotend",
       }),
-    ).toEqual({ documents: [], citations: [] });
+    ).toMatchObject({ documents: [], citations: [] });
     expect(options.meilisearch.search).toHaveBeenCalledTimes(2);
     expect(options.strapi.getKnowledgeReference).not.toHaveBeenCalled();
   });
@@ -247,7 +248,7 @@ describe("bounded discovery after a scoped lexical miss", () => {
         queryText,
         productId: "prod_hotend",
       }),
-    ).toEqual({ documents: [], citations: [] });
+    ).toMatchObject({ documents: [], citations: [] });
     expect(options.meilisearch.search).toHaveBeenCalledTimes(2);
   });
   it.each(["wrong-product", "wrong-variant", "metadata-only"])(
@@ -276,7 +277,7 @@ describe("bounded discovery after a scoped lexical miss", () => {
           queryText,
           variantId: "variant_hotend",
         }),
-      ).toEqual({ documents: [], citations: [] });
+      ).toMatchObject({ documents: [], citations: [] });
       expect(options.meilisearch.search).toHaveBeenCalledTimes(2);
       expect(options.strapi.getKnowledgeReference).not.toHaveBeenCalled();
     },
@@ -292,7 +293,7 @@ describe("bounded discovery after a scoped lexical miss", () => {
         queryText,
         productId: "prod_hotend",
       }),
-    ).toEqual({ documents: [], citations: [] });
+    ).toMatchObject({ documents: [], citations: [] });
     expect(options.meilisearch.search).toHaveBeenCalledTimes(1);
   });
   it("does not search when the requested product conflicts with variant ownership", async () => {
@@ -304,7 +305,7 @@ describe("bounded discovery after a scoped lexical miss", () => {
         productId: "prod_other",
         variantId: "variant_hotend",
       }),
-    ).toEqual({ documents: [], citations: [] });
+    ).toMatchObject({ documents: [], citations: [] });
     expect(options.meilisearch.search).not.toHaveBeenCalled();
   });
 });

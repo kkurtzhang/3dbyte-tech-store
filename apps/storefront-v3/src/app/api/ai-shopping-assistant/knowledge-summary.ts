@@ -1,5 +1,7 @@
 import type { ApprovedKnowledgeDocument } from "@3dbyte-tech-store/shared-types";
 
+import { knowledgeTopics } from "./knowledge-context";
+import { knowledgeNextStep, temperatureSetup } from "./knowledge-help";
 import { plainMarkdown } from "./grounded-text";
 import { selectKnowledgeFacts } from "./knowledge-fact-selection";
 
@@ -8,7 +10,7 @@ type Fact = ApprovedKnowledgeDocument["facts"][number];
 function scopeKey(document: ApprovedKnowledgeDocument) {
   return JSON.stringify([
     document.product_id,
-    document.binding_scope,
+    document.binding_scope ?? "variant",
     document.variant_id,
   ]);
 }
@@ -61,7 +63,9 @@ export function summarizeKnowledge(
     const key = scopeKey(document);
     groups.set(key, [...(groups.get(key) ?? []), document]);
   }
-  return Array.from(groups.values()).map((group) => {
+  let needsNextStep = false;
+  let needsPrinterSetup = false;
+  const sections = Array.from(groups.values()).map((group) => {
     const document = group[0];
     const ordered = group.flatMap((item) =>
       selectKnowledgeFacts(item, question),
@@ -101,37 +105,66 @@ export function summarizeKnowledge(
     const limitations = [
       ...(conflicts.length
         ? [
-            `**Conflicting evidence:** ${conflicts.map(plainMarkdown).join(", ")}. These facts remain unknown; I cannot choose between the returned sources.`,
+            `**Conflicting evidence:** ${conflicts.map(plainMarkdown).join(", ")}. The documents disagree, so I can't confirm which applies. Check the exact revision with the manufacturer before relying on this specification.`,
           ]
         : []),
       ...(unknown.length
         ? [
-            `**Not established:** ${unknown.map(plainMarkdown).join(", ")}. These facts remain unknown; this evidence cannot confirm them.`,
+            `**Not established:** ${unknown.map(plainMarkdown).join(", ")}. I can't confirm these details from this document.`,
           ]
         : []),
     ].join("\n\n");
-    const unresolvedLimit = ordered.some(
-      (fact) =>
-        fact.field === "installed_max_temperature" &&
-        (fact.value === null || conflicts.includes(fact.label)),
+    const setup = temperatureSetup(question, document.product_title);
+    const unresolvedLimit =
+      setup !== "process" &&
+      (knowledgeTopics(question).includes("temperature") ||
+        ordered.some((fact) => fact.field === "installed_max_temperature")) &&
+      !known.some((fact) =>
+        /installed.*(?:max|temperature)|(?:max|temperature).*installed/i.test(
+          fact.field,
+        ),
+      );
+    const missingTopic =
+      ordered.length === 0 && knowledgeTopics(question).length > 0;
+    needsPrinterSetup ||= unresolvedLimit && setup === "printer";
+    needsNextStep ||= Boolean(
+      unknown.length || unresolvedLimit || missingTopic,
     );
     return [
       `### ${plainMarkdown(document.product_title)}`,
       ...(ordered[0]?.value === null || conflicts.length
         ? [limitations, statements]
         : [statements, limitations]),
+      ...(missingTopic
+        ? [
+            "This document does not establish the specification you asked about.",
+          ]
+        : []),
       document.binding_scope === "product"
-        ? "Scope: model-level evidence only; it does not establish a specific variant or installed setup."
-        : `Scope: variant ${plainMarkdown(document.variant_id!)} only; do not apply it to sibling variants or assume an installed setup.`,
+        ? "These details apply to this model; they do not confirm a specific variant or installation."
+        : `These details apply only to variant ${plainMarkdown(document.variant_id!)}; they do not confirm a sibling variant or installation.`,
       ...(unresolvedLimit
         ? [
-            "A component rating does not verify an installed printer's operating limit. The heater, sensor, wiring and firmware requirements remain unknown unless explicitly established above.",
+            setup === "printer"
+              ? "A component rating does not verify an installed printer's operating limit. The heater, sensor, wiring and firmware limits remain unknown unless explicitly established above."
+              : "A component rating does not establish the operating limit of the complete assembly.",
           ]
         : []),
     ]
       .filter(Boolean)
       .join("\n\n");
   });
+  return [
+    ...sections,
+    ...(needsNextStep
+      ? [
+          knowledgeNextStep(
+            needsPrinterSetup ? "temperature" : question,
+            documents.map((document) => document.product_title).join(" "),
+          ),
+        ]
+      : []),
+  ];
 }
 
 /** Captions retain product/scope/field attribution beside the final source link.

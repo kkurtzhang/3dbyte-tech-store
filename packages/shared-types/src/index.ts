@@ -16,6 +16,7 @@ export type {
   KnowledgeBinding,
   KnowledgeDocumentBody,
   ApprovedKnowledgeDocument,
+  KnowledgeRetrievalAvailability,
   KnowledgeReferenceCard,
 } from "./knowledge-reference";
 
