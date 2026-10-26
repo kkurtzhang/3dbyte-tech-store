@@ -22,7 +22,7 @@ const loginSchema = z.object({
 })
 
 type LoginFormData = z.infer<typeof loginSchema>
-const loginResolver = zodFormResolver<LoginFormData>(loginSchema)
+const loginResolver = zodFormResolver(loginSchema)
 
 interface LoginFormProps {
   onSuccess?: () => void

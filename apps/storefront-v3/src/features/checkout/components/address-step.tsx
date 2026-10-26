@@ -44,7 +44,7 @@ const addressSchema = z.object({
 })
 
 type AddressFormData = z.infer<typeof addressSchema>
-const addressResolver = zodFormResolver<AddressFormData>(addressSchema)
+const addressResolver = zodFormResolver(addressSchema)
 type CheckoutIdentityMode = "guest" | "account"
 type AuthSheetMode = "login" | "register"
 const NEW_ADDRESS_SELECTION = "__new_address__"

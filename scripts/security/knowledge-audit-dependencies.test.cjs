@@ -169,6 +169,6 @@ test("Next.js and its MDX integration are on the advisory patch release", () => 
       path.join(consumer("apps/storefront-v3", ["@next/mdx"]), "package.json"),
     ),
   );
-  assert.ok(semver.gte(next.version, "16.3.8"));
+  assert.ok(semver.gte(next.version, "16.4.1"));
   assert.equal(mdx.version, next.version);
 });

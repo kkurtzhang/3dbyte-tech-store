@@ -1,0 +1,164 @@
+diff --git a/lib/types.d.ts b/lib/types.d.ts
+index bf41a067e15ac307e9148aa87c396261839b839a..5d13198aa9f1ae514725abc7ea0b603296bc0b63 100644
+--- a/lib/types.d.ts
++++ b/lib/types.d.ts
+@@ -10,116 +10,28 @@ export declare enum HttpMethodEnum {
+     DELETE = "DELETE",
+     HEAD = "HEAD"
+ }
+-declare const HttpMethod: z.ZodNativeEnum<typeof HttpMethodEnum>;
+-export declare type HttpMethod = z.infer<typeof HttpMethod>;
+-export declare type ExtendedFormidableOptions = FormidableOptions & {
++declare const HttpMethod: z.ZodEnum<typeof HttpMethodEnum>;
++export type HttpMethod = z.infer<typeof HttpMethod>;
++export type ExtendedFormidableOptions = FormidableOptions & {
+     onFileBegin?: (name: string, file: File) => void;
+ };
+ export declare const KoaBodyMiddlewareOptionsSchema: z.ZodObject<{
+-    /**
+-     * {Boolean} Patch request body to Node's ctx.req, default false
+-     *
+-     * Note: You can patch request body to Node or Koa in same time if you want.
+-     */
+     patchNode: z.ZodDefault<z.ZodOptional<z.ZodBoolean>>;
+-    /**
+-     * {Boolean} Patch request body to Koa's ctx.request, default true
+-     *
+-     * Note: You can patch request body to Node or Koa in same time if you want.
+-     */
+     patchKoa: z.ZodDefault<z.ZodOptional<z.ZodBoolean>>;
+-    /**
+-     * {String|Integer} The byte (if integer) limit of the JSON body, default 1mb
+-     */
+-    jsonLimit: z.ZodDefault<z.ZodOptional<z.ZodUnion<[z.ZodString, z.ZodNumber]>>>;
+-    /**
+-     * {String|Integer} The byte (if integer) limit of the form body, default 56kb
+-     */
+-    formLimit: z.ZodDefault<z.ZodOptional<z.ZodUnion<[z.ZodString, z.ZodNumber]>>>;
+-    /**
+-     * {String|Integer} The byte (if integer) limit of the text body, default 56kb
+-     */
+-    textLimit: z.ZodDefault<z.ZodOptional<z.ZodUnion<[z.ZodString, z.ZodNumber]>>>;
+-    /**
+-     * {String} Sets encoding for incoming form fields, default utf-8
+-     */
++    jsonLimit: z.ZodDefault<z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodNumber]>>>;
++    formLimit: z.ZodDefault<z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodNumber]>>>;
++    textLimit: z.ZodDefault<z.ZodOptional<z.ZodUnion<readonly [z.ZodString, z.ZodNumber]>>>;
+     encoding: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+-    /**
+-     * {Boolean} Parse multipart bodies, default false
+-     */
+     multipart: z.ZodDefault<z.ZodOptional<z.ZodBoolean>>;
+-    /**
+-     * {Boolean} Parse urlencoded bodies, default true
+-     */
+     urlencoded: z.ZodDefault<z.ZodOptional<z.ZodBoolean>>;
+-    /**
+-     * {Boolean} Parse text bodies, default true
+-     */
+     text: z.ZodDefault<z.ZodOptional<z.ZodBoolean>>;
+-    /**
+-     * {Boolean} Parse json bodies, default true
+-     */
+     json: z.ZodDefault<z.ZodOptional<z.ZodBoolean>>;
+-    /**
+-     * Toggles co-body strict mode; if true, only parses arrays or objects, default true
+-     */
+     jsonStrict: z.ZodDefault<z.ZodOptional<z.ZodBoolean>>;
+-    /**
+-       * Toggles co-body returnRawBody mode; if true,
+-       * the raw body will be available using a Symbol for 'unparsedBody'.
+-       *
+-       * ```
+-       // Either:
+-       const unparsed = require('koa-body/unparsed.js');
+-       const unparsed = Symbol.for('unparsedBody');
+-  
+-       // Then later, to access:
+-       ctx.request.body[unparsed]
+-       ```
+-       * default false
+-       */
+     includeUnparsed: z.ZodDefault<z.ZodOptional<z.ZodBoolean>>;
+-    /**
+-     * {String[]} What HTTP methods to enable body parsing for; should be used in preference to strict mode.
+-     *
+-     * GET, HEAD, and DELETE requests have no defined semantics for the request body,
+-     * but this doesn't mean they may not be valid in certain use cases.
+-     * koa-body will only parse HTTP request bodies for POST, PUT, and PATCH by default
+-     *
+-     * see http://tools.ietf.org/html/draft-ietf-httpbis-p2-semantics-19#section-6.3
+-     */
+-    parsedMethods: z.ZodDefault<z.ZodOptional<z.ZodArray<z.ZodNativeEnum<typeof HttpMethodEnum>, "many">>>;
+-}, "strip", z.ZodTypeAny, {
+-    json: boolean;
+-    encoding: string;
+-    multipart: boolean;
+-    patchNode: boolean;
+-    patchKoa: boolean;
+-    jsonLimit: string | number;
+-    formLimit: string | number;
+-    textLimit: string | number;
+-    urlencoded: boolean;
+-    text: boolean;
+-    jsonStrict: boolean;
+-    includeUnparsed: boolean;
+-    parsedMethods: HttpMethodEnum[];
+-}, {
+-    json?: boolean | undefined;
+-    encoding?: string | undefined;
+-    multipart?: boolean | undefined;
+-    patchNode?: boolean | undefined;
+-    patchKoa?: boolean | undefined;
+-    jsonLimit?: string | number | undefined;
+-    formLimit?: string | number | undefined;
+-    textLimit?: string | number | undefined;
+-    urlencoded?: boolean | undefined;
+-    text?: boolean | undefined;
+-    jsonStrict?: boolean | undefined;
+-    includeUnparsed?: boolean | undefined;
+-    parsedMethods?: HttpMethodEnum[] | undefined;
+-}>;
+-export declare type KoaBodyDirectOptions = z.infer<typeof KoaBodyMiddlewareOptionsSchema>;
+-export declare type KoaBodyMiddlewareOptions = KoaBodyDirectOptions & {
++    parsedMethods: z.ZodDefault<z.ZodOptional<z.ZodArray<z.ZodEnum<typeof HttpMethodEnum>>>>;
++}, z.core.$strip>;
++export type KoaBodyDirectOptions = z.infer<typeof KoaBodyMiddlewareOptionsSchema>;
++export type KoaBodyMiddlewareOptions = KoaBodyDirectOptions & {
+     onError?: (err: Error, ctx: Context) => void;
+     formidable?: ExtendedFormidableOptions;
+     queryString?: CoBodyOptions['queryString'];
+diff --git a/lib/types.js b/lib/types.js
+index 055515228c86a29c3c4c6ec2747d89ca20d494c9..d555db2aeac6e6b2b9197550735ad1008c8e584d 100644
+--- a/lib/types.js
++++ b/lib/types.js
+@@ -11,7 +11,7 @@ var HttpMethodEnum;
+     HttpMethodEnum["DELETE"] = "DELETE";
+     HttpMethodEnum["HEAD"] = "HEAD";
+ })(HttpMethodEnum = exports.HttpMethodEnum || (exports.HttpMethodEnum = {}));
+-const HttpMethod = zod_1.z.nativeEnum(HttpMethodEnum);
++const HttpMethod = zod_1.z.enum(HttpMethodEnum);
+ exports.KoaBodyMiddlewareOptionsSchema = zod_1.z.object({
+     /**
+      * {Boolean} Patch request body to Node's ctx.req, default false
+@@ -90,4 +90,3 @@ exports.KoaBodyMiddlewareOptionsSchema = zod_1.z.object({
+         .optional()
+         .default([HttpMethodEnum.POST, HttpMethodEnum.PUT, HttpMethodEnum.PATCH]),
+ });
+\ No newline at end of file
+-//# sourceMappingURL=types.js.map
+\ No newline at end of file
+diff --git a/package.json b/package.json
+index 781b13c2a1c7fcaca973c0556ced2d31874b03f5..2de020eeab56a38915ccf8c7e3dee8be40aa8c54 100644
+--- a/package.json
++++ b/package.json
+@@ -45,7 +45,7 @@
+     "@types/koa": "^2.13.5",
+     "co-body": "^6.1.0",
+     "formidable": "^2.0.1",
+-    "zod": "^3.19.1"
++    "zod": "4.6.6"
+   },
+   "devDependencies": {
+     "@types/koa-router": "^7.4.4",
