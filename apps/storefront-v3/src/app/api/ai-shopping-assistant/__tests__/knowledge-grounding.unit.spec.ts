@@ -236,7 +236,7 @@ describe("current authenticated knowledge execution", () => {
   })
 })
 
-describe("extractive answer boundary", () => {
+describe("approved-summary answer boundary", () => {
   it("keeps documented safety numbers, drops unsupported additions and retains unknowns", async () => {
     const raw = clone()
     const value = "300 °C in the documented component test only"
@@ -393,7 +393,10 @@ describe("extractive answer boundary", () => {
       ...raw.documents[0].facts[0],
       field: `fact_${i}`,
       label: `Fact ${i}`,
+      value: `Synthetic value ${i}`,
+      evidence_excerpt: `Synthetic value ${i}`,
     }))
+    raw.documents[0].text += "\n" + raw.documents[0].facts.map((fact) => fact.value).join("\n")
     const execution = await executionFor(raw)
     execution.results.set("duplicate", validateKnowledgeResult(raw, query, now))
     execution.results.set("unavailable", null)
@@ -404,7 +407,7 @@ describe("extractive answer boundary", () => {
       execution.results.set(`extra_${i}`, extra)
     }
     const answer = renderKnowledgeEvidence(execution)
-    expect(answer.match(/### /g)).toHaveLength(4)
+    expect(answer.match(/### /g)).toHaveLength(1)
     expect(answer).toContain("Fact 7")
     expect(answer).toContain("Fact 8")
     expect(answer).toContain("Fact 9")
@@ -422,11 +425,11 @@ describe("extractive answer boundary", () => {
     raw.citations[0].source_url = doc.source_url
     const result = assembleKnowledgeAnswer(await executionFor(raw))
     expect(result.text).toContain("Product \\[override\\]")
-    expect(result.text).toContain("Source: Source \\](https://evil.example)")
+    expect(result.text).not.toContain("Source: ")
     expect(result.sources).toEqual([
       expect.objectContaining({
         url: doc.source_url,
-        title: doc.document_title,
+        title: expect.stringContaining(doc.document_title),
       }),
     ])
     expect(result.text).not.toContain("\n[override]")

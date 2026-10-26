@@ -148,7 +148,11 @@ it("renders native citations from the actual SDK grounding stream as safe clicka
   }
   render(<ShoppingAssistantDrawer initiallyOpen />)
   const doc = evidence.documents![0]
-  const link = screen.getByRole("link", { name: doc.document_title })
+  const link = screen.getByRole("link", { name: (name) => name.includes(doc.document_title) })
+  expect(link).toHaveTextContent("Manufacturer body-material statement")
+  const sources = screen.getByRole("navigation", { name: "Evidence sources" })
+  expect(sources).toBe(sources.parentElement?.lastElementChild)
+  expect(screen.getByText(/shipped/).compareDocumentPosition(sources) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   expect(link).toHaveAttribute("href", doc.source_url)
   expect(link).toHaveAttribute("target", "_blank")
   expect(link).toHaveAttribute("rel", "noopener noreferrer")

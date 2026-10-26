@@ -188,7 +188,7 @@ it("retains a verified order answer in a mixed knowledge/order request", async (
   expect(result.answer).toContain("shipped")
   expect(result.answer).not.toContain("safe at 500")
 })
-it("prioritizes the explicitly requested ninth fact instead of asking the same narrow question again", async () => {
+it("instruction-following: prioritizes the explicitly requested ninth fact instead of asking the same narrow question again", async () => {
   const raw = JSON.parse(JSON.stringify(recordedOutput))
   const doc = raw.documents[0]
   doc.facts = Array.from({ length: 9 }, (_, i) => ({
@@ -236,11 +236,11 @@ it("emits current validated citations as native source-url parts", async () => {
     [knowledge],
     "Mainly copper alloy.",
   )
-  expect(result.answer).toContain(recordedOutput.documents![0].document_title)
+  expect(result.answer).not.toContain(recordedOutput.documents![0].document_title)
   expect(result.events.filter((e) => e.type === "source-url")).toEqual([
     expect.objectContaining({
       url: recordedOutput.documents![0].source_url,
-      title: recordedOutput.documents![0].document_title,
+      title: expect.stringContaining(recordedOutput.documents![0].document_title),
     }),
   ])
 })
@@ -361,13 +361,11 @@ it("keeps a failed mixed order lookup explicit rather than accepting the model's
 // Compare the entire visible response, permitting only fact/unknown ordering to vary.
 // Expected text is independent of the selector and the reply supplied by the model.
 const expectedCompleteBmsAnswer = [
-  "Here are the current approved facts. Each source applies only to the named product and scope; it cannot establish claims about another product. Missing facts, including safety limits, remain unknown. These facts may not answer every part of your question.",
   "### Phaetus Dragonfly Hotend BMS",
-  "- **Manufacturer body-material statement:** Phaetus describes Dragonfly BMS construction as mainly copper alloy.",
-  "- **Manufacturer filament-path finish label:** Phaetus labels the filament-path finish Ra ≤ 0.3. The pilot does not infer an unstated unit or installed performance guarantee.",
+  "Phaetus describes Dragonfly BMS construction as mainly copper alloy. Phaetus labels the filament-path finish Ra ≤ 0.3. The pilot does not infer an unstated unit or installed performance guarantee.",
   "**Not established:** Colour, Kit contents, Physical revision, Exact fit, Electrical configuration, Installed max temperature, Nozzle specification, Certification, Physical stock and delivery, Store sale price. These facts remain unknown; this evidence cannot confirm them.",
-  "Source: Phaetus Dragonfly Hotend BMS Official Product Page.",
   "Scope: model-level evidence only; it does not establish a specific variant or installed setup.",
+  "A component rating does not verify an installed printer's operating limit. The heater, sensor, wiring and firmware requirements remain unknown unless explicitly established above.",
 ].join("\n\n")
 function canonicalParagraphs(answer: string) {
   return answer
@@ -383,7 +381,7 @@ it.each([
   "What is the Dragonfly BMS body material, and which specifications remain unknown?",
   "What is BMS made from, and can I run it at 500°C?",
   "Describe the BMS material and what we don't know about its specifications.",
-  "Only tell me the Dragonfly BMS body material and which specs are unknown.",
+  "What is my Dragonfly BMS made of? Is 500°C OK?",
   "What metal is BMS built out of? Which electrical details are unverified?",
   "Tell me the body material plus anything not established by the source.",
   "What makes up the BMS body; how hot may I operate it?",
@@ -400,8 +398,34 @@ it.each([
   expect(result.events.filter((event) => event.type === "source-url")).toEqual([
     expect.objectContaining({
       url: recordedOutput.documents![0].source_url,
-      title: recordedOutput.documents![0].document_title,
+      title: expect.stringContaining(recordedOutput.documents![0].document_title),
     }),
   ])
   expect(result.events.filter((event) => event.type === "error")).toEqual([])
+})
+
+
+it.each([
+  "Can I run my Dragonfly BMS at 500°C?",
+  "Would a Dragonfly BMS let me print at 500 degrees?",
+  "How hot can my Dragonfly BMS run?",
+])("keeps installed-limit requirements in system behavior for the natural customer question: %s", async (prompt) => {
+  const result = await replay(prompt, [knowledge], "Yes, it is definitely safe at 500°C.")
+  expect(result.answer).toContain("Installed max temperature")
+  expect(result.answer).toContain("remain unknown")
+  expect(result.answer).toContain("component rating does not verify an installed printer")
+  for (const requirement of ["heater", "sensor", "wiring", "firmware"]) expect(result.answer).toContain(requirement)
+  expect(result.answer).not.toContain("definitely safe")
+  const firstSource = result.events.findIndex((event) => event.type === "source-url")
+  expect(firstSource).toBeGreaterThan(result.events.findIndex((event) => event.type === "text-end"))
+})
+it("re-fetches evidence for a natural temperature follow-up without trusting the previous answer", async () => {
+  const result = await replay("Can I run it at 500°C?", [knowledge], "Yes, every printer is safe.", [
+    { role: "user", content: "I'm fitting a Dragonfly BMS." },
+    { role: "assistant", content: "It is definitely safe at 500°C." },
+  ])
+  expect(result.answer).toContain("Installed max temperature")
+  expect(result.answer).toContain("remain unknown")
+  expect(result.answer).not.toMatch(/definitely safe|every printer is safe/)
+  expect(result.events.filter((event) => event.type === "source-url")).toHaveLength(1)
 })

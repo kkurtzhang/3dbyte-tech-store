@@ -497,14 +497,17 @@ export function ShoppingAssistantDrawer({
               </div>
             </div>
           ) : null}
-          {messages.map((message) => {
+          {messages.map((message, messageIndex) => {
             const content = getMessageText(message)
 
             const productEvent = message.role === "assistant" ? productEvents[message.id] : undefined
             const supportProposal = message.role === "assistant"
               ? getSupportProposalId(message.parts)
               : undefined
-            if (!content && !productEvent && !supportProposal) return null
+            const incomplete = message.parts.some((part) => part.type === "text" && part.state === "streaming") ||
+              (messageIndex === messages.length - 1 && (isStreaming || Boolean(error)))
+            const hasSources = message.parts.some((part) => part.type === "source-url")
+            if (!content && !productEvent && !supportProposal && !hasSources) return null
 
             return (
               <div
@@ -524,8 +527,8 @@ export function ShoppingAssistantDrawer({
                     <>
                       {content ? <FormattedAssistantMessage content={content} /> : null}
                       {productEvent ? <AssistantProductActions event={productEvent} /> : null}
-                      <AssistantSourceLinks parts={message.parts} />
                       {supportProposal ? <SupportTicketConfirmation proposalId={supportProposal} /> : null}
+                      {!incomplete ? <AssistantSourceLinks parts={message.parts} /> : null}
                     </>
                   ) : (
                     <span className="whitespace-pre-wrap">{content}</span>

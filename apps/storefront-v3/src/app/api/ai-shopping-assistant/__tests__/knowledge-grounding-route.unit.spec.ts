@@ -179,7 +179,7 @@ it.each(observed.cases)(
           expect.objectContaining({
             type: "source-url",
             url: doc.source_url,
-            title: doc.document_title,
+            title: expect.stringContaining(doc.document_title),
           }),
         )
       }

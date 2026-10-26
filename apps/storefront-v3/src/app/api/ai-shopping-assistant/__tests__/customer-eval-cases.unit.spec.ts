@@ -10,7 +10,7 @@ describe("customer AI eval case selection", () => {
     const release = selectCustomerAiEvalCases({ suite: "release" })
 
     expect(smoke).toHaveLength(8)
-    expect(release).toHaveLength(28)
+    expect(release).toHaveLength(31)
     expect(release).toEqual(
       expect.arrayContaining(smoke.map((evalCase) => evalCase)),
     )
@@ -95,4 +95,16 @@ describe("customer AI eval case selection", () => {
       ).passed,
     ).toBe(true)
   })
+})
+
+
+it("keeps natural installed-temperature inputs separate from strict evaluator expectations", () => {
+  const cases = customerAiEvalCases.filter((item) => item.id.startsWith("dragonfly-"))
+  expect(cases).toHaveLength(3)
+  for (const item of cases) {
+    expect([item.customerPrompt, ...(item.customerPrompts ?? [])].join(" ")).not.toMatch(/cite|evidence|approved|do not|firmware/i)
+    expect(item.checks?.toolCall?.required).toContain("searchKnowledge")
+    expect(scoreCustomerEvalAnswer(item, "Definitely safe to run at 500°C.").passed).toBe(false)
+    expect(scoreCustomerEvalAnswer(item, "The installed limit is unknown. A component rating cannot verify an installed printer; heater, sensor, wiring and firmware requirements remain unknown.").passed).toBe(true)
+  }
 })

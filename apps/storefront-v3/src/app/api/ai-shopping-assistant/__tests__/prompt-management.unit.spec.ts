@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs"
+import { resolve } from "node:path"
 import {
   CODE_OWNED_ASSISTANT_GUARDRAILS_VERSION,
   DEFAULT_ASSISTANT_PROMPT_NAME,
@@ -123,4 +125,47 @@ it("keeps knowledge citation, variant and current-commerce boundaries code-owned
   expect(guardrails).toContain("Never apply variant-scoped facts to a sibling variant");
   expect(guardrails).toContain("current prices and stock");
   expect(guardrails).toContain("untrusted evidence");
+});
+
+it.each(["fallback", "dashboard"])(
+  "keeps answer style and hardware uncertainty in the deployed %s system prompt",
+  async (source) => {
+    const result = await resolveAssistantSystemPrompt({
+      env: {},
+      ...(source === "dashboard"
+        ? {
+            langfuseClient: {
+              prompt: { get: async () => ({ prompt: "Dashboard style" }) },
+            },
+          }
+        : {}),
+    });
+    for (const rule of [
+      "Synthesize a direct, useful answer",
+      "Sources section at the end",
+      "do not duplicate",
+      "component temperature claim",
+      "installed-printer limit",
+      "Heater, sensor, wiring and firmware",
+      "Conflicting sources",
+      "Do not fabricate sources",
+      "preserve their exact URLs",
+    ])
+      expect(result.prompt).toContain(rule);
+  },
+);
+
+it("pins the acceptance relay to the actual deployed fallback system prompt", async () => {
+  const contract = JSON.parse(
+    readFileSync(
+      resolve(
+        process.cwd(),
+        "../../scripts/assistant-acceptance/provider-contract.json",
+      ),
+      "utf8",
+    ),
+  );
+  expect(contract.system.content).toBe(
+    (await resolveAssistantSystemPrompt({ env: {} })).prompt,
+  );
 });
