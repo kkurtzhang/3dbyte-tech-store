@@ -19,7 +19,7 @@ const forgotPasswordSchema = z.object({
 
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>
 const forgotPasswordResolver =
-  zodFormResolver<ForgotPasswordFormData>(forgotPasswordSchema)
+  zodFormResolver(forgotPasswordSchema)
 
 export function ForgotPasswordForm() {
   const [isLoading, setIsLoading] = React.useState(false)

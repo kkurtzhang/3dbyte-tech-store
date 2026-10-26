@@ -96,6 +96,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Test installed dependency security regressions
         run: pnpm test:dependency-security
+      - name: Test local knowledge schema compatibility
+        run: >-
+          pnpm --filter=@3dbyte-tech-store/storefront-v3 exec jest --runInBand --env=node
+          --testMatch '**/scripts/__tests__/local-knowledge.test.ts'
+          '**/scripts/__tests__/local-knowledge-catalogue100-focus.test.ts'
       - name: Test storefront custom behavior
         run: pnpm --filter=@3dbyte-tech-store/storefront-v3 test:ci
       - name: Test Medusa custom modules and routes

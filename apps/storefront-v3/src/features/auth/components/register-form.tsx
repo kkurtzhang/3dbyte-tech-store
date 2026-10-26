@@ -28,7 +28,7 @@ const registerSchema = z
   })
 
 type RegisterFormData = z.infer<typeof registerSchema>
-const registerResolver = zodFormResolver<RegisterFormData>(registerSchema)
+const registerResolver = zodFormResolver(registerSchema)
 
 interface RegisterFormProps {
   onSuccess?: () => void

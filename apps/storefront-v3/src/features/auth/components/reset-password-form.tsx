@@ -24,7 +24,7 @@ const resetPasswordSchema = z
 
 type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>
 const resetPasswordResolver =
-  zodFormResolver<ResetPasswordFormData>(resetPasswordSchema)
+  zodFormResolver(resetPasswordSchema)
 
 type ResetPasswordFormProps = {
   email: string

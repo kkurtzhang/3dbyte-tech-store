@@ -39,10 +39,10 @@ const claimSchema = z
     local_product_id: localId.nullable(),
     local_variant_id: localId.nullable(),
     source_scope: z.string().min(1).max(2000),
-    explicit_unknowns: z.record(z.null()),
-    editorial_basis: z.record(z.unknown()).optional(),
+    explicit_unknowns: z.record(z.string(), z.null()),
+    editorial_basis: z.record(z.string(), z.unknown()).optional(),
     scope_conditions: z
-      .record(z.union([z.string(), z.number(), z.null()]))
+      .record(z.string(), z.union([z.string(), z.number(), z.null()]))
       .optional(),
   })
   .superRefine((claim, ctx) => {
