@@ -160,6 +160,7 @@ function handler(strapi: Core.Strapi, write: boolean) {
           ? 400
           : [
                 "revision_changed",
+                "source_identity_conflict",
                 "immutable_decision",
                 "ambiguous_identity",
               ].includes(code)
