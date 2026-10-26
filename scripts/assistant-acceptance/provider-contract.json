@@ -1,5 +1,5 @@
 {
-  "reviewedBase": "5415c951f0cd46c640342b4681283e719c7d2eb3",
+  "reviewedBase": "ba34aa4939c9b361aeb61668868caf9e4b416f88",
   "provenance": "System text reviewed with the deployed answer-style guardrails; tool definitions remain from the reviewed normal route. Static contract, never learned from a live caller.",
   "system": {
     "role": "system",
@@ -82,6 +82,7 @@
             "email": {
               "type": "string",
               "format": "email",
+              "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
               "maxLength": 254
             }
           },
@@ -107,6 +108,7 @@
             "email": {
               "type": "string",
               "format": "email",
+              "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
               "maxLength": 254
             }
           },
@@ -196,6 +198,7 @@
             "email": {
               "type": "string",
               "format": "email",
+              "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
               "maxLength": 254
             },
             "subject": {

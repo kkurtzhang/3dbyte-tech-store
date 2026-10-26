@@ -130,7 +130,8 @@ jobs:
           curl -fsS "${LANGFUSE_HOST%/}/api/public/health" >/dev/null
           curl -fsS \
             -u "${LANGFUSE_PUBLIC_KEY}:${LANGFUSE_SECRET_KEY}" \
-            "${LANGFUSE_HOST%/}/api/public/projects" >/dev/null
+            "${LANGFUSE_HOST%/}/api/public/projects" \
+            | jq -er '.data[] | select(.id | type == "string" and length > 0) | "Langfuse review project ID: " + .id'
 
       - name: Run customer AI evals
         if: steps.live-eval.outputs.should_run == 'true'
