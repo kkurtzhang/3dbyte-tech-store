@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 const {
   reviewNativeDocument,
   upsertNativeDocument,
@@ -112,6 +113,9 @@ function setup(record = document()) {
 function recordedEvent(record: ReturnType<typeof document>) {
   return {
     id: 1,
+    revision_key: createHash("sha256")
+      .update(record.documentId + "\n" + knowledgeRevision(record))
+      .digest("hex"),
     actor_type: "content_api_token",
     actor_id: "41",
     decision: "approved",
@@ -261,4 +265,68 @@ it("preserves review behavior for unrelated product identities", async () => {
     request(record),
   );
   expect(approvedKnowledgeDocument(record, now, event)).not.toBeNull();
+});
+
+const {
+  productSourceIdentityAllowed,
+  knowledgeSourceIdentityAllowed,
+} = require("../../../../../cms/src/api/product-document/utils/source-identity");
+const {
+  knowledgeBody,
+} = require("../../../../../cms/src/api/product-document/utils/knowledge-reference");
+
+it.each([
+  "not a URL",
+  legacyUrl.replace("https:", "http:"),
+  legacyUrl.replace("https://", "https://user:password@"),
+  legacyUrl.replace("V5.4.pdf", "V5.5.pdf"),
+  legacyUrl + "&variant=45079221108793",
+  "https://shop.polymaker.com/products/petg?variant=41266031198265",
+])("fails closed on unverified legacy source identity %s", (url) => {
+  expect(
+    productSourceIdentityAllowed(productId, url, "official_datasheet"),
+  ).toBe(false);
+});
+it("normalizes only HTTP-equivalent URL details without inferring redirect identity", () => {
+  expect(
+    productSourceIdentityAllowed(
+      productId,
+      legacyUrl.replace("cdn.shopify.com", "CDN.SHOPIFY.COM:443") + "#page=4",
+      "official_datasheet",
+    ),
+  ).toBe(true);
+  expect(
+    productSourceIdentityAllowed(productId, legacyUrl, "official_product_page"),
+  ).toBe(false);
+});
+it("leaves unrelated intake identities governed by existing validation", () => {
+  expect(
+    productSourceIdentityAllowed(
+      "prod_unrelated",
+      successorUrl,
+      "official_product_page",
+    ),
+  ).toBe(true);
+});
+it("requires null variant even when product scope is claimed", () => {
+  const body = knowledgeBody(document());
+  expect(
+    knowledgeSourceIdentityAllowed({
+      ...body,
+      binding_scope: "product",
+      variant_id: "variant_01KSY6A5G61FCN57T1K9NWVBXN",
+    }),
+  ).toBe(false);
+});
+it("does not replay a historical unsafe approval as a new successful approval", async () => {
+  const record = document();
+  record.source_url = successorUrl;
+  const env = setup(record);
+  const old = recordedEvent(record);
+  env.decisions.push(old);
+  await expect(
+    reviewNativeDocument(env.strapi, auth, record.documentId, request(record)),
+  ).rejects.toMatchObject({ code: "source_identity_conflict" });
+  expect(env.decisions).toEqual([old]);
+  expect(env.reviewApi.create).not.toHaveBeenCalled();
 });

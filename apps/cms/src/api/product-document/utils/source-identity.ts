@@ -35,8 +35,8 @@ export function productSourceIdentityAllowed(
 
 /**
  * No network request or inferred redirect equivalence: this legacy product can
- * use only the reviewed source bytes at model scope. A new capture, source or
- * variant-specific claim needs a separately reviewed policy update. Other
+ * use only the reviewed source bytes at model scope. Changed bytes, another
+ * source or variant-specific claims need a reviewed policy update. Other
  * products retain their existing native review requirements.
  */
 export function knowledgeSourceIdentityAllowed(
