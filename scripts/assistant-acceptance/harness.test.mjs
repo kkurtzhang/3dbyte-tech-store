@@ -3,6 +3,7 @@ import { test } from "node:test";
 import { readFile } from "node:fs/promises";
 import http from "node:http";
 import { cases, checkAnswer } from "./cases.mjs";
+import { fixtureToolResult } from "./relay-tools.mjs";
 import {
   createFixtureData,
   answerFixture,
@@ -268,4 +269,36 @@ test("live relay hides provider error bodies", async () => {
   } finally {
     await service.close();
   }
+});
+
+
+test("customer cases do not coach evidence, attribution or hardware uncertainty", () => {
+  const customer = cases.filter((item) => item.kind !== "adversarial");
+  assert.equal(customer.length, 6);
+  for (const item of customer) assert.doesNotMatch(item.prompt, /cite|approved|evidence|do not assume|distinguish|firmware/i);
+  assert.equal(cases.find((item) => item.id === "unsupported-installed-temperature").prompt, "Can I run my Dragonfly BMS at 500°C?");
+  assert.equal(cases.find((item) => item.id === "mismatched-product-evidence").kind, "adversarial");
+});
+test("the evaluator rejects inline, premature or duplicate sources even with expected content", () => {
+  const item = cases.find((item) => item.id === "bms-body-material");
+  const source = { type: "source-url", url: "https://www.phaetus.com/manual", title: "Fixture" };
+  const events = [
+    { type: "tool-input-available", toolName: "searchKnowledge" },
+    { type: "text-delta", delta: "copper alloy" },
+    { type: "text-end" }, source, { type: "finish" },
+  ];
+  assert.equal(checkAnswer(item, events).passed, true);
+  assert.equal(checkAnswer(item, events.map((event) => event.type === "text-delta" ? { ...event, delta: "copper alloy. View https://store.example/products/bms and use array[1]." } : event)).passed, true);
+  assert.equal(checkAnswer(item, [...events, source]).passed, false);
+  assert.equal(checkAnswer(item, [source, ...events.filter((event) => event !== source)]).passed, false);
+  assert.equal(checkAnswer(item, events.map((event) => event.type === "text-delta" ? { ...event, delta: "copper alloy Source: https://www.phaetus.com/manual" } : event)).passed, false);
+});
+
+
+test("natural temperature requests use ordinary synthetic catalogue results without a prompt-specific shortcut", async () => {
+  const data = await createFixtureData();
+  const result = fixtureToolResult({ id: "natural-search", function: { name: "searchProducts", arguments: JSON.stringify({ query: "Dragonfly BMS", limit: 4 }) } }, data, "http://127.0.0.1:42003");
+  assert.equal(result.status, "matches");
+  assert.equal(result.actions.length, 1);
+  assert.equal(result.products[0].evidence.compatibility, "unknown");
 });

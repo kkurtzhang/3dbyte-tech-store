@@ -1,5 +1,5 @@
 {
-  "reviewedBase": "7b60a2980",
+  "reviewedBase": "5415c951f0cd46c640342b4681283e719c7d2eb3",
   "provenance": "System text reviewed with the deployed answer-style guardrails; tool definitions remain from the reviewed normal route. Static contract, never learned from a live caller.",
   "system": {
     "role": "system",
