@@ -94,6 +94,8 @@ jobs:
           node-version: 20
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
+      - name: Test installed dependency security regressions
+        run: pnpm test:dependency-security
       - name: Test storefront custom behavior
         run: pnpm --filter=@3dbyte-tech-store/storefront-v3 test:ci
       - name: Test Medusa custom modules and routes
