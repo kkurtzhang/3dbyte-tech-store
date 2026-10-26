@@ -2,6 +2,7 @@ export type CustomerAiEvalSuite = "smoke" | "release" | "extended"
 
 export type CustomerAiEvalToolName =
   | "searchProducts"
+  | "searchKnowledge"
   | "lookupOrder"
   | "getTracking"
   | "estimateShipping"

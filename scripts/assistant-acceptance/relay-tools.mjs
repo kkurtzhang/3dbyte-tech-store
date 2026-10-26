@@ -78,7 +78,6 @@ export function fixtureToolResult(
   call,
   data,
   origin,
-  item,
   previousCalls = [],
 ) {
   const name = call.function.name;
@@ -116,15 +115,6 @@ export function fixtureToolResult(
     return output;
   }
   if (name !== "searchProducts") return output;
-  // This fixed case's 'Do not assume ...' clause makes the reviewed route decline product lookup.
-  if (item.id === "unsupported-installed-temperature")
-    return {
-      status: "declined",
-      mode: "search",
-      query: input.query,
-      products: [],
-      actions: [],
-    };
   if (!output.products.length) return { ...output, actions: [] };
   const words = input.query.toLocaleLowerCase().match(/[a-z0-9]+/g) ?? [];
   return {

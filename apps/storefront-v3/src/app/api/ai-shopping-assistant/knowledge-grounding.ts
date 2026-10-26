@@ -2,8 +2,7 @@ import type { ApprovedKnowledgeDocument } from "@3dbyte-tech-store/shared-types"
 import { parseApprovedKnowledgeDocument } from "@3dbyte-tech-store/shared-utils/src/knowledge-reference.cjs"
 import type { TextStreamPart, ToolSet } from "ai"
 
-import { plainMarkdown } from "./grounded-text"
-import { selectKnowledgeFacts } from "./knowledge-fact-selection"
+import { includeConflictingEvidence, knowledgeSources, summarizeKnowledge } from "./knowledge-summary"
 import type { CommerceExecution } from "./commerce-execution"
 import type { KnowledgeExecution } from "./knowledge-execution"
 import { createAssistantVisibleTextTransform } from "./visible-output-sanitizer"
@@ -15,7 +14,7 @@ const NO_EVIDENCE =
 const TOO_LONG =
   "This reply exceeded the response limit. Please ask a narrower question."
 
-/** Bounded extractive rendering, not a semantic claim that every question was answered. */
+/** Bounded approved-fact summary, not a claim that every question was answered. */
 export function assembleKnowledgeAnswer(
   execution: Pick<KnowledgeExecution, "results">,
   question = "",
@@ -45,43 +44,22 @@ export function assembleKnowledgeAnswer(
       documents.set(document.document_id, document)
     }
   }
-  const selected = Array.from(documents.values()).slice(0, MAX_DOCUMENTS)
-  const sources = selected.map((document) => ({
-    sourceType: "url" as const,
-    id: `knowledge-${document.document_id}-${document.revision_hash}`,
-    url: document.source_url,
-    title: document.document_title,
-  }))
+  const validated = Array.from(documents.values())
+  const selected = validated.slice(0, MAX_DOCUMENTS)
+  const evidence = includeConflictingEvidence(selected, validated, question)
+  const sources = knowledgeSources(evidence, question)
   if (!selected.length) return { text: NO_EVIDENCE, sources }
-  const sections = selected.map((document) => {
-    const facts = selectKnowledgeFacts(document, question)
-    const known = facts.filter((fact) => fact.value !== null)
-    const unknown = facts.filter((fact) => fact.value === null)
-    return [
-      `### ${plainMarkdown(document.product_title)}`,
-      ...known.map(
-        (fact) =>
-          `- **${plainMarkdown(fact.label)}:** ${plainMarkdown(fact.value!)}`,
-      ),
-      ...(unknown.length
-        ? [
-            `**Not established:** ${unknown.map((fact) => plainMarkdown(fact.label)).join(", ")}. These facts remain unknown; this evidence cannot confirm them.`,
-          ]
-        : []),
-      `Source: ${plainMarkdown(document.document_title)}.`,
-      document.binding_scope === "product"
-        ? "Scope: model-level evidence only; it does not establish a specific variant or installed setup."
-        : `Scope: variant ${plainMarkdown(document.variant_id!)} only; do not apply it to sibling variants or assume an installed setup.`,
-    ].join("\n\n")
-  })
+  const sections = summarizeKnowledge(selected, question, evidence)
   return {
     sources,
     text: [
-      "Here are the current approved facts. Each source applies only to the named product and scope; it cannot establish claims about another product. Missing facts, including safety limits, remain unknown. These facts may not answer every part of your question.",
       ...sections,
+      ...(new Set(selected.map((document) => document.product_id)).size > 1
+        ? ["Evidence applies only to the named product and scope; it cannot establish claims about another product."]
+        : []),
       ...(documents.size > MAX_DOCUMENTS
         ? [
-            "More evidence was returned; only four documents are shown. Please narrow the request.",
+            "More evidence was returned; only four documents are summarized. Conflicting evidence is retained in Sources. Please narrow the request.",
           ]
         : []),
       ...(unavailable
@@ -134,13 +112,13 @@ export function createKnowledgeGroundingTransform<TOOLS extends ToolSet>(
         : tooLong
           ? TOO_LONG
           : text
-      for (const source of evidence?.sources ?? [])
-        controller.enqueue({ type: "source", ...source } as Part)
       if (!output) return
       const id = "evidence-grounded-answer"
       controller.enqueue({ type: "text-start", id } as Part)
       controller.enqueue({ type: "text-delta", id, text: output } as Part)
       controller.enqueue({ type: "text-end", id } as Part)
+      for (const source of evidence?.sources ?? [])
+        controller.enqueue({ type: "source", ...source } as Part)
       text = ""
     }
     const grounding = new TransformStream<Part, Part>({

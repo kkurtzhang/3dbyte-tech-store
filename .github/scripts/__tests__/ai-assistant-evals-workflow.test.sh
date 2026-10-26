@@ -21,6 +21,8 @@ grep -Fq 'COOLIFY_POLL_SECONDS: "60"' "${workflow}"
 grep -Fq "LANGFUSE_HOST" "${workflow}"
 grep -Fq "/api/public/health" "${workflow}"
 grep -Fq "/api/public/projects" "${workflow}"
+grep -Fq 'jq -er ' "${workflow}"
+grep -Fq "Langfuse review project ID:" "${workflow}"
 grep -Fq "apps/storefront-v3/src/app/api/ai-shopping-assistant/**" "${workflow}"
 grep -Fq "apps/storefront-v3/scripts/run-customer-ai-evals.ts" "${workflow}"
 

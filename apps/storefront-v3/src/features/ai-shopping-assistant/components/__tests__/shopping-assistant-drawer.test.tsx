@@ -354,7 +354,7 @@ describe("AssistantSourceLinks", () => {
     ]} />)
     expect(screen.getByRole("navigation", { name: "Evidence sources" })).toBeInTheDocument()
     expect(screen.getAllByRole("link")).toHaveLength(1)
-    expect(screen.getByRole("link", { name: "Prusa source" })).toHaveAttribute("href", "https://help.prusa3d.com/article/under-extrusion_2007")
+    expect(screen.getByRole("link", { name: /Prusa source/ })).toHaveAttribute("href", "https://help.prusa3d.com/article/under-extrusion_2007")
   })
 })
 
@@ -547,3 +547,41 @@ describe("combined product and consent drawer", () => {
     expect(screen.queryByText("forged-receipt")).not.toBeInTheDocument();
   });
 });
+
+
+describe("final Sources placement", () => {
+  beforeEach(() => {
+    mockUsePathname.mockReturnValue("/shop")
+    chatState = {
+      messages: [{ id: "final-answer", role: "assistant", parts: [
+        { type: "source-url", url: "https://source.example/manual", title: "Approved manual" },
+        { type: "text", text: "The installed limit remains unknown.", state: "streaming" },
+      ] }],
+      status: "streaming", error: null, sendMessage: sendMessageMock,
+    }
+  })
+  it("shows the answer while streaming and adds Sources after completion", () => {
+    const { rerender } = render(<ShoppingAssistantDrawer initiallyOpen />)
+    expect(screen.getByText("The installed limit remains unknown.")).toBeInTheDocument()
+    expect(screen.queryByRole("navigation", { name: "Evidence sources" })).not.toBeInTheDocument()
+    chatState = { ...chatState, status: "ready", messages: [{ ...chatState.messages[0], parts: chatState.messages[0].parts.map((part) => part.type === "text" ? { ...part, state: "done" } : part) }] }
+    rerender(<ShoppingAssistantDrawer initiallyOpen />)
+    const sources = screen.getByRole("navigation", { name: "Evidence sources" })
+    expect(screen.getByText("The installed limit remains unknown.").compareDocumentPosition(sources) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(sources).toBe(sources.parentElement?.lastElementChild)
+  })
+  it("does not show a footer for an interrupted answer", () => {
+    chatState = { ...chatState, status: "ready", error: new Error("Interrupted") }
+    render(<ShoppingAssistantDrawer initiallyOpen />)
+    expect(screen.queryByRole("navigation", { name: "Evidence sources" })).not.toBeInTheDocument()
+  })
+  it("keeps distinct attribution captions when repeated URLs are collapsed", () => {
+    render(<AssistantSourceLinks parts={[
+      { type: "source-url", url: "https://source.example/manual", title: "Material document" },
+      { type: "source-url", url: "https://source.example/manual", title: "Temperature document" },
+    ]} />)
+    expect(screen.getAllByRole("link")).toHaveLength(1)
+    expect(screen.getByRole("link")).toHaveTextContent("Material document")
+    expect(screen.getByRole("link")).toHaveTextContent("Temperature document")
+  })
+})

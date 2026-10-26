@@ -18,10 +18,15 @@ export function AssistantSourceLinks({
       return [];
     }
   });
-  const unique = sources.filter(
-    (source, index) =>
-      sources.findIndex((item) => item.url === source.url) === index,
-  );
+  const grouped = new Map<string, { url: string; titles: string[] }>();
+  for (const source of sources) {
+    const previous = grouped.get(source.url);
+    grouped.set(source.url, {
+      url: source.url,
+      titles: Array.from(new Set([...(previous?.titles ?? []), source.title])),
+    });
+  }
+  const unique = Array.from(grouped.values());
   if (!unique.length) return null;
   return (
     <nav
@@ -38,7 +43,7 @@ export function AssistantSourceLinks({
               rel="noopener noreferrer"
               className="underline"
             >
-              {source.title}
+              {source.titles.join(" / ")}
             </a>
           </li>
         ))}

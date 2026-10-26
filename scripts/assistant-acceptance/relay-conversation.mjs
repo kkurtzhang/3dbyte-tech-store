@@ -173,7 +173,7 @@ export function createConversationBoundary(data, origin) {
       role: "tool",
       tool_call_id: call.id,
       content: signature(
-        fixtureToolResult(call, data, origin, prepared.item, [
+        fixtureToolResult(call, data, origin, [
           ...previous,
           ...calls.slice(0, index),
         ]),

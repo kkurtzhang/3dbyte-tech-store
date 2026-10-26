@@ -47,7 +47,7 @@ export function selectKnowledgeFacts(
       (word) => !common.has(word) && !productWords.has(word),
     ),
   )
-  if (query.has("degree") || query.has("celsius")) query.add("temperature")
+  if (query.has("degree") || query.has("celsius") || /°\s*c\b|\bhow hot\b/i.test(question)) query.add("temperature")
   const matches = (fact: ApprovedKnowledgeDocument["facts"][number]) =>
     words(`${fact.field} ${fact.label}`).some((word) => query.has(word))
   // No silent truncation or partial-match filtering: the DTO already bounds 30 facts.
