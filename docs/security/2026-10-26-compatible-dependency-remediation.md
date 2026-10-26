@@ -4,10 +4,10 @@ Base: staging `7b60a29800c1cd5b53363fc79146918ee4d8d645`.
 
 The October 25 audit reported 3 critical and 17 high findings. This change
 updates affected packages and includes the approved Zod v4 migration. The
-storefront and first-party Strapi consumers now use 4.6.6; Strapi is upgraded
-to the 5.52.3 patch line that includes its official v4 migration. This remains
-a partial remediation: two Koa consumers retain Zod v3, and the MCP SDK has
-an additional runtime configuration requirement described below.
+storefront, first-party Strapi and Koa consumers now use 4.6.6; Strapi is
+upgraded to the 5.52.3 patch line that includes its official v4 migration.
+The remaining Koa consumers use narrow compatibility patches described below.
+The MCP SDK still has an additional runtime configuration requirement.
 
 ## Selected releases
 
@@ -27,6 +27,7 @@ an additional runtime configuration requirement described below.
 | Medusa admin-sdk/dashboard/deps Zod | 4.2.0 | 4.6.6 | Collection validation resource bounds; overrides target only these v4 consumers |
 | Storefront Zod / form resolver | 3.25.76 / 3.10.0 | 4.6.6 / 5.2.2 | Native v4 schema validation and typed resolver input/output inference |
 | Strapi packages | 5.48.1 | 5.52.3 | Official first-party v4 migration from 5.52.2 plus its next patch release |
+| Strapi koa-body / koa-session Zod | 3.25.76 | 4.6.6 | Version-scoped compatibility patches preserve the existing middleware and parser contracts |
 | First-party Strapi Zod | 3.25.67 | 4.6.6 | Parent-scoped overrides advance the upstream 4.4.3 dependency within v4 |
 | Strapi minimizer schema-utils | newly resolved 4.8.1 | 4.7.0 | Within its declared ^4.6.0 range; 4.8 requires webpack >=5.112 while Strapi selects 5.109.2 |
 
@@ -47,8 +48,8 @@ it in either scope.
 
 | Graph | Critical before → after | High before → after | Moderate before → after | Low before → after |
 | --- | --- | --- | --- | --- |
-| Full | 3 → 0 | 17 → 1 | 29 → 23 | 9 → 4 |
-| Production | 3 → 0 | 17 → 1 | 28 → 22 | 9 → 4 |
+| Full | 3 → 0 | 17 → 0 | 29 → 23 | 9 → 4 |
+| Production | 3 → 0 | 17 → 0 | 28 → 22 | 9 → 4 |
 
 `pnpm audit --json` and `pnpm audit --prod --json` both exit 1. Counts are
 pnpm metadata counts, not unique advisory IDs. Production classification does
@@ -56,27 +57,51 @@ not demonstrate that an advisory is reachable from a deployed request.
 
 Before the v4 follow-up, PR commit `c6dd230` reported 0 critical / 2 high /
 23 moderate / 6 low in full scope and 0 / 2 / 22 / 6 in production scope.
-The v4 follow-up audits ran at 00:36 UTC on October 26; the final graph has
-2,955 full / 2,666 production dependencies. These are pnpm's reported metadata
-counts; the high-gate summary also reports one existing ignored low finding.
+The first v4 follow-up (`2fa1d08`) reported 0 critical / 1 high / 23 moderate /
+4 low in full scope and 0 / 1 / 22 / 4 in production. The middleware follow-up
+was audited at 02:35 UTC on October 26 with 2,954 full / 2,665 production
+dependencies. The unchanged ordinary high-severity gate exits **0**, explicitly
+reporting that no staging exception applies. Its summary also reports one
+existing ignored low finding. Full/production JSON audits still exit 1 because
+moderate and low findings remain.
 
-The remaining high finding is [GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5),
-Zod 3.25.76. npm gives the representative path
-`apps/cms > @strapi/content-manager > @strapi/types > koa-body > zod`.
-The complete lockfile mapping has only two v3 dependency edges:
+The last high finding, [GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5),
+is no longer returned. Both actual Koa consumers resolve genuine Zod 4.6.6,
+and no standalone Zod 3 package or dependency edge remains in the lockfile.
+The middleware package names and versions are unchanged; the code and generated
+types are adapted to the patched upstream Zod implementation. This is not an
+advisory ignore or a cosmetic package version change.
 
-- `koa-body@6.0.1 > zod@3.25.76` (`^3.19.1`), reached through Strapi core/types.
-- `koa-session@7.0.2 > zod@3.25.76` (`^3.24.1`), reached through Strapi core.
+## Koa middleware compatibility patches
 
-`koa-session@7.0.2` is still the latest published release. A disposable process
-substituting v4 reproduced `TypeError: zod_1.default.function(...).args is not a
-function` at module load. No such override is committed. `koa-body` 7 supports
-v4, but also changes Formidable from v2 to v3 and Koa types from v2 to v3;
-Strapi 5.52.3 and the current latest 5.59.0 still pin koa-body 6.0.1. This PR
-does not force that separate parser major upgrade. A safe full resolution
-requires a supported Koa session v4 release/backport and a compatible Strapi
-body-parser integration, or separately scoped, thoroughly tested patches.
-No v3 security backport is published. The ordinary high-severity gate exits 1.
+The published `koa-session@7.0.2` still uses v3 function-schema APIs. Forcing
+v4 alone crashes on `.args()` at module load. The patch migrates those APIs in
+TypeScript source and both CJS/ESM distributions, with declarations generated
+against the actual Zod 4.6.6 package. A raw-array arity check runs before tuple
+validation so omitted `any` arguments are rejected while explicit `undefined`
+and extra arguments retain the v3 behavior. Codec prefaults preserve wrapped
+default functions; store context fields remain optional. Sync/async callbacks,
+`this` and rejected-Promise identity are tested. The existing `createSession`
+handling of parsed options is preserved. Zod 4 errors use v4 issue shapes, and
+infinite numeric options are now rejected; finite values and the `"session"`
+max-age sentinel remain valid.
+
+`koa-body@6.0.1` receives the v4 enum API and regenerated declarations. Its
+parser, Formidable 2, legacy `Symbol.for("unparsedBody")` contract, and empty
+body for excluded methods are unchanged. Upgrading directly to body 7 or 8
+would also change these integration contracts. Even current Strapi 5.59.0
+still selects body 6.0.1 and session 7.0.2, so broad upgrades do not solve this
+safely. Version-scoped pnpm overrides supply the v4 dependency alongside the
+patches; both packages' manifests identify the real selected dependency.
+
+The two packages' declaration files are checked with `skipLibCheck: false`.
+Sixteen regressions cover CJS/ESM schemas, bounded-collection validation, typed
+callbacks, signed cookies/tampering, sync/async stores/logout, and actual Strapi
+body parsing: JSON/raw/form/text, malformed input, size limits, multipart files
+and cleanup. Baseline checks reproduced the two consumers still loading v3.
+Independent review found no blocking defect and independently probed store
+callbacks, rejection identity and array-default isolation. These local patches
+need maintenance until upstream compatible releases replace them.
 
 ## Zod migration and consumer compatibility
 
@@ -87,7 +112,7 @@ with the official v4-capable resolver, preserving inferred input and parsed
 output types, defaults, transforms, and nested field errors. Existing auth,
 checkout, support, assistant history and SDK tool regressions pass.
 
-All 25 remaining transitive Zod edges resolve 4.6.6: first-party Strapi,
+All 27 transitive Zod edges resolve 4.6.6: first-party Strapi,
 Medusa, AI SDK/provider-utils/gateway/react/openai, MCP SDK, and
 zod-to-json-schema peer contexts. AI/MCP compatibility adapters still import
 legacy v3 subpaths for their supported v3 branches; the tested application
@@ -122,10 +147,13 @@ pass without external requests.
 
 - Frozen-lock installation succeeds with lifecycle scripts disabled; the
   existing Medusa CLI patch is applied explicitly before build verification.
+  A separate empty-store frozen install confirms both Koa runtime/declaration
+  patches apply from scratch, after regenerating a stale local patch entry.
 - Seven targeted checks fail against the old locked packages and pass after
   updating: the Next release guard, DOMPurify shadow/detached-node cases,
   GraphQL path coercion and redirect header stripping.
-- All 85 dependency regressions pass, including six Zod consumer checks.
+- All 101 dependency regressions pass, including six Zod consumer checks
+  and sixteen middleware checks.
   Three migration guards failed against the prior v3 consumers and pass now.
   React type-peer checks pass with the workspace type checks.
 - Storefront lint and 190 unit suites pass (1,561 tests; four existing skips).

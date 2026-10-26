@@ -1,0 +1,956 @@
+diff --git a/dist/commonjs/index.d.ts b/dist/commonjs/index.d.ts
+index 0c7db88401507d1e7a07c32ee86e5ee8e0733feb..35e2d8d4f69df65e9631f047107fb63780c0cf5e 100644
+--- a/dist/commonjs/index.d.ts
++++ b/dist/commonjs/index.d.ts
+@@ -1,256 +1,59 @@
+ import z from 'zod';
+ export declare const SessionOptions: z.ZodObject<{
+-    /**
+-     * cookie key
+-     * Default is `koa.sess`
+-     */
+     key: z.ZodDefault<z.ZodString>;
+-    /**
+-     * maxAge in ms
+-     * Default is `86400000`, one day
+-     * If set to 'session' will result in a cookie that expires when session/browser is closed
+-     *
+-     * Warning: If a session cookie is stolen, this cookie will never expire
+-     */
+-    maxAge: z.ZodOptional<z.ZodUnion<[z.ZodNumber, z.ZodLiteral<"session">]>>;
+-    /**
+-     * automatically commit headers
+-     * Default is `true`
+-     */
++    maxAge: z.ZodOptional<z.ZodUnion<readonly [z.ZodNumber, z.ZodLiteral<"session">]>>;
+     autoCommit: z.ZodDefault<z.ZodBoolean>;
+-    /**
+-     * cookie value can overwrite or not
+-     * Default is `true`
+-     */
+     overwrite: z.ZodDefault<z.ZodBoolean>;
+-    /**
+-     * httpOnly or not
+-     * Default is `true`
+-     */
+     httpOnly: z.ZodDefault<z.ZodBoolean>;
+-    /**
+-     * signed or not
+-     * Default is `true`
+-     */
+     signed: z.ZodDefault<z.ZodBoolean>;
+-    /**
+-     * Force a session identifier cookie to be set on every response.
+-     * The expiration is reset to the original `maxAge`, resetting the expiration countdown.
+-     * Default is `false`
+-     */
+     rolling: z.ZodDefault<z.ZodBoolean>;
+-    /**
+-     * renew session when session is nearly expired, so we can always keep user logged in.
+-     * Default is `false`
+-     */
+     renew: z.ZodDefault<z.ZodBoolean>;
+-    /**
+-     * secure cookie
+-     * Default is `undefined`, will be set to `true` if the connection is over HTTPS, otherwise `false`.
+-     */
+     secure: z.ZodOptional<z.ZodBoolean>;
+-    /**
+-     * session cookie sameSite options
+-     * Default is `undefined`, meaning don't set it
+-     */
+     sameSite: z.ZodOptional<z.ZodString>;
+-    /**
+-     * External key is used the cookie by default,
+-     * but you can use `options.externalKey` to customize your own external key methods.
+-     */
+     externalKey: z.ZodOptional<z.ZodObject<{
+-        /**
+-         * get the external key
+-         * `(ctx) => string`
+-         */
+-        get: z.ZodFunction<z.ZodTuple<[z.ZodAny], z.ZodUnknown>, z.ZodString>;
+-        /**
+-         * set the external key
+-         * `(ctx, key) => void`
+-         */
+-        set: z.ZodFunction<z.ZodTuple<[z.ZodAny, z.ZodString], z.ZodUnknown>, z.ZodVoid>;
+-    }, "strip", z.ZodTypeAny, {
+-        set: (args_0: any, args_1: string, ...args: unknown[]) => void;
+-        get: (args_0: any, ...args: unknown[]) => string;
+-    }, {
+-        set: (args_0: any, args_1: string, ...args: unknown[]) => void;
+-        get: (args_0: any, ...args: unknown[]) => string;
+-    }>>;
+-    /**
+-     * session storage is dependent on your external store
+-     */
++        get: z.ZodFunction<z.ZodPipe<z.ZodCustom<[any, ...unknown[]], [any, ...unknown[]]>, z.ZodTuple<[z.ZodAny], z.ZodUnknown>>, z.ZodString>;
++        set: z.ZodFunction<z.ZodPipe<z.ZodCustom<[any, string, ...unknown[]], [any, string, ...unknown[]]>, z.ZodTuple<[z.ZodAny, z.ZodString], z.ZodUnknown>>, z.ZodVoid>;
++    }, z.core.$strip>>;
+     store: z.ZodOptional<z.ZodObject<{
+-        /**
+-         * get session data by key
+-         * `(key, maxAge, { rolling, ctx }) => sessionData | Promise<sessionData>`
+-         */
+-        get: z.ZodFunction<z.ZodTuple<[z.ZodString, z.ZodNumber, z.ZodObject<{
+-            rolling: z.ZodBoolean;
+-            ctx: z.ZodAny;
+-        }, "strip", z.ZodTypeAny, {
++        get: z.ZodFunction<z.ZodPipe<z.ZodCustom<[string, number, {
+             rolling: boolean;
+             ctx?: any;
+-        }, {
++        }, ...unknown[]], [string, number, {
+             rolling: boolean;
+             ctx?: any;
+-        }>], z.ZodUnknown>, z.ZodPromise<z.ZodAny>>;
+-        /**
+-         * set session data for key, with a `maxAge` (in ms)
+-         * `(key, sess, maxAge, { rolling, changed, ctx }) => void | Promise<void>`
+-         */
+-        set: z.ZodFunction<z.ZodTuple<[z.ZodString, z.ZodAny, z.ZodNumber, z.ZodObject<{
++        }, ...unknown[]]>, z.ZodTuple<[z.ZodString, z.ZodNumber, z.ZodObject<{
+             rolling: z.ZodBoolean;
+-            changed: z.ZodBoolean;
+-            ctx: z.ZodAny;
+-        }, "strip", z.ZodTypeAny, {
+-            rolling: boolean;
+-            changed: boolean;
+-            ctx?: any;
+-        }, {
+-            rolling: boolean;
+-            changed: boolean;
+-            ctx?: any;
+-        }>], z.ZodUnknown>, z.ZodPromise<z.ZodVoid>>;
+-        /**
+-         * destroy session data for key
+-         * `(key, { ctx })=> void | Promise<void>`
+-         */
+-        destroy: z.ZodFunction<z.ZodTuple<[z.ZodString, z.ZodObject<{
+-            ctx: z.ZodAny;
+-        }, "strip", z.ZodTypeAny, {
+-            ctx?: any;
+-        }, {
+-            ctx?: any;
+-        }>], z.ZodUnknown>, z.ZodPromise<z.ZodVoid>>;
+-    }, "strip", z.ZodTypeAny, {
+-        set: (args_0: string, args_1: any, args_2: number, args_3: {
++            ctx: z.ZodOptional<z.ZodAny>;
++        }, z.core.$strip>], z.ZodUnknown>>, z.ZodPromise<z.ZodAny>>;
++        set: z.ZodFunction<z.ZodPipe<z.ZodCustom<[string, any, number, {
+             rolling: boolean;
+             changed: boolean;
+             ctx?: any;
+-        }, ...args: unknown[]) => Promise<void>;
+-        get: (args_0: string, args_1: number, args_2: {
+-            rolling: boolean;
+-            ctx?: any;
+-        }, ...args: unknown[]) => Promise<any>;
+-        destroy: (args_0: string, args_1: {
+-            ctx?: any;
+-        }, ...args: unknown[]) => Promise<void>;
+-    }, {
+-        set: (args_0: string, args_1: any, args_2: number, args_3: {
++        }, ...unknown[]], [string, any, number, {
+             rolling: boolean;
+             changed: boolean;
+             ctx?: any;
+-        }, ...args: unknown[]) => Promise<void>;
+-        get: (args_0: string, args_1: number, args_2: {
+-            rolling: boolean;
++        }, ...unknown[]]>, z.ZodTuple<[z.ZodString, z.ZodAny, z.ZodNumber, z.ZodObject<{
++            rolling: z.ZodBoolean;
++            changed: z.ZodBoolean;
++            ctx: z.ZodOptional<z.ZodAny>;
++        }, z.core.$strip>], z.ZodUnknown>>, z.ZodPromise<z.ZodVoid>>;
++        destroy: z.ZodFunction<z.ZodPipe<z.ZodCustom<[string, {
+             ctx?: any;
+-        }, ...args: unknown[]) => Promise<any>;
+-        destroy: (args_0: string, args_1: {
++        }, ...unknown[]], [string, {
+             ctx?: any;
+-        }, ...args: unknown[]) => Promise<void>;
+-    }>>;
+-    /**
+-     * If your session store requires data or utilities from context, `opts.ContextStore` is also supported.
+-     * `ContextStore` must be a class which claims three instance methods demonstrated above.
+-     * `new ContextStore(ctx)` will be executed on every request.
+-     */
++        }, ...unknown[]]>, z.ZodTuple<[z.ZodString, z.ZodObject<{
++            ctx: z.ZodOptional<z.ZodAny>;
++        }, z.core.$strip>], z.ZodUnknown>>, z.ZodPromise<z.ZodVoid>>;
++    }, z.core.$strip>>;
+     ContextStore: z.ZodOptional<z.ZodAny>;
+-    encode: z.ZodDefault<z.ZodOptional<z.ZodFunction<z.ZodTuple<[z.ZodAny], z.ZodUnknown>, z.ZodString>>>;
+-    decode: z.ZodDefault<z.ZodFunction<z.ZodTuple<[z.ZodString], z.ZodUnknown>, z.ZodAny>>;
+-    /**
+-     * If you want to generate a new session id, you can use `genid` option to customize it.
+-     * Default is a function that uses `randomUUID()`.
+-     * `(ctx) => string`
+-     */
+-    genid: z.ZodOptional<z.ZodFunction<z.ZodTuple<[z.ZodAny], z.ZodUnknown>, z.ZodString>>;
+-    /**
+-     * If you want to prefix the session id, you can use `prefix` option to customize it.
+-     * It will not work if `options.genid(ctx)` present.
+-     */
++    encode: z.ZodPrefault<z.ZodFunction<z.ZodPipe<z.ZodCustom<[any, ...unknown[]], [any, ...unknown[]]>, z.ZodTuple<[z.ZodAny], z.ZodUnknown>>, z.ZodString>>;
++    decode: z.ZodPrefault<z.ZodFunction<z.ZodPipe<z.ZodCustom<[string, ...unknown[]], [string, ...unknown[]]>, z.ZodTuple<[z.ZodString], z.ZodUnknown>>, z.ZodAny>>;
++    genid: z.ZodOptional<z.ZodFunction<z.ZodPipe<z.ZodCustom<[any, ...unknown[]], [any, ...unknown[]]>, z.ZodTuple<[z.ZodAny], z.ZodUnknown>>, z.ZodString>>;
+     prefix: z.ZodOptional<z.ZodString>;
+-    /**
+-     * valid session value before use it
+-     * `(ctx, sessionData) => boolean`
+-     */
+-    valid: z.ZodOptional<z.ZodFunction<z.ZodTuple<[z.ZodAny, z.ZodAny], z.ZodUnknown>, z.ZodAny>>;
+-    /**
+-     * hook before save session
+-     * `(ctx, sessionModel) => void`
+-     */
+-    beforeSave: z.ZodOptional<z.ZodFunction<z.ZodTuple<[z.ZodAny, z.ZodAny], z.ZodUnknown>, z.ZodVoid>>;
+-}, "strip", z.ZodTypeAny, {
+-    key: string;
+-    autoCommit: boolean;
+-    overwrite: boolean;
+-    httpOnly: boolean;
+-    signed: boolean;
+-    rolling: boolean;
+-    renew: boolean;
+-    encode: (args_0: any, ...args: unknown[]) => string;
+-    decode: (args_0: string, ...args: unknown[]) => any;
+-    maxAge?: number | "session" | undefined;
+-    externalKey?: {
+-        set: (args_0: any, args_1: string, ...args: unknown[]) => void;
+-        get: (args_0: any, ...args: unknown[]) => string;
+-    } | undefined;
+-    valid?: ((args_0: any, args_1: any, ...args: unknown[]) => any) | undefined;
+-    secure?: boolean | undefined;
+-    sameSite?: string | undefined;
+-    store?: {
+-        set: (args_0: string, args_1: any, args_2: number, args_3: {
+-            rolling: boolean;
+-            changed: boolean;
+-            ctx?: any;
+-        }, ...args: unknown[]) => Promise<void>;
+-        get: (args_0: string, args_1: number, args_2: {
+-            rolling: boolean;
+-            ctx?: any;
+-        }, ...args: unknown[]) => Promise<any>;
+-        destroy: (args_0: string, args_1: {
+-            ctx?: any;
+-        }, ...args: unknown[]) => Promise<void>;
+-    } | undefined;
+-    ContextStore?: any;
+-    genid?: ((args_0: any, ...args: unknown[]) => string) | undefined;
+-    prefix?: string | undefined;
+-    beforeSave?: ((args_0: any, args_1: any, ...args: unknown[]) => void) | undefined;
+-}, {
+-    maxAge?: number | "session" | undefined;
+-    externalKey?: {
+-        set: (args_0: any, args_1: string, ...args: unknown[]) => void;
+-        get: (args_0: any, ...args: unknown[]) => string;
+-    } | undefined;
+-    key?: string | undefined;
+-    valid?: ((args_0: any, args_1: any, ...args: unknown[]) => any) | undefined;
+-    autoCommit?: boolean | undefined;
+-    overwrite?: boolean | undefined;
+-    httpOnly?: boolean | undefined;
+-    signed?: boolean | undefined;
+-    rolling?: boolean | undefined;
+-    renew?: boolean | undefined;
+-    secure?: boolean | undefined;
+-    sameSite?: string | undefined;
+-    store?: {
+-        set: (args_0: string, args_1: any, args_2: number, args_3: {
+-            rolling: boolean;
+-            changed: boolean;
+-            ctx?: any;
+-        }, ...args: unknown[]) => Promise<void>;
+-        get: (args_0: string, args_1: number, args_2: {
+-            rolling: boolean;
+-            ctx?: any;
+-        }, ...args: unknown[]) => Promise<any>;
+-        destroy: (args_0: string, args_1: {
+-            ctx?: any;
+-        }, ...args: unknown[]) => Promise<void>;
+-    } | undefined;
+-    ContextStore?: any;
+-    encode?: ((args_0: any, ...args: unknown[]) => string) | undefined;
+-    decode?: ((args_0: string, ...args: unknown[]) => any) | undefined;
+-    genid?: ((args_0: any, ...args: unknown[]) => string) | undefined;
+-    prefix?: string | undefined;
+-    beforeSave?: ((args_0: any, args_1: any, ...args: unknown[]) => void) | undefined;
+-}>;
++    valid: z.ZodOptional<z.ZodFunction<z.ZodPipe<z.ZodCustom<[any, any, ...unknown[]], [any, any, ...unknown[]]>, z.ZodTuple<[z.ZodAny, z.ZodAny], z.ZodUnknown>>, z.ZodAny>>;
++    beforeSave: z.ZodOptional<z.ZodFunction<z.ZodPipe<z.ZodCustom<[any, any, ...unknown[]], [any, any, ...unknown[]]>, z.ZodTuple<[z.ZodAny, z.ZodAny], z.ZodUnknown>>, z.ZodVoid>>;
++}, z.core.$strip>;
+ export type SessionOptions = z.infer<typeof SessionOptions>;
+ export type CreateSessionOptions = Partial<SessionOptions>;
+ type Middleware = (ctx: any, next: any) => Promise<void>;
+diff --git a/dist/commonjs/index.js b/dist/commonjs/index.js
+index 57242f6f9525830889c2f9e23525024bcd6a6bf4..522a04e1256cbe2227a16bb42c42669ff1488215 100644
+--- a/dist/commonjs/index.js
++++ b/dist/commonjs/index.js
+@@ -3,6 +3,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
+     return (mod && mod.__esModule) ? mod : { "default": mod };
+ };
+ Object.defineProperty(exports, "__esModule", { value: true });
++// Zod 4 pads omitted any-valued tuple slots. Check raw arity first to retain
++// the v3 callback contract, including explicit undefined and extra arguments.
++function functionArgs(...items) {
++  const tuple = zod_1.default.tuple(items).rest(zod_1.default.unknown());
++  return zod_1.default.custom(
++    value => Array.isArray(value) && value.length >= items.length,
++    { error: 'Not enough function arguments' },
++  ).pipe(tuple);
++}
++
+ exports.SessionOptions = void 0;
+ exports.createSession = createSession;
+ const node_assert_1 = __importDefault(require("node:assert"));
+@@ -79,16 +89,12 @@ exports.SessionOptions = zod_1.default.object({
+          * get the external key
+          * `(ctx) => string`
+          */
+-        get: zod_1.default.function()
+-            .args(zod_1.default.any())
+-            .returns(zod_1.default.string()),
++        get: zod_1.default.function({ input: functionArgs(zod_1.default.any()), output: zod_1.default.string() }),
+         /**
+          * set the external key
+          * `(ctx, key) => void`
+          */
+-        set: zod_1.default.function()
+-            .args(zod_1.default.any(), zod_1.default.string())
+-            .returns(zod_1.default.void()),
++        set: zod_1.default.function({ input: functionArgs(zod_1.default.any(), zod_1.default.string()), output: zod_1.default.void() }),
+     }).optional(),
+     /**
+      * session storage is dependent on your external store
+@@ -98,23 +104,17 @@ exports.SessionOptions = zod_1.default.object({
+          * get session data by key
+          * `(key, maxAge, { rolling, ctx }) => sessionData | Promise<sessionData>`
+          */
+-        get: zod_1.default.function()
+-            .args(zod_1.default.string(), zod_1.default.number(), zod_1.default.object({ rolling: zod_1.default.boolean(), ctx: zod_1.default.any() }))
+-            .returns(zod_1.default.promise(zod_1.default.any())),
++        get: zod_1.default.function({ input: functionArgs(zod_1.default.string(), zod_1.default.number(), zod_1.default.object({ rolling: zod_1.default.boolean(), ctx: zod_1.default.any().optional() })), output: zod_1.default.promise(zod_1.default.any()) }),
+         /**
+          * set session data for key, with a `maxAge` (in ms)
+          * `(key, sess, maxAge, { rolling, changed, ctx }) => void | Promise<void>`
+          */
+-        set: zod_1.default.function()
+-            .args(zod_1.default.string(), zod_1.default.any(), zod_1.default.number(), zod_1.default.object({ rolling: zod_1.default.boolean(), changed: zod_1.default.boolean(), ctx: zod_1.default.any() }))
+-            .returns(zod_1.default.promise(zod_1.default.void())),
++        set: zod_1.default.function({ input: functionArgs(zod_1.default.string(), zod_1.default.any(), zod_1.default.number(), zod_1.default.object({ rolling: zod_1.default.boolean(), changed: zod_1.default.boolean(), ctx: zod_1.default.any().optional() })), output: zod_1.default.promise(zod_1.default.void()) }),
+         /**
+          * destroy session data for key
+          * `(key, { ctx })=> void | Promise<void>`
+          */
+-        destroy: zod_1.default.function()
+-            .args(zod_1.default.string(), zod_1.default.object({ ctx: zod_1.default.any() }))
+-            .returns(zod_1.default.promise(zod_1.default.void())),
++        destroy: zod_1.default.function({ input: functionArgs(zod_1.default.string(), zod_1.default.object({ ctx: zod_1.default.any().optional() })), output: zod_1.default.promise(zod_1.default.void()) }),
+     }).optional(),
+     /**
+      * If your session store requires data or utilities from context, `opts.ContextStore` is also supported.
+@@ -122,23 +122,17 @@ exports.SessionOptions = zod_1.default.object({
+      * `new ContextStore(ctx)` will be executed on every request.
+      */
+     ContextStore: zod_1.default.any().optional(),
+-    encode: zod_1.default.function()
+-        .args(zod_1.default.any())
+-        .returns(zod_1.default.string())
+-        .optional()
+-        .default(() => util_js_1.default.encode),
+-    decode: zod_1.default.function()
+-        .args(zod_1.default.string())
+-        .returns(zod_1.default.any())
+-        .default(() => util_js_1.default.decode),
++    encode: zod_1.default.function({ input: functionArgs(zod_1.default.any()), output: zod_1.default.string() })
++
++        .prefault(() => util_js_1.default.encode),
++    decode: zod_1.default.function({ input: functionArgs(zod_1.default.string()), output: zod_1.default.any() })
++        .prefault(() => util_js_1.default.decode),
+     /**
+      * If you want to generate a new session id, you can use `genid` option to customize it.
+      * Default is a function that uses `randomUUID()`.
+      * `(ctx) => string`
+      */
+-    genid: zod_1.default.function()
+-        .args(zod_1.default.any())
+-        .returns(zod_1.default.string())
++    genid: zod_1.default.function({ input: functionArgs(zod_1.default.any()), output: zod_1.default.string() })
+         .optional(),
+     /**
+      * If you want to prefix the session id, you can use `prefix` option to customize it.
+@@ -149,17 +143,13 @@ exports.SessionOptions = zod_1.default.object({
+      * valid session value before use it
+      * `(ctx, sessionData) => boolean`
+      */
+-    valid: zod_1.default.function()
+-        .args(zod_1.default.any(), zod_1.default.any())
+-        .returns(zod_1.default.any())
++    valid: zod_1.default.function({ input: functionArgs(zod_1.default.any(), zod_1.default.any()), output: zod_1.default.any() })
+         .optional(),
+     /**
+      * hook before save session
+      * `(ctx, sessionModel) => void`
+      */
+-    beforeSave: zod_1.default.function()
+-        .args(zod_1.default.any(), zod_1.default.any())
+-        .returns(zod_1.default.void())
++    beforeSave: zod_1.default.function({ input: functionArgs(zod_1.default.any(), zod_1.default.any()), output: zod_1.default.void() })
+         .optional(),
+ });
+ const DEFAULT_SESSION_OPTIONS = exports.SessionOptions.parse({});
+@@ -288,4 +278,3 @@ function extendContext(context, opts) {
+         },
+     });
+ }
+\ No newline at end of file
+-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaW5kZXguanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi9zcmMvaW5kZXgudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7O0FBb0xBLHNDQTRDQztBQWhPRCw4REFBaUM7QUFDakMseUNBQXFDO0FBQ3JDLDZDQUF5QztBQUN6QywyQ0FBcUM7QUFDckMsOENBQW9CO0FBQ3BCLDZDQUE4QztBQUM5Qyx3REFBNkI7QUFFN0IsTUFBTSxLQUFLLEdBQUcsSUFBQSxvQkFBUSxFQUFDLGFBQWEsQ0FBQyxDQUFDO0FBRXRDLE1BQU0sbUJBQW1CLEdBQUcsTUFBTSxDQUFDLG9CQUFvQixDQUFDLENBQUM7QUFDekQsTUFBTSx3QkFBd0IsR0FBRyxNQUFNLENBQUMseUJBQXlCLENBQUMsQ0FBQztBQUV0RCxRQUFBLGNBQWMsR0FBRyxhQUFDLENBQUMsTUFBTSxDQUFDO0lBQ3JDOzs7T0FHRztJQUNILEdBQUcsRUFBRSxhQUFDLENBQUMsTUFBTSxFQUFFLENBQUMsT0FBTyxDQUFDLFVBQVUsQ0FBQztJQUNuQzs7Ozs7O09BTUc7SUFDSCxNQUFNLEVBQUUsYUFBQyxDQUFDLEtBQUssQ0FBQyxDQUFFLGFBQUMsQ0FBQyxNQUFNLEVBQUUsRUFBRSxhQUFDLENBQUMsT0FBTyxDQUFDLFNBQVMsQ0FBQyxDQUFFLENBQUMsQ0FBQyxRQUFRLEVBQUU7SUFDaEU7OztPQUdHO0lBQ0gsVUFBVSxFQUFFLGFBQUMsQ0FBQyxPQUFPLEVBQUUsQ0FBQyxPQUFPLENBQUMsSUFBSSxDQUFDO0lBQ3JDOzs7T0FHRztJQUNILFNBQVMsRUFBRSxhQUFDLENBQUMsT0FBTyxFQUFFLENBQUMsT0FBTyxDQUFDLElBQUksQ0FBQztJQUNwQzs7O09BR0c7SUFDSCxRQUFRLEVBQUUsYUFBQyxDQUFDLE9BQU8sRUFBRSxDQUFDLE9BQU8sQ0FBQyxJQUFJLENBQUM7SUFDbkM7OztPQUdHO0lBQ0gsTUFBTSxFQUFFLGFBQUMsQ0FBQyxPQUFPLEVBQUUsQ0FBQyxPQUFPLENBQUMsSUFB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
+\ No newline at end of file
+diff --git a/dist/esm/index.d.ts b/dist/esm/index.d.ts
+index 0c7db88401507d1e7a07c32ee86e5ee8e0733feb..35e2d8d4f69df65e9631f047107fb63780c0cf5e 100644
+--- a/dist/esm/index.d.ts
++++ b/dist/esm/index.d.ts
+@@ -1,256 +1,59 @@
+ import z from 'zod';
+ export declare const SessionOptions: z.ZodObject<{
+-    /**
+-     * cookie key
+-     * Default is `koa.sess`
+-     */
+     key: z.ZodDefault<z.ZodString>;
+-    /**
+-     * maxAge in ms
+-     * Default is `86400000`, one day
+-     * If set to 'session' will result in a cookie that expires when session/browser is closed
+-     *
+-     * Warning: If a session cookie is stolen, this cookie will never expire
+-     */
+-    maxAge: z.ZodOptional<z.ZodUnion<[z.ZodNumber, z.ZodLiteral<"session">]>>;
+-    /**
+-     * automatically commit headers
+-     * Default is `true`
+-     */
++    maxAge: z.ZodOptional<z.ZodUnion<readonly [z.ZodNumber, z.ZodLiteral<"session">]>>;
+     autoCommit: z.ZodDefault<z.ZodBoolean>;
+-    /**
+-     * cookie value can overwrite or not
+-     * Default is `true`
+-     */
+     overwrite: z.ZodDefault<z.ZodBoolean>;
+-    /**
+-     * httpOnly or not
+-     * Default is `true`
+-     */
+     httpOnly: z.ZodDefault<z.ZodBoolean>;
+-    /**
+-     * signed or not
+-     * Default is `true`
+-     */
+     signed: z.ZodDefault<z.ZodBoolean>;
+-    /**
+-     * Force a session identifier cookie to be set on every response.
+-     * The expiration is reset to the original `maxAge`, resetting the expiration countdown.
+-     * Default is `false`
+-     */
+     rolling: z.ZodDefault<z.ZodBoolean>;
+-    /**
+-     * renew session when session is nearly expired, so we can always keep user logged in.
+-     * Default is `false`
+-     */
+     renew: z.ZodDefault<z.ZodBoolean>;
+-    /**
+-     * secure cookie
+-     * Default is `undefined`, will be set to `true` if the connection is over HTTPS, otherwise `false`.
+-     */
+     secure: z.ZodOptional<z.ZodBoolean>;
+-    /**
+-     * session cookie sameSite options
+-     * Default is `undefined`, meaning don't set it
+-     */
+     sameSite: z.ZodOptional<z.ZodString>;
+-    /**
+-     * External key is used the cookie by default,
+-     * but you can use `options.externalKey` to customize your own external key methods.
+-     */
+     externalKey: z.ZodOptional<z.ZodObject<{
+-        /**
+-         * get the external key
+-         * `(ctx) => string`
+-         */
+-        get: z.ZodFunction<z.ZodTuple<[z.ZodAny], z.ZodUnknown>, z.ZodString>;
+-        /**
+-         * set the external key
+-         * `(ctx, key) => void`
+-         */
+-        set: z.ZodFunction<z.ZodTuple<[z.ZodAny, z.ZodString], z.ZodUnknown>, z.ZodVoid>;
+-    }, "strip", z.ZodTypeAny, {
+-        set: (args_0: any, args_1: string, ...args: unknown[]) => void;
+-        get: (args_0: any, ...args: unknown[]) => string;
+-    }, {
+-        set: (args_0: any, args_1: string, ...args: unknown[]) => void;
+-        get: (args_0: any, ...args: unknown[]) => string;
+-    }>>;
+-    /**
+-     * session storage is dependent on your external store
+-     */
++        get: z.ZodFunction<z.ZodPipe<z.ZodCustom<[any, ...unknown[]], [any, ...unknown[]]>, z.ZodTuple<[z.ZodAny], z.ZodUnknown>>, z.ZodString>;
++        set: z.ZodFunction<z.ZodPipe<z.ZodCustom<[any, string, ...unknown[]], [any, string, ...unknown[]]>, z.ZodTuple<[z.ZodAny, z.ZodString], z.ZodUnknown>>, z.ZodVoid>;
++    }, z.core.$strip>>;
+     store: z.ZodOptional<z.ZodObject<{
+-        /**
+-         * get session data by key
+-         * `(key, maxAge, { rolling, ctx }) => sessionData | Promise<sessionData>`
+-         */
+-        get: z.ZodFunction<z.ZodTuple<[z.ZodString, z.ZodNumber, z.ZodObject<{
+-            rolling: z.ZodBoolean;
+-            ctx: z.ZodAny;
+-        }, "strip", z.ZodTypeAny, {
++        get: z.ZodFunction<z.ZodPipe<z.ZodCustom<[string, number, {
+             rolling: boolean;
+             ctx?: any;
+-        }, {
++        }, ...unknown[]], [string, number, {
+             rolling: boolean;
+             ctx?: any;
+-        }>], z.ZodUnknown>, z.ZodPromise<z.ZodAny>>;
+-        /**
+-         * set session data for key, with a `maxAge` (in ms)
+-         * `(key, sess, maxAge, { rolling, changed, ctx }) => void | Promise<void>`
+-         */
+-        set: z.ZodFunction<z.ZodTuple<[z.ZodString, z.ZodAny, z.ZodNumber, z.ZodObject<{
++        }, ...unknown[]]>, z.ZodTuple<[z.ZodString, z.ZodNumber, z.ZodObject<{
+             rolling: z.ZodBoolean;
+-            changed: z.ZodBoolean;
+-            ctx: z.ZodAny;
+-        }, "strip", z.ZodTypeAny, {
+-            rolling: boolean;
+-            changed: boolean;
+-            ctx?: any;
+-        }, {
+-            rolling: boolean;
+-            changed: boolean;
+-            ctx?: any;
+-        }>], z.ZodUnknown>, z.ZodPromise<z.ZodVoid>>;
+-        /**
+-         * destroy session data for key
+-         * `(key, { ctx })=> void | Promise<void>`
+-         */
+-        destroy: z.ZodFunction<z.ZodTuple<[z.ZodString, z.ZodObject<{
+-            ctx: z.ZodAny;
+-        }, "strip", z.ZodTypeAny, {
+-            ctx?: any;
+-        }, {
+-            ctx?: any;
+-        }>], z.ZodUnknown>, z.ZodPromise<z.ZodVoid>>;
+-    }, "strip", z.ZodTypeAny, {
+-        set: (args_0: string, args_1: any, args_2: number, args_3: {
++            ctx: z.ZodOptional<z.ZodAny>;
++        }, z.core.$strip>], z.ZodUnknown>>, z.ZodPromise<z.ZodAny>>;
++        set: z.ZodFunction<z.ZodPipe<z.ZodCustom<[string, any, number, {
+             rolling: boolean;
+             changed: boolean;
+             ctx?: any;
+-        }, ...args: unknown[]) => Promise<void>;
+-        get: (args_0: string, args_1: number, args_2: {
+-            rolling: boolean;
+-            ctx?: any;
+-        }, ...args: unknown[]) => Promise<any>;
+-        destroy: (args_0: string, args_1: {
+-            ctx?: any;
+-        }, ...args: unknown[]) => Promise<void>;
+-    }, {
+-        set: (args_0: string, args_1: any, args_2: number, args_3: {
++        }, ...unknown[]], [string, any, number, {
+             rolling: boolean;
+             changed: boolean;
+             ctx?: any;
+-        }, ...args: unknown[]) => Promise<void>;
+-        get: (args_0: string, args_1: number, args_2: {
+-            rolling: boolean;
++        }, ...unknown[]]>, z.ZodTuple<[z.ZodString, z.ZodAny, z.ZodNumber, z.ZodObject<{
++            rolling: z.ZodBoolean;
++            changed: z.ZodBoolean;
++            ctx: z.ZodOptional<z.ZodAny>;
++        }, z.core.$strip>], z.ZodUnknown>>, z.ZodPromise<z.ZodVoid>>;
++        destroy: z.ZodFunction<z.ZodPipe<z.ZodCustom<[string, {
+             ctx?: any;
+-        }, ...args: unknown[]) => Promise<any>;
+-        destroy: (args_0: string, args_1: {
++        }, ...unknown[]], [string, {
+             ctx?: any;
+-        }, ...args: unknown[]) => Promise<void>;
+-    }>>;
+-    /**
+-     * If your session store requires data or utilities from context, `opts.ContextStore` is also supported.
+-     * `ContextStore` must be a class which claims three instance methods demonstrated above.
+-     * `new ContextStore(ctx)` will be executed on every request.
+-     */
++        }, ...unknown[]]>, z.ZodTuple<[z.ZodString, z.ZodObject<{
++            ctx: z.ZodOptional<z.ZodAny>;
++        }, z.core.$strip>], z.ZodUnknown>>, z.ZodPromise<z.ZodVoid>>;
++    }, z.core.$strip>>;
+     ContextStore: z.ZodOptional<z.ZodAny>;
+-    encode: z.ZodDefault<z.ZodOptional<z.ZodFunction<z.ZodTuple<[z.ZodAny], z.ZodUnknown>, z.ZodString>>>;
+-    decode: z.ZodDefault<z.ZodFunction<z.ZodTuple<[z.ZodString], z.ZodUnknown>, z.ZodAny>>;
+-    /**
+-     * If you want to generate a new session id, you can use `genid` option to customize it.
+-     * Default is a function that uses `randomUUID()`.
+-     * `(ctx) => string`
+-     */
+-    genid: z.ZodOptional<z.ZodFunction<z.ZodTuple<[z.ZodAny], z.ZodUnknown>, z.ZodString>>;
+-    /**
+-     * If you want to prefix the session id, you can use `prefix` option to customize it.
+-     * It will not work if `options.genid(ctx)` present.
+-     */
++    encode: z.ZodPrefault<z.ZodFunction<z.ZodPipe<z.ZodCustom<[any, ...unknown[]], [any, ...unknown[]]>, z.ZodTuple<[z.ZodAny], z.ZodUnknown>>, z.ZodString>>;
++    decode: z.ZodPrefault<z.ZodFunction<z.ZodPipe<z.ZodCustom<[string, ...unknown[]], [string, ...unknown[]]>, z.ZodTuple<[z.ZodString], z.ZodUnknown>>, z.ZodAny>>;
++    genid: z.ZodOptional<z.ZodFunction<z.ZodPipe<z.ZodCustom<[any, ...unknown[]], [any, ...unknown[]]>, z.ZodTuple<[z.ZodAny], z.ZodUnknown>>, z.ZodString>>;
+     prefix: z.ZodOptional<z.ZodString>;
+-    /**
+-     * valid session value before use it
+-     * `(ctx, sessionData) => boolean`
+-     */
+-    valid: z.ZodOptional<z.ZodFunction<z.ZodTuple<[z.ZodAny, z.ZodAny], z.ZodUnknown>, z.ZodAny>>;
+-    /**
+-     * hook before save session
+-     * `(ctx, sessionModel) => void`
+-     */
+-    beforeSave: z.ZodOptional<z.ZodFunction<z.ZodTuple<[z.ZodAny, z.ZodAny], z.ZodUnknown>, z.ZodVoid>>;
+-}, "strip", z.ZodTypeAny, {
+-    key: string;
+-    autoCommit: boolean;
+-    overwrite: boolean;
+-    httpOnly: boolean;
+-    signed: boolean;
+-    rolling: boolean;
+-    renew: boolean;
+-    encode: (args_0: any, ...args: unknown[]) => string;
+-    decode: (args_0: string, ...args: unknown[]) => any;
+-    maxAge?: number | "session" | undefined;
+-    externalKey?: {
+-        set: (args_0: any, args_1: string, ...args: unknown[]) => void;
+-        get: (args_0: any, ...args: unknown[]) => string;
+-    } | undefined;
+-    valid?: ((args_0: any, args_1: any, ...args: unknown[]) => any) | undefined;
+-    secure?: boolean | undefined;
+-    sameSite?: string | undefined;
+-    store?: {
+-        set: (args_0: string, args_1: any, args_2: number, args_3: {
+-            rolling: boolean;
+-            changed: boolean;
+-            ctx?: any;
+-        }, ...args: unknown[]) => Promise<void>;
+-        get: (args_0: string, args_1: number, args_2: {
+-            rolling: boolean;
+-            ctx?: any;
+-        }, ...args: unknown[]) => Promise<any>;
+-        destroy: (args_0: string, args_1: {
+-            ctx?: any;
+-        }, ...args: unknown[]) => Promise<void>;
+-    } | undefined;
+-    ContextStore?: any;
+-    genid?: ((args_0: any, ...args: unknown[]) => string) | undefined;
+-    prefix?: string | undefined;
+-    beforeSave?: ((args_0: any, args_1: any, ...args: unknown[]) => void) | undefined;
+-}, {
+-    maxAge?: number | "session" | undefined;
+-    externalKey?: {
+-        set: (args_0: any, args_1: string, ...args: unknown[]) => void;
+-        get: (args_0: any, ...args: unknown[]) => string;
+-    } | undefined;
+-    key?: string | undefined;
+-    valid?: ((args_0: any, args_1: any, ...args: unknown[]) => any) | undefined;
+-    autoCommit?: boolean | undefined;
+-    overwrite?: boolean | undefined;
+-    httpOnly?: boolean | undefined;
+-    signed?: boolean | undefined;
+-    rolling?: boolean | undefined;
+-    renew?: boolean | undefined;
+-    secure?: boolean | undefined;
+-    sameSite?: string | undefined;
+-    store?: {
+-        set: (args_0: string, args_1: any, args_2: number, args_3: {
+-            rolling: boolean;
+-            changed: boolean;
+-            ctx?: any;
+-        }, ...args: unknown[]) => Promise<void>;
+-        get: (args_0: string, args_1: number, args_2: {
+-            rolling: boolean;
+-            ctx?: any;
+-        }, ...args: unknown[]) => Promise<any>;
+-        destroy: (args_0: string, args_1: {
+-            ctx?: any;
+-        }, ...args: unknown[]) => Promise<void>;
+-    } | undefined;
+-    ContextStore?: any;
+-    encode?: ((args_0: any, ...args: unknown[]) => string) | undefined;
+-    decode?: ((args_0: string, ...args: unknown[]) => any) | undefined;
+-    genid?: ((args_0: any, ...args: unknown[]) => string) | undefined;
+-    prefix?: string | undefined;
+-    beforeSave?: ((args_0: any, args_1: any, ...args: unknown[]) => void) | undefined;
+-}>;
++    valid: z.ZodOptional<z.ZodFunction<z.ZodPipe<z.ZodCustom<[any, any, ...unknown[]], [any, any, ...unknown[]]>, z.ZodTuple<[z.ZodAny, z.ZodAny], z.ZodUnknown>>, z.ZodAny>>;
++    beforeSave: z.ZodOptional<z.ZodFunction<z.ZodPipe<z.ZodCustom<[any, any, ...unknown[]], [any, any, ...unknown[]]>, z.ZodTuple<[z.ZodAny, z.ZodAny], z.ZodUnknown>>, z.ZodVoid>>;
++}, z.core.$strip>;
+ export type SessionOptions = z.infer<typeof SessionOptions>;
+ export type CreateSessionOptions = Partial<SessionOptions>;
+ type Middleware = (ctx: any, next: any) => Promise<void>;
+diff --git a/dist/esm/index.js b/dist/esm/index.js
+index 0774b09e190fdfb1c1942304cf38317c9f6ec3a0..98935663eeb51ee721164501a31b0d83c6e11cb8 100644
+--- a/dist/esm/index.js
++++ b/dist/esm/index.js
+@@ -8,6 +8,16 @@ import util from './util.js';
+ const debug = debuglog('koa-session');
+ const GET_CONTEXT_SESSION = Symbol('get contextSession');
+ const CONTEXT_SESSION_INSTANCE = Symbol('contextSession instance');
++// Zod 4 pads omitted any-valued tuple slots. Check raw arity first to retain
++// the v3 callback contract, including explicit undefined and extra arguments.
++function functionArgs(...items) {
++  const tuple = z.tuple(items).rest(z.unknown());
++  return z.custom(
++    value => Array.isArray(value) && value.length >= items.length,
++    { error: 'Not enough function arguments' },
++  ).pipe(tuple);
++}
++
+ export const SessionOptions = z.object({
+     /**
+      * cookie key
+@@ -72,16 +82,12 @@ export const SessionOptions = z.object({
+          * get the external key
+          * `(ctx) => string`
+          */
+-        get: z.function()
+-            .args(z.any())
+-            .returns(z.string()),
++        get: z.function({ input: functionArgs(z.any()), output: z.string() }),
+         /**
+          * set the external key
+          * `(ctx, key) => void`
+          */
+-        set: z.function()
+-            .args(z.any(), z.string())
+-            .returns(z.void()),
++        set: z.function({ input: functionArgs(z.any(), z.string()), output: z.void() }),
+     }).optional(),
+     /**
+      * session storage is dependent on your external store
+@@ -91,23 +97,17 @@ export const SessionOptions = z.object({
+          * get session data by key
+          * `(key, maxAge, { rolling, ctx }) => sessionData | Promise<sessionData>`
+          */
+-        get: z.function()
+-            .args(z.string(), z.number(), z.object({ rolling: z.boolean(), ctx: z.any() }))
+-            .returns(z.promise(z.any())),
++        get: z.function({ input: functionArgs(z.string(), z.number(), z.object({ rolling: z.boolean(), ctx: z.any().optional() })), output: z.promise(z.any()) }),
+         /**
+          * set session data for key, with a `maxAge` (in ms)
+          * `(key, sess, maxAge, { rolling, changed, ctx }) => void | Promise<void>`
+          */
+-        set: z.function()
+-            .args(z.string(), z.any(), z.number(), z.object({ rolling: z.boolean(), changed: z.boolean(), ctx: z.any() }))
+-            .returns(z.promise(z.void())),
++        set: z.function({ input: functionArgs(z.string(), z.any(), z.number(), z.object({ rolling: z.boolean(), changed: z.boolean(), ctx: z.any().optional() })), output: z.promise(z.void()) }),
+         /**
+          * destroy session data for key
+          * `(key, { ctx })=> void | Promise<void>`
+          */
+-        destroy: z.function()
+-            .args(z.string(), z.object({ ctx: z.any() }))
+-            .returns(z.promise(z.void())),
++        destroy: z.function({ input: functionArgs(z.string(), z.object({ ctx: z.any().optional() })), output: z.promise(z.void()) }),
+     }).optional(),
+     /**
+      * If your session store requires data or utilities from context, `opts.ContextStore` is also supported.
+@@ -115,23 +115,17 @@ export const SessionOptions = z.object({
+      * `new ContextStore(ctx)` will be executed on every request.
+      */
+     ContextStore: z.any().optional(),
+-    encode: z.function()
+-        .args(z.any())
+-        .returns(z.string())
+-        .optional()
+-        .default(() => util.encode),
+-    decode: z.function()
+-        .args(z.string())
+-        .returns(z.any())
+-        .default(() => util.decode),
++    encode: z.function({ input: functionArgs(z.any()), output: z.string() })
++
++        .prefault(() => util.encode),
++    decode: z.function({ input: functionArgs(z.string()), output: z.any() })
++        .prefault(() => util.decode),
+     /**
+      * If you want to generate a new session id, you can use `genid` option to customize it.
+      * Default is a function that uses `randomUUID()`.
+      * `(ctx) => string`
+      */
+-    genid: z.function()
+-        .args(z.any())
+-        .returns(z.string())
++    genid: z.function({ input: functionArgs(z.any()), output: z.string() })
+         .optional(),
+     /**
+      * If you want to prefix the session id, you can use `prefix` option to customize it.
+@@ -142,17 +136,13 @@ export const SessionOptions = z.object({
+      * valid session value before use it
+      * `(ctx, sessionData) => boolean`
+      */
+-    valid: z.function()
+-        .args(z.any(), z.any())
+-        .returns(z.any())
++    valid: z.function({ input: functionArgs(z.any(), z.any()), output: z.any() })
+         .optional(),
+     /**
+      * hook before save session
+      * `(ctx, sessionModel) => void`
+      */
+-    beforeSave: z.function()
+-        .args(z.any(), z.any())
+-        .returns(z.void())
++    beforeSave: z.function({ input: functionArgs(z.any(), z.any()), output: z.void() })
+         .optional(),
+ });
+ const DEFAULT_SESSION_OPTIONS = SessionOptions.parse({});
+@@ -281,4 +271,3 @@ function extendContext(context, opts) {
+         },
+     });
+ }
+\ No newline at end of file
+-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaW5kZXguanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyIuLi8uLi9zcmMvaW5kZXgudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsT0FBTyxNQUFNLE1BQU0sYUFBYSxDQUFDO0FBQ2pDLE9BQU8sRUFBRSxRQUFRLEVBQUUsTUFBTSxXQUFXLENBQUM7QUFDckMsT0FBTyxFQUFFLFVBQVUsRUFBRSxNQUFNLGFBQWEsQ0FBQztBQUN6QyxPQUFPLEVBQUUsT0FBTyxFQUFFLE1BQU0sWUFBWSxDQUFDO0FBQ3JDLE9BQU8sQ0FBQyxNQUFNLEtBQUssQ0FBQztBQUNwQixPQUFPLEVBQUUsY0FBYyxFQUFFLE1BQU0sY0FBYyxDQUFDO0FBQzlDLE9BQU8sSUFBSSxNQUFNLFdBQVcsQ0FBQztBQUU3QixNQUFNLEtBQUssR0FBRyxRQUFRLENBQUMsYUFBYSxDQUFDLENBQUM7QUFFdEMsTUFBTSxtQkFBbUIsR0FBRyxNQUFNLENBQUMsb0JBQW9CLENBQUMsQ0FBQztBQUN6RCxNQUFNLHdCQUF3QixHQUFHLE1BQU0sQ0FBQyx5QkFBeUIsQ0FBQyxDQUFDO0FBRW5FLE1BQU0sQ0FBQyxNQUFNLGNBQWMsR0FBRyxDQUFDLENBQUMsTUFBTSxDQUFDO0lBQ3JDOzs7T0FHRztJQUNILEdBQUcsRUFBRSxDQUFDLENBQUMsTUFBTSxFQUFFLENBQUMsT0FBTyxDQUFDLFVBQVUsQ0FBQztJQUNuQzs7Ozs7O09BTUc7SUFDSCxNQUFNLEVBQUUsQ0FBQyxDQUFDLEtBQUssQ0FBQyxDQUFFLENBQUMsQ0FBQyxNQUFNLEVBQUUsRUFBRSxDQUFDLENBQUMsT0FBTyxDQUFDLFNBQVMsQ0FBQyxDQUFFLENBQUMsQ0FBQyxRQUFRLEVBQUU7SUFDaEU7OztPQUdHO0lBQ0gsVUFBVSxFQUFFLENBQUMsQ0FBQyxPQUFPLEVBQUUsQ0FBQyxPQUFPLENBQUMsSUFBSSxDQUFDO0lBQ3JDOzs7T0FHRztJQUNILFNBQVMsRUFBRSxDQUFDLENBQUMsT0FBTyxFQUFFLENBQUMsT0FBTyxDQUFD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
+\ No newline at end of file
+diff --git a/package.json b/package.json
+index 808789eb0012e97454cc990d8be98f705125c775..1586dee2a46c423647b073d5dc2c663a873a9710 100644
+--- a/package.json
++++ b/package.json
+@@ -35,7 +35,7 @@
+   "dependencies": {
+     "crc": "^3.8.0",
+     "is-type-of": "^2.2.0",
+-    "zod": "^3.24.1"
++    "zod": "4.6.6"
+   },
+   "engines": {
+     "node": ">= 18.19.0"
+diff --git a/src/index.ts b/src/index.ts
+index 74ec11af5bbf950dcb5d0b38d243e828fa20c5d1..347aedeb400fdc6761849bde1c11cfb34ce90cf3 100644
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -11,6 +11,16 @@ const debug = debuglog('koa-session');
+ const GET_CONTEXT_SESSION = Symbol('get contextSession');
+ const CONTEXT_SESSION_INSTANCE = Symbol('contextSession instance');
+ 
++// Zod 4 pads omitted any-valued tuple slots. Check raw arity first to retain
++// the v3 callback contract, including explicit undefined and extra arguments.
++function functionArgs<T extends [z.ZodType, ...z.ZodType[]]>(...items: T) {
++  const tuple = z.tuple(items).rest(z.unknown());
++  return z.custom<z.input<typeof tuple>>(
++    value => Array.isArray(value) && value.length >= items.length,
++    { error: 'Not enough function arguments' },
++  ).pipe(tuple);
++}
++
+ export const SessionOptions = z.object({
+   /**
+    * cookie key
+@@ -75,16 +85,12 @@ export const SessionOptions = z.object({
+      * get the external key
+      * `(ctx) => string`
+      */
+-    get: z.function()
+-      .args(z.any())
+-      .returns(z.string()),
++    get: z.function({ input: functionArgs(z.any()), output: z.string() }),
+     /**
+      * set the external key
+      * `(ctx, key) => void`
+      */
+-    set: z.function()
+-      .args(z.any(), z.string())
+-      .returns(z.void()),
++    set: z.function({ input: functionArgs(z.any(), z.string()), output: z.void() }),
+   }).optional(),
+   /**
+    * session storage is dependent on your external store
+@@ -94,23 +100,17 @@ export const SessionOptions = z.object({
+      * get session data by key
+      * `(key, maxAge, { rolling, ctx }) => sessionData | Promise<sessionData>`
+      */
+-    get: z.function()
+-      .args(z.string(), z.number(), z.object({ rolling: z.boolean(), ctx: z.any() }))
+-      .returns(z.promise(z.any())),
++    get: z.function({ input: functionArgs(z.string(), z.number(), z.object({ rolling: z.boolean(), ctx: z.any().optional() })), output: z.promise(z.any()) }),
+     /**
+      * set session data for key, with a `maxAge` (in ms)
+      * `(key, sess, maxAge, { rolling, changed, ctx }) => void | Promise<void>`
+      */
+-    set: z.function()
+-      .args(z.string(), z.any(), z.number(), z.object({ rolling: z.boolean(), changed: z.boolean(), ctx: z.any() }))
+-      .returns(z.promise(z.void())),
++    set: z.function({ input: functionArgs(z.string(), z.any(), z.number(), z.object({ rolling: z.boolean(), changed: z.boolean(), ctx: z.any().optional() })), output: z.promise(z.void()) }),
+     /**
+      * destroy session data for key
+      * `(key, { ctx })=> void | Promise<void>`
+      */
+-    destroy: z.function()
+-      .args(z.string(), z.object({ ctx: z.any() }))
+-      .returns(z.promise(z.void())),
++    destroy: z.function({ input: functionArgs(z.string(), z.object({ ctx: z.any().optional() })), output: z.promise(z.void()) }),
+   }).optional(),
+   /**
+    * If your session store requires data or utilities from context, `opts.ContextStore` is also supported.
+@@ -118,23 +118,17 @@ export const SessionOptions = z.object({
+    * `new ContextStore(ctx)` will be executed on every request.
+    */
+   ContextStore: z.any().optional(),
+-  encode: z.function()
+-    .args(z.any())
+-    .returns(z.string())
+-    .optional()
+-    .default(() => util.encode),
+-  decode: z.function()
+-    .args(z.string())
+-    .returns(z.any())
+-    .default(() => util.decode),
++  encode: z.function({ input: functionArgs(z.any()), output: z.string() })
++
++    .prefault(() => util.encode),
++  decode: z.function({ input: functionArgs(z.string()), output: z.any() })
++    .prefault(() => util.decode),
+   /**
+    * If you want to generate a new session id, you can use `genid` option to customize it.
+    * Default is a function that uses `randomUUID()`.
+    * `(ctx) => string`
+    */
+-  genid: z.function()
+-    .args(z.any())
+-    .returns(z.string())
++  genid: z.function({ input: functionArgs(z.any()), output: z.string() })
+     .optional(),
+   /**
+    * If you want to prefix the session id, you can use `prefix` option to customize it.
+@@ -145,17 +139,13 @@ export const SessionOptions = z.object({
+    * valid session value before use it
+    * `(ctx, sessionData) => boolean`
+    */
+-  valid: z.function()
+-    .args(z.any(), z.any())
+-    .returns(z.any())
++  valid: z.function({ input: functionArgs(z.any(), z.any()), output: z.any() })
+     .optional(),
+   /**
+    * hook before save session
+    * `(ctx, sessionModel) => void`
+    */
+-  beforeSave: z.function()
+-    .args(z.any(), z.any())
+-    .returns(z.void())
++  beforeSave: z.function({ input: functionArgs(z.any(), z.any()), output: z.void() })
+     .optional(),
+ });
+ 

@@ -60,6 +60,8 @@ overrides:
   ip-address@>=10.0.0 <10.7.1: 10.7.1
   js-yaml@<4.3.2: 4.3.2
   json-2-csv@>=3.15.0 <5.5.11: 5.5.11
+  koa-body@6.0.1>zod: 4.6.6
+  koa-session@7.0.2>zod: 4.6.6
   linkify-it@<=5.0.1: 5.0.2
   lodash-es@<=4.17.23: 4.18.1
   lodash@<=4.17.23: 4.18.1
@@ -108,6 +110,12 @@ patchedDependencies:
   braces@3.0.3:
     hash: 16906195aadd6bf45443dc2bb3e1d9f7aea7702098f6494bda3aad40d8ca0189
     path: patches/braces@3.0.3.patch
+  koa-body@6.0.1:
+    hash: 68b5fe15bc5eacaf3d3ab90e7060c9bc1f3d5a288c92b4373231badb5633632f
+    path: patches/koa-body@6.0.1.patch
+  koa-session@7.0.2:
+    hash: ccb5eea61ba529683746320145eaae09a1cd017f7283948d5fe92f275c42007c
+    path: patches/koa-session@7.0.2.patch
   minimatch@9.0.7:
     hash: f5ddb819f70e4a3498f63db971f476b02d56156e7b798a39751b305dd1528ea2
     path: patches/minimatch@9.0.7.patch
@@ -14473,9 +14481,6 @@ packages:
     peerDependencies:
       zod: ^3.25.0 || ^4.0.0
 
-  zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
-
   zod@4.6.6:
     resolution: {integrity: sha512-4UmzQUF5fxvfcYHlbjBmejU+w+hbDnWFx4aS8kBx7nPBHcO2SqPbpAG8snbdg+Xse4pRefR98hgjFgIMCI/UhA==}
 
@@ -23600,13 +23605,13 @@ snapshots:
       json-logic-js: 2.0.5
       jsonwebtoken: 9.0.3
       koa: 2.16.4
-      koa-body: 6.0.1
+      koa-body: 6.0.1(patch_hash=68b5fe15bc5eacaf3d3ab90e7060c9bc1f3d5a288c92b4373231badb5633632f)
       koa-compose: 4.1.0
       koa-compress: 5.1.1
       koa-favicon: 2.1.0
       koa-helmet: 7.1.0(helmet@6.2.0)
       koa-ip: 2.1.4
-      koa-session: 7.0.2
+      koa-session: 7.0.2(patch_hash=ccb5eea61ba529683746320145eaae09a1cd017f7283948d5fe92f275c42007c)
       koa-static: 5.0.0
       lodash: 4.18.1
       mime-types: 2.1.35
@@ -24320,7 +24325,7 @@ snapshots:
       commander: 8.3.0
       json-logic-js: 2.0.5
       koa: 2.16.4
-      koa-body: 6.0.1
+      koa-body: 6.0.1(patch_hash=68b5fe15bc5eacaf3d3ab90e7060c9bc1f3d5a288c92b4373231badb5633632f)
       node-schedule: 2.1.1
       typedoc: 0.28.19(typescript@5.9.3)
       typedoc-github-wiki-theme: 2.1.0(typedoc-plugin-markdown@4.11.0(typedoc@0.28.19(typescript@5.9.3)))
@@ -28769,14 +28774,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  koa-body@6.0.1:
+  koa-body@6.0.1(patch_hash=68b5fe15bc5eacaf3d3ab90e7060c9bc1f3d5a288c92b4373231badb5633632f):
     dependencies:
       '@types/co-body': 6.1.3
       '@types/formidable': 2.0.6
       '@types/koa': 2.15.0
       co-body: 6.2.0
       formidable: 2.1.5
-      zod: 3.25.76
+      zod: 4.6.6
 
   koa-compose@4.1.0: {}
 
@@ -28826,11 +28831,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  koa-session@7.0.2:
+  koa-session@7.0.2(patch_hash=ccb5eea61ba529683746320145eaae09a1cd017f7283948d5fe92f275c42007c):
     dependencies:
       crc: 3.8.0
       is-type-of: 2.2.0
-      zod: 3.25.76
+      zod: 4.6.6
 
   koa-static@5.0.0:
     dependencies:
@@ -32997,8 +33002,6 @@ snapshots:
   zod-validation-error@5.0.0(zod@4.6.6):
     dependencies:
       zod: 4.6.6
-
-  zod@3.25.76: {}
 
   zod@4.6.6: {}
 

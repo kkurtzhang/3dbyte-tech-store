@@ -16,7 +16,7 @@
     "dev:turbo": "turbo run dev --parallel",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "test:dependency-security": "node --test scripts/security/dependency-regressions.test.cjs scripts/security/strapi-update-notifier.test.cjs scripts/security/runtime-advisory-regressions.test.cjs scripts/security/graphql-consumer-compatibility.test.cjs scripts/security/knowledge-audit-dependencies.test.cjs scripts/security/october-advisory-regressions.test.cjs scripts/security/zod-v4-consumers.test.cjs",
+    "test:dependency-security": "node --test scripts/security/dependency-regressions.test.cjs scripts/security/strapi-update-notifier.test.cjs scripts/security/runtime-advisory-regressions.test.cjs scripts/security/graphql-consumer-compatibility.test.cjs scripts/security/knowledge-audit-dependencies.test.cjs scripts/security/october-advisory-regressions.test.cjs scripts/security/zod-v4-consumers.test.cjs scripts/security/koa-zod-migration.test.cjs",
     "type-check": "turbo run type-check",
     "clean": "./scripts/clean.sh",
     "clean:turbo": "turbo run clean && rm -rf node_modules",
@@ -105,6 +105,8 @@
       "ip-address@>=10.0.0 <10.7.1": "10.7.1",
       "js-yaml@<4.3.2": "4.3.2",
       "json-2-csv@>=3.15.0 <5.5.11": "5.5.11",
+      "koa-body@6.0.1>zod": "4.6.6",
+      "koa-session@7.0.2>zod": "4.6.6",
       "linkify-it@<=5.0.1": "5.0.2",
       "lodash-es@<=4.17.23": "4.18.1",
       "lodash@<=4.17.23": "4.18.1",
@@ -148,7 +150,9 @@
       "minimatch@9.0.7": "patches/minimatch@9.0.7.patch",
       "yalc@1.0.0-pre.53": "patches/yalc@1.0.0-pre.53.patch",
       "braces@3.0.3": "patches/braces@3.0.3.patch",
-      "@medusajs/modules-sdk@2.15.5": "patches/@medusajs__modules-sdk@2.15.5.patch"
+      "@medusajs/modules-sdk@2.15.5": "patches/@medusajs__modules-sdk@2.15.5.patch",
+      "koa-session@7.0.2": "patches/koa-session@7.0.2.patch",
+      "koa-body@6.0.1": "patches/koa-body@6.0.1.patch"
     },
     "packageExtensions": {
       "next@16.4.1": {
