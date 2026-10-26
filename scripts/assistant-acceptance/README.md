@@ -1,6 +1,6 @@
 # Local assistant acceptance
 
-This harness exercises the normal `/api/ai-shopping-assistant` route at runtime commit `ba34aa4939c9b361aeb61668868caf9e4b416f88`, including the answer-style change and the landed evidence safeguards. The harness pins that exact runtime snapshot and refuses unrelated runtime edits or untracked sources. For a future behavior change, review and commit the runtime first, then update `BASE_SHA` in `config.mjs` and the pinned system/tool contract together; keep the exact-source comparison and isolation checks. No local-knowledge bypass or staging connection is involved.
+This harness exercises the normal `/api/ai-shopping-assistant` route at runtime commit `f207c248041792863457b28dd4141e8e1b8f880f`, including contextual retrieval, useful missing-document replies, final Sources and the landed evidence safeguards. The harness pins that exact runtime snapshot and refuses unrelated runtime edits or untracked sources. For a future behavior change, review and commit the runtime first, then update `BASE_SHA` in `config.mjs` and the pinned system/tool contract together; keep the exact-source comparison and isolation checks. No local-knowledge bypass or staging connection is involved.
 
 Two modes share the same real Next.js route, AI SDK, Redis rate limiter and synthetic backend:
 

@@ -536,3 +536,43 @@ test("relay retains body and 35-request budget limits", async () => {
     await server.close();
   }
 });
+
+test("relay preserves only the two bounded retrieval tool choices and rejects other forced tools without egress", async () => {
+  const forwarded = [];
+  const server = await startFixtureServer({
+    mode: "live",
+    providerKey: fake,
+    storefrontOrigin: "http://127.0.0.1:41003",
+    liveFetch: async (_url, options) => {
+      forwarded.push(JSON.parse(options.body));
+      return new Response(sse([{ content: "safe" }]), {
+        headers: { "content-type": "text/event-stream" },
+      });
+    },
+  });
+  try {
+    for (const name of ["searchProducts", "searchKnowledge"]) {
+      const choice = { type: "function", function: { name } };
+      const response = await request(server, {
+        ...requestBody(),
+        tool_choice: choice,
+      });
+      assert.equal(response.status, 200);
+      assert.deepEqual(forwarded.at(-1).tool_choice, choice);
+    }
+    for (const name of [
+      "createSupportTicket",
+      "lookupOrder",
+      "arbitraryTool",
+    ]) {
+      const response = await request(server, {
+        ...requestBody(),
+        tool_choice: { type: "function", function: { name } },
+      });
+      assert.equal(response.status, 422);
+    }
+    assert.equal(forwarded.length, 2);
+  } finally {
+    await server.close();
+  }
+});
