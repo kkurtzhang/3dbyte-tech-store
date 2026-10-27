@@ -27,6 +27,7 @@ export interface KnowledgeDependencies {
       documentId: string,
       productId: string,
       revision: string,
+      options?: { failSoft?: boolean },
     ): Promise<ApprovedKnowledgeDocument | null>;
   };
   query: {

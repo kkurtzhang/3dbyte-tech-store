@@ -38,7 +38,7 @@ it.each([
     expect(selectKnowledgeFacts(document, question)).toEqual(facts)
   },
 )
-it("keeps every fact when a temperature phrase only partially matches the question", () => {
+it("keeps the relevant unknown without dumping unrelated material facts for a natural temperature question", () => {
   const selected = selectKnowledgeFacts(
     original,
     "Can I run Dragonfly BMS at 500 degrees Celsius?",
@@ -50,8 +50,7 @@ it("keeps every fact when a temperature phrase only partially matches the questi
     }),
   )
   expect(selected[0].field).toBe("installed_max_temperature")
-  expect(selected).toHaveLength(original.facts.length)
-  expect(selected).toEqual(expect.arrayContaining(original.facts))
+  expect(selected).not.toContainEqual(expect.objectContaining({field: "body_material"}))
 })
 it("uses field names and labels as data, never commands in values or source text", () => {
   const altered = {
@@ -66,7 +65,7 @@ it("uses field names and labels as data, never commands in values or source text
     altered.facts[29],
   ])
   expect(selectKnowledgeFacts(altered, "Which nozzle threads are documented?")).toEqual([
-    altered.facts[29], ...altered.facts.slice(0, 29),
+    altered.facts[29],
   ])
   expect(document.facts).toEqual(facts)
 })

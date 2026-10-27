@@ -1,4 +1,7 @@
-import type { ApprovedKnowledgeDocument } from "@3dbyte-tech-store/shared-types"
+import type {
+  ApprovedKnowledgeDocument,
+  KnowledgeRetrievalAvailability,
+} from "@3dbyte-tech-store/shared-types"
 import {
   isKnowledgeRecord,
   parseApprovedKnowledgeDocument,
@@ -11,6 +14,8 @@ export type KnowledgeInput = {
   limit?: number
 }
 export type KnowledgeResult = {
+  availability?: KnowledgeRetrievalAvailability
+
   documents: ApprovedKnowledgeDocument[]
   citations: ReturnType<typeof citationFor>[]
 }
@@ -44,7 +49,12 @@ export function validateKnowledgeResult(
     !Array.isArray(raw.citations) ||
     raw.documents.length > Math.min(input.limit ?? 4, 4) ||
     raw.citations.length !== raw.documents.length ||
-    "error" in raw
+    "error" in raw ||
+    (raw.availability !== undefined &&
+      (!["available", "no_match", "not_current"].includes(
+        String(raw.availability),
+      ) ||
+        (raw.availability === "available") !== Boolean(raw.documents.length)))
   )
     return null
   const documents: ApprovedKnowledgeDocument[] = []
@@ -72,7 +82,15 @@ export function validateKnowledgeResult(
     ids.add(document.document_id)
     documents.push(document)
   }
-  return { documents, citations: documents.map(citationFor) }
+  return {
+    documents,
+    citations: documents.map(citationFor),
+    ...(["available", "no_match", "not_current"].includes(
+      String(raw.availability),
+    )
+      ? { availability: raw.availability as KnowledgeResult["availability"] }
+      : {}),
+  }
 }
 
 export function createKnowledgeExecution(
@@ -81,8 +99,13 @@ export function createKnowledgeExecution(
 ) {
   const results = new Map<string, KnowledgeResult | null>()
   let attempted = false
+  const outcomes = new Map<
+    string,
+    "available" | "empty" | "not_current" | "unavailable"
+  >()
   return {
     results,
+    outcomes,
     get attempted() {
       return attempted
     },
@@ -97,7 +120,21 @@ export function createKnowledgeExecution(
       }
       results.set(toolCallId, null)
       try {
-        const result = validateKnowledgeResult(await call(input), input, now())
+        const raw = await call(input)
+        const result = validateKnowledgeResult(raw, input, now())
+        outcomes.set(
+          toolCallId,
+          result?.documents.length
+            ? "available"
+            : result?.availability === "not_current" ||
+                (isKnowledgeRecord(raw) &&
+                  Array.isArray(raw.documents) &&
+                  raw.documents.length > 0)
+              ? "not_current"
+              : result
+                ? "empty"
+                : "unavailable",
+        )
         results.set(toolCallId, result)
         return (
           result ?? {
@@ -105,6 +142,7 @@ export function createKnowledgeExecution(
           }
         )
       } catch {
+        outcomes.set(toolCallId, "unavailable")
         return { error: "Current approved evidence is unavailable." }
       }
     },

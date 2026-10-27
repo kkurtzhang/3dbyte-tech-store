@@ -97,34 +97,47 @@ observed prompts, responses and public tool outputs are preserved in
 The captured timestamp is fixed in regression tests so evidence expiry does not
 make the test silently exercise a different case.
 
-For any turn that attempts knowledge retrieval, the visible answer is now an
-extractive rendering of current validated fact labels/values and explicit null
-unknowns, grouped by product with each source and binding scope. All model prose
-from that turn is replaced, including assertions before a tool call. This
-retains supported safety numbers without using a temperature blacklist or a
-second model to judge arbitrary prose. Empty, invalid or failed retrieval
-produces an unknown-evidence answer. Expired or conflicting revisions are
-excluded at rendering time. The renderer shows at most four documents. Lexical
-matches between the current question and approved field names/labels prioritize
-facts; they do not discard nonmatching facts or named unknowns. A match cannot
-establish that every clause or paraphrase in the question has been covered.
-General, broad and multi-intent requests retain every validated fact (at most
-thirty). Filtering is limited to a complete explicit single-field request such
-as "Only tell me the Dragonfly BMS nozzle thread": after removing product-name
-words, the whole requested phrase must equal exactly one field name or label.
-Additional clauses or ambiguous labels retain all facts. This intentionally
-conservative grammar may include extra approved facts for other narrow wording.
-Selection never uses model prose or instructions inside fact values. The previous
-first-eight-facts cap is removed, so late requested fields are not silently
-hidden. Lexical ranking is a relevance aid, not semantic verification. Null facts
-stay named unknowns; document omissions are disclosed.
+For technical questions and natural product follow-ups, the route requires a
+current catalogue lookup followed by `searchKnowledge` within the existing
+five-step bound. The catalogue request is skipped when the customer declines
+it. Customer messages supply conversational context, never evidence; historical
+assistant claims and tool parts cannot supply approved facts. A single direct
+catalogue match from the current request can supply the product scope. Multiple
+matches stay ambiguous and no variant is inferred. Known product scope retains
+the backend's bounded lexical-miss fallback and every ownership/source check.
 
-Citations are native SDK `source-url` parts, with source streaming enabled for
-these validated documents only. Provider-generated source parts are discarded.
-The real drawer renders the citations through its existing HTTPS-only source
-links (no embedded credentials; new tabs use `noopener noreferrer`). The source
-title remains beside the product's facts; the URL is a clickable source link,
-not a Markdown link that the drawer would display literally.
+The visible answer uses current validated fact labels/values and explicit null
+unknowns. Model assertions, including text before a tool call, remain withheld
+on knowledge turns; an ignored required lookup cannot authorize technical
+claims. The answer composer adds safe clarification and a concrete next step
+without requiring corpus-backed specifications for those conversational actions.
+Ordinary clarification questions can retain model wording without a lookup.
+
+Retrieval distinguishes no matching eligible documents from matching candidates
+whose current body/revision cannot be verified, and from transport failures.
+These diagnostics never contain rejected facts or sources. `not_current` is an
+aggregate diagnostic (expiry, withdrawn/invalid review, changed revision or
+binding); it does not prove which underlying reason occurred. The customer sees
+the specific unanswered requirement and one useful clarification or safe next
+step, without internal approval terminology. This does not renew a review,
+change source validity, or populate missing knowledge.
+
+Recognized single-topic questions select relevant fields and safety qualifiers
+instead of dumping unrelated specifications. Complete explicit field requests
+retain exact label matching. Compound, broad or unrecognized questions keep all
+bounded facts and unknowns (at most thirty); ambiguous field labels are retained.
+Selection uses field names/labels, never instructions inside fact values. A
+missing requested topic stays unanswered; a component rating cannot establish
+an installed printer limit even if no explicit null field was returned. Sources
+that conflict for the same product/scope/field remain associated with that
+unresolved claim, including contradictory documents beyond the presentation cap.
+
+Citations are deduplicated native SDK `source-url` parts after the answer text.
+Provider-generated sources are discarded. The drawer renders them once in its
+final Sources section through HTTPS-only links, with product/scope/field
+attribution. Functional product links remain available as current catalogue
+actions. Text remains held until the SDK finish event so unsupported pre-tool
+assertions cannot appear transiently.
 
 This changes the response experience: tool/status events still stream, but text
 is held until the SDK finish event, including on ordinary non-knowledge turns.

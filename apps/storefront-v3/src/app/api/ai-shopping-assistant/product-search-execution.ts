@@ -115,12 +115,17 @@ export function validateProductSearchResult(
 
 export function createProductSearchExecution(config: SearchConfig) {
   const results = new Map<string, ProductSearchResult>();
+  const scopeCandidates = new Map<string, {id: string; direct: boolean; title: string}>();
+  let attempted = false;
   return {
     results,
+    scopeCandidates,
+    get attempted() { return attempted; },
     execute: async (
       input: SearchInput,
       { toolCallId }: { toolCallId: string },
     ) => {
+      attempted = true;
       const mode = config.mode ?? "search";
       const query = mode === "browse" ? "" : input.query.trim().slice(0, 200);
       let result = outcome(
@@ -166,6 +171,9 @@ export function createProductSearchExecution(config: SearchConfig) {
           clearTimeout(timer);
           config.signal.removeEventListener("abort", abort);
         }
+      }
+      for (const action of result.actions) {
+        scopeCandidates.set(action.id, {id: action.id, direct: action.match === "search", title: action.title});
       }
       results.set(toolCallId, result);
       return result;

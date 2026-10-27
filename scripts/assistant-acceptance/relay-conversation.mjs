@@ -114,13 +114,21 @@ export function createConversationBoundary(data, origin) {
     for (const [key, value] of Object.entries({
       temperature: 0.2,
       max_tokens: 1800,
-      tool_choice: "auto",
       stream_options: { include_usage: true },
       thinking: { type: "disabled" },
     })) {
       if (body[key] !== undefined && !equal(body[key], value))
         throw new Error("Unapproved request option");
     }
+    const toolChoice = body.tool_choice ?? "auto";
+    const retrievalChoices = ["searchProducts", "searchKnowledge"].map(
+      (name) => ({ type: "function", function: { name } }),
+    );
+    if (
+      toolChoice !== "auto" &&
+      !retrievalChoices.some((choice) => equal(choice, toolChoice))
+    )
+      throw new Error("Unapproved request option");
     if (body.tools !== undefined && !equal(body.tools, contract.tools))
       throw new Error("Unapproved tool definitions");
     const messages = body.messages.map(normalize);
@@ -144,7 +152,7 @@ export function createConversationBoundary(data, origin) {
         stream: true,
         temperature: 0.2,
         max_tokens: 1800,
-        tool_choice: "auto",
+        tool_choice: toolChoice,
         stream_options: { include_usage: true },
         thinking: { type: "disabled" },
         tools: structuredClone(

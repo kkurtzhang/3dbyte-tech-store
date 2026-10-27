@@ -387,7 +387,7 @@ describe("POST /api/ai-shopping-assistant", () => {
     expect(config.stopWhen).toEqual({ steps: 5 })
   })
 
-  it("does not force a previous product request onto the current compatibility question", async () => {
+  it("retrieves current product identity for a natural compatibility follow-up", async () => {
     configureAiEnv()
     const { POST } = await import("../route")
     await POST(
@@ -404,7 +404,7 @@ describe("POST /api/ai-shopping-assistant", () => {
     )
     expect(
       streamTextMock.mock.calls[0]?.[0].prepareStep({ stepNumber: 0 }),
-    ).toBeUndefined()
+    ).toEqual({ toolChoice: { type: "tool", toolName: "searchProducts" } })
   })
 
   it.each(productLookupCases)("uses the same typed decision for forcing and execution: $status — $message", async ({ message, allowed }) => {
@@ -1441,7 +1441,7 @@ describe("POST /api/ai-shopping-assistant", () => {
         messages: [
           {
             role: "user",
-            content: "Can I use PETG for a printed RC car outside?",
+            content: "What details do you need from me?",
           },
         ],
       }),

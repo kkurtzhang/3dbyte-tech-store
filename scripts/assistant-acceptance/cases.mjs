@@ -142,7 +142,7 @@ export function checkAnswer(item, events) {
     const magigooSection = answer.split(/### /).find((s) => /^Magigoo/.test(s));
     checks.noCrossProductClaim = !magigooSection?.includes("copper alloy");
     checks.rejectionOrScopedEvidence =
-      /could not verify|cannot establish claims about another product/i.test(
+      /could not verify|can.t confirm|cannot establish claims about another product/i.test(
         answer,
       );
     checks.copperHasOwnSource =
