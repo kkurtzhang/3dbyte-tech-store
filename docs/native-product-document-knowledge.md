@@ -132,6 +132,13 @@ an installed printer limit even if no explicit null field was returned. Sources
 that conflict for the same product/scope/field remain associated with that
 unresolved claim, including contradictory documents beyond the presentation cap.
 
+Presentation consolidates the installed-limit unknown and its safety explanation
+into one paragraph. An exact recognized trailing qualification on a component
+temperature fact may move into that paragraph; other approved wording and
+conditions are retained verbatim. Model-level scope stays in Sources rather than
+an unconditional installation disclaimer. Exact variant facts retain a concise
+variant label in the answer and their existing validation and source scope.
+
 Citations are deduplicated native SDK `source-url` parts after the answer text.
 Provider-generated sources are discarded. The drawer renders them once in its
 final Sources section through HTTPS-only links, with product/scope/field

@@ -226,7 +226,7 @@ it("keeps sibling variants and model-level evidence separate instead of inventin
   );
   expect(result.text).toContain("mainly copper alloy");
   expect(result.text).toContain("Variant-specific synthetic material");
-  expect(result.text).toContain("only to variant variant\\_a");
+  expect(result.text).toContain("For variant variant\\_a only.");
   expect(result.text).not.toContain("Conflicting evidence");
   expect(result.sources).toHaveLength(1);
   expect(result.sources[0].title).toContain("model-level");

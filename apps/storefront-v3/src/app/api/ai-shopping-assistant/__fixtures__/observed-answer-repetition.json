@@ -1,0 +1,254 @@
+{
+  "provenance": {
+    "releaseSha": "d4359efec5bf0197ad4dc2a4f20a91e56e03e05d",
+    "observedAt": "2026-10-27T06:10:04.501Z",
+    "artifacts": [
+      "final-dragonfly-receipt.json",
+      "final-dragonfly-eval48/customer-ai-evals.json",
+      "magigoo-natural-observation.json"
+    ],
+    "sourceEventsNote": "Magigoo retained native events. Dragonfly report retained answer and tool DTOs; its native source events are tested by local replay, not claimed as a captured observation.",
+    "expectedAfterNote": "Expected deterministic local replay, verified by tests; not a new live model observation."
+  },
+  "cases": [
+    {
+      "id": "dragonfly-temperature",
+      "prompt": "Can I run my Dragonfly BMS at 500°C?",
+      "before": "### Phaetus Dragonfly Hotend BMS\n\nPhaetus advertises a 500°C component rating. This does not establish an assembled printer's safe operating temperature or its heater, sensor, wiring and firmware limits.\n\n**Not established:** Installed max temperature. I can't confirm these details from this document.\n\nThese details apply to this model; they do not confirm a specific variant or installation.\n\nA component rating does not verify an installed printer's operating limit. The heater, sensor, wiring and firmware limits remain unknown unless explicitly established above.\n\nWhich printer model are you using, and has its hotend setup been modified?",
+      "knowledge": {
+        "documents": [
+          {
+            "version": 1,
+            "document_id": "uur1zr0pe99e6px1r5ljs0nm",
+            "product_id": "prod_01KSY6A587QB771VW85M12GSWJ",
+            "binding_scope": "product",
+            "variant_id": null,
+            "product_handle": "phaetus-dragonfly-hotend-bms",
+            "product_title": "Phaetus Dragonfly Hotend BMS",
+            "document_title": "Phaetus Dragonfly Hotend BMS Official Product Page",
+            "source_url": "https://www.phaetus.com/products/dragonfly-hotend-bms",
+            "source_kind": "official_product_page",
+            "source_sha256": "ce3586fd2d0abbeeda0ce3225d512574872c6786016d00ba617fec6e8508f5f6",
+            "source_version": "manufacturer-page-capture-2026-10-27",
+            "source_checked_at": "2026-10-27T03:53:00.000Z",
+            "text": "Phaetus describes Dragonfly BMS as made mainly from copper alloy.\nPhaetus labels the filament-path finish Ra ≤ 0.3; the source does not state a unit.\nPhaetus advertises a 500°C component rating. This does not establish an assembled printer's safe operating temperature or its heater, sensor, wiring and firmware limits.\n\nBounded manufacturer evidence fragments:\ncopper alloy material\nRa ≤ 0.3\n500°C\n\nProduct-level evidence only. Unknown fields remain unknown. No live stock, delivery, store price, batch identity or exact installation guarantee is established.\n",
+            "facts": [
+              {
+                "field": "body_material",
+                "label": "Manufacturer body material",
+                "value": "Phaetus describes Dragonfly BMS as made mainly from copper alloy.",
+                "evidence_excerpt": "copper alloy material"
+              },
+              {
+                "field": "filament_path_finish",
+                "label": "Manufacturer filament-path finish",
+                "value": "Phaetus labels the filament-path finish Ra ≤ 0.3; the source does not state a unit.",
+                "evidence_excerpt": "Ra ≤ 0.3"
+              },
+              {
+                "field": "component_temperature_headline",
+                "label": "Manufacturer component temperature headline",
+                "value": "Phaetus advertises a 500°C component rating. This does not establish an assembled printer's safe operating temperature or its heater, sensor, wiring and firmware limits.",
+                "evidence_excerpt": "500°C"
+              },
+              {
+                "field": "colour",
+                "label": "Colour",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "kit_contents",
+                "label": "Kit contents",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "physical_revision",
+                "label": "Physical revision",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "exact_fit",
+                "label": "Exact fit",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "electrical_configuration",
+                "label": "Electrical configuration",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "installed_max_temperature",
+                "label": "Installed max temperature",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "nozzle_specification",
+                "label": "Nozzle specification",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "certification",
+                "label": "Certification",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "physical_stock_and_delivery",
+                "label": "Physical stock and delivery",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "store_sale_price",
+                "label": "Store sale price",
+                "value": null,
+                "evidence_excerpt": ""
+              }
+            ],
+            "revision_hash": "080677d8ec0456afa83c3e6db3d58e634d2e06db5f23e51b3a02fbfa3c804c8e",
+            "valid_until": "2026-11-03T03:53:00.000Z"
+          }
+        ],
+        "citations": [
+          {
+            "document_id": "uur1zr0pe99e6px1r5ljs0nm",
+            "product_id": "prod_01KSY6A587QB771VW85M12GSWJ",
+            "binding_scope": "product",
+            "variant_id": null,
+            "title": "Phaetus Dragonfly Hotend BMS Official Product Page",
+            "source_url": "https://www.phaetus.com/products/dragonfly-hotend-bms",
+            "source_sha256": "ce3586fd2d0abbeeda0ce3225d512574872c6786016d00ba617fec6e8508f5f6",
+            "source_version": "manufacturer-page-capture-2026-10-27",
+            "source_checked_at": "2026-10-27T03:53:00.000Z",
+            "revision_hash": "080677d8ec0456afa83c3e6db3d58e634d2e06db5f23e51b3a02fbfa3c804c8e",
+            "valid_until": "2026-11-03T03:53:00.000Z"
+          }
+        ],
+        "availability": "available"
+      },
+      "observedSources": [],
+      "expectedAfter": "### Phaetus Dragonfly Hotend BMS\n\nPhaetus advertises a 500°C component rating.\n\n**Installed max temperature remains unknown:** a component rating does not verify an installed printer's heater, sensor, wiring and firmware limits.\n\nWhich printer model are you using, and has its hotend setup been modified?"
+    },
+    {
+      "id": "magigoo-materials",
+      "prompt": "Which materials does Magigoo Original support on glass build plates?",
+      "before": "### Magigoo Original 50ml Bed Adhesive\n\nMagigoo describes Original as designed and tested on glass build plates for PLA, ABS, PETG, HIPS and TPU.\n\nThese details apply to this model; they do not confirm a specific variant or installation.",
+      "knowledge": {
+        "documents": [
+          {
+            "version": 1,
+            "document_id": "mu3sv3poa965a25lvvlbdngc",
+            "product_id": "prod_01KSY6A5870Y2J3VR66XAWP9GD",
+            "binding_scope": "product",
+            "variant_id": null,
+            "product_handle": "magigoo-original-50ml",
+            "product_title": "Magigoo Original 50ml Bed Adhesive",
+            "document_title": "Magigoo Original 50ml Bed Adhesive Official Product Page",
+            "source_url": "https://magigoo.com/products/magigoo-original",
+            "source_kind": "official_product_page",
+            "source_sha256": "d6969090d7b0afb9ee956ee998ac7d99ddbf3a93385086148dbe8fcc2d0aa651",
+            "source_version": "manufacturer-page-capture-2026-10-27",
+            "source_checked_at": "2026-10-27T03:53:00.000Z",
+            "text": "Magigoo describes Original as designed and tested on glass build plates for PLA, ABS, PETG, HIPS and TPU.\nThe manufacturer describes a thermally activated adhesive that holds the print on a hot bed and releases after cooling.\n\nBounded manufacturer evidence fragments:\nPLA, ABS, PETG, HIPS and TPU\nonce it cools\n\nProduct-level evidence only. Unknown fields remain unknown. No live stock, delivery, store price, batch identity or exact installation guarantee is established.\n",
+            "facts": [
+              {
+                "field": "material_scope",
+                "label": "Manufacturer material scope",
+                "value": "Magigoo describes Original as designed and tested on glass build plates for PLA, ABS, PETG, HIPS and TPU.",
+                "evidence_excerpt": "PLA, ABS, PETG, HIPS and TPU"
+              },
+              {
+                "field": "cooling_release",
+                "label": "Manufacturer cooling-release guidance",
+                "value": "The manufacturer describes a thermally activated adhesive that holds the print on a hot bed and releases after cooling.",
+                "evidence_excerpt": "once it cools"
+              },
+              {
+                "field": "colour",
+                "label": "Colour",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "kit_contents",
+                "label": "Kit contents",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "physical_revision",
+                "label": "Physical revision",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "exact_fit",
+                "label": "Exact fit",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "universal_petg_bed_temperature",
+                "label": "Universal petg bed temperature",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "certification",
+                "label": "Certification",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "physical_stock_and_delivery",
+                "label": "Physical stock and delivery",
+                "value": null,
+                "evidence_excerpt": ""
+              },
+              {
+                "field": "store_sale_price",
+                "label": "Store sale price",
+                "value": null,
+                "evidence_excerpt": ""
+              }
+            ],
+            "revision_hash": "b1cf33859c4f3f7f22ed41abf1c823bc5d1dfd9fe5d5e34901d7d0f77eaf60f9",
+            "valid_until": "2026-11-03T03:53:00.000Z"
+          }
+        ],
+        "citations": [
+          {
+            "document_id": "mu3sv3poa965a25lvvlbdngc",
+            "product_id": "prod_01KSY6A5870Y2J3VR66XAWP9GD",
+            "binding_scope": "product",
+            "variant_id": null,
+            "title": "Magigoo Original 50ml Bed Adhesive Official Product Page",
+            "source_url": "https://magigoo.com/products/magigoo-original",
+            "source_sha256": "d6969090d7b0afb9ee956ee998ac7d99ddbf3a93385086148dbe8fcc2d0aa651",
+            "source_version": "manufacturer-page-capture-2026-10-27",
+            "source_checked_at": "2026-10-27T03:53:00.000Z",
+            "revision_hash": "b1cf33859c4f3f7f22ed41abf1c823bc5d1dfd9fe5d5e34901d7d0f77eaf60f9",
+            "valid_until": "2026-11-03T03:53:00.000Z"
+          }
+        ],
+        "availability": "available"
+      },
+      "observedSources": [
+        {
+          "type": "source-url",
+          "sourceId": "knowledge-mu3sv3poa965a25lvvlbdngc-b1cf33859c4f3f7f22ed41abf1c823bc5d1dfd9fe5d5e34901d7d0f77eaf60f9",
+          "url": "https://magigoo.com/products/magigoo-original",
+          "title": "Magigoo Original 50ml Bed Adhesive Official Product Page (model-level); Fields: Manufacturer material scope"
+        }
+      ],
+      "expectedAfter": "### Magigoo Original 50ml Bed Adhesive\n\nMagigoo describes Original as designed and tested on glass build plates for PLA, ABS, PETG, HIPS and TPU."
+    }
+  ]
+}

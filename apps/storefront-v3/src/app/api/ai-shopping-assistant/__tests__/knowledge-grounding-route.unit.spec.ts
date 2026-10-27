@@ -189,7 +189,7 @@ it.each(observed.cases)(
       expect(answer).toContain("mainly copper")
     if (fixture.id === "unsupported-installed-temperature") {
       expect(answer).toContain("Installed max temperature")
-      expect(answer).toContain("Not established")
+      expect(answer).toContain("unknown")
     }
     if (fixture.id === "mismatched-product-evidence") {
       expect(answer).toContain("only to the named product")

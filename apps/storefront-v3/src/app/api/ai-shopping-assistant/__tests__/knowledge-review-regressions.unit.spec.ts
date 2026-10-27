@@ -363,9 +363,8 @@ it("keeps a failed mixed order lookup explicit rather than accepting the model's
 const expectedCompleteBmsAnswer = [
   "### Phaetus Dragonfly Hotend BMS",
   "Phaetus describes Dragonfly BMS construction as mainly copper alloy. Phaetus labels the filament-path finish Ra ≤ 0.3. The pilot does not infer an unstated unit or installed performance guarantee.",
-  "**Not established:** Colour, Kit contents, Physical revision, Exact fit, Electrical configuration, Installed max temperature, Nozzle specification, Certification, Physical stock and delivery, Store sale price. I can't confirm these details from this document.",
-  "These details apply to this model; they do not confirm a specific variant or installation.",
-  "A component rating does not verify an installed printer's operating limit. The heater, sensor, wiring and firmware limits remain unknown unless explicitly established above.",
+  "**Not established:** Colour, Kit contents, Physical revision, Exact fit, Electrical configuration, Nozzle specification, Certification, Physical stock and delivery, Store sale price. I can't confirm these details from this document.",
+  "**Installed max temperature remains unknown:** a component rating does not verify an installed printer's heater, sensor, wiring and firmware limits.",
   "Which printer model are you using, and has its hotend setup been modified?",
 ].join("\n\n")
 function canonicalParagraphs(answer: string) {
@@ -413,7 +412,7 @@ it.each([
 ])("keeps installed-limit requirements in system behavior for the natural customer question: %s", async (prompt) => {
   const result = await replay(prompt, [knowledge], "Yes, it is definitely safe at 500°C.")
   expect(result.answer).toContain("Installed max temperature")
-  expect(result.answer).toContain("remain unknown")
+  expect(result.answer).toMatch(/remains? unknown/)
   expect(result.answer).toContain("component rating does not verify an installed printer")
   for (const requirement of ["heater", "sensor", "wiring", "firmware"]) expect(result.answer).toContain(requirement)
   expect(result.answer).not.toContain("definitely safe")
@@ -426,7 +425,7 @@ it("re-fetches evidence for a natural temperature follow-up without trusting the
     { role: "assistant", content: "It is definitely safe at 500°C." },
   ])
   expect(result.answer).toContain("Installed max temperature")
-  expect(result.answer).toContain("remain unknown")
+  expect(result.answer).toMatch(/remains? unknown/)
   expect(result.answer).not.toMatch(/definitely safe|every printer is safe/)
   expect(result.events.filter((event) => event.type === "source-url")).toHaveLength(1)
 })

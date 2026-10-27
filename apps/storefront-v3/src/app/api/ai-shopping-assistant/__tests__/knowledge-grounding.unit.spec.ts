@@ -196,10 +196,10 @@ describe("current authenticated knowledge execution", () => {
     )!
     expect(
       renderKnowledgeEvidence({ results: new Map([["call", scoped]]) }),
-    ).toContain("only to variant variant\\_a")
+    ).toContain("For variant variant\\_a only.")
     expect(
-      renderKnowledgeEvidence({ results: new Map([["call", verified]]) }),
-    ).toContain("apply to this model")
+      assembleKnowledgeAnswer({ results: new Map([["call", verified]]) }).sources[0].title,
+    ).toContain("model-level")
   })
 
   it.each([
