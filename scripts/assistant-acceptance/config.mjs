@@ -3,7 +3,7 @@ import { open, realpath, lstat, readdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { FIXTURE_MARKER } from "./fixtures.mjs";
-export const BASE_SHA = "f207c248041792863457b28dd4141e8e1b8f880f";
+export const BASE_SHA = "ebc5116d42e8d20e2910313b56ec47b786a17df2";
 export const SSD_ROOT = "/Volumes/MINI-M1";
 export const REPO = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
