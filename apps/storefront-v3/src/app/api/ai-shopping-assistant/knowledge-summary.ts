@@ -7,6 +7,27 @@ import { selectKnowledgeFacts } from "./knowledge-fact-selection";
 
 type Fact = ApprovedKnowledgeDocument["facts"][number];
 
+// Move only this complete, recognized qualification into the single safety
+// paragraph below. Unknown wording, conditions, links and code remain untouched.
+const COMPONENT_SETUP_QUALIFIER =
+  " This does not establish an assembled printer's safe operating temperature or its heater, sensor, wiring and firmware limits.";
+function statementFor(fact: Fact, consolidatePrinterLimit: boolean) {
+  const original = fact.value!.trim();
+  const prefix = original.endsWith(COMPONENT_SETUP_QUALIFIER)
+    ? original.slice(0, -COMPONENT_SETUP_QUALIFIER.length).trim()
+    : "";
+  const value =
+    consolidatePrinterLimit &&
+    fact.field.includes("component") &&
+    fact.field.includes("temperature") &&
+    prefix
+      ? prefix
+      : original;
+  return value.split(/\s+/).length >= 5 && /[.!?]$/.test(value)
+    ? plainMarkdown(value)
+    : `${plainMarkdown(fact.label)}: ${plainMarkdown(value)}.`;
+}
+
 function scopeKey(document: ApprovedKnowledgeDocument) {
   return JSON.stringify([
     document.product_id,
@@ -82,38 +103,14 @@ export function summarizeKnowledge(
       }
     }
     const known: Fact[] = [];
-    const unknown: string[] = [];
+    const unknown: Fact[] = [];
     const conflicts: string[] = [];
     for (const facts of Array.from(fields.values())) {
       const values = new Set(facts.map((fact) => fact.value));
       if (values.size > 1) conflicts.push(facts[0].label);
-      else if (facts[0].value === null) unknown.push(facts[0].label);
+      else if (facts[0].value === null) unknown.push(facts[0]);
       else known.push(facts[0]);
     }
-    const statements = Array.from(
-      new Set(
-        known.map((fact) => {
-          const value = fact.value!.trim();
-          // Complete approved sentences already carry their meaning. Scalar values
-          // need their field label; do not rewrite values, links or code in either case.
-          return value.split(/\s+/).length >= 5 && /[.!?]$/.test(value)
-            ? plainMarkdown(value)
-            : `${plainMarkdown(fact.label)}: ${plainMarkdown(value)}.`;
-        }),
-      ),
-    ).join(" ");
-    const limitations = [
-      ...(conflicts.length
-        ? [
-            `**Conflicting evidence:** ${conflicts.map(plainMarkdown).join(", ")}. The documents disagree, so I can't confirm which applies. Check the exact revision with the manufacturer before relying on this specification.`,
-          ]
-        : []),
-      ...(unknown.length
-        ? [
-            `**Not established:** ${unknown.map(plainMarkdown).join(", ")}. I can't confirm these details from this document.`,
-          ]
-        : []),
-    ].join("\n\n");
     const setup = temperatureSetup(question, document.product_title);
     const unresolvedLimit =
       setup !== "process" &&
@@ -124,6 +121,25 @@ export function summarizeKnowledge(
           fact.field,
         ),
       );
+    const printerLimit = unresolvedLimit && setup === "printer";
+    const separateUnknowns = unknown.filter(
+      (fact) => !(printerLimit && fact.field === "installed_max_temperature"),
+    );
+    const statements = Array.from(
+      new Set(known.map((fact) => statementFor(fact, printerLimit))),
+    ).join(" ");
+    const limitations = [
+      ...(conflicts.length
+        ? [
+            `**Conflicting evidence:** ${conflicts.map(plainMarkdown).join(", ")}. The documents disagree, so I can't confirm which applies. Check the exact revision with the manufacturer before relying on this specification.`,
+          ]
+        : []),
+      ...(separateUnknowns.length
+        ? [
+            `**Not established:** ${separateUnknowns.map((fact) => plainMarkdown(fact.label)).join(", ")}. I can't confirm these details from this document.`,
+          ]
+        : []),
+    ].join("\n\n");
     const missingTopic =
       ordered.length === 0 && knowledgeTopics(question).length > 0;
     needsPrinterSetup ||= unresolvedLimit && setup === "printer";
@@ -140,13 +156,13 @@ export function summarizeKnowledge(
             "This document does not establish the specification you asked about.",
           ]
         : []),
-      document.binding_scope === "product"
-        ? "These details apply to this model; they do not confirm a specific variant or installation."
-        : `These details apply only to variant ${plainMarkdown(document.variant_id!)}; they do not confirm a sibling variant or installation.`,
+      ...(document.binding_scope === "product"
+        ? []
+        : [`For variant ${plainMarkdown(document.variant_id!)} only.`]),
       ...(unresolvedLimit
         ? [
             setup === "printer"
-              ? "A component rating does not verify an installed printer's operating limit. The heater, sensor, wiring and firmware limits remain unknown unless explicitly established above."
+              ? "**Installed max temperature remains unknown:** a component rating does not verify an installed printer's heater, sensor, wiring and firmware limits."
               : "A component rating does not establish the operating limit of the complete assembly.",
           ]
         : []),
