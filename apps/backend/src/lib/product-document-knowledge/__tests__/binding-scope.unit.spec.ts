@@ -391,7 +391,7 @@ it.each([
         queryText: "manual",
         ...scope,
       }),
-    ).toEqual({ documents: [], citations: [] });
+    ).toMatchObject({ documents: [], citations: [] });
     expect(options.meilisearch.search).not.toHaveBeenCalled();
     expect(options.strapi.getKnowledgeReference).not.toHaveBeenCalled();
   },
@@ -472,7 +472,7 @@ it("does not search for a variant owned by an unpublished product", async () => 
       queryText: "manual",
       variantId: "variant_hotend",
     }),
-  ).toEqual({ documents: [], citations: [] });
+  ).toMatchObject({ documents: [], citations: [] });
   expect(options.meilisearch.search).not.toHaveBeenCalled();
 });
 
@@ -490,5 +490,5 @@ it("rechecks current ownership after the search if the variant has moved", async
       queryText: "manual",
       variantId: "variant_hotend",
     }),
-  ).toEqual({ documents: [], citations: [] });
+  ).toMatchObject({ documents: [], citations: [] });
 });

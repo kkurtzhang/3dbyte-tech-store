@@ -21,7 +21,7 @@ import { resolveMedusaBaseUrl } from "@/lib/medusa/base-url"
 import { getReleaseSha } from "@/lib/release-identity"
 import { checkRateLimit, getClientIp } from "@/lib/security/rate-limit"
 
-import { getProductLookupDecision, isExplicitProductBrowse, prepareProductLinkStep } from "./product-link-routing"
+import { isExplicitProductBrowse, prepareProductLinkStep } from "./product-link-routing"
 import { createProductActionTransform, createProductSearchExecution } from "./product-search-execution"
 import { assistantMessageSchema, getAssistantMessageContent, toUiMessages, type AssistantMessage } from "./history"
 
@@ -32,6 +32,13 @@ import { readAssistantJson } from "./read-request"
 import { resolveAssistantSystemPrompt } from "./prompt-management"
 import { COMMERCE_PATHS, createCommerceExecution } from "./commerce-execution"
 import { createKnowledgeExecution } from "./knowledge-execution"
+import {
+  buildKnowledgeContext,
+  conversationProductLookupDecision,
+  knowledgeSubject,
+  prepareKnowledgeStep,
+  scopeKnowledgeInput,
+} from "./knowledge-context"
 import { createKnowledgeGroundingTransform } from "./knowledge-grounding"
 import {
   collectEmailAddresses,
@@ -770,7 +777,8 @@ export async function POST(req: Request): Promise<Response> {
             })
             const uiMessages = toUiMessages(parsed.data.messages)
             const latestUserMessage = getLatestUserMessage(parsed.data.messages)
-            const productLookupDecision = getProductLookupDecision(latestUserMessage)
+            const knowledgeContext = buildKnowledgeContext(parsed.data.messages)
+            const productLookupDecision = conversationProductLookupDecision(parsed.data.messages)
             const productSearch = createProductSearchExecution({
               backendUrl: config.backendUrl,
               internalToken: config.internalToken,
@@ -806,7 +814,12 @@ export async function POST(req: Request): Promise<Response> {
                     visibleAssistantOutput += text
                   },
                 },
-                { question: latestUserMessage, commerce },
+                {
+                  question: latestUserMessage,
+                  subject: () => knowledgeSubject(Array.from(productSearch.scopeCandidates.values())),
+                  requiresKnowledge: knowledgeContext.requiresKnowledge,
+                  commerce,
+                },
               ),
               experimental_telemetry: {
                 functionId: "storefront.ai-shopping-assistant",
@@ -842,7 +855,7 @@ export async function POST(req: Request): Promise<Response> {
                   latestUserMessage,
                   stepNumber,
                   productLookupDecision,
-                ),
+                ) ?? prepareKnowledgeStep(knowledgeContext, knowledge.attempted, productSearch.attempted, productLookupDecision.lookupAllowed),
               tools: {
                 searchProducts: tool({
                   description:
@@ -854,7 +867,10 @@ export async function POST(req: Request): Promise<Response> {
                   description:
                     "Retrieve current approved Product Document facts with exact product/variant identity and source/revision citations. Use for specifications, manuals and compatibility; null facts remain unknown. Use commerce tools for current offers and inventory.",
                   inputSchema: knowledgeSearchInputSchema,
-                  execute: knowledge.execute,
+                  execute: (input, options) => knowledge.execute(
+                    scopeKnowledgeInput(input, knowledgeContext, Array.from(productSearch.scopeCandidates.values())),
+                    options,
+                  ),
                 }),
                 lookupOrder: tool({
                   description:

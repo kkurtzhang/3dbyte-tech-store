@@ -280,7 +280,7 @@ it("preserves product actions and draft-only support confirmation during a knowl
         query: "Dragonfly BMS",
         products: [
           {
-            id: "prod_bms",
+            id: knowledgeOutput.documents![0].product_id,
             title: "Dragonfly BMS",
             handle: "dragonfly-bms",
             productUrl: "https://store.example/products/dragonfly-bms",
@@ -311,7 +311,7 @@ it("preserves product actions and draft-only support confirmation during a knowl
           {
             role: "user",
             content:
-              "Show me the Dragonfly BMS product page, check its approved body material and prepare a support draft.",
+              "Show me the Dragonfly BMS product page, tell me what it's made of and help me draft a support request.",
           },
         ],
       }),

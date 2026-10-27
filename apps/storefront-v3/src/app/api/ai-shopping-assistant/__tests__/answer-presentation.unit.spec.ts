@@ -50,8 +50,8 @@ it("answers directly with approved sentences and keeps all attribution outside t
   expect(answer.text).not.toContain(
     "**Manufacturer body-material statement:**",
   );
-  expect(answer.text).toContain("Installed max temperature");
-  expect(answer.text).toContain("remain unknown");
+  expect(answer.text).not.toContain("Installed max temperature");
+  expect(answer.text).not.toContain("heater");
   expect(answer.sources[0].title).toContain(
     "Manufacturer body-material statement",
   );
@@ -83,7 +83,7 @@ it("treats conflicting same-product facts as unresolved and keeps both sources f
   );
   expect(answer.text).toContain("Conflicting evidence");
   expect(answer.text).toContain("Manufacturer body-material statement");
-  expect(answer.text).toContain("remain unknown");
+  expect(answer.text).toContain("can\'t confirm");
   expect(answer.text).not.toMatch(
     /mainly copper|Synthetic conflicting material/,
   );
@@ -121,7 +121,7 @@ it("keeps absent evidence unknown without manufacturing a Sources entry", () => 
     "Can it run at 500°C?",
     now,
   );
-  expect(answer.text).toContain("remain unknown");
+  expect(answer.text).toContain("can\'t confirm");
   expect(answer.sources).toEqual([]);
 });
 
@@ -131,9 +131,8 @@ it("prioritizes the unresolved installed limit for a natural temperature questio
     "Can I run my Dragonfly BMS at 500°C?",
     now,
   );
-  expect(answer.text.indexOf("Installed max temperature")).toBeLessThan(
-    answer.text.indexOf("mainly copper"),
-  );
+  expect(answer.text).toContain("Installed max temperature");
+  expect(answer.text).not.toContain("mainly copper");
   expect(answer.text).toMatch(/component rating.*installed printer/);
   for (const requirement of ["heater", "sensor", "wiring", "firmware"])
     expect(answer.text).toContain(requirement);
@@ -227,7 +226,7 @@ it("keeps sibling variants and model-level evidence separate instead of inventin
   );
   expect(result.text).toContain("mainly copper alloy");
   expect(result.text).toContain("Variant-specific synthetic material");
-  expect(result.text).toContain("Scope: variant variant\\_a only");
+  expect(result.text).toContain("only to variant variant\\_a");
   expect(result.text).not.toContain("Conflicting evidence");
   expect(result.sources).toHaveLength(1);
   expect(result.sources[0].title).toContain("model-level");

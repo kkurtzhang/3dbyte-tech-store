@@ -1,4 +1,7 @@
-import type { ApprovedKnowledgeDocument } from "@3dbyte-tech-store/shared-types";
+import type {
+  ApprovedKnowledgeDocument,
+  KnowledgeRetrievalAvailability,
+} from "@3dbyte-tech-store/shared-types";
 import {
   isKnowledgeRecord,
   knowledgeIdentifier,
@@ -76,7 +79,11 @@ export async function retrieveProductKnowledge(
   if (options.variantId) {
     const ownerId = await readVariantOwner(options.query, options.variantId);
     if (!ownerId || (productId && productId !== ownerId))
-      return { documents: [], citations: [] };
+      return {
+        documents: [],
+        citations: [],
+        availability: "no_match" as KnowledgeRetrievalAvailability,
+      };
     productId = ownerId;
   }
   const filter = [
@@ -149,6 +156,7 @@ export async function retrieveProductKnowledge(
         candidate.id,
         candidate.productId,
         candidate.revision,
+        { failSoft: false },
       );
       const product = products.get(candidate.productId);
       // Model guidance may accompany an exact-variant query only for its own product.
@@ -186,5 +194,13 @@ export async function retrieveProductKnowledge(
     revision_hash: d.revision_hash,
     valid_until: d.valid_until,
   }));
-  return { documents, citations };
+  return {
+    documents,
+    citations,
+    availability: (documents.length
+      ? "available"
+      : candidates.length
+        ? "not_current"
+        : "no_match") as KnowledgeRetrievalAvailability,
+  };
 }

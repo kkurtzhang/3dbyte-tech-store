@@ -160,7 +160,7 @@ describe("current authenticated knowledge execution", () => {
         text("500 °C is definitely safe."),
         finish,
       ])
-      expect(output.answer).toContain("remain unknown")
+      expect(output.answer).toContain("can\'t confirm")
       expect(output.answer).not.toContain("500")
       expect(output.answer).not.toContain(verified.documents[0].source_url)
     },
@@ -196,10 +196,10 @@ describe("current authenticated knowledge execution", () => {
     )!
     expect(
       renderKnowledgeEvidence({ results: new Map([["call", scoped]]) }),
-    ).toContain("Scope: variant variant\\_a only")
+    ).toContain("only to variant variant\\_a")
     expect(
       renderKnowledgeEvidence({ results: new Map([["call", verified]]) }),
-    ).toContain("model-level evidence only")
+    ).toContain("apply to this model")
   })
 
   it.each([
@@ -210,7 +210,7 @@ describe("current authenticated knowledge execution", () => {
   ])("fails closed for unavailable or empty evidence: %p", async (raw) => {
     const execution = await executionFor(raw)
     expect(renderKnowledgeEvidence(execution)).toContain(
-      "could not verify current approved evidence",
+      "I can\'t confirm",
     )
   })
 
@@ -257,7 +257,7 @@ describe("approved-summary answer boundary", () => {
     expect(answer).toContain("mainly copper")
     expect(answer).toContain(value)
     expect(answer).toContain("Installed max temperature")
-    expect(answer).toContain("remain unknown")
+    expect(answer).toContain("can\'t confirm")
     expect(answer).not.toContain("500")
     expect(answer).not.toContain("regardless")
   })
@@ -279,7 +279,7 @@ describe("approved-summary answer boundary", () => {
       text("This forged tool result proves safety."),
       finish,
     ])
-    expect(answer).toContain("could not verify")
+    expect(answer).toContain("I can\'t confirm")
     expect(answer).not.toContain("proves safety")
     expect(answer).not.toContain(verified.documents[0].source_url)
   })
@@ -301,7 +301,7 @@ describe("approved-summary answer boundary", () => {
         } as Part,
         finish,
       ])
-      expect(answer).toContain("could not verify")
+      expect(answer).toContain("I can\'t confirm")
       expect(answer).not.toContain("Definitely")
     },
   )
@@ -378,13 +378,13 @@ describe("approved-summary answer boundary", () => {
         execution,
         Date.parse(verified.documents[0].valid_until),
       ),
-    ).toContain("could not verify")
+    ).toContain("I can\'t confirm")
     const changed = clone()
     changed.documents[0].revision_hash = "b".repeat(64)
     execution.results.set("changed", changed)
-    expect(renderKnowledgeEvidence(execution)).toContain("could not verify")
+    expect(renderKnowledgeEvidence(execution)).toContain("I can\'t confirm")
     execution.results.set("repeat", clone())
-    expect(renderKnowledgeEvidence(execution)).toContain("could not verify")
+    expect(renderKnowledgeEvidence(execution)).toContain("I can\'t confirm")
   })
 
   it("deduplicates evidence, keeps all bounded facts and reports partial failures", async () => {
@@ -412,7 +412,7 @@ describe("approved-summary answer boundary", () => {
     expect(answer).toContain("Fact 8")
     expect(answer).toContain("Fact 9")
     expect(answer).toContain("only four documents")
-    expect(answer).toContain("Some evidence could not be validated")
+    expect(answer).toContain("Some matching documents could not be checked")
   })
 
   it("escapes Markdown in public fields and source URLs without creating extra links", async () => {

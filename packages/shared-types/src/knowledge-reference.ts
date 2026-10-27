@@ -35,3 +35,9 @@ export type KnowledgeReferenceCard = ApprovedKnowledgeDocument & {
   price: null;
   simulated_initial_quantity: number;
 };
+
+/** Retrieval state is diagnostic only and never makes a rejected body usable. */
+export type KnowledgeRetrievalAvailability =
+  | "available"
+  | "no_match"
+  | "not_current";
