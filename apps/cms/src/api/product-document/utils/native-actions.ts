@@ -7,6 +7,10 @@ import {
   parseApprovedKnowledgeDocument,
 } from "@3dbyte-tech-store/shared-utils/src/knowledge-reference.cjs";
 import { knowledgeBody, knowledgeRevision } from "./knowledge-reference";
+import {
+  knowledgeSourceIdentityAllowed,
+  productSourceIdentityAllowed,
+} from "./source-identity";
 import { createReviewEvent } from "../../product-document-review/utils/write-guard";
 
 export const REVIEW_UID =
@@ -130,6 +134,14 @@ function intakeData(raw: unknown) {
     raw.search_keywords.some((x) => typeof x !== "string" || x.length > 100)
   )
     throw new NativeDocumentError("invalid_input");
+  if (
+    !productSourceIdentityAllowed(
+      raw.medusa_product_id as string,
+      canonicalSource(raw.source_url),
+      raw.source_kind as string,
+    )
+  )
+    throw new NativeDocumentError("source_identity_conflict");
   return {
     medusa_product_id: raw.medusa_product_id as string,
     product_title: raw.product_title as string,
@@ -387,6 +399,8 @@ export async function reviewDocumentRevision(
       )
     )
       throw new NativeDocumentError("invalid_review");
+    if (raw.decision === "approved" && !knowledgeSourceIdentityAllowed(body))
+      throw new NativeDocumentError("source_identity_conflict");
     const existing = await loadReviewEvents(strapi, records);
     if (existing.length) {
       if (

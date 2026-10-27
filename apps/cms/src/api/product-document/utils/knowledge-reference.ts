@@ -4,6 +4,7 @@ import {
   parseKnowledgeBody,
   parseApprovedKnowledgeDocument,
 } from "@3dbyte-tech-store/shared-utils/src/knowledge-reference.cjs";
+import { knowledgeSourceIdentityAllowed } from "./source-identity";
 export function knowledgeBody(record: unknown) {
   if (
     !isKnowledgeRecord(record) ||
@@ -46,6 +47,7 @@ export function approvedKnowledgeDocument(
   const value = knowledgeBody(record);
   if (
     !value ||
+    !knowledgeSourceIdentityAllowed(value) ||
     !isKnowledgeRecord(record) ||
     record.is_public !== true ||
     typeof record.publishedAt !== "string" ||
