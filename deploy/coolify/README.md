@@ -44,6 +44,13 @@ HTTP status/curl exit code and the observed versus expected storefront SHA.
 A failed matching Coolify deployment remains a failure. Investigate the failing
 service before rerunning; do not bypass readiness to obtain an evaluation pass.
 
+## Failed GitHub App Delivery Recovery
+
+A prepared, inactive worker can retry original staging push deliveries after
+bounded backoff and complete queue/history/CI checks. It does not call the deploy
+API or enable automation. See [the safety policy and required setup](webhook-recovery.md)
+for App JWT authority, durable state, receiver review and terminal diagnostics.
+
 ## Compose Build Stability
 
 The root compose file is tuned for Coolify's webhook path. Coolify runs a full
