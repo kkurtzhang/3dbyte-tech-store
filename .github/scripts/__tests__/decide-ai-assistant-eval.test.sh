@@ -88,6 +88,14 @@ grep -Fxq "attempts=0" "${deploy_output}"
 grep -Fxq "wait_for_release=false" "${deploy_output}"
 grep -Fq "no assistant runtime or eval files changed" "${deploy_output}"
 
+# Deployment diagnostics alone must not spend tokens on another model eval.
+printf '%s\n' "echo diagnostic-only" > "${test_repo}/.github/scripts/wait-for-staging-release.sh"
+git -C "${test_repo}" add .
+git -C "${test_repo}" commit --quiet -m "test: diagnostic-only update"
+diagnostic_output="${test_repo}/diagnostic-output"
+(cd "${test_repo}"; GITHUB_EVENT_NAME=push GITHUB_OUTPUT="${diagnostic_output}" GITHUB_SHA="$(git rev-parse HEAD)" bash "${decision_script}")
+grep -Fxq "should_run=false" "${diagnostic_output}"
+
 manual_output="${test_repo}/manual-output"
 GITHUB_EVENT_NAME=workflow_dispatch \
   GITHUB_OUTPUT="${manual_output}" \

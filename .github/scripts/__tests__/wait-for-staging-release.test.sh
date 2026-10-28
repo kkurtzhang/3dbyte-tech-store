@@ -32,7 +32,7 @@ case "${url}" in
   https://store.test/api/health) service=storefront ;;
   https://api.test/health) service=backend ;;
   https://cms.test/admin/init) service=cms ;;
-  https://coolify.test/api/v1/deployments/applications/app_123?take=1) service=coolify ;;
+  https://coolify.test/api/v1/deployments/applications/app_123?take=50&skip=0|https://coolify.test/api/v1/deployments/applications/app_123?take=50&skip=50) service=coolify ;;
   *) echo "Unexpected request: ${url}" >&2; exit 90 ;;
 esac
 counter="${TEST_STATE}/${service}"
@@ -43,7 +43,7 @@ status=200; body='{}'; rc=0
 if [ "${service}" = storefront ]; then
   body='{"releaseSha":"expected-sha"}'
   case "${TEST_SCENARIO}" in
-    old_sha|coolify_failed|coolify_unrelated) body='{"releaseSha":"old-sha"}' ;;
+    old_sha|coolify_failed|coolify_unrelated|coolify_older_page) body='{"releaseSha":"old-sha"}' ;;
     invalid_json) body='not-json' ;;
     missing_sha) body='{}' ;;
     unknown_sha) body='{"releaseSha":"unknown"}' ;;
@@ -66,6 +66,11 @@ elif [ "${service}" = cms ]; then
   esac
 elif [ "${service}" = coolify ]; then
   body='{"deployments":[{"deployment_uuid":"dep_1","commit":"expected-sha","status":"failed"}]}'
+  if [ "${TEST_SCENARIO}" = coolify_older_page ]; then
+    if [[ "${url}" == *skip=0 ]]; then
+      body="$(node -e 'process.stdout.write(JSON.stringify({deployments:Array.from({length:50},(_,id)=>({id,commit:"other-sha",status:"finished"}))}))')"
+    fi
+  fi
   if [ "${TEST_SCENARIO}" = coolify_unrelated ]; then
     body='{"deployments":[{"commit":"other-sha","status":"failed"}]}'
   fi
@@ -115,6 +120,9 @@ run_case hang 1
 check test "$(cat "${last_state}/clock")" -le 3
 check grep -Fq 'curl:28' "${last_state}/log"
 check test "$(cat "${last_state}/backend")" -le 2
+run_case coolify_older_page 1 COOLIFY_API_URL=https://coolify.test COOLIFY_API_TOKEN=fixture \
+  COOLIFY_APPLICATION_UUID=app_123 COOLIFY_POLL_SECONDS=2
+check grep -Fq 'ended with status failed' "${last_state}/log"
 run_case coolify_failed 1 COOLIFY_API_URL=https://coolify.test COOLIFY_API_TOKEN=fixture \
   COOLIFY_APPLICATION_UUID=app_123 COOLIFY_POLL_SECONDS=2
 check grep -Fq 'ended with status failed' "${last_state}/log"
@@ -134,4 +142,4 @@ run_case ready 2 REQUEST_TIMEOUT_SECONDS=0
 run_case ready 2 STAGING_CMS_HEALTH_URL=
 run_case ready 2 RELEASE_MODE=invalid
 if [ "${failures}" -ne 0 ]; then echo "${failures} readiness assertions failed"; exit 1; fi
-echo 'Staging release wait tests passed (20 offline scenarios)'
+echo 'Staging release wait tests passed (21 offline scenarios)'
