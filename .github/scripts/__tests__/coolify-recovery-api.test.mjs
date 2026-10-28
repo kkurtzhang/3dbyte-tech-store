@@ -85,3 +85,24 @@ test('URLs, redirects, invalid commit identities and large JSON responses fail c
   const f = fixture(); f.routes.set('/repos/kkurtzhang/3dbyte-tech-store/branches/staging', { commit: { sha: 'main' } });
   await assert.rejects(f.api.snapshot(), /SHA/);
 });
+
+test('transport errors stop after three bounded GET attempts; POST transport outcome stays unknown', async () => {
+  const f = fixture(); let n = 0;
+  f.routes.set('/api/v1/applications', () => { n++; throw new Error('private transport detail'); });
+  await assert.rejects(f.api.snapshot(), /outcome unknown/); assert.equal(n, 3); assert.equal(f.sleeps.length, 2);
+  const g = fixture(); g.routes.set('/app/hook/deliveries/1/attempts', () => { throw new Error('private transport detail'); });
+  await assert.rejects(g.api.redeliver(1), /outcome unknown/); assert.equal(g.calls.length, 1);
+});
+test('oversized JSON, cross-endpoint pagination and credentials in webhook URL are rejected', async () => {
+  const f = fixture();
+  f.routes.set('/api/v1/applications', () => new Response('[]', { headers: { 'content-length': '3000000' } }));
+  await assert.rejects(f.api.snapshot(), /size limit/);
+  const g = fixture(); g.routes.set('/app/hook/deliveries?per_page=100', () => new Response('[]', { headers: { link: '<https://api.github.com/user>; rel="next"' } }));
+  await assert.rejects(g.api.listDeliveries(), /pagination/);
+  assert.throws(() => createApi({ ...cfg, webhookUrl: 'https://user:pass@coolify.test/webhooks/source/github/events' }), /webhook/);
+});
+test('HTTP-date Retry-After is honored rather than accelerated', async () => {
+  const f = fixture(); let n = 0;
+  f.routes.set('/api/v1/applications', () => ++n === 1 ? new Response('{}', { status: 429, headers: { 'retry-after': new Date(Date.now() + 30_000).toUTCString() } }) : new Response(JSON.stringify([app])));
+  await f.api.snapshot(); assert.ok(f.sleeps[0] >= 28_000);
+});

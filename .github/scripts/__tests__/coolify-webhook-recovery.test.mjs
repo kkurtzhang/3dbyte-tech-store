@@ -149,3 +149,11 @@ test('filesystem lock excludes concurrent workers and state is durable across in
     await assert.rejects(initializeState(dir), /exist/i);
   } finally { await rm(parent, { recursive: true, force: true }); }
 });
+
+test('a busy queue invalidates the previous absence confirmation window', async () => {
+  const f = fixture(); await ready(f);
+  f.snapshot.queue = [{ status: 'queued', commit: 'HEAD' }];
+  assert.equal((await f.run()).status, 'queue-busy');
+  f.snapshot.queue = [];
+  assert.equal((await f.run()).status, 'observing'); assert.deepEqual(f.calls, []);
+});
