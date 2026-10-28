@@ -33,7 +33,7 @@ timeout_seconds="${TIMEOUT_SECONDS:-1200}"
 coolify_api_url="${COOLIFY_API_URL:-}"
 coolify_api_token="${COOLIFY_API_TOKEN:-}"
 coolify_application_uuid="${COOLIFY_APPLICATION_UUID:-}"
-coolify_deployment_take="${COOLIFY_DEPLOYMENT_TAKE:-1}"
+coolify_deployment_take="${COOLIFY_DEPLOYMENT_TAKE:-50}"
 coolify_poll_seconds="${COOLIFY_POLL_SECONDS:-60}"
 
 if ! [[ "${poll_seconds}" =~ ^[0-9]+$ ]] || [ "${poll_seconds}" -lt 1 ]; then
@@ -170,7 +170,12 @@ check_coolify_deployment_status() {
   local tab
   local IFS
 
-  deployments_url="${coolify_api_url%/}/api/v1/deployments/applications/${coolify_application_uuid}?take=${coolify_deployment_take}"
+  # Paginate bounded history under the same wall-clock request deadline.
+  # Missing from the first page is not evidence that a webhook was not accepted.
+  local page skip page_count
+  for page in $(seq 0 19); do
+  skip=$((page * coolify_deployment_take))
+  deployments_url="${coolify_api_url%/}/api/v1/deployments/applications/${coolify_application_uuid}?take=${coolify_deployment_take}&skip=${skip}"
   probe -H "Authorization: Bearer ${coolify_api_token}" \
     -H "Accept: application/json" "${deployments_url}"
   deployment_body="${probe_body}"
@@ -183,8 +188,23 @@ check_coolify_deployment_status() {
 
   deployment_line="$(printf '%s' "${deployment_body}" | extract_matching_coolify_deployment)"
 
+  if [ -n "${deployment_line}" ]; then break; fi
+  page_count="$(printf '%s' "${deployment_body}" | node -e '
+    try { const b=JSON.parse(require("node:fs").readFileSync(0,"utf8"));
+      const rows=Array.isArray(b)?b:b.deployments;
+      process.stdout.write(Array.isArray(rows)?String(rows.length):"invalid");
+    } catch { process.stdout.write("invalid"); }')"
+  if [ "${page_count}" = invalid ]; then
+    echo "coolify deployment status=unavailable reason=invalid-history expected=${expected_release}"
+    return 0
+  fi
+  if [ "${page_count}" -lt "${coolify_deployment_take}" ]; then
+    echo "coolify deployment attempt=${attempt}/${max_attempts} status=missing expected=${expected_release} pages=$((page + 1))"
+    return 0
+  fi
+  done
   if [ -z "${deployment_line}" ]; then
-    echo "coolify deployment attempt=${attempt}/${max_attempts} status=missing expected=${expected_release}"
+    echo "coolify deployment status=incomplete reason=history-limit expected=${expected_release}"
     return 0
   fi
 
