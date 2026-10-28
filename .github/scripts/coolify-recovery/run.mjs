@@ -23,7 +23,7 @@ export async function main(env = process.env, args = process.argv.slice(2)) {
   const store = new FileState(env.COOLIFY_WEBHOOK_RECOVERY_STATE_DIR);
   let result;
   try { result = await recover({ api: createApi(config), store, config }); }
-  catch { result = { status: 'read-or-state-failure', terminal: true, action: 'Verify private state/lock, credentials, HTTP status and complete API pagination. Reads failed closed; no blind redelivery. An interrupted intent requires manual reconciliation.' }; }
+  catch (error) { result = { status: 'read-or-state-failure', reason: /^[a-z0-9-]{1,80}$/.test(error.safeReason ?? '') ? error.safeReason : 'unclassified-read-or-state-failure', terminal: true, action: 'Verify private state/lock, credentials, HTTP status and complete API pagination. Reads failed closed; no blind redelivery. An interrupted intent requires manual reconciliation.' }; }
   if (result.terminal && !result.action) result.action = ACTION;
   if (result.status !== 'locked') await store.audit(result);
   return result;

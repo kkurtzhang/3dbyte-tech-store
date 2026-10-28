@@ -67,7 +67,7 @@ export function createApi(config, { fetchImpl = fetch, sleep = pause, random = M
         if (method === 'POST') { await response.body?.cancel(); return { status: response.status }; }
         return { body: await jsonBody(response), headers: response.headers };
       }
-      if (response && (!transient(response.status) || attempt === count - 1)) { await response.body?.cancel(); throw new Error(`HTTP ${response.status}; inspect authorization or service health`); }
+      if (response && (!transient(response.status) || attempt === count - 1)) { await response.body?.cancel(); throw Object.assign(new Error(`HTTP ${response.status}; inspect authorization or service health`), { safeReason: `http-${response.status}` }); }
       const header = response?.headers.get('retry-after');
       const retryAfter = header && /^\d+$/.test(header) ? Number(header) * 1000 : Math.max(0, Date.parse(header ?? '') - now());
       await response?.body?.cancel();
