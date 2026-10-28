@@ -32,7 +32,7 @@ case "${url}" in
   https://store.test/api/health) service=storefront ;;
   https://api.test/health) service=backend ;;
   https://cms.test/admin/init) service=cms ;;
-  https://coolify.test/api/v1/deployments/applications/app_123?take=50&skip=0|https://coolify.test/api/v1/deployments/applications/app_123?take=50&skip=50) service=coolify ;;
+  https://coolify.test/api/v1/deployments/applications/app_123?take=1|https://coolify.test/api/v1/deployments/applications/app_123?take=50\&skip=0|https://coolify.test/api/v1/deployments/applications/app_123?take=50\&skip=50) service=coolify ;;
   *) echo "Unexpected request: ${url}" >&2; exit 90 ;;
 esac
 counter="${TEST_STATE}/${service}"
@@ -67,7 +67,7 @@ elif [ "${service}" = cms ]; then
 elif [ "${service}" = coolify ]; then
   body='{"deployments":[{"deployment_uuid":"dep_1","commit":"expected-sha","status":"failed"}]}'
   if [ "${TEST_SCENARIO}" = coolify_older_page ]; then
-    if [[ "${url}" == *skip=0 ]]; then
+    if [[ "${url}" == *skip=0 || "${url}" == *take=1 ]]; then
       body="$(node -e 'process.stdout.write(JSON.stringify({deployments:Array.from({length:50},(_,id)=>({id,commit:"other-sha",status:"finished"}))}))')"
     fi
   fi
