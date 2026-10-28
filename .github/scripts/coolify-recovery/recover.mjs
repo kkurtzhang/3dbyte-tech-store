@@ -43,12 +43,19 @@ export async function recover({ api, store, config, now = Date.now, random = Mat
     if (!original) return { status: 'out-of-scope', terminal: false };
     const sha = original.payload.after;
     const result = (status, extra = {}) => ({ status, sha, deliveryId: original.id, guid: original.guid, terminal: false, ...extra });
+    const gated = (status, state) => {
+      const deploymentStatus = state.history.find((d) => d.commit === sha)?.status;
+      return result(status, {
+        ...(deploymentStatus ? { deploymentStatus } : {}),
+        terminal: status === 'unsafe-scope' || (status === 'deployment-observed' && !['queued', 'in_progress'].includes(deploymentStatus)),
+      });
+    };
     const blocked = gate(snapshot, sha);
     if (blocked) {
       const ledger = await store.read();
       const entry = ledger.entries[`${REPOSITORY}:${config.application}:${sha}`];
       if (entry) { entry.absentSince = null; await store.save(ledger); }
-      return result(blocked, { terminal: ['unsafe-scope', 'deployment-observed'].includes(blocked) });
+      return gated(blocked, snapshot);
     }
     const age = now() - time(original);
     if (!Number.isFinite(age) || age < 0 || age > LIMITS.maxAgeMs) return result('expired', { terminal: true });
@@ -86,8 +93,9 @@ export async function recover({ api, store, config, now = Date.now, random = Mat
     if (now() - entry.absentSince < LIMITS.confirmMs) { await save(); return result('observing', { nextAt: entry.absentSince + LIMITS.confirmMs }); }
     // A new webhook or human action may have queued a deployment since the
     // first snapshot. Refresh all guards immediately before committing intent.
-    const finalGate = gate(await api.snapshot(), sha);
-    if (finalGate) { entry.absentSince = null; await save(); return result(finalGate); }
+    const finalSnapshot = await api.snapshot();
+    const finalGate = gate(finalSnapshot, sha);
+    if (finalGate) { entry.absentSince = null; await save(); return gated(finalGate, finalSnapshot); }
     if (now() - time(original) > LIMITS.maxAgeMs) return result('expired', { terminal: true });
     entry.attempts.push({ requestedAt: now(), beforeIds: related.map((d) => d.id), result: 'intent' });
     await save(); // durable, fsynced intent BEFORE the non-idempotent POST

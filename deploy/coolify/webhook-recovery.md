@@ -131,7 +131,9 @@ POST; it remains the authority if the process crashes before an audit entry.
 new delivery outcome and exact-SHA Coolify queue/history, then independently verify
 service health and `releaseSha`. Terminal results include age/attempt limits,
 permanent delivery failure, rejected/uncertain redelivery, unsafe scope,
-accepted deployment, delivered-without-deployment and failed reads/state. Resolve
+failed/cancelled or finished-but-not-current deployments, delivered-without-deployment
+and failed reads/state. Observing a queued/in-progress accepted deployment is a
+normal suppression, not a terminal alert. Resolve
 the stated condition first. A `locked` result means another worker (or a crash
 lock) owns the resource; do not start another worker using a different directory.
 
