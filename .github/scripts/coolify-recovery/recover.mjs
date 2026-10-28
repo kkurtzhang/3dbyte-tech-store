@@ -44,7 +44,12 @@ export async function recover({ api, store, config, now = Date.now, random = Mat
     const sha = original.payload.after;
     const result = (status, extra = {}) => ({ status, sha, deliveryId: original.id, guid: original.guid, terminal: false, ...extra });
     const blocked = gate(snapshot, sha);
-    if (blocked) return result(blocked, { terminal: ['unsafe-scope', 'deployment-observed'].includes(blocked) });
+    if (blocked) {
+      const ledger = await store.read();
+      const entry = ledger.entries[`${REPOSITORY}:${config.application}:${sha}`];
+      if (entry) { entry.absentSince = null; await store.save(ledger); }
+      return result(blocked, { terminal: ['unsafe-scope', 'deployment-observed'].includes(blocked) });
+    }
     const age = now() - time(original);
     if (!Number.isFinite(age) || age < 0 || age > LIMITS.maxAgeMs) return result('expired', { terminal: true });
     const related = deliveries.filter((d) => d.guid === original.guid).sort((a, b) => time(b) - time(a) || b.id - a.id);
@@ -53,6 +58,7 @@ export async function recover({ api, store, config, now = Date.now, random = Mat
     const ledger = await store.read();
     const key = `${REPOSITORY}:${config.application}:${sha}`;
     const entry = ledger.entries[key] ?? { attempts: [], absentSince: now() };
+    entry.absentSince ??= now();
     ledger.entries[key] = entry;
     const save = () => store.save(ledger);
     if (entry.terminal) return result(entry.terminal, { terminal: true });
@@ -81,7 +87,7 @@ export async function recover({ api, store, config, now = Date.now, random = Mat
     // A new webhook or human action may have queued a deployment since the
     // first snapshot. Refresh all guards immediately before committing intent.
     const finalGate = gate(await api.snapshot(), sha);
-    if (finalGate) return result(finalGate);
+    if (finalGate) { entry.absentSince = null; await save(); return result(finalGate); }
     entry.attempts.push({ requestedAt: now(), beforeIds: related.map((d) => d.id), result: 'intent' });
     await save(); // durable, fsynced intent BEFORE the non-idempotent POST
     try {

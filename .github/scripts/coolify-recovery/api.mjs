@@ -49,7 +49,7 @@ async function jsonBody(response) {
 export function createApi(config, { fetchImpl = fetch, sleep = pause, random = Math.random, now = Date.now } = {}) {
   const origin = secureUrl(config.coolifyUrl);
   const hook = new URL(config.webhookUrl);
-  if (hook.origin !== origin || hook.pathname !== '/webhooks/source/github/events' || hook.search || hook.hash) throw new Error('Unexpected Coolify App webhook URL');
+  if (hook.origin !== origin || hook.pathname !== '/webhooks/source/github/events' || hook.search || hook.hash || hook.username || hook.password) throw new Error('Unexpected Coolify App webhook URL');
   if (config.repository !== 'kkurtzhang/3dbyte-tech-store' || !/^[a-zA-Z0-9_-]{1,100}$/.test(config.application)) throw new Error('Invalid staging scope');
   const deadline = now() + 90_000;
   async function request(url, token, method = 'GET', tolerateHttp = false) {
@@ -68,11 +68,12 @@ export function createApi(config, { fetchImpl = fetch, sleep = pause, random = M
         return { body: await jsonBody(response), headers: response.headers };
       }
       if (response && (!transient(response.status) || attempt === count - 1)) { await response.body?.cancel(); throw new Error(`HTTP ${response.status}; inspect authorization or service health`); }
-      const retryAfter = Number(response?.headers.get('retry-after'));
+      const header = response?.headers.get('retry-after');
+      const retryAfter = header && /^\d+$/.test(header) ? Number(header) * 1000 : Math.max(0, Date.parse(header ?? '') - now());
       await response?.body?.cancel();
       // Retry-After is honored within this tick's total budget; long waits defer
       // to the next scheduler tick instead of ignoring server rate limits.
-      const delay = Math.max(Math.ceil(1000 * 2 ** attempt * (0.75 + random() / 2)), Number.isFinite(retryAfter) ? retryAfter * 1000 : 0);
+      const delay = Math.max(Math.ceil(1000 * 2 ** attempt * (0.75 + random() / 2)), Number.isFinite(retryAfter) ? retryAfter : 0);
       if (delay >= deadline - now()) throw new Error('Rate limit exceeds recovery deadline');
       await sleep(delay);
     }
