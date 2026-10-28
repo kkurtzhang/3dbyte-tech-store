@@ -135,16 +135,17 @@ test('receiver safety review required and incomplete reads fail closed', async (
   await assert.rejects(f.run, /incomplete-history/); assert.deepEqual(f.calls, []);
 });
 test('filesystem lock excludes concurrent workers and state is durable across instances', async () => {
-  const dir = await mkdtemp(join(tmpdir(), 'recovery-state-'));
+  const parent = await mkdtemp(join(tmpdir(), 'recovery-state-'));
+  const dir = join(parent, 'private');
   try {
     await initializeState(dir);
     const a = new FileState(dir); const b = new FileState(dir);
     await a.withLock(async () => {
       assert.equal((await b.withLock(() => assert.fail('second worker ran'))).status, 'locked');
-      await a.save({ version: 1, entries: { example: { attempts: [{ result: 'intent' }] } } });
+      await a.save({ version: 1, entries: { example: { attempts: [{ result: 'intent', requestedAt: 1, beforeIds: [] }] } } });
     });
     assert.equal((await b.read()).entries.example.attempts[0].result, 'intent');
     assert.ok((await readFile(join(dir, 'ledger.json'), 'utf8')).includes('intent'));
     await assert.rejects(initializeState(dir), /exist/i);
-  } finally { await rm(dir, { recursive: true, force: true }); }
+  } finally { await rm(parent, { recursive: true, force: true }); }
 });
