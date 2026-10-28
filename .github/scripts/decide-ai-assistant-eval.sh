@@ -92,10 +92,6 @@ fi
 eval_changed="$(
   printf '%s\n' "${changed_files}" |
     awk '
-      /^\.github\/workflows\/ai-assistant-evals\.yml$/ ||
-      /^\.github\/scripts\/decide-ai-assistant-eval\.sh$/ ||
-      /^\.github\/scripts\/wait-for-staging-release\.sh$/ ||
-      /^\.github\/scripts\/__tests__\/(ai-assistant-evals-workflow|decide-ai-assistant-eval|wait-for-staging-release)\.test\.sh$/ ||
       /^apps\/storefront-v3\/scripts\/run-customer-ai-evals\.ts$/ ||
       /^apps\/storefront-v3\/src\/app\/api\/ai-shopping-assistant\/evals\// {
         print

@@ -30,6 +30,9 @@ jobs:
           bash .github/scripts/__tests__/coolify-compose-build-stability.test.sh
           bash .github/scripts/__tests__/ci-quality-contract.test.sh
           node --test .github/scripts/__tests__/staging-audit-exception.test.mjs
+          node --experimental-test-coverage --test .github/scripts/__tests__/coolify*.test.mjs
+          bash .github/scripts/__tests__/wait-for-staging-release.test.sh
+          bash .github/scripts/__tests__/decide-ai-assistant-eval.test.sh
           bash .github/scripts/__tests__/search-ownership-contract.test.sh
 
   lint:
