@@ -88,6 +88,7 @@ export async function recover({ api, store, config, now = Date.now, random = Mat
     // first snapshot. Refresh all guards immediately before committing intent.
     const finalGate = gate(await api.snapshot(), sha);
     if (finalGate) { entry.absentSince = null; await save(); return result(finalGate); }
+    if (now() - time(original) > LIMITS.maxAgeMs) return result('expired', { terminal: true });
     entry.attempts.push({ requestedAt: now(), beforeIds: related.map((d) => d.id), result: 'intent' });
     await save(); // durable, fsynced intent BEFORE the non-idempotent POST
     try {
