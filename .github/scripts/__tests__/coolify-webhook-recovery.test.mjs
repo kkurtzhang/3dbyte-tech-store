@@ -157,3 +157,15 @@ test('a busy queue invalidates the previous absence confirmation window', async 
   f.snapshot.queue = [];
   assert.equal((await f.run()).status, 'observing'); assert.deepEqual(f.calls, []);
 });
+
+test('corrupt or insecure ledger never resets the retry budget', async () => {
+  const { writeFile, chmod } = await import('node:fs/promises');
+  const parent = await mkdtemp(join(tmpdir(), 'recovery-corrupt-')); const dir = join(parent, 'private');
+  try {
+    await initializeState(dir); const store = new FileState(dir);
+    for (const value of [{ version: 2, entries: {} }, { version: 1, entries: [] }, { version: 1, entries: { key: { attempts: [{ requestedAt: 'bad', beforeIds: [] }] } } }]) {
+      await writeFile(join(dir, 'ledger.json'), JSON.stringify(value)); await assert.rejects(store.read());
+    }
+    await chmod(dir, 0o755); await assert.rejects(store.withLock(() => assert.fail('insecure state accepted')), /private persistent/);
+  } finally { await rm(parent, { recursive: true, force: true }); }
+});
