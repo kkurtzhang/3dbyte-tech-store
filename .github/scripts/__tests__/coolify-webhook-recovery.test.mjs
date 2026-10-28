@@ -169,3 +169,9 @@ test('corrupt or insecure ledger never resets the retry budget', async () => {
     await chmod(dir, 0o755); await assert.rejects(store.withLock(() => assert.fail('insecure state accepted')), /private persistent/);
   } finally { await rm(parent, { recursive: true, force: true }); }
 });
+
+test('age limit is rechecked after preflight reads immediately before POST', async () => {
+  const f = fixture(); await ready(f); let n = 0;
+  f.api.snapshot = async () => { if (++n === 2) f.advance(LIMITS.maxAgeMs); return f.snapshot; };
+  assert.equal((await f.run()).status, 'expired'); assert.deepEqual(f.calls, []);
+});
