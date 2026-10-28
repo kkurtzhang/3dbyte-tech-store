@@ -106,3 +106,16 @@ test('HTTP-date Retry-After is honored rather than accelerated', async () => {
   f.routes.set('/api/v1/applications', () => ++n === 1 ? new Response('{}', { status: 429, headers: { 'retry-after': new Date(Date.now() + 30_000).toUTCString() } }) : new Response(JSON.stringify([app])));
   await f.api.snapshot(); assert.ok(f.sleeps[0] >= 28_000);
 });
+
+test('unidentified queue/application records cannot be filtered into apparent absence', async () => {
+  const f = fixture(); f.routes.set('/api/v1/deployments', [{ commit: 'HEAD', status: 'queued' }]);
+  await assert.rejects(f.api.snapshot(), /queue identity/i);
+  const g = fixture(); g.routes.set('/api/v1/applications', [{ ...app, id: undefined }]);
+  assert.equal((await g.api.snapshot()).scopeSafe, false);
+});
+test('successful redelivery uses original integer ID and App JWT only on the supported endpoint', async () => {
+  const f = fixture(); assert.equal(await f.api.redeliver(1), 202);
+  assert.equal(f.calls.length, 1); assert.equal(f.calls[0].method, 'POST');
+  assert.equal(f.calls[0].path, '/app/hook/deliveries/1/attempts');
+  assert.equal(f.calls[0].headers.Authorization, 'Bearer fixture-app');
+});
