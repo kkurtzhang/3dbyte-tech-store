@@ -128,9 +128,11 @@ export function createApi(config, { fetchImpl = fetch, sleep = pause, random = M
       // even if the intended resource is correctly configured.
       const matching = apps.filter((a) => a.git_repository === config.repository && a.git_branch === 'staging');
       const app = matching[0];
-      const scopeSafe = matching.length === 1 && app.uuid === config.application && app.settings?.is_auto_deploy_enabled === true && (!app.git_commit_sha || app.git_commit_sha === 'HEAD' || app.git_commit_sha === sha);
+      const scopeSafe = matching.length === 1 && Number.isSafeInteger(app.id) && app.uuid === config.application && app.settings?.is_auto_deploy_enabled === true && (!app.git_commit_sha || app.git_commit_sha === 'HEAD' || app.git_commit_sha === sha);
       const history = await readDeploymentHistory(coolify, config.application);
-      const queue = rows(await coolify('/api/v1/deployments')).filter((d) => String(d.application_id) === String(app?.id));
+      const active = rows(await coolify('/api/v1/deployments'));
+      if (active.some((d) => !/^[0-9]+$/.test(String(d.application_id)))) throw new Error('Unresolved active queue identity');
+      const queue = active.filter((d) => String(d.application_id) === String(app?.id));
       // No header/token on the public health request. A failed health read is
       // deliberately inconclusive and prevents this tick from requesting a retry.
       const health = (await request(HEALTH)).body;
