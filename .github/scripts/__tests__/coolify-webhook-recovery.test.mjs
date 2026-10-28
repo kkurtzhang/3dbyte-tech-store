@@ -175,3 +175,13 @@ test('age limit is rechecked after preflight reads immediately before POST', asy
   f.api.snapshot = async () => { if (++n === 2) f.advance(LIMITS.maxAgeMs); return f.snapshot; };
   assert.equal((await f.run()).status, 'expired'); assert.deepEqual(f.calls, []);
 });
+
+test('accepted queued/in-progress deployment is a successful suppression, not a terminal failure alert', async () => {
+  for (const status of ['queued', 'in_progress']) {
+    const f = fixture(); f.snapshot.history = [{ commit: SHA, status }];
+    const result = await f.run();
+    assert.equal(result.status, 'deployment-observed'); assert.equal(result.terminal, false);
+  }
+  const f = fixture(); f.snapshot.history = [{ commit: SHA, status: 'failed' }];
+  assert.equal((await f.run()).terminal, true);
+});
