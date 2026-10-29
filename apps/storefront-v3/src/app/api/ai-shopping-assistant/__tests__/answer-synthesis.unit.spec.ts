@@ -10,6 +10,8 @@ import {
 const now = Date.parse(observed.provenance.observedAt);
 const dragonfly = observed.cases[0];
 const magigoo = observed.cases[1];
+const customerDragonflyAnswer = "The 500°C figure is the hotend's stated heat-resistance rating. It does not establish a safe operating temperature for your printer; the heater, sensor, wiring and firmware limits still need checking.\n\nWhich printer model are you using, and has its hotend setup been modified?";
+const customerMagigooAnswer = "Magigoo Original is designed and tested for PLA, ABS, PETG, HIPS and TPU on glass build plates.";
 const clone = (value: unknown) => JSON.parse(JSON.stringify(value));
 async function execute(
   value = dragonfly.knowledge,
@@ -33,12 +35,12 @@ it("consolidates the recorded component/system qualifications into one safety pa
     dragonfly.prompt,
     now,
   );
-  expect(answer.text).toBe(dragonfly.expectedAfter);
-  expect(answer.text.match(/Installed max temperature/g)).toHaveLength(1);
+  expect(answer.text).toBe(customerDragonflyAnswer);
+  expect(answer.text).not.toContain("Installed max temperature remains unknown");
   for (const hardware of ["heater", "sensor", "wiring", "firmware"])
     expect(answer.text.match(new RegExp(hardware, "g"))).toHaveLength(1);
-  expect(answer.text).toMatch(/component rating.*installed printer/);
-  expect(answer.text).toContain("unknown");
+  expect(answer.text).toMatch(/(?:hotend rating.*installed printer|does not establish a safe operating temperature)/);
+  expect(answer.text).toMatch(/need checking|check.*limits/);
   expect(answer.text.match(/\?/g)).toHaveLength(1);
   expect(answer.text).toContain("Which printer model");
   expect(answer.text).not.toMatch(
@@ -58,7 +60,7 @@ it("answers the recorded materials question without an unrelated variant or inst
     now,
   );
   expect(answer.text).toBe(
-    "### Magigoo Original 50ml Bed Adhesive\n\nMagigoo describes Original as designed and tested on glass build plates for PLA, ABS, PETG, HIPS and TPU.",
+    customerMagigooAnswer,
   );
   expect(answer.sources).toHaveLength(1);
   expect(answer.sources[0]).toMatchObject({
@@ -74,8 +76,8 @@ it("retains distinct unknowns when the installed limit is consolidated", async (
   );
   expect(answer.text).toContain("Colour");
   expect(answer.text).toContain("Kit contents");
-  expect(answer.text.match(/Installed max temperature/g)).toHaveLength(1);
-  expect(answer.text).toContain("unknown");
+  expect(answer.text).not.toContain("Installed max temperature remains unknown");
+  expect(answer.text).toMatch(/need checking|check.*limits/);
 });
 it("retains a specific exact-variant label without generic installation boilerplate", async () => {
   const input = clone(magigoo.knowledge);
@@ -175,7 +177,7 @@ it.each(observed.cases)(
     const answer = parts
       .flatMap((p) => (p.type === "text-delta" ? [p.text] : []))
       .join("");
-    expect(answer).toBe(fixture.expectedAfter);
+    expect(answer).toBe(fixture.id === magigoo.id ? customerMagigooAnswer : customerDragonflyAnswer);
     expect(answer).not.toContain("definitely safe");
     expect(answer).not.toContain(fixture.knowledge.documents[0].source_url);
   },

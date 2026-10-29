@@ -84,6 +84,8 @@ export type CustomerAiEvalCase = {
       label: string
       pattern: RegExp
     }>
+    requiredPatterns?: Array<{ label: string; pattern: RegExp }>
+    maxQuestions?: number
     formatHints: string[]
     minimumCueMatches?: number
     mustIncludeOneOf: string[]

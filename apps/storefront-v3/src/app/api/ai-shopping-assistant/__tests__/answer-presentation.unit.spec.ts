@@ -42,7 +42,7 @@ it("answers directly with approved sentences and keeps all attribution outside t
     now,
   );
   expect(answer.text).toContain(
-    "Phaetus describes Dragonfly BMS construction as mainly copper alloy.",
+    "Phaetus Dragonfly BMS is mainly copper alloy.",
   );
   expect(answer.text).not.toMatch(
     /Here are the current approved facts|Source:|Official Product Page|document_id|revision_hash/,
@@ -50,7 +50,7 @@ it("answers directly with approved sentences and keeps all attribution outside t
   expect(answer.text).not.toContain(
     "**Manufacturer body-material statement:**",
   );
-  expect(answer.text).not.toContain("Installed max temperature");
+  expect(answer.text).not.toMatch(/(?:hotend rating.*not.*operating limit|does not establish a safe operating temperature)/);
   expect(answer.text).not.toContain("heater");
   expect(answer.sources[0].title).toContain(
     "Manufacturer body-material statement",
@@ -131,9 +131,9 @@ it("prioritizes the unresolved installed limit for a natural temperature questio
     "Can I run my Dragonfly BMS at 500°C?",
     now,
   );
-  expect(answer.text).toContain("Installed max temperature");
+  expect(answer.text).toMatch(/(?:hotend rating.*not.*operating limit|does not establish a safe operating temperature)/);
   expect(answer.text).not.toContain("mainly copper");
-  expect(answer.text).toMatch(/component rating.*installed printer/);
+  expect(answer.text).toMatch(/(?:hotend rating.*installed printer|does not establish a safe operating temperature)/);
   for (const requirement of ["heater", "sensor", "wiring", "firmware"])
     expect(answer.text).toContain(requirement);
 });

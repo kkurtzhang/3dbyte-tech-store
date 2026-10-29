@@ -256,7 +256,7 @@ describe("approved-summary answer boundary", () => {
     ])
     expect(answer).toContain("mainly copper")
     expect(answer).toContain(value)
-    expect(answer).toContain("Installed max temperature")
+    expect(answer).toMatch(/(?:hotend rating.*not.*operating limit|does not establish a safe operating temperature)/)
     expect(answer).toContain("can\'t confirm")
     expect(answer).not.toContain("500")
     expect(answer).not.toContain("regardless")

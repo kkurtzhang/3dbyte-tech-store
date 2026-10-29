@@ -24,6 +24,7 @@ export function assembleKnowledgeAnswer(
   question = "",
   now = Date.now(),
   subject = "",
+  previousQuestion = "",
 ) {
   const documents = new Map<string, ApprovedKnowledgeDocument>()
   const rejected = new Set<string>()
@@ -66,7 +67,7 @@ export function assembleKnowledgeAnswer(
             : "not_retrieved"
     return { text: missingKnowledgeAnswer(question, reason, subject), sources }
   }
-  const sections = summarizeKnowledge(selected, question, evidence)
+  const sections = summarizeKnowledge(selected, question, evidence, previousQuestion)
   return {
     sources,
     text: [
@@ -108,9 +109,10 @@ export function renderKnowledgeEvidence(
 export function createKnowledgeGroundingTransform<TOOLS extends ToolSet>(
   execution: KnowledgeExecution,
   suppliedEmails: readonly string[],
-  hooks: { onFlush?: () => void; onText?: (text: string) => void } = {},
+  hooks: { onFlush?: () => void; onText?: (text: string) => void; onAnswer?: (origin: "validated_claim_composer" | "model" | "response_limit") => void } = {},
   context: {
     question?: string
+    previousQuestion?: string
     subject?: () => string
     requiresKnowledge?: boolean
     commerce?: CommerceExecution
@@ -131,7 +133,7 @@ export function createKnowledgeGroundingTransform<TOOLS extends ToolSet>(
       const knowledgeTurn =
         execution.attempted || knowledgeToolSeen || context.requiresKnowledge
       const evidence = knowledgeTurn
-        ? assembleKnowledgeAnswer(execution, context.question, Date.now(), context.subject?.())
+        ? assembleKnowledgeAnswer(execution, context.question, Date.now(), context.subject?.(), context.previousQuestion)
         : null
       const output = evidence
         ? [
@@ -142,6 +144,7 @@ export function createKnowledgeGroundingTransform<TOOLS extends ToolSet>(
           ? TOO_LONG
           : text
       if (!output) return
+      hooks.onAnswer?.(evidence ? "validated_claim_composer" : tooLong ? "response_limit" : "model")
       const id = "evidence-grounded-answer"
       controller.enqueue({ type: "text-start", id } as Part)
       controller.enqueue({ type: "text-delta", id, text: output } as Part)

@@ -1,6 +1,7 @@
 import type { ApprovedKnowledgeDocument } from "@3dbyte-tech-store/shared-types"
 
 import { knowledgeTopics } from "./knowledge-context"
+import { intentFactPattern, knowledgeAnswerIntent } from "./knowledge-answer-intent"
 
 const common = new Set(
   "a an and are as be by can check cite do does for from how i in is it its me my of on only or please product provided say source specification specifications tell that the their these this to use what when where which with you your all approved documented manufacturer evidence list unrelated".split(
@@ -53,6 +54,10 @@ export function selectKnowledgeFacts(
         ...document.facts.filter((fact) => !exact.includes(fact)),
       ]
   }
+  const intentPattern = intentFactPattern(knowledgeAnswerIntent(question))
+  if (intentPattern) return document.facts.filter((fact) =>
+    intentPattern.test(fact.field) || /\b(?:conditions?|restrictions?|warnings?|safety)\b/i.test(fact.label),
+  )
   const topics = knowledgeTopics(question)
   const compound =
     /[,;]|[.!?].+\S|\b(?:and|plus|also|anything|unknowns?|not established|what is it for)\b/i.test(
