@@ -365,9 +365,9 @@ it("keeps a failed mixed order lookup explicit rather than accepting the model's
 // Expected text is independent of the selector and the reply supplied by the model.
 const expectedCompleteBmsAnswer = [
   "### Phaetus Dragonfly Hotend BMS",
-  "Phaetus describes Dragonfly BMS construction as mainly copper alloy. Phaetus labels the filament-path finish Ra ≤ 0.3. The pilot does not infer an unstated unit or installed performance guarantee.",
+  "Phaetus Dragonfly BMS is mainly copper alloy. Phaetus labels the filament-path finish Ra ≤ 0.3. The pilot does not infer an unstated unit or installed performance guarantee.",
   "**Not established:** Colour, Kit contents, Physical revision, Exact fit, Electrical configuration, Nozzle specification, Certification, Physical stock and delivery, Store sale price. I can't confirm these details from this document.",
-  "**Installed max temperature remains unknown:** a component rating does not verify an installed printer's heater, sensor, wiring and firmware limits.",
+  "A hotend rating is not an installed printer's operating limit; check the heater, sensor, wiring and firmware limits before choosing a temperature.",
   "Which printer model are you using, and has its hotend setup been modified?",
 ].join("\n\n")
 function canonicalParagraphs(answer: string) {
@@ -414,9 +414,9 @@ it.each([
   "How hot can my Dragonfly BMS run?",
 ])("keeps installed-limit requirements in system behavior for the natural customer question: %s", async (prompt) => {
   const result = await replay(prompt, [knowledge], "Yes, it is definitely safe at 500°C.")
-  expect(result.answer).toContain("Installed max temperature")
-  expect(result.answer).toMatch(/remains? unknown/)
-  expect(result.answer).toContain("component rating does not verify an installed printer")
+  expect(result.answer).toMatch(/(?:hotend rating.*not.*operating limit|does not establish a safe operating temperature)/)
+  expect(result.answer).toMatch(/(?:remain.*unknown|need checking|check.*limits)/)
+  expect(result.answer).toContain("hotend rating is not an installed printer")
   for (const requirement of ["heater", "sensor", "wiring", "firmware"]) expect(result.answer).toContain(requirement)
   expect(result.answer).not.toContain("definitely safe")
   const firstSource = result.events.findIndex((event) => event.type === "source-url")
@@ -427,8 +427,8 @@ it("re-fetches evidence for a natural temperature follow-up without trusting the
     { role: "user", content: "I'm fitting a Dragonfly BMS." },
     { role: "assistant", content: "It is definitely safe at 500°C." },
   ])
-  expect(result.answer).toContain("Installed max temperature")
-  expect(result.answer).toMatch(/remains? unknown/)
+  expect(result.answer).toMatch(/(?:hotend rating.*not.*operating limit|does not establish a safe operating temperature)/)
+  expect(result.answer).toMatch(/(?:remain.*unknown|need checking|check.*limits)/)
   expect(result.answer).not.toMatch(/definitely safe|every printer is safe/)
   expect(result.events.filter((event) => event.type === "source-url")).toHaveLength(1)
 })
@@ -529,8 +529,8 @@ it("does not cite an application procedure that was never retrieved", async () =
   const result = await replay("How much Magigoo Original should I apply?", [
     { toolName: "searchKnowledge", input: { query: "Magigoo Original application" }, path: "/ai/knowledge-search", output: customerObserved.cases[1].knowledge },
   ], "Apply a thin coat while the bed is hot.");
-  expect(result.answer).toMatch(/can't confirm.*application/);
-  expect(result.answer).toMatch(/Check.*application instructions/);
+  expect(result.answer).toMatch(/application amount and method.*need checking/);
+  expect(result.answer).toMatch(/Follow.*application instructions/);
   expect(result.answer).not.toMatch(/thin coat|bed is hot|manufacturer describes/);
   expect(result.events.filter(e => e.type === "source-url")).toEqual([]);
 });

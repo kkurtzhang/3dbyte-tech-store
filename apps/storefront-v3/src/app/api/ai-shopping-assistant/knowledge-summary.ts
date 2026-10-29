@@ -6,8 +6,9 @@ import { plainMarkdown } from "./grounded-text";
 import { knowledgeAnswerIntent } from "./knowledge-answer-intent";
 import {
   presentMaterialUse,
-  reviewedPresentation,
+  parseKnowledgeClaim,
 } from "./knowledge-claim-presentation";
+import { missingCapabilityGuidance, PRINTER_LIMIT_CHECK, temperatureRatingGuidance } from "./knowledge-customer-guidance";
 import { selectKnowledgeFacts } from "./knowledge-fact-selection";
 
 type Fact = ApprovedKnowledgeDocument["facts"][number];
@@ -22,7 +23,9 @@ function statementFor(
   consolidatePrinterLimit: boolean,
 ) {
   const original =
-    reviewedPresentation(document, fact)?.statement ?? fact.value!.trim();
+    fact.value!.trim();
+  const parsed = parseKnowledgeClaim(document, fact);
+  if (parsed && parsed.kind !== "temperature") return plainMarkdown(parsed.statement);
   const prefix = original.endsWith(COMPONENT_SETUP_QUALIFIER)
     ? original.slice(0, -COMPONENT_SETUP_QUALIFIER.length).trim()
     : "";
@@ -130,7 +133,7 @@ export function summarizeKnowledge(
     if (intent.kind !== "other") {
       if (conflicts.length)
         return withScope(
-          `I can't confirm ${conflicts.map(plainMarkdown).join(", ")}: the specifications conflict. Check the exact revision with the manufacturer before relying on this detail.`,
+          `The specifications conflict on ${conflicts.map(plainMarkdown).join(", ")}. Check the exact revision with the manufacturer before relying on this detail.`,
         );
       if (intent.kind === "material_use") {
         for (const fact of known) {
@@ -142,22 +145,8 @@ export function summarizeKnowledge(
             return withScope(response);
         }
       }
-      if (!known.length) {
-        const subject = plainMarkdown(document.product_title);
-        if (intent.kind === "application")
-          return withScope(
-            `I can't confirm the application amount or procedure for ${subject}. Check its application instructions before applying it.`,
-          );
-        if (intent.kind === "fit")
-          return withScope(
-            `I can't confirm ${subject}'s fit for your setup.\n\n${knowledgeNextStep("Can it fit?", document.product_title)}`,
-          );
-        const materials =
-          intent.materials.join(" and ") || "that material or build surface";
-        return withScope(
-          `I can't confirm ${subject}'s suitability for ${materials} in your setup.\n\n${knowledgeNextStep("Can it fit?", document.product_title)}`,
-        );
-      }
+      if (intent.kind === "release_behavior" && known.length && !unknown.length) return withScope(known.map(fact => statementFor(group.find(item => item.facts.includes(fact)) ?? document, fact, false)).join(" "));
+      if (!known.length) return withScope(missingCapabilityGuidance(intent, document.product_title));
     }
     const setup = temperatureSetup(question, document.product_title);
     const unresolvedLimit =
@@ -170,6 +159,12 @@ export function summarizeKnowledge(
         ),
       );
     const printerLimit = unresolvedLimit && setup === "printer";
+    const focusedTemperature = knowledgeTopics(question).includes("temperature") && !/\b(?:all|every|full|complete|unknowns?)\b|\b(?:and|plus|also)\b.*\b(?:what|which|how|can|does|is|will)\b/i.test(question);
+    if (printerLimit && focusedTemperature && !conflicts.length) {
+      const claims = known.map(fact => parseKnowledgeClaim(group.find(item => item.facts.includes(fact)) ?? document, fact));
+      const rating = claims.find(claim => claim?.kind === "temperature");
+      if (rating?.temperature && known.length === 1 && unknown.every(fact => fact.field === "installed_max_temperature")) return withScope(`${temperatureRatingGuidance(rating.temperature)}\n\n${knowledgeNextStep(question, document.product_title)}`);
+    }
     const separateUnknowns = unknown.filter(
       (fact) => !(printerLimit && fact.field === "installed_max_temperature"),
     );
@@ -218,7 +213,7 @@ export function summarizeKnowledge(
       ...(unresolvedLimit
         ? [
             setup === "printer"
-              ? "**Installed max temperature remains unknown:** a component rating does not verify an installed printer's heater, sensor, wiring and firmware limits."
+              ? PRINTER_LIMIT_CHECK
               : "A component rating does not establish the operating limit of the complete assembly.",
           ]
         : []),

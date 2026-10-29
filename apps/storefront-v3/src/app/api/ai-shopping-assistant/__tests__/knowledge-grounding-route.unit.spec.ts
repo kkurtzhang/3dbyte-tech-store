@@ -188,8 +188,8 @@ it.each(observed.cases)(
     if (fixture.id === "bms-body-material")
       expect(answer).toContain("mainly copper")
     if (fixture.id === "unsupported-installed-temperature") {
-      expect(answer).toContain("Installed max temperature")
-      expect(answer).toContain("unknown")
+      expect(answer).toMatch(/(?:hotend rating.*not.*operating limit|does not establish a safe operating temperature)/)
+      expect(answer).toMatch(/check.*heater.*sensor.*wiring.*firmware/)
     }
     if (fixture.id === "mismatched-product-evidence") {
       expect(answer).toContain("only to the named product")

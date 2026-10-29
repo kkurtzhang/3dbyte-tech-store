@@ -94,7 +94,7 @@ it("does not carry the previous glass surface across an explicit PEI follow-up",
     magigoo,
     "I'm using Magigoo Original with PETG on glass.",
   );
-  expect(result.text).toMatch(/can't confirm.*textured PEI/i);
+  expect(result.text).toMatch(/does not establish.*textured PEI/i);
   expect(result.text).toContain("glass build plates");
   expect(result.text).toMatch(/check.*plate.*compatibility/i);
   expect(result.text).not.toMatch(
@@ -110,7 +110,7 @@ it("does not mistake a listed filament for support on every surface", async () =
 });
 it("does not turn absence from a material list into an incompatibility claim", async () => {
   const result = await answer("Can I use Magigoo Original for nylon on glass?");
-  expect(result.text).toMatch(/can't confirm.*nylon/i);
+  expect(result.text).toMatch(/does not establish.*nylon/i);
   expect(result.text).not.toMatch(
     /not compatible|will not work|safe for nylon/i,
   );
@@ -118,9 +118,9 @@ it("does not turn absence from a material list into an incompatibility claim", a
 it("gives a concrete next step when application instructions are missing", async () => {
   const result = await answer("How much Magigoo Original should I apply?");
   expect(result.text).toMatch(
-    /can't confirm.*(?:amount|how much|application)/i,
+    /application amount and method.*need checking/i,
   );
-  expect(result.text).toMatch(/check.*application instructions/i);
+  expect(result.text).toMatch(/follow.*application instructions/i);
   expect(result.text).not.toMatch(
     /thin|layer|coat|drops|hot bed|cooling|Colour|500/,
   );
@@ -130,12 +130,12 @@ it("gives a concrete next step when application instructions are missing", async
 it.each([
   [
     "Will a Dragonfly BMS fit my printer?",
-    /can't confirm.*fit/i,
+    /check.*mounting and electrical requirements/i,
     /which printer model/i,
   ],
   [
     "Can I print PETG with a Dragonfly BMS?",
-    /can't confirm.*PETG/i,
+    /check the PETG filament.*printing requirements/i,
     /which printer model/i,
   ],
 ])(
@@ -156,8 +156,8 @@ it("retains the installed-printer safety boundary for the exceptional 500°C que
     "Can I run my Dragonfly BMS at 500°C?",
     dragonfly,
   );
-  expect(result.text).toContain("500°C component rating");
-  expect(result.text).toMatch(/installed.*unknown/i);
+  expect(result.text).toContain("500°C figure");
+  expect(result.text).toMatch(/does not establish a safe operating temperature/i);
   expect(result.text).toMatch(/heater.*sensor.*wiring.*firmware/);
   expect(result.text.match(/\?/g)).toHaveLength(1);
   expect(result.text).not.toMatch(
@@ -176,9 +176,10 @@ it("preserves an unrecognized qualifier rather than stripping attribution heuris
   );
   expect(result.text).toContain(fact.value);
 });
-it("does not apply a presentation rewrite to a different source", async () => {
+it("does not reinterpret a claim naming a different product", async () => {
   const knowledge = copy(magigoo);
   knowledge.documents[0].source_url = "https://manufacturer.example/different";
+  knowledge.documents[0].product_title = "Unrelated synthetic product";
   knowledge.citations[0].source_url = knowledge.documents[0].source_url;
   const result = await answer(
     "Which materials does Magigoo Original support?",
@@ -237,7 +238,7 @@ it.each([
   "Can I use Magigoo Original for PETG without glass?",
 ])("does not generalize reviewed support: %s", async (question) => {
   const result = await answer(question);
-  expect(result.text).toMatch(/can't confirm/i);
+  expect(result.text).toMatch(/does not establish/i);
   expect(result.text).not.toMatch(
     /tested for PLA-CF|tested for PETG on coated|tested for PETG without/,
   );
@@ -248,7 +249,7 @@ it("does not forget a surface qualification in a TPU follow-up", async () => {
     magigoo,
     "Can I use Magigoo Original for PETG on coated glass?",
   );
-  expect(result.text).toMatch(/can't confirm/i);
+  expect(result.text).toMatch(/does not establish/i);
   expect(result.text).not.toContain("tested for TPU on glass");
 });
 it("retains exact variant scope on a direct answer and never mutates the approved evidence", async () => {
@@ -322,7 +323,7 @@ it("explains both unknown material and surface constraints without silently trea
   const result = await answer(
     "Can I use Magigoo Original for nylon on textured PEI?",
   );
-  expect(result.text).toMatch(/can't confirm.*nylon.*textured PEI/i);
+  expect(result.text).toMatch(/does not establish.*nylon.*textured PEI/i);
   expect(result.text).not.toMatch(
     /not compatible|safe for nylon|designed and tested for nylon/i,
   );

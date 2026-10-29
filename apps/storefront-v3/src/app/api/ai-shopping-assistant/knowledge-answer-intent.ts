@@ -1,7 +1,13 @@
 /** Customer text identifies the question, never establishes a product capability. */
-export const KNOWLEDGE_ANSWER_POLICY_VERSION = "2026-10-29.customer-intent-1";
+export const KNOWLEDGE_ANSWER_POLICY_VERSION = "2026-10-29.customer-intent-2";
 export type KnowledgeAnswerIntent = {
-  kind: "material_use" | "application" | "fit" | "other";
+  kind:
+    | "material_use"
+    | "print_settings"
+    | "release_behavior"
+    | "application"
+    | "fit"
+    | "other";
   materials: string[];
   surfaces: string[];
   qualifiedSurface: boolean;
@@ -71,6 +77,26 @@ export function knowledgeAnswerIntent(
           : `${previousQuestion} ${question}`,
       ),
   };
+  const compoundInventory =
+    /\b(?:all|every|full|complete|unknowns?)\b|\b(?:and|plus|also)\b.*\b(?:what|which|how|can|does|is|will)\b/i.test(
+      question,
+    );
+  if (
+    !compoundInventory &&
+    materials.length &&
+    /\b(?:what|which)\b.*\b(?:temperature|settings?)\b|\bhow hot\b|\b(?:need|necessary)\b.*(?:[0-9]|temperature|degrees?|°\s*c)/i.test(
+      question,
+    )
+  )
+    return { ...result, kind: "print_settings" };
+  if (
+    !compoundInventory &&
+    /\b(?:print|plate|bed|adhesive|cool|cooling)\b/i.test(question) &&
+    /\b(?:release|releases|cooling|cool down|remove the print)\b/i.test(
+      question,
+    )
+  )
+    return { ...result, kind: "release_behavior" };
   // Keep compound specification requests and explicit full inventories on the
   // existing complete-evidence path; a partial intent must not hide a limitation.
   if (
@@ -105,6 +131,18 @@ export function knowledgeAnswerIntent(
 export function intentFactPattern(intent: KnowledgeAnswerIntent) {
   const conditions = "|^conditions?$|^safety$|^warnings?$";
   switch (intent.kind) {
+    case "release_behavior":
+      return new RegExp(
+        "cooling_release|release_behavior|release_condition|cooling_condition" +
+          conditions,
+        "i",
+      );
+    case "print_settings":
+      return new RegExp(
+        "(?:print|nozzle|bed|filament).*temperature|temperature.*(?:print|nozzle|bed|filament)|recommended_settings" +
+          conditions,
+        "i",
+      );
     case "application":
       return new RegExp(
         "application|instructions|preparation|coverage|quantity|procedure" +

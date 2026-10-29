@@ -14,11 +14,28 @@ const irrelevant = {
 };
 const inputs = [
   {
+    id: "everyday-magigoo-release",
+    customerPrompt: "When does Magigoo Original release the print?",
+    required: /thermally activated.*holds.*hot bed.*releases after cooling/i,
+    cues: ["hot bed", "cooling"],
+    forbidden: /[0-9].*(?:°C|degrees)|I can.t confirm/i,
+  },
+  {
+    id: "everyday-dragonfly-print-settings",
+    customerPrompt:
+      "What temperature should I use to print PETG with a Dragonfly BMS?",
+    required:
+      /filament manufacturer.s settings.*printer.s operating limits[\s\S]*which filament brand\/grade and printer setup/i,
+    cues: ["settings", "printer"],
+    forbidden: /[0-9].*(?:°C|degrees)|I can.t confirm/i,
+  },
+  {
     id: "everyday-magigoo-petg-glass",
     customerPrompt: "I'm printing PETG on glass. Is Magigoo Original suitable?",
     required: /designed and tested for PETG on glass/i,
     cues: ["PETG", "glass"],
-    forbidden: /thin coat|all surfaces|PEI|guarantee|(?:not|never) designed|can't confirm/i,
+    forbidden:
+      /thin coat|all surfaces|PEI|guarantee|(?:not|never) designed|can't confirm/i,
   },
   {
     id: "everyday-magigoo-tpu-follow-up",
@@ -29,12 +46,13 @@ const inputs = [
     ],
     required: /designed and tested for TPU on glass/i,
     cues: ["TPU", "glass"],
-    forbidden: /every plate|all surfaces|PEI|guarantee|(?:not|never) designed|can't confirm/i,
+    forbidden:
+      /every plate|all surfaces|PEI|guarantee|(?:not|never) designed|can't confirm/i,
   },
   {
     id: "everyday-magigoo-pei-unknown",
     customerPrompt: "Will Magigoo Original work on textured PEI?",
-    required: /can't confirm[^.]*textured PEI/i,
+    required: /does not establish[^.]*textured PEI/i,
     cues: ["PEI", "glass"],
     forbidden: /(?:yes|safe|tested for TPU on textured PEI)/i,
   },
@@ -42,29 +60,30 @@ const inputs = [
     id: "everyday-magigoo-application-unknown",
     customerPrompt: "How much Magigoo Original should I apply?",
     required:
-      /can't confirm[^.]*application[\s\S]*check[^.]*application instructions/i,
+      /application amount and method.*need checking[\s\S]*follow.*application instructions/i,
     cues: ["application", "instructions"],
     forbidden: /thin|coat|layer|drops|hot bed|cooling/i,
   },
   {
     id: "everyday-dragonfly-printer-fit",
     customerPrompt: "Will a Dragonfly BMS fit my printer?",
-    required: /can't confirm[^.]*fit[\s\S]*which printer model/i,
+    required:
+      /check.*mounting and electrical requirements[\s\S]*which printer model/i,
     cues: ["fit", "printer model"],
-    forbidden: /(?:definitely|guaranteed|universal) fit/i,
+    forbidden: /(?:definitely|guaranteed|universal) fit|I can.t confirm/i,
   },
   {
     id: "everyday-dragonfly-petg-setup",
     customerPrompt: "Can I print PETG with a Dragonfly BMS?",
-    required: /can't confirm[^.]*PETG[\s\S]*which printer model/i,
+    required:
+      /check the PETG filament.*printing requirements[\s\S]*which printer model/i,
     cues: ["PETG", "printer model"],
-    forbidden: /safe for PETG|definitely compatible/i,
+    forbidden: /safe for PETG|definitely compatible|I can.t confirm/i,
   },
   {
     id: "everyday-dragonfly-body-material",
     customerPrompt: "What is the Dragonfly BMS made from?",
-    required:
-      /(?:Dragonfly BMS is made mainly from copper alloy|construction as mainly copper alloy)/i,
+    required: /Dragonfly BMS is mainly copper alloy/i,
     cues: ["copper alloy"],
     forbidden: /heater|firmware/i,
   },

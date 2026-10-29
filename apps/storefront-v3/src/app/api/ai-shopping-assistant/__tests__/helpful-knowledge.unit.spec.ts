@@ -140,7 +140,7 @@ describe("helpful missing and current specifications", () => {
     const doc = value.documents[0];
     doc.facts = doc.facts.filter((f: { value: unknown }) => f.value !== null);
     const result = await answer(value);
-    expect(result.text).toMatch(/component.*installed printer/i);
+    expect(result.text).toMatch(/(?:component|hotend).*installed printer/i);
     expect(result.text).toMatch(/which printer/i);
     expect(result.text).not.toMatch(/safe at 500/i);
   });

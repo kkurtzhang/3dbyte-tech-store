@@ -26,9 +26,9 @@ async function openFixture(page: import("@playwright/test").Page, withSources: b
           write({ type: "source-url", sourceId: "unsafe", url: "javascript:alert(1)", title: "Unsafe" })
         }
         write({ type: "text-start", id: "reply" })
-        write({ type: "text-delta", id: "reply", delta: "The installed temperature limit remains unknown." })
+        write({ type: "text-delta", id: "reply", delta: "The 500°C figure is the hotend's stated heat-resistance rating." })
         Object.assign(window, { finishAssistantFixture: () => {
-          write({ type: "text-delta", id: "reply", delta: " Heater, sensor, wiring and firmware requirements are unverified." })
+          write({ type: "text-delta", id: "reply", delta: " It does not establish a safe operating temperature for your printer; the heater, sensor, wiring and firmware limits still need checking.\n\nWhich printer model are you using, and has its hotend setup been modified?" })
           write({ type: "text-end", id: "reply" })
           write({ type: "finish", finishReason: "stop" })
           controller.enqueue(encoder.encode("data: [DONE]\n\n"))
@@ -42,7 +42,7 @@ async function openFixture(page: import("@playwright/test").Page, withSources: b
   await page.getByRole("button", { name: "Shopping assistant", exact: true }).click()
   await page.getByRole("textbox", { name: "Ask the shopping assistant" }).fill("Can I run my Dragonfly BMS at 500°C?")
   await page.getByRole("button", { name: "Send", exact: true }).click()
-  await expect(page.getByText("The installed temperature limit remains unknown.", { exact: true })).toBeVisible()
+  await expect(page.getByText("The 500°C figure is the hotend's stated heat-resistance rating.", { exact: true })).toBeVisible()
 }
 
 for (const withSources of [true, false]) {
@@ -53,7 +53,7 @@ for (const withSources of [true, false]) {
     await expect(page.getByText("Thinking...", { exact: true })).toBeVisible()
     await page.evaluate(() => (window as unknown as { finishAssistantFixture: () => void }).finishAssistantFixture())
     await expect(page.getByText("Thinking...", { exact: true })).toHaveCount(0)
-    await expect(page.getByText(/Heater, sensor, wiring and firmware requirements are unverified/)).toBeVisible()
+    await expect(page.getByText(/heater, sensor, wiring and firmware limits still need checking/)).toBeVisible()
     if (withSources) {
       await expect(sources).toBeVisible()
       await expect(sources.getByRole("link")).toHaveCount(1)
