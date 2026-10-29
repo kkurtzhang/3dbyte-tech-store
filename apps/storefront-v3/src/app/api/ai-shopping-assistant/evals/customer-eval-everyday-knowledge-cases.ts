@@ -18,7 +18,7 @@ const inputs = [
     customerPrompt: "I'm printing PETG on glass. Is Magigoo Original suitable?",
     required: /designed and tested for PETG on glass/i,
     cues: ["PETG", "glass"],
-    forbidden: /thin coat|all surfaces|PEI|guarantee/i,
+    forbidden: /thin coat|all surfaces|PEI|guarantee|(?:not|never) designed|can't confirm/i,
   },
   {
     id: "everyday-magigoo-tpu-follow-up",
@@ -29,7 +29,7 @@ const inputs = [
     ],
     required: /designed and tested for TPU on glass/i,
     cues: ["TPU", "glass"],
-    forbidden: /every plate|all surfaces|PEI|guarantee/i,
+    forbidden: /every plate|all surfaces|PEI|guarantee|(?:not|never) designed|can't confirm/i,
   },
   {
     id: "everyday-magigoo-pei-unknown",

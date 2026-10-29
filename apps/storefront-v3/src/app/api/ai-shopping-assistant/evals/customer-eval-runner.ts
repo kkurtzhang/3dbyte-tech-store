@@ -176,7 +176,7 @@ export function scoreCustomerEvalAnswer(
   )
   const forbiddenMatches = collectForbiddenMatches(evalCase, answer)
   const qualityFailures = (evalCase.expectedAnswer.requiredPatterns ?? [])
-    .filter(({ pattern }) => !pattern.test(answer))
+    .filter(({ pattern }) => !new RegExp(pattern).test(answer))
     .map(({ label }) => `Missing required answer behavior: ${label}`)
   if (evalCase.expectedAnswer.maxQuestions !== undefined &&
       (answer.match(/\?/g)?.length ?? 0) > evalCase.expectedAnswer.maxQuestions)

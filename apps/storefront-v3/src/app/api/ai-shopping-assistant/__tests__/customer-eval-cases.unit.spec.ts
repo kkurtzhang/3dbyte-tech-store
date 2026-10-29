@@ -122,3 +122,17 @@ it("makes everyday answer quality a gate rather than allowing matching keywords 
   expect(scoreCustomerEvalAnswer(petg, "Magigoo Original is designed and tested for PETG on glass build plates.").passed).toBe(true);
   expect(scoreCustomerEvalAnswer(petg, "Magigoo Original is designed and tested for PETG on glass build plates. Which printer? Which plate?").passed).toBe(false);
 });
+
+it("rejects a negated supported claim even when every expected keyword appears", () => {
+  const item = customerAiEvalCases.find(item => item.id === "everyday-magigoo-petg-glass")!;
+  expect(scoreCustomerEvalAnswer(item, "Magigoo Original is not designed and tested for PETG on glass build plates.").passed).toBe(false);
+});
+it("keeps required-pattern grading repeatable without changing caller-owned regex state", () => {
+  const item = customerAiEvalCases.find(item => item.id === "everyday-magigoo-petg-glass")!;
+  const pattern = /designed and tested/g;
+  const guarded = { ...item, expectedAnswer: { ...item.expectedAnswer, requiredPatterns: [{ label: "direct claim", pattern }] } };
+  const answer = "Magigoo Original is designed and tested for PETG on glass build plates.";
+  expect(scoreCustomerEvalAnswer(guarded, answer).passed).toBe(true);
+  expect(scoreCustomerEvalAnswer(guarded, answer).passed).toBe(true);
+  expect(pattern.lastIndex).toBe(0);
+});
