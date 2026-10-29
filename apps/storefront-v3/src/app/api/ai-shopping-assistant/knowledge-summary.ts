@@ -3,6 +3,11 @@ import type { ApprovedKnowledgeDocument } from "@3dbyte-tech-store/shared-types"
 import { knowledgeTopics } from "./knowledge-context";
 import { knowledgeNextStep, temperatureSetup } from "./knowledge-help";
 import { plainMarkdown } from "./grounded-text";
+import { knowledgeAnswerIntent } from "./knowledge-answer-intent";
+import {
+  presentMaterialUse,
+  reviewedPresentation,
+} from "./knowledge-claim-presentation";
 import { selectKnowledgeFacts } from "./knowledge-fact-selection";
 
 type Fact = ApprovedKnowledgeDocument["facts"][number];
@@ -11,8 +16,13 @@ type Fact = ApprovedKnowledgeDocument["facts"][number];
 // paragraph below. Unknown wording, conditions, links and code remain untouched.
 const COMPONENT_SETUP_QUALIFIER =
   " This does not establish an assembled printer's safe operating temperature or its heater, sensor, wiring and firmware limits.";
-function statementFor(fact: Fact, consolidatePrinterLimit: boolean) {
-  const original = fact.value!.trim();
+function statementFor(
+  document: ApprovedKnowledgeDocument,
+  fact: Fact,
+  consolidatePrinterLimit: boolean,
+) {
+  const original =
+    reviewedPresentation(document, fact)?.statement ?? fact.value!.trim();
   const prefix = original.endsWith(COMPONENT_SETUP_QUALIFIER)
     ? original.slice(0, -COMPONENT_SETUP_QUALIFIER.length).trim()
     : "";
@@ -78,7 +88,9 @@ export function summarizeKnowledge(
   documents: ApprovedKnowledgeDocument[],
   question: string,
   evidenceDocuments = documents,
+  previousQuestion = "",
 ) {
+  const intent = knowledgeAnswerIntent(question, previousQuestion);
   const groups = new Map<string, ApprovedKnowledgeDocument[]>();
   for (const document of documents) {
     const key = scopeKey(document);
@@ -111,6 +123,42 @@ export function summarizeKnowledge(
       else if (facts[0].value === null) unknown.push(facts[0]);
       else known.push(facts[0]);
     }
+    const withScope = (response: string) =>
+      document.binding_scope === "product"
+        ? response
+        : `${response}\n\nFor variant ${plainMarkdown(document.variant_id!)} only.`;
+    if (intent.kind !== "other") {
+      if (conflicts.length)
+        return withScope(
+          `I can't confirm ${conflicts.map(plainMarkdown).join(", ")}: the specifications conflict. Check the exact revision with the manufacturer before relying on this detail.`,
+        );
+      if (intent.kind === "material_use") {
+        for (const fact of known) {
+          const claimDocument =
+            group.find((item) => item.facts.includes(fact)) ?? document;
+          const response = presentMaterialUse(claimDocument, fact, intent);
+          // Additional constraints must remain visible; this is not a free-form paraphraser.
+          if (response && known.length === 1 && !unknown.length)
+            return withScope(response);
+        }
+      }
+      if (!known.length) {
+        const subject = plainMarkdown(document.product_title);
+        if (intent.kind === "application")
+          return withScope(
+            `I can't confirm the application amount or procedure for ${subject}. Check its application instructions before applying it.`,
+          );
+        if (intent.kind === "fit")
+          return withScope(
+            `I can't confirm ${subject}'s fit for your setup.\n\n${knowledgeNextStep("Can it fit?", document.product_title)}`,
+          );
+        const materials =
+          intent.materials.join(" and ") || "that material or build surface";
+        return withScope(
+          `I can't confirm ${subject}'s suitability for ${materials} in your setup.\n\n${knowledgeNextStep("Can it fit?", document.product_title)}`,
+        );
+      }
+    }
     const setup = temperatureSetup(question, document.product_title);
     const unresolvedLimit =
       setup !== "process" &&
@@ -126,7 +174,15 @@ export function summarizeKnowledge(
       (fact) => !(printerLimit && fact.field === "installed_max_temperature"),
     );
     const statements = Array.from(
-      new Set(known.map((fact) => statementFor(fact, printerLimit))),
+      new Set(
+        known.map((fact) =>
+          statementFor(
+            group.find((item) => item.facts.includes(fact)) ?? document,
+            fact,
+            printerLimit,
+          ),
+        ),
+      ),
     ).join(" ");
     const limitations = [
       ...(conflicts.length
@@ -196,6 +252,7 @@ export function knowledgeSources(
   >();
   for (const document of documents) {
     const facts = selectKnowledgeFacts(document, question);
+    if (!facts.length) continue;
     const known = facts
       .filter((fact) => fact.value !== null)
       .map((fact) => fact.label);

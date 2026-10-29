@@ -10,7 +10,7 @@ describe("customer AI eval case selection", () => {
     const release = selectCustomerAiEvalCases({ suite: "release" })
 
     expect(smoke).toHaveLength(8)
-    expect(release).toHaveLength(31)
+    expect(release).toHaveLength(38)
     expect(release).toEqual(
       expect.arrayContaining(smoke.map((evalCase) => evalCase)),
     )
@@ -108,3 +108,17 @@ it("keeps natural installed-temperature inputs separate from strict evaluator ex
     expect(scoreCustomerEvalAnswer(item, "The installed limit is unknown. A component rating cannot verify an installed printer; heater, sensor, wiring and firmware requirements remain unknown.").passed).toBe(true)
   }
 })
+
+it("makes everyday answer quality a gate rather than allowing matching keywords to pass", () => {
+  const cases = customerAiEvalCases.filter((item) => item.id.startsWith("everyday-"));
+  expect(cases).toHaveLength(7);
+  for (const item of cases) {
+    expect(item.expectedAnswer.requiredPatterns?.length).toBeGreaterThan(0);
+    const keywordsOnly = item.expectedAnswer.mustIncludeOneOf.join(" ");
+    expect(scoreCustomerEvalAnswer(item, keywordsOnly).passed).toBe(false);
+    expect(scoreCustomerEvalAnswer(item, "I couldn't verify current approved evidence. " + keywordsOnly).passed).toBe(false);
+  }
+  const petg = cases.find((item) => item.id === "everyday-magigoo-petg-glass")!;
+  expect(scoreCustomerEvalAnswer(petg, "Magigoo Original is designed and tested for PETG on glass build plates.").passed).toBe(true);
+  expect(scoreCustomerEvalAnswer(petg, "Magigoo Original is designed and tested for PETG on glass build plates. Which printer? Which plate?").passed).toBe(false);
+});

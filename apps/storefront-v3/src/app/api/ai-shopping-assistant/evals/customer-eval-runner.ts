@@ -175,7 +175,13 @@ export function scoreCustomerEvalAnswer(
     (value) => !includesIgnoreCase(answer, value),
   )
   const forbiddenMatches = collectForbiddenMatches(evalCase, answer)
-  const formatWarnings = collectFormatWarnings(evalCase, answer)
+  const qualityFailures = (evalCase.expectedAnswer.requiredPatterns ?? [])
+    .filter(({ pattern }) => !pattern.test(answer))
+    .map(({ label }) => `Missing required answer behavior: ${label}`)
+  if (evalCase.expectedAnswer.maxQuestions !== undefined &&
+      (answer.match(/\?/g)?.length ?? 0) > evalCase.expectedAnswer.maxQuestions)
+    qualityFailures.push("Too many follow-up questions")
+  const formatWarnings = [...collectFormatWarnings(evalCase, answer), ...qualityFailures]
   const minimumCueMatches = evalCase.expectedAnswer.minimumCueMatches ?? 1
 
   return {
@@ -186,7 +192,7 @@ export function scoreCustomerEvalAnswer(
     includeMissing,
     passed:
       includeMatched.length >= minimumCueMatches &&
-      forbiddenMatches.length === 0,
+      forbiddenMatches.length === 0 && qualityFailures.length === 0,
   }
 }
 

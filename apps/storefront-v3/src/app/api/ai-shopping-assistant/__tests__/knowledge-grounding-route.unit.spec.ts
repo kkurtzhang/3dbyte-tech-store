@@ -174,7 +174,7 @@ it.each(observed.cases)(
     for (const output of knowledgeOutputs) {
       if (!output.documents) throw Error("Expected captured knowledge evidence")
       for (const doc of output.documents) {
-        expect(answer).toContain(doc.product_title)
+        expect(answer).toContain(fixture.id === "magigoo-materials" ? "Magigoo Original" : doc.product_title)
         expect(events).toContainEqual(
           expect.objectContaining({
             type: "source-url",

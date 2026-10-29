@@ -10,6 +10,7 @@ import {
 const now = Date.parse(observed.provenance.observedAt);
 const dragonfly = observed.cases[0];
 const magigoo = observed.cases[1];
+const customerMagigooAnswer = "Magigoo Original is designed and tested for PLA, ABS, PETG, HIPS and TPU on glass build plates.";
 const clone = (value: unknown) => JSON.parse(JSON.stringify(value));
 async function execute(
   value = dragonfly.knowledge,
@@ -58,7 +59,7 @@ it("answers the recorded materials question without an unrelated variant or inst
     now,
   );
   expect(answer.text).toBe(
-    "### Magigoo Original 50ml Bed Adhesive\n\nMagigoo describes Original as designed and tested on glass build plates for PLA, ABS, PETG, HIPS and TPU.",
+    customerMagigooAnswer,
   );
   expect(answer.sources).toHaveLength(1);
   expect(answer.sources[0]).toMatchObject({
@@ -175,7 +176,7 @@ it.each(observed.cases)(
     const answer = parts
       .flatMap((p) => (p.type === "text-delta" ? [p.text] : []))
       .join("");
-    expect(answer).toBe(fixture.expectedAfter);
+    expect(answer).toBe(fixture.id === magigoo.id ? customerMagigooAnswer : fixture.expectedAfter);
     expect(answer).not.toContain("definitely safe");
     expect(answer).not.toContain(fixture.knowledge.documents[0].source_url);
   },

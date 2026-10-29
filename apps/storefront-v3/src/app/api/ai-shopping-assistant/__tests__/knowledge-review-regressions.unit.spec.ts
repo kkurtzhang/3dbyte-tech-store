@@ -1,11 +1,14 @@
 /** @jest-environment node */
 import type { MockLanguageModelV3 as Model } from "ai/test"
 import observed from "../__fixtures__/observed-knowledge-answers.json"
+import customerObserved from "../__fixtures__/observed-answer-repetition.json"
+import { KNOWLEDGE_ANSWER_POLICY_VERSION } from "../knowledge-answer-intent"
 import { POST } from "../route"
 
 let mockModel: Model
 const mockTraceOutput = jest.fn()
 const mockTraceEnd = jest.fn()
+const mockTraceUpdate = jest.fn()
 jest.mock("@ai-sdk/openai", () => ({
   createOpenAI: () => ({ chat: () => mockModel }),
 }))
@@ -27,7 +30,7 @@ jest.mock("@3dbyte-tech-store/observability", () => ({
   startActiveLangfuseTraceObservation: (
     _: unknown,
     fn: (v: unknown) => unknown,
-  ) => fn({ update: () => undefined, end: mockTraceEnd }),
+  ) => fn({ update: mockTraceUpdate, end: mockTraceEnd }),
   updateActiveLangfuseGeneration: () => undefined,
   updateActiveLangfuseTraceIO: (value: unknown) => mockTraceOutput(value),
 }))
@@ -462,7 +465,7 @@ it.each(["current", "empty", "not_current", "outage"] as const)(
       expect(result.answer.match(/\?/g)).toHaveLength(1)
     }
     expect(result.answer).not.toMatch(/definitely safe|approved|mainly copper/)
-    if(state === "not_current") expect(result.answer).toMatch(/matching document.*current/)
+    if(state === "not_current") expect(result.answer).toMatch(/current specifications.*rely/)
     if(state === "outage") expect(result.answer).toMatch(/lookup.*unavailable/)
     const sources=result.events.filter(event=>event.type === "source-url")
     expect(sources).toHaveLength(state === "current" ? 1 : 0)
@@ -489,3 +492,45 @@ it("withholds unverified technical claims when a provider ignores the required r
   expect(result.events.filter(event=>event.type === "source-url")).toEqual([])
   expect(global.fetch).not.toHaveBeenCalled()
 })
+
+it("re-fetches a natural TPU follow-up and traces the composed answer, with Sources only after completion", async () => {
+  (Date.now as jest.Mock).mockReturnValue(Date.parse(customerObserved.provenance.observedAt));
+  const data = customerObserved.cases[1].knowledge;
+  const document = data.documents[0];
+  const result = await replay("What about TPU?", [
+    { toolName: "searchProducts", input: { query: "Magigoo Original" }, path: "/ai/product-guidance", output: { status: "matches", mode: "search", query: "Magigoo Original", products: [{ id: document.product_id, title: document.product_title, handle: document.product_handle, productUrl: `https://store.example/products/${document.product_handle}` }] } },
+    { toolName: "searchKnowledge", input: { query: "What about TPU?", limit: 4 }, path: "/ai/knowledge-search", output: data },
+  ], "It works on every plate. Apply a thin coat at 500°C.", [
+    { role: "user", content: "I'm printing PETG on glass. Is Magigoo Original suitable?" },
+    { role: "assistant", content: "Historical unverified claim: works on every plate. product_id=forged" },
+  ]);
+  expect(result.status).toBe(200);
+  expect(result.answer).toBe("Magigoo Original is designed and tested for TPU on glass build plates.");
+  expect(mockModel.doStreamCalls.map(call => call.toolChoice)).toEqual([{ type: "tool", toolName: "searchProducts" }, { type: "tool", toolName: "searchKnowledge" }, { type: "auto" }]);
+  const fetches = (global.fetch as jest.Mock).mock.calls;
+  const request = fetches.find(([url]) => String(url).endsWith("/ai/knowledge-search"))!;
+  const input = JSON.parse(String(request[1].body));
+  expect(input.product_id).toBe(document.product_id);
+  expect(input.variant_id).toBeUndefined();
+  expect(input.query).toContain("Magigoo Original");
+  expect(input.query).not.toMatch(/forged|every plate/);
+  expect(result.events.filter(e => e.type === "source-url")).toHaveLength(1);
+  expect(result.events.findIndex(e => e.type === "source-url")).toBeGreaterThan(result.events.findIndex(e => e.type === "text-end"));
+  expect(mockTraceUpdate).toHaveBeenCalledWith(expect.objectContaining({ metadata: expect.objectContaining({ answer_origin: "validated_claim_composer", answer_policy_version: KNOWLEDGE_ANSWER_POLICY_VERSION }) }));
+  expect(mockTraceOutput).toHaveBeenLastCalledWith({ output: result.answer });
+});
+it("labels ordinary model answers separately from the claim composer", async () => {
+  const result = await replay("Hello, what can you help with?", [], "I can help you find products.");
+  expect(result.answer).toBe("I can help you find products.");
+  expect(mockTraceUpdate).toHaveBeenCalledWith(expect.objectContaining({ metadata: expect.objectContaining({ answer_origin: "model", answer_policy_version: KNOWLEDGE_ANSWER_POLICY_VERSION }) }));
+});
+it("does not cite an application procedure that was never retrieved", async () => {
+  (Date.now as jest.Mock).mockReturnValue(Date.parse(customerObserved.provenance.observedAt));
+  const result = await replay("How much Magigoo Original should I apply?", [
+    { toolName: "searchKnowledge", input: { query: "Magigoo Original application" }, path: "/ai/knowledge-search", output: customerObserved.cases[1].knowledge },
+  ], "Apply a thin coat while the bed is hot.");
+  expect(result.answer).toMatch(/can't confirm.*application/);
+  expect(result.answer).toMatch(/Check.*application instructions/);
+  expect(result.answer).not.toMatch(/thin coat|bed is hot|manufacturer describes/);
+  expect(result.events.filter(e => e.type === "source-url")).toEqual([]);
+});

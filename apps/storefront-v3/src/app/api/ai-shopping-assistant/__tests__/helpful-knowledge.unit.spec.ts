@@ -110,12 +110,12 @@ describe("helpful missing and current specifications", () => {
     const expired = evidence();
     expired.documents[0].valid_until = new Date(now).toISOString();
     const result = await answer(expired);
-    expect(result.text).toMatch(/matching document.*current/i);
+    expect(result.text).toMatch(/current specifications.*rely/i);
     expect(result.text).not.toContain("mainly copper");
     expect(result.sources).toEqual([]);
     const invalid = evidence();
     invalid.citations[0].revision_hash = "f".repeat(64);
-    expect((await answer(invalid)).text).toMatch(/matching document.*current/i);
+    expect((await answer(invalid)).text).toMatch(/current specifications.*rely/i);
   });
   it("distinguishes a lookup outage from a corpus gap without pretending to have searched successfully", async () => {
     const result = await answer({ error: "Internal service failure" });

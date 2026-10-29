@@ -1,3 +1,4 @@
+import { customerAiEverydayKnowledgeEvalCases } from "./customer-eval-everyday-knowledge-cases"
 import { customerAiCommerceEvalCases } from "./customer-eval-commerce-cases"
 import { customerAiProductEvalCases } from "./customer-eval-product-cases"
 import { customerAiRcSupportEvalCases } from "./customer-eval-rc-support-cases"
@@ -28,6 +29,7 @@ export const CUSTOMER_AI_EVAL_REQUIRED_TAGS = [
 
 export const customerAiEvalCases: CustomerAiEvalCase[] = [
   ...customerAiProductEvalCases,
+  ...customerAiEverydayKnowledgeEvalCases,
   ...customerAiRcSupportEvalCases,
   ...customerAiCommerceEvalCases,
 ]
