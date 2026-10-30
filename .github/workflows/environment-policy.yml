@@ -2,7 +2,8 @@ name: environment-policy
 
 on:
   pull_request:
-    branches: [main, staging]
+    # Temporary stacked trial base: PR260. All standard gates still apply.
+    branches: [main, staging, fix/assistant-customer-answers-20261029]
   push:
     branches: [main, staging, build/containerize-monorepo]
 

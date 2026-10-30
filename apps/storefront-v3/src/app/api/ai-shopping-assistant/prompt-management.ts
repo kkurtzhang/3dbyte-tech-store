@@ -84,6 +84,7 @@ export type LangfusePromptClient = {
 export type AssistantSystemPromptResult = {
   metadata: AssistantPromptMetadata;
   prompt: string;
+  editableTone: string;
   source: "code_fallback" | "langfuse";
 };
 
@@ -256,6 +257,7 @@ export async function resolveAssistantSystemPrompt({
     return {
       metadata: buildPromptMetadata({ label, name, source: "code_fallback" }),
       prompt: buildFallbackPrompt(),
+      editableTone: DASHBOARD_EDITABLE_ASSISTANT_PROMPT,
       source: "code_fallback",
     };
   }
@@ -269,6 +271,7 @@ export async function resolveAssistantSystemPrompt({
       return {
         metadata: buildPromptMetadata({ label, name, source: "code_fallback" }),
         prompt: buildFallbackPrompt(),
+        editableTone: DASHBOARD_EDITABLE_ASSISTANT_PROMPT,
         source: "code_fallback",
       };
     }
@@ -282,6 +285,7 @@ export async function resolveAssistantSystemPrompt({
         version: prompt.version,
       }),
       prompt: appendCodeOwnedGuardrails(promptText),
+      editableTone: promptText,
       source: "langfuse",
     };
   } catch (error) {
@@ -293,6 +297,7 @@ export async function resolveAssistantSystemPrompt({
         source: "code_fallback",
       }),
       prompt: buildFallbackPrompt(),
+      editableTone: DASHBOARD_EDITABLE_ASSISTANT_PROMPT,
       source: "code_fallback",
     };
   }
