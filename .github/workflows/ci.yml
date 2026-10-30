@@ -2,7 +2,8 @@ name: ci
 
 on:
   pull_request:
-    branches: [main, staging]
+    # Temporary stacked trial base: PR260. All standard gates still apply.
+    branches: [main, staging, fix/assistant-customer-answers-20261029]
   push:
     branches: [main, staging]
 
@@ -197,7 +198,7 @@ jobs:
       - name: Test support notification reconciliation with synthetic data
         run: pnpm exec playwright test --config apps/backend/integration-tests/admin/delivery.playwright.config.cjs
       - name: Run browser smoke against the PR storefront
-        run: pnpm exec playwright test tests/e2e/homepage.spec.ts tests/e2e/assistant-product-actions.spec.ts tests/e2e/assistant-combined-consent.spec.ts
+        run: pnpm exec playwright test tests/e2e/homepage.spec.ts tests/e2e/assistant-product-actions.spec.ts tests/e2e/assistant-combined-consent.spec.ts tests/e2e/assistant-final-sources.spec.ts
 
   security-scan:
     name: security-scan
