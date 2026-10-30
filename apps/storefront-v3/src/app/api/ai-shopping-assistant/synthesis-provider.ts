@@ -1,4 +1,5 @@
 import { generateText, type LanguageModel } from "ai";
+import { withComparisonStage, comparisonMetadata } from "./comparison-context";
 import { isAiTelemetryEnabled } from "@3dbyte-tech-store/observability";
 import {
   isSynthesisEnabled,
@@ -34,25 +35,28 @@ export function createSynthesisResolver(
     return synthesizeKnowledgeAnswer({
       ...options,
       call: async (request) => {
-        const result = await generateText({
-          model: options.model,
-          system: request.system,
-          prompt: request.payload,
-          abortSignal: request.signal,
-          maxRetries: 0,
-          maxOutputTokens: request.maxOutputTokens,
-          temperature: 0.2,
-          experimental_telemetry: {
-            isEnabled: isAiTelemetryEnabled(),
-            functionId: `storefront.ai-shopping-assistant.synthesis.${request.stage}`,
-            recordInputs: false,
-            recordOutputs: false,
-            metadata: {
-              ...synthesisMetadata(),
-              synthesis_stage: request.stage,
+        const result = await withComparisonStage(request.stage, () =>
+          generateText({
+            model: options.model,
+            system: request.system,
+            prompt: request.payload,
+            abortSignal: request.signal,
+            maxRetries: 0,
+            maxOutputTokens: request.maxOutputTokens,
+            temperature: 0.2,
+            experimental_telemetry: {
+              isEnabled: isAiTelemetryEnabled(),
+              functionId: `storefront.ai-shopping-assistant.synthesis.${request.stage}`,
+              recordInputs: false,
+              recordOutputs: false,
+              metadata: {
+                ...synthesisMetadata(),
+                ...comparisonMetadata(),
+                synthesis_stage: request.stage,
+              },
             },
-          },
-        });
+          }),
+        );
         return {
           text: result.text,
           inputTokens: result.totalUsage.inputTokens,

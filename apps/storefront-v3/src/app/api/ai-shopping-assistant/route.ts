@@ -42,6 +42,7 @@ import {
 } from "./knowledge-context"
 import { createKnowledgeGroundingTransform } from "./knowledge-grounding"
 import { createSynthesisResolver, synthesisMetadata } from "./synthesis-provider"
+import { comparisonFetch, comparisonMetadata, comparisonRouteSettings, assertComparisonReleaseSha } from "./comparison-context"
 import {
   collectEmailAddresses,
   maskCompleteEmailAddresses,
@@ -675,6 +676,7 @@ export async function POST(req: Request): Promise<Response> {
     )
   }
 
+  assertComparisonReleaseSha(config.releaseSha)
   const supportSession = getSupportSession(req, true)!
   const assistantPrompt = await resolveAssistantSystemPrompt()
   const traceMetadata = {
@@ -683,6 +685,7 @@ export async function POST(req: Request): Promise<Response> {
     message_count: parsed.data.messages.length,
     answer_policy_version: KNOWLEDGE_ANSWER_POLICY_VERSION,
     ...synthesisMetadata(),
+    ...comparisonMetadata(),
   }
   const telemetryMetadata = {
     ...assistantPrompt.metadata,
@@ -776,7 +779,7 @@ export async function POST(req: Request): Promise<Response> {
             const deepseek = createOpenAI({
               apiKey: config.apiKey,
               baseURL: config.baseURL,
-              fetch: createDeepSeekFetch(fetch, deepSeekUsageRef),
+              fetch: createDeepSeekFetch(comparisonFetch(fetch), deepSeekUsageRef),
               name: "deepseek",
             })
             const uiMessages = toUiMessages(parsed.data.messages)
@@ -825,6 +828,7 @@ export async function POST(req: Request): Promise<Response> {
                 ignoreIncompleteToolCalls: true,
               }),
               temperature: config.temperature,
+              ...comparisonRouteSettings(),
               experimental_transform: createKnowledgeGroundingTransform(
                 knowledge,
                 suppliedEmails,

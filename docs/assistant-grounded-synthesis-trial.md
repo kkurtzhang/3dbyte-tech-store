@@ -95,34 +95,117 @@ limits, provider failure/timeout, abort and end-only Sources. Installed SDK/rout
 mocks verify exact visible trace output and flag-off parity. Mock outputs are test
 inputs, **not measurements of real-model response quality**.
 
-## Proposed paired live comparison — approval required
+## Comparison preflight and reservations (no live run)
 
-Do not run or enable the flag yet. After review and a separately approved secure
-execution setup, compare pinned #260 with this exact trial head using the same
-current approved packet and model/prompt version. Never compare stale fixture facts
-to different live content. Suggested first batch: **12 customer turns per arm,
-24 total**, once each, no sampling retries:
+`comparison-budget.ts` requires an explicit reviewed public pricing record: exact
+model and documented version, provider origin, full context-token capacity,
+**peak/cache-miss upper input rate** and peak output rate in USD per million,
+official pricing source URL, verification time and expiry. It supplies no default
+prices, cache-hit discount or byte-to-token estimate. Unknown/malformed model or
+rates, zero rates, future/stale records, expiry beyond 24 hours, invalid SHA/run ID,
+or a reservation above USD 2 fail closed. Record syntax/freshness checks do not
+independently prove that an operator copied the correct provider prices.
 
-- Magigoo PETG/glass plus TPU follow-up (two turns), material list and cooling release.
-- Magigoo PEI, coated glass and missing application instructions.
-- Dragonfly construction, ordinary PETG suitability and printer-fit question.
-- Dragonfly 500°C operation and a follow-up (two turns); both should use the strict fallback.
+Offline command (reads only the explicitly supplied non-secret JSON file):
 
-Use synthetic identities only. Proposed hard spend ceiling **US$2 total**, 24 turns,
-max existing five route steps plus four added trial calls per turn, at most 168
-provider calls across both arms, with a 60-second per-turn wall-clock limit and no
-full reruns. **The current comparison harness does not enforce that dollar cap**:
-before requesting execution, add/review a runner that reserves worst-case spend
-using verified current provider prices, bounds original-route output as well as
-trial output, meters all calls and stops before the next reservation exceeds $2.
-Confirm the existing tracing setup records both arms; do not create a test-only
-Langfuse connection. No fallback run may be relabelled successful synthesis.
+```bash
+pnpm --filter=@3dbyte-tech-store/storefront-v3 eval:ai:comparison:preflight \
+  /absolute/path/reviewed-public-pricing.json <candidate-40-character-sha> <unique-run-id>
+```
 
-Blindly review intent-first usefulness, naturalness, relevance, complete grounding,
-qualifiers, unknowns and a single useful clarification; retain all strict existing
-safety/evidence rubrics. Report output, arm/origin, exact SHA/prompt/validator
-versions, evidence hashes, latency, token/cost usage and actual ingested trace IDs.
-Any unsupported fact/identity/operating-limit acceptance blocks rollout. A small
-batch can guide the next revision; it cannot establish statistical safety or justify
-a model upgrade. Merge, staging deployment, live calls and flag enablement each
-remain outside this draft's approval.
+This command cannot make provider or Langfuse calls. It prints the conservative
+quote and exits nonzero if the whole plan cannot be reserved under USD 2.
+
+The plan reserves **24 customer turns**, at most **168 physical provider attempts**,
+**247,200 output tokens**, and **168 times the documented context capacity** for
+input. Each of 24 turns gets five initial-route attempts at 1,800 output tokens;
+each of 12 trial turns additionally gets one 700-token draft, two 600-token reviews
+and one 700-token repair. Original-route SDK retries are disabled within comparison
+context; any unexpected HTTP retry still consumes an attempt. Stage quotas cannot
+be transferred. No failure, non-2xx response, abort, cache hit or missing usage
+refunds a reservation. Integer micro-USD arithmetic rounds each call upward.
+
+`comparisonFetch` enforces each actual outbound attempt before transport: exact
+provider/model, bounded JSON/text-only requests, non-thinking mode, explicit output
+cap, one completion and no paid provider-side tools. The full documented model
+context is reserved at the supplied peak/cache-miss rate; output is over-reserved
+separately. Reservations are synchronous before awaiting transport, preventing
+concurrent calls from oversubscribing one controller. Pricing expiry and exact app
+release SHA are checked during execution. The ledger excludes request content and
+credentials and preserves actual returned trace IDs for **every turn**, including
+non-final follow-ups. The full reservation is persisted before the first invocation;
+receipt-write failures stop the batch. It must run once in one process; a process
+restart is not permission to reset the allowance or automatically resume the run.
+
+### Why the proposed USD 2 batch is currently refused
+
+The [official DeepSeek pricing page](https://api-docs.deepseek.com/quick_start/pricing/),
+checked October 30, 2026, lists `deepseek-flash` / DeepSeek-V4.1-Flash-1017 with a
+1M-token context, peak cache-miss input USD 0.30/M and output USD 1.20/M. Full-context
+reservation for this plan is **USD 50.696640**, so preflight **refuses USD 2**. This
+is an intentionally large over-reservation, **not an expected bill**. Off-peak or
+cache-hit savings cannot be assumed to make it pass. No paid call was made.
+
+The USD 2 value is a **client reservation limit under explicit pricing assumptions**,
+not a provider-enforced/account-wide dollar cap. Pricing changes, alias changes,
+provider accounting, taxes or other account traffic cannot be controlled by this
+code. The limits do not apply to ordinary customer traffic outside trusted
+comparison context. A tighter reviewed tokenizer/framing bound would be needed to
+make this full batch feasible under USD 2; otherwise a different plan/reservation
+limit needs separate review and approval. Do not lower the declared model context
+or use approximate character counts merely to obtain a passing quote.
+
+## Proposed paired live comparison — approval and runtime entry required
+
+`comparison-evaluation.ts` reuses the **nine existing everyday cases** plus the
+existing two-turn `dragonfly-temperature-follow-up` case: ten cases / twelve turns
+per arm, twenty results / twenty-four turn traces total. Inputs and strict graders
+are unchanged. Everyday coverage includes Magigoo PETG/glass, TPU follow-up, release,
+PEI and missing application instructions; Dragonfly construction, printing settings,
+PETG suitability and printer fit. The safety conversation retains the 500°C edge.
+Existing exact-phrase graders can flag legitimate wording variation; report their
+results honestly and use blind human usefulness/grounding review as well. Do not
+weaken them or resample until passing.
+
+The baseline and trial use the **same candidate binary and approved retrieval path**.
+The baseline selects the unchanged #260 composer (with tested output parity), not a
+separately running historical #260 binary. Both arms record the candidate SHA plus
+composer/prompt/validator versions. Trusted `AsyncLocalStorage` selects the arm per
+turn; it does not mutate the global feature flag. There is **no new HTTP endpoint,
+header, query or body option** to select an arm. Each request is paced 6.5 seconds
+apart, has a 60-second turn deadline and a 2MB buffered response limit. Transport,
+release or trace-diagnostic failures stop the batch; quality failures remain visible
+results. There is one attempt per case, no sampling or automatic batch restart.
+
+### Existing Langfuse integration and precise remaining execution boundary
+
+Normal Next.js startup uses `instrumentation.ts` → `instrumentation.node.ts` →
+`startNodeTracingAsync`. The route already creates Langfuse observations and returns
+`x-3db-langfuse-trace-id` for the existing eval header. The new trusted in-process
+adapter invokes that **same route in the already instrumented application process**,
+keeps context through complete stream consumption, and uses the existing evaluator's
+`fetchImpl` seam. It adds run/arm/turn/reservation metadata and separate sessions
+`<run-id>-baseline` / `<run-id>-trial`. It creates no Langfuse client, exporter,
+connection, credential or test-only telemetry configuration.
+
+The ordinary `run-customer-ai-evals.ts` HTTP command **cannot enter this server-owned
+context or meter provider calls from the client**. No live operator entry is exposed
+by this draft. Execution therefore still requires a separately approved candidate
+deployment and a reviewed trusted invocation inside the existing instrumented
+runtime (with `invokeAssistant: POST` and a durable `persistReceipt` callback), after
+the pricing/bound issue above is resolved. Deploying the code alone does not launch
+the comparison or enable the feature for customer traffic. Do not repurpose the
+isolated acceptance relay: it deliberately disables Langfuse and cannot demonstrate
+existing application ingestion. No test-only connection should be added.
+
+Mocked route tests verify arm isolation, global flag false, exact SHA, metadata and
+visible output; they do **not** prove live ingestion. For a future approved run,
+verify each returned trace in the existing authorized Langfuse UI/API at
+`observe.3dbytetech.com.au`, project `estore`, checking natural input, final output,
+run/arm/turn, exact release and policy versions. Header presence alone is not proof
+of ingestion. Eval traces use `storefront.customer-ai-evals` / `customer-eval-runner`;
+the shopping-assistant saved filter can hide them. Return actual verified IDs and
+canonical links, never guessed links.
+
+No paid comparison, new credentials, remote prompt/knowledge publication, merge,
+deployment or flag enablement is authorized or performed in this draft update.

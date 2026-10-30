@@ -1,3 +1,4 @@
+import { comparisonArm } from "./comparison-context";
 import { plainMarkdown } from "./grounded-text";
 import { assembleKnowledgeAnswer } from "./knowledge-grounding";
 import { knowledgeAnswerIntent } from "./knowledge-answer-intent";
@@ -42,7 +43,10 @@ export type SynthesisOptions = {
 export function isSynthesisEnabled(
   env: Record<string, string | undefined> = process.env,
 ) {
-  return env.AI_ASSISTANT_GROUNDED_SYNTHESIS_ENABLED === "true";
+  const arm = comparisonArm();
+  return arm
+    ? arm === "trial"
+    : env.AI_ASSISTANT_GROUNDED_SYNTHESIS_ENABLED === "true";
 }
 /** Buffer -> hard checks -> independent grounding review -> one style repair at most.
  * Same-model review can share errors with generation. This experimental path does

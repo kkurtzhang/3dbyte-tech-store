@@ -4,6 +4,8 @@ import observed from "../__fixtures__/observed-knowledge-answers.json"
 import customerObserved from "../__fixtures__/observed-answer-repetition.json"
 import { KNOWLEDGE_ANSWER_POLICY_VERSION } from "../knowledge-answer-intent"
 import { POST } from "../route"
+import { ComparisonBudget } from "../comparison-budget"
+import { runComparisonTurn } from "../comparison-context"
 
 let mockSynthesisOutputs: string[] = []
 let mockGenerateCalls = 0
@@ -570,4 +572,18 @@ it("flag off preserves the exact composer without any additional SDK generations
   const result = await replay(prompt, [{ toolName: "searchKnowledge", input: { query: prompt }, output: customerObserved.cases[1].knowledge, path: "/ai/knowledge-search" }], "Untrusted prose")
   expect(result.answer).toBe("Magigoo Original is designed and tested for PETG on glass build plates.")
   expect(mockGenerateCalls).toBe(0)
+})
+
+it("keeps the global flag disabled while a trusted comparison selects and traces each arm",async()=>{
+ const clock=Date.parse(customerObserved.provenance.observedAt);jest.spyOn(Date,"now").mockReturnValue(clock)
+ process.env.AI_ASSISTANT_GROUNDED_SYNTHESIS_ENABLED="false";process.env.STOREFRONT_RELEASE_SHA="a".repeat(40)
+ const budget=new ComparisonBudget({runId:"synthetic-budgeted-comparison",releaseSha:"a".repeat(40),now:()=>clock,pricing:{model:"deepseek-flash",modelVersion:"fictional-fixture",providerOrigin:"https://api.deepseek.com",contextTokens:1_000_000,inputUsdPerMillion:"0.000001",outputUsdPerMillion:"0.000001",sourceUrl:"https://api-docs.deepseek.com/quick_start/pricing/",verifiedAt:new Date(clock).toISOString(),validUntil:new Date(clock+3600000).toISOString()}})
+ const prompt="Can I use Magigoo Original for PETG on glass?"
+ const calls=[{toolName:"searchKnowledge",input:{query:prompt},output:customerObserved.cases[1].knowledge,path:"/ai/knowledge-search"}]
+ await runComparisonTurn(budget,"baseline",0,async()=>{const result=await replay(prompt,calls,"raw untrusted");expect(result.answer).toContain("designed and tested for PETG on glass");expect(mockGenerateCalls).toBe(0)})
+ mockSynthesisOutputs=[JSON.stringify({segments:[{kind:"fact",text:"For PETG on glass, {{product}} is a supported choice.",productKey:"p1",evidenceIds:["f1"]}]}),JSON.stringify({verdict:"accept",findings:[],coverage:[{index:0,supported:true,evidenceIds:["f1"]}]})]
+ await runComparisonTurn(budget,"trial",0,async()=>{const result=await replay(prompt,calls,"raw untrusted");expect(result.answer).toContain("supported choice");expect(mockGenerateCalls).toBe(2)})
+ expect(process.env.AI_ASSISTANT_GROUNDED_SYNTHESIS_ENABLED).toBe("false")
+ expect(mockTraceUpdate).toHaveBeenCalledWith({metadata:expect.objectContaining({comparison_run_id:"synthetic-budgeted-comparison",comparison_arm:"trial",comparison_expected_release_sha:"a".repeat(40),answer_origin:"reviewed_llm_synthesis"})})
+ expect(mockModel.doStreamCalls[0].maxOutputTokens).toBe(1800)
 })
