@@ -36,6 +36,7 @@ export type SynthesisOptions = {
   tone?: string;
   signal?: AbortSignal;
   now?: () => number;
+  maxRepairs?: 0 | 1;
   callTimeoutMs?: number;
   totalTimeoutMs?: number;
   onOutcome?: (outcome: SynthesisOutcome) => void;
@@ -152,7 +153,7 @@ export async function synthesizeKnowledgeAnswer(options: SynthesisOptions) {
   };
   try {
     let candidate = await invoke("draft");
-    for (let attempt = 0; attempt < 2; attempt++) {
+    for (let attempt = 0; attempt < 1 + (options.maxRepairs ?? 1); attempt++) {
       const parsed = draftSchema.safeParse(candidate);
       if (!parsed.success || !hardCheckDraft(parsed.data, packet))
         return finish(fallback(), "hard_check_failed");
@@ -189,7 +190,11 @@ export async function synthesizeKnowledgeAnswer(options: SynthesisOptions) {
         review.data.findings.every((f) =>
           ["not_customer_focused", "repetition"].includes(f),
         );
-      if (attempt || review.data.verdict !== "repair" || !styleOnly)
+      if (
+        attempt >= (options.maxRepairs ?? 1) ||
+        review.data.verdict !== "repair" ||
+        !styleOnly
+      )
         return finish(fallback(), "review_rejected");
       candidate = await invoke("repair", {
         draft: parsed.data,

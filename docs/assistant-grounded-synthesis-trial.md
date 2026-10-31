@@ -209,3 +209,71 @@ canonical links, never guessed links.
 
 No paid comparison, new credentials, remote prompt/knowledge publication, merge,
 deployment or flag enablement is authorized or performed in this draft update.
+
+
+## Approved three-case composition pilot (October 31)
+
+The approved pilot supersedes the larger proposed live batch for this release.
+It compares the same freshly validated packet for three natural questions:
+
+1. I'm printing PETG on glass. Is Magigoo Original suitable?
+2. What is the Dragonfly BMS made from?
+3. Will Magigoo Original work on textured PEI?
+
+`COMPOSITION_PILOT_PLAN` reserves six requests at most, 6,291,456 full-context input tokens
+and 3,900 output tokens: one 700-token draft and one 600-token review per case.
+There are no model planner/tool-routing calls, repairs, retries or paid graders.
+The #260 composer baseline makes no provider calls. At peak cache-miss input USD
+0.30/M and output USD 1.20/M, the conservative reservation is USD 1.892118. The
+pricing record must be freshly verified against the official provider page before
+execution and its model/context must match the documented Flash version and 1,048,576-token
+context. This is a client reservation under those assumptions, not an account-wide
+provider dollar cap. Full packet bodies/qualifications are never truncated: a
+packet over 18KB or complete provider JSON over 64KiB is rejected. Unknown, expired
+or conflicting evidence remains ineligible for synthesis.
+
+Offline preflight adds `--composition-pilot` after the three existing arguments.
+The unchanged larger-chat proposal remains refused under USD 2; the approved pilot
+must never silently fall through to that full-chat runner.
+
+The trusted operator lives in the already instrumented **production-mode staging**
+Next.js process. It initializes no new tracing connection and changes no environment
+flags. There is no public endpoint. Startup writes private, owner-only readiness
+metadata to `/tmp/3dbyte-composition-pilot/readiness.json` and registers SIGUSR2.
+An authorized container owner supplies an owner-only `request.json` containing only
+scope, unique run ID, exact release SHA and public verified pricing, then signals
+that recorded PID once. Scope is fixed to `composition-only-three-cases-six-calls`;
+questions and quotas cannot come from the operator file. An exclusive `claimed.json`
+is created before execution, preventing duplicate signals or process restarts from
+creating another allowance. Requests are never automatically resumed or replayed.
+Inspect receipts and actual traces after any uncertain outcome before considering
+another operation. No new credentials, external network listener or permissions
+grants are required. Production and development environments do not register it.
+
+The existing application SDK records baseline and trial observations, versions,
+packet hash, case/arm and exact SHA. Baseline trace ingestion is verified through
+the existing configured Langfuse read API **before that case's paid calls**. Returned
+trace metadata, natural input and complete text/source output must match. Every
+provider attempt reserves before egress; usage and a peak-rate usage-based cost
+upper estimate are recorded separately from the conservative reservation and from
+an actual provider bill. Missing usage or transport failures stop further paid
+calls. A rejected or incomplete draft/review remains an explicitly failed synthesis
+with the useful composer fallback; unused attempts are not reallocated.
+
+The complete `report.json`, `reservation.json`, `status.json` and six trace IDs are
+private operator receipts. The general synthesis flag stays false. Results assess
+composition/helpfulness for these packets only, not full-chat retrieval, tool routing,
+high-temperature operational advice or universal semantic safety.
+
+
+Context precision correction: the provider's Models API documentation specifies
+`context_window: 1048576` for Flash. The earlier USD 1.804680 pilot quote used a
+decimal 1,000,000-token assumption; the corrected conservative reservation is
+USD 1.892118, still below USD 2. The legacy larger-chat USD 50.696640 calculation
+above likewise used the earlier decimal assumption and is not an approved live
+bound. The corrected larger-plan reservation would be USD 53.144904 and remains
+refused. The staged pilot requires the precise documented context; no paid Models
+API probe or extra completion is added. See
+https://api-docs.deepseek.com/api/list-models/ for the provider's explicit context
+metadata. Reverify both pricing and model/context documentation immediately before
+supplying the private one-shot request.

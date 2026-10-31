@@ -4,9 +4,10 @@ import { extname } from "node:path";
 import {
   ComparisonBudget,
   quoteComparison,
+  COMPOSITION_PILOT_PLAN,
 } from "../src/app/api/ai-shopping-assistant/comparison-budget.js";
 async function main() {
-  const [file, releaseSha, runId] = process.argv.slice(2);
+  const [file, releaseSha, runId, mode] = process.argv.slice(2);
   if (!file || extname(file) !== ".json" || !releaseSha || !runId)
     throw Error(
       "Usage: comparison-preflight <public-pricing.json> <exact-release-sha> <run-id>",
@@ -15,7 +16,9 @@ async function main() {
   if (Buffer.byteLength(raw, "utf8") > 4096)
     throw Error("Pricing record exceeds limit");
   const pricing: unknown = JSON.parse(raw);
-  const quote = quoteComparison(pricing);
+  const plan =
+    mode === "--composition-pilot" ? COMPOSITION_PILOT_PLAN : undefined;
+  const quote = quoteComparison(pricing, Date.now(), plan);
   console.log(
     JSON.stringify(
       { quote, maximumUsd: "2.00", mode: "offline_preflight_only" },
@@ -23,7 +26,7 @@ async function main() {
       2,
     ),
   );
-  new ComparisonBudget({ runId, releaseSha, pricing });
+  new ComparisonBudget({ runId, releaseSha, pricing, plan });
   console.log(
     "Preflight passed. No provider request or trace was sent; execution remains separately authorized.",
   );

@@ -52,6 +52,27 @@ export const COMPARISON_LIMITS = {
     repair: { calls: 1, outputTokens: 700 },
   },
 } as const;
+export type ComparisonPlan = {
+  name: string;
+  turnsPerArm: number;
+  maximumRequestBytes: number;
+  stages: Record<ComparisonStage, { calls: number; outputTokens: number }>;
+};
+const CHAT_PLAN: ComparisonPlan = {
+  ...COMPARISON_LIMITS,
+  name: "full-chat-comparison",
+};
+export const COMPOSITION_PILOT_PLAN: ComparisonPlan = Object.freeze({
+  name: "composition-only-three-case",
+  turnsPerArm: 3,
+  maximumRequestBytes: 65_536,
+  stages: Object.freeze({
+    route: { calls: 0, outputTokens: 1800 },
+    draft: { calls: 1, outputTokens: 700 },
+    review: { calls: 1, outputTokens: 600 },
+    repair: { calls: 0, outputTokens: 700 },
+  }),
+});
 function micros(value: string) {
   if (!money.safeParse(value).success) throw Error("Invalid USD amount");
   const [whole, fraction = ""] = value.split(".");
@@ -90,20 +111,24 @@ function reservation(p: ComparisonPricing, outputTokens: number) {
     ceilDivide(BigInt(outputTokens) * micros(p.outputUsdPerMillion), MICRO)
   );
 }
-export function quoteComparison(input: unknown, now = Date.now()) {
+export function quoteComparison(
+  input: unknown,
+  now = Date.now(),
+  plan: ComparisonPlan = CHAT_PLAN,
+) {
   const p = currentPricing(input, now);
   let count = 0,
     outputs = 0,
     total = BigInt(0);
-  for (const [stage, limit] of Object.entries(COMPARISON_LIMITS.stages)) {
-    const calls = limit.calls * 12 * (stage === "route" ? 2 : 1);
+  for (const [stage, limit] of Object.entries(plan.stages)) {
+    const calls = limit.calls * plan.turnsPerArm * (stage === "route" ? 2 : 1);
     count += calls;
     outputs += calls * limit.outputTokens;
     total += BigInt(calls) * reservation(p, limit.outputTokens);
   }
   return {
     version: COMPARISON_BUDGET_VERSION,
-    turns: 24,
+    turns: plan.turnsPerArm * 2,
     maximumCalls: count,
     maximumInputTokens: count * p.contextTokens,
     maximumOutputTokens: outputs,
@@ -123,6 +148,8 @@ export type ComparisonCallReceipt = {
 };
 export class ComparisonBudget {
   readonly runId: string;
+  readonly plan: ComparisonPlan;
+  private readonly onReserve?: () => void;
   readonly releaseSha: string;
   readonly quote: ReturnType<typeof quoteComparison>;
   private readonly pricing: ComparisonPricing;
@@ -140,17 +167,31 @@ export class ComparisonBudget {
     pricing: unknown;
     maximumUsd?: string;
     now?: () => number;
+    plan?: ComparisonPlan;
+    onReserve?: () => void;
   }) {
     if (
       !/^[a-zA-Z0-9._:-]{1,100}$/.test(config.runId) ||
       !/^[a-f0-9]{40}$/.test(config.releaseSha)
     )
       throw Error("Comparison run identity and exact release SHA are required");
+    this.plan = config.plan ?? CHAT_PLAN;
+    this.onReserve = config.onReserve;
     this.runId = config.runId;
     this.releaseSha = config.releaseSha;
     this.now = config.now ?? Date.now;
     this.pricing = Object.freeze(currentPricing(config.pricing, this.now()));
-    this.quote = Object.freeze(quoteComparison(this.pricing, this.now()));
+    if (
+      this.plan.name === COMPOSITION_PILOT_PLAN.name &&
+      (this.pricing.contextTokens !== 1_048_576 ||
+        this.pricing.modelVersion !== "DeepSeek-V4.1-Flash-1017")
+    )
+      throw Error(
+        "Pilot requires verified current full context and documented model version",
+      );
+    this.quote = Object.freeze(
+      quoteComparison(this.pricing, this.now(), this.plan),
+    );
     const limit = micros(config.maximumUsd ?? COMPARISON_LIMITS.maximumUsd);
     if (limit <= BigInt(0) || limit > micros(COMPARISON_LIMITS.maximumUsd))
       throw Error("Comparison reservation limit must not exceed USD 2");
@@ -164,7 +205,7 @@ export class ComparisonBudget {
       !["baseline", "trial"].includes(arm) ||
       !Number.isInteger(turn) ||
       turn < 0 ||
-      turn >= 12
+      turn >= this.plan.turnsPerArm
     )
       throw Error("Unknown comparison turn");
     currentPricing(this.pricing, this.now());
@@ -201,8 +242,7 @@ export class ComparisonBudget {
     if (
       init?.method !== "POST" ||
       typeof init.body !== "string" ||
-      Buffer.byteLength(init.body, "utf8") >
-        COMPARISON_LIMITS.maximumRequestBytes
+      Buffer.byteLength(init.body, "utf8") > this.plan.maximumRequestBytes
     )
       throw Error("Invalid comparison provider request");
     const body: unknown = JSON.parse(init.body);
@@ -231,7 +271,7 @@ export class ComparisonBudget {
       "n",
     ]);
     const tokens = b.max_tokens;
-    const limit = COMPARISON_LIMITS.stages[stage];
+    const limit = this.plan.stages[stage];
     if (
       !limit ||
       Object.keys(b).some((k) => !allowed.has(k)) ||
@@ -273,6 +313,7 @@ export class ComparisonBudget {
       outcome: "reserved",
     };
     this.calls.push(call);
+    this.onReserve?.();
     return call.id;
   }
   complete(id: number, outcome: ComparisonCallReceipt["outcome"]) {
@@ -291,6 +332,7 @@ export class ComparisonBudget {
   }
   receipt() {
     return {
+      plan: this.plan.name,
       runId: this.runId,
       releaseSha: this.releaseSha,
       quote: { ...this.quote },
