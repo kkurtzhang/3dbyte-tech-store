@@ -5,6 +5,7 @@ const http = require("node:http");
 const { createRequire } = require("node:module");
 const path = require("node:path");
 const { test } = require("node:test");
+const vm = require("node:vm");
 
 // Resolve installed packages through the actual workspace consumer, including
 // Strapi packages with no root JavaScript export. Never select a store glob.
@@ -148,71 +149,76 @@ async function close(server) {
   server.closeAllConnections();
   await new Promise((resolve) => server.close(resolve));
 }
-for (const arrayHeaders of [false, true]) {
-  test(`Medusa HTTP consumer strips credentials across redirects with ${arrayHeaders ? "array" : "object"} headers`, async () => {
-    const received = [];
-    const destination = await listen((req, res) => {
-      received.push(req.headers);
-      res.end("fixture");
-    });
-    const origin = await listen((_req, res) => {
-      res.writeHead(302, {
-        location: `http://127.0.0.1:${destination.address().port}/`,
+for (const crossRealm of [false, true])
+  for (const arrayHeaders of [false, true]) {
+    test(`Medusa HTTP consumer strips credentials across redirects with ${arrayHeaders ? "array" : "object"} headers and ${crossRealm ? "cross-realm" : "same-realm"} sensitive names`, async () => {
+      const received = [];
+      const destination = await listen((req, res) => {
+        received.push(req.headers);
+        res.end("fixture");
       });
-      res.end();
-    });
-    const headers = {
-      Authorization: "synthetic",
-      Cookie: "fixture=1",
-      "Proxy-Authorization": "synthetic",
-      "X-Api^Key": "synthetic",
-      "X-Token|Secret": "synthetic",
-      "X-Ordinary": "keep",
-    };
-    try {
-      await new Promise((resolve, reject) => {
-        let req;
-        try {
-          req = follow.http.request(
-            {
-              hostname: "127.0.0.1",
-              port: origin.address().port,
-              path: "/",
-              headers: arrayHeaders ? Object.entries(headers).flat() : headers,
-              sensitiveHeaders: ["X-Api^Key", "X-Token|Secret"],
-            },
-            (res) => {
-              res.resume();
-              res.once("end", resolve);
-              res.once("error", reject);
-            },
+      const origin = await listen((_req, res) => {
+        res.writeHead(302, {
+          location: `http://127.0.0.1:${destination.address().port}/`,
+        });
+        res.end();
+      });
+      const headers = {
+        Authorization: "synthetic",
+        Cookie: "fixture=1",
+        "Proxy-Authorization": "synthetic",
+        "X-Api^Key": "synthetic",
+        "X-Token|Secret": "synthetic",
+        "X-Ordinary": "keep",
+      };
+      try {
+        await new Promise((resolve, reject) => {
+          let req;
+          try {
+            req = follow.http.request(
+              {
+                hostname: "127.0.0.1",
+                port: origin.address().port,
+                path: "/",
+                headers: arrayHeaders
+                  ? Object.entries(headers).flat()
+                  : headers,
+                sensitiveHeaders: crossRealm
+                  ? vm.runInNewContext('["X-Api^Key", "X-Token|Secret"]')
+                  : ["X-Api^Key", "X-Token|Secret"],
+              },
+              (res) => {
+                res.resume();
+                res.once("end", resolve);
+                res.once("error", reject);
+              },
+            );
+          } catch (error) {
+            // Explicitly rejecting unsupported header containers is also safe.
+            if (arrayHeaders && error instanceof TypeError) return resolve();
+            return reject(error);
+          }
+          req.setTimeout(2000, () =>
+            req.destroy(new Error("Loopback fixture deadline")),
           );
-        } catch (error) {
-          // Explicitly rejecting unsupported header containers is also safe.
-          if (arrayHeaders && error instanceof TypeError) return resolve();
-          return reject(error);
+          req.once("error", reject);
+          req.end();
+        });
+        if (!arrayHeaders) assert.equal(received.length, 1);
+        for (const request of received) {
+          for (const name of [
+            "authorization",
+            "cookie",
+            "proxy-authorization",
+            "x-api^key",
+            "x-token|secret",
+          ])
+            assert.equal(request[name], undefined, name);
+          assert.equal(request["x-ordinary"], "keep");
         }
-        req.setTimeout(2000, () =>
-          req.destroy(new Error("Loopback fixture deadline")),
-        );
-        req.once("error", reject);
-        req.end();
-      });
-      if (!arrayHeaders) assert.equal(received.length, 1);
-      for (const request of received) {
-        for (const name of [
-          "authorization",
-          "cookie",
-          "proxy-authorization",
-          "x-api^key",
-          "x-token|secret",
-        ])
-          assert.equal(request[name], undefined, name);
-        assert.equal(request["x-ordinary"], "keep");
+      } finally {
+        await close(origin);
+        await close(destination);
       }
-    } finally {
-      await close(origin);
-      await close(destination);
-    }
-  });
-}
+    });
+  }
