@@ -1122,6 +1122,7 @@ describe("POST /api/ai-shopping-assistant", () => {
       body: JSON.stringify({
         messages: [{ role: "user", content: "Create a support ticket" }],
         model: "deepseek-flash",
+        stream: true,
       }),
       headers: { "content-type": "application/json" },
       method: "POST",
@@ -1137,6 +1138,20 @@ describe("POST /api/ai-shopping-assistant", () => {
         thinking: { type: "disabled" },
       }),
     )
+  })
+
+  it("keeps non-streaming synthesis requests free of streaming-only usage options", async () => {
+    configureAiEnv()
+    const { POST } = await import("../route")
+    await POST(createJsonRequest({ messages: [{ role: "user", content: "What is this made of?" }] }))
+    const providerConfig = createOpenAIMock.mock.calls[0]?.[0]
+    await providerConfig.fetch("https://api.deepseek.com/chat/completions", {
+      body: JSON.stringify({ messages: [{ role: "user", content: "synthetic" }], model: "deepseek-flash" }),
+      method: "POST",
+    })
+    const forwarded = JSON.parse(fetchMock.mock.calls[0]?.[1].body)
+    expect(forwarded.thinking).toEqual({ type: "disabled" })
+    expect(forwarded).not.toHaveProperty("stream_options")
   })
 
   it("records DeepSeek cache-aware Langfuse usage details when streaming finishes", async () => {

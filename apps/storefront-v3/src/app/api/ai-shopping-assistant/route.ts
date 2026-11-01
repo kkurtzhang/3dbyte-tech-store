@@ -41,6 +41,8 @@ import {
   scopeKnowledgeInput,
 } from "./knowledge-context"
 import { createKnowledgeGroundingTransform } from "./knowledge-grounding"
+import { createSynthesisResolver, synthesisMetadata } from "./synthesis-provider"
+import { comparisonFetch, comparisonMetadata, comparisonRouteSettings, assertComparisonReleaseSha } from "./comparison-context"
 import {
   collectEmailAddresses,
   maskCompleteEmailAddresses,
@@ -360,12 +362,12 @@ function toDeepSeekNonThinkingBody(
 
     return JSON.stringify({
       ...parsedBody,
-      stream_options: {
-        ...(isJsonRecord(parsedBody.stream_options)
-          ? parsedBody.stream_options
-          : {}),
-        include_usage: true,
-      },
+      ...(parsedBody.stream === true
+        ? { stream_options: {
+            ...(isJsonRecord(parsedBody.stream_options) ? parsedBody.stream_options : {}),
+            include_usage: true,
+          } }
+        : {}),
       thinking: DEEPSEEK_NON_THINKING_MODE,
     })
   } catch {
@@ -674,6 +676,7 @@ export async function POST(req: Request): Promise<Response> {
     )
   }
 
+  assertComparisonReleaseSha(config.releaseSha)
   const supportSession = getSupportSession(req, true)!
   const assistantPrompt = await resolveAssistantSystemPrompt()
   const traceMetadata = {
@@ -681,6 +684,8 @@ export async function POST(req: Request): Promise<Response> {
     ...buildAssistantTraceMetadata(config, parsed.data.traceContext),
     message_count: parsed.data.messages.length,
     answer_policy_version: KNOWLEDGE_ANSWER_POLICY_VERSION,
+    ...synthesisMetadata(),
+    ...comparisonMetadata(),
   }
   const telemetryMetadata = {
     ...assistantPrompt.metadata,
@@ -774,7 +779,7 @@ export async function POST(req: Request): Promise<Response> {
             const deepseek = createOpenAI({
               apiKey: config.apiKey,
               baseURL: config.baseURL,
-              fetch: createDeepSeekFetch(fetch, deepSeekUsageRef),
+              fetch: createDeepSeekFetch(comparisonFetch(fetch), deepSeekUsageRef),
               name: "deepseek",
             })
             const uiMessages = toUiMessages(parsed.data.messages)
@@ -795,6 +800,25 @@ export async function POST(req: Request): Promise<Response> {
             const commerce = createCommerceExecution((toolName, input) =>
               callInternalBackend(COMMERCE_PATHS[toolName], input, config),
             )
+            let synthesisOutcome: Record<string, string | number> = {}
+            const resolveAnswer = createSynthesisResolver({
+              model: deepseek.chat(config.model),
+              execution: knowledge, commerce, suppliedEmails,
+              question: latestUserMessage,
+              previousQuestion: knowledgeContext.previousQuestion,
+              tone: assistantPrompt.editableTone,
+              signal: req.signal,
+              onOutcome: (outcome) => {
+                synthesisOutcome = {
+                  synthesis_outcome: outcome.reason,
+                  synthesis_calls: outcome.calls,
+                  synthesis_duration_ms: outcome.durationMs,
+                  synthesis_input_tokens: outcome.inputTokens,
+                  synthesis_output_tokens: outcome.outputTokens,
+                }
+                assistantTrace.update({ metadata: { ...traceMetadata, ...synthesisOutcome } })
+              },
+            })
             const responseMessageId = randomUUID()
             const result = streamText({
               abortSignal: req.signal,
@@ -804,6 +828,7 @@ export async function POST(req: Request): Promise<Response> {
                 ignoreIncompleteToolCalls: true,
               }),
               temperature: config.temperature,
+              ...comparisonRouteSettings(),
               experimental_transform: createKnowledgeGroundingTransform(
                 knowledge,
                 suppliedEmails,
@@ -813,7 +838,7 @@ export async function POST(req: Request): Promise<Response> {
                     finishPendingAssistantTrace()
                   },
                   onAnswer: (origin) => {
-                    assistantTrace.update({ metadata: { ...traceMetadata, answer_origin: origin } })
+                    assistantTrace.update({ metadata: { ...traceMetadata, ...synthesisOutcome, answer_origin: origin } })
                   },
                   onText: (text) => {
                     visibleAssistantOutput += text
@@ -824,6 +849,7 @@ export async function POST(req: Request): Promise<Response> {
                   previousQuestion: knowledgeContext.previousQuestion,
                   subject: () => knowledgeSubject(Array.from(productSearch.scopeCandidates.values())),
                   requiresKnowledge: knowledgeContext.requiresKnowledge,
+                  resolveAnswer, signal: req.signal,
                   commerce,
                 },
               ),

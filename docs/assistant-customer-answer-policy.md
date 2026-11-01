@@ -5,7 +5,9 @@ It validates current tool evidence, composes the visible answer and emits valida
 source parts after `text-end`. The drawer renders a deduplicated Sources footer
 only after completion. Ordinary clarification can retain model prose. Expired
 approvals, mismatched revisions, source/scope inconsistencies and historical client
-claims remain excluded. No model prose bypasses this grounding boundary.
+claims remain excluded. No model prose bypasses this grounding boundary. A default-disabled, separately
+reviewed trial can generate and review prose inside the boundary; see
+[the trial design and comparison plan](assistant-grounded-synthesis-trial.md).
 
 ## Composition and ownership
 
