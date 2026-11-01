@@ -2,8 +2,7 @@ name: ci
 
 on:
   pull_request:
-    # Temporary stacked trial base: PR260. All standard gates still apply.
-    branches: [main, staging, fix/assistant-customer-answers-20261029]
+    branches: [main, staging]
   push:
     branches: [main, staging]
 
