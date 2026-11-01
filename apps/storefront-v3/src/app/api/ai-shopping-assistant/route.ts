@@ -29,6 +29,7 @@ import { callSupportBackend, getSupportSession, isSupportSameOrigin, withSupport
 
 import { readAssistantJson } from "./read-request"
 
+import { KNOWLEDGE_ANSWER_POLICY_VERSION } from "./knowledge-answer-intent"
 import { resolveAssistantSystemPrompt } from "./prompt-management"
 import { COMMERCE_PATHS, createCommerceExecution } from "./commerce-execution"
 import { createKnowledgeExecution } from "./knowledge-execution"
@@ -679,6 +680,7 @@ export async function POST(req: Request): Promise<Response> {
     ...assistantPrompt.metadata,
     ...buildAssistantTraceMetadata(config, parsed.data.traceContext),
     message_count: parsed.data.messages.length,
+    answer_policy_version: KNOWLEDGE_ANSWER_POLICY_VERSION,
   }
   const telemetryMetadata = {
     ...assistantPrompt.metadata,
@@ -810,12 +812,16 @@ export async function POST(req: Request): Promise<Response> {
                     visibleStreamClosed = true
                     finishPendingAssistantTrace()
                   },
+                  onAnswer: (origin) => {
+                    assistantTrace.update({ metadata: { ...traceMetadata, answer_origin: origin } })
+                  },
                   onText: (text) => {
                     visibleAssistantOutput += text
                   },
                 },
                 {
                   question: latestUserMessage,
+                  previousQuestion: knowledgeContext.previousQuestion,
                   subject: () => knowledgeSubject(Array.from(productSearch.scopeCandidates.values())),
                   requiresKnowledge: knowledgeContext.requiresKnowledge,
                   commerce,

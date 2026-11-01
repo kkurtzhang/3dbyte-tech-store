@@ -53,6 +53,7 @@ export function buildKnowledgeContext(messages: readonly AssistantMessage[]) {
     );
   return {
     question,
+    previousQuestion: previous.slice(-1000),
     retrievalQuestion: previous
       ? `${previous.slice(-70)} ${question.slice(0, 49)}`
       : question.slice(0, 120),
@@ -61,6 +62,9 @@ export function buildKnowledgeContext(messages: readonly AssistantMessage[]) {
       (knowledgeTopics(question).length > 0 ||
         contextualFollowup ||
         usageQuestion ||
+        (previous.length > 0 &&
+          /^(?:and\s+)?(?:what|how) about\b/i.test(question)) ||
+        /\b(?:apply|application|instructions)\b/i.test(question) ||
         /\b(?:specifications?|specs|manual|documented|made of|made from)\b/i.test(
           question,
         )),
@@ -104,7 +108,9 @@ export function scopeKnowledgeInput(
     ...(!input.product_id && direct.length === 1
       ? { product_id: direct[0] }
       : {}),
-    ...(/\b(?:it|its|this|that|the same)\b/i.test(input.query)
+    ...(/\b(?:it|its|this|that|the same)\b|^(?:and\s+)?(?:what|how) about\b/i.test(
+      input.query,
+    )
       ? { query: context.retrievalQuestion }
       : {}),
   };

@@ -3,6 +3,12 @@ import type { ApprovedKnowledgeDocument } from "@3dbyte-tech-store/shared-types"
 import { knowledgeTopics } from "./knowledge-context";
 import { knowledgeNextStep, temperatureSetup } from "./knowledge-help";
 import { plainMarkdown } from "./grounded-text";
+import { knowledgeAnswerIntent } from "./knowledge-answer-intent";
+import {
+  presentMaterialUse,
+  parseKnowledgeClaim,
+} from "./knowledge-claim-presentation";
+import { missingCapabilityGuidance, PRINTER_LIMIT_CHECK, temperatureRatingGuidance } from "./knowledge-customer-guidance";
 import { selectKnowledgeFacts } from "./knowledge-fact-selection";
 
 type Fact = ApprovedKnowledgeDocument["facts"][number];
@@ -11,8 +17,15 @@ type Fact = ApprovedKnowledgeDocument["facts"][number];
 // paragraph below. Unknown wording, conditions, links and code remain untouched.
 const COMPONENT_SETUP_QUALIFIER =
   " This does not establish an assembled printer's safe operating temperature or its heater, sensor, wiring and firmware limits.";
-function statementFor(fact: Fact, consolidatePrinterLimit: boolean) {
-  const original = fact.value!.trim();
+function statementFor(
+  document: ApprovedKnowledgeDocument,
+  fact: Fact,
+  consolidatePrinterLimit: boolean,
+) {
+  const original =
+    fact.value!.trim();
+  const parsed = parseKnowledgeClaim(document, fact);
+  if (parsed && parsed.kind !== "temperature") return plainMarkdown(parsed.statement);
   const prefix = original.endsWith(COMPONENT_SETUP_QUALIFIER)
     ? original.slice(0, -COMPONENT_SETUP_QUALIFIER.length).trim()
     : "";
@@ -78,7 +91,9 @@ export function summarizeKnowledge(
   documents: ApprovedKnowledgeDocument[],
   question: string,
   evidenceDocuments = documents,
+  previousQuestion = "",
 ) {
+  const intent = knowledgeAnswerIntent(question, previousQuestion);
   const groups = new Map<string, ApprovedKnowledgeDocument[]>();
   for (const document of documents) {
     const key = scopeKey(document);
@@ -111,6 +126,28 @@ export function summarizeKnowledge(
       else if (facts[0].value === null) unknown.push(facts[0]);
       else known.push(facts[0]);
     }
+    const withScope = (response: string) =>
+      document.binding_scope === "product"
+        ? response
+        : `${response}\n\nFor variant ${plainMarkdown(document.variant_id!)} only.`;
+    if (intent.kind !== "other") {
+      if (conflicts.length)
+        return withScope(
+          `The specifications conflict on ${conflicts.map(plainMarkdown).join(", ")}. Check the exact revision with the manufacturer before relying on this detail.`,
+        );
+      if (intent.kind === "material_use") {
+        for (const fact of known) {
+          const claimDocument =
+            group.find((item) => item.facts.includes(fact)) ?? document;
+          const response = presentMaterialUse(claimDocument, fact, intent);
+          // Additional constraints must remain visible; this is not a free-form paraphraser.
+          if (response && known.length === 1 && !unknown.length)
+            return withScope(response);
+        }
+      }
+      if (intent.kind === "release_behavior" && known.length && !unknown.length) return withScope(known.map(fact => statementFor(group.find(item => item.facts.includes(fact)) ?? document, fact, false)).join(" "));
+      if (!known.length) return withScope(missingCapabilityGuidance(intent, document.product_title));
+    }
     const setup = temperatureSetup(question, document.product_title);
     const unresolvedLimit =
       setup !== "process" &&
@@ -122,11 +159,25 @@ export function summarizeKnowledge(
         ),
       );
     const printerLimit = unresolvedLimit && setup === "printer";
+    const focusedTemperature = knowledgeTopics(question).includes("temperature") && !/\b(?:all|every|full|complete|unknowns?)\b|\b(?:and|plus|also)\b.*\b(?:what|which|how|can|does|is|will)\b/i.test(question);
+    if (printerLimit && focusedTemperature && !conflicts.length) {
+      const claims = known.map(fact => parseKnowledgeClaim(group.find(item => item.facts.includes(fact)) ?? document, fact));
+      const rating = claims.find(claim => claim?.kind === "temperature");
+      if (rating?.temperature && known.length === 1 && unknown.every(fact => fact.field === "installed_max_temperature")) return withScope(`${temperatureRatingGuidance(rating.temperature)}\n\n${knowledgeNextStep(question, document.product_title)}`);
+    }
     const separateUnknowns = unknown.filter(
       (fact) => !(printerLimit && fact.field === "installed_max_temperature"),
     );
     const statements = Array.from(
-      new Set(known.map((fact) => statementFor(fact, printerLimit))),
+      new Set(
+        known.map((fact) =>
+          statementFor(
+            group.find((item) => item.facts.includes(fact)) ?? document,
+            fact,
+            printerLimit,
+          ),
+        ),
+      ),
     ).join(" ");
     const limitations = [
       ...(conflicts.length
@@ -162,7 +213,7 @@ export function summarizeKnowledge(
       ...(unresolvedLimit
         ? [
             setup === "printer"
-              ? "**Installed max temperature remains unknown:** a component rating does not verify an installed printer's heater, sensor, wiring and firmware limits."
+              ? PRINTER_LIMIT_CHECK
               : "A component rating does not establish the operating limit of the complete assembly.",
           ]
         : []),
@@ -196,6 +247,7 @@ export function knowledgeSources(
   >();
   for (const document of documents) {
     const facts = selectKnowledgeFacts(document, question);
+    if (!facts.length) continue;
     const known = facts
       .filter((fact) => fact.value !== null)
       .map((fact) => fact.label);

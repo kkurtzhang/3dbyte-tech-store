@@ -134,11 +134,16 @@ Runtime prompt env:
 
 Safety rule: Langfuse owns editable tone/format wording only. The storefront route always appends the code-owned assistant guardrails after the dashboard prompt, including suggest-only behavior, exact `productUrl` copying, support-ticket confirmation, and no cart/order/customer mutation.
 
+Knowledge turns are composed from validated claims after model generation. See
+[Customer answer policy](../assistant-customer-answer-policy.md) for ownership,
+source-bound presentation, everyday quality gates and answer-origin metadata.
+A remote prompt edit alone does not change this composer.
+
 The eval runner now adds Langfuse-friendly score objects to every JSON result:
 
 | Score | Data type | Meaning |
 | --- | --- | --- |
-| `deterministic_pass` | `BOOLEAN` as `1` or `0` | HTTP success plus required answer cues and no forbidden claims. |
+| `deterministic_pass` | `BOOLEAN` as `1` or `0` | HTTP success plus required answer cues/behaviour checks and no forbidden claims. |
 | `grounding_cue_match` | `NUMERIC` | Ratio of expected answer cues matched. |
 | `format_warning_count` | `NUMERIC` | Number of format-hint warnings. |
 | `forbidden_claim_count` | `NUMERIC` | Number of forbidden mutation/protected-content claims. |

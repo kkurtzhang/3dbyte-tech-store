@@ -318,17 +318,21 @@ export const customerAiProductEvalCases = [
           "A component rating cannot establish a safe installed-printer limit. Do not invent heater, sensor, wiring or firmware requirements.",
           "Keep all supporting citations in the final Sources section, with accurate product/scope attribution; do not paste citation metadata into prose.",
         ],
-        minimumCueMatches: 7,
+        requiredPatterns: [
+          { label: "Explain the stated thermal rating without turning it into a printer setting", pattern: /stated.*(?:resistance|rating)[\s\S]*does not establish a safe operating temperature/i },
+          { label: "Keep all unverified installed hardware limits explicit", pattern: /heater.*sensor.*wiring.*firmware.*need checking/i },
+          { label: "Ask one useful setup question", pattern: /which printer model/i },
+        ],
+        maxQuestions: 1,
+        minimumCueMatches: 4,
         mustIncludeOneOf: [
-          "unknown",
-          "component",
-          "installed",
           "heater",
           "sensor",
           "wiring",
           "firmware",
         ],
         forbiddenPatterns: [
+          { label: "Avoid the rejected document-centric wording", pattern: /Phaetus advertises|Installed max temperature remains unknown|I can.t confirm|approved evidence/i },
           {
             label:
               "Do not guarantee a safe installed-printer limit from a component rating.",

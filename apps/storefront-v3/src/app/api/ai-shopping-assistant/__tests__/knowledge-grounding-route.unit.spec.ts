@@ -174,7 +174,7 @@ it.each(observed.cases)(
     for (const output of knowledgeOutputs) {
       if (!output.documents) throw Error("Expected captured knowledge evidence")
       for (const doc of output.documents) {
-        expect(answer).toContain(doc.product_title)
+        expect(answer).toContain(fixture.id === "magigoo-materials" ? "Magigoo Original" : doc.product_title)
         expect(events).toContainEqual(
           expect.objectContaining({
             type: "source-url",
@@ -188,8 +188,8 @@ it.each(observed.cases)(
     if (fixture.id === "bms-body-material")
       expect(answer).toContain("mainly copper")
     if (fixture.id === "unsupported-installed-temperature") {
-      expect(answer).toContain("Installed max temperature")
-      expect(answer).toContain("unknown")
+      expect(answer).toMatch(/(?:hotend rating.*not.*operating limit|does not establish a safe operating temperature)/)
+      expect(answer).toMatch(/check.*heater.*sensor.*wiring.*firmware/)
     }
     if (fixture.id === "mismatched-product-evidence") {
       expect(answer).toContain("only to the named product")

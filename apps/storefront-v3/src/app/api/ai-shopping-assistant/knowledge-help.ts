@@ -1,3 +1,4 @@
+import { knowledgeAnswerIntent } from "./knowledge-answer-intent";
 import { knowledgeTopics } from "./knowledge-context";
 
 export type MissingKnowledgeReason =
@@ -31,7 +32,9 @@ export function knowledgeNextStep(question: string, subject = "") {
   if (topics.includes("electrical"))
     return "What are the exact models of the parts you want to connect?";
   if (topics.includes("compatibility"))
-    return "Which printer or device model should it fit?";
+    return /\b(?:printer|hotend|nozzle)\b/i.test(`${question} ${subject}`)
+      ? "Which printer model are you using, and is its hotend setup still stock or modified?"
+      : "Which device model should it fit?";
   return "Could you share a link to the manufacturer's manual or the model number on its label?";
 }
 
@@ -42,23 +45,26 @@ export function missingKnowledgeAnswer(
 ) {
   const topics = knowledgeTopics(question);
   const setup = temperatureSetup(question, subjectContext);
-  const subject = topics.includes("temperature")
-    ? "that operating temperature"
-    : topics.includes("electrical")
-      ? "the electrical compatibility of those parts"
-      : topics.includes("compatibility")
-        ? "the fit for that setup"
-        : topics.includes("material")
-          ? "the requested material or use"
-          : "the requested specification";
+  const intent = knowledgeAnswerIntent(question);
+  const subject =
+    intent.kind === "application"
+      ? "the application amount or procedure"
+      : intent.kind === "material_use"
+        ? `suitability for ${intent.materials.join(" and ") || "that material"}${intent.surfaces.length ? " on " + intent.surfaces.join(" and ") : " in that setup"}`
+        : topics.includes("temperature")
+          ? "that operating temperature"
+          : topics.includes("electrical")
+            ? "the electrical compatibility of those parts"
+            : topics.includes("compatibility")
+              ? "the fit for that setup"
+              : topics.includes("material")
+                ? "the requested material or use"
+                : "the requested specification";
   const explanation = {
-    empty:
-      "I couldn't find a matching specification in the documents available to me.",
-    not_current:
-      "The matching document could not be verified as current, so I can't rely on its specifications.",
-    unavailable: "The document lookup is temporarily unavailable.",
-    not_retrieved:
-      "I haven't been able to check the relevant documentation yet.",
+    empty: "No matching specification was found.",
+    not_current: "I don't have current specifications I can rely on.",
+    unavailable: "The specification lookup is temporarily unavailable.",
+    not_retrieved: "I haven't been able to check this specification yet.",
   }[reason];
   return [
     `I can't confirm ${subject} yet. ${explanation}`,
@@ -73,6 +79,8 @@ export function missingKnowledgeAnswer(
         : []),
     reason === "unavailable"
       ? "Please try the lookup again, or share the manufacturer's manual so we can check the specific requirement."
-      : knowledgeNextStep(question, subjectContext),
+      : intent.kind === "application"
+        ? "Check the product's application instructions before applying it."
+        : knowledgeNextStep(question, subjectContext),
   ].join("\n\n");
 }
