@@ -60,6 +60,41 @@ export type RuntimePilotReport = PilotReport & {
     errorCode?: string;
   }>;
 };
+export function pilotTraceIOMatches(
+  input: unknown,
+  output: unknown,
+  question: string,
+  answer: GroundedAnswer,
+) {
+  const decode = (value: unknown): unknown => {
+    if (typeof value !== "string") return value;
+    try {
+      return JSON.parse(value) as unknown;
+    } catch {
+      return value;
+    }
+  };
+  const parsed = decode(output);
+  if (input !== question && decode(input) !== question) return false;
+  if (
+    !parsed ||
+    typeof parsed !== "object" ||
+    !("text" in parsed) ||
+    parsed.text !== answer.text ||
+    !("sources" in parsed) ||
+    !Array.isArray(parsed.sources) ||
+    parsed.sources.length !== answer.sources.length
+  )
+    return false;
+  return answer.sources.every((source, index) => {
+    const stored = (parsed as { sources: Array<Record<string, unknown>> })
+      .sources[index];
+    return (
+      stored &&
+      Object.entries(source).every(([key, value]) => stored[key] === value)
+    );
+  });
+}
 /** Runs only in the existing staging process; never initializes tracing or changes env. */
 export async function runStagingCompositionPilot(
   request: PilotRequest,
@@ -212,25 +247,8 @@ export async function runStagingCompositionPilot(
           meta?.pilot_arm === arm &&
           meta?.release_sha === request.releaseSha &&
           meta?.evidence_hash === c.evidenceHash &&
-          trace.input === c.question &&
-          trace.output !== null &&
-          typeof trace.output === "object" &&
-          "text" in trace.output &&
-          trace.output.text === answer.text &&
-          "sources" in trace.output &&
-          Array.isArray(trace.output.sources) &&
-          trace.output.sources.length === answer.sources.length &&
-          answer.sources.every((source, index) => {
-            const stored = (
-              trace.output as { sources: Array<Record<string, unknown>> }
-            ).sources[index];
-            return (
-              stored &&
-              Object.entries(source).every(
-                ([key, value]) => stored[key] === value,
-              )
-            );
-          })
+          trace.projectId === "estore" &&
+          pilotTraceIOMatches(trace.input, trace.output, c.question, answer)
         )
           return {
             verified: true,

@@ -1,6 +1,9 @@
 /** @jest-environment node */
 import observed from "../__fixtures__/observed-answer-repetition.json";
-import { runStagingCompositionPilot } from "../pilot-runtime";
+import {
+  runStagingCompositionPilot,
+  pilotTraceIOMatches,
+} from "../pilot-runtime";
 let mockProviderFetch: typeof fetch;
 let mockActive: string;
 const mockTraces = new Map<string, Record<string, unknown>>();
@@ -298,4 +301,53 @@ it("stops further paid attempts when provider usage is missing and never refunds
   expect(
     (latest as { budget: { calls: unknown[] } }).budget.calls,
   ).toHaveLength(1);
+});
+
+it("verifies exact structured trace I/O in parsed or JSON-encoded API responses without accepting missing source fields", () => {
+  const answer = {
+    text: "Supported answer.",
+    origin: "validated_claim_composer" as const,
+    sources: [
+      {
+        sourceType: "url" as const,
+        id: "source",
+        url: "https://source.fixture",
+        title: "Exact scope",
+      },
+    ],
+  };
+  const output = { sources: answer.sources, text: answer.text };
+  expect(
+    pilotTraceIOMatches("Natural question", output, "Natural question", answer),
+  ).toBe(true);
+  expect(
+    pilotTraceIOMatches(
+      JSON.stringify("Natural question"),
+      JSON.stringify(output),
+      "Natural question",
+      answer,
+    ),
+  ).toBe(true);
+  expect(
+    pilotTraceIOMatches("Other question", output, "Natural question", answer),
+  ).toBe(false);
+  expect(
+    pilotTraceIOMatches(
+      "Natural question",
+      { text: answer.text, sources: [] },
+      "Natural question",
+      answer,
+    ),
+  ).toBe(false);
+  expect(
+    pilotTraceIOMatches(
+      "Natural question",
+      {
+        text: answer.text,
+        sources: [{ ...answer.sources[0], url: "https://wrong.fixture" }],
+      },
+      "Natural question",
+      answer,
+    ),
+  ).toBe(false);
 });
