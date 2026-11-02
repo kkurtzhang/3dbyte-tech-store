@@ -563,7 +563,7 @@ it("runs the enabled trial through the installed SDK and actual route, tracing o
   expect(result.events.filter(e => e.type === "source-url")).toHaveLength(1)
   expect(result.events.findIndex(e => e.type === "source-url")).toBeGreaterThan(result.events.findIndex(e => e.type === "text-end"))
   expect(mockTraceOutput).toHaveBeenLastCalledWith({ output: result.answer })
-  expect(mockTraceUpdate).toHaveBeenCalledWith({metadata:expect.objectContaining({ answer_origin: "reviewed_llm_synthesis", synthesis_calls: 2, synthesis_outcome: "accepted", synthesis_prompt_version: "2026-10-30.grounded-draft-1", synthesis_validator_version: "2026-10-30.grounded-review-1", answer_policy_version: KNOWLEDGE_ANSWER_POLICY_VERSION })})
+  expect(mockTraceUpdate).toHaveBeenCalledWith({metadata:expect.objectContaining({ answer_origin: "reviewed_llm_synthesis", synthesis_calls: 2, synthesis_outcome: "accepted", synthesis_prompt_version: "2026-11-02.intent-focused-draft-2", synthesis_validator_version: "2026-11-02.intent-focused-review-2", answer_policy_version: KNOWLEDGE_ANSWER_POLICY_VERSION })})
 })
 it("flag off preserves the exact composer without any additional SDK generations", async () => {
   jest.spyOn(Date, "now").mockReturnValue(Date.parse(customerObserved.provenance.observedAt))

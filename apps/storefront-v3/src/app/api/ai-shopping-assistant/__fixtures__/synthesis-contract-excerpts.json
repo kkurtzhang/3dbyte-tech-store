@@ -1,0 +1,142 @@
+{
+  "provenance": {
+    "origin": "Selected paragraphs from the November 2 synthetic diagnostic pilot, reviewed for public-safe test inclusion. These are excerpts, not full private receipts.",
+    "privacy": "Only synthetic questions and public product/source-scope wording; no customer data, raw receipt, trace/run IDs, credentials or private metadata.",
+    "after": "Manually authored offline examples. Mock reviewer responses test plumbing only; no live generation, entailment or usefulness result is claimed.",
+    "evidence": "Uses the existing historical knowledge fixture at its recorded clock; does not renew or publish evidence."
+  },
+  "cases": [
+    {
+      "id": "magigoo-petg-glass",
+      "knowledgeCaseIndex": 1,
+      "question": "I'm printing PETG on glass. Is Magigoo Original suitable?",
+      "beforeExcerpt": {
+        "segments": [
+          {
+            "kind": "guidance",
+            "text": "Yes — {{product}} is a reasonable choice for PETG on glass.",
+            "productKey": "p1",
+            "evidenceIds": ["f1"]
+          },
+          {
+            "kind": "fact",
+            "text": "The manufacturer describes {{product}} as designed and tested on glass build plates for PLA, ABS, PETG, HIPS and TPU.",
+            "productKey": "p1",
+            "evidenceIds": ["f1"]
+          },
+          {
+            "kind": "fact",
+            "text": "It is described as a thermally activated adhesive that holds the print on a hot bed and releases after cooling.",
+            "productKey": "p1",
+            "evidenceIds": ["f2"]
+          }
+        ]
+      },
+      "beforeFailure": {
+        "phase": "hard",
+        "code": "missing_product_placeholder",
+        "segmentIndex": 2
+      },
+      "authoredAfter": {
+        "segments": [
+          {
+            "kind": "fact",
+            "text": "Yes — {{product}} is designed and tested for PETG on glass build plates.",
+            "productKey": "p1",
+            "evidenceIds": ["f1"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "dragonfly-construction",
+      "knowledgeCaseIndex": 0,
+      "question": "What is the Dragonfly BMS made from?",
+      "beforeExcerpt": {
+        "segments": [
+          {
+            "kind": "fact",
+            "text": "{{product}} is described by Phaetus as made mainly from copper alloy.",
+            "productKey": "p1",
+            "evidenceIds": ["f1"]
+          },
+          {
+            "kind": "fact",
+            "text": "Phaetus labels the filament-path finish Ra ≤ 0.3, though the source does not state a unit.",
+            "productKey": "p1",
+            "evidenceIds": ["f2"]
+          }
+        ]
+      },
+      "beforeFailure": {
+        "phase": "hard",
+        "code": "missing_product_placeholder",
+        "segmentIndex": 1
+      },
+      "authoredAfter": {
+        "segments": [
+          {
+            "kind": "fact",
+            "text": "{{product}} is made mainly from copper alloy.",
+            "productKey": "p1",
+            "evidenceIds": ["f1"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "magigoo-pei-unknown",
+      "knowledgeCaseIndex": 1,
+      "question": "Will Magigoo Original work on textured PEI?",
+      "beforeExcerpt": {
+        "segments": [
+          {
+            "kind": "uncertainty",
+            "text": "I can't confirm that {{product}} is intended for textured PEI. The manufacturer information describes it as designed and tested on glass build plates, so textured PEI compatibility isn't established.",
+            "productKey": "p1",
+            "evidenceIds": ["f1"]
+          },
+          {
+            "kind": "fact",
+            "text": "For the materials it does cover, {{product}} is described as designed and tested on glass build plates for PLA, ABS, PETG, HIPS and TPU.",
+            "productKey": "p1",
+            "evidenceIds": ["f1"]
+          },
+          {
+            "kind": "fact",
+            "text": "It is described as a thermally activated adhesive that holds the print on a hot bed and releases after cooling.",
+            "productKey": "p1",
+            "evidenceIds": ["f2"]
+          }
+        ]
+      },
+      "beforeFailure": {
+        "phase": "hard",
+        "code": "missing_product_placeholder",
+        "segmentIndex": 2
+      },
+      "authoredAfter": {
+        "segments": [
+          {
+            "kind": "uncertainty",
+            "text": "Textured PEI compatibility isn't established for {{product}}.",
+            "productKey": "p1",
+            "evidenceIds": []
+          },
+          {
+            "kind": "fact",
+            "text": "{{product}} is designed and tested on glass build plates.",
+            "productKey": "p1",
+            "evidenceIds": ["f1"]
+          },
+          {
+            "kind": "guidance",
+            "text": "Check the adhesive and plate manufacturers' compatibility guidance before applying it.",
+            "productKey": "p1",
+            "evidenceIds": []
+          }
+        ]
+      }
+    }
+  ]
+}
