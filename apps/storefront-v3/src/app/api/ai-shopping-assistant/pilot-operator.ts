@@ -12,6 +12,10 @@ const requestSchema = z
     runId: z.string().regex(/^[a-zA-Z0-9._:-]{1,100}$/),
     releaseSha: z.string().regex(/^[a-f0-9]{40}$/),
     pricing: z.record(z.string(), z.unknown()),
+    diagnostics: z
+      .object({ captureRejectedDrafts: z.literal("synthetic-pilot-only") })
+      .strict()
+      .optional(),
   })
   .strict();
 /** Local container-owner operation only. No network endpoint or credential grants. */

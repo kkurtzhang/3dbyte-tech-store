@@ -163,3 +163,148 @@ it("retains malformed-draft fallbacks without a review, repair or resample", asy
     report.cases.every((c) => c.status === "synthesis_failed_fallback"),
   ).toBe(true);
 });
+
+// Newly authored synthetic outputs, not recovered November 1 provider drafts.
+it.each([
+  undefined,
+  { captureRejectedDrafts: "synthetic-pilot-only" as const },
+])(
+  "captures rejected drafts privately only with explicit synthetic opt-in: %p",
+  async (diagnostics) => {
+    const marker = "SYNTHETIC_PRIVATE_DRAFT";
+    const raw = JSON.stringify({
+      segments: [
+        {
+          kind: "fact",
+          text: marker,
+          productKey: "wrong",
+          evidenceIds: ["f1"],
+        },
+      ],
+    });
+    const call = jest.fn(async () => ({ text: raw }));
+    const seen: string[] = [];
+    const report = await runCompositionPilot({
+      budget: budget(),
+      now: () => now,
+      diagnostics,
+      loadEvidence: fixtureEvidence,
+      call,
+      observe: async (_c, _a, fn) => {
+        const answer = await fn();
+        seen.push(JSON.stringify(answer));
+        return { answer, traceId: "f".repeat(32), ingestionVerified: true };
+      },
+      persist: async () => {},
+    });
+    expect(call).toHaveBeenCalledTimes(3);
+    expect(
+      report.cases.every(
+        (c) => c.sameEvidence && c.status === "synthesis_failed_fallback",
+      ),
+    ).toBe(true);
+    expect(seen.join("")).not.toContain(marker);
+    for (const c of report.cases) {
+      expect(c.outcome?.failure).toMatchObject({
+        phase: "schema",
+        code: "schema_invalid",
+      });
+      expect(c.rejectedDraft).toEqual(
+        diagnostics
+          ? expect.objectContaining({
+              synthetic: true,
+              text: raw,
+              sha256: c.outcome!.candidate!.sha256,
+            })
+          : undefined,
+      );
+    }
+    if (!diagnostics) expect(JSON.stringify(report)).not.toContain(marker);
+  },
+);
+it("omits oversized UTF-8 draft text instead of truncating it or changing fallback", async () => {
+  const raw = JSON.stringify({ extra: "🧪".repeat(1100) });
+  const report = await runCompositionPilot({
+    budget: budget(),
+    now: () => now,
+    diagnostics: { captureRejectedDrafts: "synthetic-pilot-only" },
+    loadEvidence: fixtureEvidence,
+    call: async () => ({ text: raw }),
+    observe: async (_c, _a, fn) => ({
+      answer: await fn(),
+      traceId: "f".repeat(32),
+      ingestionVerified: true,
+    }),
+    persist: async () => {},
+  });
+  expect(report.cases).toHaveLength(3);
+  for (const c of report.cases) {
+    expect(c.rejectedDraft).toMatchObject({
+      omittedReason: "byte_limit",
+      utf8Bytes: Buffer.byteLength(raw),
+    });
+    expect(c.rejectedDraft).not.toHaveProperty("text");
+    expect(c.trial!.answer).toEqual(c.baseline!.answer);
+  }
+});
+it("does not capture accepted drafts even with synthetic opt-in", async () => {
+  const report = await runCompositionPilot({
+    budget: budget(),
+    now: () => now,
+    diagnostics: { captureRejectedDrafts: "synthetic-pilot-only" },
+    loadEvidence: fixtureEvidence,
+    call: async ({ stage }) => ({
+      text: JSON.stringify(
+        stage === "draft"
+          ? {
+              segments: [
+                {
+                  kind: "guidance",
+                  text: "Which build plate are you using?",
+                  productKey: "p1",
+                  evidenceIds: [],
+                },
+              ],
+            }
+          : {
+              verdict: "accept",
+              findings: [],
+              coverage: [{ index: 0, supported: true, evidenceIds: [] }],
+            },
+      ),
+    }),
+    observe: async (_c, _a, fn) => ({
+      answer: await fn(),
+      traceId: "f".repeat(32),
+      ingestionVerified: true,
+    }),
+    persist: async () => {},
+  });
+  expect(
+    report.cases.every(
+      (c) => c.status === "synthesis_accepted" && c.rejectedDraft === undefined,
+    ),
+  ).toBe(true);
+});
+it("keeps an opt-in rejected draft when later trace verification fails without resampling", async () => {
+  const raw = JSON.stringify({ unexpected: "SYNTHETIC_REJECTION" });
+  const call = jest.fn(async () => ({ text: raw }));
+  const report = await runCompositionPilot({
+    budget: budget(),
+    now: () => now,
+    diagnostics: { captureRejectedDrafts: "synthetic-pilot-only" },
+    loadEvidence: fixtureEvidence,
+    call,
+    observe: async (_c, arm, fn) => ({
+      answer: await fn(),
+      traceId: "f".repeat(32),
+      ingestionVerified: arm === "baseline",
+    }),
+    persist: async () => {},
+  });
+  expect(report.status).toBe("stopped");
+  expect(call).toHaveBeenCalledTimes(1);
+  expect(report.cases).toHaveLength(1);
+  expect(report.cases[0].rejectedDraft?.text).toBe(raw);
+  expect(report.cases[0].outcome?.failure?.code).toBe("schema_invalid");
+});

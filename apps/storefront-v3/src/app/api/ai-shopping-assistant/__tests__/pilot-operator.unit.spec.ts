@@ -93,3 +93,66 @@ it("refuses world-readable requests, mismatched releases and missing tracing bef
     }
   }
 });
+it.each([
+  true,
+  "customer",
+  { captureRejectedDrafts: true },
+  { captureRejectedDrafts: "synthetic-pilot-only", extra: "not allowed" },
+])(
+  "refuses unsupported capture controls %p before invoking the runner",
+  async (diagnostics) => {
+    const directory = await mkdtemp(join(tmpdir(), "composition-op-"));
+    await chmod(directory, 0o700);
+    try {
+      const run = jest.fn();
+      const op = await registerCompositionPilotOperator({
+        directory,
+        env,
+        tracingReady: true,
+        signalTarget: { on: jest.fn() },
+        run,
+      });
+      await writeFile(
+        join(directory, "request.json"),
+        JSON.stringify({ ...request, diagnostics }),
+        { mode: 0o600 },
+      );
+      await op!.handle();
+      expect(run).not.toHaveBeenCalled();
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  },
+);
+it("passes the explicit synthetic opt-in only from the owner-only request and retains private receipt permissions", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "composition-op-"));
+  await chmod(directory, 0o700);
+  try {
+    const run = jest.fn(async (_r, io) => {
+      await io.persist({ rejectedDraft: { text: "SYNTHETIC_PRIVATE_DRAFT" } });
+    });
+    const op = await registerCompositionPilotOperator({
+      directory,
+      env,
+      tracingReady: true,
+      signalTarget: { on: jest.fn() },
+      run,
+    });
+    await writeFile(
+      join(directory, "request.json"),
+      JSON.stringify({
+        ...request,
+        diagnostics: { captureRejectedDrafts: "synthetic-pilot-only" },
+      }),
+      { mode: 0o600 },
+    );
+    await op!.handle();
+    expect(run.mock.calls[0][0].diagnostics).toEqual({
+      captureRejectedDrafts: "synthetic-pilot-only",
+    });
+    const { stat } = await import("node:fs/promises");
+    expect((await stat(join(directory, "report.json"))).mode & 0o077).toBe(0);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});

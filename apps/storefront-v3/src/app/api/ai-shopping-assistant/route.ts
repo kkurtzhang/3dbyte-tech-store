@@ -42,6 +42,7 @@ import {
 } from "./knowledge-context"
 import { createKnowledgeGroundingTransform } from "./knowledge-grounding"
 import { createSynthesisResolver, synthesisMetadata } from "./synthesis-provider"
+import { synthesisDiagnosticMetadata } from "./synthesis-diagnostics"
 import { comparisonFetch, comparisonMetadata, comparisonRouteSettings, assertComparisonReleaseSha } from "./comparison-context"
 import {
   collectEmailAddresses,
@@ -810,6 +811,7 @@ export async function POST(req: Request): Promise<Response> {
               signal: req.signal,
               onOutcome: (outcome) => {
                 synthesisOutcome = {
+                  ...synthesisDiagnosticMetadata(outcome),
                   synthesis_outcome: outcome.reason,
                   synthesis_calls: outcome.calls,
                   synthesis_duration_ms: outcome.durationMs,

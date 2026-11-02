@@ -277,3 +277,46 @@ API probe or extra completion is added. See
 https://api-docs.deepseek.com/api/list-models/ for the provider's explicit context
 metadata. Reverify both pricing and model/context documentation immediately before
 supplying the private one-shot request.
+
+## Rejection diagnostics and private synthetic capture (diagnostic draft)
+
+The November 1 pilot completed three draft calls, but all three candidates fell
+back with `hard_check_failed`. Their rejected text was not retained; this patch
+cannot recover it or establish which rule failed. New offline fixtures are
+constructed synthetic examples, not replays of those lost outputs.
+
+The existing coarse outcome and all acceptance predicates remain unchanged.
+An additive `failure` identifies `schema`, `hard` or `parse` phase and a stable
+specific code. Segment indexes identify the offending paragraph where relevant.
+Schema issues retain only codes and allowlisted field paths (eight issues, four
+path components); messages, received values and unknown property names are omitted.
+`candidate` identifies the exact original draft/repair UTF-8 text by SHA-256 and
+byte count. Safe diagnostic fields go to existing Langfuse metadata; generation
+`recordInputs` and `recordOutputs` remain false. These diagnostics are not a
+semantic entailment guarantee and do not relax approval, scope or safety checks.
+
+Raw rejected draft capture is **off by default** and has no environment flag or
+customer HTTP control. A separately authorized owner-only synthetic pilot request
+may explicitly include:
+
+```json
+"diagnostics": { "captureRejectedDrafts": "synthetic-pilot-only" }
+```
+
+The private operator validates that exact opt-in, retains its existing staging,
+release, permissions, claim and budget checks, and runs only the three fixed
+synthetic customer questions. Only rejected draft text goes into the existing
+private `report.json` receipt, never trace I/O, telemetry metadata, ordinary chat,
+console logs or final customer answers. Accepted drafts are excluded. Each case
+can retain one draft of at most 4,096 UTF-8 bytes, at most 12,288 bytes across the
+three cases. Oversized text is omitted entirely with `byte_limit`; it is not
+truncated. Its full-text hash and byte count remain available. Treat receipt text
+as untrusted data, restrict access and retain it only for the authorized diagnosis.
+No provider credentials or environment configuration are copied into captures.
+
+This diagnostic draft does not enable capture, dispatch another pilot, renew an
+approval or authorize spending unused calls from the completed run. Review and
+merge/deployment approval, followed by a separately bounded live-run approval,
+are required before collecting new real-model examples. Offline checks exercise
+failure codes, privacy, byte bounds, unchanged acceptance/fallback decisions and
+the fixed six-request budget with mocked transports.
