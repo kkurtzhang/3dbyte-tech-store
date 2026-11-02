@@ -10,6 +10,7 @@ const mockTraces = new Map<string, Record<string, unknown>>();
 let mockCount = 0;
 let mockInvalidUsage = false;
 let mockInvalidDraft = false;
+let mockTelemetry: unknown[] = [];
 jest.mock("@ai-sdk/openai", () => ({
   createOpenAI: (config: { fetch: typeof fetch }) => {
     mockProviderFetch = config.fetch;
@@ -43,7 +44,12 @@ jest.mock("@3dbyte-tech-store/observability", () => ({
     Object.assign(mockTraces.get(mockActive)!, v),
 }));
 jest.mock("ai", () => ({
-  generateText: async (config: { prompt: string; maxOutputTokens: number }) => {
+  generateText: async (config: {
+    prompt: string;
+    maxOutputTokens: number;
+    experimental_telemetry: unknown;
+  }) => {
+    mockTelemetry.push(config.experimental_telemetry);
     await mockProviderFetch("https://api.deepseek.com/chat/completions", {
       method: "POST",
       body: JSON.stringify({
@@ -115,6 +121,7 @@ beforeEach(() => {
   mockCount = 0;
   mockInvalidUsage = false;
   mockInvalidDraft = false;
+  mockTelemetry = [];
   process.env = {
     ...originalEnv,
     NODE_ENV: "production",
@@ -424,6 +431,12 @@ it.each([false, true])(
       budget: { calls: unknown[] };
     };
     expect(report.budget.calls).toHaveLength(3);
+    expect(mockTelemetry).toHaveLength(3);
+    for (const options of mockTelemetry)
+      expect(options).toMatchObject({
+        recordInputs: false,
+        recordOutputs: false,
+      });
     expect(
       report.cases.every((c) => c.outcome.failure.code === "schema_invalid"),
     ).toBe(true);
