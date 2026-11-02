@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { parseKnowledgeClaim } from "./knowledge-claim-presentation";
 import { knowledgeAnswerIntent } from "./knowledge-answer-intent";
+import type { HardCheckResult } from "./synthesis-diagnostics";
 import type { SynthesisPacket } from "./synthesis-evidence";
 
 export const SYNTHESIS_PROMPT_VERSION = "2026-10-30.grounded-draft-1";
@@ -77,44 +78,58 @@ function quantities(text: string) {
 }
 /** Hard constraints complement probabilistic review; they are not semantic entailment or complete entity recognition. */
 export function hardCheckDraft(draft: SynthesisDraft, packet: SynthesisPacket) {
+  return diagnoseHardCheckDraft(draft, packet).ok;
+}
+export function diagnoseHardCheckDraft(
+  draft: SynthesisDraft,
+  packet: SynthesisPacket,
+): HardCheckResult {
+  if (draft.segments.map((s) => s.text).join("").length > 3000)
+    return { ok: false, code: "answer_length_limit" };
   if (
-    draft.segments.map((s) => s.text).join("").length > 3000 ||
     draft.segments.reduce((n, s) => n + (s.text.match(/\?/g)?.length ?? 0), 0) >
-      1
+    1
   )
-    return false;
+    return { ok: false, code: "question_limit" };
   // v1 never synthesizes operating thermal/electrical advice, even if a reviewer
   // mistakenly accepts it or a customer hides it in an everyday question.
-  if (
-    draft.segments.some((s) =>
-      /°\s*[cf]|\b(?:celsius|fahrenheit|volts?|amps?|watts?)\b/i.test(s.text),
-    )
-  )
-    return false;
+  const thermalIndex = draft.segments.findIndex((s) =>
+    /°\s*[cf]|\b(?:celsius|fahrenheit|volts?|amps?|watts?)\b/i.test(s.text),
+  );
+  if (thermalIndex !== -1)
+    return {
+      ok: false,
+      code: "thermal_or_electrical_advice",
+      segmentIndex: thermalIndex,
+    };
 
-  for (const segment of draft.segments) {
+  for (
+    let segmentIndex = 0;
+    segmentIndex < draft.segments.length;
+    segmentIndex++
+  ) {
+    const segment = draft.segments[segmentIndex];
     const refs = segment.evidenceIds.map((id) =>
       packet.facts.find((f) => f.id === id),
     );
-    if (
-      refs.some((f) => !f) ||
-      new Set(segment.evidenceIds).size !== refs.length
-    )
-      return false;
+    if (refs.some((f) => !f))
+      return { ok: false, code: "unknown_evidence_id", segmentIndex };
+    if (new Set(segment.evidenceIds).size !== refs.length)
+      return { ok: false, code: "duplicate_evidence_id", segmentIndex };
     if (segment.kind === "fact") {
-      if (
-        !refs.length ||
-        !segment.text.includes("{{product}}") ||
-        refs.every((f) => f!.fact.value === null)
-      )
-        return false;
+      if (!refs.length)
+        return { ok: false, code: "fact_without_evidence", segmentIndex };
+      if (!segment.text.includes("{{product}}"))
+        return { ok: false, code: "missing_product_placeholder", segmentIndex };
+      if (refs.every((f) => f!.fact.value === null))
+        return { ok: false, code: "only_unknown_evidence", segmentIndex };
     }
     if (
       /https?:|www\.|\[[^\]]*\]|[<>`]|\bSources\s*:|\{\{(?!product\}\})/i.test(
         segment.text,
       )
     )
-      return false;
+      return { ok: false, code: "forbidden_markup_or_citation", segmentIndex };
     const allowed = new Set(
       refs.flatMap((f) => quantities(f!.fact.value ?? "")),
     );
@@ -123,7 +138,7 @@ export function hardCheckDraft(draft: SynthesisDraft, packet: SynthesisPacket) {
         (q) => !allowed.has(q),
       )
     )
-      return false;
+      return { ok: false, code: "unsupported_quantity", segmentIndex };
     // Scope checks for the currently recognized material/plate claim grammar.
     // Unsupported forms still require full review; this is not an exhaustive semantic check.
     const materialClaims = refs.flatMap((f) => {
@@ -134,23 +149,27 @@ export function hardCheckDraft(draft: SynthesisDraft, packet: SynthesisPacket) {
       return claim?.kind === "materials" ? [claim] : [];
     });
     const named = knowledgeAnswerIntent(segment.text);
-    if (
-      segment.kind === "fact" &&
-      materialClaims.length &&
-      (named.materials.some(
-        (m) => !materialClaims.some((c) => c.materials?.includes(m)),
-      ) ||
+    if (segment.kind === "fact" && materialClaims.length) {
+      if (
+        named.materials.some(
+          (m) => !materialClaims.some((c) => c.materials?.includes(m)),
+        )
+      )
+        return { ok: false, code: "unsupported_material_scope", segmentIndex };
+      if (
         named.surfaces.some(
           (s) =>
             !materialClaims.some(
               (c) => c.surface?.toLowerCase() === s.toLowerCase(),
             ),
-        ))
-    )
-      return false;
+        )
+      )
+        return { ok: false, code: "unsupported_surface_scope", segmentIndex };
+    }
   }
-  return true;
+  return { ok: true };
 }
+
 export function acceptsReview(review: SynthesisReview, draft: SynthesisDraft) {
   return (
     review.verdict === "accept" &&

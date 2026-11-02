@@ -31,13 +31,16 @@ import {
   SYNTHESIS_PROMPT_VERSION,
   SYNTHESIS_VALIDATOR_VERSION,
 } from "./synthesis-contract";
-import type { SynthesisCall } from "./grounded-synthesis";
+import { synthesisDiagnosticMetadata } from "./synthesis-diagnostics";
+import type { PilotDiagnosticsOptIn } from "./pilot-draft-capture";
+import type { SynthesisCall, SynthesisOutcome } from "./grounded-synthesis";
 import type { GroundedAnswer } from "./knowledge-grounding";
 
 export type PilotRequest = {
   runId: string;
   releaseSha: string;
   pricing: ComparisonPricing;
+  diagnostics?: PilotDiagnosticsOptIn;
   scope: "composition-only-three-cases-six-calls";
 };
 export type RuntimePilotReport = PilotReport & {
@@ -138,6 +141,7 @@ export async function runStagingCompositionPilot(
   if (!backendUrl) throw Error("pilot_backend_unavailable");
   const prompt = await resolveAssistantSystemPrompt();
   const usage: RuntimePilotReport["usage"] = [];
+  const outcomes = new Map<string, SynthesisOutcome>();
   const observations: NonNullable<RuntimePilotReport["observations"]> = [];
   let fatalReason: string | undefined;
   let budget: ComparisonBudget;
@@ -272,6 +276,10 @@ export async function runStagingCompositionPilot(
   return runCompositionPilot({
     budget,
     tone: prompt.editableTone,
+    diagnostics: request.diagnostics,
+    onOutcome: (c, outcome) => {
+      outcomes.set(c.id, outcome);
+    },
     call,
     fatalReason: () => fatalReason,
     loadEvidence: async (c) => {
@@ -348,7 +356,11 @@ export async function runStagingCompositionPilot(
                   output: { text: answer.text, sources: answer.sources },
                 });
                 span.update({
-                  metadata: { ...metadata, answer_origin: answer.origin },
+                  metadata: {
+                    ...metadata,
+                    ...synthesisDiagnosticMetadata(outcomes.get(c.id)),
+                    answer_origin: answer.origin,
+                  },
                 });
                 return { answer, traceId: span.traceId };
               } finally {

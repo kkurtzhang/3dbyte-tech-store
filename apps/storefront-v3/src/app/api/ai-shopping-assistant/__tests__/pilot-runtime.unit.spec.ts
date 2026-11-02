@@ -9,6 +9,8 @@ let mockActive: string;
 const mockTraces = new Map<string, Record<string, unknown>>();
 let mockCount = 0;
 let mockInvalidUsage = false;
+let mockInvalidDraft = false;
+let mockTelemetry: unknown[] = [];
 jest.mock("@ai-sdk/openai", () => ({
   createOpenAI: (config: { fetch: typeof fetch }) => {
     mockProviderFetch = config.fetch;
@@ -42,7 +44,12 @@ jest.mock("@3dbyte-tech-store/observability", () => ({
     Object.assign(mockTraces.get(mockActive)!, v),
 }));
 jest.mock("ai", () => ({
-  generateText: async (config: { prompt: string; maxOutputTokens: number }) => {
+  generateText: async (config: {
+    prompt: string;
+    maxOutputTokens: number;
+    experimental_telemetry: unknown;
+  }) => {
+    mockTelemetry.push(config.experimental_telemetry);
     await mockProviderFetch("https://api.deepseek.com/chat/completions", {
       method: "POST",
       body: JSON.stringify({
@@ -87,7 +94,18 @@ jest.mock("ai", () => ({
                 }),
               ),
             }
-          : { segments },
+          : mockInvalidDraft
+            ? {
+                segments: [
+                  {
+                    kind: "fact",
+                    text: "SYNTHETIC_PRIVATE_DRAFT",
+                    productKey: "wrong",
+                    evidenceIds: ["f1"],
+                  },
+                ],
+              }
+            : { segments },
       ),
       totalUsage: {
         inputTokens: mockInvalidUsage ? undefined : 10,
@@ -102,6 +120,8 @@ beforeEach(() => {
   mockTraces.clear();
   mockCount = 0;
   mockInvalidUsage = false;
+  mockInvalidDraft = false;
+  mockTelemetry = [];
   process.env = {
     ...originalEnv,
     NODE_ENV: "production",
@@ -351,3 +371,89 @@ it("verifies exact structured trace I/O in parsed or JSON-encoded API responses 
     ),
   ).toBe(false);
 });
+
+it.each([false, true])(
+  "keeps synthetic rejected text in opt-in private receipts only, never Langfuse: %p",
+  async (enabled) => {
+    mockInvalidDraft = true;
+    global.fetch = jest.fn(async (input, init) => {
+      const url = String(input);
+      if (url.includes("/api/public/traces/"))
+        return Response.json(mockTraces.get(url.split("/").at(-1)!));
+      if (url.startsWith("https://api.deepseek.com"))
+        return Response.json({ fixture: true });
+      const body = JSON.parse(init!.body as string);
+      const data =
+        observed.cases[body.query.includes("Dragonfly") ? 0 : 1].knowledge;
+      const d = data.documents[0];
+      return Response.json(
+        url.endsWith("/ai/product-guidance")
+          ? {
+              status: "matches",
+              mode: "search",
+              query: body.query,
+              products: [
+                {
+                  id: d.product_id,
+                  title: d.product_title,
+                  handle: d.product_handle,
+                  productUrl: `https://store.fixture/products/${d.product_handle}`,
+                },
+              ],
+            }
+          : data,
+      );
+    }) as typeof fetch;
+    let latest: unknown;
+    await runStagingCompositionPilot(
+      {
+        ...fixtureRequest(),
+        ...(enabled
+          ? {
+              diagnostics: {
+                captureRejectedDrafts: "synthetic-pilot-only" as const,
+              },
+            }
+          : {}),
+      },
+      {
+        persist: async (r) => {
+          latest = r;
+        },
+        reserve: () => {},
+      },
+    );
+    const report = latest as {
+      cases: Array<{
+        rejectedDraft?: { text?: string };
+        outcome: { failure: { code: string } };
+      }>;
+      budget: { calls: unknown[] };
+    };
+    expect(report.budget.calls).toHaveLength(3);
+    expect(mockTelemetry).toHaveLength(3);
+    for (const options of mockTelemetry)
+      expect(options).toMatchObject({
+        recordInputs: false,
+        recordOutputs: false,
+      });
+    expect(
+      report.cases.every((c) => c.outcome.failure.code === "schema_invalid"),
+    ).toBe(true);
+    expect(
+      report.cases.every(
+        (c) =>
+          c.rejectedDraft?.text?.includes("SYNTHETIC_PRIVATE_DRAFT") ===
+          (enabled ? true : undefined),
+      ),
+    ).toBe(true);
+    expect(JSON.stringify(Array.from(mockTraces.values()))).not.toContain(
+      "SYNTHETIC_PRIVATE_DRAFT",
+    );
+    expect(JSON.stringify(Array.from(mockTraces.values()))).toContain(
+      "synthesis_failure_code",
+    );
+    if (!enabled)
+      expect(JSON.stringify(latest)).not.toContain("SYNTHETIC_PRIVATE_DRAFT");
+  },
+);

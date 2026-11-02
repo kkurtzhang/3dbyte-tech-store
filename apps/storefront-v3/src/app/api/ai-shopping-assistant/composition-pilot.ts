@@ -15,6 +15,11 @@ import {
   type SynthesisOutcome,
 } from "./grounded-synthesis";
 import { synthesisEvidence } from "./synthesis-evidence";
+import {
+  captureSyntheticPilotDraft,
+  type PilotDiagnosticsOptIn,
+  type SyntheticRejectedDraft,
+} from "./pilot-draft-capture";
 import type { KnowledgeExecution } from "./knowledge-execution";
 export const COMPOSITION_PILOT_CASES = [
   {
@@ -53,6 +58,7 @@ type CaseResult = {
   baseline?: ObservedPilotAnswer;
   trial?: ObservedPilotAnswer;
   outcome?: SynthesisOutcome;
+  rejectedDraft?: SyntheticRejectedDraft;
   status: string;
   errorCode?: string;
 };
@@ -71,6 +77,8 @@ export async function runCompositionPilot(options: {
   now?: () => number;
   call: SynthesisCall;
   tone?: string;
+  diagnostics?: PilotDiagnosticsOptIn;
+  onOutcome?: (context: PilotCaseContext, outcome: SynthesisOutcome) => void;
   loadEvidence: (c: PilotCase) => Promise<KnowledgeExecution>;
   observe: (
     c: PilotCaseContext,
@@ -105,6 +113,7 @@ export async function runCompositionPilot(options: {
       status: "preparing",
     };
     report.cases.push(result);
+    let capturedDraft: SyntheticRejectedDraft | undefined;
     try {
       const execution = await options.loadEvidence(c);
       const packet = synthesisEvidence(execution, now());
@@ -148,11 +157,28 @@ export async function runCompositionPilot(options: {
               execution,
               question: c.question,
               tone: options.tone,
-              call: options.call,
+              call: async (request) => {
+                const response = await options.call(request);
+                if (
+                  options.diagnostics?.captureRejectedDrafts ===
+                    "synthetic-pilot-only" &&
+                  request.stage === "draft"
+                )
+                  capturedDraft = captureSyntheticPilotDraft(response.text);
+                return response;
+              },
               now,
               maxRepairs: 0,
               onOutcome: (o) => {
                 result.outcome = o;
+                if (
+                  capturedDraft &&
+                  o.reason !== "accepted" &&
+                  o.reason !== "ineligible" &&
+                  o.candidate?.sha256 === capturedDraft.sha256
+                )
+                  result.rejectedDraft = capturedDraft;
+                options.onOutcome?.(context, o);
               },
             }),
           );

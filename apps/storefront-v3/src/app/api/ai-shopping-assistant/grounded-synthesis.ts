@@ -6,11 +6,18 @@ import { synthesisEvidence, synthesisSources } from "./synthesis-evidence";
 import {
   acceptsReview,
   draftSchema,
-  hardCheckDraft,
+  diagnoseHardCheckDraft,
   reviewSchema,
   REVIEW_RULES,
   SYNTHESIS_RULES,
 } from "./synthesis-contract";
+import {
+  candidateIdentity,
+  schemaFailure,
+  type CandidateIdentity,
+  type ValidationFailure,
+  SYNTHESIS_DIAGNOSTICS_VERSION,
+} from "./synthesis-diagnostics";
 import type { KnowledgeExecution } from "./knowledge-execution";
 
 export type SynthesisCall = (request: {
@@ -21,6 +28,9 @@ export type SynthesisCall = (request: {
   maxOutputTokens: number;
 }) => Promise<{ text: string; inputTokens?: number; outputTokens?: number }>;
 export type SynthesisOutcome = {
+  diagnosticsVersion?: string;
+  candidate?: CandidateIdentity;
+  failure?: ValidationFailure;
   reason: string;
   calls: number;
   durationMs: number;
@@ -58,6 +68,7 @@ export async function synthesizeKnowledgeAnswer(options: SynthesisOptions) {
   const started = Date.now();
   const metrics: SynthesisOutcome = {
     reason: "ineligible",
+    diagnosticsVersion: SYNTHESIS_DIAGNOSTICS_VERSION,
     calls: 0,
     durationMs: 0,
     inputTokens: 0,
@@ -143,8 +154,20 @@ export async function synthesizeKnowledgeAnswer(options: SynthesisOptions) {
       ]);
       metrics.inputTokens += response.inputTokens ?? 0;
       metrics.outputTokens += response.outputTokens ?? 0;
-      if (response.text.length > 12_000) throw new Error("response_limit");
-      return JSON.parse(response.text) as unknown;
+      if (stage !== "review")
+        metrics.candidate = candidateIdentity(response.text);
+      if (response.text.length > 12_000) {
+        if (stage !== "review")
+          metrics.failure = { phase: "parse", code: "response_limit" };
+        throw new Error("response_limit");
+      }
+      try {
+        return JSON.parse(response.text) as unknown;
+      } catch (error) {
+        if (stage !== "review")
+          metrics.failure = { phase: "parse", code: "json_invalid" };
+        throw error;
+      }
     } finally {
       if (timer) clearTimeout(timer);
       options.signal?.removeEventListener("abort", abort);
@@ -155,8 +178,21 @@ export async function synthesizeKnowledgeAnswer(options: SynthesisOptions) {
     let candidate = await invoke("draft");
     for (let attempt = 0; attempt < 1 + (options.maxRepairs ?? 1); attempt++) {
       const parsed = draftSchema.safeParse(candidate);
-      if (!parsed.success || !hardCheckDraft(parsed.data, packet))
+      if (!parsed.success) {
+        metrics.failure = schemaFailure(parsed.error.issues);
         return finish(fallback(), "hard_check_failed");
+      }
+      const hard = diagnoseHardCheckDraft(parsed.data, packet);
+      if (!hard.ok) {
+        metrics.failure = {
+          phase: "hard",
+          code: hard.code,
+          ...(hard.segmentIndex === undefined
+            ? {}
+            : { segmentIndex: hard.segmentIndex }),
+        };
+        return finish(fallback(), "hard_check_failed");
+      }
       const review = reviewSchema.safeParse(
         await invoke("review", { draft: parsed.data }),
       );
