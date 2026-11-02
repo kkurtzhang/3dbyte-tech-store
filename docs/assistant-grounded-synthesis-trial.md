@@ -1,12 +1,42 @@
 # Grounded synthesis trial (disabled)
 
-This is a stacked draft based on PR #260 at
-`497f94322e45e35362cebf75c614b8c979a664b0`. Its PR base is
-`fix/assistant-customer-answers-20261029`, not staging. PR #260 remains independent
-and unmodified. After #260 merges, refresh this trial against staging and retarget
-it, then rerun all gates. Do not merge this stacked branch first. The exact stacked
-base is temporarily included in the two existing PR workflow filters so all
-standard checks run; no jobs, permissions or security requirements are removed.
+The experimental path and private rejection diagnostics are now on staging through
+PRs #261 and #262. General synthesis remains disabled. This focused draft is based
+on staging `68da79099f067b97a9099ed8bcd0c418567894c0`; it changes code-owned generation
+and review instructions, examples and offline tests only. It does not change remote
+Langfuse prompts, evidence, acceptance predicates, capture controls or call budgets.
+
+## November 2 output-contract correction (offline draft)
+
+The three-question diagnostic pilot retained three rejected synthetic drafts. Each
+passed JSON shape validation but failed `missing_product_placeholder` in a later
+factual paragraph: the model had named the product earlier, then used a pronoun or
+manufacturer-led sentence without `{{product}}`. `productKey: "p1"` alone does not
+satisfy the per-fact text requirement. The old generation wording said to use the
+marker for the product name without explicitly stating this per-paragraph rule.
+The hard check is unchanged; no marker is inserted after generation and factual
+claims must not be relabelled as guidance to evade it.
+
+Code-owned draft/review versions now require each factual segment's own marker,
+prefer one concise paragraph when sufficient, answer the actual question first,
+and omit unasked fact inventories, document narration and irrelevant unknowns.
+Fictional format examples show both one requested property and two factual
+paragraphs with a marker in each. Their sample facts are explicitly not evidence
+for any current product. Editable tone cannot impose an irrelevant heading/caveat/
+follow-up outline. Necessary source qualifications and scope limits still apply.
+
+The regression fixture contains reviewed public-safe excerpts from synthetic
+questions and product-description paragraphs, not complete private receipts or
+trace/run/customer metadata. Its after examples are hand-authored test inputs.
+Offline tests preserve the observed failure indexes and exact fallback, exercise
+unchanged unsupported-claim rejection, and release authored examples only after
+mocked complete review. They do **not** show that a real model follows the revised
+prompt or that a semantic reviewer would accept these answers. A future release
+and bounded paid comparison require separate approval; this draft makes no calls.
+
+The remaining sections record the trial's architecture and earlier comparison
+proposals. Historical draft/release statements below describe those stages, not
+new authority to deploy, enable synthesis or dispatch evaluations.
 
 `AI_ASSISTANT_GROUNDED_SYNTHESIS_ENABLED` is a **server-only, default-false** runtime
 flag. Only the exact value `true` selects the trial. The environment example and
