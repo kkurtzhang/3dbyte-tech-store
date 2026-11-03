@@ -109,6 +109,12 @@ function instructionFixture() {
   const data = structuredClone(observed.cases[1].knowledge);
   const d = data.documents[0];
   Object.assign(d, {
+    document_id: "synthetic-instruction-doc",
+    source_sha256: "a".repeat(64),
+    revision_hash: "b".repeat(64),
+    source_version: "synthetic-offline-only",
+    source_checked_at: new Date(now - 1000).toISOString(),
+    valid_until: new Date(now + 3600000).toISOString(),
     product_id: "synthetic-adhesive",
     product_handle: "example-adhesive",
     product_title: "Example Adhesive",
