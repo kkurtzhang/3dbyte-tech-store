@@ -1,0 +1,14 @@
+{
+  "provenance": {
+    "observedAt": "2026-11-02T13:38:21.800Z",
+    "releaseSha": "b59a6e0d61c65082102c4b43edd62e85cd0b7f9a",
+    "scope": "Synthetic composition-only pilot; selected rendered output reviewed as public-safe. No customer data, private receipt, trace/run IDs or provider metadata.",
+    "reconstruction": "Accepted raw draft JSON and reviewer JSON were not retained. Candidate segment shapes in tests are reconstructed, not recovered original model segments.",
+    "validity": "Use the historical clock of observed-answer-repetition.json. This does not refresh live content or renew reviews expiring November 3 at 03:53 UTC."
+  },
+  "question": "Will Magigoo Original work on textured PEI?",
+  "observedRenderedAnswer": "The available information doesn't confirm whether Magigoo Original 50ml Bed Adhesive works on textured PEI; the manufacturer's stated testing is for glass build plates, so textured PEI compatibility is unknown.\n\nA safe next step is to check with Magigoo directly or test a small, inconspicuous area of your textured PEI plate before relying on it for a full print.",
+  "unsupportedParagraph": "A safe next step is to check with Magigoo directly or test a small, inconspicuous area of your textured PEI plate before relying on it for a full print.",
+  "automatedOutcome": "accepted",
+  "operatorFinding": "The manufacturer referral is useful, but the alternative small-area application test is not established safe by any approved instruction fact."
+}

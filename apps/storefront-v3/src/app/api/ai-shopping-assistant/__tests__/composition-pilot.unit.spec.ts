@@ -82,7 +82,11 @@ it("uses the identical fresh packet for both arms and keeps all failures visible
     persist: async () => {},
   });
   expect(results.cases).toHaveLength(3);
-  expect(call).toHaveBeenCalledTimes(6);
+  expect(call).toHaveBeenCalledTimes(4);
+  expect(results.cases[2].outcome).toMatchObject({
+    reason: "ineligible",
+    calls: 0,
+  });
   expect(call.mock.calls.every(([v]) => v.stage !== "repair")).toBe(true);
   expect(
     results.cases.every(
@@ -158,7 +162,7 @@ it("retains malformed-draft fallbacks without a review, repair or resample", asy
     }),
     persist: async () => {},
   });
-  expect(call).toHaveBeenCalledTimes(3);
+  expect(call).toHaveBeenCalledTimes(2);
   expect(
     report.cases.every((c) => c.status === "synthesis_failed_fallback"),
   ).toBe(true);
@@ -197,7 +201,7 @@ it.each([
       },
       persist: async () => {},
     });
-    expect(call).toHaveBeenCalledTimes(3);
+    expect(call).toHaveBeenCalledTimes(2);
     expect(
       report.cases.every(
         (c) => c.sameEvidence && c.status === "synthesis_failed_fallback",
@@ -205,6 +209,11 @@ it.each([
     ).toBe(true);
     expect(seen.join("")).not.toContain(marker);
     for (const c of report.cases) {
+      if (c.id === "magigoo-pei-unknown") {
+        expect(c.outcome).toMatchObject({ reason: "ineligible", calls: 0 });
+        expect(c.rejectedDraft).toBeUndefined();
+        continue;
+      }
       expect(c.outcome?.failure).toMatchObject({
         phase: "schema",
         code: "schema_invalid",
@@ -239,6 +248,11 @@ it("omits oversized UTF-8 draft text instead of truncating it or changing fallba
   });
   expect(report.cases).toHaveLength(3);
   for (const c of report.cases) {
+    if (c.id === "magigoo-pei-unknown") {
+      expect(c.outcome).toMatchObject({ reason: "ineligible", calls: 0 });
+      expect(c.rejectedDraft).toBeUndefined();
+      continue;
+    }
     expect(c.rejectedDraft).toMatchObject({
       omittedReason: "byte_limit",
       utf8Bytes: Buffer.byteLength(raw),
@@ -282,7 +296,10 @@ it("does not capture accepted drafts even with synthetic opt-in", async () => {
   });
   expect(
     report.cases.every(
-      (c) => c.status === "synthesis_accepted" && c.rejectedDraft === undefined,
+      (c) =>
+        (c.id === "magigoo-pei-unknown"
+          ? c.outcome?.reason === "ineligible"
+          : c.status === "synthesis_accepted") && c.rejectedDraft === undefined,
     ),
   ).toBe(true);
 });

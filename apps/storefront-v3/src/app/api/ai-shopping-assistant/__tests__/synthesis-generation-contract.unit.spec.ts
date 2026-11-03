@@ -104,12 +104,14 @@ it.each(excerpts.cases)(
         outcome = value;
       },
     });
-    expect(call).toHaveBeenCalledTimes(1);
+    expect(call).toHaveBeenCalledTimes(c.id === "magigoo-pei-unknown" ? 0 : 1);
     expect(answer).toEqual({
       ...assembleKnowledgeAnswer(execution, c.question, now),
       origin: "validated_claim_composer",
     });
-    expect(outcome?.failure).toEqual(c.beforeFailure);
+    if (c.id === "magigoo-pei-unknown")
+      expect(outcome?.reason).toBe("ineligible");
+    else expect(outcome?.failure).toEqual(c.beforeFailure);
     expect(JSON.stringify(outcome)).not.toContain(
       candidate.segments.at(-1)!.text,
     );
@@ -118,10 +120,25 @@ it.each(excerpts.cases)(
 );
 
 it.each(excerpts.cases)(
-  "releases the concise authored $id example only after a complete mocked review",
+  "reviews the supported authored $id example and keeps unsupported scope on the composer",
   async (c) => {
     const execution = await setup(c.knowledgeCaseIndex);
     const draft = draftSchema.parse(c.authoredAfter);
+    if (c.id === "magigoo-pei-unknown") {
+      const call = jest.fn(async () => ({
+        text: JSON.stringify(c.authoredAfter),
+      }));
+      const answer = await synthesizeKnowledgeAnswer({
+        execution,
+        question: c.question,
+        call,
+        now: () => now,
+      });
+      expect(answer.origin).toBe("validated_claim_composer");
+      expect(call).not.toHaveBeenCalled();
+      expect(answer.text).toContain("compatibility with textured PEI");
+      return;
+    }
     expect(
       diagnoseHardCheckDraft(draft, synthesisEvidence(execution, now)!),
     ).toEqual({ ok: true });
@@ -239,7 +256,7 @@ it("does not treat valid format, evidence IDs or concise prose as semantic proof
       call,
       now: () => now,
     });
-    expect(call).toHaveBeenCalledTimes(2);
+    expect(call).toHaveBeenCalledTimes(kind === "guidance" ? 1 : 2);
     expect(answer.origin).toBe("validated_claim_composer");
     expect(answer.text).not.toContain("prevents all warping");
   }
