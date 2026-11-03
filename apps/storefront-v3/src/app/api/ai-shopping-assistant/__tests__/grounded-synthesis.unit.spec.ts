@@ -256,7 +256,7 @@ it("carries only structured customer intent into a natural TPU follow-up", async
   expect(payload).not.toHaveProperty("previousQuestion");
   expect(result.text).not.toMatch(/PETG|500|document/);
 });
-it("can explain a specific unknown surface and ask one useful question without fabricating compatibility", async () => {
+it("keeps unknown surface compatibility on the specific composer fallback without model advice", async () => {
   const segments = [
     fact("{{product}} supports PETG on glass build plates."),
     {
@@ -280,9 +280,10 @@ it("can explain a specific unknown surface and ask one useful question without f
   const result = await run(call, {
     question: "Can I use Magigoo Original on PEI?",
   });
-  expect(result.origin).toBe("reviewed_llm_synthesis");
-  expect(result.text).toContain("does not establish PEI compatibility");
-  expect(result.text.match(/\?/g)).toHaveLength(1);
+  expect(result.origin).toBe("validated_claim_composer");
+  expect(call).not.toHaveBeenCalled();
+  expect(result.text).toContain("does not establish compatibility with PEI");
+  expect(result.text).toContain("manufacturers' compatibility guidance");
 });
 it("allows useful instructions clarification but rejects invented instructions in semantic review", async () => {
   const candidate = {
@@ -307,7 +308,8 @@ it("allows useful instructions clarification but rejects invented instructions i
   const result = await run(call, {
     question: "How do I apply Magigoo Original?",
   });
-  expect(result.text).toContain("Which plate");
+  expect(result.text).toContain("application amount and method need checking");
+  expect(call).not.toHaveBeenCalled();
   expect(result.text).not.toMatch(/coats|shake|wipe|thin layer/);
   const invented = calls(draft("Shake {{product}} and wipe a thin layer."), {
     verdict: "reject",
@@ -395,9 +397,10 @@ it("can ask a useful procedure question without dumping unrelated facts or citin
   const result = await run(call, {
     question: "How do I apply Magigoo Original?",
   });
-  expect(result.origin).toBe("reviewed_llm_synthesis");
+  expect(result.origin).toBe("validated_claim_composer");
+  expect(call).not.toHaveBeenCalled();
   expect(result.text).not.toMatch(/PLA|TPU|500|document|approved/);
-  expect(result.text.match(/\?/g)).toHaveLength(1);
+  expect(result.text).toContain("application amount and method need checking");
   expect(result.sources).toEqual([]);
 });
 it("refuses a wrong variant or product scope and oversized evidence without extra calls", async () => {
@@ -466,7 +469,7 @@ it("keeps canonical product titles inert after substituting the validated identi
     })),
   });
   const call = calls(draft("{{product}} is a supported choice."), review());
-  const answer = await run(call, { execution });
+  const answer = await run(call, { execution, question: "What is its main feature?" });
   expect(answer.origin).toBe("reviewed_llm_synthesis");
   expect(answer.text).toContain("\\[identity\\]");
 });

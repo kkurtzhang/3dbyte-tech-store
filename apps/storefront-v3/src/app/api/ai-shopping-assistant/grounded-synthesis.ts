@@ -1,3 +1,4 @@
+import { requiresProcedureFallback } from "./synthesis-procedures";
 import { comparisonArm } from "./comparison-context";
 import { plainMarkdown } from "./grounded-text";
 import { assembleKnowledgeAnswer } from "./knowledge-grounding";
@@ -101,6 +102,7 @@ export async function synthesizeKnowledgeAnswer(options: SynthesisOptions) {
   // This conservative trial boundary can exclude benign wording; it is not a safety classifier.
   if (
     !packet ||
+    requiresProcedureFallback(packet, options) ||
     options.signal?.aborted ||
     /\b(?:order|tracking|shipping|ticket|account|password|address|phone|volts?|amps?|wiring|heater|sensor|firmware|degrees?|celsius|temperature|hotter|maximum|heat|rating)\b|@|°\s*[cf]/i.test(
       `${options.previousQuestion ?? ""} ${options.question}`,
@@ -182,7 +184,7 @@ export async function synthesizeKnowledgeAnswer(options: SynthesisOptions) {
         metrics.failure = schemaFailure(parsed.error.issues);
         return finish(fallback(), "hard_check_failed");
       }
-      const hard = diagnoseHardCheckDraft(parsed.data, packet);
+      const hard = diagnoseHardCheckDraft(parsed.data, packet, options);
       if (!hard.ok) {
         metrics.failure = {
           phase: "hard",

@@ -147,7 +147,7 @@ afterEach(() => {
   global.fetch = originalFetch;
   jest.restoreAllMocks();
 });
-it("runs six mock transports through the existing tracing path, verifies all six answer traces and records actual usage", async () => {
+it("runs bounded eligible mock transports through the existing tracing path, verifies all six answer traces and records actual usage", async () => {
   global.fetch = jest.fn(async (input, init) => {
     const url = String(input);
     if (url.includes("/api/public/traces/"))
@@ -210,14 +210,16 @@ it("runs six mock transports through the existing tracing path, verifies all six
     };
   };
   expect(report.status).toBe("completed");
-  expect(report.cases.every((c) => c.status === "synthesis_accepted")).toBe(
-    true,
-  );
-  expect(report.usage).toHaveLength(6);
-  expect(report.budget.calls).toHaveLength(6);
+  expect(report.cases.map((c) => c.status)).toEqual([
+    "synthesis_accepted",
+    "synthesis_accepted",
+    "synthesis_failed_fallback",
+  ]);
+  expect(report.usage).toHaveLength(4);
+  expect(report.budget.calls).toHaveLength(4);
   expect(report.budget.traces).toHaveLength(6);
   expect(report.budget.quote.reservedUsd).toBe("1.892118");
-  expect(reserve).toHaveBeenCalledTimes(6);
+  expect(reserve).toHaveBeenCalledTimes(4);
   expect(process.env.AI_ASSISTANT_GROUNDED_SYNTHESIS_ENABLED).toBe("false");
 });
 
@@ -426,25 +428,31 @@ it.each([false, true])(
     const report = latest as {
       cases: Array<{
         rejectedDraft?: { text?: string };
-        outcome: { failure: { code: string } };
+        outcome: { reason: string; calls: number; failure?: { code: string } };
       }>;
       budget: { calls: unknown[] };
     };
-    expect(report.budget.calls).toHaveLength(3);
-    expect(mockTelemetry).toHaveLength(3);
+    expect(report.budget.calls).toHaveLength(2);
+    expect(mockTelemetry).toHaveLength(2);
     for (const options of mockTelemetry)
       expect(options).toMatchObject({
         recordInputs: false,
         recordOutputs: false,
       });
     expect(
-      report.cases.every((c) => c.outcome.failure.code === "schema_invalid"),
+      report.cases.every((c, index) =>
+        index === 2
+          ? c.outcome.reason === "ineligible" &&
+            c.outcome.calls === 0 &&
+            !c.outcome.failure
+          : c.outcome.failure?.code === "schema_invalid",
+      ),
     ).toBe(true);
     expect(
       report.cases.every(
-        (c) =>
+        (c, index) =>
           c.rejectedDraft?.text?.includes("SYNTHETIC_PRIVATE_DRAFT") ===
-          (enabled ? true : undefined),
+          (enabled && index < 2 ? true : undefined),
       ),
     ).toBe(true);
     expect(JSON.stringify(Array.from(mockTraces.values()))).not.toContain(

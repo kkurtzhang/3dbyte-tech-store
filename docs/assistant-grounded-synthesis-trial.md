@@ -1,10 +1,74 @@
 # Grounded synthesis trial (disabled)
 
-The experimental path and private rejection diagnostics are now on staging through
-PRs #261 and #262. General synthesis remains disabled. This focused draft is based
-on staging `68da79099f067b97a9099ed8bcd0c418567894c0`; it changes code-owned generation
-and review instructions, examples and offline tests only. It does not change remote
-Langfuse prompts, evidence, acceptance predicates, capture controls or call budgets.
+The experimental path and prior diagnostics are on staging through PRs #261–#263.
+General synthesis remains disabled. This focused draft is based on staging
+`b59a6e0d61c65082102c4b43edd62e85cd0b7f9a`. It adds conservative procedure-evidence
+checks and unsupported-scope fallback; it does not change live evidence, remote
+prompts/configuration, credentials, capture controls, call budgets or the flag.
+
+## Procedure evidence safeguard (offline draft)
+
+The PR #263 three-question pilot fixed the observed marker failures but exposed a
+false acceptance: the PEI answer called a small-area application test a safe next
+step without any approved instruction evidence. Both the draft and same-model
+review allowed it. Existing hard checks covered format, IDs, numbers and some
+material/surface claims, not the procedure itself. A model review verdict is not
+sufficient authority for this advice.
+
+The new code-owned boundary is deliberately narrow:
+
+1. A requested material/surface outside a complete recognised approved scope, or a
+   qualified surface such as coated glass, uses the existing specific composer
+   answer without generation/review calls. A procedure request without matching
+   instruction evidence also uses that useful fallback. This covers the actual
+   PEI case independently of how a model might paraphrase the recommendation.
+2. Generic `guidance` must equal a bounded referral/clarification sentence from
+   `SYNTHESIS_SAFE_NEXT_STEPS`. Appended alternatives are rejected. Referring the
+   customer to manufacturer compatibility/application instructions does not grant
+   permission to perform an experiment or invent application steps.
+3. The only supported instruction channel is a `fact` citing exactly one current
+   official-source `application_instructions` or `surface_test_instructions` fact.
+   Its full reviewed value must have the explicit single-scope form
+   `For MATERIAL on SURFACE only: ...`; both requested material and surface must
+   match. The draft text must equal `{{product}}: ` plus that entire value. No
+   paraphrasing, missing conditions, extra safety assurance or volunteered
+   procedure is accepted. Other recognised scopes or operational thermal/electrical
+   content inside the value fail closed. Supplier/marketing values, source bodies,
+   excerpts and null fields are not promoted into instruction facts.
+4. Conservative English action/risk checks inspect all remaining paragraph kinds,
+   not just `guidance`, including imperative, passive and trial/safety wording.
+   Common width/diacritic/zero-width obfuscation is normalised for inspection;
+   rejected prose is never stripped, silently repaired or released.
+
+Original identity/marker, numeric, markup, question/length, material/surface and
+thermal/electrical hard checks still run before the additional checks. Approval,
+expiry, conflicts, exact variant binding, release-time evidence revalidation,
+complete model review and deterministic final Sources remain required. New safe
+failure codes identify `procedure_without_approved_instructions`,
+`unbounded_guidance`, `instruction_scope_unverified` or
+`instruction_contract_mismatch`, without logging raw customer/model text.
+
+The scope and action recognition is bounded, not semantic entailment or complete
+multilingual/adversarial detection. Unsupported forms can be conservatively
+rejected, and unforeseen procedure language in free factual prose can still evade
+recognition and a model review. Broad synthesis must remain disabled pending
+separately approved adversarial/live evaluation. This patch does not claim to
+resolve the remaining manufacturer narration seen in the PETG trial.
+
+No current product instruction claim is added or renewed. The supported-instruction
+positive uses a clearly fictional `Example Adhesive` / `example.com` DTO. Native
+publication would require its own sourced, reviewed instructions; existing facts
+must not be renamed or rewritten merely to satisfy this contract. Historical
+fixtures use their recorded validity clock; the known live reviews expire on
+November 3 at 03:53 UTC, and this draft does not extend them.
+
+The negative fixture contains reviewed public-safe **rendered** synthetic output
+from PR #263. Accepted raw draft/reviewer JSON was not retained, so the tests
+explicitly reconstruct segment shapes under different labels; they do not pretend
+to recover the original JSON. Offline mocks force an accepting reviewer behind
+negative candidates to show that these gates act independently. Positive mocked
+reviews test plumbing, not real-model helpfulness or semantic accuracy. No paid
+calls, deployment or configuration changes are part of this draft.
 
 ## November 2 output-contract correction (offline draft)
 

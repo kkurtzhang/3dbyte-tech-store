@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 
 export const SYNTHESIS_DIAGNOSTICS_VERSION =
-  "2026-11-02.validation-diagnostics-1";
+  "2026-11-02.procedure-diagnostics-2";
 export type CandidateIdentity = { sha256: string; utf8Bytes: number };
 export type HardFailureCode =
   | "answer_length_limit"
@@ -15,7 +15,11 @@ export type HardFailureCode =
   | "forbidden_markup_or_citation"
   | "unsupported_quantity"
   | "unsupported_material_scope"
-  | "unsupported_surface_scope";
+  | "unsupported_surface_scope"
+  | "procedure_without_approved_instructions"
+  | "unbounded_guidance"
+  | "instruction_scope_unverified"
+  | "instruction_contract_mismatch";
 export type HardCheckResult =
   | { ok: true }
   | { ok: false; code: HardFailureCode; segmentIndex?: number };
